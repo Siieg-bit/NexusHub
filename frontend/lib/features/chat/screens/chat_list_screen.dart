@@ -18,6 +18,7 @@ import '../../../core/providers/chat_provider.dart'
 import '../widgets/dm_invite_card.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../stories/screens/story_viewer_screen.dart';
 import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Provider para "Meus chats" — lista pessoal do usuário.
@@ -204,6 +205,90 @@ final chatCommunitiesProvider =
       .where((e) => e['communities'] != null)
       .map((e) => CommunityModel.fromJson(e['communities']))
       .toList();
+});
+
+/// Provider para stories dos usuários que o usuário atual segue.
+/// Agrupa por autor, filtra apenas stories ativos não expirados.
+final followingStoriesProvider =
+    FutureProvider<List<Map<String, dynamic>>>((ref) async {
+  final userId = SupabaseService.currentUserId;
+  if (userId == null) return [];
+  try {
+    // Buscar quem o usuário segue
+    final follows = await SupabaseService.table('follows')
+        .select('following_id')
+        .eq('follower_id', userId)
+        .limit(50);
+    final followingIds = (follows as List? ?? [])
+        .map((r) => r['following_id'] as String?)
+        .whereType<String>()
+        .toList();
+    if (followingIds.isEmpty) return [];
+
+    // Buscar stories ativos dos seguidos
+    final now = DateTime.now().toUtc().toIso8601String();
+    final stories = await SupabaseService.table('stories')
+        .select('*, profiles!author_id(id, nickname, icon_url)')
+        .inFilter('author_id', followingIds)
+        .eq('is_active', true)
+        .gte('expires_at', now)
+        .order('created_at', ascending: false)
+        .limit(100);
+
+    // Agrupar por autor
+    final grouped = <String, Map<String, dynamic>>{};
+    for (final story in (stories as List? ?? [])) {
+      final authorId = story['author_id'] as String? ?? '';
+      if (authorId.isEmpty) continue;
+      if (!grouped.containsKey(authorId)) {
+        grouped[authorId] = {
+          'author_id': authorId,
+          'profile': story['profiles'],
+          'stories': <Map<String, dynamic>>[],
+          'has_unviewed': false,
+        };
+      }
+      (grouped[authorId]!['stories'] as List).add(Map<String, dynamic>.from(story as Map));
+    }
+
+    // Verificar stories não vistos
+    if (grouped.isNotEmpty) {
+      final allStoryIds = (stories as List<dynamic>)
+          .map((s) => (s as Map<String, dynamic>)['id'] as String?)
+          .whereType<String>()
+          .toList();
+      try {
+        final viewed = await SupabaseService.table('story_views')
+            .select('story_id')
+            .eq('viewer_id', userId)
+            .inFilter('story_id', allStoryIds);
+        // viewer_id é o campo correto (confirmado no story_carousel)
+        final viewedIds = (viewed as List)
+            .map((v) => v['story_id'] as String?)
+            .whereType<String>()
+            .toSet();
+        for (final group in grouped.values) {
+          final groupStories = group['stories'] as List;
+          group['has_unviewed'] =
+              groupStories.any((s) => !viewedIds.contains(s['id']));
+        }
+      } catch (_) {}
+    }
+
+    // Ordenar: não vistos primeiro
+    final result = grouped.values.toList()
+      ..sort((a, b) {
+        final aUnviewed = a['has_unviewed'] as bool? ?? false;
+        final bUnviewed = b['has_unviewed'] as bool? ?? false;
+        if (aUnviewed && !bUnviewed) return -1;
+        if (!aUnviewed && bUnviewed) return 1;
+        return 0;
+      });
+    return result;
+  } catch (e) {
+    debugPrint('[followingStoriesProvider] error: \$e');
+    return [];
+  }
 });
 
 /// Tela de Chats — réplica fiel do Amino Apps.
@@ -593,10 +678,160 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
               ];
             },
           ),
+          // ── Stories dos seguidos (tipo Instagram) ──
+          _buildFollowingStoriesBar(r),
+
           // ── Lista de chats ──
           ...chatRooms.map((chatRoom) => _AminoChatTile(chatRoom: chatRoom)),
         ],
       ),
+    );
+  }
+
+  // ==========================================================================
+  // STORIES DOS SEGUIDOS — Barra horizontal estilo Instagram
+  // ==========================================================================
+  Widget _buildFollowingStoriesBar(Responsive r) {
+    final storiesAsync = ref.watch(followingStoriesProvider);
+    return storiesAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (groups) {
+        if (groups.isEmpty) return const SizedBox.shrink();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16), r.s(4)),
+              child: Row(
+                children: [
+                  Icon(Icons.auto_stories_rounded,
+                      color: context.nexusTheme.accentPrimary, size: r.s(14)),
+                  SizedBox(width: r.s(6)),
+                  Text(
+                    'Status',
+                    style: TextStyle(
+                      color: context.nexusTheme.textSecondary,
+                      fontSize: r.fs(12),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(
+              height: r.s(90),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.symmetric(horizontal: r.s(12)),
+                itemCount: groups.length,
+                itemBuilder: (context, index) {
+                  final group = groups[index];
+                  final profile = group['profile'] as Map<String, dynamic>?;
+                  final username = (profile?['nickname'] as String?) ?? '?';
+                  final avatarUrl = profile?['icon_url'] as String?;
+                  final hasUnviewed = group['has_unviewed'] as bool? ?? false;
+                  final stories = (group['stories'] as List)
+                      .map((s) => Map<String, dynamic>.from(s as Map))
+                      .toList();
+                  return Padding(
+                    padding: EdgeInsets.only(right: r.s(12)),
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (_) => _FollowingStoryViewer(
+                            stories: stories,
+                            authorProfile: profile ?? {},
+                          ),
+                        ));
+                      },
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: r.s(56),
+                            height: r.s(56),
+                            padding: const EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: hasUnviewed
+                                  ? const LinearGradient(
+                                      colors: [
+                                        Color(0xFFE91E63),
+                                        Color(0xFFFF5722),
+                                        Color(0xFFFF9800),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    )
+                                  : null,
+                              border: hasUnviewed
+                                  ? null
+                                  : Border.all(
+                                      color: Colors.grey[700] ?? Colors.grey,
+                                      width: 2),
+                            ),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                    color: context.nexusTheme.backgroundPrimary,
+                                    width: 2),
+                              ),
+                              child: CircleAvatar(
+                                radius: 22,
+                                backgroundColor:
+                                    context.nexusTheme.surfacePrimary,
+                                backgroundImage: avatarUrl != null
+                                    ? NetworkImage(avatarUrl)
+                                    : null,
+                                child: avatarUrl == null
+                                    ? Text(
+                                        username[0].toUpperCase(),
+                                        style: TextStyle(
+                                          color: context.nexusTheme.textPrimary,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      )
+                                    : null,
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: r.s(4)),
+                          SizedBox(
+                            width: r.s(56),
+                            child: Text(
+                              username,
+                              style: TextStyle(
+                                color: hasUnviewed
+                                    ? context.nexusTheme.textPrimary
+                                    : Colors.grey[600],
+                                fontSize: r.fs(10),
+                                fontWeight: hasUnviewed
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            Divider(
+              color: context.dividerClr.withValues(alpha: 0.3),
+              height: r.s(8),
+              indent: r.s(16),
+              endIndent: r.s(16),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -1365,5 +1600,26 @@ class _AminoChatTile extends ConsumerWidget {
         ),
       ),
     ); // GestureDetector
+  }
+}
+
+// =============================================================================
+// VIEWER DE STORIES DOS SEGUIDOS — Wrapper para StoryViewerScreen
+// =============================================================================
+class _FollowingStoryViewer extends StatelessWidget {
+  final List<Map<String, dynamic>> stories;
+  final Map<String, dynamic> authorProfile;
+
+  const _FollowingStoryViewer({
+    required this.stories,
+    required this.authorProfile,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return StoryViewerScreen(
+      stories: stories,
+      authorProfile: authorProfile,
+    );
   }
 }
