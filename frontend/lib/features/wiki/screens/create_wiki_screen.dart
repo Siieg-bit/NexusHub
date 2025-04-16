@@ -44,7 +44,8 @@ class _WikiSection {
 class CreateWikiScreen extends ConsumerStatefulWidget {
   final String communityId;
   final PostModel? editingPost;
-  const CreateWikiScreen({super.key, required this.communityId, this.editingPost});
+  final String? draftId;
+  const CreateWikiScreen({super.key, required this.communityId, this.editingPost, this.draftId});
 
   @override
   ConsumerState<CreateWikiScreen> createState() => _CreateWikiScreenState();
@@ -76,7 +77,11 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
     if (_isEditing) {
       _populateFromPost(widget.editingPost!);
     } else {
-      Future.microtask(_restoreLatestDraft);
+      // Só restaurar rascunho automaticamente quando um draftId específico é fornecido
+      // (via tela de rascunhos). Ao criar novo, não restaurar automaticamente.
+      if (widget.draftId != null) {
+        Future.microtask(_restoreLatestDraft);
+      }
       _startAutoDraftTimer();
     }
   }
@@ -139,13 +144,17 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
     if (userId == null) return;
 
     try {
-      final result = await SupabaseService.table('post_drafts')
+      final query = SupabaseService.table('post_drafts')
           .select()
           .eq('user_id', userId)
-          .eq('community_id', widget.communityId)
-          .eq('post_type', 'wiki')
-          .order('updated_at', ascending: false)
-          .limit(1);
+          .eq('community_id', widget.communityId);
+
+      final result = widget.draftId != null
+          ? await query.eq('id', widget.draftId!).limit(1)
+          : await query
+              .eq('post_type', 'wiki')
+              .order('updated_at', ascending: false)
+              .limit(1);
 
       if (!mounted) return;
       final list = (result as List?) ?? const [];

@@ -476,6 +476,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           return CreateWikiScreen(
             communityId: state.pathParameters['communityId']!,
             editingPost: extra['editingPost'] as PostModel?,
+            draftId: extra['draftId'] as String?,
           );
         },
       ),

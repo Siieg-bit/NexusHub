@@ -168,12 +168,17 @@ Future<void> _injectCommunityAuthorIdentity(
 ) async {
   if (posts.isEmpty) return;
 
-  final authorIds = posts
-      .map((p) => p['author_id'] as String?)
-      .whereType<String>()
-      .where((id) => id.isNotEmpty)
-      .toSet()
-      .toList();
+  // Coletar todos os author_ids (post principal + original_post para republicações)
+  final authorIds = <String>{};
+  for (final p in posts) {
+    final id = p['author_id'] as String?;
+    if (id != null && id.isNotEmpty) authorIds.add(id);
+    final op = p['original_post'] as Map?;
+    if (op != null) {
+      final opId = op['author_id'] as String?;
+      if (opId != null && opId.isNotEmpty) authorIds.add(opId);
+    }
+  }
   if (authorIds.isEmpty) return;
 
   try {
@@ -181,7 +186,7 @@ Future<void> _injectCommunityAuthorIdentity(
         .select(
             'user_id, local_nickname, local_icon_url, local_banner_url, local_level')
         .eq('community_id', communityId)
-        .inFilter('user_id', authorIds);
+        .inFilter('user_id', authorIds.toList());
 
     final memberships = {
       for (final row in (membershipsRes as List? ?? const []))
@@ -189,32 +194,59 @@ Future<void> _injectCommunityAuthorIdentity(
     };
 
     for (final post in posts) {
+      // Injetar identidade local do autor do post principal
       final authorId = post['author_id'] as String?;
-      if (authorId == null) continue;
-      final membership = memberships[authorId];
-      if (membership == null) continue;
+      if (authorId != null) {
+        final membership = memberships[authorId];
+        if (membership != null) {
+          post['author_local_level'] = membership['local_level'];
+          post['author_local_nickname'] = membership['local_nickname'];
+          post['author_local_icon_url'] = membership['local_icon_url'];
+          post['author_local_banner_url'] = membership['local_banner_url'];
 
-      post['author_local_level'] = membership['local_level'];
-      post['author_local_nickname'] = membership['local_nickname'];
-      post['author_local_icon_url'] = membership['local_icon_url'];
-      post['author_local_banner_url'] = membership['local_banner_url'];
+          final currentAuthor = Map<String, dynamic>.from(
+            (post['author'] ?? post['profiles'] ?? const <String, dynamic>{})
+                as Map,
+          );
+          // local_nickname/local_icon_url sempre preenchidos desde o join (migration 093)
+          final localNickname = (membership['local_nickname'] as String?)?.trim();
+          final localIconUrl = (membership['local_icon_url'] as String?)?.trim();
+          final localBannerUrl = (membership['local_banner_url'] as String?)?.trim();
 
-      final currentAuthor = Map<String, dynamic>.from(
-        (post['author'] ?? post['profiles'] ?? const <String, dynamic>{})
-            as Map,
-      );
-      // local_nickname/local_icon_url sempre preenchidos desde o join (migration 093)
-      final localNickname = (membership['local_nickname'] as String?)?.trim();
-      final localIconUrl = (membership['local_icon_url'] as String?)?.trim();
-      final localBannerUrl =
-          (membership['local_banner_url'] as String?)?.trim();
+          currentAuthor['nickname'] = localNickname;
+          currentAuthor['icon_url'] = localIconUrl;
+          currentAuthor['banner_url'] = localBannerUrl;
 
-      currentAuthor['nickname'] = localNickname;
-      currentAuthor['icon_url'] = localIconUrl;
-      currentAuthor['banner_url'] = localBannerUrl;
+          post['author'] = currentAuthor;
+          post['profiles'] = currentAuthor;
+        }
+      }
 
-      post['author'] = currentAuthor;
-      post['profiles'] = currentAuthor;
+      // Injetar identidade local também no original_post (para republicações/reposts)
+      final opMap = post['original_post'] as Map?;
+      if (opMap != null) {
+        final opAuthorId = opMap['author_id'] as String?;
+        if (opAuthorId != null) {
+          final opMembership = memberships[opAuthorId];
+          if (opMembership != null) {
+            final op = Map<String, dynamic>.from(opMap);
+            op['author_local_nickname'] = opMembership['local_nickname'];
+            op['author_local_icon_url'] = opMembership['local_icon_url'];
+            op['author_local_banner_url'] = opMembership['local_banner_url'];
+            op['author_local_level'] = opMembership['local_level'];
+            // Atualizar profiles aninhado do original_post
+            final opAuthor = Map<String, dynamic>.from(
+              (op['author'] ?? op['profiles'] ?? const <String, dynamic>{})
+                  as Map,
+            );
+            opAuthor['nickname'] = (opMembership['local_nickname'] as String?)?.trim();
+            opAuthor['icon_url'] = (opMembership['local_icon_url'] as String?)?.trim();
+            op['author'] = opAuthor;
+            op['profiles'] = opAuthor;
+            post['original_post'] = op;
+          }
+        }
+      }
     }
   } catch (e) {
     debugPrint(

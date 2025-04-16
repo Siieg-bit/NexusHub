@@ -1011,6 +1011,22 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         ),
         // Configurações gerais do app acessíveis pelo drawer
         _AminoDrawerTile(
+          icon: Icons.notifications_outlined,
+          iconColor: theme.textSecondary,
+          label: s.notifications,
+          onTap: () => _closeAndNavigate(() {
+            context.push('/community/${widget.community.id}/notifications');
+          }),
+        ),
+        _AminoDrawerTile(
+          icon: Icons.block_rounded,
+          iconColor: theme.textSecondary,
+          label: s.blockedUsers,
+          onTap: () => _closeAndNavigate(() {
+            context.push('/settings/blocked-users');
+          }),
+        ),
+        _AminoDrawerTile(
           icon: Icons.manage_accounts_rounded,
           iconColor: theme.textSecondary,
           label: s.settings,
