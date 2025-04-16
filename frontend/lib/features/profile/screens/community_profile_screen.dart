@@ -2556,12 +2556,16 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
           _isFollowingMe = false;
           if (_followersCount > 0) _followersCount--;
         });
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(s.blockSuccess),
-          backgroundColor: context.surfaceColor,
-          behavior: SnackBarBehavior.floating,
-        ));
-        if (mounted) context.pop();
+        // Navegar de volta ANTES de mostrar o snackbar para evitar que seja descartado
+        if (mounted) {
+          context.pop();
+          // Mostrar snackbar na tela anterior usando o rootScaffoldMessenger
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(s.blockSuccess),
+            backgroundColor: const Color(0xFF4CAF50),
+            behavior: SnackBarBehavior.floating,
+          ));
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Erro ao bloquear usuário. Tente novamente.'),
