@@ -46,7 +46,7 @@ class _WikiListScreenState extends ConsumerState<WikiListScreen> {
 
       // Carregar entries com join na categoria
       final res = await SupabaseService.table('wiki_entries')
-          .select('*, profiles(*), wiki_categories(id, name)')
+          .select('*, profiles!wiki_entries_author_id_fkey(*), wiki_categories(id, name)')
           .eq('community_id', widget.communityId)
           .eq('status', 'ok')
           .order('created_at', ascending: false);
@@ -433,7 +433,7 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
   Future<void> _loadEntry() async {
     try {
       final res = await SupabaseService.table('wiki_entries')
-          .select('*, profiles(*), wiki_categories(id, name)')
+          .select('*, profiles!wiki_entries_author_id_fkey(*), wiki_categories(id, name)')
           .eq('id', widget.wikiId)
           .maybeSingle();
       if (res == null) {
@@ -512,13 +512,32 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
       // Load "What I Like" comments
       try {
         final likesRes = await SupabaseService.table('wiki_what_i_like')
-            .select('*, profiles(nickname, icon_url)')
+            .select('*')
             .eq('wiki_entry_id', widget.wikiId)
             .order('created_at', ascending: false)
             .limit(20);
         if (!mounted) return;
-        _whatILikeList =
-            List<Map<String, dynamic>>.from(likesRes as List? ?? []);
+        final likesList = List<Map<String, dynamic>>.from(likesRes as List? ?? []);
+        // Buscar perfis separadamente (wiki_what_i_like.user_id -> auth.users, sem FK para profiles)
+        if (likesList.isNotEmpty) {
+          final userIds = likesList.map((e) => e['user_id'] as String).toList();
+          try {
+            final profilesRes = await SupabaseService.table('profiles')
+                .select('id, nickname, icon_url')
+                .inFilter('id', userIds);
+            final profilesMap = <String, Map<String, dynamic>>{
+              for (final p in (profilesRes as List).map((e) => Map<String, dynamic>.from(e as Map)))
+                p['id'] as String: p,
+            };
+            for (final like in likesList) {
+              final uid = like['user_id'] as String?;
+              if (uid != null && profilesMap.containsKey(uid)) {
+                like['profiles'] = profilesMap[uid];
+              }
+            }
+          } catch (_) {}
+        }
+        _whatILikeList = likesList;
       } catch (e) {
         debugPrint('[wiki_screen] Erro: $e');
       }

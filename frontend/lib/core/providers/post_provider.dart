@@ -164,49 +164,85 @@ Future<List<Map<String, dynamic>>> _injectIsLiked(
     debugPrint('[post_provider] _injectIsLiked error: \$e');
   }
 
-  // Injetar user_vote para enquetes
+  // Injetar poll_data completo para enquetes (busca opções do banco)
   try {
     final pollPostIds = posts
         .where((p) => p['type'] == 'poll')
         .map((p) => p['id'] as String)
         .toList();
     if (pollPostIds.isNotEmpty) {
-      // Buscar as opções de cada post de enquete
+      // Buscar as opções completas de cada post de enquete (com votes_count)
       final optionsRaw = await SupabaseService.table('poll_options')
-          .select('id, post_id')
-          .inFilter('post_id', pollPostIds);
+          .select('id, post_id, text, votes_count, sort_order')
+          .inFilter('post_id', pollPostIds)
+          .order('sort_order', ascending: true);
       final optionsList = (optionsRaw as List)
           .map((e) => Map<String, dynamic>.from(e as Map))
           .toList();
+
+      // Agrupar opções por post_id
+      final optionsByPost = <String, List<Map<String, dynamic>>>{};
+      for (final o in optionsList) {
+        final pid = o['post_id'] as String;
+        optionsByPost.putIfAbsent(pid, () => []).add(o);
+      }
+
+      // Buscar votos do usuário
       final allOptionIds = optionsList.map((e) => e['id'] as String).toList();
+      Set<String> votedOptionIds = {};
       if (allOptionIds.isNotEmpty) {
         final votesRes = await SupabaseService.table('poll_votes')
             .select('option_id')
             .eq('user_id', userId)
             .inFilter('option_id', allOptionIds);
-        final votedOptionIds = (votesRes as List)
+        votedOptionIds = (votesRes as List)
             .map((e) => e['option_id'] as String)
             .toSet();
-        // Mapear option_id -> post_id
-        final optionToPost = <String, String>{
-          for (final o in optionsList)
-            o['id'] as String: o['post_id'] as String,
-        };
-        // Injetar user_vote no poll_data de cada post
-        for (final post in posts) {
-          if (post['type'] != 'poll') continue;
-          final pollData = post['poll_data'];
-          if (pollData is! Map) continue;
-          final options = (pollData['options'] as List<dynamic>?) ?? [];
-          for (final optId in votedOptionIds) {
-            if (optionToPost[optId] == post['id']) {
-              final updatedPollData = Map<String, dynamic>.from(pollData);
-              updatedPollData['user_vote'] = optId;
-              post['poll_data'] = updatedPollData;
-              break;
-            }
+      }
+
+      // Montar poll_data para cada post de enquete
+      for (final post in posts) {
+        if (post['type'] != 'poll') continue;
+        final postId = post['id'] as String;
+        final options = optionsByPost[postId] ?? [];
+        if (options.isEmpty) continue;
+
+        // Normalizar opções: usar 'votes' e 'votes_count' para compatibilidade
+        final normalizedOptions = options.map((o) {
+          final vc = (o['votes_count'] as num?)?.toInt() ?? 0;
+          return {
+            'id': o['id'],
+            'text': o['text'] ?? '',
+            'votes': vc,
+            'votes_count': vc,
+            'sort_order': o['sort_order'] ?? 0,
+          };
+        }).toList();
+
+        final totalVotes = normalizedOptions.fold<int>(
+          0, (sum, o) => sum + ((o['votes'] as int?) ?? 0));
+
+        // Encontrar voto do usuário
+        String? userVote;
+        for (final optId in votedOptionIds) {
+          if (options.any((o) => o['id'] == optId)) {
+            userVote = optId;
+            break;
           }
         }
+
+        // Preservar question do poll_data existente se houver
+        final existingPollData = post['poll_data'];
+        final question = existingPollData is Map
+            ? existingPollData['question']?.toString()
+            : null;
+
+        post['poll_data'] = {
+          if (question != null) 'question': question,
+          'options': normalizedOptions,
+          'total_votes': totalVotes,
+          if (userVote != null) 'user_vote': userVote,
+        };
       }
     }
   } catch (e) {

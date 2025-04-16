@@ -13,6 +13,7 @@ import '../../../core/providers/post_provider.dart' as post_providers;
 import '../../communities/providers/community_detail_providers.dart'
     as community_providers;
 import '../../auth/providers/auth_provider.dart' as auth_providers;
+import '../../profile/providers/profile_providers.dart' as profile_providers;
 import '../../moderation/widgets/post_moderation_menu.dart';
 import 'block_content_renderer.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
@@ -830,12 +831,15 @@ class _PostCardState extends ConsumerState<PostCard>
       padding: EdgeInsets.fromLTRB(r.s(12), r.s(10), r.s(12), r.s(8)),
       child: Row(
         children: [
-          // Avatar (36px, rounded-full)
+          // Avatar (36px, rounded-full) com anel de story quando ativo
           CosmeticAvatar(
             userId: isAnonymousQuestion ? null : _post.authorId,
             avatarUrl: displayAuthorAvatar,
             size: r.s(36),
             onTap: isAnonymousQuestion ? null : () => context.push(authorProfileRoute),
+            hasActiveStory: !isAnonymousQuestion &&
+                ref.watch(profile_providers.userHasActiveStoryProvider(
+                    _post.authorId)).valueOrNull == true,
           ),
           SizedBox(width: r.s(10)),
           Expanded(
@@ -983,8 +987,11 @@ class _PostCardState extends ConsumerState<PostCard>
       case 'crosspost':
       case 'repost':
         return _buildCrosspostBanner();
+      case 'wiki':
+        // Post do tipo wiki (formato legado) — exibe card de wiki
+        return _buildWikiCard();
       default:
-        // Verificar se é um post de wiki pelo variant
+        // Verificar se é um post de wiki pelo variant (formato novo)
         if (_post.variant == 'wiki' && _post.wikiData != null) {
           return _buildWikiCard();
         }
@@ -999,8 +1006,8 @@ class _PostCardState extends ConsumerState<PostCard>
     final wikiEntryId = _post.wikiData?['wiki_entry_id'] as String?;
     return GestureDetector(
       onTap: wikiEntryId != null
-          ? () => context.push('/wiki/\$wikiEntryId')
-          : null,
+          ? () => context.push('/wiki/$wikiEntryId')
+          : () => context.push('/post/${_post.id}'),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         padding: const EdgeInsets.all(12),

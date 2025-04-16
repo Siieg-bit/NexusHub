@@ -182,6 +182,24 @@ final userStoriesProvider =
   }
 });
 
+/// Provider que verifica se um usuário específico tem stories ativos (não expirados).
+/// Usado para exibir o anel de story ao redor do avatar do usuário.
+final userHasActiveStoryProvider =
+    FutureProvider.family<bool, String>((ref, userId) async {
+  if (userId.isEmpty) return false;
+  try {
+    final response = await SupabaseService.table('stories')
+        .select('id')
+        .eq('author_id', userId)
+        .eq('is_active', true)
+        .gte('expires_at', DateTime.now().toUtc().toIso8601String())
+        .limit(1);
+    return ((response as List?) ?? []).isNotEmpty;
+  } catch (_) {
+    return false;
+  }
+});
+
 /// Provider para comunidades vinculadas (Linked Communities) de qualquer usuário.
 final userLinkedCommunitiesProvider =
     FutureProvider.family<List<CommunityModel>, String>((ref, userId) async {
