@@ -429,6 +429,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     final isHiddenProfile = _membership?['is_hidden'] == true;
 
     if (isHiddenProfile && !canViewHiddenProfile) {
+      // Perfil oculto: exibe layout temático com banner/avatar borrados e ícone de olho riscado
       return Scaffold(
         backgroundColor: context.nexusTheme.backgroundPrimary,
         appBar: AppBar(
@@ -436,48 +437,128 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
           foregroundColor: context.nexusTheme.textPrimary,
           title: Text(displayName),
         ),
-        body: Center(
-          child: Padding(
-            padding: EdgeInsets.all(r.s(24)),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+        body: Column(
+          children: [
+            // ── Banner temático de oculto ────────────────────────────────────
+            Stack(
               children: [
-                Container(
-                  width: r.s(72),
-                  height: r.s(72),
-                  decoration: BoxDecoration(
-                    color: context.nexusTheme.surfaceSecondary,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.visibility_off_rounded,
-                    size: r.s(32),
-                    color: context.nexusTheme.textSecondary,
+                // Banner com filtro escurecido
+                SizedBox(
+                  width: double.infinity,
+                  height: r.s(140),
+                  child: ColorFiltered(
+                    colorFilter: ColorFilter.mode(
+                      Colors.black.withValues(alpha: 0.72),
+                      BlendMode.darken,
+                    ),
+                    child: displayBanner != null
+                        ? Image.network(
+                            displayBanner!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              color: context.nexusTheme.surfaceSecondary,
+                            ),
+                          )
+                        : Container(
+                            color: context.nexusTheme.surfaceSecondary,
+                          ),
                   ),
                 ),
-                SizedBox(height: r.s(16)),
-                Text(
-                  'Perfil ocultado nesta comunidade',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: context.nexusTheme.textPrimary,
-                    fontSize: r.fs(18),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                SizedBox(height: r.s(10)),
-                Text(
-                  'Este perfil foi ocultado pela moderação da comunidade e não está visível para membros comuns no momento.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: context.nexusTheme.textSecondary,
-                    fontSize: r.fs(13),
-                    height: 1.5,
+                // Avatar com filtro escurecido + ícone sobreposto
+                Positioned(
+                  bottom: -r.s(36),
+                  left: r.s(20),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        width: r.s(72),
+                        height: r.s(72),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: context.nexusTheme.backgroundPrimary,
+                            width: 3,
+                          ),
+                        ),
+                        child: ClipOval(
+                          child: ColorFiltered(
+                            colorFilter: ColorFilter.mode(
+                              Colors.black.withValues(alpha: 0.65),
+                              BlendMode.darken,
+                            ),
+                            child: displayAvatar != null
+                                ? Image.network(
+                                    displayAvatar!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Container(
+                                      color: context.nexusTheme.surfaceSecondary,
+                                    ),
+                                  )
+                                : Container(
+                                    color: context.nexusTheme.surfaceSecondary,
+                                  ),
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        Icons.visibility_off_rounded,
+                        color: Colors.white.withValues(alpha: 0.85),
+                        size: r.s(22),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
+            SizedBox(height: r.s(44)),
+            // ── Mensagem de perfil oculto ────────────────────────────────────
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: r.s(24)),
+              child: Column(
+                children: [
+                  Text(
+                    displayName,
+                    style: TextStyle(
+                      color: context.nexusTheme.textPrimary,
+                      fontSize: r.fs(18),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  SizedBox(height: r.s(12)),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: r.s(16), vertical: r.s(10)),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                          color: Colors.grey.withValues(alpha: 0.2)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.visibility_off_rounded,
+                            size: r.s(16),
+                            color: context.nexusTheme.textSecondary),
+                        SizedBox(width: r.s(8)),
+                        Flexible(
+                          child: Text(
+                            'Perfil ocultado pela moderação',
+                            style: TextStyle(
+                              color: context.nexusTheme.textSecondary,
+                              fontSize: r.fs(13),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       );
     }

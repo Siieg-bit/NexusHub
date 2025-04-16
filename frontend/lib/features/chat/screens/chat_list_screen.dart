@@ -369,6 +369,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                 showModalBottomSheet(
                   context: context,
                   backgroundColor: context.surfaceColor,
+                  useSafeArea: true,
                   shape: const RoundedRectangleBorder(
                     borderRadius:
                         BorderRadius.vertical(top: Radius.circular(20)),

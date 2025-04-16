@@ -242,6 +242,23 @@ class _MemberRoleManagerSheetState
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text('Erro: $error')));
       } else {
+        // Enviar notificação ao membro que recebeu o título (apenas quando não é o próprio moderador)
+        if (!_isSelf) {
+          try {
+            final roleLabel = _roleLabel(widget.callerRole);
+            await SupabaseService.table('notifications').insert({
+              'user_id': widget.targetUserId,
+              'actor_id': SupabaseService.currentUserId,
+              'type': 'moderation',
+              'title': 'Novo título recebido',
+              'body': '$roleLabel te deu o título "$title" nesta comunidade.',
+              'community_id': widget.communityId,
+            });
+          } catch (_) {
+            // Notificação não é crítica — ignorar falha silenciosamente
+          }
+        }
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(_isSelf
               ? 'Seu título foi definido como "$title"!'
