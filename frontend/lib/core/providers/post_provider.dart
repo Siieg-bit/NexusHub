@@ -143,28 +143,31 @@ Future<void> _enrichAuthorData(Map<String, dynamic> map) async {
 Future<List<Map<String, dynamic>>> _injectIsLiked(
   List<Map<String, dynamic>> posts,
 ) async {
+  if (posts.isEmpty) return posts;
   final userId = SupabaseService.currentUserId;
-  if (userId == null || posts.isEmpty) return posts;
-
   final postIds = posts.map((p) => p['id'] as String).toList();
 
-  try {
-    final likesRes = await SupabaseService.table('likes')
-        .select('post_id')
-        .eq('user_id', userId)
-        .inFilter('post_id', postIds);
+  // Injetar likes (apenas se o usuário estiver autenticado)
+  if (userId != null) {
+    try {
+      final likesRes = await SupabaseService.table('likes')
+          .select('post_id')
+          .eq('user_id', userId)
+          .inFilter('post_id', postIds);
 
-    final likedPostIds =
-        (likesRes as List).map((e) => e['post_id'] as String).toSet();
+      final likedPostIds =
+          (likesRes as List).map((e) => e['post_id'] as String).toSet();
 
-    for (final post in posts) {
-      post['is_liked'] = likedPostIds.contains(post['id']);
+      for (final post in posts) {
+        post['is_liked'] = likedPostIds.contains(post['id']);
+      }
+    } catch (e) {
+      debugPrint('[post_provider] _injectIsLiked error: \$e');
     }
-  } catch (e) {
-    debugPrint('[post_provider] _injectIsLiked error: \$e');
   }
 
   // Injetar poll_data completo para enquetes (busca opções do banco)
+  // Executado sempre, independente de autenticação
   try {
     final pollPostIds = posts
         .where((p) => p['type'] == 'poll')
@@ -187,10 +190,10 @@ Future<List<Map<String, dynamic>>> _injectIsLiked(
         optionsByPost.putIfAbsent(pid, () => []).add(o);
       }
 
-      // Buscar votos do usuário
+      // Buscar votos do usuário (apenas se autenticado)
       final allOptionIds = optionsList.map((e) => e['id'] as String).toList();
       Set<String> votedOptionIds = {};
-      if (allOptionIds.isNotEmpty) {
+      if (allOptionIds.isNotEmpty && userId != null) {
         final votesRes = await SupabaseService.table('poll_votes')
             .select('option_id')
             .eq('user_id', userId)
