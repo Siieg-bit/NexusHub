@@ -6,6 +6,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../config/nexus_theme_data.dart';
+import 'package:amino_clone/config/nexus_theme_extension.dart';
 
 /// Tela de redefinição de senha.
 ///
