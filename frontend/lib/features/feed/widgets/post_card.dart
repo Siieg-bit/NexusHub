@@ -1002,7 +1002,7 @@ class _PostCardState extends ConsumerState<PostCard>
   // ── WIKI CARD ──
   Widget _buildWikiCard() {
     final s = ref.read(stringsProvider);
-    final theme = Theme.of(context).extension<NexusThemeExtension>()!;
+    final theme = context.nexusTheme;
     final wikiEntryId = _post.wikiData?['wiki_entry_id'] as String?;
     return GestureDetector(
       onTap: wikiEntryId != null

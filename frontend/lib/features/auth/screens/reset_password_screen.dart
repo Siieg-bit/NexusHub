@@ -5,7 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
-import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_data.dart';
 
 /// Tela de redefinição de senha.
 ///
@@ -114,7 +114,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
     );
   }
 
-  Widget _buildSuccess(ResponsiveUtil r, NexusThemeExtension theme) {
+  Widget _buildSuccess(Responsive r, NexusThemeData theme) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -151,7 +151,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
     );
   }
 
-  Widget _buildForm(dynamic s, ResponsiveUtil r, NexusThemeExtension theme) {
+  Widget _buildForm(dynamic s, Responsive r, NexusThemeData theme) {
     return Form(
       key: _formKey,
       child: Column(

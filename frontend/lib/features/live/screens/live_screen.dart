@@ -6,7 +6,7 @@ import '../../chat/screens/call_screen.dart';
 import 'screening_room_screen.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
-import 'package:amino_clone/config/nexus_theme_extension.dart';
+import '../../../config/nexus_theme_data.dart';
 
 /// Tela Live — exibe Salas de Projeção e Voice Chats ativos.
 ///
@@ -454,7 +454,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     );
   }
 
-  Widget _buildCreateFab(ResponsiveUtil r) {
+  Widget _buildCreateFab(Responsive r) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
