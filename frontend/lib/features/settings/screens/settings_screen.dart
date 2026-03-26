@@ -22,6 +22,138 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _loadProfile();
   }
 
+  Future<void> _exportData() async {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.download_rounded, color: AppTheme.primaryColor),
+            SizedBox(width: 8),
+            Text('Exportar Dados'),
+          ],
+        ),
+        content: const Text(
+            'Vamos preparar um arquivo com todos os seus dados (perfil, posts, comentários, mensagens). '
+            'Você receberá uma notificação quando estiver pronto.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancelar')),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              try {
+                await SupabaseService.rpc('request_data_export');
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text(
+                            'Solicitação enviada! Você receberá uma notificação.')),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Erro: $e')),
+                  );
+                }
+              }
+            },
+            child: const Text('Solicitar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteAccount() async {
+    final confirm1 = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.warning_rounded, color: AppTheme.errorColor),
+            SizedBox(width: 8),
+            Text('Excluir Conta'),
+          ],
+        ),
+        content: const Text(
+            'Esta ação é IRREVERSÍVEL. Todos os seus dados, posts, comentários, '
+            'mensagens e itens comprados serão permanentemente deletados.\n\n'
+            'Tem certeza que deseja continuar?'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancelar')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.errorColor),
+            child: const Text('Sim, excluir',
+                style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm1 != true) return;
+
+    // Segunda confirmação com digitação
+    final confirmCtrl = TextEditingController();
+    final confirm2 = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Confirmação Final'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+                'Digite "EXCLUIR" para confirmar a exclusão permanente da sua conta.'),
+            const SizedBox(height: 12),
+            TextField(
+              controller: confirmCtrl,
+              decoration: const InputDecoration(
+                hintText: 'EXCLUIR',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancelar')),
+          ElevatedButton(
+            onPressed: () {
+              if (confirmCtrl.text.trim() == 'EXCLUIR') {
+                Navigator.pop(ctx, true);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.errorColor),
+            child: const Text('Excluir Permanentemente',
+                style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm2 != true || !mounted) return;
+
+    try {
+      await SupabaseService.rpc('delete_user_account');
+      await SupabaseService.client.auth.signOut();
+      if (mounted) context.go('/login');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao excluir conta: $e')),
+        );
+      }
+    }
+  }
+
   Future<void> _loadProfile() async {
     try {
       final userId = SupabaseService.currentUserId;
@@ -200,6 +332,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(height: 20),
 
                 // ============================================================
+                // SEGURANÇA
+                // ============================================================
+                _SectionLabel(title: 'Segurança'),
+                _SettingsGroup(items: [
+                  _SettingsItem(
+                    icon: Icons.block_rounded,
+                    title: 'Usuários Bloqueados',
+                    onTap: () => context.push('/settings/blocked-users'),
+                  ),
+                  _SettingsItem(
+                    icon: Icons.devices_rounded,
+                    title: 'Dispositivos Conectados',
+                    onTap: () => context.push('/settings/devices'),
+                  ),
+                ]),
+                const SizedBox(height: 20),
+
+                // ============================================================
                 // SUPORTE
                 // ============================================================
                 _SectionLabel(title: 'Suporte'),
@@ -208,7 +358,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     icon: Icons.help_rounded,
                     title: 'Central de Ajuda',
                     onTap: () {
-                      // TODO: Help center
+                      // TODO: Help center URL
                     },
                   ),
                   _SettingsItem(
@@ -231,6 +381,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             '© 2025 NexusHub. Todos os direitos reservados.',
                       );
                     },
+                  ),
+                ]),
+                const SizedBox(height: 20),
+
+                // ============================================================
+                // DADOS
+                // ============================================================
+                _SectionLabel(title: 'Dados'),
+                _SettingsGroup(items: [
+                  _SettingsItem(
+                    icon: Icons.download_rounded,
+                    title: 'Exportar Meus Dados',
+                    onTap: () => _exportData(),
+                  ),
+                  _SettingsItem(
+                    icon: Icons.delete_forever_rounded,
+                    title: 'Excluir Conta',
+                    onTap: () => _deleteAccount(),
                   ),
                 ]),
                 const SizedBox(height: 20),

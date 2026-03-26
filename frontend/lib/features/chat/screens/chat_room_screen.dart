@@ -11,6 +11,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/models/message_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../widgets/giphy_picker.dart';
+import '../widgets/sticker_picker.dart';
 
 /// ============================================================================
 /// 19+ TIPOS DE MENSAGEM (mapeados do Amino original):
@@ -597,18 +599,38 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   icon: Icons.gif_box_rounded,
                   label: 'GIF',
                   color: AppTheme.accentColor,
-                  onTap: () {
+                  onTap: () async {
                     Navigator.pop(ctx);
-                    _sendMessage(type: 'gif', metadata: {'source': 'giphy'});
+                    final gifUrl = await GiphyPicker.show(context);
+                    if (gifUrl != null && gifUrl.isNotEmpty) {
+                      await _sendMessage(
+                          type: 'gif',
+                          mediaUrl: gifUrl,
+                          metadata: {'source': 'giphy'});
+                    }
                   },
                 ),
                 _MediaOptionItem(
                   icon: Icons.sticky_note_2_rounded,
                   label: 'Sticker',
                   color: AppTheme.warningColor,
-                  onTap: () {
+                  onTap: () async {
                     Navigator.pop(ctx);
-                    // TODO: Sticker picker
+                    final sticker = await StickerPicker.show(context,
+                        communityId: _threadInfo?['community_id'] as String?);
+                    if (sticker != null) {
+                      final emoji = sticker['emoji'];
+                      if (emoji != null && emoji.isNotEmpty) {
+                        await _sendMessage(
+                            type: 'sticker',
+                            metadata: {'emoji': emoji, 'sticker_id': sticker['sticker_id']});
+                      } else {
+                        await _sendMessage(
+                            type: 'sticker',
+                            mediaUrl: sticker['sticker_url'],
+                            metadata: {'sticker_id': sticker['sticker_id']});
+                      }
+                    }
                   },
                 ),
                 _MediaOptionItem(

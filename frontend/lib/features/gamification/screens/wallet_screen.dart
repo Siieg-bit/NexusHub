@@ -171,9 +171,7 @@ class _WalletScreenState extends State<WalletScreen>
                             icon: Icons.shopping_bag_rounded,
                             label: 'Loja',
                             color: AppTheme.primaryColor,
-                            onTap: () {
-                              // Navegar para a tab Store
-                            },
+                            onTap: () => context.go('/store'),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -183,6 +181,15 @@ class _WalletScreenState extends State<WalletScreen>
                             label: 'Transferir',
                             color: AppTheme.accentColor,
                             onTap: () => _showTransferDialog(),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _ActionCard(
+                            icon: Icons.volunteer_activism_rounded,
+                            label: 'Props',
+                            color: const Color(0xFFE91E63),
+                            onTap: () => _showPropsDialog(),
                           ),
                         ),
                       ],
@@ -353,7 +360,7 @@ class _WalletScreenState extends State<WalletScreen>
             TextField(
               controller: userIdCtrl,
               decoration: const InputDecoration(
-                labelText: 'ID ou nome do usuário',
+                labelText: 'Amino ID do destinatário',
                 prefixIcon: Icon(Icons.person_rounded),
               ),
             ),
@@ -366,6 +373,9 @@ class _WalletScreenState extends State<WalletScreen>
                 prefixIcon: Icon(Icons.monetization_on_rounded),
               ),
             ),
+            const SizedBox(height: 8),
+            Text('Saldo atual: $_coins coins',
+                style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
           ],
         ),
         actions: [
@@ -373,16 +383,140 @@ class _WalletScreenState extends State<WalletScreen>
               onPressed: () => Navigator.pop(ctx),
               child: const Text('Cancelar')),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
+              final amount = int.tryParse(amountCtrl.text) ?? 0;
+              final targetAminoId = userIdCtrl.text.trim();
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text('Transferência em desenvolvimento')),
-              );
+              if (amount <= 0 || targetAminoId.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Dados inválidos')),
+                );
+                return;
+              }
+              if (amount > _coins) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Saldo insuficiente')),
+                );
+                return;
+              }
+              try {
+                await SupabaseService.rpc('transfer_coins', params: {
+                  'p_target_amino_id': targetAminoId,
+                  'p_amount': amount,
+                });
+                setState(() => _coins -= amount);
+                await _loadWallet();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('$amount coins transferidos!')),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Erro: $e')),
+                  );
+                }
+              }
             },
             child: const Text('Transferir'),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showPropsDialog() {
+    final userIdCtrl = TextEditingController();
+    int selectedAmount = 10;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.volunteer_activism_rounded, color: Color(0xFFE91E63)),
+              SizedBox(width: 8),
+              Text('Enviar Props'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: userIdCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Amino ID do usuário',
+                  prefixIcon: Icon(Icons.person_rounded),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text('Quantidade de Props',
+                  style: TextStyle(fontWeight: FontWeight.w500)),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: [5, 10, 25, 50, 100].map((amount) {
+                  final isSelected = selectedAmount == amount;
+                  return ChoiceChip(
+                    label: Text('$amount'),
+                    selected: isSelected,
+                    selectedColor: const Color(0xFFE91E63).withOpacity(0.2),
+                    onSelected: (_) {
+                      setDialogState(() => selectedAmount = amount);
+                    },
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 8),
+              Text('Custo: $selectedAmount coins',
+                  style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+            ],
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancelar')),
+            ElevatedButton(
+              onPressed: () async {
+                final targetAminoId = userIdCtrl.text.trim();
+                Navigator.pop(ctx);
+                if (targetAminoId.isEmpty) return;
+                if (selectedAmount > _coins) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Saldo insuficiente')),
+                  );
+                  return;
+                }
+                try {
+                  await SupabaseService.rpc('send_props', params: {
+                    'p_target_amino_id': targetAminoId,
+                    'p_amount': selectedAmount,
+                  });
+                  setState(() => _coins -= selectedAmount);
+                  await _loadWallet();
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text(
+                              '$selectedAmount props enviados!')),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Erro: $e')),
+                    );
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFE91E63)),
+              child: const Text('Enviar', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
       ),
     );
   }

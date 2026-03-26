@@ -70,10 +70,10 @@ class CommunityDrawer extends StatelessWidget {
                     child: CircleAvatar(
                       radius: 32,
                       backgroundColor: Colors.white24,
-                      backgroundImage: currentUser?.avatarUrl != null
-                          ? CachedNetworkImageProvider(currentUser!.avatarUrl!)
+                      backgroundImage: currentUser?.iconUrl != null
+                          ? CachedNetworkImageProvider(currentUser!.iconUrl!)
                           : null,
-                      child: currentUser?.avatarUrl == null
+                      child: currentUser?.iconUrl == null
                           ? const Icon(Icons.person_rounded,
                               color: Colors.white, size: 32)
                           : null,
@@ -245,7 +245,8 @@ class CommunityDrawer extends StatelessWidget {
                       color: themeColor,
                       onTap: () {
                         Navigator.pop(context);
-                        // TODO: ACM screen
+                        context.push(
+                          '/community/${community.id}/acm');
                       },
                     ),
                     _DrawerItem(
@@ -254,7 +255,8 @@ class CommunityDrawer extends StatelessWidget {
                       color: themeColor,
                       onTap: () {
                         Navigator.pop(context);
-                        // TODO: Stats screen
+                        context.push(
+                          '/community/${community.id}/acm');
                       },
                     ),
                   ],

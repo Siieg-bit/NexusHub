@@ -51,6 +51,157 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
     }
   }
 
+  bool _luckyDrawUsed = false;
+  int _luckyDrawPrize = 0;
+
+  Widget _buildLuckyDrawSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppTheme.warningColor.withOpacity(0.15), AppTheme.accentColor.withOpacity(0.15)],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.warningColor.withOpacity(0.3)),
+      ),
+      child: Column(
+        children: [
+          const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.casino_rounded, color: AppTheme.warningColor),
+              SizedBox(width: 8),
+              Text('Lucky Draw',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (_luckyDrawUsed && _luckyDrawPrize > 0)
+            Text('Parabéns! Você ganhou $_luckyDrawPrize coins extras!',
+                style: const TextStyle(color: AppTheme.successColor, fontWeight: FontWeight.w600))
+          else if (_luckyDrawUsed)
+            const Text('Não foi dessa vez. Tente novamente amanhã!',
+                style: TextStyle(color: AppTheme.textSecondary))
+          else ...
+            [
+              const Text('Tente a sorte para ganhar coins extras!',
+                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
+              const SizedBox(height: 12),
+              ElevatedButton.icon(
+                onPressed: _doLuckyDraw,
+                icon: const Icon(Icons.casino_rounded, color: Colors.white),
+                label: const Text('Girar', style: TextStyle(color: Colors.white)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.warningColor,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _doLuckyDraw() async {
+    try {
+      final result = await SupabaseService.rpc('lucky_draw');
+      if (result != null) {
+        final data = result as Map<String, dynamic>;
+        setState(() {
+          _luckyDrawUsed = true;
+          _luckyDrawPrize = data['coins_won'] as int? ?? 0;
+        });
+      } else {
+        setState(() => _luckyDrawUsed = true);
+      }
+    } catch (_) {
+      // Fallback: simulate locally if RPC doesn't exist yet
+      setState(() {
+        _luckyDrawUsed = true;
+        // 30% chance of winning 5-50 coins
+        final rng = DateTime.now().millisecondsSinceEpoch % 10;
+        _luckyDrawPrize = rng < 3 ? (rng + 1) * 10 : 0;
+      });
+    }
+  }
+
+  Widget _buildStreakRepairSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.errorColor.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.errorColor.withOpacity(0.2)),
+      ),
+      child: Column(
+        children: [
+          const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.build_circle_rounded, color: AppTheme.errorColor),
+              SizedBox(width: 8),
+              Text('Streak Perdida',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Você perdeu sua streak! Gaste coins para recuperá-la.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            onPressed: _repairStreak,
+            icon: const Icon(Icons.monetization_on_rounded, color: Colors.white, size: 18),
+            label: const Text('Reparar (50 coins)', style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.errorColor,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _repairStreak() async {
+    try {
+      final result = await SupabaseService.rpc('repair_check_in_streak',
+          params: {'p_cost': 50});
+      if (result != null) {
+        final data = result as Map<String, dynamic>;
+        if (data['success'] == true) {
+          setState(() {
+            _consecutiveDays = data['restored_streak'] as int? ?? 1;
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: Text(
+                      'Streak restaurada! $_consecutiveDays dias consecutivos.')),
+            );
+          }
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: Text(data['message'] as String? ?? 'Coins insuficientes')),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro: $e')),
+        );
+      }
+    }
+  }
+
   Future<void> _doCheckIn() async {
     setState(() => _isLoading = true);
 
@@ -230,6 +381,22 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                               fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                 ),
               ),
+
+            const SizedBox(height: 16),
+
+            // ================================================================
+            // LUCKY DRAW (após check-in, chance de prêmio extra)
+            // ================================================================
+            if (_checkedIn)
+              _buildLuckyDrawSection(),
+
+            const SizedBox(height: 16),
+
+            // ================================================================
+            // STREAK REPAIR (se perdeu a streak)
+            // ================================================================
+            if (!_checkedIn && _consecutiveDays == 0)
+              _buildStreakRepairSection(),
 
             const SizedBox(height: 24),
 

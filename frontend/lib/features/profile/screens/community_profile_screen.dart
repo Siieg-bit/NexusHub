@@ -32,6 +32,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
   List<CommentModel> _wallComments = [];
   List<Map<String, dynamic>> _userPosts = [];
   bool _isLoading = true;
+  final _wallController = TextEditingController();
 
   @override
   void initState() {
@@ -141,10 +142,10 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                         CircleAvatar(
                           radius: 44,
                           backgroundColor: Colors.white24,
-                          backgroundImage: _user?.avatarUrl != null
-                              ? CachedNetworkImageProvider(_user!.avatarUrl!)
+                          backgroundImage: _user?.iconUrl != null
+                              ? CachedNetworkImageProvider(_user!.iconUrl!)
                               : null,
-                          child: _user?.avatarUrl == null
+                          child: _user?.iconUrl == null
                               ? const Icon(Icons.person_rounded,
                                   color: Colors.white, size: 44)
                               : null,
@@ -348,6 +349,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
             children: [
               Expanded(
                 child: TextField(
+                  controller: _wallController,
                   decoration: InputDecoration(
                     hintText: 'Escreva no mural...',
                     filled: true,
@@ -365,7 +367,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
               IconButton(
                 icon: const Icon(Icons.send_rounded,
                     color: AppTheme.primaryColor),
-                onPressed: () {/* TODO: Post wall comment */},
+                onPressed: () => _postWallComment(),
               ),
             ],
           ),
@@ -395,11 +397,11 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                           CircleAvatar(
                             radius: 18,
                             backgroundImage:
-                                comment.author?.avatarUrl != null
+                                comment.author?.iconUrl != null
                                     ? CachedNetworkImageProvider(
-                                        comment.author!.avatarUrl!)
+                                        comment.author!.iconUrl!)
                                     : null,
-                            child: comment.author?.avatarUrl == null
+                            child: comment.author?.iconUrl == null
                                 ? const Icon(Icons.person_rounded,
                                     size: 18)
                                 : null,
@@ -436,10 +438,10 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        if (_user?.bio != null && _user!.bio!.isNotEmpty) ...[
+        if (_user != null && _user!.bio.isNotEmpty) ...[
           Text('Bio', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
-          Text(_user!.bio!,
+          Text(_user!.bio,
               style: const TextStyle(
                   color: AppTheme.textSecondary, height: 1.5)),
           const SizedBox(height: 24),
@@ -460,6 +462,36 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
             value: _userPosts.length.toString()),
       ],
     );
+  }
+
+  Future<void> _postWallComment() async {
+    final text = _wallController.text.trim();
+    if (text.isEmpty) return;
+    try {
+      await SupabaseService.table('comments').insert({
+        'author_id': SupabaseService.currentUserId,
+        'profile_wall_id': widget.userId,
+        'content': text,
+      });
+      _wallController.clear();
+      // Reload wall comments
+      final wallRes = await SupabaseService.table('comments')
+          .select('*, profiles(*)')
+          .eq('profile_wall_id', widget.userId)
+          .order('created_at', ascending: false)
+          .limit(30);
+      setState(() {
+        _wallComments = (wallRes as List)
+            .map((e) => CommentModel.fromJson(e))
+            .toList();
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro: $e')),
+        );
+      }
+    }
   }
 
   String _formatDate(DateTime date) {

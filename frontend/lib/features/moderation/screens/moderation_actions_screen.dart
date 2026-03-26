@@ -179,27 +179,24 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
           break;
 
         case 'strike':
-          // Incrementar strikes
-          await SupabaseService.table('community_members')
-              .update({
-                'strikes': SupabaseService.client.rpc('increment_strikes',
-                    params: {
-                      'p_community_id': widget.communityId,
-                      'p_user_id': widget.targetUserId,
-                    }),
-              })
-              .eq('community_id', widget.communityId)
-              .eq('user_id', widget.targetUserId!);
+          // Usar RPC moderate_user para incrementar strikes
+          await SupabaseService.rpc('moderate_user', params: {
+            'p_community_id': widget.communityId,
+            'p_moderator_id': SupabaseService.currentUserId,
+            'p_target_user_id': widget.targetUserId,
+            'p_action': 'strike',
+            'p_reason': _reasonController.text.trim(),
+          });
           break;
 
         case 'warn':
           // Enviar notificação de aviso
           await SupabaseService.table('notifications').insert({
             'user_id': widget.targetUserId,
-            'type': 'moderation',
-            'message':
+            'actor_id': SupabaseService.currentUserId,
+            'notification_type': 'moderation',
+            'content':
                 'Você recebeu um aviso: ${_reasonController.text.trim()}',
-            'target_type': 'community',
             'target_id': widget.communityId,
           });
           break;

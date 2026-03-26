@@ -4,9 +4,12 @@ import 'user_model.dart';
 /// Baseado no schema v5 — tabela chat_messages (ChatMessage.smali).
 class MessageModel {
   final String id;
-  final String threadId; // era chat_room_id
-  final String authorId; // era sender_id
-  final String type; // enum: text, strike, voice_note, sticker, video, share_url, etc.
+  final String threadId;
+  final String authorId;
+  final String type; // text, image, audio, video, sticker, gif, file, link,
+  //                    reply, forward, poll, quiz, voice_chat, video_chat,
+  //                    screening_room, tip, shared_post, shared_user,
+  //                    shared_community, system
   final String? content;
   final String? mediaUrl;
   final String? mediaType;
@@ -19,12 +22,14 @@ class MessageModel {
   final String? sharedUrl;
   final Map<String, dynamic>? sharedLinkSummary;
   final int? tipAmount;
+  final Map<String, dynamic>? metadata; // poll options, quiz data, etc.
   final Map<String, dynamic> reactions;
+  final bool isPinned;
   final bool isDeleted;
   final String? deletedBy;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final UserModel? author; // era sender
+  final UserModel? author;
 
   const MessageModel({
     required this.id,
@@ -43,7 +48,9 @@ class MessageModel {
     this.sharedUrl,
     this.sharedLinkSummary,
     this.tipAmount,
+    this.metadata,
     this.reactions = const {},
+    this.isPinned = false,
     this.isDeleted = false,
     this.deletedBy,
     required this.createdAt,
@@ -69,16 +76,23 @@ class MessageModel {
       sharedUrl: json['shared_url'] as String?,
       sharedLinkSummary: json['shared_link_summary'] as Map<String, dynamic>?,
       tipAmount: json['tip_amount'] as int?,
+      metadata: json['metadata'] as Map<String, dynamic>?,
       reactions: json['reactions'] as Map<String, dynamic>? ?? {},
+      isPinned: json['is_pinned'] as bool? ?? false,
       isDeleted: json['is_deleted'] as bool? ?? false,
       deletedBy: json['deleted_by'] as String?,
-      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ?? DateTime.now(),
-      updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '') ?? DateTime.now(),
+      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ??
+          DateTime.now(),
+      updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '') ??
+          DateTime.now(),
       author: json['profiles'] != null
           ? UserModel.fromJson(json['profiles'] as Map<String, dynamic>)
           : (json['author'] != null
               ? UserModel.fromJson(json['author'] as Map<String, dynamic>)
-              : null),
+              : (json['sender'] != null
+                  ? UserModel.fromJson(
+                      json['sender'] as Map<String, dynamic>)
+                  : null)),
     );
   }
 
@@ -89,13 +103,32 @@ class MessageModel {
       'type': type,
       'content': content,
       'media_url': mediaUrl,
+      'media_type': mediaType,
+      'media_duration': mediaDuration,
+      'media_thumbnail_url': mediaThumbnailUrl,
+      'sticker_id': stickerId,
+      'sticker_url': stickerUrl,
       'reply_to_id': replyToId,
+      'shared_user_id': sharedUserId,
+      'shared_url': sharedUrl,
+      'shared_link_summary': sharedLinkSummary,
+      'tip_amount': tipAmount,
+      'metadata': metadata,
     };
   }
 
   bool get isTextMessage => type == 'text';
-  bool get isImageMessage => type == 'video' || mediaUrl != null;
-  bool get isSystemMessage => type.startsWith('system_');
+  bool get isImageMessage => type == 'image';
+  bool get isSystemMessage => type == 'system' || type.startsWith('system_');
   bool get isStickerMessage => type == 'sticker';
-  bool get isVoiceNote => type == 'voice_note';
+  bool get isVoiceNote => type == 'voice_note' || type == 'audio';
+  bool get isGif => type == 'gif';
+  bool get isVideo => type == 'video';
+  bool get isFile => type == 'file';
+  bool get isLink => type == 'link';
+  bool get isPoll => type == 'poll';
+  bool get isQuiz => type == 'quiz';
+  bool get isTip => type == 'tip';
+  bool get isReply => type == 'reply';
+  bool get isForward => type == 'forward';
 }

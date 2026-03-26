@@ -6,6 +6,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config/app_config.dart';
 import 'config/app_theme.dart';
 import 'router/app_router.dart';
+import 'core/services/device_fingerprint_service.dart';
+import 'core/services/deep_link_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,22 +35,37 @@ void main() async {
     ),
   );
 
+  // Registrar device fingerprint se usuário já estiver logado
+  if (Supabase.instance.client.auth.currentUser != null) {
+    DeviceFingerprintService.registerDevice();
+  }
+
+  // Escutar mudanças de auth para registrar dispositivo após login
+  Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+    if (data.event == AuthChangeEvent.signedIn) {
+      DeviceFingerprintService.registerDevice();
+    }
+  });
+
   runApp(
     const ProviderScope(
-      child: AminoCloneApp(),
+      child: NexusHubApp(),
     ),
   );
 }
 
-class AminoCloneApp extends ConsumerWidget {
-  const AminoCloneApp({super.key});
+class NexusHubApp extends ConsumerWidget {
+  const NexusHubApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
 
+    // Inicializar Deep Link service com o router
+    DeepLinkService.init(router);
+
     return MaterialApp.router(
-      title: 'Amino Clone',
+      title: 'NexusHub',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
       darkTheme: AppTheme.darkTheme,

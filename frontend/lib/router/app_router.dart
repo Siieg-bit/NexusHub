@@ -34,6 +34,11 @@ import '../features/profile/screens/profile_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
 import '../features/settings/screens/privacy_settings_screen.dart';
 import '../features/settings/screens/notification_settings_screen.dart';
+import '../features/settings/screens/blocked_users_screen.dart';
+import '../features/settings/screens/devices_screen.dart';
+import '../features/explore/screens/search_screen.dart';
+import '../features/profile/screens/user_wall_screen.dart';
+import '../features/profile/screens/followers_screen.dart';
 import '../features/store/screens/store_screen.dart';
 import '../features/wiki/screens/wiki_screen.dart';
 import 'shell_screen.dart';
@@ -318,6 +323,53 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/settings/notifications',
         name: 'notification-settings',
         builder: (context, state) => const NotificationSettingsScreen(),
+      ),
+      GoRoute(
+        path: '/settings/blocked-users',
+        name: 'blocked-users',
+        builder: (context, state) => const BlockedUsersScreen(),
+      ),
+      GoRoute(
+        path: '/settings/devices',
+        name: 'devices',
+        builder: (context, state) => const DevicesScreen(),
+      ),
+
+      // ====================================================================
+      // BUSCA GLOBAL
+      // ====================================================================
+      GoRoute(
+        path: '/search',
+        name: 'search',
+        builder: (context, state) => const SearchScreen(),
+      ),
+
+      // ====================================================================
+      // MURAL E SEGUIDORES
+      // ====================================================================
+      GoRoute(
+        path: '/user/:userId/wall',
+        name: 'user-wall',
+        builder: (context, state) => UserWallScreen(
+          userId: state.pathParameters['userId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/user/:userId/followers',
+        name: 'followers',
+        builder: (context, state) => FollowersScreen(
+          userId: state.pathParameters['userId']!,
+          initialTab: state.uri.queryParameters['tab'] == 'following' ? 1 : 0,
+        ),
+      ),
+
+      // ====================================================================
+      // EDITAR PERFIL
+      // ====================================================================
+      GoRoute(
+        path: '/edit-profile',
+        name: 'edit-profile-alt',
+        builder: (context, state) => const EditProfileScreen(),
       ),
     ],
   );

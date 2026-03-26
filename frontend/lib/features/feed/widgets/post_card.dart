@@ -104,7 +104,7 @@ class PostCard extends StatelessWidget {
                   ),
 
                   // Feature badge
-                  if (post.featureType != 'none')
+                  if (post.isFeatured || post.isPinned)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
@@ -117,7 +117,7 @@ class PostCard extends StatelessWidget {
                           const Icon(Icons.star_rounded, size: 12, color: AppTheme.warningColor),
                           const SizedBox(width: 2),
                           Text(
-                            post.featureType == 'featured' ? 'Destaque' : 'Fixado',
+                            post.isFeatured ? 'Destaque' : 'Fixado',
                             style: const TextStyle(
                               color: AppTheme.warningColor,
                               fontSize: 10,
@@ -176,13 +176,13 @@ class PostCard extends StatelessWidget {
             // ================================================================
             // MÍDIA (primeira imagem)
             // ================================================================
-            if (post.mediaUrl.isNotEmpty)
+            if (post.mediaUrl != null && post.mediaUrl!.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: CachedNetworkImage(
-                    imageUrl: post.mediaUrl.first,
+                    imageUrl: post.mediaUrl!,
                     height: 200,
                     width: double.infinity,
                     fit: BoxFit.cover,
