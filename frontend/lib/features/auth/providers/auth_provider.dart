@@ -69,9 +69,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final user = UserModel.fromJson(response);
       state = AuthState(isAuthenticated: true, user: user);
 
-      // Atualizar status online
+      // Atualizar status online (1 = Online)
       await SupabaseService.table('profiles')
-          .update({'online_status': 'online'})
+          .update({
+            'online_status': 1,
+            'last_seen_at': DateTime.now().toUtc().toIso8601String(),
+          })
           .eq('id', userId);
     } catch (e) {
       state = state.copyWith(error: 'Erro ao carregar perfil: $e');
@@ -134,8 +137,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       final userId = SupabaseService.currentUserId;
       if (userId != null) {
+        // Atualizar status offline (2 = Offline)
         await SupabaseService.table('profiles')
-            .update({'online_status': 'offline'})
+            .update({
+              'online_status': 2,
+              'last_seen_at': DateTime.now().toUtc().toIso8601String(),
+            })
             .eq('id', userId);
       }
       await SupabaseService.auth.signOut();

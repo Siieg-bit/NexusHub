@@ -13,14 +13,14 @@ final chatListProvider = FutureProvider<List<ChatRoomModel>>((ref) async {
   final userId = SupabaseService.currentUserId;
   if (userId == null) return [];
 
-  final response = await SupabaseService.table('chat_room_members')
-      .select('chat_room_id, chat_rooms(*)')
+  final response = await SupabaseService.table('chat_members')
+      .select('thread_id, chat_threads(*)')
       .eq('user_id', userId)
       .order('joined_at', ascending: false);
 
   return (response as List)
-      .where((e) => e['chat_rooms'] != null)
-      .map((e) => ChatRoomModel.fromJson(e['chat_rooms'] as Map<String, dynamic>))
+      .where((e) => e['chat_threads'] != null)
+      .map((e) => ChatRoomModel.fromJson(e['chat_threads'] as Map<String, dynamic>))
       .toList()
     ..sort((a, b) => (b.lastMessageAt ?? b.createdAt).compareTo(a.lastMessageAt ?? a.createdAt));
 });
@@ -112,7 +112,7 @@ class _ChatRoomTile extends StatelessWidget {
             : null,
         child: chatRoom.iconUrl == null
             ? Icon(
-                chatRoom.chatType == 'direct' ? Icons.person_rounded : Icons.group_rounded,
+                chatRoom.type == 'direct' ? Icons.person_rounded : Icons.group_rounded,
                 color: AppTheme.primaryColor,
               )
             : null,

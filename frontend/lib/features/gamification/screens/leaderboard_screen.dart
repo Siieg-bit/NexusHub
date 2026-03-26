@@ -118,10 +118,10 @@ class _PodiumItem extends StatelessWidget {
           CircleAvatar(
             radius: rank == 1 ? 32 : 24,
             backgroundColor: color.withOpacity(0.3),
-            backgroundImage: data['avatar_url'] != null
-                ? CachedNetworkImageProvider(data['avatar_url'] as String)
+            backgroundImage: data['icon_url'] != null
+                ? CachedNetworkImageProvider(data['icon_url'] as String)
                 : null,
-            child: data['avatar_url'] == null
+            child: data['icon_url'] == null
                 ? Text(
                     ((data['nickname'] as String?) ?? '?')[0].toUpperCase(),
                     style: TextStyle(color: color, fontWeight: FontWeight.bold),
@@ -200,10 +200,10 @@ class _LeaderboardTile extends StatelessWidget {
             child: CircleAvatar(
               radius: 20,
               backgroundColor: AppTheme.primaryColor.withOpacity(0.2),
-              backgroundImage: data['avatar_url'] != null
-                  ? CachedNetworkImageProvider(data['avatar_url'] as String)
+              backgroundImage: data['icon_url'] != null
+                  ? CachedNetworkImageProvider(data['icon_url'] as String)
                   : null,
-              child: data['avatar_url'] == null
+              child: data['icon_url'] == null
                   ? Text(
                       ((data['nickname'] as String?) ?? '?')[0].toUpperCase(),
                       style: const TextStyle(color: AppTheme.primaryColor, fontSize: 14),
@@ -225,14 +225,14 @@ class _LeaderboardTile extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: AppTheme.getLevelColor(data['global_level'] as int? ?? 1)
+                        color: AppTheme.getLevelColor(data['level'] as int? ?? 1)
                             .withOpacity(0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        'Lv.${data['global_level'] ?? 1}',
+                        'Lv.${data['level'] ?? 1}',
                         style: TextStyle(
-                          color: AppTheme.getLevelColor(data['global_level'] as int? ?? 1),
+                          color: AppTheme.getLevelColor(data['level'] as int? ?? 1),
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                         ),

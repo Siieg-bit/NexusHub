@@ -1,5 +1,5 @@
-/// Configurações globais do aplicativo.
-/// Substitua os valores abaixo pelas credenciais reais do seu projeto Supabase.
+/// Configurações globais do aplicativo NexusHub.
+/// Credenciais do Supabase configuradas para o projeto de produção.
 class AppConfig {
   AppConfig._();
 
@@ -7,17 +7,18 @@ class AppConfig {
   // SUPABASE
   // ============================================================================
 
-  /// URL do projeto Supabase (encontre em Settings > API no dashboard)
+  /// URL do projeto Supabase
   static const String supabaseUrl = 'https://SEU_PROJETO.supabase.co';
 
-  /// Chave anônima do Supabase (encontre em Settings > API no dashboard)
-  static const String supabaseAnonKey = 'SUA_ANON_KEY_AQUI';
+  /// Chave anônima do Supabase (publishable key — segura para uso no client)
+  static const String supabaseAnonKey =
+      'SUA_SUPABASE_ANON_KEY_AQUI';
 
   // ============================================================================
   // APP
   // ============================================================================
 
-  static const String appName = 'CommunityHub';
+  static const String appName = 'NexusHub';
   static const String appVersion = '1.0.0';
   static const String appTagline = 'Conecte-se com suas comunidades favoritas';
 

@@ -125,10 +125,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             child: CircleAvatar(
                               radius: 24,
                               backgroundColor: AppTheme.primaryColor.withOpacity(0.3),
-                              backgroundImage: post.author?.avatarUrl != null
-                                  ? CachedNetworkImageProvider(post.author!.avatarUrl!)
+                              backgroundImage: post.author?.iconUrl != null
+                                  ? CachedNetworkImageProvider(post.author!.iconUrl!)
                                   : null,
-                              child: post.author?.avatarUrl == null
+                              child: post.author?.iconUrl == null
                                   ? Text(
                                       (post.author?.nickname ?? '?')[0].toUpperCase(),
                                       style: const TextStyle(
@@ -151,14 +151,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                         decoration: BoxDecoration(
-                                          color: AppTheme.getLevelColor(post.author!.globalLevel)
+                                          color: AppTheme.getLevelColor(post.author!.level)
                                               .withOpacity(0.2),
                                           borderRadius: BorderRadius.circular(8),
                                         ),
                                         child: Text(
-                                          'Lv.${post.author!.globalLevel}',
+                                          'Lv.${post.author!.level}',
                                           style: TextStyle(
-                                            color: AppTheme.getLevelColor(post.author!.globalLevel),
+                                            color: AppTheme.getLevelColor(post.author!.level),
                                             fontSize: 10,
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -202,8 +202,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     // ======================================================
                     // MÍDIA
                     // ======================================================
-                    if (post.mediaUrls.isNotEmpty)
-                      ...post.mediaUrls.map((url) => Padding(
+                    if (post.mediaUrl.isNotEmpty)
+                      ...post.mediaUrl.map((url) => Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(12),
@@ -359,10 +359,10 @@ class _CommentTile extends StatelessWidget {
             child: CircleAvatar(
               radius: 16,
               backgroundColor: AppTheme.primaryColor.withOpacity(0.3),
-              backgroundImage: comment.author?.avatarUrl != null
-                  ? CachedNetworkImageProvider(comment.author!.avatarUrl!)
+              backgroundImage: comment.author?.iconUrl != null
+                  ? CachedNetworkImageProvider(comment.author!.iconUrl!)
                   : null,
-              child: comment.author?.avatarUrl == null
+              child: comment.author?.iconUrl == null
                   ? Text(
                       (comment.author?.nickname ?? '?')[0].toUpperCase(),
                       style: const TextStyle(fontSize: 12, color: AppTheme.primaryColor),

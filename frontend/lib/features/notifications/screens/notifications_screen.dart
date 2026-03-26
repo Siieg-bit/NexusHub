@@ -13,7 +13,7 @@ final notificationsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) a
   if (userId == null) return [];
 
   final response = await SupabaseService.table('notifications')
-      .select('*, profiles!notifications_actor_id_fkey(nickname, avatar_url)')
+      .select('*, profiles!notifications_actor_id_fkey(nickname, icon_url)')
       .eq('user_id', userId)
       .order('created_at', ascending: false)
       .limit(50);
@@ -146,10 +146,10 @@ class _NotificationTile extends StatelessWidget {
             CircleAvatar(
               radius: 22,
               backgroundColor: _getColor(type).withOpacity(0.15),
-              backgroundImage: actor?['avatar_url'] != null
-                  ? CachedNetworkImageProvider(actor!['avatar_url'] as String)
+              backgroundImage: actor?['icon_url'] != null
+                  ? CachedNetworkImageProvider(actor!['icon_url'] as String)
                   : null,
-              child: actor?['avatar_url'] == null
+              child: actor?['icon_url'] == null
                   ? Icon(_getIcon(type), color: _getColor(type), size: 20)
                   : null,
             ),

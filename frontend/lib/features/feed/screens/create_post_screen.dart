@@ -50,7 +50,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             ? null
             : _titleController.text.trim(),
         'content': _contentController.text.trim(),
-        'post_type': _postType,
+        'type': _postType,
         'tags': _tags,
         'status': 'published',
       });

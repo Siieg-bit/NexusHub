@@ -140,7 +140,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/chat/:id',
         name: 'chat-room',
         builder: (context, state) => ChatRoomScreen(
-          chatRoomId: state.pathParameters['id']!,
+          threadId: state.pathParameters['id']!,
         ),
       ),
 

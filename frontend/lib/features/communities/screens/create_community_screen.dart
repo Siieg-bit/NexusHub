@@ -50,7 +50,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
         'description': _descriptionController.text.trim().isEmpty
             ? null
             : _descriptionController.text.trim(),
-        'owner_id': userId,
+        'agent_id': userId,
         'theme_color': _selectedColor,
         'primary_language': _selectedLanguage,
       }).select().single();
@@ -59,7 +59,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
       await SupabaseService.table('community_members').insert({
         'user_id': userId,
         'community_id': response['id'],
-        'role': 'leader',
+        'role': 'agent',
       });
 
       if (mounted) {

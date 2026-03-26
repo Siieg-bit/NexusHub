@@ -13,9 +13,9 @@ import '../../auth/providers/auth_provider.dart';
 
 /// Tela de chat em tempo real usando Supabase Realtime.
 class ChatRoomScreen extends ConsumerStatefulWidget {
-  final String chatRoomId;
+  final String threadId;
 
-  const ChatRoomScreen({super.key, required this.chatRoomId});
+  const ChatRoomScreen({super.key, required this.threadId});
 
   @override
   ConsumerState<ChatRoomScreen> createState() => _ChatRoomScreenState();
@@ -47,9 +47,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   /// Carregar mensagens históricas.
   Future<void> _loadMessages() async {
     try {
-      final response = await SupabaseService.table('messages')
-          .select('*, profiles!messages_sender_id_fkey(*)')
-          .eq('chat_room_id', widget.chatRoomId)
+      final response = await SupabaseService.table('chat_messages')
+          .select('*, profiles!chat_messages_author_id_fkey(*)')
+          .eq('thread_id', widget.threadId)
           .order('created_at', ascending: false)
           .limit(50);
 
@@ -74,22 +74,22 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   /// Inscrever-se no canal Realtime para novas mensagens.
   void _subscribeToRealtime() {
     _channel = SupabaseService.client
-        .channel('chat:${widget.chatRoomId}')
+        .channel('chat:${widget.threadId}')
         .onPostgresChanges(
           event: PostgresChangeEvent.insert,
           schema: 'public',
-          table: 'messages',
+          table: 'chat_messages',
           filter: PostgresChangeFilter(
             type: PostgresChangeFilterType.eq,
-            column: 'chat_room_id',
-            value: widget.chatRoomId,
+            column: 'thread_id',
+            value: widget.threadId,
           ),
           callback: (payload) async {
             final newMessage = payload.newRecord;
             // Buscar dados do sender
             final senderData = await SupabaseService.table('profiles')
                 .select()
-                .eq('id', newMessage['sender_id'])
+                .eq('id', newMessage['author_id'])
                 .single();
 
             newMessage['sender'] = senderData;
@@ -127,11 +127,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     setState(() => _isSending = true);
 
     try {
-      await SupabaseService.table('messages').insert({
-        'chat_room_id': widget.chatRoomId,
-        'sender_id': SupabaseService.currentUserId,
+      await SupabaseService.table('chat_messages').insert({
+        'thread_id': widget.threadId,
+        'author_id': SupabaseService.currentUserId,
         'content': text,
-        'message_type': 'text',
+        'type': 'text',
       });
     } catch (e) {
       if (mounted) {
@@ -192,9 +192,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         itemCount: _messages.length,
                         itemBuilder: (context, index) {
                           final message = _messages[index];
-                          final isMe = message.senderId == currentUserId;
+                          final isMe = message.authorId == currentUserId;
                           final showAvatar = index == _messages.length - 1 ||
-                              _messages[index + 1].senderId != message.senderId;
+                              _messages[index + 1].authorId != message.authorId;
 
                           return _MessageBubble(
                             message: message,
@@ -383,16 +383,16 @@ class _MessageBubble extends StatelessWidget {
           // Avatar (apenas para outros)
           if (!isMe && showAvatar)
             GestureDetector(
-              onTap: () => context.push('/user/${message.senderId}'),
+              onTap: () => context.push('/user/${message.authorId}'),
               child: CircleAvatar(
                 radius: 16,
                 backgroundColor: AppTheme.primaryColor.withOpacity(0.3),
-                backgroundImage: message.sender?.avatarUrl != null
-                    ? CachedNetworkImageProvider(message.sender!.avatarUrl!)
+                backgroundImage: message.author?.iconUrl != null
+                    ? CachedNetworkImageProvider(message.author!.iconUrl!)
                     : null,
-                child: message.sender?.avatarUrl == null
+                child: message.author?.iconUrl == null
                     ? Text(
-                        (message.sender?.nickname ?? '?')[0].toUpperCase(),
+                        (message.author?.nickname ?? '?')[0].toUpperCase(),
                         style: const TextStyle(fontSize: 11, color: AppTheme.primaryColor),
                       )
                     : null,
@@ -424,7 +424,7 @@ class _MessageBubble extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 4),
                       child: Text(
-                        message.sender?.nickname ?? 'Usuário',
+                        message.author?.nickname ?? 'Usuário',
                         style: TextStyle(
                           color: isMe ? Colors.white70 : AppTheme.primaryLight,
                           fontSize: 11,

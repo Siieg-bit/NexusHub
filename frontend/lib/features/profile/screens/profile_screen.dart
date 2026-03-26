@@ -118,10 +118,10 @@ class ProfileScreen extends ConsumerWidget {
                           CircleAvatar(
                             radius: 44,
                             backgroundColor: AppTheme.primaryColor.withOpacity(0.3),
-                            backgroundImage: user.avatarUrl != null
-                                ? CachedNetworkImageProvider(user.avatarUrl!)
+                            backgroundImage: user.iconUrl != null
+                                ? CachedNetworkImageProvider(user.iconUrl!)
                                 : null,
-                            child: user.avatarUrl == null
+                            child: user.iconUrl == null
                                 ? Text(
                                     user.nickname[0].toUpperCase(),
                                     style: const TextStyle(
@@ -139,7 +139,7 @@ class ProfileScreen extends ConsumerWidget {
                             children: [
                               Text(user.nickname,
                                   style: Theme.of(context).textTheme.headlineSmall),
-                              if (user.isVerified) ...[
+                              if (user.isNicknameVerified) ...[
                                 const SizedBox(width: 6),
                                 const Icon(Icons.verified_rounded,
                                     color: AppTheme.accentColor, size: 20),
@@ -305,12 +305,12 @@ class ProfileScreen extends ConsumerWidget {
   Future<void> _toggleFollow(WidgetRef ref, UserModel user) async {
     try {
       if (user.isFollowing == true) {
-        await SupabaseService.table('user_follows')
+        await SupabaseService.table('follows')
             .delete()
             .eq('follower_id', SupabaseService.currentUserId!)
             .eq('following_id', userId);
       } else {
-        await SupabaseService.table('user_follows').insert({
+        await SupabaseService.table('follows').insert({
           'follower_id': SupabaseService.currentUserId,
           'following_id': userId,
         });
@@ -372,9 +372,9 @@ class _LevelBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final levelColor = AppTheme.getLevelColor(user.globalLevel);
+    final levelColor = AppTheme.getLevelColor(user.level);
     // Calcular progresso para o próximo nível (simplificado)
-    final progress = (user.xp % 500) / 500.0;
+    final progress = (user.reputation % 500) / 500.0;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -396,7 +396,7 @@ class _LevelBar extends StatelessWidget {
             ),
             child: Center(
               child: Text(
-                '${user.globalLevel}',
+                '${user.level}',
                 style: TextStyle(
                   color: levelColor,
                   fontWeight: FontWeight.bold,
@@ -413,9 +413,9 @@ class _LevelBar extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Nível ${user.globalLevel}',
+                    Text('Nível ${user.level}',
                         style: TextStyle(color: levelColor, fontWeight: FontWeight.w600)),
-                    Text('${user.xp} XP',
+                    Text('${user.reputation} Rep',
                         style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
                   ],
                 ),

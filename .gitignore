@@ -8,4 +8,6 @@ build/
 .vscode/
 .DS_Store
 *.log
+.env
+!.env.example
 web-preview/client/node_modules/

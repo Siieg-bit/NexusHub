@@ -11,7 +11,7 @@ import '../../../core/services/supabase_service.dart';
 final wikiEntriesProvider =
     FutureProvider.family<List<WikiEntry>, String>((ref, communityId) async {
   final response = await SupabaseService.table('wiki_entries')
-      .select('*, profiles!wiki_entries_author_id_fkey(nickname, avatar_url)')
+      .select('*, profiles!wiki_entries_author_id_fkey(nickname, icon_url)')
       .eq('community_id', communityId)
       .eq('status', 'published')
       .order('created_at', ascending: false);

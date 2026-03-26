@@ -1,79 +1,143 @@
 /// Modelo de usuário/perfil da plataforma.
-/// Baseado na engenharia reversa do modelo User do Amino original.
+/// Baseado no schema v5 — engenharia reversa do APK Amino (User.smali).
 class UserModel {
   final String id;
   final String aminoId;
   final String nickname;
-  final String? email;
-  final String? avatarUrl;
+  final bool isNicknameVerified;
+  final String? email; // vem de auth.users, não da tabela profiles
+  final String? iconUrl; // avatar (era avatar_url)
   final String? bannerUrl;
   final String bio;
-  final int globalLevel;
+
+  // Roles globais (Team NexusHub)
+  final bool isTeamAdmin;
+  final bool isTeamModerator;
+  final bool isSystemAccount;
+
+  // Gamificação global
+  final int level; // era global_level
   final int reputation;
-  final int xp;
+
+  // Economia
   final int coins;
-  final String onlineStatus;
-  final bool isVerified;
+  final double coinsFloat;
+  final int businessCoins;
   final bool isPremium;
-  final int consecutiveCheckInDays;
+  final DateTime? premiumExpiresAt;
+
+  // Estatísticas globais
+  final int blogsCount;
   final int postsCount;
   final int commentsCount;
+  final int itemsCount;
+  final int joinedCommunitiesCount; // era communities_count
   final int followersCount;
   final int followingCount;
-  final int communitiesCount;
+
+  // Check-in global
+  final int consecutiveCheckinDays;
+  final DateTime? lastCheckinAt;
+  final int brokenStreaks;
+
+  // Onboarding
+  final bool hasCompletedOnboarding;
+
+  // Metadata
+  final int onlineStatus; // 1=Online, 2=Offline (era String)
+  final DateTime? lastSeenAt;
   final DateTime createdAt;
+  final DateTime updatedAt;
+
+  // Campos calculados (não na tabela)
   final bool? isFollowing;
   final bool? isFollowedBy;
 
   const UserModel({
     required this.id,
-    required this.aminoId,
+    this.aminoId = '',
     required this.nickname,
+    this.isNicknameVerified = false,
     this.email,
-    this.avatarUrl,
+    this.iconUrl,
     this.bannerUrl,
     this.bio = '',
-    this.globalLevel = 1,
+    this.isTeamAdmin = false,
+    this.isTeamModerator = false,
+    this.isSystemAccount = false,
+    this.level = 1,
     this.reputation = 0,
-    this.xp = 0,
     this.coins = 0,
-    this.onlineStatus = 'offline',
-    this.isVerified = false,
+    this.coinsFloat = 0.0,
+    this.businessCoins = 0,
     this.isPremium = false,
-    this.consecutiveCheckInDays = 0,
+    this.premiumExpiresAt,
+    this.blogsCount = 0,
     this.postsCount = 0,
     this.commentsCount = 0,
+    this.itemsCount = 0,
+    this.joinedCommunitiesCount = 0,
     this.followersCount = 0,
     this.followingCount = 0,
-    this.communitiesCount = 0,
+    this.consecutiveCheckinDays = 0,
+    this.lastCheckinAt,
+    this.brokenStreaks = 0,
+    this.hasCompletedOnboarding = false,
+    this.onlineStatus = 2,
+    this.lastSeenAt,
     required this.createdAt,
+    required this.updatedAt,
     this.isFollowing,
     this.isFollowedBy,
   });
+
+  /// Indica se o usuário está online (online_status == 1).
+  bool get isOnline => onlineStatus == 1;
+
+  /// Indica se o usuário é membro da equipe (admin ou moderador global).
+  bool get isTeamMember => isTeamAdmin || isTeamModerator;
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: json['id'] as String,
       aminoId: json['amino_id'] as String? ?? '',
       nickname: json['nickname'] as String? ?? 'Usuário',
+      isNicknameVerified: json['is_nickname_verified'] as bool? ?? false,
       email: json['email'] as String?,
-      avatarUrl: json['avatar_url'] as String?,
+      iconUrl: json['icon_url'] as String?,
       bannerUrl: json['banner_url'] as String?,
       bio: json['bio'] as String? ?? '',
-      globalLevel: json['global_level'] as int? ?? 1,
+      isTeamAdmin: json['is_team_admin'] as bool? ?? false,
+      isTeamModerator: json['is_team_moderator'] as bool? ?? false,
+      isSystemAccount: json['is_system_account'] as bool? ?? false,
+      level: json['level'] as int? ?? 1,
       reputation: json['reputation'] as int? ?? 0,
-      xp: json['xp'] as int? ?? 0,
       coins: json['coins'] as int? ?? 0,
-      onlineStatus: json['online_status'] as String? ?? 'offline',
-      isVerified: json['is_verified'] as bool? ?? false,
+      coinsFloat: (json['coins_float'] as num?)?.toDouble() ?? 0.0,
+      businessCoins: json['business_coins'] as int? ?? 0,
       isPremium: json['is_premium'] as bool? ?? false,
-      consecutiveCheckInDays: json['consecutive_check_in_days'] as int? ?? 0,
+      premiumExpiresAt: json['premium_expires_at'] != null
+          ? DateTime.tryParse(json['premium_expires_at'] as String)
+          : null,
+      blogsCount: json['blogs_count'] as int? ?? 0,
       postsCount: json['posts_count'] as int? ?? 0,
       commentsCount: json['comments_count'] as int? ?? 0,
+      itemsCount: json['items_count'] as int? ?? 0,
+      joinedCommunitiesCount: json['joined_communities_count'] as int? ?? 0,
       followersCount: json['followers_count'] as int? ?? 0,
       followingCount: json['following_count'] as int? ?? 0,
-      communitiesCount: json['communities_count'] as int? ?? 0,
+      consecutiveCheckinDays: json['consecutive_checkin_days'] as int? ?? 0,
+      lastCheckinAt: json['last_checkin_at'] != null
+          ? DateTime.tryParse(json['last_checkin_at'] as String)
+          : null,
+      brokenStreaks: json['broken_streaks'] as int? ?? 0,
+      hasCompletedOnboarding: json['has_completed_onboarding'] as bool? ?? false,
+      onlineStatus: json['online_status'] as int? ?? 2,
+      lastSeenAt: json['last_seen_at'] != null
+          ? DateTime.tryParse(json['last_seen_at'] as String)
+          : null,
       createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ?? DateTime.now(),
+      updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '') ?? DateTime.now(),
       isFollowing: json['is_following'] as bool?,
       isFollowedBy: json['is_followed_by'] as bool?,
     );
@@ -84,53 +148,65 @@ class UserModel {
       'id': id,
       'amino_id': aminoId,
       'nickname': nickname,
-      'email': email,
-      'avatar_url': avatarUrl,
+      'is_nickname_verified': isNicknameVerified,
+      'icon_url': iconUrl,
       'banner_url': bannerUrl,
       'bio': bio,
-      'global_level': globalLevel,
+      'level': level,
       'reputation': reputation,
-      'xp': xp,
       'coins': coins,
       'online_status': onlineStatus,
-      'is_verified': isVerified,
       'is_premium': isPremium,
     };
   }
 
   UserModel copyWith({
     String? nickname,
-    String? avatarUrl,
+    String? iconUrl,
     String? bannerUrl,
     String? bio,
-    int? globalLevel,
+    int? level,
     int? reputation,
-    int? xp,
     int? coins,
-    String? onlineStatus,
+    int? onlineStatus,
+    bool? hasCompletedOnboarding,
   }) {
     return UserModel(
       id: id,
       aminoId: aminoId,
       nickname: nickname ?? this.nickname,
+      isNicknameVerified: isNicknameVerified,
       email: email,
-      avatarUrl: avatarUrl ?? this.avatarUrl,
+      iconUrl: iconUrl ?? this.iconUrl,
       bannerUrl: bannerUrl ?? this.bannerUrl,
       bio: bio ?? this.bio,
-      globalLevel: globalLevel ?? this.globalLevel,
+      isTeamAdmin: isTeamAdmin,
+      isTeamModerator: isTeamModerator,
+      isSystemAccount: isSystemAccount,
+      level: level ?? this.level,
       reputation: reputation ?? this.reputation,
-      xp: xp ?? this.xp,
       coins: coins ?? this.coins,
-      onlineStatus: onlineStatus ?? this.onlineStatus,
-      isVerified: isVerified,
+      coinsFloat: coinsFloat,
+      businessCoins: businessCoins,
       isPremium: isPremium,
-      consecutiveCheckInDays: consecutiveCheckInDays,
+      premiumExpiresAt: premiumExpiresAt,
+      blogsCount: blogsCount,
       postsCount: postsCount,
       commentsCount: commentsCount,
+      itemsCount: itemsCount,
+      joinedCommunitiesCount: joinedCommunitiesCount,
       followersCount: followersCount,
       followingCount: followingCount,
-      communitiesCount: communitiesCount,
+      consecutiveCheckinDays: consecutiveCheckinDays,
+      lastCheckinAt: lastCheckinAt,
+      brokenStreaks: brokenStreaks,
+      hasCompletedOnboarding: hasCompletedOnboarding ?? this.hasCompletedOnboarding,
+      onlineStatus: onlineStatus ?? this.onlineStatus,
+      lastSeenAt: lastSeenAt,
       createdAt: createdAt,
+      updatedAt: updatedAt,
+      isFollowing: isFollowing,
+      isFollowedBy: isFollowedBy,
     );
   }
 }

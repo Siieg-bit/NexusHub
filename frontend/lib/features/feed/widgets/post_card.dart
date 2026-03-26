@@ -40,10 +40,10 @@ class PostCard extends StatelessWidget {
                     child: CircleAvatar(
                       radius: 20,
                       backgroundColor: AppTheme.primaryColor.withOpacity(0.3),
-                      backgroundImage: post.author?.avatarUrl != null
-                          ? CachedNetworkImageProvider(post.author!.avatarUrl!)
+                      backgroundImage: post.author?.iconUrl != null
+                          ? CachedNetworkImageProvider(post.author!.iconUrl!)
                           : null,
-                      child: post.author?.avatarUrl == null
+                      child: post.author?.iconUrl == null
                           ? Text(
                               (post.author?.nickname ?? '?')[0].toUpperCase(),
                               style: const TextStyle(
@@ -79,14 +79,14 @@ class PostCard extends StatelessWidget {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.getLevelColor(post.author!.globalLevel)
+                                  color: AppTheme.getLevelColor(post.author!.level)
                                       .withOpacity(0.2),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
-                                  'Lv.${post.author!.globalLevel}',
+                                  'Lv.${post.author!.level}',
                                   style: TextStyle(
-                                    color: AppTheme.getLevelColor(post.author!.globalLevel),
+                                    color: AppTheme.getLevelColor(post.author!.level),
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -176,13 +176,13 @@ class PostCard extends StatelessWidget {
             // ================================================================
             // MÍDIA (primeira imagem)
             // ================================================================
-            if (post.mediaUrls.isNotEmpty)
+            if (post.mediaUrl.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: CachedNetworkImage(
-                    imageUrl: post.mediaUrls.first,
+                    imageUrl: post.mediaUrl.first,
                     height: 200,
                     width: double.infinity,
                     fit: BoxFit.cover,
