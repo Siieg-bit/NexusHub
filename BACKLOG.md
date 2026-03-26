@@ -1,7 +1,7 @@
 # NexusHub - Backlog de Desenvolvimento
 
 > Documento vivo que rastreia todas as funcionalidades pendentes, bugs conhecidos e melhorias planejadas.
-> Atualizado em: 26/03/2026
+> Atualizado em: 26/03/2026 (v3 - Perfis Duais Fiéis ao Amino)
 
 ---
 
@@ -38,19 +38,29 @@
 ### 3.1 Perfil Global (Interface Principal)
 - [x] **Perfil Global** - Visível antes de entrar em qualquer comunidade
 - [x] **Avatar e nickname globais** - Compartilhados como identidade base
-- [x] **Lista de comunidades** que o usuário participa
+- [x] **Lista de comunidades** que o usuário participa (Linked Communities)
+- [x] **Layout fiel ao Amino** - Avatar à esquerda, Edit Profile, Followers/Following em caixas divididas
+- [x] **Banner Amino+** - "Try Amino+ for free today!"
+- [x] **Tabs Stories/Wall** - Seções de conteúdo do perfil global
+- [x] **Header com Coins + Share + Menu** - Fiel ao print do Amino
 - [ ] **Configurações da conta** (email, senha, notificações)
-- [ ] **Amino+ / Assinatura**
+- [ ] **Amino+ / Assinatura** funcional
 
 ### 3.2 Perfil por Comunidade (Dentro da Comunidade)
 - [x] **Perfil individual por comunidade** - Completamente separado
 - [x] **Nickname customizado** por comunidade
 - [x] **Bio/descrição** específica da comunidade
-- [x] **Background image** customizado por comunidade
-- [x] **Badges e títulos** específicos da comunidade
-- [x] **Level e XP** independentes por comunidade
-- [x] **Reputação** independente por comunidade
-- [ ] **Posts e Wall** específicos da comunidade
+- [x] **Background image** customizado por comunidade (full-width, customizável)
+- [x] **Avatar com anel gradiente** decorativo (rosa/roxo/azul)
+- [x] **Badges e títulos coloridos** específicos da comunidade (cápsulas coloridas)
+- [x] **Role badge** (Leader/Curator) em destaque
+- [x] **Level badge + título** (Lv + título descritivo)
+- [x] **Reputação** independente por comunidade (números grandes)
+- [x] **Streak bar dourada** com contagem de dias
+- [x] **Botões Follow + Chat** centralizados
+- [x] **Stats GRANDES** (Reputation, Following, Followers) - Fiel ao Amino
+- [x] **Seção Biography** com data de membro
+- [x] **Tabs Posts/Wall/Media** - Conteúdo do perfil na comunidade
 - [x] **Followers/Following** dentro da comunidade
 
 ## 4. TELA INTERNA DA COMUNIDADE
