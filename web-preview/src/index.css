@@ -218,6 +218,152 @@
   }
 }
 
+/* ============ ANIMATION KEYFRAMES ============ */
+@keyframes amino-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes amino-slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes amino-slide-down {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes amino-slide-left {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes amino-slide-right {
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes amino-scale-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes amino-scale-bounce {
+  0% { opacity: 0; transform: scale(0.8); }
+  60% { opacity: 1; transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+@keyframes amino-drawer-slide {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes amino-drawer-overlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes amino-pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(45, 190, 96, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(45, 190, 96, 0); }
+}
+
+@keyframes amino-stagger-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes amino-check-celebrate {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.15); }
+  50% { transform: scale(0.95); }
+  70% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes amino-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes amino-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes amino-join-btn-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 255, 200, 0.5); }
+  50% { box-shadow: 0 0 20px 4px rgba(0, 255, 200, 0.15); }
+}
+
+/* ============ ANIMATION UTILITY CLASSES ============ */
+.anim-fade-in { animation: amino-fade-in 0.3s ease-out both; }
+.anim-slide-up { animation: amino-slide-up 0.35s ease-out both; }
+.anim-slide-down { animation: amino-slide-down 0.3s ease-out both; }
+.anim-slide-left { animation: amino-slide-left 0.3s ease-out both; }
+.anim-slide-right { animation: amino-slide-right 0.3s ease-out both; }
+.anim-scale-in { animation: amino-scale-in 0.3s ease-out both; }
+.anim-scale-bounce { animation: amino-scale-bounce 0.4s ease-out both; }
+.anim-drawer-slide { animation: amino-drawer-slide 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.anim-drawer-overlay { animation: amino-drawer-overlay 0.25s ease-out both; }
+.anim-pulse-glow { animation: amino-pulse-glow 2s ease-in-out infinite; }
+.anim-check-celebrate { animation: amino-check-celebrate 0.5s ease-out; }
+.anim-float { animation: amino-float 3s ease-in-out infinite; }
+.anim-join-pulse { animation: amino-join-btn-pulse 2s ease-in-out infinite; }
+
+/* Stagger delays for lists */
+.anim-stagger-1 { animation: amino-stagger-in 0.3s ease-out 0.05s both; }
+.anim-stagger-2 { animation: amino-stagger-in 0.3s ease-out 0.1s both; }
+.anim-stagger-3 { animation: amino-stagger-in 0.3s ease-out 0.15s both; }
+.anim-stagger-4 { animation: amino-stagger-in 0.3s ease-out 0.2s both; }
+.anim-stagger-5 { animation: amino-stagger-in 0.3s ease-out 0.25s both; }
+.anim-stagger-6 { animation: amino-stagger-in 0.3s ease-out 0.3s both; }
+.anim-stagger-7 { animation: amino-stagger-in 0.3s ease-out 0.35s both; }
+.anim-stagger-8 { animation: amino-stagger-in 0.3s ease-out 0.4s both; }
+.anim-stagger-9 { animation: amino-stagger-in 0.3s ease-out 0.45s both; }
+
+/* Shimmer loading placeholder */
+.amino-shimmer {
+  background: linear-gradient(90deg, #1e1e38 25%, #2a2a45 50%, #1e1e38 75%);
+  background-size: 200% 100%;
+  animation: amino-shimmer 1.5s ease-in-out infinite;
+}
+
+/* Screen transitions */
+.screen-enter {
+  animation: amino-slide-left 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.screen-exit {
+  animation: amino-slide-right 0.2s ease-in both;
+}
+
+/* Tab content transitions */
+.tab-content-enter {
+  animation: amino-fade-in 0.25s ease-out both;
+}
+
+/* Card press effect */
+.card-press {
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.card-press:active {
+  transform: scale(0.97);
+  opacity: 0.85;
+}
+
+/* Smooth hover for interactive elements */
+.amino-hover {
+  transition: background-color 0.2s ease, transform 0.15s ease, opacity 0.15s ease;
+}
+.amino-hover:hover {
+  background-color: rgba(255,255,255,0.04);
+}
+.amino-hover:active {
+  transform: scale(0.98);
+}
+
 /* Phone frame styles */
 .phone-frame {
   width: 390px;

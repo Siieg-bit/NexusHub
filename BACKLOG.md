@@ -1,7 +1,7 @@
 # NexusHub - Backlog de Desenvolvimento
 
 > Documento vivo que rastreia todas as funcionalidades pendentes, bugs conhecidos e melhorias planejadas.
-> Atualizado em: 26/03/2026 (v4 - Busca, Cards, Níveis)
+> Atualizado em: 26/03/2026 (v5 - Animações, Join Community, Edição de Comunidade)
 
 ---
 
@@ -32,6 +32,9 @@
 - [x] **Indicador de notificações** por comunidade no card
 - [ ] **Reordenação por drag & drop** (long press)
 - [ ] **Botão "Create Your Own"** funcional com fluxo de criação
+- [x] **Tela "Join Community"** - Aparece na primeira vez ao clicar numa comunidade (ícone, nome, membros, idioma, Amino ID, tags, botão JOIN COMMUNITY ciano, descrição)
+- [x] **Long press no card** para ver detalhes de comunidade já joinada (sem botão Join)
+- [x] **Estrutura para edição de comunidade** - Preparada para líder editar (nome, descrição, tags, avatar, capa)
 
 ## 3. SISTEMA DE PERFIS (Arquitetura Dual)
 
@@ -72,6 +75,16 @@
 - [x] **Perfil do usuário NA COMUNIDADE** (não global)
 - [ ] **"See More..." expandir** para mostrar mais opções
 - [ ] **Seção "General"** com links customizáveis pelo admin
+
+### 4.5 Animações e Transições
+- [x] **Transições de tela** com framer-motion (fade + slide)
+- [x] **Animação de cards** com stagger (entrada sequencial)
+- [x] **Animação de tabs** com slide horizontal
+- [x] **Animação de drawer** com slide lateral
+- [x] **Animação de modais** com scale + fade
+- [x] **Micro-interações** em botões (hover, tap scale)
+- [x] **Animação de check-in** com pulse e confetti effect
+- [x] **Animação de like** com scale bounce
 
 ### 4.2 Tela Principal
 - [x] Cover image + info da comunidade
@@ -185,7 +198,10 @@
 4. ~~**[ALTA]** Botões funcionais em todas as telas~~ ✅ (toast "Coming soon" para features pendentes)
 5. ~~**[ALTA]** Tela de busca fiel ao Amino~~ ✅
 6. ~~**[ALTA]** Sistema de níveis com 20 levels~~ ✅
-7. **[MÉDIA]** Tela de criação de post
-6. **[MÉDIA]** Sistema de notificações
-7. **[BAIXA]** Onboarding/Login
-8. **[BAIXA]** Configurações
+7. ~~**[ALTA]** Animações e transições~~ ✅
+8. ~~**[ALTA]** Tela Join Community~~ ✅
+9. ~~**[ALTA]** Estrutura de edição de comunidade~~ ✅
+10. **[MÉDIA]** Tela de criação de post
+11. **[MÉDIA]** Sistema de notificações
+12. **[BAIXA]** Onboarding/Login
+13. **[BAIXA]** Configurações
