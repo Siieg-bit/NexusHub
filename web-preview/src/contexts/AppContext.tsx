@@ -8,6 +8,8 @@ export interface User {
   level: number;
   levelTitle: string;
   reputation: number;
+  dailyRepEarned: number; // max 100 per day
+  totalRepAllTime: number;
   following: number;
   followers: number;
   coins: number;
@@ -17,6 +19,50 @@ export interface User {
   badges: Badge[];
   isOnline: boolean;
   backgroundImage: string;
+}
+
+// ============ LEVEL SYSTEM ============
+// Level is calculated from total reputation earned across all time
+// Max 100 reputation per day (XP cap)
+export const LEVEL_THRESHOLDS = [
+  { level: 1, minRep: 0, title: "Newcomer" },
+  { level: 2, minRep: 50, title: "Beginner" },
+  { level: 3, minRep: 150, title: "Apprentice" },
+  { level: 4, minRep: 350, title: "Regular" },
+  { level: 5, minRep: 700, title: "Active" },
+  { level: 6, minRep: 1200, title: "Contributor" },
+  { level: 7, minRep: 2000, title: "Enthusiast" },
+  { level: 8, minRep: 3200, title: "Dedicated" },
+  { level: 9, minRep: 5000, title: "Veteran" },
+  { level: 10, minRep: 7500, title: "Expert" },
+  { level: 11, minRep: 11000, title: "Master" },
+  { level: 12, minRep: 15500, title: "Elite" },
+  { level: 13, minRep: 21000, title: "Champion" },
+  { level: 14, minRep: 28000, title: "Hero" },
+  { level: 15, minRep: 37000, title: "Legend" },
+  { level: 16, minRep: 48000, title: "Mythic" },
+  { level: 17, minRep: 62000, title: "Transcendent" },
+  { level: 18, minRep: 80000, title: "Immortal" },
+  { level: 19, minRep: 105000, title: "Ascended" },
+  { level: 20, minRep: 140000, title: "Godlike" },
+];
+
+export const MAX_DAILY_REP = 100;
+
+export function getLevelFromRep(totalRep: number): { level: number; title: string; currentRep: number; nextLevelRep: number; progress: number } {
+  let currentLevel = LEVEL_THRESHOLDS[0];
+  let nextLevel = LEVEL_THRESHOLDS[1];
+  for (let i = LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
+    if (totalRep >= LEVEL_THRESHOLDS[i].minRep) {
+      currentLevel = LEVEL_THRESHOLDS[i];
+      nextLevel = LEVEL_THRESHOLDS[i + 1] || { level: currentLevel.level + 1, minRep: currentLevel.minRep * 1.5, title: "Max" };
+      break;
+    }
+  }
+  const repInLevel = totalRep - currentLevel.minRep;
+  const repNeeded = nextLevel.minRep - currentLevel.minRep;
+  const progress = Math.min(repInLevel / repNeeded, 1);
+  return { level: currentLevel.level, title: currentLevel.title, currentRep: repInLevel, nextLevelRep: repNeeded, progress };
 }
 
 export interface Badge {
@@ -67,6 +113,7 @@ export interface Community {
   guidelines: string[];
   language: string;
   createdAt: string;
+  tags: string[];
 }
 
 export interface Post {
@@ -181,33 +228,33 @@ const categories: Category[] = [
 // ============ COMMUNITIES (organized by category, scalable) ============
 const communities: Community[] = [
   // Anime & Manga
-  { id: "c1", name: "Anime Amino", icon: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600&h=300&fit=crop", members: 3253749, onlineNow: 12430, description: "The biggest anime community! Share your love for anime and manga.", isJoined: true, checkedIn: false, categoryId: "anime", aminoId: "anime", guidelines: ["Be respectful to all members", "No NSFW content", "Credit artists", "No spam or self-promotion", "Use appropriate tags"], language: "en", createdAt: "2015-07-15" },
-  { id: "c9", name: "Naruto Amino", icon: "https://images.unsplash.com/photo-1601850494422-3cf14624b0b3?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1601850494422-3cf14624b0b3?w=600&h=300&fit=crop", members: 1456000, onlineNow: 5670, description: "For all Naruto and Boruto fans!", isJoined: true, checkedIn: false, categoryId: "anime", aminoId: "naruto", guidelines: ["No spoilers without tags", "Respect all characters"], language: "en", createdAt: "2016-03-20" },
-  { id: "c10", name: "Dragon Ball Amino", icon: "https://images.unsplash.com/photo-1614583225154-5fcdda07019e?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1614583225154-5fcdda07019e?w=600&h=300&fit=crop", members: 987000, onlineNow: 3200, description: "Kamehameha! The Dragon Ball community.", isJoined: false, checkedIn: false, categoryId: "anime", aminoId: "dragonball", guidelines: ["Power scaling debates are welcome", "Be respectful"], language: "en", createdAt: "2016-01-10" },
-  { id: "c11", name: "One Piece Amino", icon: "https://images.unsplash.com/photo-1618336753974-aae8e04506aa?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1618336753974-aae8e04506aa?w=600&h=300&fit=crop", members: 1890000, onlineNow: 7800, description: "Set sail with the Straw Hat crew!", isJoined: false, checkedIn: false, categoryId: "anime", aminoId: "onepiece", guidelines: ["Spoiler warnings required", "No piracy links"], language: "en", createdAt: "2015-12-05" },
+  { id: "c1", name: "Anime Amino", icon: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600&h=300&fit=crop", members: 3253749, onlineNow: 12430, description: "The biggest anime community! Share your love for anime and manga.", isJoined: true, checkedIn: false, categoryId: "anime", aminoId: "anime", guidelines: ["Be respectful to all members", "No NSFW content", "Credit artists", "No spam or self-promotion", "Use appropriate tags"], language: "en", createdAt: "2015-07-15", tags: ["Anime", "Manga", "Otaku", "Japanese"] },
+  { id: "c9", name: "Naruto Amino", icon: "https://images.unsplash.com/photo-1601850494422-3cf14624b0b3?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1601850494422-3cf14624b0b3?w=600&h=300&fit=crop", members: 1456000, onlineNow: 5670, description: "For all Naruto and Boruto fans!", isJoined: true, checkedIn: false, categoryId: "anime", aminoId: "naruto", guidelines: ["No spoilers without tags", "Respect all characters"], language: "en", createdAt: "2016-03-20", tags: ["Naruto", "Boruto", "Ninja", "Shonen"] },
+  { id: "c10", name: "Dragon Ball Amino", icon: "https://images.unsplash.com/photo-1614583225154-5fcdda07019e?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1614583225154-5fcdda07019e?w=600&h=300&fit=crop", members: 987000, onlineNow: 3200, description: "Kamehameha! The Dragon Ball community.", isJoined: false, checkedIn: false, categoryId: "anime", aminoId: "dragonball", guidelines: ["Power scaling debates are welcome", "Be respectful"], language: "en", createdAt: "2016-01-10", tags: ["Dragon Ball", "Goku", "Saiyan", "Shonen"] },
+  { id: "c11", name: "One Piece Amino", icon: "https://images.unsplash.com/photo-1618336753974-aae8e04506aa?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1618336753974-aae8e04506aa?w=600&h=300&fit=crop", members: 1890000, onlineNow: 7800, description: "Set sail with the Straw Hat crew!", isJoined: false, checkedIn: false, categoryId: "anime", aminoId: "onepiece", guidelines: ["Spoiler warnings required", "No piracy links"], language: "en", createdAt: "2015-12-05", tags: ["One Piece", "Luffy", "Pirates", "Manga"] },
 
   // Gaming
-  { id: "c3", name: "Gaming Amino", icon: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&h=300&fit=crop", members: 2134500, onlineNow: 8567, description: "The ultimate gaming community. PC, Console, Mobile.", isJoined: true, checkedIn: false, categoryId: "gaming", aminoId: "gaming", guidelines: ["No cheating discussions", "Be a good sport", "No piracy links"], language: "en", createdAt: "2015-08-20" },
-  { id: "c6", name: "Pokemon Amino", icon: "https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?w=600&h=300&fit=crop", members: 1512300, onlineNow: 4450, description: "Gotta catch 'em all! The Pokemon community.", isJoined: false, checkedIn: false, categoryId: "gaming", aminoId: "pokemon", guidelines: ["No ROM links", "Be kind to new trainers"], language: "en", createdAt: "2016-02-14" },
-  { id: "c12", name: "Minecraft Amino", icon: "https://images.unsplash.com/photo-1553481187-be93c21490a9?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1553481187-be93c21490a9?w=600&h=300&fit=crop", members: 876000, onlineNow: 2340, description: "Build, explore, survive! Minecraft community.", isJoined: false, checkedIn: false, categoryId: "gaming", aminoId: "minecraft", guidelines: ["Share your builds", "No griefing promotion"], language: "en", createdAt: "2016-06-01" },
+  { id: "c3", name: "Gaming Amino", icon: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&h=300&fit=crop", members: 2134500, onlineNow: 8567, description: "The ultimate gaming community. PC, Console, Mobile.", isJoined: true, checkedIn: false, categoryId: "gaming", aminoId: "gaming", guidelines: ["No cheating discussions", "Be a good sport", "No piracy links"], language: "en", createdAt: "2015-08-20", tags: ["Gaming", "PC", "Console", "Esports"] },
+  { id: "c6", name: "Pokemon Amino", icon: "https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?w=600&h=300&fit=crop", members: 1512300, onlineNow: 4450, description: "Gotta catch 'em all! The Pokemon community.", isJoined: false, checkedIn: false, categoryId: "gaming", aminoId: "pokemon", guidelines: ["No ROM links", "Be kind to new trainers"], language: "en", createdAt: "2016-02-14", tags: ["Pokemon", "Nintendo", "RPG", "Catch"] },
+  { id: "c12", name: "Minecraft Amino", icon: "https://images.unsplash.com/photo-1553481187-be93c21490a9?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1553481187-be93c21490a9?w=600&h=300&fit=crop", members: 876000, onlineNow: 2340, description: "Build, explore, survive! Minecraft community.", isJoined: false, checkedIn: false, categoryId: "gaming", aminoId: "minecraft", guidelines: ["Share your builds", "No griefing promotion"], language: "en", createdAt: "2016-06-01", tags: ["Minecraft", "Sandbox", "Building", "Survival"] },
 
   // Music
-  { id: "c2", name: "K-Pop Amino", icon: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=300&fit=crop", members: 2185430, onlineNow: 8920, description: "For all K-Pop fans! BTS, BLACKPINK, Stray Kids and more.", isJoined: true, checkedIn: true, categoryId: "music", aminoId: "k-pop", guidelines: ["No fanwars", "Respect all groups", "Credit fansite photos"], language: "en", createdAt: "2015-09-10" },
-  { id: "c13", name: "J-Rock Amino", icon: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&h=300&fit=crop", members: 234000, onlineNow: 560, description: "Japanese Rock and Visual Kei community.", isJoined: false, checkedIn: false, categoryId: "music", aminoId: "jrock", guidelines: ["Share music respectfully", "Credit artists"], language: "en", createdAt: "2017-01-15" },
+  { id: "c2", name: "K-Pop Amino", icon: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=300&fit=crop", members: 2185430, onlineNow: 8920, description: "For all K-Pop fans! BTS, BLACKPINK, Stray Kids and more.", isJoined: true, checkedIn: true, categoryId: "music", aminoId: "k-pop", guidelines: ["No fanwars", "Respect all groups", "Credit fansite photos"], language: "en", createdAt: "2015-09-10", tags: ["K-Pop", "BTS", "BLACKPINK", "Stray Kids"] },
+  { id: "c13", name: "J-Rock Amino", icon: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&h=300&fit=crop", members: 234000, onlineNow: 560, description: "Japanese Rock and Visual Kei community.", isJoined: false, checkedIn: false, categoryId: "music", aminoId: "jrock", guidelines: ["Share music respectfully", "Credit artists"], language: "en", createdAt: "2017-01-15", tags: ["J-Rock", "Visual Kei", "Japanese", "Rock"] },
 
   // Art & Design
-  { id: "c4", name: "Art Amino", icon: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=600&h=300&fit=crop", members: 1498200, onlineNow: 4234, description: "Share your art, get feedback, and improve your skills!", isJoined: false, checkedIn: false, categoryId: "art", aminoId: "art", guidelines: ["Credit original artists", "No art theft", "Constructive criticism only"], language: "en", createdAt: "2015-10-01" },
-  { id: "c14", name: "Digital Art Amino", icon: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=600&h=300&fit=crop", members: 567000, onlineNow: 1230, description: "Procreate, Photoshop, Clip Studio - all digital art!", isJoined: false, checkedIn: false, categoryId: "art", aminoId: "digitalart", guidelines: ["Share your process", "No AI art without disclosure"], language: "en", createdAt: "2017-04-20" },
+  { id: "c4", name: "Art Amino", icon: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=600&h=300&fit=crop", members: 1498200, onlineNow: 4234, description: "Share your art, get feedback, and improve your skills!", isJoined: false, checkedIn: false, categoryId: "art", aminoId: "art", guidelines: ["Credit original artists", "No art theft", "Constructive criticism only"], language: "en", createdAt: "2015-10-01", tags: ["Art", "Drawing", "Painting", "Creative"] },
+  { id: "c14", name: "Digital Art Amino", icon: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=600&h=300&fit=crop", members: 567000, onlineNow: 1230, description: "Procreate, Photoshop, Clip Studio - all digital art!", isJoined: false, checkedIn: false, categoryId: "art", aminoId: "digitalart", guidelines: ["Share your process", "No AI art without disclosure"], language: "en", createdAt: "2017-04-20", tags: ["Digital Art", "Procreate", "Photoshop", "Illustration"] },
 
   // Movies & TV
-  { id: "c5", name: "Horror Amino", icon: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=600&h=300&fit=crop", members: 867800, onlineNow: 2156, description: "For horror fans! Movies, books, games, creepypasta.", isJoined: true, checkedIn: false, categoryId: "movies", aminoId: "horror", guidelines: ["Use trigger warnings", "No real gore", "Spoiler tags required"], language: "en", createdAt: "2016-10-31" },
-  { id: "c15", name: "Marvel Amino", icon: "https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=600&h=300&fit=crop", members: 1234000, onlineNow: 3450, description: "Marvel Comics, MCU, and everything Marvel!", isJoined: false, checkedIn: false, categoryId: "movies", aminoId: "marvel", guidelines: ["Spoiler warnings for new releases", "Respect all opinions"], language: "en", createdAt: "2016-05-15" },
+  { id: "c5", name: "Horror Amino", icon: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=600&h=300&fit=crop", members: 867800, onlineNow: 2156, description: "For horror fans! Movies, books, games, creepypasta.", isJoined: true, checkedIn: false, categoryId: "movies", aminoId: "horror", guidelines: ["Use trigger warnings", "No real gore", "Spoiler tags required"], language: "en", createdAt: "2016-10-31", tags: ["Horror", "Movies", "Creepypasta", "Scary"] },
+  { id: "c15", name: "Marvel Amino", icon: "https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=600&h=300&fit=crop", members: 1234000, onlineNow: 3450, description: "Marvel Comics, MCU, and everything Marvel!", isJoined: false, checkedIn: false, categoryId: "movies", aminoId: "marvel", guidelines: ["Spoiler warnings for new releases", "Respect all opinions"], language: "en", createdAt: "2016-05-15", tags: ["Marvel", "MCU", "Comics", "Superheroes"] },
 
   // Cosplay
-  { id: "c7", name: "Cosplay Amino", icon: "https://images.unsplash.com/photo-1608889825103-eb5ed706fc64?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1608889825103-eb5ed706fc64?w=600&h=300&fit=crop", members: 754200, onlineNow: 890, description: "Show off your cosplays and get tips!", isJoined: false, checkedIn: false, categoryId: "cosplay", aminoId: "cosplay", guidelines: ["Credit cosplayers", "No body shaming", "Constructive feedback"], language: "en", createdAt: "2016-07-20" },
+  { id: "c7", name: "Cosplay Amino", icon: "https://images.unsplash.com/photo-1608889825103-eb5ed706fc64?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1608889825103-eb5ed706fc64?w=600&h=300&fit=crop", members: 754200, onlineNow: 890, description: "Show off your cosplays and get tips!", isJoined: false, checkedIn: false, categoryId: "cosplay", aminoId: "cosplay", guidelines: ["Credit cosplayers", "No body shaming", "Constructive feedback"], language: "en", createdAt: "2016-07-20", tags: ["Cosplay", "Convention", "Costume", "DIY"] },
 
   // Books & Writing
-  { id: "c8", name: "Books Amino", icon: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=600&h=300&fit=crop", members: 543100, onlineNow: 670, description: "For book lovers! Reviews, recommendations and discussions.", isJoined: false, checkedIn: false, categoryId: "books", aminoId: "books", guidelines: ["Use spoiler warnings", "Respect all genres"], language: "en", createdAt: "2016-04-23" },
+  { id: "c8", name: "Books Amino", icon: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=200&h=200&fit=crop", cover: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=600&h=300&fit=crop", members: 543100, onlineNow: 670, description: "For book lovers! Reviews, recommendations and discussions.", isJoined: false, checkedIn: false, categoryId: "books", aminoId: "books", guidelines: ["Use spoiler warnings", "Respect all genres"], language: "en", createdAt: "2016-04-23", tags: ["Books", "Reading", "Fanfiction", "Writing"] },
 ];
 
 // ============ COMMUNITY PROFILES (per-community user profiles) ============
@@ -310,6 +357,8 @@ interface AppContextType {
   navigateTo: (screen: string) => void;
   getCommunityProfile: (communityId: string) => CommunityProfile | undefined;
   getCommunitiesByCategory: (categoryId: string) => Community[];
+  searchCommunities: (query: string) => Community[];
+  earnReputation: (amount: number) => void;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -319,8 +368,10 @@ const currentUser: User = {
   nickname: "NexusUser",
   avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop",
   level: 16,
-  levelTitle: "Explorer",
+  levelTitle: "Mythic",
   reputation: 48914,
+  dailyRepEarned: 45,
+  totalRepAllTime: 48914,
   following: 24,
   followers: 30190,
   coins: 68,
@@ -336,7 +387,7 @@ const currentUser: User = {
 };
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [user] = useState(currentUser);
+  const [user, setUser] = useState(currentUser);
   const [comms, setComms] = useState(communities);
   const [profiles] = useState(communityProfiles);
   const [allPosts, setAllPosts] = useState(posts);
@@ -406,13 +457,42 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return comms.filter(c => c.categoryId === categoryId);
   }, [comms]);
 
+  const searchCommunities = useCallback((query: string) => {
+    if (!query.trim()) return [];
+    const q = query.toLowerCase();
+    return comms.filter(c =>
+      c.name.toLowerCase().includes(q) ||
+      c.aminoId.toLowerCase().includes(q) ||
+      c.description.toLowerCase().includes(q) ||
+      c.tags.some(t => t.toLowerCase().includes(q)) ||
+      c.categoryId.toLowerCase().includes(q)
+    );
+  }, [comms]);
+
+  const earnReputation = useCallback((amount: number) => {
+    setUser(prev => {
+      const canEarn = Math.min(amount, MAX_DAILY_REP - prev.dailyRepEarned);
+      if (canEarn <= 0) return prev;
+      const newTotalRep = prev.totalRepAllTime + canEarn;
+      const levelInfo = getLevelFromRep(newTotalRep);
+      return {
+        ...prev,
+        reputation: prev.reputation + canEarn,
+        dailyRepEarned: prev.dailyRepEarned + canEarn,
+        totalRepAllTime: newTotalRep,
+        level: levelInfo.level,
+        levelTitle: levelInfo.title,
+      };
+    });
+  }, []);
+
   return (
     <AppContext.Provider value={{
       currentUser: user, communities: comms, categories, communityProfiles: profiles,
       posts: allPosts, chatRooms, chatMessages: msgs, comments, wikiEntries, communityMembers,
       activeTab, setActiveTab, currentScreen, setCurrentScreen, selectedCommunity, setSelectedCommunity,
       selectedPost, setSelectedPost, selectedChat, setSelectedChat, toggleLike, toggleJoinCommunity,
-      checkIn, sendMessage, votePoll, screenHistory, goBack, navigateTo, getCommunityProfile, getCommunitiesByCategory,
+      checkIn, sendMessage, votePoll, screenHistory, goBack, navigateTo, getCommunityProfile, getCommunitiesByCategory, searchCommunities, earnReputation,
     }}>
       {children}
     </AppContext.Provider>

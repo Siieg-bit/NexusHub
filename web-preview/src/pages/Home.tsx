@@ -26,9 +26,47 @@ function comingSoon(feature: string) {
   toast(`${feature} - Coming soon!`, { duration: 2000 });
 }
 
+function getLevelFromRep(totalRep: number): { level: number; title: string; progress: number; nextLevelRep: number } {
+  const levels = [
+    { level: 1, title: "Newcomer", minRep: 0 },
+    { level: 2, title: "Beginner", minRep: 200 },
+    { level: 3, title: "Apprentice", minRep: 500 },
+    { level: 4, title: "Regular", minRep: 1000 },
+    { level: 5, title: "Active", minRep: 2000 },
+    { level: 6, title: "Contributor", minRep: 3500 },
+    { level: 7, title: "Veteran", minRep: 5500 },
+    { level: 8, title: "Expert", minRep: 8000 },
+    { level: 9, title: "Master", minRep: 11000 },
+    { level: 10, title: "Elite", minRep: 15000 },
+    { level: 11, title: "Champion", minRep: 20000 },
+    { level: 12, title: "Legend", minRep: 26000 },
+    { level: 13, title: "Mythic", minRep: 33000 },
+    { level: 14, title: "Immortal", minRep: 41000 },
+    { level: 15, title: "Transcendent", minRep: 50000 },
+    { level: 16, title: "Ascended", minRep: 60000 },
+    { level: 17, title: "Celestial", minRep: 72000 },
+    { level: 18, title: "Divine", minRep: 86000 },
+    { level: 19, title: "Omniscient", minRep: 102000 },
+    { level: 20, title: "Supreme", minRep: 120000 },
+  ];
+  let current = levels[0];
+  let next = levels[1];
+  for (let i = levels.length - 1; i >= 0; i--) {
+    if (totalRep >= levels[i].minRep) {
+      current = levels[i];
+      next = levels[Math.min(i + 1, levels.length - 1)];
+      break;
+    }
+  }
+  const progress = next.minRep > current.minRep
+    ? ((totalRep - current.minRep) / (next.minRep - current.minRep)) * 100
+    : 100;
+  return { level: current.level, title: current.title, progress: Math.min(progress, 100), nextLevelRep: next.minRep };
+}
+
 // ============ AMINO MAIN HEADER ============
-function AminoMainHeader({ onBack, title, showSearch = true, rightContent }: {
-  onBack?: () => void; title?: string; showSearch?: boolean; rightContent?: React.ReactNode;
+function AminoMainHeader({ onBack, title, showSearch = true, rightContent, onSearchClick }: {
+  onBack?: () => void; title?: string; showSearch?: boolean; rightContent?: React.ReactNode; onSearchClick?: () => void;
 }) {
   const { currentUser, navigateTo } = useApp();
   return (
@@ -43,7 +81,7 @@ function AminoMainHeader({ onBack, title, showSearch = true, rightContent }: {
       {title ? (
         <span className="text-white font-semibold text-[15px] flex-1 truncate">{title}</span>
       ) : showSearch ? (
-        <div className="flex-1 flex items-center bg-[#1a1a2e] rounded-full px-3 py-1.5 mx-1" onClick={() => comingSoon("Search")}>
+        <div className="flex-1 flex items-center bg-[#1a1a2e] rounded-full px-3 py-1.5 mx-1 cursor-pointer" onClick={onSearchClick}>
           <Search size={14} className="text-gray-500 mr-2" />
           <span className="text-gray-500 text-[13px]">Search Amino</span>
         </div>
@@ -128,28 +166,167 @@ function PostCard({ post, onPress, showCommunity = true }: { post: Post; onPress
           {post.pollOptions.map(opt => (
             <button key={opt.id} onClick={(e) => { e.stopPropagation(); votePoll(post.id, opt.id); }}
               className="w-full relative overflow-hidden rounded-md bg-[#1e1e38] text-left">
-              <div className="absolute inset-y-0 left-0 bg-blue-500/20 transition-all" style={{ width: `${opt.percentage}%` }} />
+              <div className="absolute inset-y-0 left-0 bg-blue-500/15 transition-all" style={{ width: `${opt.percentage}%` }} />
               <div className="relative flex items-center justify-between px-3 py-2">
-                <span className={`text-[12px] ${opt.isVoted ? "text-blue-400 font-semibold" : "text-gray-300"}`}>{opt.text}</span>
-                <span className="text-gray-500 text-[11px]">{opt.percentage}%</span>
+                <span className={`text-[12px] ${opt.isVoted ? "text-blue-400 font-semibold" : "text-gray-400"}`}>{opt.text}</span>
+                <span className="text-gray-600 text-[11px]">{opt.percentage}%</span>
               </div>
             </button>
           ))}
-          <p className="text-gray-600 text-[10px] text-center">{post.pollOptions.reduce((s, o) => s + o.votes, 0)} votes</p>
         </div>
       )}
-      {post.tags.length > 0 && (
-        <div className="flex gap-1 px-3 pb-2 flex-wrap">
-          {post.tags.map(tag => <span key={tag} className="bg-[#1e1e38] text-gray-500 text-[10px] px-2 py-0.5 rounded-full">#{tag}</span>)}
-        </div>
-      )}
-      <div className="flex items-center gap-5 px-3 py-2 border-t border-white/5">
+      <div className="flex items-center gap-4 px-3 pb-2.5 pt-1 border-t border-white/3 mt-1">
         <button onClick={(e) => { e.stopPropagation(); toggleLike(post.id); }}
-          className={`flex items-center gap-1 text-[12px] ${post.isLiked ? "text-red-400" : "text-gray-600"}`}>
-          <Heart size={16} fill={post.isLiked ? "currentColor" : "none"} /><span>{post.likesCount}</span>
+          className={`flex items-center gap-1 text-[11px] ${post.isLiked ? "text-red-400" : "text-gray-600"}`}>
+          <Heart size={14} fill={post.isLiked ? "currentColor" : "none"} />{post.likesCount}
         </button>
-        <div className="flex items-center gap-1 text-gray-600 text-[12px]"><MessageCircle size={16} /><span>{post.commentsCount}</span></div>
-        <button onClick={(e) => { e.stopPropagation(); comingSoon("Share"); }} className="ml-auto text-gray-600"><Share2 size={16} /></button>
+        <span className="flex items-center gap-1 text-gray-600 text-[11px]"><MessageCircle size={14} />{post.commentsCount}</span>
+      </div>
+    </div>
+  );
+}
+
+// ============ SEARCH SCREEN (Amino faithful) ============
+function SearchScreen({ onClose }: { onClose: () => void }) {
+  const { communities, navigateTo, setSelectedCommunity, toggleJoinCommunity } = useApp();
+  const [query, setQuery] = useState("");
+  const [searchTab, setSearchTab] = useState("communities");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setTimeout(() => inputRef.current?.focus(), 100);
+  }, []);
+
+  const filtered = query.trim()
+    ? communities.filter(c =>
+        c.name.toLowerCase().includes(query.toLowerCase()) ||
+        c.id.toLowerCase().includes(query.toLowerCase()) ||
+        c.description.toLowerCase().includes(query.toLowerCase()) ||
+        (c.tags && c.tags.some(t => t.toLowerCase().includes(query.toLowerCase())))
+      )
+    : [];
+
+  // Exact match by ID
+  const exactMatch = query.trim()
+    ? communities.find(c => c.id.toLowerCase() === query.toLowerCase() || c.name.toLowerCase() === query.toLowerCase())
+    : null;
+
+  // Keyword matches (excluding exact match)
+  const keywordMatches = filtered.filter(c => c !== exactMatch);
+
+  // Tag colors for search results
+  const tagColors = ["#FF9800", "#4CAF50", "#E91E63", "#9E9E9E", "#03A9F4", "#FF5722", "#8BC34A", "#673AB7"];
+
+  const tabs = [
+    { id: "communities", label: "Communities" },
+    { id: "users", label: "Users" },
+    { id: "chats", label: "Chats" },
+    { id: "others", label: "Others" },
+  ];
+
+  return (
+    <div className="flex flex-col h-full bg-[#0f0f1e]">
+      {/* Search Header */}
+      <div className="flex items-center gap-2 px-3 py-2 bg-[#0f0f1e] border-b border-white/5" style={{ paddingTop: 38 }}>
+        <div className="flex-1 flex items-center bg-[#2a2a40] rounded-full px-3 py-2">
+          <Search size={16} className="text-gray-500 mr-2 shrink-0" />
+          <input
+            ref={inputRef}
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search communities, users..."
+            className="flex-1 bg-transparent text-white text-[14px] outline-none placeholder:text-gray-600"
+          />
+          {query && (
+            <button onClick={() => setQuery("")} className="p-0.5 ml-1">
+              <X size={16} className="text-gray-500" />
+            </button>
+          )}
+        </div>
+        <button onClick={onClose} className="text-gray-400 text-[14px] font-medium shrink-0 pl-1">Cancel</button>
+      </div>
+
+      {/* Search Tabs */}
+      <div className="flex border-b border-white/5">
+        {tabs.map(tab => (
+          <button key={tab.id} onClick={() => setSearchTab(tab.id)}
+            className={`flex-1 py-2.5 text-[13px] font-semibold text-center transition-colors relative ${searchTab === tab.id ? "text-white" : "text-gray-600"}`}>
+            {tab.label}
+            {searchTab === tab.id && <div className="absolute bottom-0 left-2 right-2 h-[2px] bg-white rounded-full" />}
+          </button>
+        ))}
+      </div>
+
+      {/* Search Results */}
+      <div className="flex-1 overflow-y-auto amino-scroll">
+        {!query.trim() ? (
+          <div className="px-4 pt-8 text-center">
+            <Search size={40} className="text-gray-700 mx-auto mb-3" />
+            <p className="text-gray-600 text-[14px]">Search for communities, users, and chats</p>
+          </div>
+        ) : searchTab === "communities" ? (
+          <div>
+            {/* Exact match by ID */}
+            {exactMatch && (
+              <div className="px-3 pt-3">
+                <p className="text-gray-500 text-[11px] mb-2 font-medium">Identified by Amino ID / Link</p>
+                <button onClick={() => { setSelectedCommunity(exactMatch); navigateTo("community"); onClose(); }}
+                  className="w-full flex items-center gap-3 py-2 text-left">
+                  <img src={exactMatch.icon} className="w-12 h-12 rounded-full object-cover shrink-0" alt="" />
+                  <div>
+                    <p className="text-white text-[15px] font-bold">{exactMatch.name}</p>
+                    <p className="text-gray-500 text-[12px]">@{exactMatch.id}</p>
+                  </div>
+                </button>
+                <div className="h-px bg-white/5 mt-2" />
+              </div>
+            )}
+
+            {/* Keyword results */}
+            {keywordMatches.length > 0 && (
+              <div className="px-3 pt-3">
+                <p className="text-gray-500 text-[11px] mb-3 font-medium">Search Results by Keywords</p>
+                {keywordMatches.map(c => (
+                  <button key={c.id} onClick={() => { setSelectedCommunity(c); navigateTo("community"); onClose(); }}
+                    className="w-full flex gap-3 mb-4 text-left">
+                    {/* Community image - square, rounded */}
+                    <img src={c.cover} className="w-[110px] h-[110px] rounded-xl object-cover shrink-0" alt="" />
+                    {/* Info */}
+                    <div className="flex-1 min-w-0 py-0.5">
+                      <h4 className="text-white font-bold text-[15px] leading-tight mb-1">{c.name}</h4>
+                      <div className="inline-flex items-center bg-[#2a2a40] rounded px-1.5 py-0.5 mb-1">
+                        <span className="text-gray-400 text-[10px]">ID Amino: {c.id}</span>
+                      </div>
+                      <p className="text-gray-400 text-[11px] mb-1.5">{formatNumber(c.members)} Members | {c.language || "English"}</p>
+                      {/* Tags with colored borders */}
+                      {c.tags && c.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mb-1.5">
+                          {c.tags.slice(0, 4).map((tag, i) => (
+                            <span key={tag} className="text-[9px] font-semibold px-2 py-0.5 rounded-full border"
+                              style={{ borderColor: tagColors[i % tagColors.length], color: tagColors[i % tagColors.length] }}>
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      <p className="text-gray-500 text-[11px] line-clamp-2 leading-snug">{c.description}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {!exactMatch && keywordMatches.length === 0 && (
+              <div className="px-4 pt-8 text-center">
+                <p className="text-gray-600 text-[13px]">No communities found for "{query}"</p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="px-4 pt-8 text-center">
+            <p className="text-gray-600 text-[13px]">{searchTab === "users" ? "User" : searchTab === "chats" ? "Chat" : "Other"} search coming soon</p>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -194,32 +371,36 @@ function DiscoverTab() {
       </div>
 
       {selectedCategory ? (
-        /* Filtered view */
         <div className="px-3 pt-2 pb-20">
           <h3 className="text-white font-bold text-[16px] mb-3">{categories.find(c => c.id === selectedCategory)?.name}</h3>
-          <div className="grid grid-cols-2 gap-2.5">
-            {filteredCommunities.map(c => (
-              <div key={c.id} className="rounded-xl overflow-hidden bg-[#16162a]" onClick={() => { setSelectedCommunity(c); navigateTo("community"); }}>
-                <div className="relative h-[80px]">
-                  <img src={c.cover} className="w-full h-full object-cover" alt="" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#16162a] via-transparent to-transparent" />
+          {/* Amino-style search results for category */}
+          {filteredCommunities.map(c => (
+            <button key={c.id} className="w-full flex gap-3 mb-4 text-left"
+              onClick={() => { setSelectedCommunity(c); navigateTo("community"); }}>
+              <img src={c.cover} className="w-[100px] h-[100px] rounded-xl object-cover shrink-0" alt="" />
+              <div className="flex-1 min-w-0 py-0.5">
+                <h4 className="text-white font-bold text-[14px] leading-tight mb-0.5">{c.name}</h4>
+                <div className="inline-flex items-center bg-[#2a2a40] rounded px-1.5 py-0.5 mb-1">
+                  <span className="text-gray-400 text-[9px]">ID: {c.id}</span>
                 </div>
-                <div className="flex justify-center -mt-5 relative z-10">
-                  <img src={c.icon} className="w-10 h-10 rounded-lg object-cover border-2 border-[#16162a]" alt="" />
-                </div>
-                <div className="px-2 pt-1 pb-2.5 text-center">
-                  <p className="text-white text-[11px] font-bold leading-tight mb-0.5 line-clamp-1">{c.name}</p>
-                  <p className="text-gray-600 text-[9px] mb-1.5">{formatNumber(c.members)} Members</p>
-                  {c.isJoined ? (
-                    <span className="text-[#2dbe60] text-[9px] font-semibold">Joined ✓</span>
-                  ) : (
-                    <button onClick={(e) => { e.stopPropagation(); toggleJoinCommunity(c.id); }}
-                      className="bg-[#2dbe60] text-white text-[9px] font-bold px-3 py-1 rounded-full">Join</button>
-                  )}
-                </div>
+                <p className="text-gray-400 text-[10px] mb-1">{formatNumber(c.members)} Members</p>
+                {c.tags && c.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mb-1">
+                    {c.tags.slice(0, 3).map((tag, i) => {
+                      const colors = ["#FF9800", "#4CAF50", "#E91E63", "#03A9F4"];
+                      return (
+                        <span key={tag} className="text-[8px] font-semibold px-1.5 py-0.5 rounded-full border"
+                          style={{ borderColor: colors[i % colors.length], color: colors[i % colors.length] }}>
+                          {tag}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+                <p className="text-gray-500 text-[10px] line-clamp-1">{c.description}</p>
               </div>
-            ))}
-          </div>
+            </button>
+          ))}
         </div>
       ) : (
         <>
@@ -311,7 +492,7 @@ function DiscoverTab() {
   );
 }
 
-// ============ COMMUNITIES TAB ============
+// ============ COMMUNITIES TAB (Amino faithful - vertical compact cards) ============
 function CommunitiesTab() {
   const { communities, navigateTo, setSelectedCommunity, checkIn, toggleJoinCommunity } = useApp();
   const joined = communities.filter(c => c.isJoined);
@@ -323,48 +504,50 @@ function CommunitiesTab() {
         <h3 className="text-white font-bold text-[16px] mb-0.5">My Communities</h3>
         <p className="text-gray-600 text-[11px] mb-3">Long press to reorder</p>
       </div>
-      <div className="px-3 grid grid-cols-2 gap-2.5 mb-4">
-        {joined.map(c => (
-          <div key={c.id} className="relative rounded-xl overflow-hidden bg-[#16162a]"
-            onClick={() => { setSelectedCommunity(c); navigateTo("community"); }}>
-            <div className="relative h-[100px]">
-              <img src={c.cover} className="w-full h-full object-cover" alt="" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#16162a] via-transparent to-transparent" />
-              <div className="absolute top-1.5 right-1.5 min-w-[20px] h-[20px] bg-red-500 rounded-full text-[9px] text-white flex items-center justify-center font-bold px-1">
-                {Math.floor(Math.random() * 15) + 1}
+      {/* Amino-style vertical compact cards - 3 columns */}
+      <div className="px-3 grid grid-cols-3 gap-2 mb-4">
+        {joined.map(c => {
+          const notifCount = Math.floor(Math.random() * 15) + 1;
+          return (
+            <div key={c.id} className="relative rounded-xl overflow-hidden bg-[#16162a]"
+              onClick={() => { setSelectedCommunity(c); navigateTo("community"); }}>
+              {/* Tall cover image */}
+              <div className="relative h-[130px]">
+                <img src={c.cover} className="w-full h-full object-cover" alt="" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#16162a] via-transparent to-transparent" />
+                {/* Community icon - top left overlaid */}
+                <div className="absolute top-1.5 left-1.5">
+                  <img src={c.icon} className="w-7 h-7 rounded-md object-cover border border-white/20 shadow" alt="" />
+                </div>
+                {/* Notification badge - top right */}
+                {notifCount > 0 && (
+                  <div className="absolute top-1 right-1 min-w-[18px] h-[18px] bg-red-500 rounded-full text-[8px] text-white flex items-center justify-center font-bold px-1">
+                    {notifCount > 9 ? "9+" : notifCount}
+                  </div>
+                )}
+              </div>
+              {/* Community name */}
+              <div className="px-1.5 pt-1 pb-2 text-center">
+                <p className="text-white text-[10px] font-semibold leading-tight line-clamp-2">•{c.name}•</p>
               </div>
             </div>
-            <div className="flex justify-center -mt-6 relative z-10">
-              <img src={c.icon} className="w-12 h-12 rounded-lg object-cover border-2 border-[#16162a] shadow-lg" alt="" />
-            </div>
-            <div className="px-2 pt-1.5 pb-2.5 text-center">
-              <p className="text-white text-[12px] font-bold leading-tight mb-0.5 line-clamp-1">{c.name}</p>
-              <p className="text-gray-600 text-[9px] mb-2">{formatNumber(c.members)} Members</p>
-              {c.checkedIn ? (
-                <div className="bg-gray-600/40 text-white/40 text-[9px] font-bold py-1 px-2 rounded-md text-center uppercase flex items-center justify-center gap-1">
-                  <Check size={10} />Checked In
-                </div>
-              ) : (
-                <button onClick={(e) => { e.stopPropagation(); checkIn(c.id); }}
-                  className="w-full bg-[#2dbe60] text-white text-[9px] font-bold py-1.5 rounded-md text-center uppercase tracking-wider hover:bg-[#25a854] transition-colors">
-                  CHECK IN
-                </button>
-              )}
-            </div>
-          </div>
-        ))}
-        <div className="rounded-xl border border-dashed border-white/15 flex flex-col items-center justify-center gap-2 min-h-[180px]"
-          onClick={() => comingSoon("Create Community")}>
-          <Plus size={28} className="text-white/20" />
-          <span className="text-white/20 text-[10px] font-medium">Join More</span>
+          );
+        })}
+        {/* Join more card */}
+        <div className="rounded-xl border border-dashed border-white/15 flex flex-col items-center justify-center gap-1.5 min-h-[160px]"
+          onClick={() => comingSoon("Join Community")}>
+          <Plus size={24} className="text-white/20" />
+          <span className="text-white/20 text-[9px] font-medium">Join More</span>
         </div>
       </div>
+
       <div className="px-3 mb-5">
         <button onClick={() => comingSoon("Create Community")}
           className="w-full py-2.5 border border-[#2dbe60] rounded-lg text-[#2dbe60] font-bold text-[13px] tracking-wide hover:bg-[#2dbe60]/10 transition-colors">
           CREATE YOUR OWN
         </button>
       </div>
+
       {notJoined.length > 0 && (
         <div className="px-3">
           <h3 className="text-white font-bold text-[14px] mb-2.5">Recommended for You</h3>
@@ -516,7 +699,6 @@ function CommunityDetailScreen() {
   const displayName = profile?.nickname || currentUser.nickname;
   const displayAvatar = profile?.avatar || currentUser.avatar;
 
-  // Drawer menu items
   const drawerItems = [
     { icon: <HomeIcon size={18} />, label: "Home", color: "bg-[#2dbe60]", action: () => { setDrawerOpen(false); setActiveTab("featured"); } },
     { icon: <MessageCircle size={18} />, label: "My Chats", color: "bg-[#2dbe60]", badge: 2, action: () => { setDrawerOpen(false); setActiveTab("chats"); } },
@@ -532,7 +714,6 @@ function CommunityDetailScreen() {
       {/* Drawer Overlay */}
       {drawerOpen && (
         <div className="absolute inset-0 z-50 flex">
-          {/* Left sidebar - community icons */}
           <div className="w-[56px] bg-[#080812] flex flex-col items-center py-3 gap-2 border-r border-white/5">
             <button onClick={goBack} className="flex flex-col items-center gap-0.5 mb-2">
               <LogOut size={18} className="text-gray-400 rotate-180" />
@@ -550,10 +731,7 @@ function CommunityDetailScreen() {
               <Plus size={16} />
             </button>
           </div>
-
-          {/* Main drawer panel */}
           <div className="flex-1 bg-[#0f0f1e]/98 backdrop-blur-md overflow-y-auto amino-scroll" onClick={(e) => e.stopPropagation()}>
-            {/* Cover + Profile */}
             <div className="relative h-[260px]">
               <img src={selectedCommunity.cover} className="w-full h-full object-cover" alt="" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f1e] via-[#0f0f1e]/40 to-transparent" />
@@ -575,8 +753,6 @@ function CommunityDetailScreen() {
                 </button>
               </div>
             </div>
-
-            {/* Menu items */}
             <div className="px-2 pt-2 pb-4">
               {drawerItems.map((item, i) => (
                 <button key={i} onClick={item.action}
@@ -592,8 +768,6 @@ function CommunityDetailScreen() {
               </button>
             </div>
           </div>
-
-          {/* Close area */}
           <div className="w-[60px] bg-transparent" onClick={() => setDrawerOpen(false)} />
         </div>
       )}
@@ -606,13 +780,10 @@ function CommunityDetailScreen() {
           <div className="absolute top-8 left-3 right-3 flex items-center justify-between z-10">
             <button onClick={goBack} className="p-1"><ChevronLeft size={22} className="text-white" /></button>
             <div className="flex items-center gap-2">
-              <button onClick={() => comingSoon("Claim Gifts")} className="bg-[#2dbe60] text-white text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-1">
-                🎁 Claim gifts
-              </button>
+              <button onClick={() => comingSoon("Claim Gifts")} className="bg-[#2dbe60] text-white text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-1">🎁 Claim gifts</button>
               <button onClick={() => comingSoon("Gallery")} className="p-1.5 bg-black/30 rounded-full"><Image size={16} className="text-white" /></button>
               <button onClick={() => comingSoon("Notifications")} className="relative p-1.5 bg-black/30 rounded-full">
-                <Bell size={16} className="text-white" />
-                <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full" />
+                <Bell size={16} className="text-white" /><span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full" />
               </button>
             </div>
           </div>
@@ -622,7 +793,7 @@ function CommunityDetailScreen() {
               <h2 className="text-white font-black text-[20px] leading-tight">{selectedCommunity.name}</h2>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-white/70 text-[11px]">{formatNumber(selectedCommunity.members)} Members</span>
-                <button onClick={() => comingSoon("Leaderboards")} className="bg-[#2dbe60] text-white text-[8px] font-bold px-2 py-0.5 rounded-full">Leaderboards</button>
+                <button onClick={() => setActiveTab("leaderboard")} className="bg-[#2dbe60] text-white text-[8px] font-bold px-2 py-0.5 rounded-full">Leaderboards</button>
               </div>
             </div>
           </div>
@@ -731,22 +902,28 @@ function CommunityDetailScreen() {
         {activeTab === "members" && (
           <div>
             {[
-              { name: "CommunityAdmin", role: "Leader", level: 20, avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100" },
-              { name: "ModeratorX", role: "Curator", level: 15, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" },
-              { name: "ActiveUser99", role: "Member", level: 8, avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=100" },
-            ].map((m, i) => (
-              <div key={i} className="flex items-center gap-3 py-2.5 border-b border-white/5">
-                <img src={m.avatar} className="w-10 h-10 rounded-full object-cover" alt="" />
-                <div className="flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-white text-[13px] font-semibold">{m.name}</span>
-                    {m.role === "Leader" && <span className="bg-[#2dbe60] text-white text-[7px] px-1 py-px rounded font-bold">Leader</span>}
-                    {m.role === "Curator" && <span className="bg-[#E040FB] text-white text-[7px] px-1 py-px rounded font-bold">Curator</span>}
+              { name: "CommunityAdmin", role: "Leader", level: 20, rep: 120000, avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100" },
+              { name: "ModeratorX", role: "Curator", level: 15, rep: 50000, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" },
+              { name: "ActiveUser99", role: "Member", level: 8, rep: 8000, avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=100" },
+            ].map((m, i) => {
+              const lvl = getLevelFromRep(m.rep);
+              return (
+                <div key={i} className="flex items-center gap-3 py-2.5 border-b border-white/5">
+                  <img src={m.avatar} className="w-10 h-10 rounded-full object-cover" alt="" />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-white text-[13px] font-semibold">{m.name}</span>
+                      {m.role === "Leader" && <span className="bg-[#2dbe60] text-white text-[7px] px-1 py-px rounded font-bold">Leader</span>}
+                      {m.role === "Curator" && <span className="bg-[#E040FB] text-white text-[7px] px-1 py-px rounded font-bold">Curator</span>}
+                    </div>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className="bg-gradient-to-r from-blue-700 to-blue-500 text-white text-[8px] font-bold px-1.5 py-px rounded">Lv{lvl.level}</span>
+                      <span className="text-gray-600 text-[10px]">{lvl.title} · {formatNumber(m.rep)} rep</span>
+                    </div>
                   </div>
-                  <span className="text-gray-600 text-[10px]">Level {m.level}</span>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
         {activeTab === "wiki" && (
@@ -760,19 +937,28 @@ function CommunityDetailScreen() {
           <div>
             <h4 className="text-white font-bold text-[14px] mb-3 flex items-center gap-1.5"><Trophy size={16} className="text-yellow-400" />Top Members</h4>
             {[
-              { rank: 1, name: "TopUser", rep: 15420, avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100" },
-              { rank: 2, name: "ProMember", rep: 12300, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" },
-              { rank: 3, name: "ActiveFan", rep: 9870, avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=100" },
-            ].map(m => (
-              <div key={m.rank} className="flex items-center gap-3 py-2.5 border-b border-white/5">
-                <span className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-[12px] ${m.rank === 1 ? "bg-yellow-500 text-black" : m.rank === 2 ? "bg-gray-400 text-black" : "bg-orange-700 text-white"}`}>{m.rank}</span>
-                <img src={m.avatar} className="w-9 h-9 rounded-full object-cover" alt="" />
-                <div className="flex-1">
-                  <span className="text-white text-[13px] font-semibold">{m.name}</span>
-                  <p className="text-gray-600 text-[10px]">{formatNumber(m.rep)} reputation</p>
+              { rank: 1, name: "TopUser", rep: 120000, avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100" },
+              { rank: 2, name: "ProMember", rep: 50000, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" },
+              { rank: 3, name: "ActiveFan", rep: 33000, avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=100" },
+            ].map(m => {
+              const lvl = getLevelFromRep(m.rep);
+              return (
+                <div key={m.rank} className="flex items-center gap-3 py-2.5 border-b border-white/5">
+                  <span className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-[12px] ${m.rank === 1 ? "bg-yellow-500 text-black" : m.rank === 2 ? "bg-gray-400 text-black" : "bg-orange-700 text-white"}`}>{m.rank}</span>
+                  <img src={m.avatar} className="w-9 h-9 rounded-full object-cover" alt="" />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-white text-[13px] font-semibold">{m.name}</span>
+                      <span className="bg-gradient-to-r from-blue-700 to-blue-500 text-white text-[8px] font-bold px-1.5 py-px rounded">Lv{lvl.level}</span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-gray-500 text-[10px]">{lvl.title}</span>
+                      <span className="text-gray-600 text-[10px]">{formatNumber(m.rep)} reputation</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -780,13 +966,11 @@ function CommunityDetailScreen() {
       {/* Community Bottom Nav */}
       <div className="sticky bottom-0 z-40 flex items-center bg-[#0b0b18] border-t border-white/5" style={{ paddingBottom: 4 }}>
         <button onClick={() => setDrawerOpen(true)} className="flex-1 flex flex-col items-center py-2 gap-0.5 text-gray-500 relative">
-          <Menu size={20} />
-          <span className="text-[9px]">Menu</span>
+          <Menu size={20} /><span className="text-[9px]">Menu</span>
           <span className="absolute top-1 right-[30%] w-2 h-2 bg-red-500 rounded-full" />
         </button>
         <button onClick={() => comingSoon("Online Members")} className="flex-1 flex flex-col items-center py-2 gap-0.5 text-gray-500 relative">
-          <Users size={20} />
-          <span className="text-[9px]">Online</span>
+          <Users size={20} /><span className="text-[9px]">Online</span>
           <span className="absolute top-0 right-[25%] min-w-[16px] h-[16px] bg-[#2dbe60] rounded-full text-[8px] text-white flex items-center justify-center font-bold">{selectedCommunity.onlineNow || 42}</span>
         </button>
         <button onClick={() => setShowFab(!showFab)} className="flex items-center justify-center -mt-4">
@@ -795,13 +979,11 @@ function CommunityDetailScreen() {
           </div>
         </button>
         <button onClick={() => setActiveTab("chats")} className="flex-1 flex flex-col items-center py-2 gap-0.5 text-gray-500 relative">
-          <MessageCircle size={20} />
-          <span className="text-[9px]">Chats</span>
+          <MessageCircle size={20} /><span className="text-[9px]">Chats</span>
           <span className="absolute top-0 right-[25%] w-2 h-2 bg-red-500 rounded-full" />
         </button>
         <button onClick={() => navigateTo("communityProfile")} className="flex-1 flex flex-col items-center py-2 gap-0.5 text-gray-500">
-          <img src={displayAvatar} className="w-5 h-5 rounded-full object-cover" alt="" />
-          <span className="text-[9px]">Me</span>
+          <img src={displayAvatar} className="w-5 h-5 rounded-full object-cover" alt="" /><span className="text-[9px]">Me</span>
         </button>
       </div>
 
@@ -830,6 +1012,9 @@ function PostDetailScreen() {
   const { selectedPost, comments, goBack, toggleLike } = useApp();
   const [newComment, setNewComment] = useState("");
   if (!selectedPost) return null;
+
+  const authorLevel = getLevelFromRep(selectedPost.author.level * 500);
+
   return (
     <div className="flex flex-col h-full">
       <AminoMainHeader onBack={goBack} title={selectedPost.communityName} />
@@ -843,7 +1028,7 @@ function PostDetailScreen() {
               {selectedPost.author.role === "Curator" && <span className="bg-[#E040FB] text-white text-[7px] px-1 py-px rounded font-bold">Curator</span>}
             </div>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className="bg-gradient-to-r from-blue-600 to-blue-400 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">Lv.{selectedPost.author.level}</span>
+              <span className="bg-gradient-to-r from-blue-600 to-blue-400 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">Lv.{authorLevel.level}</span>
               <span className="text-gray-600 text-[10px]">{getTimeAgo(selectedPost.createdAt)}</span>
             </div>
           </div>
@@ -994,7 +1179,6 @@ function GlobalProfileScreen() {
 
   return (
     <div className="flex flex-col h-full bg-[#1a1a2e]">
-      {/* Header - dark, simple */}
       <div className="flex items-center justify-between px-3 py-2 bg-[#0f0f1e] border-b border-white/5" style={{ paddingTop: 38 }}>
         <button onClick={goBack} className="p-1"><ChevronLeft size={22} className="text-white" /></button>
         <div className="flex items-center bg-[#2dbe60] rounded-full px-2.5 py-1 gap-1">
@@ -1007,7 +1191,6 @@ function GlobalProfileScreen() {
       </div>
 
       <div className="flex-1 overflow-y-auto amino-scroll">
-        {/* Profile section - LEFT aligned like Amino global profile */}
         <div className="px-4 pt-4 pb-3">
           <div className="flex items-start justify-between mb-3">
             <img src={currentUser.avatar} className="w-20 h-20 rounded-full object-cover border-2 border-white/10" alt="" />
@@ -1016,15 +1199,11 @@ function GlobalProfileScreen() {
               <Edit size={14} />Edit Profile
             </button>
           </div>
-
-          {/* Name + Amino+ badge */}
           <div className="flex items-center gap-2 mb-1">
             <h2 className="text-white font-bold text-[20px]">{currentUser.nickname}</h2>
             <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded">A+</div>
           </div>
           <p className="text-gray-500 text-[12px] mb-3">@{currentUser.nickname.toLowerCase().replace(/\s/g, "_")}</p>
-
-          {/* Followers / Following - in divided boxes */}
           <div className="flex border border-white/10 rounded-lg overflow-hidden mb-4">
             <button onClick={() => comingSoon("Followers")} className="flex-1 py-3 text-center border-r border-white/10 hover:bg-white/3 transition-colors">
               <p className="text-white font-bold text-[18px]">{formatNumber(currentUser.followers)}</p>
@@ -1035,17 +1214,11 @@ function GlobalProfileScreen() {
               <p className="text-gray-500 text-[11px]">Following</p>
             </button>
           </div>
-
-          {/* Bio */}
           <p className="text-gray-300 text-[13px] leading-relaxed mb-4">{currentUser.bio}</p>
-
-          {/* Amino+ Banner */}
           <div className="flex items-center gap-3 bg-[#2a2a40] rounded-lg px-3 py-2.5 mb-4 border border-white/5">
             <div className="bg-yellow-400 text-black font-black text-[10px] px-2 py-1 rounded shrink-0">Amino+</div>
             <span className="text-white text-[13px] font-medium">Try Amino+ for free today!</span>
           </div>
-
-          {/* Linked Communities */}
           <div className="mb-4">
             <div className="flex items-center gap-1 mb-2 pb-2 border-b border-white/5">
               <Link2 size={14} className="text-gray-500" />
@@ -1062,12 +1235,10 @@ function GlobalProfileScreen() {
             </div>
           </div>
         </div>
-
-        {/* Tabs: Stories / Wall */}
         <div className="flex border-b border-white/10 bg-[#16162a]">
           {[
             { id: "stories", label: "Stories" },
-            { id: "wall", label: `Wall ${Math.floor(Math.random() * 5)}` },
+            { id: "wall", label: "Wall" },
           ].map(tab => (
             <button key={tab.id} onClick={() => setActiveProfileTab(tab.id)}
               className={`flex-1 py-3 text-[13px] font-bold text-center transition-colors relative ${activeProfileTab === tab.id ? "text-white" : "text-gray-600"}`}>
@@ -1076,8 +1247,6 @@ function GlobalProfileScreen() {
             </button>
           ))}
         </div>
-
-        {/* Tab content */}
         <div className="bg-[#16162a] min-h-[200px]">
           {activeProfileTab === "stories" ? (
             <div className="p-4">
@@ -1116,8 +1285,6 @@ function CommunityProfileScreen() {
   const displayAvatar = profile?.avatar || currentUser.avatar;
   const displayBio = profile?.bio || "No bio set for this community yet.";
   const displayBg = profile?.backgroundImage || selectedCommunity.cover;
-  const displayLevel = profile?.level || 1;
-  const displayLevelTitle = profile?.levelTitle || "Newcomer";
   const displayRep = profile?.reputation || 0;
   const displayFollowing = profile?.following || 0;
   const displayFollowers = profile?.followers || 0;
@@ -1127,37 +1294,32 @@ function CommunityProfileScreen() {
   const displayJoinedAt = profile?.joinedAt || "Recently";
   const displayPostsCount = profile?.postsCount || 0;
 
+  // Calculate level from reputation
+  const lvl = getLevelFromRep(displayRep);
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto amino-scroll">
-        {/* Background image - full width, customized by user */}
         <div className="relative h-[320px]">
           <img src={displayBg} className="w-full h-full object-cover" alt="" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f1e] via-transparent to-black/20" />
-          
-          {/* Back button + options */}
           <button onClick={goBack} className="absolute top-10 left-3 p-1.5 bg-black/40 rounded-full z-10"><ChevronLeft size={20} className="text-white" /></button>
           <button onClick={() => comingSoon("Profile Options")} className="absolute top-10 right-3 p-1.5 bg-black/40 rounded-full z-10"><MoreHorizontal size={20} className="text-white" /></button>
-
-          {/* Centered avatar + name + level + tags */}
           <div className="absolute bottom-4 left-0 right-0 flex flex-col items-center">
-            {/* Avatar with decorative ring */}
             <div className="relative mb-2">
               <div className="w-20 h-20 rounded-full p-[3px] bg-gradient-to-br from-pink-400 via-purple-400 to-blue-400 shadow-lg">
                 <img src={displayAvatar} className="w-full h-full rounded-full object-cover border-2 border-[#0f0f1e]" alt="" />
               </div>
             </div>
-
-            {/* Nickname - styled */}
             <h2 className="text-white font-bold text-[18px] mb-1 text-center px-4">{displayName}</h2>
-
-            {/* Level badge */}
             <div className="flex items-center gap-1 mb-2">
-              <span className="bg-gradient-to-r from-blue-700 to-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">Lv{displayLevel}</span>
-              <span className="text-white/70 text-[11px]">{displayLevelTitle}</span>
+              <span className="bg-gradient-to-r from-blue-700 to-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">Lv{lvl.level}</span>
+              <span className="text-white/70 text-[11px]">{lvl.title}</span>
             </div>
-
-            {/* Role + Custom tags/titles */}
+            {/* Level progress bar */}
+            <div className="w-32 h-1.5 bg-gray-700 rounded-full overflow-hidden mb-2">
+              <div className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full transition-all" style={{ width: `${lvl.progress}%` }} />
+            </div>
             <div className="flex flex-wrap justify-center gap-1.5 px-6 mb-2">
               {displayRole !== "Member" && (
                 <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${displayRole === "Leader" ? "bg-[#2dbe60] text-white" : "bg-[#E040FB] text-white"}`}>
@@ -1170,8 +1332,6 @@ function CommunityProfileScreen() {
                 </span>
               ))}
             </div>
-
-            {/* Action buttons: Follow + Chat */}
             <div className="flex items-center gap-3">
               <button onClick={() => comingSoon("Follow")} className="w-10 h-10 rounded-full bg-[#2dbe60] flex items-center justify-center shadow-lg">
                 <User size={18} className="text-white" />
@@ -1182,16 +1342,12 @@ function CommunityProfileScreen() {
             </div>
           </div>
         </div>
-
-        {/* Streak bar - golden/orange gradient */}
         {displayStreak > 0 && (
           <div className="bg-gradient-to-r from-[#FF6F00] to-[#FFB300] px-4 py-2 flex items-center gap-2">
             <Trophy size={16} className="text-white" />
             <span className="text-white text-[13px] font-bold">{displayStreak} Day Streak</span>
           </div>
         )}
-
-        {/* Stats - LARGE numbers like Amino */}
         <div className="flex items-center py-4 px-4 bg-[#0f0f1e]">
           <div className="flex-1 text-center">
             <p className="text-white font-black text-[22px]">{formatNumber(displayRep)}</p>
@@ -1208,8 +1364,16 @@ function CommunityProfileScreen() {
             <p className="text-gray-500 text-[11px]">Followers</p>
           </div>
         </div>
-
-        {/* Biography section */}
+        {/* Daily XP info */}
+        <div className="px-4 py-2 bg-[#16162a] border-t border-white/5">
+          <div className="flex items-center justify-between">
+            <span className="text-gray-400 text-[11px]">Daily XP (max 100/day)</span>
+            <span className="text-[#2dbe60] text-[11px] font-bold">+{Math.min(Math.floor(Math.random() * 100), 100)} today</span>
+          </div>
+          <div className="w-full h-1.5 bg-gray-700 rounded-full overflow-hidden mt-1">
+            <div className="h-full bg-[#2dbe60] rounded-full" style={{ width: `${Math.floor(Math.random() * 100)}%` }} />
+          </div>
+        </div>
         <div className="px-4 py-3 bg-[#0f0f1e] border-t border-white/5">
           <div className="flex items-baseline gap-2 mb-1">
             <h3 className="text-white font-bold text-[15px]">Biography</h3>
@@ -1217,14 +1381,10 @@ function CommunityProfileScreen() {
           </div>
           <p className="text-gray-300 text-[13px] leading-relaxed">{displayBio}</p>
         </div>
-
-        {/* Community context */}
         <div className="px-4 py-2 bg-[#16162a] border-t border-white/5 flex items-center gap-2">
           <img src={selectedCommunity.icon} className="w-5 h-5 rounded object-cover" alt="" />
           <span className="text-gray-500 text-[11px]">in <span className="text-[#2dbe60] font-semibold">{selectedCommunity.name}</span></span>
         </div>
-
-        {/* Tabs: Posts / Wall / Media */}
         <div className="flex border-b border-white/10 bg-[#0f0f1e]">
           {["posts", "wall", "media"].map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)}
@@ -1234,8 +1394,6 @@ function CommunityProfileScreen() {
             </button>
           ))}
         </div>
-
-        {/* Tab content */}
         <div className="bg-[#0f0f1e] min-h-[200px] px-4 py-4">
           {activeTab === "posts" ? (
             displayPostsCount > 0 ? (
@@ -1260,7 +1418,9 @@ function CommunityProfileScreen() {
 // ============ MAIN HOME COMPONENT ============
 export default function Home() {
   const { activeTab, currentScreen } = useApp();
+  const [showSearch, setShowSearch] = useState(false);
 
+  if (showSearch) return <SearchScreen onClose={() => setShowSearch(false)} />;
   if (currentScreen === "community") return <CommunityDetailScreen />;
   if (currentScreen === "communityProfile") return <CommunityProfileScreen />;
   if (currentScreen === "post") return <PostDetailScreen />;
@@ -1269,7 +1429,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col h-full">
-      <AminoMainHeader />
+      <AminoMainHeader onSearchClick={() => setShowSearch(true)} />
       <div className="flex-1 overflow-y-auto">
         {activeTab === "discover" && <DiscoverTab />}
         {activeTab === "communities" && <CommunitiesTab />}

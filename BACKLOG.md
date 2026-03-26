@@ -1,7 +1,7 @@
 # NexusHub - Backlog de Desenvolvimento
 
 > Documento vivo que rastreia todas as funcionalidades pendentes, bugs conhecidos e melhorias planejadas.
-> Atualizado em: 26/03/2026 (v3 - Perfis Duais Fiéis ao Amino)
+> Atualizado em: 26/03/2026 (v4 - Busca, Cards, Níveis)
 
 ---
 
@@ -22,7 +22,7 @@
 - [ ] **Seção "New Communities"** com comunidades recém-criadas
 - [ ] **Seção "For You"** baseada em interesses do usuário
 - [x] **Banner carousel** com comunidades em destaque (curadoria)
-- [ ] **Barra de busca funcional** com filtro por categoria, comunidade e usuário
+- [x] **Barra de busca funcional** com filtro por categoria, comunidade e usuário (tela de busca fiel ao Amino com tabs Comunidades/Usuários/Chats/Outros, resultado por ID Amino, tags coloridas)
 
 ## 2. TELA COMMUNITIES
 
@@ -78,9 +78,9 @@
 - [x] Check-in progress bar de 7 dias
 - [x] Chatrooms ao vivo
 - [x] Tabs (Guidelines, Featured, Latest Feed, Public Chatrooms)
-- [ ] **Tab Members** - Lista de membros com roles (Leader, Curator, Member)
-- [ ] **Tab Wiki/Catalog** - Entradas wiki da comunidade
-- [ ] **Tab Leaderboard** - Ranking por reputação/check-in
+- [x] **Tab Members** - Lista de membros com roles (Leader, Curator, Member)
+- [x] **Tab Wiki/Catalog** - Entradas wiki da comunidade (placeholder com botão criar)
+- [x] **Tab Leaderboard** - Ranking por reputação/check-in (com levels e títulos)
 
 ### 4.3 Bottom Nav da Comunidade
 - [x] Menu, Online, +, Chats, Me
@@ -126,8 +126,8 @@
 
 - [x] Check-in com streak
 - [x] **Check-in POR COMUNIDADE** (não global)
-- [ ] **Sistema de XP** por ações (postar, comentar, curtir)
-- [ ] **Sistema de Levels** com títulos progressivos
+- [x] **Sistema de XP** por ações (max 100 rep/dia)
+- [x] **Sistema de Levels** com 20 níveis progressivos (Newcomer → Supreme) baseado em reputação total
 - [ ] **Sistema de Coins** com economia funcional
 - [ ] **Loja de itens** (chat bubbles, profile frames)
 - [ ] **Leaderboard** por comunidade
@@ -152,7 +152,7 @@
 
 ## 11. BUSCA
 
-- [ ] **Busca global** por comunidades, posts, usuários
+- [x] **Busca global** por comunidades (com tabs, ID match, keyword search, tags coloridas)
 - [ ] **Busca dentro da comunidade** por posts, membros, wiki
 - [ ] **Filtros** por tipo, data, popularidade
 - [ ] **Sugestões de busca** (autocomplete)
@@ -183,7 +183,9 @@
 2. ~~**[ALTA]** Cards maiores em Communities~~ ✅
 3. ~~**[ALTA]** Separação de perfis (global vs. comunidade)~~ ✅
 4. ~~**[ALTA]** Botões funcionais em todas as telas~~ ✅ (toast "Coming soon" para features pendentes)
-5. **[MÉDIA]** Tela de criação de post
+5. ~~**[ALTA]** Tela de busca fiel ao Amino~~ ✅
+6. ~~**[ALTA]** Sistema de níveis com 20 levels~~ ✅
+7. **[MÉDIA]** Tela de criação de post
 6. **[MÉDIA]** Sistema de notificações
 7. **[BAIXA]** Onboarding/Login
 8. **[BAIXA]** Configurações
