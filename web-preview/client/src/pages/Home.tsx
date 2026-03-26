@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useApp, Community, Post, ChatRoom as ChatRoomType, Badge, PostAuthor, WikiEntry, CommunityMember } from "@/contexts/AppContext";
-import { Search, Bell, Plus, ChevronLeft, ChevronRight, Heart, MessageCircle, Share2, Pin, Send, Smile, Mic, Users, Clock, Globe, Trophy, Star, BookOpen, MoreHorizontal, Check, Flame, Award, Bookmark, Menu, X, Home as HomeIcon, Zap, BarChart3, Image, FileText, HelpCircle, Settings, LogOut, Eye, TrendingUp, Crown, Shield, Hash, ArrowUp, PenSquare, Vote, CircleDot } from "lucide-react";
+import { Search, Bell, Plus, ChevronLeft, ChevronRight, Heart, MessageCircle, Share2, Pin, Send, Smile, Mic, Users, Clock, Globe, Trophy, Star, BookOpen, MoreHorizontal, Check, Flame, Award, Bookmark, Menu, X, Home as HomeIcon, Zap, BarChart3, Image, FileText, HelpCircle, Settings, LogOut, Eye, TrendingUp, Crown, Shield, Hash, ArrowUp, PenSquare, Vote, CircleDot, ExternalLink, Link2, ChevronDown } from "lucide-react";
 
 // ============ HELPERS ============
 function getTimeAgo(dateStr: string): string {
@@ -21,7 +21,7 @@ function formatNumber(n: number): string {
   return n.toString();
 }
 
-// ============ AMINO MAIN HEADER (Discover/Communities/Chats) ============
+// ============ AMINO MAIN HEADER ============
 function AminoMainHeader({ onBack, title, showSearch = true, rightContent }: {
   onBack?: () => void; title?: string; showSearch?: boolean; rightContent?: React.ReactNode;
 }) {
@@ -49,10 +49,9 @@ function AminoMainHeader({ onBack, title, showSearch = true, rightContent }: {
             <span className="text-[11px]">🪙</span>
             <span className="text-white text-[11px] font-bold">{currentUser.coins}</span>
           </div>
-          <button className="p-1 shrink-0"><Plus size={20} className="text-[#2dbe60]" /></button>
-          <button className="p-1 relative shrink-0">
-            <Bell size={19} className="text-white/60" />
-            <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full text-[8px] text-white flex items-center justify-center font-bold">3</span>
+          <button className="relative p-1">
+            <Bell size={20} className="text-white/70" />
+            <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full" />
           </button>
         </>
       )}
@@ -60,19 +59,19 @@ function AminoMainHeader({ onBack, title, showSearch = true, rightContent }: {
   );
 }
 
-// ============ BOTTOM NAV (Amino exact) ============
+// ============ BOTTOM NAV (Main App) ============
 function BottomNav() {
   const { activeTab, setActiveTab, setCurrentScreen, setSelectedCommunity, setSelectedPost, setSelectedChat } = useApp();
   const tabs = [
-    { id: "discover", label: "Discover", icon: (active: boolean) => <Globe size={22} strokeWidth={active ? 2.5 : 1.5} /> },
-    { id: "communities", label: "Communities", icon: (active: boolean) => (
-      <svg viewBox="0 0 24 24" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth={active ? 0 : 1.5} className="w-[22px] h-[22px]">
+    { id: "discover", label: "Discover", icon: (a: boolean) => <Globe size={22} strokeWidth={a ? 2.5 : 1.5} /> },
+    { id: "communities", label: "Communities", icon: (a: boolean) => (
+      <svg viewBox="0 0 24 24" fill={a ? "currentColor" : "none"} stroke="currentColor" strokeWidth={a ? 0 : 1.5} className="w-[22px] h-[22px]">
         <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" />
         <rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
       </svg>
     )},
-    { id: "chats", label: "Chats", icon: (active: boolean) => <MessageCircle size={22} strokeWidth={active ? 2.5 : 1.5} fill={active ? "currentColor" : "none"} /> },
-    { id: "store", label: "Store", icon: (active: boolean) => <Star size={22} strokeWidth={active ? 2.5 : 1.5} fill={active ? "currentColor" : "none"} /> },
+    { id: "chats", label: "Chats", icon: (a: boolean) => <MessageCircle size={22} strokeWidth={a ? 2.5 : 1.5} fill={a ? "currentColor" : "none"} /> },
+    { id: "store", label: "Store", icon: (a: boolean) => <Star size={22} strokeWidth={a ? 2.5 : 1.5} fill={a ? "currentColor" : "none"} /> },
   ];
   return (
     <div className="sticky bottom-0 z-40 flex items-center bg-[#0b0b18] border-t border-white/5" style={{ paddingBottom: 4 }}>
@@ -90,13 +89,11 @@ function BottomNav() {
   );
 }
 
-// ============ POST CARD (Amino Faithful) ============
+// ============ POST CARD ============
 function PostCard({ post, onPress, showCommunity = true }: { post: Post; onPress: () => void; showCommunity?: boolean }) {
   const { toggleLike, votePoll } = useApp();
-
   return (
     <div className="mb-2.5 bg-[#16162a] rounded-lg overflow-hidden" onClick={onPress}>
-      {/* Community badge */}
       {showCommunity && (
         <div className="flex items-center gap-2 px-3 pt-2.5 pb-1">
           <img src={post.communityIcon} className="w-5 h-5 rounded object-cover" alt="" />
@@ -105,7 +102,6 @@ function PostCard({ post, onPress, showCommunity = true }: { post: Post; onPress
           {post.isFeatured && !post.isPinned && <span className="ml-auto bg-yellow-500/15 text-yellow-400 text-[8px] px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5"><Star size={7} />FEATURED</span>}
         </div>
       )}
-      {/* Author row */}
       <div className="flex items-center gap-2 px-3 pb-2">
         <img src={post.author.avatar} className="w-7 h-7 rounded-full object-cover" alt="" />
         <div className="flex items-center gap-1.5 flex-1 min-w-0">
@@ -115,9 +111,7 @@ function PostCard({ post, onPress, showCommunity = true }: { post: Post; onPress
         </div>
         <span className="text-gray-600 text-[10px] shrink-0">{getTimeAgo(post.createdAt)}</span>
       </div>
-      {/* Content */}
       <div className="px-3 pb-2">
-        {/* Type indicator */}
         {post.type === "poll" && (
           <div className="flex items-center gap-1 mb-1.5">
             <BarChart3 size={12} className="text-blue-400" />
@@ -133,13 +127,11 @@ function PostCard({ post, onPress, showCommunity = true }: { post: Post; onPress
         <h4 className="text-white font-bold text-[14px] leading-snug mb-1">{post.title}</h4>
         <p className="text-gray-400 text-[12px] leading-relaxed line-clamp-2">{post.content}</p>
       </div>
-      {/* Media */}
       {post.mediaUrl && (
         <div className="px-3 pb-2">
           <img src={post.mediaUrl} className="w-full h-[160px] object-cover rounded-md" alt="" />
         </div>
       )}
-      {/* Poll options */}
       {post.type === "poll" && post.pollOptions && (
         <div className="px-3 pb-2 space-y-1.5">
           {post.pollOptions.map(opt => (
@@ -155,7 +147,6 @@ function PostCard({ post, onPress, showCommunity = true }: { post: Post; onPress
           <p className="text-gray-600 text-[10px] text-center">{post.pollOptions.reduce((s, o) => s + o.votes, 0)} votes</p>
         </div>
       )}
-      {/* Tags */}
       {post.tags.length > 0 && (
         <div className="flex gap-1 px-3 pb-2 flex-wrap">
           {post.tags.map(tag => (
@@ -163,7 +154,6 @@ function PostCard({ post, onPress, showCommunity = true }: { post: Post; onPress
           ))}
         </div>
       )}
-      {/* Actions bar */}
       <div className="flex items-center gap-5 px-3 py-2 border-t border-white/5">
         <button onClick={(e) => { e.stopPropagation(); toggleLike(post.id); }}
           className={`flex items-center gap-1 text-[12px] ${post.isLiked ? "text-red-400" : "text-gray-600"}`}>
@@ -195,7 +185,6 @@ function DiscoverTab() {
 
   return (
     <div className="amino-scroll">
-      {/* Banner Carousel */}
       {banners.length > 0 && (
         <div className="relative h-[170px] overflow-hidden">
           {banners.map((c, i) => (
@@ -216,8 +205,6 @@ function DiscoverTab() {
           </div>
         </div>
       )}
-
-      {/* Check In streak banner */}
       <div className="px-3 pt-3 pb-1">
         <div className="bg-gradient-to-r from-[#FF6F00] to-[#FFB300] rounded-lg px-3 py-2 flex items-center gap-2">
           <Flame size={18} className="text-white" />
@@ -228,8 +215,6 @@ function DiscoverTab() {
           <ChevronRight size={16} className="text-white/60" />
         </div>
       </div>
-
-      {/* My Communities - horizontal scroll */}
       <div className="px-3 pt-3 pb-1">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-white font-bold text-[15px]">My Communities</h3>
@@ -258,8 +243,6 @@ function DiscoverTab() {
           </div>
         </div>
       </div>
-
-      {/* Recommended Communities */}
       <div className="px-3 pt-2 pb-1">
         <h3 className="text-white font-bold text-[15px] mb-2">Recommended</h3>
         <div className="flex gap-2 overflow-x-auto pb-2 amino-scroll">
@@ -272,8 +255,6 @@ function DiscoverTab() {
           ))}
         </div>
       </div>
-
-      {/* Latest Posts Feed */}
       <div className="px-3 pt-2 pb-20">
         <h3 className="text-white font-bold text-[15px] mb-2">Latest Posts</h3>
         {posts.map(post => (
@@ -288,14 +269,12 @@ function DiscoverTab() {
 function CommunitiesTab() {
   const { communities, navigateTo, setSelectedCommunity, checkIn } = useApp();
   const joined = communities.filter(c => c.isJoined);
-
   return (
     <div className="amino-scroll pb-20">
       <div className="px-3 pt-3">
         <h3 className="text-white font-bold text-[16px] mb-0.5">My Communities</h3>
         <p className="text-gray-600 text-[11px] mb-3">Long press to reorder</p>
       </div>
-      {/* Grid of joined communities */}
       <div className="px-3 grid grid-cols-2 gap-2.5 mb-4">
         {joined.map(c => (
           <div key={c.id} className="relative rounded-lg overflow-hidden"
@@ -318,15 +297,11 @@ function CommunitiesTab() {
           <span className="text-white/25 text-[10px]">Join More</span>
         </div>
       </div>
-
-      {/* Create your own */}
       <div className="px-3 mb-5">
         <button className="w-full py-2.5 border border-[#2dbe60] rounded-lg text-[#2dbe60] font-bold text-[13px] tracking-wide hover:bg-[#2dbe60]/10 transition-colors">
           CREATE YOUR OWN
         </button>
       </div>
-
-      {/* Recommended */}
       <div className="px-3">
         <h3 className="text-white font-bold text-[14px] mb-2.5">Recommended for You</h3>
         {communities.filter(c => !c.isJoined).map(c => (
@@ -344,19 +319,17 @@ function CommunitiesTab() {
   );
 }
 
-// ============ CHATS TAB (Amino Style with Left Sidebar) ============
+// ============ CHATS TAB ============
 function ChatsTab() {
   const { communities, chatRooms, navigateTo, setSelectedChat } = useApp();
   const [sidebarFilter, setSidebarFilter] = useState("recent");
   const joinedComms = communities.filter(c => c.isJoined);
-
   const filteredChats = sidebarFilter === "recent" ? chatRooms :
     sidebarFilter === "global" ? chatRooms :
     chatRooms.filter(ch => ch.communityId === sidebarFilter);
 
   return (
     <div className="flex h-full" style={{ paddingBottom: 48 }}>
-      {/* Left Sidebar - Community Icons (Amino exact) */}
       <div className="w-[52px] bg-[#0a0a16] flex flex-col items-center py-2 gap-1.5 border-r border-white/5 overflow-y-auto amino-scroll shrink-0">
         <button onClick={() => setSidebarFilter("recent")}
           className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${sidebarFilter === "recent" ? "bg-[#2dbe60]/20 text-[#2dbe60]" : "bg-[#1a1a2e] text-gray-600"}`}>
@@ -378,18 +351,13 @@ function ChatsTab() {
           <Plus size={16} />
         </button>
       </div>
-
-      {/* Chat List */}
       <div className="flex-1 overflow-y-auto amino-scroll">
-        {/* New chat button */}
         <button className="w-full flex items-center gap-3 px-3 py-3 border-b border-white/5 hover:bg-white/3 transition-colors">
           <div className="w-10 h-10 rounded-full bg-[#1e1e38] flex items-center justify-center">
             <PenSquare size={16} className="text-gray-500" />
           </div>
           <span className="text-gray-500 text-[13px]">New Chat</span>
         </button>
-
-        {/* Chat items */}
         {filteredChats.map(chat => (
           <button key={chat.id} onClick={() => { setSelectedChat(chat); navigateTo("chatroom"); }}
             className="w-full flex items-center gap-3 px-3 py-2.5 border-b border-white/3 hover:bg-white/3 transition-colors text-left">
@@ -417,8 +385,6 @@ function ChatsTab() {
             </div>
           </button>
         ))}
-
-        {/* Recommended public chats */}
         <div className="px-3 pt-4 pb-2">
           <h4 className="text-gray-500 text-[11px] font-semibold mb-2 uppercase tracking-wider">Public Chats</h4>
           {chatRooms.filter(c => c.isGroupChat).slice(0, 2).map(chat => (
@@ -444,7 +410,6 @@ function StoreTab() {
   return (
     <div className="amino-scroll pb-20 px-3 pt-3">
       <h3 className="text-white font-bold text-[16px] mb-3">Amino+ Store</h3>
-      {/* Amino+ card */}
       <div className="bg-gradient-to-r from-[#2dbe60] to-[#1a9e4a] rounded-xl p-4 mb-4 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
         <div className="flex items-center gap-2 mb-2">
@@ -454,7 +419,6 @@ function StoreTab() {
         <p className="text-white/80 text-[11px] mb-3 leading-relaxed">Ad-free experience, custom profiles, exclusive chat bubbles and more!</p>
         <button className="bg-white text-[#2dbe60] font-bold text-[12px] px-5 py-1.5 rounded-full">Subscribe Now</button>
       </div>
-      {/* Chat Bubbles */}
       <h4 className="text-white font-semibold text-[14px] mb-2">Chat Bubbles</h4>
       <div className="grid grid-cols-3 gap-2 mb-4">
         {[
@@ -472,7 +436,6 @@ function StoreTab() {
           </div>
         ))}
       </div>
-      {/* Profile Frames */}
       <h4 className="text-white font-semibold text-[14px] mb-2">Profile Frames</h4>
       <div className="grid grid-cols-3 gap-2">
         {[
@@ -492,305 +455,391 @@ function StoreTab() {
   );
 }
 
-// ============ COMMUNITY DETAIL (Amino Internal - COMPLETELY REDESIGNED) ============
+// ============ COMMUNITY DETAIL - AMINO FAITHFUL REDESIGN ============
 function CommunityDetailScreen() {
-  const { selectedCommunity, posts, chatRooms, wikiEntries, communityMembers, goBack, navigateTo, setSelectedPost, setSelectedChat, toggleJoinCommunity, checkIn } = useApp();
-  const [sideDrawerOpen, setSideDrawerOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState("featured");
+  const { selectedCommunity, communities, currentUser, posts, chatRooms, wikiEntries, communityMembers, goBack, navigateTo, setSelectedPost, setSelectedChat, setSelectedCommunity, toggleJoinCommunity, checkIn } = useApp();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [communityTab, setCommunityTab] = useState("featured");
   const [showFab, setShowFab] = useState(false);
+  const [checkInDismissed, setCheckInDismissed] = useState(false);
 
   if (!selectedCommunity) return null;
 
   const communityPosts = posts.filter(p => p.communityId === selectedCommunity.id);
   const featuredPosts = communityPosts.filter(p => p.isFeatured);
   const commChats = chatRooms.filter(ch => ch.communityId === selectedCommunity.id);
+  const joinedComms = communities.filter(c => c.isJoined);
+  const onlineCount = selectedCommunity.onlineNow;
+
+  // Side drawer menu items - exactly like Amino screenshot
+  const drawerMenuItems = [
+    { id: "home", label: "Home", iconBg: "bg-[#4FC3F7]", icon: <HomeIcon size={18} className="text-white" /> },
+    { id: "chats", label: "My Chats", iconBg: "bg-[#66BB6A]", icon: <MessageCircle size={18} className="text-white" />, badge: 2 },
+    { id: "catalog", label: "Catalog", iconBg: "bg-[#FFA726]", icon: <Star size={18} className="text-white" /> },
+    { id: "public-chats", label: "Public Chatrooms", iconBg: "bg-[#66BB6A]", icon: <Users size={18} className="text-white" /> },
+    { id: "latest", label: "Latest Feed", iconBg: "bg-[#42A5F5]", icon: <Clock size={18} className="text-white" /> },
+    { id: "guidelines", label: "Guidelines", iconBg: "bg-[#42A5F5]", icon: <Globe size={18} className="text-white" /> },
+    { id: "resources", label: "Resource Links", iconBg: "bg-[#FFA726]", icon: <Link2 size={18} className="text-white" /> },
+  ];
 
   return (
     <div className="relative h-full flex">
-      {/* Side Drawer Overlay */}
-      {sideDrawerOpen && (
-        <div className="absolute inset-0 z-50 flex">
-          {/* Drawer */}
-          <div className="w-[260px] bg-[#0f0f1e] h-full overflow-y-auto amino-scroll border-r border-white/5 animate-in slide-in-from-left duration-200">
-            {/* Community header in drawer */}
-            <div className="relative h-[120px]">
+      {/* ===== SIDE DRAWER (Amino Exact) ===== */}
+      {drawerOpen && (
+        <div className="absolute inset-0 z-50 flex animate-in fade-in duration-150">
+          {/* Left narrow sidebar - community icons */}
+          <div className="w-[60px] bg-[#0a0a16] flex flex-col items-center py-3 gap-2 border-r border-white/5 overflow-y-auto amino-scroll shrink-0">
+            {/* Exit button */}
+            <button onClick={() => { setDrawerOpen(false); goBack(); }}
+              className="flex flex-col items-center gap-0.5 mb-2">
+              <LogOut size={18} className="text-white/60 rotate-180" />
+              <span className="text-white/40 text-[8px]">Exit</span>
+            </button>
+            <div className="w-6 h-px bg-white/10 mb-1" />
+            {/* Community icons with notification badges */}
+            {joinedComms.map(c => (
+              <button key={c.id} onClick={() => { setSelectedCommunity(c); setDrawerOpen(false); setCommunityTab("featured"); }}
+                className={`relative w-10 h-10 rounded-lg overflow-hidden shrink-0 border-2 transition-all ${c.id === selectedCommunity.id ? "border-[#2dbe60]" : "border-transparent"}`}>
+                <img src={c.icon} className="w-full h-full object-cover" alt="" />
+                {/* Red notification badge */}
+                <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] bg-red-500 rounded-full text-[8px] text-white flex items-center justify-center font-bold px-0.5">
+                  {Math.floor(Math.random() * 9) + 1}
+                </span>
+              </button>
+            ))}
+            {/* Add community button */}
+            <button className="w-10 h-10 rounded-lg bg-[#1a1a2e] flex items-center justify-center text-gray-600 shrink-0 mt-1 border border-dashed border-white/10">
+              <Plus size={18} />
+            </button>
+          </div>
+
+          {/* Main drawer panel */}
+          <div className="w-[calc(100%-120px)] max-w-[280px] bg-[#0f0f1e] h-full overflow-y-auto amino-scroll animate-in slide-in-from-left duration-200">
+            {/* Cover image with community branding */}
+            <div className="relative h-[200px]">
               <img src={selectedCommunity.cover} className="w-full h-full object-cover" alt="" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f1e] via-[#0f0f1e]/50 to-transparent" />
-              <div className="absolute bottom-3 left-3 right-3 flex items-center gap-2">
-                <img src={selectedCommunity.icon} className="w-10 h-10 rounded-lg object-cover border border-white/20" alt="" />
-                <div>
-                  <h3 className="text-white font-bold text-[13px]">{selectedCommunity.name}</h3>
-                  <p className="text-white/50 text-[10px]">{formatNumber(selectedCommunity.members)} Members</p>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f1e] via-[#0f0f1e]/60 to-[#0f0f1e]/30" />
+              {/* "WELCOME TO" text */}
+              <div className="absolute top-4 left-0 right-0 text-center">
+                <p className="text-white/50 text-[10px] tracking-[3px] uppercase">Welcome To</p>
+                <h2 className="text-white font-bold text-[18px] mt-0.5 drop-shadow-lg">{selectedCommunity.name.toUpperCase()}</h2>
+              </div>
+              {/* User avatar centered */}
+              <div className="absolute bottom-8 left-0 right-0 flex flex-col items-center">
+                <div className="relative mb-1">
+                  <div className="w-16 h-16 rounded-full p-[2px] bg-gradient-to-br from-blue-400 to-blue-600">
+                    <img src={currentUser.avatar} className="w-full h-full rounded-full object-cover border-2 border-[#0f0f1e]" alt="" />
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-[#42A5F5] flex items-center justify-center border-2 border-[#0f0f1e]">
+                    <Plus size={12} className="text-white" />
+                  </div>
                 </div>
+                <span className="text-white text-[13px] font-semibold">{currentUser.nickname}</span>
               </div>
             </div>
-            {/* Nav items */}
-            <div className="py-2">
-              {selectedCommunity.sideNavItems.map(item => (
-                <button key={item.id} onClick={() => { setActiveSection(item.id); setSideDrawerOpen(false); }}
-                  className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${activeSection === item.id ? "bg-[#2dbe60]/10 text-[#2dbe60]" : "text-gray-400 hover:bg-white/3"}`}>
-                  <span className="text-[16px] w-6 text-center">{item.icon}</span>
-                  <span className="text-[13px] font-medium flex-1">{item.label}</span>
-                  {item.badge && <span className="bg-red-500 text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{item.badge}</span>}
+
+            {/* Check In button */}
+            <div className="px-6 -mt-2 mb-3">
+              {selectedCommunity.checkedIn ? (
+                <div className="bg-gray-600/40 text-white/40 font-bold text-[13px] py-2.5 rounded-lg text-center uppercase">Checked In ✓</div>
+              ) : (
+                <button onClick={() => checkIn(selectedCommunity.id)}
+                  className="w-full bg-[#2dbe60] text-white font-bold text-[14px] py-2.5 rounded-lg text-center uppercase tracking-wider shadow-lg shadow-[#2dbe60]/20 hover:bg-[#25a854] transition-colors">
+                  Check In
+                </button>
+              )}
+            </div>
+
+            {/* Navigation menu items */}
+            <div className="py-1">
+              {drawerMenuItems.map(item => (
+                <button key={item.id} onClick={() => {
+                  if (item.id === "home") setCommunityTab("featured");
+                  else if (item.id === "chats" || item.id === "public-chats") setCommunityTab("chat");
+                  else if (item.id === "latest") setCommunityTab("latest");
+                  else if (item.id === "guidelines") setCommunityTab("guidelines");
+                  else if (item.id === "catalog") setCommunityTab("wiki");
+                  else if (item.id === "resources") setCommunityTab("wiki");
+                  setDrawerOpen(false);
+                }}
+                  className="w-full flex items-center gap-3 px-5 py-3 text-left hover:bg-white/3 transition-colors border-b border-white/3">
+                  <div className={`w-9 h-9 rounded-full ${item.iconBg} flex items-center justify-center shrink-0`}>
+                    {item.icon}
+                  </div>
+                  <span className="text-white text-[14px] font-medium flex-1">{item.label}</span>
+                  {item.badge && (
+                    <span className="min-w-[22px] h-[22px] bg-red-500 rounded-md text-[11px] text-white flex items-center justify-center font-bold px-1">{item.badge}</span>
+                  )}
                 </button>
               ))}
-            </div>
-            <div className="border-t border-white/5 py-2 px-4">
-              <button className="flex items-center gap-3 py-2 text-gray-500 text-[12px]">
-                <Settings size={14} />
-                <span>Community Settings</span>
+              {/* See More */}
+              <button className="w-full flex items-center justify-between px-5 py-3 text-left hover:bg-white/3 transition-colors">
+                <span className="text-white/60 text-[14px]">See More...</span>
+                <ChevronRight size={18} className="text-white/40" />
               </button>
             </div>
+
+            {/* General section at bottom */}
+            <div className="border-t border-white/5 px-5 py-3">
+              <span className="text-white/40 text-[12px] font-semibold uppercase tracking-wider">General</span>
+            </div>
           </div>
-          {/* Overlay backdrop */}
-          <div className="flex-1 bg-black/50" onClick={() => setSideDrawerOpen(false)} />
+
+          {/* Backdrop overlay */}
+          <div className="flex-1 bg-black/60" onClick={() => setDrawerOpen(false)} />
         </div>
       )}
 
-      {/* Main Content */}
+      {/* ===== MAIN COMMUNITY CONTENT ===== */}
       <div className="flex-1 flex flex-col h-full overflow-hidden">
-        {/* Community Header */}
-        <div className="sticky top-0 z-40 bg-[#0f0f1e]/95 backdrop-blur-sm border-b border-white/5" style={{ paddingTop: 36 }}>
-          <div className="flex items-center gap-2 px-3 py-2">
-            <button onClick={() => setSideDrawerOpen(true)} className="p-1">
-              <Menu size={20} className="text-white" />
-            </button>
-            <img src={selectedCommunity.icon} className="w-7 h-7 rounded-md object-cover" alt="" />
-            <span className="text-white font-semibold text-[14px] flex-1 truncate">{selectedCommunity.name}</span>
-            <button className="p-1"><Search size={18} className="text-white/60" /></button>
-            <button onClick={goBack} className="p-1"><X size={18} className="text-white/60" /></button>
+        {/* Scrollable content area */}
+        <div className="flex-1 overflow-y-auto amino-scroll">
+          {/* Community Header with Cover */}
+          <div className="relative">
+            {/* Cover image */}
+            <div className="h-[180px] relative">
+              <img src={selectedCommunity.cover} className="w-full h-full object-cover" alt="" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f1e] via-transparent to-[#0f0f1e]/40" />
+              {/* Top bar */}
+              <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-3 z-10" style={{ paddingTop: 36 }}>
+                <button onClick={goBack} className="p-1.5 bg-black/30 rounded-full">
+                  <ChevronLeft size={20} className="text-white" />
+                </button>
+                <div className="flex items-center gap-2">
+                  <button className="bg-[#2dbe60] text-white text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                    🎁 Claim gifts
+                  </button>
+                  <button className="p-1.5 bg-black/30 rounded-full"><Image size={18} className="text-white" /></button>
+                  <button className="p-1.5 bg-black/30 rounded-full relative">
+                    <Bell size={18} className="text-white" />
+                    <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full" />
+                  </button>
+                </div>
+              </div>
+              {/* Community info overlay */}
+              <div className="absolute bottom-3 left-3 right-3 flex items-end gap-3">
+                <img src={selectedCommunity.icon} className="w-14 h-14 rounded-xl object-cover border-2 border-white/20 shrink-0 shadow-lg" alt="" />
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-white font-bold text-[20px] drop-shadow-lg leading-tight">{selectedCommunity.name.split(" ")[0]}</h2>
+                  <p className="text-white/40 text-[10px] tracking-[2px] uppercase">{selectedCommunity.aminoId} AMINO</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-white/70 text-[11px]">{formatNumber(selectedCommunity.members)} Members</span>
+                    <button className="bg-[#2dbe60] text-white text-[9px] font-bold px-2 py-0.5 rounded-full">Leaderboards</button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          {/* Section tabs */}
-          <div className="flex overflow-x-auto amino-scroll px-1">
-            {["featured", "latest", "chat", "members", "wiki"].map(tab => (
-              <button key={tab} onClick={() => setActiveSection(tab)}
-                className={`px-3 py-2 text-[12px] font-semibold whitespace-nowrap transition-colors relative capitalize ${activeSection === tab ? "text-[#2dbe60]" : "text-gray-600"}`}>
-                {tab}
-                {activeSection === tab && <div className="absolute bottom-0 left-2 right-2 h-[2px] bg-[#2dbe60] rounded-full" />}
+
+          {/* Check-in reward banner (per community) */}
+          {!selectedCommunity.checkedIn && !checkInDismissed && (
+            <div className="bg-[#141428] px-3 py-3 relative">
+              <button onClick={() => setCheckInDismissed(true)} className="absolute top-2 right-2 text-white/30 hover:text-white/60">
+                <X size={16} />
+              </button>
+              <p className="text-white text-[13px] font-semibold text-center mb-2">Check In to earn a prize</p>
+              {/* 7-day progress bar */}
+              <div className="flex items-center justify-center gap-0 mb-3 px-2">
+                {[1, 2, 3, 4, 5, 6, 7].map((day, i) => (
+                  <div key={day} className="flex items-center">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${i === 0 ? "bg-[#2dbe60] border-[#2dbe60]" : "border-gray-600 bg-transparent"}`}>
+                      {i === 0 && <Check size={10} className="text-white" />}
+                    </div>
+                    {i < 6 && <div className={`w-6 h-0.5 ${i === 0 ? "bg-[#2dbe60]" : "bg-gray-700"}`} />}
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => checkIn(selectedCommunity.id)}
+                className="mx-auto block bg-[#2dbe60] text-white font-bold text-[13px] px-8 py-2 rounded-lg uppercase tracking-wider">
+                Check In
+              </button>
+            </div>
+          )}
+
+          {/* Live Chatrooms horizontal scroll */}
+          <div className="px-3 py-3">
+            <div className="flex gap-2.5 overflow-x-auto amino-scroll">
+              {commChats.filter(c => c.isGroupChat).map(chat => (
+                <div key={chat.id} className="shrink-0 w-[160px] rounded-lg overflow-hidden bg-[#16162a]"
+                  onClick={() => { setSelectedChat(chat); navigateTo("chatroom"); }}>
+                  <div className="relative h-[90px]">
+                    <img src={communities.find(c => c.id === chat.communityId)?.cover || selectedCommunity.cover} className="w-full h-full object-cover" alt="" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                    {/* Host avatar + Live badge */}
+                    <div className="absolute top-2 left-2 flex items-center gap-1.5">
+                      <img src={communityMembers[0]?.avatar || currentUser.avatar} className="w-6 h-6 rounded-full object-cover border border-white/30" alt="" />
+                      <span className="bg-red-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />Live
+                      </span>
+                    </div>
+                    <div className="absolute bottom-2 left-2 right-2">
+                      <p className="text-white text-[11px] font-semibold truncate">{chat.name}</p>
+                      <p className="text-white/50 text-[9px] flex items-center gap-1"><Users size={8} />{chat.membersCount}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {/* If no chats, show placeholder */}
+              {commChats.filter(c => c.isGroupChat).length === 0 && (
+                <div className="shrink-0 w-[160px] h-[90px] rounded-lg border border-dashed border-white/10 flex items-center justify-center">
+                  <span className="text-gray-600 text-[11px]">No live chats</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Tabs - exactly like Amino: Guidelines | Featured | Latest Feed | Public Chatrooms */}
+          <div className="flex overflow-x-auto amino-scroll border-b border-white/5 px-1">
+            {[
+              { id: "guidelines", label: "Guidelines" },
+              { id: "featured", label: "Featured" },
+              { id: "latest", label: "Latest Feed" },
+              { id: "chat", label: "Public Chatrooms" },
+            ].map(tab => (
+              <button key={tab.id} onClick={() => setCommunityTab(tab.id)}
+                className={`px-3 py-2.5 text-[12px] font-semibold whitespace-nowrap transition-colors relative ${communityTab === tab.id ? "text-white" : "text-gray-500"}`}>
+                {tab.label}
+                {communityTab === tab.id && <div className="absolute bottom-0 left-2 right-2 h-[2px] bg-white rounded-full" />}
               </button>
             ))}
           </div>
-        </div>
 
-        {/* Content Area */}
-        <div className="flex-1 overflow-y-auto amino-scroll">
-          {/* HOME / FEATURED section */}
-          {activeSection === "home" && (
-            <div>
-              {/* Cover banner */}
-              <div className="relative h-[160px]">
-                <img src={selectedCommunity.cover} className="w-full h-full object-cover" alt="" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f1e] via-transparent to-transparent" />
-                <div className="absolute bottom-3 left-3 right-3">
-                  <div className="flex items-center gap-2">
-                    <img src={selectedCommunity.icon} className="w-12 h-12 rounded-xl object-cover border-2 border-white/20" alt="" />
-                    <div>
-                      <h2 className="text-white font-bold text-[16px]">{selectedCommunity.name}</h2>
-                      <p className="text-white/60 text-[11px]">{formatNumber(selectedCommunity.members)} Members  ·  {formatNumber(selectedCommunity.onlineNow)} Online</p>
+          {/* Tab Content */}
+          <div className="pb-16">
+            {/* GUIDELINES */}
+            {communityTab === "guidelines" && (
+              <div className="px-3 pt-3">
+                <h4 className="text-white font-bold text-[15px] mb-3">Community Guidelines</h4>
+                {selectedCommunity.guidelines.map((rule, i) => (
+                  <div key={i} className="flex gap-3 mb-3 bg-[#16162a] rounded-lg p-3">
+                    <div className="w-6 h-6 rounded-full bg-[#2dbe60]/20 flex items-center justify-center shrink-0">
+                      <span className="text-[#2dbe60] text-[11px] font-bold">{i + 1}</span>
                     </div>
+                    <p className="text-gray-300 text-[12px] leading-relaxed">{rule}</p>
                   </div>
-                </div>
-              </div>
-              {/* Quick actions */}
-              <div className="px-3 py-3 flex gap-2">
-                {selectedCommunity.isJoined ? (
-                  <>
-                    {!selectedCommunity.checkedIn && (
-                      <button onClick={() => checkIn(selectedCommunity.id)} className="flex-1 bg-[#2dbe60] text-white font-bold text-[12px] py-2 rounded-lg uppercase tracking-wider">CHECK IN</button>
-                    )}
-                    <button className="flex-1 bg-[#1e1e38] text-white font-medium text-[12px] py-2 rounded-lg">Invite Friends</button>
-                  </>
-                ) : (
-                  <button onClick={() => toggleJoinCommunity(selectedCommunity.id)} className="flex-1 bg-[#2dbe60] text-white font-bold text-[12px] py-2 rounded-lg">Join Community</button>
-                )}
-              </div>
-              {/* Description */}
-              <div className="px-3 pb-3">
-                <p className="text-gray-400 text-[12px] leading-relaxed">{selectedCommunity.description}</p>
-              </div>
-              {/* Featured posts */}
-              <div className="px-3 pb-20">
-                <h4 className="text-white font-bold text-[14px] mb-2">Featured Posts</h4>
-                {featuredPosts.map(post => (
-                  <PostCard key={post.id} post={post} showCommunity={false} onPress={() => { setSelectedPost(post); navigateTo("post"); }} />
                 ))}
               </div>
-            </div>
-          )}
+            )}
 
-          {/* FEATURED section */}
-          {activeSection === "featured" && (
-            <div className="px-3 pt-3 pb-20">
-              {featuredPosts.length > 0 ? featuredPosts.map(post => (
-                <PostCard key={post.id} post={post} showCommunity={false} onPress={() => { setSelectedPost(post); navigateTo("post"); }} />
-              )) : (
-                <div className="text-center py-12">
-                  <Star size={36} className="text-gray-700 mx-auto mb-2" />
-                  <p className="text-gray-600 text-[13px]">No featured posts yet</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* LATEST section */}
-          {activeSection === "latest" && (
-            <div className="px-3 pt-3 pb-20">
-              {communityPosts.length > 0 ? communityPosts.map(post => (
-                <PostCard key={post.id} post={post} showCommunity={false} onPress={() => { setSelectedPost(post); navigateTo("post"); }} />
-              )) : (
-                <div className="text-center py-12">
-                  <FileText size={36} className="text-gray-700 mx-auto mb-2" />
-                  <p className="text-gray-600 text-[13px]">No posts yet</p>
-                  <p className="text-gray-700 text-[11px]">Be the first to post!</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* CHAT section */}
-          {activeSection === "chat" && (
-            <div className="px-3 pt-3 pb-20">
-              {/* Public chats */}
-              <h4 className="text-gray-500 text-[11px] font-semibold mb-2 uppercase tracking-wider">Public Chats</h4>
-              {commChats.filter(c => c.isGroupChat).map(chat => (
-                <div key={chat.id} className="mb-2 rounded-lg overflow-hidden bg-[#16162a]" onClick={() => { setSelectedChat(chat); navigateTo("chatroom"); }}>
-                  <div className="flex items-center gap-3 p-3">
-                    <div className="w-11 h-11 rounded-full bg-[#1e1e38] flex items-center justify-center shrink-0">
-                      <Hash size={18} className="text-[#2dbe60]" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white text-[13px] font-semibold truncate">{chat.name}</p>
-                      <p className="text-gray-600 text-[10px] flex items-center gap-1"><Users size={9} />{chat.membersCount} members</p>
-                    </div>
-                    <div className="w-2 h-2 rounded-full bg-[#2dbe60]" />
+            {/* FEATURED */}
+            {communityTab === "featured" && (
+              <div className="px-3 pt-3">
+                {/* Featured posts as text list first (like Amino) */}
+                {featuredPosts.length > 0 && (
+                  <div className="mb-3">
+                    {featuredPosts.map(post => (
+                      <button key={post.id} onClick={() => { setSelectedPost(post); navigateTo("post"); }}
+                        className="w-full text-left py-2 border-b border-white/3 flex items-start gap-2">
+                        <span className="text-[#2dbe60] text-[8px] mt-1.5">●</span>
+                        <span className="text-white text-[13px] leading-snug">{post.title}</span>
+                      </button>
+                    ))}
                   </div>
-                </div>
-              ))}
-              {/* Create chat */}
-              <button className="w-full mt-3 py-2.5 border border-dashed border-white/10 rounded-lg text-gray-600 text-[12px] flex items-center justify-center gap-2">
-                <Plus size={14} />
-                Create a New Chat
-              </button>
-            </div>
-          )}
-
-          {/* MEMBERS section */}
-          {activeSection === "members" && (
-            <div className="px-3 pt-3 pb-20">
-              {/* Online count */}
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-2 h-2 rounded-full bg-[#2dbe60]" />
-                <span className="text-gray-500 text-[12px]">{formatNumber(selectedCommunity.onlineNow)} Online Now</span>
+                )}
+                {/* Then full post cards */}
+                {communityPosts.map(post => (
+                  <PostCard key={post.id} post={post} showCommunity={false} onPress={() => { setSelectedPost(post); navigateTo("post"); }} />
+                ))}
+                {communityPosts.length === 0 && (
+                  <div className="text-center py-12">
+                    <Star size={36} className="text-gray-700 mx-auto mb-2" />
+                    <p className="text-gray-600 text-[13px]">No featured posts yet</p>
+                  </div>
+                )}
               </div>
-              {/* Staff section */}
-              <h4 className="text-gray-500 text-[11px] font-semibold mb-2 uppercase tracking-wider">Staff</h4>
-              {communityMembers.filter(m => m.role !== "Member").map(member => (
-                <div key={member.id} className="flex items-center gap-3 py-2.5 border-b border-white/3">
-                  <div className="relative">
-                    <img src={member.avatar} className="w-10 h-10 rounded-full object-cover" alt="" />
-                    {member.isOnline && <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-[#2dbe60] border-2 border-[#0f0f1e]" />}
+            )}
+
+            {/* LATEST FEED */}
+            {communityTab === "latest" && (
+              <div className="px-3 pt-3">
+                {communityPosts.length > 0 ? communityPosts.map(post => (
+                  <PostCard key={post.id} post={post} showCommunity={false} onPress={() => { setSelectedPost(post); navigateTo("post"); }} />
+                )) : (
+                  <div className="text-center py-12">
+                    <FileText size={36} className="text-gray-700 mx-auto mb-2" />
+                    <p className="text-gray-600 text-[13px]">No posts yet</p>
+                    <p className="text-gray-700 text-[11px]">Be the first to post!</p>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-white text-[13px] font-semibold truncate">{member.nickname}</span>
-                      <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded ${member.role === "Leader" ? "bg-[#2dbe60] text-white" : "bg-[#E040FB] text-white"}`}>{member.role}</span>
+                )}
+              </div>
+            )}
+
+            {/* PUBLIC CHATROOMS */}
+            {communityTab === "chat" && (
+              <div className="px-3 pt-3">
+                {commChats.filter(c => c.isGroupChat).map(chat => (
+                  <div key={chat.id} className="mb-2 rounded-lg overflow-hidden bg-[#16162a]" onClick={() => { setSelectedChat(chat); navigateTo("chatroom"); }}>
+                    <div className="flex items-center gap-3 p-3">
+                      <div className="w-11 h-11 rounded-full bg-[#1e1e38] flex items-center justify-center shrink-0">
+                        <Hash size={18} className="text-[#2dbe60]" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white text-[13px] font-semibold truncate">{chat.name}</p>
+                        <p className="text-gray-600 text-[10px] flex items-center gap-1"><Users size={9} />{chat.membersCount} members</p>
+                      </div>
+                      <div className="w-2 h-2 rounded-full bg-[#2dbe60]" />
                     </div>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-gray-600 text-[10px]">Lv.{member.level}</span>
-                      <span className="text-gray-600 text-[10px]">Rep: {formatNumber(member.reputation)}</span>
-                    </div>
                   </div>
-                </div>
-              ))}
-              {/* Regular members */}
-              <h4 className="text-gray-500 text-[11px] font-semibold mb-2 mt-4 uppercase tracking-wider">Members</h4>
-              {communityMembers.filter(m => m.role === "Member").map(member => (
-                <div key={member.id} className="flex items-center gap-3 py-2.5 border-b border-white/3">
-                  <div className="relative">
-                    <img src={member.avatar} className="w-10 h-10 rounded-full object-cover" alt="" />
-                    {member.isOnline && <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-[#2dbe60] border-2 border-[#0f0f1e]" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <span className="text-white text-[13px] font-medium truncate block">{member.nickname}</span>
-                    <span className="text-gray-600 text-[10px]">Lv.{member.level}  ·  {member.isOnline ? "Online" : member.lastSeen}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* WIKI section */}
-          {activeSection === "wiki" && (
-            <div className="px-3 pt-3 pb-20">
-              <h4 className="text-gray-500 text-[11px] font-semibold mb-2 uppercase tracking-wider">Wiki Entries</h4>
-              {wikiEntries.map(entry => (
-                <div key={entry.id} className="mb-2 bg-[#16162a] rounded-lg overflow-hidden flex">
-                  {entry.cover && (
-                    <img src={entry.cover} className="w-20 h-20 object-cover shrink-0" alt="" />
-                  )}
-                  <div className="flex-1 p-3 min-w-0">
-                    <h5 className="text-white text-[13px] font-semibold truncate">{entry.title}</h5>
-                    <p className="text-gray-600 text-[10px] mt-0.5">{entry.category}  ·  by {entry.author}</p>
-                    <p className="text-gray-600 text-[10px] flex items-center gap-1 mt-1"><Eye size={9} />{formatNumber(entry.viewCount)} views</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* GUIDELINES section */}
-          {activeSection === "guidelines" && (
-            <div className="px-3 pt-3 pb-20">
-              <h4 className="text-white font-bold text-[15px] mb-3">Community Guidelines</h4>
-              {selectedCommunity.guidelines.map((rule, i) => (
-                <div key={i} className="flex gap-3 mb-3 bg-[#16162a] rounded-lg p-3">
-                  <div className="w-6 h-6 rounded-full bg-[#2dbe60]/20 flex items-center justify-center shrink-0">
-                    <span className="text-[#2dbe60] text-[11px] font-bold">{i + 1}</span>
-                  </div>
-                  <p className="text-gray-300 text-[12px] leading-relaxed">{rule}</p>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* LEADERBOARD section */}
-          {activeSection === "leaderboard" && (
-            <div className="px-3 pt-3 pb-20">
-              <h4 className="text-white font-bold text-[15px] mb-3">Leaderboard</h4>
-              {communityMembers.sort((a, b) => b.reputation - a.reputation).map((member, i) => (
-                <div key={member.id} className="flex items-center gap-3 py-2.5 border-b border-white/3">
-                  <span className={`w-7 text-center font-bold text-[14px] ${i === 0 ? "text-yellow-400" : i === 1 ? "text-gray-300" : i === 2 ? "text-amber-600" : "text-gray-600"}`}>
-                    {i < 3 ? ["🥇", "🥈", "🥉"][i] : `#${i + 1}`}
-                  </span>
-                  <img src={member.avatar} className="w-9 h-9 rounded-full object-cover" alt="" />
-                  <div className="flex-1 min-w-0">
-                    <span className="text-white text-[13px] font-semibold truncate block">{member.nickname}</span>
-                    <span className="text-gray-600 text-[10px]">Lv.{member.level}</span>
-                  </div>
-                  <span className="text-[#2dbe60] text-[12px] font-bold">{formatNumber(member.reputation)}</span>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+                <button className="w-full mt-3 py-2.5 border border-dashed border-white/10 rounded-lg text-gray-600 text-[12px] flex items-center justify-center gap-2">
+                  <Plus size={14} />Create a New Chat
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Floating Action Button */}
-        <button onClick={() => setShowFab(!showFab)}
-          className="absolute bottom-4 right-4 w-12 h-12 rounded-full bg-[#2dbe60] shadow-lg shadow-[#2dbe60]/30 flex items-center justify-center z-30 transition-transform"
-          style={{ transform: showFab ? "rotate(45deg)" : "none" }}>
-          <Plus size={24} className="text-white" />
-        </button>
-        {/* FAB Menu */}
+        {/* ===== COMMUNITY BOTTOM NAV (Amino Exact - different from main) ===== */}
+        <div className="sticky bottom-0 z-30 flex items-center bg-[#0b0b18] border-t border-white/5" style={{ paddingBottom: 4 }}>
+          {/* Menu */}
+          <button onClick={() => setDrawerOpen(true)}
+            className="flex-1 flex flex-col items-center py-2 gap-0.5 text-gray-500 relative">
+            <Menu size={22} />
+            <span className="text-[9px] font-medium">Menu</span>
+            <span className="absolute top-1 right-[calc(50%-14px)] w-2 h-2 bg-red-500 rounded-full" />
+          </button>
+          {/* Online */}
+          <button className="flex-1 flex flex-col items-center py-2 gap-0.5 text-gray-500 relative">
+            <div className="relative">
+              <img src={communityMembers[0]?.avatar || currentUser.avatar} className="w-6 h-6 rounded-full object-cover" alt="" />
+              <span className="absolute -top-2 -right-3 min-w-[18px] h-[14px] bg-[#2dbe60] rounded-full text-[8px] text-white flex items-center justify-center font-bold px-0.5">{onlineCount > 999 ? "999+" : onlineCount}</span>
+            </div>
+            <span className="text-[9px] font-medium">Online</span>
+          </button>
+          {/* Create Post (big + button) */}
+          <button onClick={() => setShowFab(!showFab)}
+            className="relative -mt-4 w-14 h-14 rounded-full bg-[#2563EB] shadow-lg shadow-blue-500/30 flex items-center justify-center z-10 border-4 border-[#0b0b18]"
+            style={{ transform: showFab ? "rotate(45deg)" : "none", transition: "transform 0.2s" }}>
+            <Plus size={28} className="text-white" />
+          </button>
+          {/* Chats */}
+          <button onClick={() => setCommunityTab("chat")}
+            className="flex-1 flex flex-col items-center py-2 gap-0.5 text-gray-500 relative">
+            <MessageCircle size={22} />
+            <span className="text-[9px] font-medium">Chats</span>
+            <span className="absolute top-1 right-[calc(50%-14px)] w-2 h-2 bg-red-500 rounded-full" />
+          </button>
+          {/* Me */}
+          <button onClick={() => navigateTo("profile")}
+            className="flex-1 flex flex-col items-center py-2 gap-0.5 text-gray-500">
+            <div className="w-6 h-6 rounded-full overflow-hidden border border-white/20">
+              <img src={currentUser.avatar} className="w-full h-full object-cover" alt="" />
+            </div>
+            <span className="text-[9px] font-medium">Me</span>
+          </button>
+        </div>
+
+        {/* FAB Menu overlay */}
         {showFab && (
-          <div className="absolute bottom-20 right-4 z-30 flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-4 duration-200">
+          <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-40 flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-4 duration-200">
             {[
               { icon: <FileText size={16} />, label: "Blog Post", color: "bg-blue-500" },
               { icon: <Image size={16} />, label: "Image Post", color: "bg-purple-500" },
               { icon: <BarChart3 size={16} />, label: "Poll", color: "bg-orange-500" },
               { icon: <HelpCircle size={16} />, label: "Quiz", color: "bg-pink-500" },
             ].map(item => (
-              <div key={item.label} className="flex items-center gap-2 justify-end">
-                <span className="text-white text-[11px] font-medium bg-black/60 px-2 py-1 rounded">{item.label}</span>
+              <div key={item.label} className="flex items-center gap-2 justify-center">
+                <span className="text-white text-[11px] font-medium bg-black/70 px-2 py-1 rounded">{item.label}</span>
                 <button className={`w-10 h-10 rounded-full ${item.color} flex items-center justify-center text-white shadow-lg`}>
                   {item.icon}
                 </button>
@@ -812,7 +861,6 @@ function PostDetailScreen() {
     <div className="flex flex-col h-full">
       <AminoMainHeader onBack={goBack} title={selectedPost.communityName} />
       <div className="flex-1 overflow-y-auto amino-scroll px-3 pt-2 pb-4">
-        {/* Author */}
         <div className="flex items-center gap-3 mb-3">
           <img src={selectedPost.author.avatar} className="w-10 h-10 rounded-full object-cover" alt="" />
           <div className="flex-1">
@@ -828,13 +876,9 @@ function PostDetailScreen() {
           </div>
           <button className="p-1"><MoreHorizontal size={18} className="text-gray-600" /></button>
         </div>
-        {/* Title & Content */}
         <h2 className="text-white font-bold text-[18px] mb-2 leading-snug">{selectedPost.title}</h2>
         <p className="text-gray-300 text-[13px] leading-relaxed mb-3 whitespace-pre-line">{selectedPost.content}</p>
-        {selectedPost.mediaUrl && (
-          <img src={selectedPost.mediaUrl} className="w-full rounded-lg mb-3" alt="" />
-        )}
-        {/* Poll in detail */}
+        {selectedPost.mediaUrl && <img src={selectedPost.mediaUrl} className="w-full rounded-lg mb-3" alt="" />}
         {selectedPost.type === "poll" && selectedPost.pollOptions && (
           <div className="mb-3 space-y-1.5">
             {selectedPost.pollOptions.map(opt => (
@@ -848,13 +892,11 @@ function PostDetailScreen() {
             ))}
           </div>
         )}
-        {/* Tags */}
         <div className="flex gap-1.5 mb-4 flex-wrap">
           {selectedPost.tags.map(tag => (
             <span key={tag} className="bg-[#1e1e38] text-gray-500 text-[11px] px-2.5 py-1 rounded-full">#{tag}</span>
           ))}
         </div>
-        {/* Actions */}
         <div className="flex items-center gap-6 py-3 border-y border-white/5 mb-4">
           <button onClick={() => toggleLike(selectedPost.id)}
             className={`flex items-center gap-1.5 text-[13px] ${selectedPost.isLiked ? "text-red-400" : "text-gray-600"}`}>
@@ -862,13 +904,11 @@ function PostDetailScreen() {
             <span>{selectedPost.likesCount}</span>
           </button>
           <div className="flex items-center gap-1.5 text-gray-600 text-[13px]">
-            <MessageCircle size={20} />
-            <span>{selectedPost.commentsCount}</span>
+            <MessageCircle size={20} /><span>{selectedPost.commentsCount}</span>
           </div>
           <button className="ml-auto text-gray-600"><Bookmark size={20} /></button>
           <button className="text-gray-600"><Share2 size={20} /></button>
         </div>
-        {/* Comments */}
         <h4 className="text-white font-bold text-[14px] mb-3">Comments ({comments.length})</h4>
         {comments.map(comment => (
           <div key={comment.id} className="flex gap-2.5 mb-4">
@@ -883,8 +923,7 @@ function PostDetailScreen() {
               <p className="text-gray-300 text-[12px] leading-relaxed">{comment.content}</p>
               <div className="flex items-center gap-3 mt-1.5">
                 <button className={`flex items-center gap-1 text-[11px] ${comment.isLiked ? "text-red-400" : "text-gray-700"}`}>
-                  <Heart size={12} fill={comment.isLiked ? "currentColor" : "none"} />
-                  <span>{comment.likesCount}</span>
+                  <Heart size={12} fill={comment.isLiked ? "currentColor" : "none"} /><span>{comment.likesCount}</span>
                 </button>
                 <button className="text-gray-700 text-[11px]">Reply</button>
               </div>
@@ -892,12 +931,11 @@ function PostDetailScreen() {
           </div>
         ))}
       </div>
-      {/* Comment input */}
       <div className="flex items-center gap-2 px-3 py-2 bg-[#0b0b18] border-t border-white/5">
         <input value={newComment} onChange={e => setNewComment(e.target.value)}
           placeholder="Write a comment..."
           className="flex-1 bg-[#1e1e38] text-white text-[13px] px-3 py-2 rounded-full placeholder:text-gray-700 outline-none" />
-        <button className="p-1.5 text-[#2dbe60]"><Send size={18} /></button>
+        <button className="p-1.5"><Send size={18} className="text-[#2dbe60]" /></button>
       </div>
     </div>
   );
@@ -923,7 +961,6 @@ function ChatRoomScreen() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
       <div className="flex items-center gap-2 px-3 py-2 bg-[#0f0f1e]/95 backdrop-blur-sm border-b border-white/5" style={{ paddingTop: 38 }}>
         <button onClick={goBack} className="p-1"><ChevronLeft size={20} className="text-white" /></button>
         <div className="w-8 h-8 rounded-full bg-[#1e1e38] flex items-center justify-center">
@@ -936,8 +973,6 @@ function ChatRoomScreen() {
         <button className="p-1"><Users size={18} className="text-white/60" /></button>
         <button className="p-1"><MoreHorizontal size={18} className="text-white/60" /></button>
       </div>
-
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto amino-scroll px-3 py-2">
         {chatMessages.map(msg => {
           if (msg.isSystem) {
@@ -976,8 +1011,6 @@ function ChatRoomScreen() {
         })}
         <div ref={messagesEndRef} />
       </div>
-
-      {/* Input */}
       <div className="flex items-center gap-1.5 px-2 py-2 bg-[#0b0b18] border-t border-white/5">
         <button className="p-1.5"><Plus size={18} className="text-gray-600" /></button>
         <button className="p-1.5"><Smile size={18} className="text-gray-600" /></button>
@@ -1002,7 +1035,6 @@ function ProfileScreen() {
 
   return (
     <div className="amino-scroll pb-20">
-      {/* Background + Header */}
       <div className="relative h-[300px]">
         <img src={currentUser.backgroundImage} className="w-full h-full object-cover" alt="" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f1e] via-[#0f0f1e]/30 to-transparent" />
@@ -1015,8 +1047,6 @@ function ProfileScreen() {
           </span>
           <button className="p-1.5 bg-black/40 rounded-full"><MoreHorizontal size={18} className="text-white" /></button>
         </div>
-
-        {/* Avatar + Info */}
         <div className="absolute bottom-4 left-0 right-0 flex flex-col items-center">
           <div className="relative mb-2">
             <div className="w-20 h-20 rounded-full p-[2.5px] bg-gradient-to-br from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500">
@@ -1028,13 +1058,11 @@ function ProfileScreen() {
             <span className="bg-blue-800 rounded-full px-1.5 py-px text-[9px]">Lv{currentUser.level}</span>
             <span>{currentUser.levelTitle}</span>
           </div>
-          {/* Badges */}
           <div className="flex flex-wrap justify-center gap-1 mb-2 px-8">
             {currentUser.badges.map((badge: Badge, i: number) => (
               <span key={i} className="text-[9px] font-bold px-2 py-0.5 rounded" style={{ backgroundColor: badge.color, color: "white" }}>{badge.label}</span>
             ))}
           </div>
-          {/* Action buttons */}
           <div className="flex gap-2 mt-1">
             <button className="bg-[#2dbe60] text-white font-bold text-[11px] px-4 py-1.5 rounded-full flex items-center gap-1">
               <Plus size={12} />Follow
@@ -1045,14 +1073,10 @@ function ProfileScreen() {
           </div>
         </div>
       </div>
-
-      {/* Streak + Achievements */}
       <div className="px-3 py-2 flex gap-2">
         <div className="flex-1 bg-gradient-to-r from-[#FF6F00] to-[#FFB300] rounded-lg px-3 py-2 flex items-center gap-2">
           <Flame size={16} className="text-white" />
-          <div>
-            <span className="text-white text-[11px] font-bold">{currentUser.streakDays} Day Streak</span>
-          </div>
+          <div><span className="text-white text-[11px] font-bold">{currentUser.streakDays} Day Streak</span></div>
         </div>
         <div className="flex items-center gap-1">
           <div className="flex items-center bg-[#2dbe60] rounded-full px-2.5 py-1 gap-1">
@@ -1062,8 +1086,6 @@ function ProfileScreen() {
           <button className="w-7 h-7 bg-blue-500 rounded-md flex items-center justify-center text-white font-bold text-[12px]">+</button>
         </div>
       </div>
-
-      {/* Stats */}
       <div className="flex items-center py-3 mx-3 border-b border-white/5">
         <div className="flex-1 text-center">
           <p className="text-white font-bold text-[18px]">{formatNumber(currentUser.reputation)}</p>
@@ -1078,14 +1100,10 @@ function ProfileScreen() {
           <p className="text-gray-600 text-[10px]">Followers</p>
         </div>
       </div>
-
-      {/* Bio */}
       <div className="px-3 py-3">
         <p className="text-gray-400 text-[12px] leading-relaxed">{currentUser.bio}</p>
         <p className="text-gray-700 text-[10px] mt-1">Member since {currentUser.memberSince}</p>
       </div>
-
-      {/* Profile Tabs */}
       <div className="flex border-b border-white/5 mx-3">
         {["posts", "wall", "media"].map(tab => (
           <button key={tab} onClick={() => setActiveProfileTab(tab)}
@@ -1095,7 +1113,6 @@ function ProfileScreen() {
           </button>
         ))}
       </div>
-
       <div className="px-3 py-8 text-center">
         <p className="text-gray-700 text-[12px]">No {activeProfileTab} yet</p>
       </div>
@@ -1107,7 +1124,6 @@ function ProfileScreen() {
 export default function Home() {
   const { activeTab, currentScreen } = useApp();
 
-  // Sub-screens
   if (currentScreen === "community") return <CommunityDetailScreen />;
   if (currentScreen === "post") return <PostDetailScreen />;
   if (currentScreen === "chatroom") return <ChatRoomScreen />;

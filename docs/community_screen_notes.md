@@ -1,0 +1,54 @@
+# Notas Visuais - Tela Interna de Comunidade do Amino
+
+## Print 1 - Side Drawer (aberto da esquerda)
+- **Sidebar esquerda escura** (#1a1a2e) com ícones quadrados das comunidades do usuário
+  - Cada ícone tem badge vermelho com número de notificações (4, 9+, 9+, 7)
+  - No topo: botão "Exit" com ícone de seta
+  - Embaixo: botão "+" para adicionar comunidade
+- **Drawer principal** ocupa ~75% da tela:
+  - **Cover image** da comunidade como background (escurecido)
+  - Texto "WELCOME TO" + nome da comunidade em letras grandes
+  - **Avatar do usuário** centralizado com borda circular azulada + botão "+" no canto
+  - **Nome do usuário** abaixo do avatar
+  - **Botão "Check In"** verde grande centralizado
+  - **Menu de navegação** com ícones coloridos redondos:
+    - 🏠 Home (ícone azul claro)
+    - 💬 My Chats (ícone verde) + badge vermelho "2"
+    - ⭐ Catalog (ícone laranja)
+    - 💬 Public Chatrooms (ícone verde)
+    - 🕐 Latest Feed (ícone azul)
+    - 🌐 Guidelines (ícone azul)
+    - ⭐ Resource Links (ícone laranja)
+    - "See More..." com seta >
+    - Seção "General" embaixo
+
+## Print 2 - Tela Principal da Comunidade
+- **Header com cover image** da comunidade (azul escuro com arte)
+  - Seta voltar no canto superior esquerdo
+  - "Claim gifts" badge verde/amarelo no topo
+  - Ícone de imagem e sino de notificação no canto superior direito
+  - **Ícone da comunidade** (quadrado arredondado) à esquerda
+  - **Nome "Anime"** em branco grande
+  - Subtítulo "NIME AMINO" em letras espaçadas
+  - "3,253,749 Members" + badge verde "Leaderboards"
+- **Seção Check-in** (fundo azul escuro):
+  - "Check In to earn a prize"
+  - **Barra de progresso** com 7 pontos (dias da semana)
+  - Botão "Check In" verde
+  - Botão X para fechar
+- **Cards horizontais de chatrooms ao vivo**:
+  - Cover image + avatar do host + badge "Live" verde
+  - Nome do chatroom
+  - Ícone de membros + contagem
+- **Tabs horizontais**: Guidelines | **Featured** (sublinhado) | Latest Feed | Public Chatrooms
+- **Lista de posts featured** (texto simples com bullet points):
+  - "PSA: AI Writing for FF"
+  - "[Extended]Twisted Twins | Official Event"
+  - "Time for Reincarnation * AA Official Event"
+- **Post com imagem grande** (Snorlax artwork)
+- **Bottom Navigation própria da comunidade** (diferente da main):
+  - Menu (com badge vermelho)
+  - Online (avatar + badge "676")
+  - **+** (botão grande azul central para criar post)
+  - Chats (com badge vermelho)
+  - Me (avatar do usuário)
