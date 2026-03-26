@@ -1,0 +1,85 @@
+name: amino_clone
+description: Plataforma de comunidades sociais inspirada no Amino Apps.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Supabase
+  supabase_flutter: ^2.3.0
+
+  # State Management
+  flutter_riverpod: ^2.4.9
+  riverpod_annotation: ^2.3.3
+
+  # Navigation
+  go_router: ^13.0.0
+
+  # UI Components
+  cupertino_icons: ^1.0.6
+  flutter_svg: ^2.0.9
+  cached_network_image: ^3.3.1
+  shimmer: ^3.0.0
+  flutter_staggered_grid_view: ^0.7.0
+  badges: ^3.1.2
+
+  # Forms & Validation
+  flutter_form_builder: ^9.2.0
+  form_builder_validators: ^9.1.0
+
+  # Image & Media
+  image_picker: ^1.0.7
+  image_cropper: ^5.0.1
+  photo_view: ^0.14.0
+
+  # Chat & Realtime
+  timeago: ^3.6.1
+  emoji_picker_flutter: ^1.6.4
+
+  # Storage & Cache
+  shared_preferences: ^2.2.2
+  hive_flutter: ^1.1.0
+  path_provider: ^2.1.2
+
+  # Utils
+  intl: ^0.19.0
+  uuid: ^4.3.3
+  url_launcher: ^6.2.4
+  share_plus: ^7.2.2
+  connectivity_plus: ^5.0.2
+  flutter_markdown: ^0.6.20
+  pull_to_refresh: ^2.0.0
+  infinite_scroll_pagination: ^4.0.0
+  flutter_animate: ^4.5.0
+  google_fonts: ^6.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+  riverpod_generator: ^2.3.9
+  build_runner: ^2.4.8
+  json_serializable: ^6.7.1
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/fonts/
+
+  fonts:
+    - family: PlusJakartaSans
+      fonts:
+        - asset: assets/fonts/PlusJakartaSans-Regular.ttf
+        - asset: assets/fonts/PlusJakartaSans-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/PlusJakartaSans-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/PlusJakartaSans-Bold.ttf
+          weight: 700

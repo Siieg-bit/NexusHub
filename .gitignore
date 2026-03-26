@@ -1,0 +1,11 @@
+node_modules/
+.dart_tool/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.iml
+.idea/
+.vscode/
+.DS_Store
+*.log
+web-preview/client/node_modules/
