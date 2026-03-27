@@ -10,7 +10,6 @@ import 'package:image_picker/image_picker.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/models/message_model.dart';
 import '../../../core/services/supabase_service.dart';
-import '../../auth/providers/auth_provider.dart';
 import '../widgets/giphy_picker.dart';
 import '../widgets/sticker_picker.dart';
 
@@ -235,6 +234,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     }
   }
 
+  // ignore: unused_element
   Future<void> _sendTip(String targetUserId) async {
     final amountController = TextEditingController(text: '10');
     final result = await showDialog<int>(

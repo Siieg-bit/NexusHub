@@ -206,11 +206,7 @@ class _CommunityDetailScreenState
         return Scaffold(
           drawer: CommunityDrawer(
             community: community,
-            currentUser: ref.read(
-                    StateProvider((ref) => null).notifier) !=
-                null
-                ? null
-                : null,
+            currentUser: null,
             userRole: userRole,
           ),
           body: NestedScrollView(
@@ -305,8 +301,8 @@ class _CommunityDetailScreenState
                                       style: Theme.of(context)
                                           .textTheme
                                           .headlineSmall),
-                                  if (community.tagline != null)
-                                    Text(community.tagline!,
+                                  if (community.tagline.isNotEmpty)
+                                    Text(community.tagline,
                                         style: const TextStyle(
                                             color: AppTheme.textSecondary,
                                             fontSize: 13)),
@@ -512,13 +508,13 @@ class _CommunityDetailScreenState
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (community.tagline != null) ...[
-                Text(community.tagline!,
+              if (community.tagline.isNotEmpty) ...[
+                Text(community.tagline,
                     style: const TextStyle(
                         fontWeight: FontWeight.w600, fontSize: 15)),
                 const SizedBox(height: 12),
               ],
-              Text(community.description ?? 'Sem descrição disponível.'),
+              Text(community.description.isEmpty ? 'Sem descrição disponível.' : community.description),
               const SizedBox(height: 16),
               Row(
                 children: [

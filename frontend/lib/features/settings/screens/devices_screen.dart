@@ -222,9 +222,6 @@ class _DevicesScreenState extends State<DevicesScreen> {
                         : null;
                     final isCurrentDevice =
                         device['is_current'] as bool? ?? false;
-                    final fingerprint =
-                        device['fingerprint'] as String? ?? '';
-
                     return Container(
                       margin: const EdgeInsets.only(bottom: 8),
                       padding: const EdgeInsets.all(14),

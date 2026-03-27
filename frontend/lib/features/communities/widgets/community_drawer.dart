@@ -4,7 +4,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/models/community_model.dart';
 import '../../../core/models/user_model.dart';
-import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/helpers.dart';
 
 /// Sidebar arrastável (Drawer) dentro da comunidade — cópia 1:1 do Amino.

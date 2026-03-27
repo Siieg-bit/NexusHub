@@ -169,7 +169,6 @@ class _AchievementTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final name = achievement['name'] as String? ?? 'Conquista';
     final description = achievement['description'] as String? ?? '';
-    final iconName = achievement['icon'] as String? ?? 'emoji_events';
     final reward = achievement['coin_reward'] as int? ?? 0;
     final rarity = achievement['rarity'] as String? ?? 'common';
 

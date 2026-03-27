@@ -205,7 +205,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                   : communities
                       .where((c) =>
                           c.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                          (c.tagline?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false))
+                          c.tagline.toLowerCase().contains(_searchQuery.toLowerCase()))
                       .toList();
 
               if (filtered.isEmpty) {
@@ -360,10 +360,10 @@ class _CommunityCard extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        if (community.tagline != null) ...[
+                        if (community.tagline.isNotEmpty) ...[
                           const SizedBox(height: 2),
                           Text(
-                            community.tagline!,
+                            community.tagline,
                             style: const TextStyle(
                               color: AppTheme.textSecondary,
                               fontSize: 12,

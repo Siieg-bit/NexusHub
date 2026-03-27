@@ -35,6 +35,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   final List<_QuizQuestion> _quizQuestions = [_QuizQuestion()];
 
   // Q&A
+  // ignore: unused_field
   bool _isQaClosed = false;
 
   static const _postTypes = [

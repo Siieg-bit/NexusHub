@@ -5,7 +5,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import '../../../config/app_theme.dart';
-import '../../../core/models/message_model.dart';
 import '../../../core/models/chat_room_model.dart';
 import '../../../core/services/supabase_service.dart';
 
@@ -119,7 +118,7 @@ class _ChatRoomTile extends StatelessWidget {
             : null,
       ),
       title: Text(
-        chatRoom.name,
+        chatRoom.title,
         style: const TextStyle(fontWeight: FontWeight.w600),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
