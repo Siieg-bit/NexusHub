@@ -1,7 +1,8 @@
 plugins {
     id "com.android.application"
+    // The Flutter Gradle Plugin must be applied after the Android plugin.
+    // With AGP 9+, kotlin-android is no longer needed (built-in Kotlin).
     id "dev.flutter.flutter-gradle-plugin"
-    id "kotlin-android"
     id "com.google.gms.google-services"
 }
 
@@ -33,8 +34,10 @@ android {
         coreLibraryDesugaringEnabled true
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
+    kotlin {
+        compilerOptions {
+            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+        }
     }
 
     sourceSets {
