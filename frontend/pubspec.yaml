@@ -35,7 +35,7 @@ dependencies:
   photo_view: ^0.14.0
   video_player: ^2.8.3
   audioplayers: ^5.2.1
-  record: ^5.0.5
+  record: ^6.2.0
   file_picker: ^6.1.1
 
   # Chat & Realtime
