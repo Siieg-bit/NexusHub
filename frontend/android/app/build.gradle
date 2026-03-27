@@ -1,9 +1,7 @@
 plugins {
     id "com.android.application"
-    // IMPORTANTE: flutter-gradle-plugin DEVE vir ANTES de kotlin-android
     id "dev.flutter.flutter-gradle-plugin"
     id "kotlin-android"
-    // Firebase
     id "com.google.gms.google-services"
 }
 
@@ -27,7 +25,7 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.nexushub.app"
-    compileSdk 35
+    compileSdk flutter.compileSdkVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -46,7 +44,7 @@ android {
     defaultConfig {
         applicationId "com.nexushub.app"
         minSdk 23
-        targetSdk 35
+        targetSdk flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
@@ -54,7 +52,6 @@ android {
 
     signingConfigs {
         release {
-            // Configurar com sua keystore para release
             // storeFile file("keystore/nexushub-release.jks")
             // storePassword System.getenv("KEYSTORE_PASSWORD")
             // keyAlias "nexushub"
@@ -80,15 +77,15 @@ flutter {
 }
 
 dependencies {
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
 
     // Firebase BoM
-    implementation platform('com.google.firebase:firebase-bom:32.7.0')
+    implementation platform('com.google.firebase:firebase-bom:33.7.0')
     implementation 'com.google.firebase:firebase-messaging'
     implementation 'com.google.firebase:firebase-analytics'
 
     // Google Play Services (AdMob)
-    implementation 'com.google.android.gms:play-services-ads:22.6.0'
+    implementation 'com.google.android.gms:play-services-ads:23.6.0'
 
     // Multidex
     implementation 'androidx.multidex:multidex:2.0.1'
