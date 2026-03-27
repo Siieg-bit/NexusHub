@@ -117,6 +117,11 @@ jobs:
           echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
           echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
 
+      - name: Clean Gradle caches
+        run: |
+          rm -rf ~/.gradle/caches/jars-*
+          rm -rf ~/.gradle/caches/transforms-*
+
       - name: Build APK (debug)
         run: flutter build apk --debug
 
