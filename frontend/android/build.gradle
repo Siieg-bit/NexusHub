@@ -26,12 +26,10 @@ subprojects {
 subprojects {
     project.evaluationDependsOn(':app')
 
-    afterEvaluate { project ->
-        // Force consistent JVM target across all subprojects
-        project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-            kotlinOptions {
-                jvmTarget = '1.8'
-            }
+    // Force consistent JVM target across all subprojects
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+        kotlinOptions {
+            jvmTarget = '1.8'
         }
     }
 }
