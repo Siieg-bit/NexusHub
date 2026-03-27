@@ -1,7 +1,7 @@
 plugins {
     id "com.android.application"
+    id "kotlin-android"
     // The Flutter Gradle Plugin must be applied after the Android plugin.
-    // Note: kotlin-android removed — AGP 9+ uses built-in Kotlin by default.
     id "dev.flutter.flutter-gradle-plugin"
     id "com.google.gms.google-services"
 }
@@ -34,11 +34,8 @@ android {
         coreLibraryDesugaringEnabled true
     }
 
-    // Migrated from kotlinOptions to built-in Kotlin compilerOptions (AGP 9+).
-    kotlin {
-        compilerOptions {
-            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
-        }
+    kotlinOptions {
+        jvmTarget = "17"
     }
 
     sourceSets {

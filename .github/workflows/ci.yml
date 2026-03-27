@@ -26,7 +26,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
-          flutter-channel: ${{ env.FLUTTER_CHANNEL }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
           cache: true
 
       - name: Install dependencies
@@ -52,7 +52,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
-          flutter-channel: ${{ env.FLUTTER_CHANNEL }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
           cache: true
 
       - name: Install dependencies
@@ -89,7 +89,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
-          flutter-channel: ${{ env.FLUTTER_CHANNEL }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
           cache: true
 
       - name: Install dependencies
@@ -105,7 +105,6 @@ jobs:
       # Fix: "Cannot run Project.afterEvaluate when project is already evaluated"
       # Caused by third-party plugins (agora_rtc_engine/iris_method_channel) using
       # rootProject.allprojects {} which forces early evaluation of subprojects.
-      # Only applies to Flutter ≤ 3.29.x (Groovy DSL). Flutter 3.30+ uses Kotlin DSL.
       # See: https://github.com/flutter/flutter/issues/180899
       - name: Patch flutter.groovy (fix afterEvaluate race condition)
         working-directory: ${{ github.workspace }}
@@ -163,7 +162,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
-          flutter-channel: ${{ env.FLUTTER_CHANNEL }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
           cache: true
 
       - name: Install dependencies
