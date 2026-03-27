@@ -1,17 +1,21 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../config/app_theme.dart';
 import '../../../core/services/call_service.dart';
 
 /// ============================================================================
-/// CallScreen — UI de chamada de voz/vídeo/screening room.
+/// CallScreen — UI de chamada com Agora.io RTC real.
 ///
-/// Mostra participantes em tempo real via Supabase Realtime,
-/// timer da chamada, controles de mute/speaker/câmera, e botão de encerrar.
-///
-/// Para WebRTC real, integrar flutter_webrtc ou agora_rtc_engine aqui.
+/// Features:
+/// - Vídeo real (câmera local + remota) via AgoraVideoView
+/// - Indicadores de volume de áudio (quem está falando)
+/// - Controles: mute, speaker, câmera, trocar câmera, encerrar
+/// - Grid adaptativo de participantes
+/// - Timer de duração da chamada
+/// - Suporte a Voice Chat, Video Chat e Screening Room
 /// ============================================================================
 
 class CallScreen extends StatefulWidget {
@@ -34,10 +38,17 @@ class CallScreen extends StatefulWidget {
 
 class _CallScreenState extends State<CallScreen> {
   List<Map<String, dynamic>> _participants = [];
-  StreamSubscription? _sub;
+  Set<int> _remoteUsers = {};
+  Map<int, double> _audioLevels = {};
+  StreamSubscription? _participantsSub;
+  StreamSubscription? _remoteUsersSub;
+  StreamSubscription? _audioLevelsSub;
+
   bool _isMuted = false;
   bool _isSpeakerOn = true;
   bool _isCameraOn = false;
+  bool _controlsVisible = true;
+
   late DateTime _startTime;
   Timer? _timer;
   String _elapsed = '00:00';
@@ -46,10 +57,28 @@ class _CallScreenState extends State<CallScreen> {
   void initState() {
     super.initState();
     _startTime = DateTime.now();
+    _isCameraOn = widget.session.type == CallType.video;
+    _isMuted = CallService.isMuted;
+    _isSpeakerOn = CallService.isSpeakerOn;
+
     _loadParticipants();
-    _sub = CallService.participantsStream.listen((p) {
+
+    // Ouvir atualizações de participantes do Supabase
+    _participantsSub = CallService.participantsStream.listen((p) {
       if (mounted) setState(() => _participants = p);
     });
+
+    // Ouvir usuários remotos do Agora
+    _remoteUsersSub = CallService.remoteUsersStream.listen((users) {
+      if (mounted) setState(() => _remoteUsers = users);
+    });
+
+    // Ouvir níveis de áudio do Agora
+    _audioLevelsSub = CallService.audioLevelsStream.listen((levels) {
+      if (mounted) setState(() => _audioLevels = levels);
+    });
+
+    // Timer de duração
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) {
         final diff = DateTime.now().difference(_startTime);
@@ -59,7 +88,6 @@ class _CallScreenState extends State<CallScreen> {
         });
       }
     });
-    _isCameraOn = widget.session.type == CallType.video;
   }
 
   Future<void> _loadParticipants() async {
@@ -69,9 +97,30 @@ class _CallScreenState extends State<CallScreen> {
 
   @override
   void dispose() {
-    _sub?.cancel();
+    _participantsSub?.cancel();
+    _remoteUsersSub?.cancel();
+    _audioLevelsSub?.cancel();
     _timer?.cancel();
     super.dispose();
+  }
+
+  Future<void> _toggleMute() async {
+    await CallService.toggleMute();
+    setState(() => _isMuted = CallService.isMuted);
+  }
+
+  Future<void> _toggleSpeaker() async {
+    await CallService.toggleSpeaker();
+    setState(() => _isSpeakerOn = CallService.isSpeakerOn);
+  }
+
+  Future<void> _toggleCamera() async {
+    await CallService.toggleCamera();
+    setState(() => _isCameraOn = CallService.isCameraOn);
+  }
+
+  Future<void> _switchCamera() async {
+    await CallService.switchCamera();
   }
 
   Future<void> _endCall() async {
@@ -96,156 +145,216 @@ class _CallScreenState extends State<CallScreen> {
 
     return Scaffold(
       backgroundColor: bgColor,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // ── Header ──
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
+      body: GestureDetector(
+        onTap: () => setState(() => _controlsVisible = !_controlsVisible),
+        child: SafeArea(
+          child: Stack(
+            children: [
+              // ── Main Content ──
+              Column(
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_rounded,
-                        color: Colors.white),
-                    onPressed: () => Navigator.of(context).pop(),
+                  // ── Header ──
+                  AnimatedOpacity(
+                    opacity: _controlsVisible ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 200),
+                    child: _buildHeader(title),
                   ),
-                  const Spacer(),
-                  Column(
-                    children: [
-                      Text(title,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold)),
-                      Text(_elapsed,
-                          style: const TextStyle(
-                              color: Colors.white60, fontSize: 14)),
-                    ],
+
+                  // ── Video/Audio Grid ──
+                  Expanded(
+                    child: isVideo
+                        ? _buildVideoGrid()
+                        : _buildAudioGrid(),
                   ),
-                  const Spacer(),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppTheme.successColor.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.people_rounded,
-                            color: AppTheme.successColor, size: 16),
-                        const SizedBox(width: 4),
-                        Text('${_participants.length}',
-                            style: const TextStyle(
-                                color: AppTheme.successColor,
-                                fontWeight: FontWeight.bold)),
-                      ],
-                    ),
+
+                  // ── Screening Room: Shared screen area ──
+                  if (isScreening) _buildScreeningArea(),
+
+                  // ── Controls ──
+                  AnimatedOpacity(
+                    opacity: _controlsVisible ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 200),
+                    child: _buildControls(isVideo),
                   ),
                 ],
               ),
-            ),
 
-            // ── Participants Grid ──
-            Expanded(
-              child: _participants.isEmpty
-                  ? const Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          CircularProgressIndicator(color: Colors.white38),
-                          SizedBox(height: 16),
-                          Text('Aguardando participantes...',
-                              style: TextStyle(color: Colors.white60)),
-                        ],
+              // ── Local video preview (PiP) ──
+              if (isVideo && _isCameraOn && _remoteUsers.isNotEmpty)
+                Positioned(
+                  top: 80,
+                  right: 16,
+                  child: GestureDetector(
+                    onTap: _switchCamera,
+                    child: Container(
+                      width: 120,
+                      height: 160,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white24, width: 1),
                       ),
-                    )
-                  : GridView.builder(
-                      padding: const EdgeInsets.all(16),
-                      gridDelegate:
-                          SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: _participants.length <= 2 ? 1 : 2,
-                        mainAxisSpacing: 12,
-                        crossAxisSpacing: 12,
-                        childAspectRatio:
-                            _participants.length <= 2 ? 1.5 : 1.0,
-                      ),
-                      itemCount: _participants.length,
-                      itemBuilder: (_, i) =>
-                          _buildParticipantTile(_participants[i]),
+                      clipBehavior: Clip.antiAlias,
+                      child: CallService.engine != null
+                          ? AgoraVideoView(
+                              controller: VideoViewController(
+                                rtcEngine: CallService.engine!,
+                                canvas: const VideoCanvas(uid: 0),
+                              ),
+                            )
+                          : const SizedBox(),
                     ),
-            ),
-
-            // ── Screening Room: Video area ──
-            if (isScreening)
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                height: 200,
-                decoration: BoxDecoration(
-                  color: Colors.black,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.live_tv_rounded,
-                          color: Colors.white24, size: 48),
-                      SizedBox(height: 8),
-                      Text('Tela compartilhada aparecerá aqui',
-                          style: TextStyle(color: Colors.white38)),
-                    ],
                   ),
                 ),
-              ),
-
-            // ── Controls ──
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _ControlButton(
-                    icon: _isMuted
-                        ? Icons.mic_off_rounded
-                        : Icons.mic_rounded,
-                    label: _isMuted ? 'Mudo' : 'Mic',
-                    isActive: !_isMuted,
-                    onTap: () => setState(() => _isMuted = !_isMuted),
-                  ),
-                  _ControlButton(
-                    icon: _isSpeakerOn
-                        ? Icons.volume_up_rounded
-                        : Icons.volume_off_rounded,
-                    label: 'Speaker',
-                    isActive: _isSpeakerOn,
-                    onTap: () =>
-                        setState(() => _isSpeakerOn = !_isSpeakerOn),
-                  ),
-                  if (isVideo)
-                    _ControlButton(
-                      icon: _isCameraOn
-                          ? Icons.videocam_rounded
-                          : Icons.videocam_off_rounded,
-                      label: 'Câmera',
-                      isActive: _isCameraOn,
-                      onTap: () =>
-                          setState(() => _isCameraOn = !_isCameraOn),
-                    ),
-                  _ControlButton(
-                    icon: Icons.call_end_rounded,
-                    label: 'Encerrar',
-                    isActive: false,
-                    isEnd: true,
-                    onTap: _endCall,
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          const Spacer(),
+          Column(
+            children: [
+              Text(title,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold)),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: AppTheme.successColor,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(_elapsed,
+                      style: const TextStyle(
+                          color: Colors.white60, fontSize: 14)),
+                ],
+              ),
+            ],
+          ),
+          const Spacer(),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppTheme.successColor.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.people_rounded,
+                    color: AppTheme.successColor, size: 16),
+                const SizedBox(width: 4),
+                Text('${_participants.length + _remoteUsers.length}',
+                    style: const TextStyle(
+                        color: AppTheme.successColor,
+                        fontWeight: FontWeight.bold)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Grid de vídeo real via Agora
+  Widget _buildVideoGrid() {
+    if (CallService.engine == null) {
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.white38),
+      );
+    }
+
+    final List<Widget> videoViews = [];
+
+    // Se não há usuários remotos, mostrar vídeo local em tela cheia
+    if (_remoteUsers.isEmpty) {
+      videoViews.add(
+        _isCameraOn
+            ? AgoraVideoView(
+                controller: VideoViewController(
+                  rtcEngine: CallService.engine!,
+                  canvas: const VideoCanvas(uid: 0),
+                ),
+              )
+            : _buildAvatarPlaceholder('Você'),
+      );
+    } else {
+      // Mostrar vídeos remotos
+      for (final uid in _remoteUsers) {
+        videoViews.add(
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: AgoraVideoView(
+              controller: VideoViewController.remote(
+                rtcEngine: CallService.engine!,
+                canvas: VideoCanvas(uid: uid),
+                connection: RtcConnection(
+                  channelId:
+                      'nexushub_${widget.session.id.replaceAll('-', '').substring(0, 16)}',
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
+    return GridView.builder(
+      padding: const EdgeInsets.all(8),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: videoViews.length <= 1 ? 1 : 2,
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
+        childAspectRatio: videoViews.length <= 1 ? 0.75 : 0.65,
+      ),
+      itemCount: videoViews.length,
+      itemBuilder: (_, i) => videoViews[i],
+    );
+  }
+
+  /// Grid de áudio com indicadores de volume
+  Widget _buildAudioGrid() {
+    if (_participants.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(color: Colors.white38),
+            SizedBox(height: 16),
+            Text('Aguardando participantes...',
+                style: TextStyle(color: Colors.white60)),
+          ],
+        ),
+      );
+    }
+
+    return GridView.builder(
+      padding: const EdgeInsets.all(16),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: _participants.length <= 2 ? 1 : 2,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: _participants.length <= 2 ? 1.5 : 1.0,
+      ),
+      itemCount: _participants.length,
+      itemBuilder: (_, i) => _buildParticipantTile(_participants[i]),
     );
   }
 
@@ -253,32 +362,63 @@ class _CallScreenState extends State<CallScreen> {
     final profile = participant['profiles'] as Map<String, dynamic>?;
     final nickname = profile?['nickname'] as String? ?? 'Usuário';
     final iconUrl = profile?['icon_url'] as String?;
-    final isSpeaking = false; // TODO: Audio level detection
 
-    return Container(
+    // Detectar se está falando via audio levels do Agora
+    // uid 0 = local user
+    final isSpeaking = _audioLevels.values.any((v) => v > 30);
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(16),
         border: isSpeaking
-            ? Border.all(color: AppTheme.successColor, width: 2)
+            ? Border.all(color: AppTheme.successColor, width: 2.5)
+            : Border.all(color: Colors.white10, width: 1),
+        boxShadow: isSpeaking
+            ? [
+                BoxShadow(
+                  color: AppTheme.successColor.withOpacity(0.3),
+                  blurRadius: 12,
+                  spreadRadius: 2,
+                )
+              ]
             : null,
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircleAvatar(
-            radius: 36,
-            backgroundColor: AppTheme.primaryColor.withOpacity(0.3),
-            backgroundImage: iconUrl != null
-                ? CachedNetworkImageProvider(iconUrl)
-                : null,
-            child: iconUrl == null
-                ? Text(nickname[0].toUpperCase(),
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold))
-                : null,
+          // Avatar com indicador de áudio
+          Stack(
+            alignment: Alignment.bottomRight,
+            children: [
+              CircleAvatar(
+                radius: 36,
+                backgroundColor: AppTheme.primaryColor.withOpacity(0.3),
+                backgroundImage: iconUrl != null
+                    ? CachedNetworkImageProvider(iconUrl)
+                    : null,
+                child: iconUrl == null
+                    ? Text(nickname[0].toUpperCase(),
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold))
+                    : null,
+              ),
+              if (isSpeaking)
+                Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: AppTheme.successColor,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFF16213E), width: 2),
+                  ),
+                  child: const Icon(Icons.mic_rounded,
+                      color: Colors.white, size: 12),
+                ),
+            ],
           ),
           const SizedBox(height: 12),
           Text(nickname,
@@ -303,8 +443,151 @@ class _CallScreenState extends State<CallScreen> {
                   style: TextStyle(color: Colors.white38, fontSize: 11)),
             ],
           ),
+          // Audio level bar
+          if (isSpeaking)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: _AudioLevelBar(level: _audioLevels.values.isNotEmpty
+                  ? _audioLevels.values.first / 255
+                  : 0),
+            ),
         ],
       ),
+    );
+  }
+
+  Widget _buildAvatarPlaceholder(String name) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CircleAvatar(
+            radius: 48,
+            backgroundColor: AppTheme.primaryColor.withOpacity(0.3),
+            child: Text(name[0].toUpperCase(),
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold)),
+          ),
+          const SizedBox(height: 16),
+          Text(name,
+              style: const TextStyle(color: Colors.white, fontSize: 18)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScreeningArea() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      height: 200,
+      decoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: _remoteUsers.isNotEmpty && CallService.engine != null
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: AgoraVideoView(
+                controller: VideoViewController.remote(
+                  rtcEngine: CallService.engine!,
+                  canvas: VideoCanvas(uid: _remoteUsers.first),
+                  connection: RtcConnection(
+                    channelId:
+                        'nexushub_${widget.session.id.replaceAll('-', '').substring(0, 16)}',
+                  ),
+                ),
+              ),
+            )
+          : const Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.live_tv_rounded, color: Colors.white24, size: 48),
+                  SizedBox(height: 8),
+                  Text('Tela compartilhada aparecerá aqui',
+                      style: TextStyle(color: Colors.white38)),
+                ],
+              ),
+            ),
+    );
+  }
+
+  Widget _buildControls(bool isVideo) {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _ControlButton(
+            icon: _isMuted ? Icons.mic_off_rounded : Icons.mic_rounded,
+            label: _isMuted ? 'Mudo' : 'Mic',
+            isActive: !_isMuted,
+            onTap: _toggleMute,
+          ),
+          _ControlButton(
+            icon: _isSpeakerOn
+                ? Icons.volume_up_rounded
+                : Icons.volume_off_rounded,
+            label: 'Speaker',
+            isActive: _isSpeakerOn,
+            onTap: _toggleSpeaker,
+          ),
+          if (isVideo) ...[
+            _ControlButton(
+              icon: _isCameraOn
+                  ? Icons.videocam_rounded
+                  : Icons.videocam_off_rounded,
+              label: 'Câmera',
+              isActive: _isCameraOn,
+              onTap: _toggleCamera,
+            ),
+            _ControlButton(
+              icon: Icons.cameraswitch_rounded,
+              label: 'Trocar',
+              isActive: true,
+              onTap: _switchCamera,
+            ),
+          ],
+          _ControlButton(
+            icon: Icons.call_end_rounded,
+            label: 'Encerrar',
+            isActive: false,
+            isEnd: true,
+            onTap: _endCall,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Barra animada de nível de áudio
+class _AudioLevelBar extends StatelessWidget {
+  final double level; // 0.0 a 1.0
+
+  const _AudioLevelBar({required this.level});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(5, (i) {
+        final threshold = (i + 1) / 5;
+        final isActive = level >= threshold;
+        return Container(
+          width: 4,
+          height: 8 + (i * 3).toDouble(),
+          margin: const EdgeInsets.symmetric(horizontal: 1),
+          decoration: BoxDecoration(
+            color: isActive
+                ? AppTheme.successColor
+                : Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(2),
+          ),
+        );
+      }),
     );
   }
 }
