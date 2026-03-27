@@ -117,7 +117,7 @@ class _PodiumItem extends StatelessWidget {
           // Avatar
           CircleAvatar(
             radius: rank == 1 ? 32 : 24,
-            backgroundColor: color.withOpacity(0.3),
+            backgroundColor: color.withValues(alpha: 0.3),
             backgroundImage: data['icon_url'] != null
                 ? CachedNetworkImageProvider(data['icon_url'] as String)
                 : null,
@@ -144,9 +144,9 @@ class _PodiumItem extends StatelessWidget {
           Container(
             height: height * 0.5,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
+              color: color.withValues(alpha: 0.2),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-              border: Border.all(color: color.withOpacity(0.5)),
+              border: Border.all(color: color.withValues(alpha: 0.5)),
             ),
             child: Center(
               child: Text(
@@ -199,7 +199,7 @@ class _LeaderboardTile extends StatelessWidget {
             onTap: () => context.push('/user/${data['user_id']}'),
             child: CircleAvatar(
               radius: 20,
-              backgroundColor: AppTheme.primaryColor.withOpacity(0.2),
+              backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.2),
               backgroundImage: data['icon_url'] != null
                   ? CachedNetworkImageProvider(data['icon_url'] as String)
                   : null,
@@ -226,7 +226,7 @@ class _LeaderboardTile extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: AppTheme.getLevelColor(data['level'] as int? ?? 1)
-                            .withOpacity(0.2),
+                            .withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(

@@ -124,7 +124,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             onTap: () => context.push('/user/${post.authorId}'),
                             child: CircleAvatar(
                               radius: 24,
-                              backgroundColor: AppTheme.primaryColor.withOpacity(0.3),
+                              backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.3),
                               backgroundImage: post.author?.iconUrl != null
                                   ? CachedNetworkImageProvider(post.author!.iconUrl!)
                                   : null,
@@ -152,7 +152,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                         decoration: BoxDecoration(
                                           color: AppTheme.getLevelColor(post.author!.level)
-                                              .withOpacity(0.2),
+                                              .withValues(alpha: 0.2),
                                           borderRadius: BorderRadius.circular(8),
                                         ),
                                         child: Text(
@@ -358,7 +358,7 @@ class _CommentTile extends StatelessWidget {
             onTap: () => context.push('/user/${comment.authorId}'),
             child: CircleAvatar(
               radius: 16,
-              backgroundColor: AppTheme.primaryColor.withOpacity(0.3),
+              backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.3),
               backgroundImage: comment.author?.iconUrl != null
                   ? CachedNetworkImageProvider(comment.author!.iconUrl!)
                   : null,

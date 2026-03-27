@@ -107,7 +107,7 @@ class _ChatRoomTile extends StatelessWidget {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: CircleAvatar(
         radius: 28,
-        backgroundColor: AppTheme.primaryColor.withOpacity(0.2),
+        backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.2),
         backgroundImage: chatRoom.iconUrl != null
             ? CachedNetworkImageProvider(chatRoom.iconUrl!)
             : null,

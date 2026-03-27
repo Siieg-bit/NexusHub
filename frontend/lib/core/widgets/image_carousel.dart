@@ -154,7 +154,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
                     decoration: BoxDecoration(
                       color: _currentPage == i
                           ? Colors.white
-                          : Colors.white.withOpacity(0.4),
+                          : Colors.white.withValues(alpha: 0.4),
                       borderRadius: BorderRadius.circular(3),
                     ),
                   ),

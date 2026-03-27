@@ -90,7 +90,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.block_rounded,
-                          size: 64, color: AppTheme.textHint.withOpacity(0.3)),
+                          size: 64, color: AppTheme.textHint.withValues(alpha: 0.3)),
                       const SizedBox(height: 16),
                       const Text('Nenhum usuário bloqueado',
                           style: TextStyle(

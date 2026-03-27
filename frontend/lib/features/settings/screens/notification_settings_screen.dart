@@ -128,10 +128,10 @@ class _NotificationSettingsScreenState
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryColor.withOpacity(0.08),
+                    color: AppTheme.primaryColor.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
-                        color: AppTheme.primaryColor.withOpacity(0.2)),
+                        color: AppTheme.primaryColor.withValues(alpha: 0.2)),
                   ),
                   child: Row(
                     children: [
@@ -344,7 +344,7 @@ class _NotifToggle extends StatelessWidget {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
+              color: color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: color, size: 16),

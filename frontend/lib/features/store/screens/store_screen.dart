@@ -105,7 +105,7 @@ class _StoreScreenState extends State<StoreScreen>
             margin: const EdgeInsets.only(right: 16),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: AppTheme.warningColor.withOpacity(0.15),
+              color: AppTheme.warningColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
@@ -193,7 +193,7 @@ class _StoreItemCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.dividerColor.withOpacity(0.3)),
+        border: Border.all(color: AppTheme.dividerColor.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -207,7 +207,7 @@ class _StoreItemCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     borderRadius:
                         const BorderRadius.vertical(top: Radius.circular(16)),
-                    color: AppTheme.primaryColor.withOpacity(0.1),
+                    color: AppTheme.primaryColor.withValues(alpha: 0.1),
                   ),
                   child: imageUrl != null
                       ? ClipRRect(
@@ -268,7 +268,7 @@ class _StoreItemCard extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 6),
                       decoration: BoxDecoration(
-                        color: AppTheme.warningColor.withOpacity(0.15),
+                        color: AppTheme.warningColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(

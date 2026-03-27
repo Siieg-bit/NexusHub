@@ -187,7 +187,7 @@ class _InventoryScreenState extends State<InventoryScreen>
               border: isEquipped
                   ? Border.all(color: AppTheme.primaryColor, width: 2)
                   : Border.all(
-                      color: AppTheme.dividerColor.withOpacity(0.3)),
+                      color: AppTheme.dividerColor.withValues(alpha: 0.3)),
             ),
             child: Column(
               children: [
@@ -199,7 +199,7 @@ class _InventoryScreenState extends State<InventoryScreen>
                         decoration: BoxDecoration(
                           borderRadius: const BorderRadius.vertical(
                               top: Radius.circular(14)),
-                          color: AppTheme.primaryColor.withOpacity(0.08),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.08),
                         ),
                         child: imageUrl != null
                             ? ClipRRect(

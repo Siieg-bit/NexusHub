@@ -59,10 +59,10 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppTheme.warningColor.withOpacity(0.15), AppTheme.accentColor.withOpacity(0.15)],
+          colors: [AppTheme.warningColor.withValues(alpha: 0.15), AppTheme.accentColor.withValues(alpha: 0.15)],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.warningColor.withOpacity(0.3)),
+        border: Border.all(color: AppTheme.warningColor.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
@@ -130,9 +130,9 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.errorColor.withOpacity(0.08),
+        color: AppTheme.errorColor.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.errorColor.withOpacity(0.2)),
+        border: Border.all(color: AppTheme.errorColor.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
@@ -270,7 +270,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                   boxShadow: [
                     BoxShadow(
                       color: (_checkedIn ? AppTheme.successColor : AppTheme.warningColor)
-                          .withOpacity(0.3),
+                          .withValues(alpha: 0.3),
                       blurRadius: 20,
                       spreadRadius: 5,
                     ),
@@ -331,7 +331,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                 decoration: BoxDecoration(
                   color: AppTheme.cardColor,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppTheme.successColor.withOpacity(0.3)),
+                  border: Border.all(color: AppTheme.successColor.withValues(alpha: 0.3)),
                 ),
                 child: Column(
                   children: [
@@ -457,7 +457,7 @@ class _DayCircle extends StatelessWidget {
       bgColor = AppTheme.primaryColor;
       textColor = Colors.white;
     } else if (isToday) {
-      bgColor = AppTheme.warningColor.withOpacity(0.3);
+      bgColor = AppTheme.warningColor.withValues(alpha: 0.3);
       textColor = AppTheme.warningColor;
     } else {
       bgColor = AppTheme.cardColorLight;

@@ -120,7 +120,7 @@ class _FollowersScreenState extends State<FollowersScreen>
           },
           leading: CircleAvatar(
             radius: 22,
-            backgroundColor: AppTheme.primaryColor.withOpacity(0.2),
+            backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.2),
             backgroundImage: avatarUrl != null
                 ? CachedNetworkImageProvider(avatarUrl)
                 : null,

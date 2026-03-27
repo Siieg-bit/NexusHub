@@ -150,7 +150,7 @@ class ProfileScreen extends ConsumerWidget {
                           gradient: LinearGradient(
                             colors: [
                               Colors.transparent,
-                              AppTheme.scaffoldBg.withOpacity(0.5),
+                              AppTheme.scaffoldBg.withValues(alpha: 0.5),
                               AppTheme.scaffoldBg,
                             ],
                             begin: Alignment.topCenter,
@@ -480,7 +480,7 @@ class _FreeCoinsBadge extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFFFD700).withOpacity(0.3),
+                color: const Color(0xFFFFD700).withValues(alpha: 0.3),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -525,7 +525,7 @@ class _LevelBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: levelColor.withOpacity(0.3)),
+        border: Border.all(color: levelColor.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -534,7 +534,7 @@ class _LevelBar extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: levelColor.withOpacity(0.2),
+              color: levelColor.withValues(alpha: 0.2),
               shape: BoxShape.circle,
               border: Border.all(color: levelColor, width: 2),
             ),
@@ -582,7 +582,7 @@ class _LevelBar extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: AppTheme.warningColor.withOpacity(0.15),
+                color: AppTheme.warningColor.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(

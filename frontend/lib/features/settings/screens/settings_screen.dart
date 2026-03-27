@@ -205,7 +205,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         CircleAvatar(
                           radius: 28,
                           backgroundColor:
-                              AppTheme.primaryColor.withOpacity(0.2),
+                              AppTheme.primaryColor.withValues(alpha: 0.2),
                           backgroundImage: _profile?['icon_url'] != null
                               ? CachedNetworkImageProvider(
                                   _profile!['icon_url'] as String)

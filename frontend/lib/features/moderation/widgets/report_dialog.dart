@@ -203,12 +203,12 @@ class _ReportDialogState extends State<ReportDialog> {
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? Color(type['color'] as int).withOpacity(0.1)
+                      ? Color(type['color'] as int).withValues(alpha: 0.1)
                       : AppTheme.cardColor,
                   borderRadius: BorderRadius.circular(12),
                   border: isSelected
                       ? Border.all(
-                          color: Color(type['color'] as int).withOpacity(0.5))
+                          color: Color(type['color'] as int).withValues(alpha: 0.5))
                       : null,
                 ),
                 child: Row(

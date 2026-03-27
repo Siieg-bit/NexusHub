@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
-import '../../../core/utils/helpers.dart';
 
 // ============================================================================
 // WIKI LIST SCREEN
@@ -187,7 +186,7 @@ class _CategoryChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppTheme.primaryColor.withOpacity(0.15)
+              ? AppTheme.primaryColor.withValues(alpha: 0.15)
               : AppTheme.cardColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
@@ -225,7 +224,7 @@ class _WikiEntryCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppTheme.cardColor,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppTheme.dividerColor.withOpacity(0.3)),
+          border: Border.all(color: AppTheme.dividerColor.withValues(alpha: 0.3)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -236,7 +235,7 @@ class _WikiEntryCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(12)),
-                  color: AppTheme.primaryColor.withOpacity(0.1),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.1),
                 ),
                 child: imageUrl != null
                     ? ClipRRect(
@@ -438,7 +437,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withOpacity(0.15),
+                        color: AppTheme.primaryColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -459,7 +458,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                         color: AppTheme.cardColor,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                            color: AppTheme.dividerColor.withOpacity(0.5)),
+                            color: AppTheme.dividerColor.withValues(alpha: 0.5)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

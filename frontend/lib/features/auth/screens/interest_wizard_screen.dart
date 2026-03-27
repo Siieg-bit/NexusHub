@@ -275,7 +275,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
             height: 100,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppTheme.primaryColor.withOpacity(0.15),
+              color: AppTheme.primaryColor.withValues(alpha: 0.15),
             ),
             child: const Icon(Icons.badge_rounded, size: 48, color: AppTheme.primaryColor),
           ),
@@ -386,7 +386,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
                     duration: const Duration(milliseconds: 200),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? item.color.withOpacity(0.25)
+                          ? item.color.withValues(alpha: 0.25)
                           : AppTheme.cardColor,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
@@ -452,7 +452,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
             height: 100,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppTheme.successColor.withOpacity(0.15),
+              color: AppTheme.successColor.withValues(alpha: 0.15),
             ),
             child: const Icon(Icons.celebration_rounded, size: 48, color: AppTheme.successColor),
           ),
@@ -486,7 +486,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
               return Chip(
                 avatar: Icon(item.icon, size: 16, color: item.color),
                 label: Text(interest, style: TextStyle(color: item.color, fontSize: 12)),
-                backgroundColor: item.color.withOpacity(0.15),
+                backgroundColor: item.color.withValues(alpha: 0.15),
                 side: BorderSide.none,
               );
             }).toList(),

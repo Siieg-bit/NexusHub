@@ -50,7 +50,7 @@ class ShellScreen extends StatelessWidget {
           color: AppTheme.bottomNavBg,
           border: Border(
             top: BorderSide(
-              color: AppTheme.dividerColor.withOpacity(0.3),
+              color: AppTheme.dividerColor.withValues(alpha: 0.3),
               width: 0.5,
             ),
           ),

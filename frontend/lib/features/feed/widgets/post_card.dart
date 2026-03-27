@@ -97,7 +97,7 @@ class _PostCardState extends State<PostCard> {
         decoration: BoxDecoration(
           color: AppTheme.cardColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.dividerColor.withOpacity(0.3)),
+          border: Border.all(color: AppTheme.dividerColor.withValues(alpha: 0.3)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -163,7 +163,7 @@ class _PostCardState extends State<PostCard> {
                   children: _post.tags.take(3).map((tag) => Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withOpacity(0.1),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text('#$tag',
@@ -193,7 +193,7 @@ class _PostCardState extends State<PostCard> {
             onTap: () => context.push('/user/${_post.authorId}'),
             child: CircleAvatar(
               radius: 20,
-              backgroundColor: AppTheme.primaryColor.withOpacity(0.3),
+              backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.3),
               backgroundImage: _post.author?.iconUrl != null
                   ? CachedNetworkImageProvider(_post.author!.iconUrl!)
                   : null,
@@ -230,7 +230,7 @@ class _PostCardState extends State<PostCard> {
                             horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: AppTheme.getLevelColor(_post.author!.level)
-                              .withOpacity(0.2),
+                              .withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -259,7 +259,7 @@ class _PostCardState extends State<PostCard> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 1),
                         decoration: BoxDecoration(
-                          color: _typeColor.withOpacity(0.15),
+                          color: _typeColor.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -281,7 +281,7 @@ class _PostCardState extends State<PostCard> {
               padding:
                   const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: AppTheme.warningColor.withOpacity(0.2),
+                color: AppTheme.warningColor.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -359,7 +359,7 @@ class _PostCardState extends State<PostCard> {
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? AppTheme.primaryColor.withOpacity(0.15)
+                      ? AppTheme.primaryColor.withValues(alpha: 0.15)
                       : AppTheme.scaffoldBg,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
@@ -453,10 +453,10 @@ class _PostCardState extends State<PostCard> {
               Color borderColor = AppTheme.dividerColor;
               if (_quizAnswered) {
                 if (isCorrect) {
-                  bgColor = AppTheme.successColor.withOpacity(0.15);
+                  bgColor = AppTheme.successColor.withValues(alpha: 0.15);
                   borderColor = AppTheme.successColor;
                 } else if (isSelected && !isCorrect) {
-                  bgColor = AppTheme.errorColor.withOpacity(0.15);
+                  bgColor = AppTheme.errorColor.withValues(alpha: 0.15);
                   borderColor = AppTheme.errorColor;
                 }
               }
@@ -500,9 +500,9 @@ class _PostCardState extends State<PostCard> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFF1A237E).withOpacity(0.1),
+          color: const Color(0xFF1A237E).withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFF3F51B5).withOpacity(0.3)),
+          border: Border.all(color: const Color(0xFF3F51B5).withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
@@ -510,7 +510,7 @@ class _PostCardState extends State<PostCard> {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: const Color(0xFF3F51B5).withOpacity(0.2),
+                color: const Color(0xFF3F51B5).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Center(

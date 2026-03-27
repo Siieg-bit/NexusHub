@@ -139,7 +139,7 @@ class _BubblePainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     final shadowPaint = Paint()
-      ..color = Colors.black.withOpacity(0.08)
+      ..color = Colors.black.withValues(alpha: 0.08)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
 
     const radius = 16.0;
@@ -348,7 +348,7 @@ class StreakBar extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: currentStreak > 0
-              ? AppTheme.warningColor.withOpacity(0.3)
+              ? AppTheme.warningColor.withValues(alpha: 0.3)
               : AppTheme.dividerColor,
         ),
       ),
@@ -401,8 +401,8 @@ class StreakBar extends StatelessWidget {
                     height: 32,
                     decoration: BoxDecoration(
                       color: isActive
-                          ? AppTheme.warningColor.withOpacity(0.2)
-                          : AppTheme.dividerColor.withOpacity(0.3),
+                          ? AppTheme.warningColor.withValues(alpha: 0.2)
+                          : AppTheme.dividerColor.withValues(alpha: 0.3),
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: isActive

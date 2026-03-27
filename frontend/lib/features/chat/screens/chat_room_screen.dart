@@ -367,7 +367,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 width: double.infinity,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                color: AppTheme.warningColor.withOpacity(0.1),
+                color: AppTheme.warningColor.withValues(alpha: 0.1),
                 child: Row(
                   children: [
                     const Icon(Icons.push_pin_rounded,
@@ -1042,7 +1042,7 @@ class _MessageBubble extends StatelessWidget {
               child: CircleAvatar(
                 radius: 16,
                 backgroundColor:
-                    AppTheme.primaryColor.withOpacity(0.3),
+                    AppTheme.primaryColor.withValues(alpha: 0.3),
                 backgroundImage: message.author?.iconUrl != null
                     ? CachedNetworkImageProvider(
                         message.author!.iconUrl!)
@@ -1185,7 +1185,7 @@ class _MessageBubble extends StatelessWidget {
                   width: 120,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: textColor.withOpacity(0.3),
+                    color: textColor.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -1226,7 +1226,7 @@ class _MessageBubble extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: const Color(0xFFFF4081).withOpacity(0.15),
+            color: const Color(0xFFFF4081).withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -1247,7 +1247,7 @@ class _MessageBubble extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppTheme.warningColor.withOpacity(0.15),
+            color: AppTheme.warningColor.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -1282,7 +1282,7 @@ class _MessageBubble extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: textColor.withOpacity(0.1),
+                    color: textColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(opt.toString(),
@@ -1299,7 +1299,7 @@ class _MessageBubble extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: textColor.withOpacity(0.1),
+                color: textColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -1370,7 +1370,7 @@ class _MessageBubble extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: textColor.withOpacity(0.1),
+            color: textColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
@@ -1429,7 +1429,7 @@ class _MediaOptionItem extends StatelessWidget {
             width: 52,
             height: 52,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
+              color: color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(icon, color: color, size: 24),

@@ -209,7 +209,7 @@ class _FlagCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isPending
-              ? AppTheme.warningColor.withOpacity(0.3)
+              ? AppTheme.warningColor.withValues(alpha: 0.3)
               : AppTheme.dividerColor,
         ),
       ),
@@ -223,7 +223,7 @@ class _FlagCard extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: _flagTypeColor(type).withOpacity(0.15),
+                  color: _flagTypeColor(type).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -242,8 +242,8 @@ class _FlagCard extends StatelessWidget {
                       horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: status == 'approved'
-                        ? AppTheme.successColor.withOpacity(0.15)
-                        : AppTheme.errorColor.withOpacity(0.15),
+                        ? AppTheme.successColor.withValues(alpha: 0.15)
+                        : AppTheme.errorColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(

@@ -94,12 +94,12 @@ class MusicEmbedWidget extends StatelessWidget {
           color: isDark ? AppTheme.cardColor : Colors.white,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: _platformColor.withOpacity(0.3),
+            color: _platformColor.withValues(alpha: 0.3),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: _platformColor.withOpacity(0.08),
+              color: _platformColor.withValues(alpha: 0.08),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -136,7 +136,7 @@ class MusicEmbedWidget extends StatelessWidget {
                           end: Alignment.bottomCenter,
                           colors: [
                             Colors.transparent,
-                            Colors.black.withOpacity(0.7),
+                            Colors.black.withValues(alpha: 0.7),
                           ],
                         ),
                       ),
@@ -154,7 +154,7 @@ class MusicEmbedWidget extends StatelessWidget {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: _platformColor.withOpacity(0.4),
+                              color: _platformColor.withValues(alpha: 0.4),
                               blurRadius: 16,
                               spreadRadius: 2,
                             ),
@@ -267,14 +267,14 @@ class _ArtworkPlaceholder extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            color.withOpacity(0.3),
-            color.withOpacity(0.1),
+            color.withValues(alpha: 0.3),
+            color.withValues(alpha: 0.1),
           ],
         ),
       ),
       child: Center(
         child: Icon(Icons.music_note_rounded,
-            color: color.withOpacity(0.5), size: 64),
+            color: color.withValues(alpha: 0.5), size: 64),
       ),
     );
   }

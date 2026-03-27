@@ -125,7 +125,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                       gradient: LinearGradient(
                         colors: [
                           AppTheme.primaryColor,
-                          AppTheme.primaryColor.withOpacity(0.5),
+                          AppTheme.primaryColor.withValues(alpha: 0.5),
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,

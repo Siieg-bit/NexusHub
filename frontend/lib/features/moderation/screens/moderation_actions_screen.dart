@@ -301,13 +301,13 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                         decoration: BoxDecoration(
                           color: isSelected
                               ? Color(action['color'] as int)
-                                  .withOpacity(0.1)
+                                  .withValues(alpha: 0.1)
                               : AppTheme.cardColor,
                           borderRadius: BorderRadius.circular(12),
                           border: isSelected
                               ? Border.all(
                                   color: Color(action['color'] as int)
-                                      .withOpacity(0.5))
+                                      .withValues(alpha: 0.5))
                               : null,
                         ),
                         child: Row(
@@ -473,11 +473,11 @@ class _DurationChip extends StatelessWidget {
             const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppTheme.errorColor.withOpacity(0.15)
+              ? AppTheme.errorColor.withValues(alpha: 0.15)
               : AppTheme.cardColor,
           borderRadius: BorderRadius.circular(10),
           border: isSelected
-              ? Border.all(color: AppTheme.errorColor.withOpacity(0.5))
+              ? Border.all(color: AppTheme.errorColor.withValues(alpha: 0.5))
               : null,
         ),
         child: Text(

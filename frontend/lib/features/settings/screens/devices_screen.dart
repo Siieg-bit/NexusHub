@@ -164,7 +164,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                     children: [
                       Icon(Icons.devices_rounded,
                           size: 64,
-                          color: AppTheme.textHint.withOpacity(0.3)),
+                          color: AppTheme.textHint.withValues(alpha: 0.3)),
                       const SizedBox(height: 16),
                       const Text('Nenhum dispositivo registrado',
                           style: TextStyle(
@@ -182,11 +182,11 @@ class _DevicesScreenState extends State<DevicesScreen> {
                         margin: const EdgeInsets.only(bottom: 16),
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryColor.withOpacity(0.08),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                               color:
-                                  AppTheme.primaryColor.withOpacity(0.2)),
+                                  AppTheme.primaryColor.withValues(alpha: 0.2)),
                         ),
                         child: const Row(
                           children: [
@@ -234,7 +234,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                         border: isCurrentDevice
                             ? Border.all(
                                 color: AppTheme.successColor
-                                    .withOpacity(0.5))
+                                    .withValues(alpha: 0.5))
                             : null,
                       ),
                       child: Row(
@@ -246,7 +246,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                               color: (isCurrentDevice
                                       ? AppTheme.successColor
                                       : AppTheme.primaryColor)
-                                  .withOpacity(0.1),
+                                  .withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Icon(
@@ -277,7 +277,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                                                 vertical: 2),
                                         decoration: BoxDecoration(
                                           color: AppTheme.successColor
-                                              .withOpacity(0.15),
+                                              .withValues(alpha: 0.15),
                                           borderRadius:
                                               BorderRadius.circular(4),
                                         ),

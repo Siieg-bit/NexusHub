@@ -26,7 +26,7 @@ class LiveScreen extends StatelessWidget {
               height: 100,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFFFF4081).withOpacity(0.15),
+                color: const Color(0xFFFF4081).withValues(alpha: 0.15),
               ),
               child: const Icon(
                 Icons.live_tv_rounded,

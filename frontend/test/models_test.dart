@@ -13,23 +13,23 @@ void main() {
         'author_id': 'user-1',
         'title': 'Test Post',
         'content': 'Hello World',
-        'post_type': 'normal',
+        'type': 'normal',
         'media_url': 'https://example.com/img.jpg',
-        'link_url': null,
         'is_pinned': false,
         'is_featured': true,
-        'like_count': 42,
-        'comment_count': 5,
-        'view_count': 100,
+        'likes_count': 42,
+        'comments_count': 5,
+        'views_count': 100,
         'created_at': '2025-01-01T00:00:00Z',
+        'updated_at': '2025-01-01T00:00:00Z',
       };
 
       final post = PostModel.fromJson(json);
 
       expect(post.id, '123');
       expect(post.title, 'Test Post');
-      expect(post.postType, 'normal');
-      expect(post.likeCount, 42);
+      expect(post.type, 'normal');
+      expect(post.likesCount, 42);
       expect(post.isFeatured, true);
       expect(post.isPinned, false);
     });
@@ -41,22 +41,22 @@ void main() {
         'author_id': 'user-1',
         'title': 'Test',
         'content': null,
-        'post_type': 'normal',
+        'type': 'normal',
         'media_url': null,
-        'link_url': null,
         'is_pinned': null,
         'is_featured': null,
-        'like_count': null,
-        'comment_count': null,
-        'view_count': null,
+        'likes_count': null,
+        'comments_count': null,
+        'views_count': null,
         'created_at': '2025-01-01T00:00:00Z',
+        'updated_at': '2025-01-01T00:00:00Z',
       };
 
       final post = PostModel.fromJson(json);
 
       expect(post.content, '');
       expect(post.mediaUrl, isNull);
-      expect(post.likeCount, 0);
+      expect(post.likesCount, 0);
       expect(post.isPinned, false);
     });
   });
@@ -115,18 +115,17 @@ void main() {
         'icon_url': 'https://example.com/icon.jpg',
         'banner_url': 'https://example.com/banner.jpg',
         'theme_color': '#FF5722',
-        'member_count': 500,
-        'is_verified': true,
-        'tags': ['gaming', 'anime'],
+        'members_count': 500,
+        'agent_id': 'user-1',
         'created_at': '2025-01-01T00:00:00Z',
+        'updated_at': '2025-01-01T00:00:00Z',
       };
 
       final community = CommunityModel.fromJson(json);
 
       expect(community.id, 'comm-1');
       expect(community.name, 'Test Community');
-      expect(community.memberCount, 500);
-      expect(community.isVerified, true);
+      expect(community.membersCount, 500);
     });
 
     test('fromJson lida com campos nulos', () {
@@ -137,17 +136,16 @@ void main() {
         'icon_url': null,
         'banner_url': null,
         'theme_color': null,
-        'member_count': null,
-        'is_verified': null,
-        'tags': null,
+        'members_count': null,
+        'agent_id': 'user-1',
         'created_at': '2025-01-01T00:00:00Z',
+        'updated_at': '2025-01-01T00:00:00Z',
       };
 
       final community = CommunityModel.fromJson(json);
 
       expect(community.description, '');
-      expect(community.memberCount, 0);
-      expect(community.isVerified, false);
+      expect(community.membersCount, 0);
     });
   });
 
@@ -156,19 +154,20 @@ void main() {
       final json = {
         'id': 'msg-1',
         'thread_id': 'thread-1',
-        'sender_id': 'user-1',
+        'author_id': 'user-1',
         'content': 'Hello!',
-        'message_type': 'text',
+        'type': 'text',
         'metadata': null,
         'is_pinned': false,
         'created_at': '2025-01-01T00:00:00Z',
+        'updated_at': '2025-01-01T00:00:00Z',
       };
 
       final msg = MessageModel.fromJson(json);
 
       expect(msg.id, 'msg-1');
       expect(msg.content, 'Hello!');
-      expect(msg.messageType, 'text');
+      expect(msg.type, 'text');
       expect(msg.isTextMessage, true);
       expect(msg.isImageMessage, false);
       expect(msg.isSystemMessage, false);
@@ -178,12 +177,13 @@ void main() {
       final json = {
         'id': 'msg-2',
         'thread_id': 'thread-1',
-        'sender_id': 'user-1',
+        'author_id': 'user-1',
         'content': 'User joined',
-        'message_type': 'system',
+        'type': 'system',
         'metadata': null,
         'is_pinned': false,
         'created_at': '2025-01-01T00:00:00Z',
+        'updated_at': '2025-01-01T00:00:00Z',
       };
 
       final msg = MessageModel.fromJson(json);
@@ -194,29 +194,30 @@ void main() {
       final types = {
         'image': 'isImageMessage',
         'sticker': 'isStickerMessage',
-        'gif': 'isGifMessage',
-        'voice': 'isVoiceMessage',
-        'video': 'isVideoMessage',
-        'file': 'isFileMessage',
-        'poll': 'isPollMessage',
-        'link': 'isLinkMessage',
+        'gif': 'isGif',
+        'audio': 'isVoiceNote',
+        'video': 'isVideo',
+        'file': 'isFile',
+        'poll': 'isPoll',
+        'link': 'isLink',
       };
 
       for (final entry in types.entries) {
         final json = {
           'id': 'msg-${entry.key}',
           'thread_id': 'thread-1',
-          'sender_id': 'user-1',
+          'author_id': 'user-1',
           'content': 'test',
-          'message_type': entry.key,
+          'type': entry.key,
           'metadata': null,
           'is_pinned': false,
           'created_at': '2025-01-01T00:00:00Z',
+          'updated_at': '2025-01-01T00:00:00Z',
         };
 
         final msg = MessageModel.fromJson(json);
         // Verificar que o tipo correto é true
-        expect(msg.messageType, entry.key);
+        expect(msg.type, entry.key);
       }
     });
   });

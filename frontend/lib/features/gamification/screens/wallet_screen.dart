@@ -89,7 +89,7 @@ class _WalletScreenState extends State<WalletScreen>
                       gradient: LinearGradient(
                         colors: [
                           AppTheme.primaryColor,
-                          AppTheme.primaryColor.withOpacity(0.7),
+                          AppTheme.primaryColor.withValues(alpha: 0.7),
                           AppTheme.accentColor,
                         ],
                         begin: Alignment.topLeft,
@@ -98,7 +98,7 @@ class _WalletScreenState extends State<WalletScreen>
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.primaryColor.withOpacity(0.3),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.3),
                           blurRadius: 16,
                           offset: const Offset(0, 6),
                         ),
@@ -303,7 +303,7 @@ class _WalletScreenState extends State<WalletScreen>
                                   color: (isPositive
                                           ? AppTheme.successColor
                                           : AppTheme.errorColor)
-                                      .withOpacity(0.15),
+                                      .withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Icon(
@@ -462,7 +462,7 @@ class _WalletScreenState extends State<WalletScreen>
                   return ChoiceChip(
                     label: Text('$amount'),
                     selected: isSelected,
-                    selectedColor: const Color(0xFFE91E63).withOpacity(0.2),
+                    selectedColor: const Color(0xFFE91E63).withValues(alpha: 0.2),
                     onSelected: (_) {
                       setDialogState(() => selectedAmount = amount);
                     },
@@ -571,7 +571,7 @@ class _ActionCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -613,7 +613,7 @@ class _EarnRow extends StatelessWidget {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
+              color: color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: color, size: 16),
@@ -626,7 +626,7 @@ class _EarnRow extends StatelessWidget {
             padding:
                 const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
-              color: AppTheme.warningColor.withOpacity(0.1),
+              color: AppTheme.warningColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(

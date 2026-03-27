@@ -44,17 +44,14 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
   Future<void> _purchaseCoins(CoinPackage pkg) async {
     setState(() => _isPurchasing = true);
     try {
-      final offerings = await IAPService.getOfferings();
-      if (offerings == null || offerings.current == null) {
+      final packages = await IAPService.getOfferings();
+      if (packages.isEmpty) {
         _showError('Ofertas não disponíveis no momento');
         return;
       }
 
       // Encontrar o pacote correspondente
-      final packages = offerings.current!.availablePackages;
-      final target = packages.where(
-        (p) => p.storeProduct.identifier.contains(pkg.id),
-      );
+      final target = packages.where((p) => p.id == pkg.id);
 
       if (target.isEmpty) {
         _showError('Pacote não encontrado');
@@ -177,7 +174,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFFD700).withOpacity(0.3),
+            color: const Color(0xFFFFD700).withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -226,14 +223,14 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
       decoration: BoxDecoration(
         color: AppTheme.cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.successColor.withOpacity(0.3)),
+        border: Border.all(color: AppTheme.successColor.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppTheme.successColor.withOpacity(0.1),
+              color: AppTheme.successColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(Icons.play_circle_filled_rounded,
@@ -291,8 +288,8 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isPopular
-              ? AppTheme.primaryColor.withOpacity(0.5)
-              : AppTheme.dividerColor.withOpacity(0.3),
+              ? AppTheme.primaryColor.withValues(alpha: 0.5)
+              : AppTheme.dividerColor.withValues(alpha: 0.3),
           width: isPopular ? 2 : 1,
         ),
       ),
@@ -302,7 +299,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppTheme.warningColor.withOpacity(0.1),
+              color: AppTheme.warningColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Stack(
@@ -366,7 +363,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                   Text(
                     'Melhor custo-benefício!',
                     style: TextStyle(
-                      color: AppTheme.successColor.withOpacity(0.8),
+                      color: AppTheme.successColor.withValues(alpha: 0.8),
                       fontSize: 11,
                     ),
                   ),
@@ -435,7 +432,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Text(

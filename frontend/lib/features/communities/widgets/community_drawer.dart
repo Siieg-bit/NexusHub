@@ -53,7 +53,7 @@ class CommunityDrawer extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [themeColor, themeColor.withOpacity(0.6)],
+                  colors: [themeColor, themeColor.withValues(alpha: 0.6)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),

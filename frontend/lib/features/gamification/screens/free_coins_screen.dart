@@ -277,7 +277,7 @@ class _EarningCard extends StatelessWidget {
             ? null
             : [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -288,7 +288,7 @@ class _EarningCard extends StatelessWidget {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.15),
+            color: iconColor.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: iconColor, size: 24),
@@ -327,7 +327,7 @@ class _EarningCard extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppTheme.successColor.withOpacity(0.15),
+                  color: AppTheme.successColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(reward,

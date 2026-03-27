@@ -244,7 +244,7 @@ class _CommunityDetailScreenState
                             gradient: LinearGradient(
                               colors: [
                                 themeColor,
-                                themeColor.withOpacity(0.3)
+                                themeColor.withValues(alpha: 0.3)
                               ],
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
@@ -257,7 +257,7 @@ class _CommunityDetailScreenState
                           gradient: LinearGradient(
                             colors: [
                               Colors.transparent,
-                              AppTheme.scaffoldBg.withOpacity(0.8),
+                              AppTheme.scaffoldBg.withValues(alpha: 0.8),
                               AppTheme.scaffoldBg,
                             ],
                             begin: Alignment.topCenter,
@@ -278,7 +278,7 @@ class _CommunityDetailScreenState
                               width: 60,
                               height: 60,
                               decoration: BoxDecoration(
-                                color: themeColor.withOpacity(0.3),
+                                color: themeColor.withValues(alpha: 0.3),
                                 borderRadius: BorderRadius.circular(16),
                                 border:
                                     Border.all(color: themeColor, width: 2),
@@ -791,7 +791,7 @@ class _WikiTabState extends State<_WikiTab> {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withOpacity(0.1),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: entry['cover_image_url'] != null
@@ -904,7 +904,7 @@ class _ChatTabState extends State<_ChatTab> {
           child: ListTile(
             onTap: () => context.push('/chat/${chat['id']}'),
             leading: CircleAvatar(
-              backgroundColor: AppTheme.accentColor.withOpacity(0.2),
+              backgroundColor: AppTheme.accentColor.withValues(alpha: 0.2),
               backgroundImage: chat['icon_url'] != null
                   ? CachedNetworkImageProvider(
                       chat['icon_url'] as String)
@@ -1096,7 +1096,7 @@ class _MemberTile extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 22,
-              backgroundColor: AppTheme.primaryColor.withOpacity(0.2),
+              backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.2),
               backgroundImage: avatarUrl != null
                   ? CachedNetworkImageProvider(avatarUrl)
                   : null,
@@ -1139,7 +1139,7 @@ class _MemberTile extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: roleColor(role).withOpacity(0.2),
+                  color: roleColor(role).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(

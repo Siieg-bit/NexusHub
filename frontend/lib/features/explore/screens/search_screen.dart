@@ -250,7 +250,7 @@ class _SearchScreenState extends State<SearchScreen>
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withOpacity(0.1),
+              color: AppTheme.primaryColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(Icons.article_rounded,

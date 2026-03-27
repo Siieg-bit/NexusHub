@@ -98,7 +98,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   children: [
                     CircleAvatar(
                       radius: 50,
-                      backgroundColor: AppTheme.primaryColor.withOpacity(0.3),
+                      backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.3),
                       child: Text(
                         (user?.nickname ?? '?')[0].toUpperCase(),
                         style: const TextStyle(

@@ -252,7 +252,7 @@ class _CallScreenState extends State<CallScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: AppTheme.successColor.withOpacity(0.2),
+              color: AppTheme.successColor.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -370,7 +370,7 @@ class _CallScreenState extends State<CallScreen> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
         border: isSpeaking
             ? Border.all(color: AppTheme.successColor, width: 2.5)
@@ -378,7 +378,7 @@ class _CallScreenState extends State<CallScreen> {
         boxShadow: isSpeaking
             ? [
                 BoxShadow(
-                  color: AppTheme.successColor.withOpacity(0.3),
+                  color: AppTheme.successColor.withValues(alpha: 0.3),
                   blurRadius: 12,
                   spreadRadius: 2,
                 )
@@ -394,7 +394,7 @@ class _CallScreenState extends State<CallScreen> {
             children: [
               CircleAvatar(
                 radius: 36,
-                backgroundColor: AppTheme.primaryColor.withOpacity(0.3),
+                backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.3),
                 backgroundImage: iconUrl != null
                     ? CachedNetworkImageProvider(iconUrl)
                     : null,
@@ -463,7 +463,7 @@ class _CallScreenState extends State<CallScreen> {
         children: [
           CircleAvatar(
             radius: 48,
-            backgroundColor: AppTheme.primaryColor.withOpacity(0.3),
+            backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.3),
             child: Text(name[0].toUpperCase(),
                 style: const TextStyle(
                     color: Colors.white,
@@ -583,7 +583,7 @@ class _AudioLevelBar extends StatelessWidget {
           decoration: BoxDecoration(
             color: isActive
                 ? AppTheme.successColor
-                : Colors.white.withOpacity(0.1),
+                : Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(2),
           ),
         );
@@ -621,8 +621,8 @@ class _ControlButton extends StatelessWidget {
               color: isEnd
                   ? AppTheme.errorColor
                   : isActive
-                      ? Colors.white.withOpacity(0.15)
-                      : Colors.white.withOpacity(0.05),
+                      ? Colors.white.withValues(alpha: 0.15)
+                      : Colors.white.withValues(alpha: 0.05),
               shape: BoxShape.circle,
             ),
             child: Icon(icon,

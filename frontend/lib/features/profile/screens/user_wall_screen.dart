@@ -244,7 +244,7 @@ class _UserWallScreenState extends State<UserWallScreen> {
               color: AppTheme.cardColor,
               border: Border(
                 top: BorderSide(
-                    color: AppTheme.dividerColor.withOpacity(0.3)),
+                    color: AppTheme.dividerColor.withValues(alpha: 0.3)),
               ),
             ),
             child: Row(

@@ -107,7 +107,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                               icon: Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.warningColor.withOpacity(0.15),
+                                  color: AppTheme.warningColor.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: const Icon(Icons.calendar_today_rounded,
@@ -122,7 +122,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                               icon: Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.primaryColor.withOpacity(0.15),
+                                  color: AppTheme.primaryColor.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: const Icon(Icons.notifications_outlined,
@@ -289,7 +289,7 @@ class _CommunityCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppTheme.cardColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.dividerColor.withOpacity(0.3)),
+          border: Border.all(color: AppTheme.dividerColor.withValues(alpha: 0.3)),
         ),
         child: Column(
           children: [
@@ -306,7 +306,7 @@ class _CommunityCard extends StatelessWidget {
                         placeholder: (_, __) => Container(
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                              colors: [themeColor, themeColor.withOpacity(0.5)],
+                              colors: [themeColor, themeColor.withValues(alpha: 0.5)],
                             ),
                           ),
                         ),
@@ -314,7 +314,7 @@ class _CommunityCard extends StatelessWidget {
                     : Container(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [themeColor, themeColor.withOpacity(0.5)],
+                            colors: [themeColor, themeColor.withValues(alpha: 0.5)],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
@@ -333,9 +333,9 @@ class _CommunityCard extends StatelessWidget {
                     width: 50,
                     height: 50,
                     decoration: BoxDecoration(
-                      color: themeColor.withOpacity(0.2),
+                      color: themeColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: themeColor.withOpacity(0.5)),
+                      border: Border.all(color: themeColor.withValues(alpha: 0.5)),
                     ),
                     child: community.iconUrl != null
                         ? ClipRRect(

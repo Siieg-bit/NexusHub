@@ -117,7 +117,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                   gradient: LinearGradient(
                     colors: [
                       _parseColor(_selectedColor),
-                      _parseColor(_selectedColor).withOpacity(0.5),
+                      _parseColor(_selectedColor).withValues(alpha: 0.5),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(16),
@@ -191,7 +191,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                             : null,
                         boxShadow: isSelected
                             ? [BoxShadow(
-                                color: _parseColor(color).withOpacity(0.5),
+                                color: _parseColor(color).withValues(alpha: 0.5),
                                 blurRadius: 8,
                               )]
                             : null,

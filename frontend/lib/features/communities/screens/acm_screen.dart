@@ -399,7 +399,7 @@ class _AcmScreenState extends State<AcmScreen>
                           width: 3,
                         ),
                         boxShadow: isSelected
-                            ? [BoxShadow(color: c.withOpacity(0.5), blurRadius: 8)]
+                            ? [BoxShadow(color: c.withValues(alpha: 0.5), blurRadius: 8)]
                             : null,
                       ),
                       child: isSelected
@@ -666,7 +666,7 @@ class _AccessOption extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppTheme.primaryColor.withOpacity(0.1)
+              ? AppTheme.primaryColor.withValues(alpha: 0.1)
               : AppTheme.cardColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
@@ -730,7 +730,7 @@ class _StatCard extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
+              color: color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color),

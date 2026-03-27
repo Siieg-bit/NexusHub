@@ -177,7 +177,7 @@ class AppTheme {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: cardColorLight,
-        selectedColor: primaryColor.withOpacity(0.3),
+        selectedColor: primaryColor.withValues(alpha: 0.3),
         labelStyle: const TextStyle(color: textPrimary, fontSize: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         side: BorderSide.none,
@@ -295,7 +295,7 @@ class AppTheme {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: cardColorLtAlt,
-        selectedColor: primaryColor.withOpacity(0.15),
+        selectedColor: primaryColor.withValues(alpha: 0.15),
         labelStyle: const TextStyle(color: textPrimaryLight, fontSize: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         side: BorderSide.none,

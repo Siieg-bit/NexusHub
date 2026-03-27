@@ -115,7 +115,7 @@ class _NotificationTile extends StatelessWidget {
     final createdAt = DateTime.tryParse(data['created_at'] as String? ?? '') ?? DateTime.now();
 
     return Container(
-      color: isRead ? null : AppTheme.primaryColor.withOpacity(0.05),
+      color: isRead ? null : AppTheme.primaryColor.withValues(alpha: 0.05),
       child: ListTile(
         onTap: () {
           // Marcar como lida e navegar
@@ -145,7 +145,7 @@ class _NotificationTile extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 22,
-              backgroundColor: _getColor(type).withOpacity(0.15),
+              backgroundColor: _getColor(type).withValues(alpha: 0.15),
               backgroundImage: actor?['icon_url'] != null
                   ? CachedNetworkImageProvider(actor!['icon_url'] as String)
                   : null,

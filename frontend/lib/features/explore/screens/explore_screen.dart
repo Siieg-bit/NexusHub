@@ -314,7 +314,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                     gradient: LinearGradient(
                       colors: [
                         _parseColor(community.themeColor),
-                        _parseColor(community.themeColor).withOpacity(0.6),
+                        _parseColor(community.themeColor).withValues(alpha: 0.6),
                       ],
                     ),
                   ),
@@ -335,7 +335,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                               end: Alignment.bottomCenter,
                               colors: [
                                 Colors.transparent,
-                                Colors.black.withOpacity(0.7)
+                                Colors.black.withValues(alpha: 0.7)
                               ],
                             ),
                           ),
@@ -359,7 +359,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                               Text(
                                 '${formatCount(community.membersCount)} membros',
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.8),
+                                  color: Colors.white.withValues(alpha: 0.8),
                                   fontSize: 13,
                                 ),
                               ),
@@ -494,7 +494,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: cat.color.withOpacity(0.15),
+                color: cat.color.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(cat.icon, color: cat.color),
@@ -612,7 +612,7 @@ class _TrendingCommunityCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppTheme.cardColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.dividerColor.withOpacity(0.3)),
+          border: Border.all(color: AppTheme.dividerColor.withValues(alpha: 0.3)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -624,7 +624,7 @@ class _TrendingCommunityCard extends StatelessWidget {
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(16)),
                   gradient: LinearGradient(
-                      colors: [color, color.withOpacity(0.5)]),
+                      colors: [color, color.withValues(alpha: 0.5)]),
                 ),
                 child: community.bannerUrl != null
                     ? ClipRRect(
@@ -712,7 +712,7 @@ class _CommunityListTile extends StatelessWidget {
       trailing: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         decoration: BoxDecoration(
-          color: AppTheme.primaryColor.withOpacity(0.15),
+          color: AppTheme.primaryColor.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(16),
         ),
         child: const Text(
@@ -750,7 +750,7 @@ class _CommunityGridCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppTheme.cardColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.dividerColor.withOpacity(0.3)),
+          border: Border.all(color: AppTheme.dividerColor.withValues(alpha: 0.3)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -762,7 +762,7 @@ class _CommunityGridCard extends StatelessWidget {
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(16)),
                   gradient: LinearGradient(
-                      colors: [color, color.withOpacity(0.5)]),
+                      colors: [color, color.withValues(alpha: 0.5)]),
                 ),
                 child: community.bannerUrl != null
                     ? ClipRRect(
@@ -805,7 +805,7 @@ class _CommunityGridCard extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
-                            color: color.withOpacity(0.15),
+                            color: color.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(

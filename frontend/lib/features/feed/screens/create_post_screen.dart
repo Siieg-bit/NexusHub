@@ -283,7 +283,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                           horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppTheme.primaryColor.withOpacity(0.15)
+                            ? AppTheme.primaryColor.withValues(alpha: 0.15)
                             : AppTheme.cardColor,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(

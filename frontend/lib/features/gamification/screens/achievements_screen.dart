@@ -87,7 +87,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                           gradient: LinearGradient(
                             colors: [
                               AppTheme.warningColor,
-                              AppTheme.warningColor.withOpacity(0.7),
+                              AppTheme.warningColor.withValues(alpha: 0.7),
                             ],
                           ),
                           borderRadius: BorderRadius.circular(16),
@@ -193,11 +193,11 @@ class _AchievementTile extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isUnlocked
-            ? AppTheme.warningColor.withOpacity(0.06)
+            ? AppTheme.warningColor.withValues(alpha: 0.06)
             : AppTheme.cardColor,
         borderRadius: BorderRadius.circular(14),
         border: isUnlocked
-            ? Border.all(color: AppTheme.warningColor.withOpacity(0.3))
+            ? Border.all(color: AppTheme.warningColor.withValues(alpha: 0.3))
             : null,
       ),
       child: Row(
@@ -208,8 +208,8 @@ class _AchievementTile extends StatelessWidget {
             height: 48,
             decoration: BoxDecoration(
               color: isUnlocked
-                  ? AppTheme.warningColor.withOpacity(0.15)
-                  : AppTheme.dividerColor.withOpacity(0.3),
+                  ? AppTheme.warningColor.withValues(alpha: 0.15)
+                  : AppTheme.dividerColor.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
@@ -242,7 +242,7 @@ class _AchievementTile extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: rarityColor.withOpacity(0.15),
+                        color: rarityColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
@@ -273,7 +273,7 @@ class _AchievementTile extends StatelessWidget {
                           child: LinearProgressIndicator(
                             value: progress / 100,
                             backgroundColor:
-                                AppTheme.dividerColor.withOpacity(0.3),
+                                AppTheme.dividerColor.withValues(alpha: 0.3),
                             valueColor: AlwaysStoppedAnimation(
                                 AppTheme.primaryColor),
                             minHeight: 4,
