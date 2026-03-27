@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 env:
-  FLUTTER_VERSION: '3.41.6'
+  FLUTTER_VERSION: '3.29.3'
   JAVA_VERSION: '17'
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -98,6 +98,14 @@ jobs:
             flutter create --project-name amino_clone --org com.nexushub --platforms android .
           fi
 
+      # Fix: "Cannot run Project.afterEvaluate when project is already evaluated"
+      # Caused by third-party plugins (agora_rtc_engine/iris_method_channel) using
+      # rootProject.allprojects {} which forces early evaluation of subprojects.
+      # See: https://github.com/flutter/flutter/issues/180899
+      - name: Patch flutter.groovy (fix afterEvaluate race condition)
+        working-directory: ${{ github.workspace }}
+        run: python3 scripts/patch_flutter_groovy.py
+
       # Decodificar google-services.json do secret (ou usar placeholder)
       - name: Decode google-services.json
         env:
@@ -121,25 +129,7 @@ jobs:
           echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
           echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
 
-      - name: Clean Gradle caches
-        run: |
-          rm -rf ~/.gradle/caches/jars-*
-          rm -rf ~/.gradle/caches/transforms-*
-
-      - name: Debug build files
-        run: |
-          echo "=== settings.gradle ==="
-          cat android/settings.gradle
-          echo "=== app/build.gradle ==="
-          cat android/app/build.gradle
-          echo "=== gradle.properties ==="
-          cat android/gradle.properties
-          echo "=== gradle-wrapper.properties ==="
-          cat android/gradle/wrapper/gradle-wrapper.properties
-
       - name: Build APK (debug)
-        env:
-          GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.logging.stacktrace=all"
         run: flutter build apk --debug
 
       - name: Upload APK
@@ -178,6 +168,10 @@ jobs:
           if [ ! -f "android/app/src/main/AndroidManifest.xml" ] || [ ! -f "android/settings.gradle" ]; then
             flutter create --project-name amino_clone --org com.nexushub --platforms android .
           fi
+
+      - name: Patch flutter.groovy (fix afterEvaluate race condition)
+        working-directory: ${{ github.workspace }}
+        run: python3 scripts/patch_flutter_groovy.py
 
       - name: Decode google-services.json
         env:
