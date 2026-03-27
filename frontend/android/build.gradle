@@ -26,17 +26,23 @@ subprojects {
 subprojects {
     project.evaluationDependsOn(':app')
 
-    // Force consistent JVM target (17) across all subprojects for both Java and Kotlin
-    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-        kotlinOptions {
-            jvmTarget = '17'
+    afterEvaluate {
+        // Force consistent JVM target (17) for Kotlin in all subprojects
+        tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+            kotlinOptions {
+                jvmTarget = '17'
+            }
         }
-    }
 
-    // Force Java compile options to match Kotlin JVM target (17)
-    tasks.withType(JavaCompile).configureEach {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        // Force Java compile options to VERSION_17 in all Android subprojects
+        if (project.hasProperty('android')) {
+            project.android {
+                compileOptions {
+                    sourceCompatibility JavaVersion.VERSION_17
+                    targetCompatibility JavaVersion.VERSION_17
+                }
+            }
+        }
     }
 }
 
