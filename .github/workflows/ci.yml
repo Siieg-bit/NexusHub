@@ -98,12 +98,16 @@ jobs:
             flutter create --project-name amino_clone --org com.nexushub --platforms android .
           fi
 
-      # Decodificar google-services.json do secret
+      # Decodificar google-services.json do secret (ou usar placeholder)
       - name: Decode google-services.json
-        if: env.GOOGLE_SERVICES_JSON != ''
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
-        run: echo "$GOOGLE_SERVICES_JSON" | base64 -d > android/app/google-services.json
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            echo "$GOOGLE_SERVICES_JSON" | base64 -d > android/app/google-services.json
+          else
+            echo "Using placeholder google-services.json for debug build"
+          fi
 
       # Decodificar keystore do secret
       - name: Decode keystore

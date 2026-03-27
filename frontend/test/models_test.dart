@@ -71,8 +71,9 @@ void main() {
         'amino_id': 'test_user',
         'level': 5,
         'reputation': 1000,
-        'is_online': true,
+        'online_status': 1,
         'created_at': '2025-01-01T00:00:00Z',
+        'updated_at': '2025-01-01T00:00:00Z',
       };
 
       final user = UserModel.fromJson(json);
@@ -93,8 +94,9 @@ void main() {
         'amino_id': null,
         'level': null,
         'reputation': null,
-        'is_online': null,
+        'online_status': null,
         'created_at': '2025-01-01T00:00:00Z',
+        'updated_at': '2025-01-01T00:00:00Z',
       };
 
       final user = UserModel.fromJson(json);
