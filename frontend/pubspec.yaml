@@ -29,9 +29,7 @@ dependencies:
   badges: ^3.1.2
   flutter_colorpicker: ^1.0.3
 
-  # Forms & Validation
-  flutter_form_builder: ^9.5.0
-  form_builder_validators: ^10.0.1
+  # Forms & Validation (using custom validators.dart)
 
   # Image & Media
   image_picker: ^1.0.7
@@ -76,7 +74,6 @@ dependencies:
   # purchases_flutter: ^6.18.0
 
   # Utils
-  intl: ^0.19.0
   uuid: ^4.3.3
   url_launcher: ^6.2.4
   share_plus: ^7.2.2
