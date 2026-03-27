@@ -58,32 +58,18 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
     setState(() => _isLoadingAd = true);
 
     try {
-      final reward = await AdService.showRewardedAd();
-      if (reward > 0) {
-        // Creditar moedas
-        final userId = SupabaseService.currentUserId;
-        if (userId != null) {
-          await SupabaseService.table('transactions').insert({
-            'user_id': userId,
-            'amount': reward,
-            'type': 'ad_reward',
-            'description': 'Recompensa por assistir anúncio',
-          });
-
-          await SupabaseService.table('wallets')
-              .update({'balance': _balance + reward})
-              .eq('user_id', userId);
-        }
-
+      const int rewardCoins = 5;
+      final success = await AdService.showRewardedAd(rewardCoins: rewardCoins);
+      if (success) {
         setState(() {
-          _balance += reward;
+          _balance += rewardCoins;
           _adsWatchedToday++;
         });
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('+$reward moedas! 🎉'),
+              content: Text('+$rewardCoins moedas!'),
               backgroundColor: AppTheme.successColor,
             ),
           );

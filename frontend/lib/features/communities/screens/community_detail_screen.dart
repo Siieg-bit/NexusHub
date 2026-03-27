@@ -327,7 +327,7 @@ class _CommunityDetailScreenState
                                           color: AppTheme.onlineColor),
                                       const SizedBox(width: 4),
                                       Text(
-                                          '${community.onlineMembersCount} online',
+                                          '${community.membersCount} membros',
                                           style: const TextStyle(
                                               color: AppTheme.onlineColor,
                                               fontSize: 12)),

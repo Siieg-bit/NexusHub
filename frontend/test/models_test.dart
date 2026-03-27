@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nexus_hub/core/models/post_model.dart';
-import 'package:nexus_hub/core/models/user_model.dart';
-import 'package:nexus_hub/core/models/community_model.dart';
-import 'package:nexus_hub/core/models/message_model.dart';
+import 'package:amino_clone/core/models/post_model.dart';
+import 'package:amino_clone/core/models/user_model.dart';
+import 'package:amino_clone/core/models/community_model.dart';
+import 'package:amino_clone/core/models/message_model.dart';
 
 void main() {
   group('PostModel', () {

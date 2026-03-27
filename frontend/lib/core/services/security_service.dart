@@ -12,7 +12,8 @@ import 'supabase_service.dart';
 /// - Content Security Policy helpers
 class SecurityService {
   /// Chave secreta para HMAC (em produção, usar variável de ambiente)
-  static const String _hmacSecret = 'nexushub_hmac_secret_change_in_production';
+  static const String _hmacSecret =
+      'nexushub_hmac_secret_change_in_production';
 
   /// Gera assinatura HMAC SHA-256 para uma payload
   static String generateHmac(Map<String, dynamic> payload) {
@@ -45,11 +46,14 @@ class SecurityService {
   static String sanitizeHtml(String input) {
     // Remove script tags
     var sanitized = input.replaceAll(
-        RegExp(r'<script[^>]*>.*?</script>', caseSensitive: false, dotAll: true), '');
+        RegExp(r'<script[^>]*>.*?</script>',
+            caseSensitive: false, dotAll: true),
+        '');
 
     // Remove event handlers (onclick, onerror, etc.)
     sanitized = sanitized.replaceAll(
-        RegExp(r'\s+on\w+\s*=\s*["\'][^"\']*["\']', caseSensitive: false), '');
+        RegExp(r"""\s+on\w+\s*=\s*["'][^"']*["']""", caseSensitive: false),
+        '');
 
     // Remove javascript: URLs
     sanitized = sanitized.replaceAll(
@@ -57,12 +61,14 @@ class SecurityService {
 
     // Remove data: URLs em src/href (podem conter scripts)
     sanitized = sanitized.replaceAll(
-        RegExp(r'(src|href)\s*=\s*["\']data:', caseSensitive: false), '');
+        RegExp(r"""(src|href)\s*=\s*["']data:""", caseSensitive: false), '');
 
     // Remove iframe, object, embed tags
     sanitized = sanitized.replaceAll(
-        RegExp(r'<(iframe|object|embed|form)[^>]*>.*?</(iframe|object|embed|form)>',
-            caseSensitive: false, dotAll: true),
+        RegExp(
+            r'<(iframe|object|embed|form)[^>]*>.*?</(iframe|object|embed|form)>',
+            caseSensitive: false,
+            dotAll: true),
         '');
 
     return sanitized;
@@ -105,7 +111,8 @@ class SecurityService {
   static bool isValidImageUrl(String url) {
     try {
       final uri = Uri.parse(url);
-      if (!uri.hasScheme || (!uri.isScheme('https') && !uri.isScheme('http'))) {
+      if (!uri.hasScheme ||
+          (!uri.isScheme('https') && !uri.isScheme('http'))) {
         return false;
       }
       final ext = uri.path.toLowerCase();

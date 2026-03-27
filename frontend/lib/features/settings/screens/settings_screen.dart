@@ -477,7 +477,7 @@ class _SectionLabel extends StatelessWidget {
 }
 
 class _SettingsGroup extends StatelessWidget {
-  final List<_SettingsItem> items;
+  final List<Widget> items;
   const _SettingsGroup({required this.items});
 
   @override

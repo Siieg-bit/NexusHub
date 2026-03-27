@@ -46,7 +46,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
     final user = ref.read(currentUserProvider);
     if (user != null) {
       setState(() {
-        _consecutiveDays = user.consecutiveCheckInDays;
+        _consecutiveDays = user.consecutiveCheckinDays;
       });
     }
   }

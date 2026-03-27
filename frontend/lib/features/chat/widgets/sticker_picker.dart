@@ -252,7 +252,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
                     child: CachedNetworkImage(
                       imageUrl: imageUrl,
                       fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => const Center(
+                      errorWidget: (_, __, ___) => const Center(
                           child: Icon(Icons.broken_image_rounded)),
                     ),
                   )

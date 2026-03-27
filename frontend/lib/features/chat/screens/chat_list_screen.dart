@@ -6,6 +6,7 @@ import 'package:timeago/timeago.dart' as timeago;
 
 import '../../../config/app_theme.dart';
 import '../../../core/models/message_model.dart';
+import '../../../core/models/chat_room_model.dart';
 import '../../../core/services/supabase_service.dart';
 
 /// Provider para lista de chats do usuário.

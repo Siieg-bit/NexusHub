@@ -47,7 +47,7 @@ class SupabaseService {
     required String bucket,
     required String path,
     required dynamic file,
-    FileOptions? fileOptions,
+    FileOptions fileOptions = const FileOptions(),
   }) async {
     await storage.from(bucket).upload(path, file, fileOptions: fileOptions);
     return storage.from(bucket).getPublicUrl(path);

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nexus_hub/core/utils/validators.dart';
+import 'package:amino_clone/core/utils/validators.dart';
 
 void main() {
   group('Validators', () {

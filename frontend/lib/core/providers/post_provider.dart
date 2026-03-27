@@ -92,26 +92,14 @@ class CommunityFeedNotifier extends FamilyAsyncNotifier<List<PostModel>, String>
       await SupabaseService.client.rpc('toggle_post_like', params: {
         'p_post_id': postId,
       });
-      // Atualizar o post localmente
+      // Atualizar o post localmente usando copyWith
       final current = state.valueOrNull ?? [];
       final index = current.indexWhere((p) => p.id == postId);
       if (index >= 0) {
         final post = current[index];
-        final updated = PostModel(
-          id: post.id,
-          communityId: post.communityId,
-          authorId: post.authorId,
-          title: post.title,
-          content: post.content,
-          postType: post.postType,
-          mediaUrl: post.mediaUrl,
-          linkUrl: post.linkUrl,
-          isPinned: post.isPinned,
-          isFeatured: post.isFeatured,
-          likeCount: post.likeCount + 1, // toggle
-          commentCount: post.commentCount,
-          viewCount: post.viewCount,
-          createdAt: post.createdAt,
+        final updated = post.copyWith(
+          likesCount: post.isLiked ? post.likesCount - 1 : post.likesCount + 1,
+          isLiked: !post.isLiked,
         );
         final newList = [...current];
         newList[index] = updated;

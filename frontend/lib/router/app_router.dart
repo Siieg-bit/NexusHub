@@ -43,6 +43,7 @@ import '../features/store/screens/store_screen.dart';
 import '../features/store/screens/coin_shop_screen.dart';
 import '../features/gamification/screens/free_coins_screen.dart';
 import '../features/chat/screens/call_screen.dart';
+import '../core/services/call_service.dart';
 import '../features/wiki/screens/wiki_screen.dart';
 import 'shell_screen.dart';
 
@@ -362,7 +363,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'followers',
         builder: (context, state) => FollowersScreen(
           userId: state.pathParameters['userId']!,
-          initialTab: state.uri.queryParameters['tab'] == 'following' ? 1 : 0,
+          showFollowers: state.uri.queryParameters['tab'] != 'following',
         ),
       ),
 
@@ -386,9 +387,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/call/:sessionId',
         name: 'call',
-        builder: (context, state) => CallScreen(
-          sessionId: state.pathParameters['sessionId']!,
-        ),
+        builder: (context, state) {
+          final session = state.extra as CallSession?;
+          if (session != null) {
+            return CallScreen(session: session);
+          }
+          // Fallback: redirecionar para home se não houver sessão
+          return const Scaffold(
+            body: Center(child: Text('Sessão de chamada inválida')),
+          );
+        },
       ),
 
       // ====================================================================
