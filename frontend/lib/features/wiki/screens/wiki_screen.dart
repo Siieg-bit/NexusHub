@@ -36,6 +36,7 @@ class _WikiListScreenState extends State<WikiListScreen> {
       final res = await SupabaseService.table('wiki_entries')
           .select('*, profiles(*)')
           .eq('community_id', widget.communityId)
+          .eq('status', 'approved')
           .order('created_at', ascending: false);
       _entries = List<Map<String, dynamic>>.from(res as List);
 
@@ -303,6 +304,11 @@ class WikiDetailScreen extends StatefulWidget {
 class _WikiDetailScreenState extends State<WikiDetailScreen> {
   Map<String, dynamic>? _entry;
   bool _isLoading = true;
+  int _userRating = 0;
+  double _avgRating = 0;
+  int _totalRatings = 0;
+  final _whatILikeController = TextEditingController();
+  List<Map<String, dynamic>> _whatILikeList = [];
 
   @override
   void initState() {
@@ -317,10 +323,69 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
           .eq('id', widget.wikiId)
           .single();
       _entry = res;
+      _avgRating = (res['average_rating'] as num?)?.toDouble() ?? 0;
+      _totalRatings = res['total_ratings'] as int? ?? 0;
+
+      // Load user's own rating
+      final userId = SupabaseService.currentUserId;
+      if (userId != null) {
+        try {
+          final ratingRes = await SupabaseService.table('wiki_ratings')
+              .select('rating')
+              .eq('wiki_entry_id', widget.wikiId)
+              .eq('user_id', userId)
+              .maybeSingle();
+          if (ratingRes != null) {
+            _userRating = ratingRes['rating'] as int? ?? 0;
+          }
+        } catch (_) {}
+      }
+
+      // Load "What I Like" comments
+      try {
+        final likesRes = await SupabaseService.table('wiki_what_i_like')
+            .select('*, profiles(nickname, icon_url)')
+            .eq('wiki_entry_id', widget.wikiId)
+            .order('created_at', ascending: false)
+            .limit(20);
+        _whatILikeList = List<Map<String, dynamic>>.from(likesRes as List);
+      } catch (_) {}
+
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _submitRating(int rating) async {
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) return;
+    try {
+      await SupabaseService.table('wiki_ratings').upsert({
+        'wiki_entry_id': widget.wikiId,
+        'user_id': userId,
+        'rating': rating,
+      });
+      setState(() => _userRating = rating);
+      // Reload to get updated average
+      _loadEntry();
+    } catch (_) {}
+  }
+
+  Future<void> _submitWhatILike() async {
+    final text = _whatILikeController.text.trim();
+    if (text.isEmpty) return;
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) return;
+    try {
+      await SupabaseService.table('wiki_what_i_like').insert({
+        'wiki_entry_id': widget.wikiId,
+        'user_id': userId,
+        'content': text,
+      });
+      _whatILikeController.clear();
+      _loadEntry();
+    } catch (_) {}
   }
 
   @override
@@ -444,11 +509,11 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                       children: [
                         CircleAvatar(
                           radius: 16,
-                          backgroundImage: author['avatar_url'] != null
+                          backgroundImage: author['icon_url'] != null
                               ? CachedNetworkImageProvider(
-                                  author['avatar_url'] as String)
+                                  author['icon_url'] as String)
                               : null,
-                          child: author['avatar_url'] == null
+                          child: author['icon_url'] == null
                               ? const Icon(Icons.person_rounded, size: 16)
                               : null,
                         ),
@@ -460,6 +525,118 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                         ),
                       ],
                     ),
+
+                  // ── My Rating ──
+                  const SizedBox(height: 24),
+                  const Divider(),
+                  const SizedBox(height: 12),
+                  Text('Minha Avaliação',
+                      style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: List.generate(5, (i) {
+                      final star = i + 1;
+                      return GestureDetector(
+                        onTap: () => _submitRating(star),
+                        child: Icon(
+                          star <= _userRating
+                              ? Icons.star_rounded
+                              : Icons.star_border_rounded,
+                          color: star <= _userRating
+                              ? Colors.amber
+                              : AppTheme.textHint,
+                          size: 32,
+                        ),
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Média: ${_avgRating.toStringAsFixed(1)} ($_totalRatings avaliações)',
+                    style: const TextStyle(
+                        color: AppTheme.textSecondary, fontSize: 12),
+                  ),
+
+                  // ── What I Like ──
+                  const SizedBox(height: 24),
+                  const Divider(),
+                  const SizedBox(height: 12),
+                  Text('O que eu gosto',
+                      style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _whatILikeController,
+                          decoration: InputDecoration(
+                            hintText: 'Escreva o que você gosta...',
+                            filled: true,
+                            fillColor: AppTheme.cardColor,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            isDense: true,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        onPressed: _submitWhatILike,
+                        icon: const Icon(Icons.send_rounded,
+                            color: AppTheme.primaryColor),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  ..._whatILikeList.map((item) {
+                    final profile =
+                        item['profiles'] as Map<String, dynamic>?;
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppTheme.cardColor,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CircleAvatar(
+                            radius: 14,
+                            backgroundImage: profile?['icon_url'] != null
+                                ? CachedNetworkImageProvider(
+                                    profile!['icon_url'] as String)
+                                : null,
+                            child: profile?['icon_url'] == null
+                                ? const Icon(Icons.person, size: 14)
+                                : null,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  profile?['nickname'] ?? 'Anônimo',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 12),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  item['content'] as String? ?? '',
+                                  style: const TextStyle(fontSize: 13),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
                 ],
               ),
             ),

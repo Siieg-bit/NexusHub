@@ -490,8 +490,8 @@ class _WalletScreenState extends State<WalletScreen>
                   return;
                 }
                 try {
-                  await SupabaseService.rpc('send_props', params: {
-                    'p_target_amino_id': targetAminoId,
+                  await SupabaseService.rpc('send_tip', params: {
+                    'p_target_user_id': targetAminoId,
                     'p_amount': selectedAmount,
                   });
                   setState(() => _coins -= selectedAmount);

@@ -105,7 +105,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
 
   Future<void> _doLuckyDraw() async {
     try {
-      final result = await SupabaseService.rpc('lucky_draw');
+      final result = await SupabaseService.rpc('play_lucky_draw');
       if (result != null) {
         final data = result as Map<String, dynamic>;
         setState(() {
@@ -169,7 +169,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
 
   Future<void> _repairStreak() async {
     try {
-      final result = await SupabaseService.rpc('repair_check_in_streak',
+      final result = await SupabaseService.rpc('repair_streak',
           params: {'p_cost': 50});
       if (result != null) {
         final data = result as Map<String, dynamic>;
@@ -206,7 +206,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
     setState(() => _isLoading = true);
 
     try {
-      final result = await SupabaseService.rpc('daily_check_in');
+      final result = await SupabaseService.rpc('daily_checkin');
 
       if (result != null) {
         final data = result as Map<String, dynamic>;

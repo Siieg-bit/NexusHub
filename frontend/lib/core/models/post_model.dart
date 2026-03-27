@@ -19,6 +19,8 @@ class PostModel {
   final String? originalCommunityId;
   final String? externalUrl; // para type=link
   final Map<String, dynamic>? linkSummary;
+  final Map<String, dynamic>? pollData;   // JSONB: {options: [{text, votes}], totalVotes, userVote}
+  final Map<String, dynamic>? quizData;   // JSONB: {questions: [{text, options, correctIndex}]}
   final int likesCount;
   final int commentsCount;
   final int viewsCount;
@@ -50,6 +52,8 @@ class PostModel {
     this.originalCommunityId,
     this.externalUrl,
     this.linkSummary,
+    this.pollData,
+    this.quizData,
     this.likesCount = 0,
     this.commentsCount = 0,
     this.viewsCount = 0,
@@ -83,6 +87,8 @@ class PostModel {
       originalCommunityId: json['original_community_id'] as String?,
       externalUrl: json['external_url'] as String?,
       linkSummary: json['link_summary'] as Map<String, dynamic>?,
+      pollData: json['poll_data'] as Map<String, dynamic>?,
+      quizData: json['quiz_data'] as Map<String, dynamic>?,
       likesCount: json['likes_count'] as int? ?? 0,
       commentsCount: json['comments_count'] as int? ?? 0,
       viewsCount: json['views_count'] as int? ?? 0,
@@ -114,6 +120,8 @@ class PostModel {
       'content': content,
       'media_url': mediaUrl,
       'tags': tags,
+      if (pollData != null) 'poll_data': pollData,
+      if (quizData != null) 'quiz_data': quizData,
     };
   }
 
@@ -141,6 +149,8 @@ class PostModel {
       originalCommunityId: originalCommunityId,
       externalUrl: externalUrl,
       linkSummary: linkSummary,
+      pollData: pollData,
+      quizData: quizData,
       likesCount: likesCount ?? this.likesCount,
       commentsCount: commentsCount ?? this.commentsCount,
       viewsCount: viewsCount,
