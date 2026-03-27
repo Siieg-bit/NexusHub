@@ -7,6 +7,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'config/app_config.dart';
 import 'config/app_theme.dart';
 import 'router/app_router.dart';
+import 'core/providers/theme_provider.dart';
 import 'core/services/device_fingerprint_service.dart';
 import 'core/services/deep_link_service.dart';
 import 'core/services/push_notification_service.dart';
@@ -96,16 +97,28 @@ class NexusHubApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
+    final themeMode = ref.watch(themeProvider);
 
     // Inicializar Deep Link service com o router
     DeepLinkService.init(router);
 
+    // Atualizar barra de status conforme o tema
+    final isDark = themeMode == ThemeMode.dark;
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+        systemNavigationBarColor: isDark ? AppTheme.bottomNavBg : AppTheme.bottomNavBgLight,
+        systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+      ),
+    );
+
     return MaterialApp.router(
       title: 'NexusHub',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.dark,
+      themeMode: themeMode,
       routerConfig: router,
     );
   }

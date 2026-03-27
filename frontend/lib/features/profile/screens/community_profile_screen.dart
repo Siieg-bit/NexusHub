@@ -6,6 +6,7 @@ import '../../../core/models/user_model.dart';
 import '../../../core/models/comment_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/helpers.dart';
+import '../../chat/widgets/chat_bubble.dart';
 
 /// Perfil da Comunidade — exibe Nível, Reputação, Títulos Customizados,
 /// Streak Bar e The Wall (mural de comentários).
@@ -138,17 +139,11 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                     right: 16,
                     child: Column(
                       children: [
-                        // Avatar
-                        CircleAvatar(
-                          radius: 44,
-                          backgroundColor: Colors.white24,
-                          backgroundImage: _user?.iconUrl != null
-                              ? CachedNetworkImageProvider(_user!.iconUrl!)
-                              : null,
-                          child: _user?.iconUrl == null
-                              ? const Icon(Icons.person_rounded,
-                                  color: Colors.white, size: 44)
-                              : null,
+                        // Avatar com Frame
+                        AvatarWithFrame(
+                          avatarUrl: _user?.iconUrl,
+                          size: 88,
+                          showAminoPlus: _user?.isPremium ?? false,
                         ),
                         const SizedBox(height: 12),
                         // Nome + Role badge
@@ -233,6 +228,20 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                     ),
                   ),
                 ],
+              ),
+            ),
+          ),
+
+          // ============================================================
+          // STREAK BAR
+          // ============================================================
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: StreakBar(
+                currentStreak: streak,
+                maxStreak: _membership?['max_streak'] as int? ?? 0,
+                checkInDays: _membership?['total_check_ins'] as int? ?? 0,
               ),
             ),
           ),

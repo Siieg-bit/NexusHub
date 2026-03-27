@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/providers/theme_provider.dart';
 
 /// Tela de Configurações Gerais — Hub central para todas as configurações.
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Map<String, dynamic>? _profile;
   bool _isLoading = true;
 
@@ -289,13 +291,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     title: 'Privacidade',
                     onTap: () => context.push('/settings/privacy'),
                   ),
-                  _SettingsItem(
-                    icon: Icons.palette_rounded,
-                    title: 'Aparência',
-                    subtitle: 'Tema escuro',
-                    onTap: () {
-                      // TODO: Theme settings
-                    },
+                  _ThemeToggleItem(
+                    isDark: ref.watch(themeProvider) == ThemeMode.dark,
+                    onToggle: () => ref.read(themeProvider.notifier).toggle(),
                   ),
                   _SettingsItem(
                     icon: Icons.language_rounded,
@@ -532,6 +530,36 @@ class _SettingsItem extends StatelessWidget {
       trailing: const Icon(Icons.chevron_right_rounded,
           color: AppTheme.textHint, size: 20),
       onTap: onTap,
+    );
+  }
+}
+
+class _ThemeToggleItem extends StatelessWidget {
+  final bool isDark;
+  final VoidCallback onToggle;
+
+  const _ThemeToggleItem({required this.isDark, required this.onToggle});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(
+        isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+        color: AppTheme.primaryColor,
+        size: 22,
+      ),
+      title: const Text('Aparência',
+          style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+      subtitle: Text(
+        isDark ? 'Tema escuro' : 'Tema claro',
+        style: const TextStyle(color: AppTheme.textHint, fontSize: 11),
+      ),
+      trailing: Switch(
+        value: isDark,
+        onChanged: (_) => onToggle(),
+        activeColor: AppTheme.primaryColor,
+      ),
+      onTap: onToggle,
     );
   }
 }

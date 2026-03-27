@@ -40,6 +40,9 @@ import '../features/explore/screens/search_screen.dart';
 import '../features/profile/screens/user_wall_screen.dart';
 import '../features/profile/screens/followers_screen.dart';
 import '../features/store/screens/store_screen.dart';
+import '../features/store/screens/coin_shop_screen.dart';
+import '../features/gamification/screens/free_coins_screen.dart';
+import '../features/chat/screens/call_screen.dart';
 import '../features/wiki/screens/wiki_screen.dart';
 import 'shell_screen.dart';
 
@@ -361,6 +364,40 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           userId: state.pathParameters['userId']!,
           initialTab: state.uri.queryParameters['tab'] == 'following' ? 1 : 0,
         ),
+      ),
+
+      // ====================================================================
+      // MOEDAS E LOJA
+      // ====================================================================
+      GoRoute(
+        path: '/free-coins',
+        name: 'free-coins',
+        builder: (context, state) => const FreeCoinsScreen(),
+      ),
+      GoRoute(
+        path: '/coin-shop',
+        name: 'coin-shop',
+        builder: (context, state) => const CoinShopScreen(),
+      ),
+
+      // ====================================================================
+      // CHAMADAS
+      // ====================================================================
+      GoRoute(
+        path: '/call/:sessionId',
+        name: 'call',
+        builder: (context, state) => CallScreen(
+          sessionId: state.pathParameters['sessionId']!,
+        ),
+      ),
+
+      // ====================================================================
+      // FEED GLOBAL
+      // ====================================================================
+      GoRoute(
+        path: '/feed',
+        name: 'global-feed',
+        builder: (context, state) => const GlobalFeedScreen(),
       ),
 
       // ====================================================================
