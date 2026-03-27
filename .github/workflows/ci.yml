@@ -127,7 +127,7 @@ jobs:
           rm -rf ~/.gradle/caches/transforms-*
 
       - name: Build APK (debug)
-        run: flutter build apk --debug
+        run: flutter build apk --debug --verbose 2>&1 | tail -200
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
