@@ -24,6 +24,11 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
+// Configuração do JVM Toolchain para Kotlin — DEVE ficar FORA do bloco android{}
+kotlin {
+    jvmToolchain(17)
+}
+
 android {
     namespace "com.nexushub.app"
     compileSdk 35
@@ -35,8 +40,8 @@ android {
         coreLibraryDesugaringEnabled true
     }
 
-    kotlin {
-        jvmToolchain(17)
+    kotlinOptions {
+        jvmTarget = "17"
     }
 
     sourceSets {
