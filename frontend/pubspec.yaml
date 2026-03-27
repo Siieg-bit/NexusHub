@@ -29,8 +29,6 @@ dependencies:
   badges: ^3.1.2
   flutter_colorpicker: ^1.0.3
 
-  # Forms & Validation (using custom validators.dart)
-
   # Image & Media
   image_picker: ^1.0.7
   image_cropper: ^5.0.1
@@ -57,18 +55,17 @@ dependencies:
   path_provider: ^2.1.2
 
   # Device Info & Security
-  device_info_plus: ^10.1.0
+  device_info_plus: ^11.0.0
   crypto: ^3.0.3
   flutter_secure_storage: ^9.0.0
-  package_info_plus: ^5.0.1
+  package_info_plus: ^8.2.0
 
   # Deep Links & Navigation
   app_links: ^6.1.1
-  uni_links: ^0.5.1
 
   # Push Notifications
-  firebase_core: ^2.27.0
-  firebase_messaging: ^14.7.15
+  firebase_core: ^3.0.0
+  firebase_messaging: ^15.0.0
 
   # In-App Purchases (placeholder — configurar depois)
   # purchases_flutter: ^6.18.0
@@ -76,21 +73,21 @@ dependencies:
   # Utils
   uuid: ^4.3.3
   url_launcher: ^6.2.4
-  share_plus: ^7.2.2
-  connectivity_plus: ^5.0.2
-  flutter_markdown: ^0.6.20
+  share_plus: ^10.0.0
+  connectivity_plus: ^6.0.0
+  flutter_markdown: ^0.7.0
   pull_to_refresh: ^2.0.0
   infinite_scroll_pagination: ^4.0.0
   flutter_animate: ^4.5.0
   google_fonts: ^6.1.0
   collection: ^1.18.0
-  flutter_local_notifications: ^17.0.0
+  flutter_local_notifications: ^18.0.0
   permission_handler: ^11.3.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.1
+  flutter_lints: ^5.0.0
   riverpod_generator: ^2.3.9
   build_runner: ^2.4.8
   json_serializable: ^6.7.1
