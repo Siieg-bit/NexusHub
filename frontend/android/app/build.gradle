@@ -1,7 +1,8 @@
 plugins {
     id "com.android.application"
-    id "kotlin-android"
+    // IMPORTANTE: flutter-gradle-plugin DEVE vir ANTES de kotlin-android
     id "dev.flutter.flutter-gradle-plugin"
+    id "kotlin-android"
     // Firebase
     id "com.google.gms.google-services"
 }
@@ -24,11 +25,6 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
-// Configuração do JVM Toolchain para Kotlin — DEVE ficar FORA do bloco android{}
-kotlin {
-    jvmToolchain(17)
-}
-
 android {
     namespace "com.nexushub.app"
     compileSdk 35
@@ -36,7 +32,6 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
-        // Necessário para desugaring (suporte a APIs Java 8+ em Android < 26)
         coreLibraryDesugaringEnabled true
     }
 
@@ -69,11 +64,9 @@ android {
 
     buildTypes {
         release {
-            // Habilitar minificação e ofuscação para produção
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            // signingConfig signingConfigs.release  // Descomentar quando keystore estiver configurada
             signingConfig signingConfigs.debug
         }
         debug {
@@ -87,7 +80,6 @@ flutter {
 }
 
 dependencies {
-    // Desugaring para suporte a APIs modernas
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 
     // Firebase BoM
