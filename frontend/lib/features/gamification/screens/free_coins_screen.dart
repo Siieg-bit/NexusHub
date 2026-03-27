@@ -297,7 +297,8 @@ class _EarningCard extends StatelessWidget {
             style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
         subtitle: Text(subtitle,
             style: TextStyle(
-              color: isDark ? AppTheme.textSecondary : AppTheme.textSecondaryLight,
+              color:
+                  isDark ? AppTheme.textSecondary : AppTheme.textSecondaryLight,
               fontSize: 12,
             )),
         trailing: onTap != null

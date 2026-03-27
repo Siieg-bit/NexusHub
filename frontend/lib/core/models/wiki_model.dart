@@ -64,7 +64,9 @@ class WikiEntryModel {
       mediaList: json['media_list'] as List<dynamic>? ?? [],
       myRating: (json['my_rating'] as num?)?.toDouble(),
       customFields: json['custom_fields'] as Map<String, dynamic>?,
-      tags: (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+      tags:
+          (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
+              [],
       status: json['status'] as String? ?? 'ok',
       submissionNote: json['submission_note'] as String?,
       reviewedBy: json['reviewed_by'] as String?,
@@ -74,8 +76,10 @@ class WikiEntryModel {
       likesCount: json['likes_count'] as int? ?? 0,
       commentsCount: json['comments_count'] as int? ?? 0,
       viewsCount: json['views_count'] as int? ?? 0,
-      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ?? DateTime.now(),
-      updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '') ?? DateTime.now(),
+      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ??
+          DateTime.now(),
+      updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '') ??
+          DateTime.now(),
       author: json['profiles'] != null
           ? UserModel.fromJson(json['profiles'] as Map<String, dynamic>)
           : null,

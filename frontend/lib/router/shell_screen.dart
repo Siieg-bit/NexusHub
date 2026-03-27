@@ -121,9 +121,8 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isSelected
-        ? (accentColor ?? AppTheme.primaryColor)
-        : AppTheme.textHint;
+    final color =
+        isSelected ? (accentColor ?? AppTheme.primaryColor) : AppTheme.textHint;
 
     Widget iconWidget = Icon(icon, color: color, size: 24);
 

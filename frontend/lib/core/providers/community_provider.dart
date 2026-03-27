@@ -103,12 +103,12 @@ class DiscoverCommunitiesNotifier extends AsyncNotifier<List<CommunityModel>> {
       query = query.ilike('name', '%$_searchQuery%');
     }
 
-    final res = await query
-        .order('member_count', ascending: false)
-        .limit(50);
+    final res = await query.order('member_count', ascending: false).limit(50);
 
     final list = res as List;
-    return list.map((e) => CommunityModel.fromJson(e as Map<String, dynamic>)).toList();
+    return list
+        .map((e) => CommunityModel.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<void> search(String query) async {

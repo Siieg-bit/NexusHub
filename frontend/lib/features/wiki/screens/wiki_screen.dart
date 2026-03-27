@@ -120,8 +120,7 @@ class _WikiListScreenState extends State<WikiListScreen> {
                         _CategoryChip(
                           label: 'Todos',
                           isSelected: _selectedCategory == null,
-                          onTap: () =>
-                              setState(() => _selectedCategory = null),
+                          onTap: () => setState(() => _selectedCategory = null),
                         ),
                         ..._categories.map((cat) => _CategoryChip(
                               label: cat,
@@ -137,8 +136,7 @@ class _WikiListScreenState extends State<WikiListScreen> {
                   child: _filteredEntries.isEmpty
                       ? const Center(
                           child: Text('Nenhuma entrada encontrada',
-                              style:
-                                  TextStyle(color: AppTheme.textSecondary)),
+                              style: TextStyle(color: AppTheme.textSecondary)),
                         )
                       : GridView.builder(
                           padding: const EdgeInsets.all(16),
@@ -154,8 +152,7 @@ class _WikiListScreenState extends State<WikiListScreen> {
                             final entry = _filteredEntries[index];
                             return _WikiEntryCard(
                               entry: entry,
-                              onTap: () =>
-                                  context.push('/wiki/${entry['id']}'),
+                              onTap: () => context.push('/wiki/${entry['id']}'),
                             );
                           },
                         ),
@@ -224,7 +221,8 @@ class _WikiEntryCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppTheme.cardColor,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppTheme.dividerColor.withValues(alpha: 0.3)),
+          border:
+              Border.all(color: AppTheme.dividerColor.withValues(alpha: 0.3)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -458,7 +456,8 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                         color: AppTheme.cardColor,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                            color: AppTheme.dividerColor.withValues(alpha: 0.5)),
+                            color:
+                                AppTheme.dividerColor.withValues(alpha: 0.5)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -471,8 +470,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 4),
                                 child: Row(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     SizedBox(
                                       width: 100,
@@ -590,8 +588,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                   ),
                   const SizedBox(height: 12),
                   ..._whatILikeList.map((item) {
-                    final profile =
-                        item['profiles'] as Map<String, dynamic>?;
+                    final profile = item['profiles'] as Map<String, dynamic>?;
                     return Container(
                       margin: const EdgeInsets.only(bottom: 8),
                       padding: const EdgeInsets.all(12),
@@ -615,8 +612,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   profile?['nickname'] ?? 'Anônimo',
@@ -776,8 +772,7 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
             const SizedBox(height: 16),
             TextField(
               controller: _titleController,
-              style:
-                  const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               decoration: const InputDecoration(
                 hintText: 'Título da entrada...',
                 border: InputBorder.none,
@@ -798,8 +793,7 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
             const Divider(height: 32),
             Row(
               children: [
-                Text('Infobox',
-                    style: Theme.of(context).textTheme.titleMedium),
+                Text('Infobox', style: Theme.of(context).textTheme.titleMedium),
                 const Spacer(),
                 TextButton.icon(
                   onPressed: () {

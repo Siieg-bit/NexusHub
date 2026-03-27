@@ -15,8 +15,8 @@ import '../../feed/widgets/post_card.dart';
 /// Provider para perfil de um usuário.
 final userProfileProvider =
     FutureProvider.family<UserModel, String>((ref, userId) async {
-  final response =
-      await SupabaseService.rpc('get_user_profile', params: {'p_user_id': userId});
+  final response = await SupabaseService.rpc('get_user_profile',
+      params: {'p_user_id': userId});
   return UserModel.fromJson(response as Map<String, dynamic>);
 });
 
@@ -96,7 +96,8 @@ class ProfileScreen extends ConsumerWidget {
     final isOwnProfile = currentUser?.id == userId;
 
     return profileAsync.when(
-      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (error, _) => Scaffold(
         appBar: AppBar(),
         body: Center(child: Text('Erro: $error')),
@@ -138,7 +139,10 @@ class ProfileScreen extends ConsumerWidget {
                         Container(
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                              colors: [AppTheme.primaryColor, AppTheme.primaryDark],
+                              colors: [
+                                AppTheme.primaryColor,
+                                AppTheme.primaryDark
+                              ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
@@ -181,7 +185,9 @@ class ProfileScreen extends ConsumerWidget {
                                 Flexible(
                                   child: Text(
                                     user.nickname,
-                                    style: Theme.of(context).textTheme.headlineSmall,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineSmall,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
@@ -199,7 +205,8 @@ class ProfileScreen extends ConsumerWidget {
                             const SizedBox(height: 4),
                             Text('@${user.aminoId}',
                                 style: const TextStyle(
-                                    color: AppTheme.textSecondary, fontSize: 13)),
+                                    color: AppTheme.textSecondary,
+                                    fontSize: 13)),
                           ],
                         ),
                       ),
@@ -213,7 +220,8 @@ class ProfileScreen extends ConsumerWidget {
               // ================================================================
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: _LevelBar(user: user),
                 ),
               ),
@@ -223,12 +231,14 @@ class ProfileScreen extends ConsumerWidget {
               // ================================================================
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       _StatItem(label: 'Posts', value: user.postsCount),
-                      _StatItem(label: 'Seguidores', value: user.followersCount),
+                      _StatItem(
+                          label: 'Seguidores', value: user.followersCount),
                       _StatItem(label: 'Seguindo', value: user.followingCount),
                       _StatItem(label: 'Reputação', value: user.reputation),
                     ],
@@ -241,7 +251,8 @@ class ProfileScreen extends ConsumerWidget {
               // ================================================================
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: isOwnProfile
                       ? Column(
                           children: [
@@ -249,8 +260,10 @@ class ProfileScreen extends ConsumerWidget {
                               children: [
                                 Expanded(
                                   child: ElevatedButton.icon(
-                                    onPressed: () => context.push('/profile/edit'),
-                                    icon: const Icon(Icons.edit_rounded, size: 18),
+                                    onPressed: () =>
+                                        context.push('/profile/edit'),
+                                    icon: const Icon(Icons.edit_rounded,
+                                        size: 18),
                                     label: const Text('Editar Perfil'),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: AppTheme.cardColorLight,
@@ -277,14 +290,16 @@ class ProfileScreen extends ConsumerWidget {
                                       ? AppTheme.cardColorLight
                                       : AppTheme.primaryColor,
                                 ),
-                                child: Text(
-                                    user.isFollowing == true ? 'Seguindo' : 'Seguir'),
+                                child: Text(user.isFollowing == true
+                                    ? 'Seguindo'
+                                    : 'Seguir'),
                               ),
                             ),
                             const SizedBox(width: 12),
                             OutlinedButton(
                               onPressed: () {/* TODO: DM */},
-                              child: const Icon(Icons.chat_bubble_outline_rounded),
+                              child:
+                                  const Icon(Icons.chat_bubble_outline_rounded),
                             ),
                             const SizedBox(width: 8),
                             OutlinedButton(
@@ -316,7 +331,8 @@ class ProfileScreen extends ConsumerWidget {
               if (isOwnProfile)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     child: streakAsync.when(
                       loading: () => const SizedBox.shrink(),
                       error: (_, __) => const SizedBox.shrink(),
@@ -337,12 +353,14 @@ class ProfileScreen extends ConsumerWidget {
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                   child: Row(
                     children: [
-                      Text('Posts', style: Theme.of(context).textTheme.titleLarge),
+                      Text('Posts',
+                          style: Theme.of(context).textTheme.titleLarge),
                       const Spacer(),
                       if (isOwnProfile)
                         TextButton.icon(
                           onPressed: () => context.push('/followers/$userId'),
-                          icon: const Icon(Icons.people_outline_rounded, size: 16),
+                          icon: const Icon(Icons.people_outline_rounded,
+                              size: 16),
                           label: const Text('Seguidores'),
                         ),
                     ],
@@ -438,13 +456,15 @@ class ProfileScreen extends ConsumerWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.flag_rounded, color: AppTheme.errorColor),
+              leading:
+                  const Icon(Icons.flag_rounded, color: AppTheme.errorColor),
               title: const Text('Denunciar',
                   style: TextStyle(color: AppTheme.errorColor)),
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
-              leading: const Icon(Icons.block_rounded, color: AppTheme.errorColor),
+              leading:
+                  const Icon(Icons.block_rounded, color: AppTheme.errorColor),
               title: const Text('Bloquear',
                   style: TextStyle(color: AppTheme.errorColor)),
               onTap: () => Navigator.pop(context),
@@ -489,7 +509,8 @@ class _FreeCoinsBadge extends StatelessWidget {
           child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.monetization_on_rounded, color: Colors.white, size: 18),
+              Icon(Icons.monetization_on_rounded,
+                  color: Colors.white, size: 18),
               SizedBox(width: 4),
               Text(
                 'Free Coins',
@@ -542,7 +563,9 @@ class _LevelBar extends StatelessWidget {
               child: Text(
                 '${user.level}',
                 style: TextStyle(
-                    color: levelColor, fontWeight: FontWeight.bold, fontSize: 18),
+                    color: levelColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18),
               ),
             ),
           ),

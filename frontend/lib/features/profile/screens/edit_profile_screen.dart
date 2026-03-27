@@ -79,10 +79,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             onPressed: _isLoading ? null : _saveProfile,
             child: _isLoading
                 ? const SizedBox(
-                    width: 20, height: 20,
+                    width: 20,
+                    height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Salvar', style: TextStyle(fontWeight: FontWeight.bold)),
+                : const Text('Salvar',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -98,7 +100,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   children: [
                     CircleAvatar(
                       radius: 50,
-                      backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.3),
+                      backgroundColor:
+                          AppTheme.primaryColor.withValues(alpha: 0.3),
                       child: Text(
                         (user?.nickname ?? '?')[0].toUpperCase(),
                         style: const TextStyle(
@@ -134,7 +137,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   prefixIcon: Icon(Icons.person_outlined),
                 ),
                 validator: (value) {
-                  if (value == null || value.trim().isEmpty) return 'Obrigatório';
+                  if (value == null || value.trim().isEmpty)
+                    return 'Obrigatório';
                   if (value.trim().length < 3) return 'Mínimo 3 caracteres';
                   return null;
                 },

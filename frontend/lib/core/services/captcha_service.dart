@@ -17,7 +17,8 @@ class CaptchaService {
   static final _random = Random();
 
   /// Exibe um dialog de CAPTCHA e retorna `true` se resolvido corretamente.
-  static Future<bool> showCaptcha(BuildContext context, {String? reason}) async {
+  static Future<bool> showCaptcha(BuildContext context,
+      {String? reason}) async {
     final a = _random.nextInt(20) + 1;
     final b = _random.nextInt(20) + 1;
     final ops = ['+', '-', '×'];

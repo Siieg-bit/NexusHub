@@ -6,10 +6,12 @@ class PostModel {
   final String id;
   final String communityId;
   final String authorId;
-  final String type; // enum: normal, crosspost, repost, qa, poll, link, quiz, image, external
+  final String
+      type; // enum: normal, crosspost, repost, qa, poll, link, quiz, image, external
   final String? title;
   final String content;
-  final String? mediaUrl; // era media_urls (array) → agora media_url (single) + media_list
+  final String?
+      mediaUrl; // era media_urls (array) → agora media_url (single) + media_list
   final List<dynamic> mediaList; // JSONB array de mídias adicionais
   final String? coverImageUrl;
   final String? backgroundUrl;
@@ -19,8 +21,10 @@ class PostModel {
   final String? originalCommunityId;
   final String? externalUrl; // para type=link
   final Map<String, dynamic>? linkSummary;
-  final Map<String, dynamic>? pollData;   // JSONB: {options: [{text, votes}], totalVotes, userVote}
-  final Map<String, dynamic>? quizData;   // JSONB: {questions: [{text, options, correctIndex}]}
+  final Map<String, dynamic>?
+      pollData; // JSONB: {options: [{text, votes}], totalVotes, userVote}
+  final Map<String, dynamic>?
+      quizData; // JSONB: {questions: [{text, options, correctIndex}]}
   final int likesCount;
   final int commentsCount;
   final int viewsCount;
@@ -82,7 +86,9 @@ class PostModel {
       coverImageUrl: json['cover_image_url'] as String?,
       backgroundUrl: json['background_url'] as String?,
       categoryId: json['category_id'] as String?,
-      tags: (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+      tags:
+          (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
+              [],
       originalPostId: json['original_post_id'] as String?,
       originalCommunityId: json['original_community_id'] as String?,
       externalUrl: json['external_url'] as String?,
@@ -100,8 +106,10 @@ class PostModel {
       featuredAt: json['featured_at'] != null
           ? DateTime.tryParse(json['featured_at'] as String)
           : null,
-      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ?? DateTime.now(),
-      updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '') ?? DateTime.now(),
+      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ??
+          DateTime.now(),
+      updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '') ??
+          DateTime.now(),
       author: json['profiles'] != null
           ? UserModel.fromJson(json['profiles'] as Map<String, dynamic>)
           : (json['author'] != null

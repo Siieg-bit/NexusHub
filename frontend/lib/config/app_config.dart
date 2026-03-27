@@ -28,19 +28,19 @@ class AppConfig {
 
   /// XP necessário para cada nível (índice = nível - 1)
   static const List<int> xpThresholds = [
-    0,     // Nível 1
-    100,   // Nível 2
-    300,   // Nível 3
-    600,   // Nível 4
-    1000,  // Nível 5
-    1500,  // Nível 6
-    2200,  // Nível 7
-    3000,  // Nível 8
-    4000,  // Nível 9
-    5200,  // Nível 10
-    6500,  // Nível 11
-    8000,  // Nível 12
-    9700,  // Nível 13
+    0, // Nível 1
+    100, // Nível 2
+    300, // Nível 3
+    600, // Nível 4
+    1000, // Nível 5
+    1500, // Nível 6
+    2200, // Nível 7
+    3000, // Nível 8
+    4000, // Nível 9
+    5200, // Nível 10
+    6500, // Nível 11
+    8000, // Nível 12
+    9700, // Nível 13
     11600, // Nível 14
     13700, // Nível 15
     16000, // Nível 16

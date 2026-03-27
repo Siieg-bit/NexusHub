@@ -27,7 +27,8 @@ class ChatThreadsNotifier extends AsyncNotifier<List<Map<String, dynamic>>> {
     if (userId == null) return [];
 
     final res = await SupabaseService.table('thread_participants')
-        .select('thread_id, chat_threads!inner(*, messages(content, created_at, sender_id))')
+        .select(
+            'thread_id, chat_threads!inner(*, messages(content, created_at, sender_id))')
         .eq('user_id', userId)
         .order('updated_at', referencedTable: 'chat_threads', ascending: false)
         .limit(50);
@@ -46,7 +47,8 @@ final chatThreadsProvider =
         ChatThreadsNotifier.new);
 
 // ── Thread Messages ──
-class ThreadMessagesNotifier extends FamilyAsyncNotifier<List<MessageModel>, String> {
+class ThreadMessagesNotifier
+    extends FamilyAsyncNotifier<List<MessageModel>, String> {
   int _page = 0;
   bool _hasMore = true;
   static const _pageSize = 50;
@@ -138,9 +140,8 @@ class ThreadMessagesNotifier extends FamilyAsyncNotifier<List<MessageModel>, Str
       });
 
       // Atualizar updated_at da thread
-      await SupabaseService.table('chat_threads')
-          .update({'updated_at': DateTime.now().toIso8601String()})
-          .eq('id', arg);
+      await SupabaseService.table('chat_threads').update(
+          {'updated_at': DateTime.now().toIso8601String()}).eq('id', arg);
 
       return true;
     } catch (e) {
@@ -150,12 +151,10 @@ class ThreadMessagesNotifier extends FamilyAsyncNotifier<List<MessageModel>, Str
 
   Future<bool> deleteMessage(String messageId) async {
     try {
-      await SupabaseService.table('messages')
-          .update({
-            'message_type': 'deleted',
-            'content': 'Mensagem apagada',
-          })
-          .eq('id', messageId);
+      await SupabaseService.table('messages').update({
+        'message_type': 'deleted',
+        'content': 'Mensagem apagada',
+      }).eq('id', messageId);
 
       final current = state.valueOrNull ?? [];
       final index = current.indexWhere((m) => m.id == messageId);
@@ -173,9 +172,10 @@ class ThreadMessagesNotifier extends FamilyAsyncNotifier<List<MessageModel>, Str
   bool get hasMore => _hasMore;
 }
 
-final threadMessagesProvider =
-    AsyncNotifierProvider.family<ThreadMessagesNotifier, List<MessageModel>, String>(
-        ThreadMessagesNotifier.new);
+final threadMessagesProvider = AsyncNotifierProvider.family<
+    ThreadMessagesNotifier,
+    List<MessageModel>,
+    String>(ThreadMessagesNotifier.new);
 
 // ── Unread Count ──
 final unreadCountProvider = FutureProvider<int>((ref) async {

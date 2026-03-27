@@ -41,14 +41,16 @@ class _FollowersScreenState extends State<FollowersScreen>
     try {
       // Seguidores
       final followersRes = await SupabaseService.table('follows')
-          .select('*, profiles!follows_follower_id_fkey(id, nickname, icon_url, level)')
+          .select(
+              '*, profiles!follows_follower_id_fkey(id, nickname, icon_url, level)')
           .eq('following_id', widget.userId)
           .order('created_at', ascending: false);
       _followers = List<Map<String, dynamic>>.from(followersRes as List);
 
       // Seguindo
       final followingRes = await SupabaseService.table('follows')
-          .select('*, profiles!follows_following_id_fkey(id, nickname, icon_url, level)')
+          .select(
+              '*, profiles!follows_following_id_fkey(id, nickname, icon_url, level)')
           .eq('follower_id', widget.userId)
           .order('created_at', ascending: false);
       _following = List<Map<String, dynamic>>.from(followingRes as List);
@@ -107,8 +109,7 @@ class _FollowersScreenState extends State<FollowersScreen>
       itemCount: list.length,
       itemBuilder: (context, index) {
         final item = list[index];
-        final profile =
-            item['profiles'] as Map<String, dynamic>? ?? item;
+        final profile = item['profiles'] as Map<String, dynamic>? ?? item;
         final userId = profile['id'] as String?;
         final nickname = profile['nickname'] as String? ?? 'Usuário';
         final avatarUrl = profile['icon_url'] as String?;
@@ -134,8 +135,8 @@ class _FollowersScreenState extends State<FollowersScreen>
           title: Text(nickname,
               style: const TextStyle(fontWeight: FontWeight.w600)),
           subtitle: Text('Nível $level',
-              style: const TextStyle(
-                  color: AppTheme.textSecondary, fontSize: 12)),
+              style:
+                  const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
           trailing: _FollowButton(targetUserId: userId ?? ''),
         );
       },
@@ -164,8 +165,7 @@ class _FollowButtonState extends State<_FollowButton> {
   Future<void> _checkFollowing() async {
     try {
       final currentUserId = SupabaseService.currentUserId;
-      if (currentUserId == null ||
-          currentUserId == widget.targetUserId) {
+      if (currentUserId == null || currentUserId == widget.targetUserId) {
         if (mounted) setState(() => _isLoading = false);
         return;
       }
@@ -212,8 +212,7 @@ class _FollowButtonState extends State<_FollowButton> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading ||
-        widget.targetUserId == SupabaseService.currentUserId) {
+    if (_isLoading || widget.targetUserId == SupabaseService.currentUserId) {
       return const SizedBox.shrink();
     }
 
@@ -224,12 +223,9 @@ class _FollowButtonState extends State<_FollowButton> {
         style: OutlinedButton.styleFrom(
           backgroundColor:
               _isFollowing ? Colors.transparent : AppTheme.primaryColor,
-          foregroundColor:
-              _isFollowing ? AppTheme.textSecondary : Colors.white,
+          foregroundColor: _isFollowing ? AppTheme.textSecondary : Colors.white,
           side: BorderSide(
-            color: _isFollowing
-                ? AppTheme.dividerColor
-                : AppTheme.primaryColor,
+            color: _isFollowing ? AppTheme.dividerColor : AppTheme.primaryColor,
           ),
           padding: const EdgeInsets.symmetric(horizontal: 12),
           shape: RoundedRectangleBorder(

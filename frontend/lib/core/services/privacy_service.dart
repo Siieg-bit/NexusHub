@@ -28,7 +28,8 @@ class PrivacyService {
       // Mesmo usuário sempre pode ver seus próprios dados
       if (viewerId == targetUserId) return true;
 
-      final result = await SupabaseService.rpc('check_privacy_permission', params: {
+      final result =
+          await SupabaseService.rpc('check_privacy_permission', params: {
         'p_viewer_id': viewerId,
         'p_target_user_id': targetUserId,
         'p_field': field,

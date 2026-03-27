@@ -51,12 +51,15 @@ class SystemAccountService {
         chatId = chat['id'] as String;
       } else {
         // Criar chat de anúncios se não existir
-        final newChat = await SupabaseService.table('chat_rooms').insert({
-          'community_id': communityId,
-          'name': 'Anúncios',
-          'type': 'announcements',
-          'created_by': globalSystemId,
-        }).select('id').single();
+        final newChat = await SupabaseService.table('chat_rooms')
+            .insert({
+              'community_id': communityId,
+              'name': 'Anúncios',
+              'type': 'announcements',
+              'created_by': globalSystemId,
+            })
+            .select('id')
+            .single();
         chatId = newChat['id'] as String;
       }
 
@@ -78,13 +81,15 @@ class SystemAccountService {
           .select('user_id')
           .eq('community_id', communityId);
 
-      final notifications = (members as List).map((m) => {
-            'user_id': m['user_id'],
-            'notification_type': 'broadcast',
-            'content': title,
-            'reference_id': communityId,
-            'reference_type': 'community',
-          }).toList();
+      final notifications = (members as List)
+          .map((m) => {
+                'user_id': m['user_id'],
+                'notification_type': 'broadcast',
+                'content': title,
+                'reference_id': communityId,
+                'reference_type': 'community',
+              })
+          .toList();
 
       if (notifications.isNotEmpty) {
         // Inserir em lotes de 100

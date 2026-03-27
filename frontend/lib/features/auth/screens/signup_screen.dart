@@ -71,7 +71,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 20),
-                Text('Criar Conta', style: Theme.of(context).textTheme.displaySmall),
+                Text('Criar Conta',
+                    style: Theme.of(context).textTheme.displaySmall),
                 const SizedBox(height: 8),
                 Text('Junte-se a milhares de comunidades',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
@@ -88,7 +89,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     hintText: 'Como você quer ser chamado?',
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Escolha um nickname';
+                    if (value == null || value.isEmpty)
+                      return 'Escolha um nickname';
                     if (value.length < 3) return 'Mínimo 3 caracteres';
                     if (value.length > 30) return 'Máximo 30 caracteres';
                     return null;
@@ -105,7 +107,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     prefixIcon: Icon(Icons.email_outlined),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Informe seu email';
+                    if (value == null || value.isEmpty)
+                      return 'Informe seu email';
                     if (!value.contains('@')) return 'Email inválido';
                     return null;
                   },
@@ -144,7 +147,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     prefixIcon: Icon(Icons.lock_outlined),
                   ),
                   validator: (value) {
-                    if (value != _passwordController.text) return 'As senhas não coincidem';
+                    if (value != _passwordController.text)
+                      return 'As senhas não coincidem';
                     return null;
                   },
                 ),
@@ -161,10 +165,12 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     ),
                     Expanded(
                       child: GestureDetector(
-                        onTap: () => setState(() => _acceptedTerms = !_acceptedTerms),
+                        onTap: () =>
+                            setState(() => _acceptedTerms = !_acceptedTerms),
                         child: const Text(
                           'Aceito os Termos de Uso e Política de Privacidade',
-                          style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                          style: TextStyle(
+                              color: AppTheme.textSecondary, fontSize: 13),
                         ),
                       ),
                     ),
@@ -182,11 +188,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.error_outline, color: AppTheme.errorColor, size: 20),
+                        const Icon(Icons.error_outline,
+                            color: AppTheme.errorColor, size: 20),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(authState.error!,
-                              style: const TextStyle(color: AppTheme.errorColor, fontSize: 13)),
+                              style: const TextStyle(
+                                  color: AppTheme.errorColor, fontSize: 13)),
                         ),
                       ],
                     ),
@@ -203,7 +211,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         ? const SizedBox(
                             height: 20,
                             width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white),
                           )
                         : const Text('Criar Conta'),
                   ),
@@ -214,12 +223,15 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 // Divisor
                 Row(
                   children: [
-                    const Expanded(child: Divider(color: AppTheme.dividerColor)),
+                    const Expanded(
+                        child: Divider(color: AppTheme.dividerColor)),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text('ou', style: TextStyle(color: AppTheme.textHint)),
+                      child: Text('ou',
+                          style: TextStyle(color: AppTheme.textHint)),
                     ),
-                    const Expanded(child: Divider(color: AppTheme.dividerColor)),
+                    const Expanded(
+                        child: Divider(color: AppTheme.dividerColor)),
                   ],
                 ),
 
@@ -229,7 +241,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
-                    onPressed: () => ref.read(authProvider.notifier).signInWithGoogle(),
+                    onPressed: () =>
+                        ref.read(authProvider.notifier).signInWithGoogle(),
                     icon: const Icon(Icons.g_mobiledata_rounded, size: 28),
                     label: const Text('Continuar com Google'),
                   ),

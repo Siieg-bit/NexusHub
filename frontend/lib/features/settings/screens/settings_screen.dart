@@ -90,8 +90,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               child: const Text('Cancelar')),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.errorColor),
+            style:
+                ElevatedButton.styleFrom(backgroundColor: AppTheme.errorColor),
             child: const Text('Sim, excluir',
                 style: TextStyle(color: Colors.white)),
           ),
@@ -132,8 +132,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 Navigator.pop(ctx, true);
               }
             },
-            style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.errorColor),
+            style:
+                ElevatedButton.styleFrom(backgroundColor: AppTheme.errorColor),
             child: const Text('Excluir Permanentemente',
                 style: TextStyle(color: Colors.white)),
           ),
@@ -221,11 +221,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                _profile?['nickname'] as String? ??
-                                    'Usuário',
+                                _profile?['nickname'] as String? ?? 'Usuário',
                                 style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16),
+                                    fontWeight: FontWeight.bold, fontSize: 16),
                               ),
                               Text(
                                 'Nível ${_profile?['level'] ?? 1}',
@@ -257,9 +255,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   _SettingsItem(
                     icon: Icons.email_rounded,
                     title: 'Email e Senha',
-                    subtitle: SupabaseService.client.auth.currentUser
-                            ?.email ??
-                        '',
+                    subtitle:
+                        SupabaseService.client.auth.currentUser?.email ?? '',
                     onTap: () {
                       // TODO: Email/password change
                     },
@@ -283,8 +280,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   _SettingsItem(
                     icon: Icons.notifications_rounded,
                     title: 'Notificações',
-                    onTap: () =>
-                        context.push('/settings/notifications'),
+                    onTap: () => context.push('/settings/notifications'),
                   ),
                   _SettingsItem(
                     icon: Icons.lock_rounded,
@@ -417,15 +413,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               'Tem certeza que deseja sair da sua conta?'),
                           actions: [
                             TextButton(
-                                onPressed: () =>
-                                    Navigator.pop(ctx, false),
+                                onPressed: () => Navigator.pop(ctx, false),
                                 child: const Text('Cancelar')),
                             ElevatedButton(
-                              onPressed: () =>
-                                  Navigator.pop(ctx, true),
+                              onPressed: () => Navigator.pop(ctx, true),
                               style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      AppTheme.errorColor),
+                                  backgroundColor: AppTheme.errorColor),
                               child: const Text('Sair'),
                             ),
                           ],
@@ -524,8 +517,7 @@ class _SettingsItem extends StatelessWidget {
           style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
       subtitle: subtitle != null
           ? Text(subtitle!,
-              style: const TextStyle(
-                  color: AppTheme.textHint, fontSize: 11))
+              style: const TextStyle(color: AppTheme.textHint, fontSize: 11))
           : null,
       trailing: const Icon(Icons.chevron_right_rounded,
           color: AppTheme.textHint, size: 20),

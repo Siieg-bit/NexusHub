@@ -106,19 +106,24 @@ class MediaUploadService {
   }
 
   /// Crop de imagem (para avatares, banners)
+  ///
+  /// [cropStyle] foi removido da API do cropImage() no image_cropper 6+.
+  /// Para crop circular, use [useCircleCrop] = true, que configura
+  /// o AndroidUiSettings com CropStyle.circle internamente.
   static Future<File?> cropImage(
     File file, {
     CropAspectRatio? aspectRatio,
-    CropStyle cropStyle = CropStyle.rectangle,
+    bool useCircleCrop = false,
     int maxWidth = 1024,
     int maxHeight = 1024,
   }) async {
+    final cropStyle = useCircleCrop ? CropStyle.circle : CropStyle.rectangle;
+
     final cropped = await ImageCropper().cropImage(
       sourcePath: file.path,
       maxWidth: maxWidth,
       maxHeight: maxHeight,
       aspectRatio: aspectRatio,
-      cropStyle: cropStyle,
       uiSettings: [
         AndroidUiSettings(
           toolbarTitle: 'Recortar Imagem',
@@ -127,6 +132,7 @@ class MediaUploadService {
           activeControlsWidgetColor: const Color(0xFF6C63FF),
           initAspectRatio: CropAspectRatioPreset.original,
           lockAspectRatio: aspectRatio != null,
+          cropStyle: cropStyle,
         ),
       ],
     );
@@ -152,9 +158,7 @@ class MediaUploadService {
 
       final bytes = await file.readAsBytes();
 
-      await SupabaseService.client.storage
-          .from(bucketName)
-          .uploadBinary(
+      await SupabaseService.client.storage.from(bucketName).uploadBinary(
             storagePath,
             bytes,
             fileOptions: FileOptions(
@@ -214,7 +218,7 @@ class MediaUploadService {
     final cropped = await cropImage(
       file,
       aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
-      cropStyle: CropStyle.circle,
+      useCircleCrop: true,
       maxWidth: 512,
       maxHeight: 512,
     );
@@ -287,9 +291,7 @@ class MediaUploadService {
     required String filePath,
   }) async {
     try {
-      await SupabaseService.client.storage
-          .from(bucket)
-          .remove([filePath]);
+      await SupabaseService.client.storage.from(bucket).remove([filePath]);
       return true;
     } catch (e) {
       debugPrint('MediaUploadService.deleteFile error: $e');

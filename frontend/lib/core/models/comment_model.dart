@@ -47,8 +47,10 @@ class CommentModel {
       mediaUrl: json['media_url'] as String?,
       likesCount: json['likes_count'] as int? ?? 0,
       status: json['status'] as String? ?? 'ok',
-      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ?? DateTime.now(),
-      updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '') ?? DateTime.now(),
+      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ??
+          DateTime.now(),
+      updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '') ??
+          DateTime.now(),
       author: json['author'] != null
           ? UserModel.fromJson(json['author'] as Map<String, dynamic>)
           : (json['profiles'] != null

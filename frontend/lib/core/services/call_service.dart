@@ -50,7 +50,8 @@ class CallSession {
       type: _parseType(json['type'] as String? ?? 'voice'),
       creatorId: json['creator_id'] as String,
       status: json['status'] as String? ?? 'active',
-      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ?? DateTime.now(),
+      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ??
+          DateTime.now(),
     );
   }
 
@@ -98,8 +99,7 @@ class CallService {
   static CallSession? activeCall;
   static final _participantsController =
       StreamController<List<Map<String, dynamic>>>.broadcast();
-  static final _remoteUsersController =
-      StreamController<Set<int>>.broadcast();
+  static final _remoteUsersController = StreamController<Set<int>>.broadcast();
   static final _audioLevelsController =
       StreamController<Map<int, double>>.broadcast();
 
@@ -135,7 +135,8 @@ class CallService {
     // Registrar event handlers
     _engine!.registerEventHandler(RtcEngineEventHandler(
       onJoinChannelSuccess: (connection, elapsed) {
-        debugPrint('Agora: Joined channel ${connection.channelId} in ${elapsed}ms');
+        debugPrint(
+            'Agora: Joined channel ${connection.channelId} in ${elapsed}ms');
       },
       onUserJoined: (connection, remoteUid, elapsed) {
         debugPrint('Agora: Remote user $remoteUid joined');
@@ -148,7 +149,8 @@ class CallService {
         _audioLevels.remove(remoteUid);
         _remoteUsersController.add(Set.from(_remoteUsers));
       },
-      onAudioVolumeIndication: (connection, speakers, speakerNumber, totalVolume) {
+      onAudioVolumeIndication:
+          (connection, speakers, speakerNumber, totalVolume) {
         for (final speaker in speakers) {
           _audioLevels[speaker.uid ?? 0] = (speaker.volume ?? 0).toDouble();
         }
@@ -197,16 +199,19 @@ class CallService {
       }
 
       // Criar sessão no Supabase
-      final res = await SupabaseService.table('call_sessions').insert({
-        'thread_id': threadId,
-        'type': type == CallType.voice
-            ? 'voice'
-            : type == CallType.video
-                ? 'video'
-                : 'screening_room',
-        'creator_id': userId,
-        'status': 'active',
-      }).select().single();
+      final res = await SupabaseService.table('call_sessions')
+          .insert({
+            'thread_id': threadId,
+            'type': type == CallType.voice
+                ? 'voice'
+                : type == CallType.video
+                    ? 'video'
+                    : 'screening_room',
+            'creator_id': userId,
+            'status': 'active',
+          })
+          .select()
+          .single();
 
       final session = CallSession.fromJson(res);
       activeCall = session;
@@ -295,7 +300,8 @@ class CallService {
     // O channelName é o ID da sessão (único por chamada)
     // Para produção, gere um token temporário via Edge Function
     // usando o Agora Token Builder com o channelName e uid.
-    final channelName = 'nexushub_${session.id.replaceAll('-', '').substring(0, 16)}';
+    final channelName =
+        'nexushub_${session.id.replaceAll('-', '').substring(0, 16)}';
 
     // uid = 0 → Agora atribui automaticamente
     await _engine!.joinChannel(
@@ -375,12 +381,10 @@ class CallService {
     if (activeCall == null) return;
     try {
       await _engine?.leaveChannel();
-      await SupabaseService.table('call_sessions')
-          .update({
-            'status': 'ended',
-            'ended_at': DateTime.now().toIso8601String(),
-          })
-          .eq('id', activeCall!.id);
+      await SupabaseService.table('call_sessions').update({
+        'status': 'ended',
+        'ended_at': DateTime.now().toIso8601String(),
+      }).eq('id', activeCall!.id);
     } catch (_) {}
     _cleanup();
   }

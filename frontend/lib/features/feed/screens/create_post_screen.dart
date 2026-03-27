@@ -64,9 +64,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           .from('post-media')
           .uploadBinary(path, bytes);
 
-      final url = SupabaseService.storage
-          .from('post-media')
-          .getPublicUrl(path);
+      final url = SupabaseService.storage.from('post-media').getPublicUrl(path);
 
       setState(() => _mediaUrls.add(url));
     } catch (e) {
@@ -85,16 +83,15 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
     try {
       final userId = SupabaseService.currentUserId ?? 'unknown';
-      final path = 'covers/$userId/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final path =
+          'covers/$userId/${DateTime.now().millisecondsSinceEpoch}.jpg';
       final bytes = await image.readAsBytes();
 
       await SupabaseService.storage
           .from('post-media')
           .uploadBinary(path, bytes);
 
-      final url = SupabaseService.storage
-          .from('post-media')
-          .getPublicUrl(path);
+      final url = SupabaseService.storage.from('post-media').getPublicUrl(path);
 
       setState(() => _coverImageUrl = url);
     } catch (e) {
@@ -133,8 +130,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         'media_url': _mediaUrls.isNotEmpty ? _mediaUrls.first : null,
         'media_list': _mediaUrls.length > 1 ? _mediaUrls.sublist(1) : [],
         'cover_image_url': _coverImageUrl,
-        'external_url':
-            _linkController.text.trim().isNotEmpty ? _linkController.text.trim() : null,
+        'external_url': _linkController.text.trim().isNotEmpty
+            ? _linkController.text.trim()
+            : null,
         'background_url': _backgroundUrlController.text.trim().isNotEmpty
             ? _backgroundUrlController.text.trim()
             : null,
@@ -445,8 +443,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     controller: _pollOptions[i],
                     decoration: InputDecoration(
                       hintText: 'Opção ${i + 1}',
-                      prefixIcon:
-                          Icon(Icons.circle_outlined, size: 16, color: AppTheme.textHint),
+                      prefixIcon: Icon(Icons.circle_outlined,
+                          size: 16, color: AppTheme.textHint),
                     ),
                   ),
                 ),
@@ -553,8 +551,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 }),
                 TextButton.icon(
                   onPressed: () {
-                    setState(
-                        () => q.options.add(TextEditingController()));
+                    setState(() => q.options.add(TextEditingController()));
                   },
                   icon: const Icon(Icons.add_rounded, size: 16),
                   label: const Text('Opção', style: TextStyle(fontSize: 12)),
@@ -583,8 +580,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       children: [
         const SizedBox(height: 16),
         const Divider(),
-        Text('Link Externo',
-            style: Theme.of(context).textTheme.titleMedium),
+        Text('Link Externo', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
         TextField(
           controller: _linkController,
@@ -607,8 +603,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       children: [
         const SizedBox(height: 16),
         const Divider(),
-        Text('Imagens',
-            style: Theme.of(context).textTheme.titleMedium),
+        Text('Imagens', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -631,8 +626,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                       top: 2,
                       right: 2,
                       child: GestureDetector(
-                        onTap: () =>
-                            setState(() => _mediaUrls.remove(url)),
+                        onTap: () => setState(() => _mediaUrls.remove(url)),
                         child: Container(
                           padding: const EdgeInsets.all(2),
                           decoration: const BoxDecoration(
@@ -681,14 +675,18 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         children: [
           _ToolbarButton(Icons.image_rounded, 'Imagem', _pickImage),
           _ToolbarButton(Icons.gif_rounded, 'GIF', () {/* TODO: Giphy */}),
-          _ToolbarButton(
-              Icons.music_note_rounded, 'Música', () {/* TODO: SoundCloud */}),
-          _ToolbarButton(
-              Icons.format_bold_rounded, 'Negrito', () {/* TODO: Bold */}),
-          _ToolbarButton(
-              Icons.format_italic_rounded, 'Itálico', () {/* TODO: Italic */}),
-          _ToolbarButton(Icons.format_strikethrough_rounded, 'Riscado',
-              () {/* TODO: Strikethrough */}),
+          _ToolbarButton(Icons.music_note_rounded, 'Música', () {
+            /* TODO: SoundCloud */
+          }),
+          _ToolbarButton(Icons.format_bold_rounded, 'Negrito', () {
+            /* TODO: Bold */
+          }),
+          _ToolbarButton(Icons.format_italic_rounded, 'Itálico', () {
+            /* TODO: Italic */
+          }),
+          _ToolbarButton(Icons.format_strikethrough_rounded, 'Riscado', () {
+            /* TODO: Strikethrough */
+          }),
         ],
       ),
     );

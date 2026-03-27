@@ -90,8 +90,7 @@ class _InventoryScreenState extends State<InventoryScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-                isEquipped ? 'Item desequipado' : 'Item equipado!'),
+            content: Text(isEquipped ? 'Item desequipado' : 'Item equipado!'),
           ),
         );
       }
@@ -172,8 +171,7 @@ class _InventoryScreenState extends State<InventoryScreen>
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
-        final storeItem =
-            item['store_items'] as Map<String, dynamic>? ?? {};
+        final storeItem = item['store_items'] as Map<String, dynamic>? ?? {};
         final name = storeItem['name'] as String? ?? 'Item';
         final imageUrl = storeItem['image_url'] as String?;
         final isEquipped = _equippedIds.contains(item['id']);

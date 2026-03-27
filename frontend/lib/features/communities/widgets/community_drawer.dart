@@ -98,8 +98,8 @@ class CommunityDrawer extends StatelessWidget {
                       ),
                       child: Text(
                         _roleLabel(userRole!),
-                        style: const TextStyle(
-                            color: Colors.white, fontSize: 11),
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 11),
                       ),
                     ),
                   ],
@@ -179,8 +179,7 @@ class CommunityDrawer extends StatelessWidget {
                     color: themeColor,
                     onTap: () {
                       Navigator.pop(context);
-                      context.push(
-                          '/community/${community.id}/leaderboard');
+                      context.push('/community/${community.id}/leaderboard');
                     },
                   ),
                   _DrawerItem(
@@ -234,8 +233,7 @@ class CommunityDrawer extends StatelessWidget {
                       color: AppTheme.errorColor,
                       onTap: () {
                         Navigator.pop(context);
-                        context.push(
-                            '/community/${community.id}/flags');
+                        context.push('/community/${community.id}/flags');
                       },
                     ),
                     _DrawerItem(
@@ -244,8 +242,7 @@ class CommunityDrawer extends StatelessWidget {
                       color: themeColor,
                       onTap: () {
                         Navigator.pop(context);
-                        context.push(
-                          '/community/${community.id}/acm');
+                        context.push('/community/${community.id}/acm');
                       },
                     ),
                     _DrawerItem(
@@ -254,8 +251,7 @@ class CommunityDrawer extends StatelessWidget {
                       color: themeColor,
                       onTap: () {
                         Navigator.pop(context);
-                        context.push(
-                          '/community/${community.id}/acm');
+                        context.push('/community/${community.id}/acm');
                       },
                     ),
                   ],

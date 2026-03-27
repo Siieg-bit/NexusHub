@@ -10,7 +10,8 @@ class CreateCommunityScreen extends ConsumerStatefulWidget {
   const CreateCommunityScreen({super.key});
 
   @override
-  ConsumerState<CreateCommunityScreen> createState() => _CreateCommunityScreenState();
+  ConsumerState<CreateCommunityScreen> createState() =>
+      _CreateCommunityScreenState();
 }
 
 class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
@@ -23,8 +24,16 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
   bool _isLoading = false;
 
   final _colors = [
-    '#6C5CE7', '#E74C3C', '#2ECC71', '#F39C12', '#3498DB',
-    '#9B59B6', '#E84393', '#00CEC9', '#FD79A8', '#636E72',
+    '#6C5CE7',
+    '#E74C3C',
+    '#2ECC71',
+    '#F39C12',
+    '#3498DB',
+    '#9B59B6',
+    '#E84393',
+    '#00CEC9',
+    '#FD79A8',
+    '#636E72',
   ];
 
   @override
@@ -42,18 +51,21 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
 
     try {
       final userId = SupabaseService.currentUserId!;
-      final response = await SupabaseService.table('communities').insert({
-        'name': _nameController.text.trim(),
-        'tagline': _taglineController.text.trim().isEmpty
-            ? null
-            : _taglineController.text.trim(),
-        'description': _descriptionController.text.trim().isEmpty
-            ? null
-            : _descriptionController.text.trim(),
-        'agent_id': userId,
-        'theme_color': _selectedColor,
-        'primary_language': _selectedLanguage,
-      }).select().single();
+      final response = await SupabaseService.table('communities')
+          .insert({
+            'name': _nameController.text.trim(),
+            'tagline': _taglineController.text.trim().isEmpty
+                ? null
+                : _taglineController.text.trim(),
+            'description': _descriptionController.text.trim().isEmpty
+                ? null
+                : _descriptionController.text.trim(),
+            'agent_id': userId,
+            'theme_color': _selectedColor,
+            'primary_language': _selectedLanguage,
+          })
+          .select()
+          .single();
 
       // Entrar na comunidade como leader
       await SupabaseService.table('community_members').insert({
@@ -95,10 +107,12 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
             onPressed: _isLoading ? null : _createCommunity,
             child: _isLoading
                 ? const SizedBox(
-                    width: 20, height: 20,
+                    width: 20,
+                    height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Criar', style: TextStyle(fontWeight: FontWeight.bold)),
+                : const Text('Criar',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -123,7 +137,8 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Center(
-                  child: Icon(Icons.camera_alt_rounded, size: 40, color: Colors.white54),
+                  child: Icon(Icons.camera_alt_rounded,
+                      size: 40, color: Colors.white54),
                 ),
               ),
               const SizedBox(height: 24),
@@ -137,7 +152,8 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                   prefixIcon: Icon(Icons.groups_rounded),
                 ),
                 validator: (value) {
-                  if (value == null || value.trim().isEmpty) return 'Nome é obrigatório';
+                  if (value == null || value.trim().isEmpty)
+                    return 'Nome é obrigatório';
                   if (value.trim().length < 3) return 'Mínimo 3 caracteres';
                   return null;
                 },
@@ -171,7 +187,8 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
               const SizedBox(height: 24),
 
               // Cor do tema
-              Text('Cor do Tema', style: Theme.of(context).textTheme.titleMedium),
+              Text('Cor do Tema',
+                  style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 12),
               Wrap(
                 spacing: 10,
@@ -190,14 +207,18 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                             ? Border.all(color: Colors.white, width: 3)
                             : null,
                         boxShadow: isSelected
-                            ? [BoxShadow(
-                                color: _parseColor(color).withValues(alpha: 0.5),
-                                blurRadius: 8,
-                              )]
+                            ? [
+                                BoxShadow(
+                                  color:
+                                      _parseColor(color).withValues(alpha: 0.5),
+                                  blurRadius: 8,
+                                )
+                              ]
                             : null,
                       ),
                       child: isSelected
-                          ? const Icon(Icons.check_rounded, color: Colors.white, size: 20)
+                          ? const Icon(Icons.check_rounded,
+                              color: Colors.white, size: 20)
                           : null,
                     ),
                   );
@@ -206,7 +227,8 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
               const SizedBox(height: 24),
 
               // Idioma
-              Text('Idioma Principal', style: Theme.of(context).textTheme.titleMedium),
+              Text('Idioma Principal',
+                  style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 value: _selectedLanguage,
@@ -214,7 +236,8 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                   prefixIcon: Icon(Icons.language_rounded),
                 ),
                 items: const [
-                  DropdownMenuItem(value: 'pt-BR', child: Text('Português (Brasil)')),
+                  DropdownMenuItem(
+                      value: 'pt-BR', child: Text('Português (Brasil)')),
                   DropdownMenuItem(value: 'en', child: Text('English')),
                   DropdownMenuItem(value: 'es', child: Text('Español')),
                   DropdownMenuItem(value: 'ja', child: Text('日本語')),

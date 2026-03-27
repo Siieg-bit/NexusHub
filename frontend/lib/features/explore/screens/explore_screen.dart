@@ -83,18 +83,16 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
           .select()
           .order('members_count', ascending: false)
           .limit(20);
-      _trendingCommunities = (trendRes as List)
-          .map((e) => CommunityModel.fromJson(e))
-          .toList();
+      _trendingCommunities =
+          (trendRes as List).map((e) => CommunityModel.fromJson(e)).toList();
 
       // Novos
       final newRes = await SupabaseService.table('communities')
           .select()
           .order('created_at', ascending: false)
           .limit(20);
-      _newCommunities = (newRes as List)
-          .map((e) => CommunityModel.fromJson(e))
-          .toList();
+      _newCommunities =
+          (newRes as List).map((e) => CommunityModel.fromJson(e)).toList();
 
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
@@ -180,8 +178,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                     autofocus: true,
                     decoration: InputDecoration(
                       hintText: 'Buscar comunidades...',
-                      prefixIcon:
-                          const Icon(Icons.search_rounded, size: 20),
+                      prefixIcon: const Icon(Icons.search_rounded, size: 20),
                       suffixIcon: IconButton(
                         icon: const Icon(Icons.clear_rounded, size: 18),
                         onPressed: () {
@@ -202,26 +199,25 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                 Expanded(
                   child: Consumer(
                     builder: (context, ref, _) {
-                      final results = ref.watch(
-                          searchCommunitiesProvider(_searchQuery));
+                      final results =
+                          ref.watch(searchCommunitiesProvider(_searchQuery));
                       return results.when(
-                        loading: () => const Center(
-                            child: CircularProgressIndicator()),
-                        error: (e, _) =>
-                            Center(child: Text('Erro: $e')),
+                        loading: () =>
+                            const Center(child: CircularProgressIndicator()),
+                        error: (e, _) => Center(child: Text('Erro: $e')),
                         data: (communities) {
                           if (communities.isEmpty) {
                             return const Center(
                               child: Text('Nenhuma comunidade encontrada',
-                                  style: TextStyle(
-                                      color: AppTheme.textSecondary)),
+                                  style:
+                                      TextStyle(color: AppTheme.textSecondary)),
                             );
                           }
                           return ListView.builder(
                             controller: scrollController,
                             itemCount: communities.length,
-                            itemBuilder: (_, i) => _CommunityListTile(
-                                community: communities[i]),
+                            itemBuilder: (_, i) =>
+                                _CommunityListTile(community: communities[i]),
                           );
                         },
                       );
@@ -314,7 +310,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                     gradient: LinearGradient(
                       colors: [
                         _parseColor(community.themeColor),
-                        _parseColor(community.themeColor).withValues(alpha: 0.6),
+                        _parseColor(community.themeColor)
+                            .withValues(alpha: 0.6),
                       ],
                     ),
                   ),
@@ -410,8 +407,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             GestureDetector(
               onTap: onSeeAll,
               child: const Text('Ver Tudo',
-                  style:
-                      TextStyle(color: AppTheme.primaryColor, fontSize: 13)),
+                  style: TextStyle(color: AppTheme.primaryColor, fontSize: 13)),
             ),
         ],
       ),
@@ -450,8 +446,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     final categories = [
       _CategoryItem(
           'Anime & Manga', Icons.movie_filter_rounded, const Color(0xFFE91E63)),
-      _CategoryItem(
-          'K-Pop', Icons.music_note_rounded, const Color(0xFF9C27B0)),
+      _CategoryItem('K-Pop', Icons.music_note_rounded, const Color(0xFF9C27B0)),
       _CategoryItem(
           'Gaming', Icons.sports_esports_rounded, const Color(0xFF4CAF50)),
       _CategoryItem(
@@ -462,12 +457,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
           'Books & Writing', Icons.menu_book_rounded, const Color(0xFF795548)),
       _CategoryItem(
           'Movies & TV', Icons.theaters_rounded, const Color(0xFFF44336)),
-      _CategoryItem(
-          'Music', Icons.headphones_rounded, const Color(0xFF2196F3)),
+      _CategoryItem('Music', Icons.headphones_rounded, const Color(0xFF2196F3)),
       _CategoryItem(
           'Photography', Icons.camera_alt_rounded, const Color(0xFF607D8B)),
-      _CategoryItem(
-          'Science', Icons.science_rounded, const Color(0xFF00BCD4)),
+      _CategoryItem('Science', Icons.science_rounded, const Color(0xFF00BCD4)),
       _CategoryItem(
           'Sports', Icons.fitness_center_rounded, const Color(0xFFFF5722)),
       _CategoryItem(
@@ -612,7 +605,8 @@ class _TrendingCommunityCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppTheme.cardColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.dividerColor.withValues(alpha: 0.3)),
+          border:
+              Border.all(color: AppTheme.dividerColor.withValues(alpha: 0.3)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -685,8 +679,7 @@ class _CommunityListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: Container(
         width: 48,
         height: 48,
@@ -706,8 +699,7 @@ class _CommunityListTile extends StatelessWidget {
           style: const TextStyle(fontWeight: FontWeight.w500)),
       subtitle: Text(
         '${formatCount(community.membersCount)} membros',
-        style:
-            const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+        style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
       ),
       trailing: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -750,7 +742,8 @@ class _CommunityGridCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppTheme.cardColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.dividerColor.withValues(alpha: 0.3)),
+          border:
+              Border.all(color: AppTheme.dividerColor.withValues(alpha: 0.3)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

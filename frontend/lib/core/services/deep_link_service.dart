@@ -162,11 +162,12 @@ class DeepLinkService {
   }) {
     if (useWebUrl) {
       final prefix = {
-        'community': 'c',
-        'post': 'p',
-        'user': 'u',
-        'invite': 'i',
-      }[type] ?? type;
+            'community': 'c',
+            'post': 'p',
+            'user': 'u',
+            'invite': 'i',
+          }[type] ??
+          type;
       return 'https://nexushub.app/$prefix/$id';
     }
     return 'nexushub://$type/$id';

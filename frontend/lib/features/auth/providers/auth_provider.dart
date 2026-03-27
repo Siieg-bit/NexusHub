@@ -70,12 +70,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = AuthState(isAuthenticated: true, user: user);
 
       // Atualizar status online (1 = Online)
-      await SupabaseService.table('profiles')
-          .update({
-            'online_status': 1,
-            'last_seen_at': DateTime.now().toUtc().toIso8601String(),
-          })
-          .eq('id', userId);
+      await SupabaseService.table('profiles').update({
+        'online_status': 1,
+        'last_seen_at': DateTime.now().toUtc().toIso8601String(),
+      }).eq('id', userId);
     } catch (e) {
       state = state.copyWith(error: 'Erro ao carregar perfil: $e');
     }
@@ -127,7 +125,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await SupabaseService.auth.signInWithOAuth(OAuthProvider.google);
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: 'Erro no login com Google: $e');
+      state = state.copyWith(
+          isLoading: false, error: 'Erro no login com Google: $e');
       return false;
     }
   }
@@ -138,12 +137,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final userId = SupabaseService.currentUserId;
       if (userId != null) {
         // Atualizar status offline (2 = Offline)
-        await SupabaseService.table('profiles')
-            .update({
-              'online_status': 2,
-              'last_seen_at': DateTime.now().toUtc().toIso8601String(),
-            })
-            .eq('id', userId);
+        await SupabaseService.table('profiles').update({
+          'online_status': 2,
+          'last_seen_at': DateTime.now().toUtc().toIso8601String(),
+        }).eq('id', userId);
       }
       await SupabaseService.auth.signOut();
       state = const AuthState();

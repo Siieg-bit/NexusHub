@@ -41,8 +41,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Revogar Dispositivo'),
-        content: const Text(
-            'Isso encerrará a sessão neste dispositivo. '
+        content: const Text('Isso encerrará a sessão neste dispositivo. '
             'O usuário precisará fazer login novamente.'),
         actions: [
           TextButton(
@@ -50,10 +49,9 @@ class _DevicesScreenState extends State<DevicesScreen> {
               child: const Text('Cancelar')),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.errorColor),
-            child: const Text('Revogar',
-                style: TextStyle(color: Colors.white)),
+            style:
+                ElevatedButton.styleFrom(backgroundColor: AppTheme.errorColor),
+            child: const Text('Revogar', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -87,8 +85,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Revogar Todos os Outros'),
-        content: const Text(
-            'Isso encerrará todas as sessões exceto a atual. '
+        content: const Text('Isso encerrará todas as sessões exceto a atual. '
             'Todos os outros dispositivos precisarão fazer login novamente.'),
         actions: [
           TextButton(
@@ -96,8 +93,8 @@ class _DevicesScreenState extends State<DevicesScreen> {
               child: const Text('Cancelar')),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.errorColor),
+            style:
+                ElevatedButton.styleFrom(backgroundColor: AppTheme.errorColor),
             child: const Text('Revogar Todos',
                 style: TextStyle(color: Colors.white)),
           ),
@@ -214,11 +211,9 @@ class _DevicesScreenState extends State<DevicesScreen> {
                         device['device_name'] as String? ?? 'Dispositivo';
                     final os = device['os'] as String? ?? '';
                     final browser = device['browser'] as String? ?? '';
-                    final ipAddress =
-                        device['ip_address'] as String? ?? '';
+                    final ipAddress = device['ip_address'] as String? ?? '';
                     final lastSeen = device['last_seen_at'] != null
-                        ? DateTime.tryParse(
-                            device['last_seen_at'] as String)
+                        ? DateTime.tryParse(device['last_seen_at'] as String)
                         : null;
                     final isCurrentDevice =
                         device['is_current'] as bool? ?? false;
@@ -256,8 +251,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
                                   children: [
@@ -268,10 +262,8 @@ class _DevicesScreenState extends State<DevicesScreen> {
                                     if (isCurrentDevice) ...[
                                       const SizedBox(width: 6),
                                       Container(
-                                        padding:
-                                            const EdgeInsets.symmetric(
-                                                horizontal: 6,
-                                                vertical: 2),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 2),
                                         decoration: BoxDecoration(
                                           color: AppTheme.successColor
                                               .withValues(alpha: 0.15),
@@ -280,11 +272,9 @@ class _DevicesScreenState extends State<DevicesScreen> {
                                         ),
                                         child: const Text('Atual',
                                             style: TextStyle(
-                                                color: AppTheme
-                                                    .successColor,
+                                                color: AppTheme.successColor,
                                                 fontSize: 9,
-                                                fontWeight:
-                                                    FontWeight.bold)),
+                                                fontWeight: FontWeight.bold)),
                                       ),
                                     ],
                                   ],
@@ -307,16 +297,15 @@ class _DevicesScreenState extends State<DevicesScreen> {
                                   Text(
                                     'Último acesso: ${lastSeen.day}/${lastSeen.month}/${lastSeen.year} ${lastSeen.hour}:${lastSeen.minute.toString().padLeft(2, '0')}',
                                     style: const TextStyle(
-                                        color: AppTheme.textHint,
-                                        fontSize: 10),
+                                        color: AppTheme.textHint, fontSize: 10),
                                   ),
                               ],
                             ),
                           ),
                           if (!isCurrentDevice)
                             IconButton(
-                              onPressed: () => _revokeDevice(
-                                  device['id'] as String),
+                              onPressed: () =>
+                                  _revokeDevice(device['id'] as String),
                               icon: const Icon(Icons.close_rounded,
                                   color: AppTheme.errorColor, size: 20),
                               tooltip: 'Revogar',

@@ -233,12 +233,10 @@ class _FullScreenGalleryState extends State<_FullScreenGallery> {
         onPageChanged: (i) => setState(() => _currentIndex = i),
         builder: (context, index) {
           return PhotoViewGalleryPageOptions(
-            imageProvider:
-                CachedNetworkImageProvider(widget.imageUrls[index]),
+            imageProvider: CachedNetworkImageProvider(widget.imageUrls[index]),
             minScale: PhotoViewComputedScale.contained,
             maxScale: PhotoViewComputedScale.covered * 3,
-            heroAttributes:
-                PhotoViewHeroAttributes(tag: 'image_$index'),
+            heroAttributes: PhotoViewHeroAttributes(tag: 'image_$index'),
           );
         },
         scrollPhysics: const BouncingScrollPhysics(),
@@ -247,8 +245,7 @@ class _FullScreenGalleryState extends State<_FullScreenGallery> {
           child: CircularProgressIndicator(
             value: event == null
                 ? null
-                : event.cumulativeBytesLoaded /
-                    (event.expectedTotalBytes ?? 1),
+                : event.cumulativeBytesLoaded / (event.expectedTotalBytes ?? 1),
             color: Colors.white38,
           ),
         ),
@@ -317,7 +314,8 @@ class ImagePickerGrid extends StatelessWidget {
                       color: Colors.red,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.close, color: Colors.white, size: 14),
+                    child:
+                        const Icon(Icons.close, color: Colors.white, size: 14),
                   ),
                 ),
               ),
@@ -333,7 +331,8 @@ class ImagePickerGrid extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.grey[800],
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey[600]!, style: BorderStyle.solid),
+                border: Border.all(
+                    color: Colors.grey[600]!, style: BorderStyle.solid),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -350,5 +349,3 @@ class ImagePickerGrid extends StatelessWidget {
     );
   }
 }
-
-

@@ -19,10 +19,8 @@ import '../widgets/community_drawer.dart';
 /// Provider para detalhes de uma comunidade.
 final communityDetailProvider =
     FutureProvider.family<CommunityModel, String>((ref, id) async {
-  final response = await SupabaseService.table('communities')
-      .select()
-      .eq('id', id)
-      .single();
+  final response =
+      await SupabaseService.table('communities').select().eq('id', id).single();
   return CommunityModel.fromJson(response);
 });
 
@@ -51,7 +49,8 @@ final communityMembersProvider =
     FutureProvider.family<List<Map<String, dynamic>>, String>(
         (ref, communityId) async {
   final response = await SupabaseService.table('community_members')
-      .select('*, profiles!community_members_user_id_fkey(id, nickname, icon_url, level, online_status)')
+      .select(
+          '*, profiles!community_members_user_id_fkey(id, nickname, icon_url, level, online_status)')
       .eq('community_id', communityId)
       .order('role', ascending: false)
       .limit(50);
@@ -98,8 +97,7 @@ class CommunityDetailScreen extends ConsumerStatefulWidget {
       _CommunityDetailScreenState();
 }
 
-class _CommunityDetailScreenState
-    extends ConsumerState<CommunityDetailScreen>
+class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
@@ -276,13 +274,11 @@ class _CommunityDetailScreenState
                               decoration: BoxDecoration(
                                 color: themeColor.withValues(alpha: 0.3),
                                 borderRadius: BorderRadius.circular(16),
-                                border:
-                                    Border.all(color: themeColor, width: 2),
+                                border: Border.all(color: themeColor, width: 2),
                               ),
                               child: community.iconUrl != null
                                   ? ClipRRect(
-                                      borderRadius:
-                                          BorderRadius.circular(14),
+                                      borderRadius: BorderRadius.circular(14),
                                       child: CachedNetworkImage(
                                         imageUrl: community.iconUrl!,
                                         fit: BoxFit.cover,
@@ -294,8 +290,7 @@ class _CommunityDetailScreenState
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(community.name,
                                       style: Theme.of(context)
@@ -315,15 +310,12 @@ class _CommunityDetailScreenState
                                       Text(
                                           '${formatCount(community.membersCount)} membros',
                                           style: TextStyle(
-                                              color: themeColor,
-                                              fontSize: 12)),
+                                              color: themeColor, fontSize: 12)),
                                       const SizedBox(width: 12),
                                       const Icon(Icons.circle,
-                                          size: 6,
-                                          color: AppTheme.onlineColor),
+                                          size: 6, color: AppTheme.onlineColor),
                                       const SizedBox(width: 4),
-                                      Text(
-                                          '${community.membersCount} membros',
+                                      Text('${community.membersCount} membros',
                                           style: const TextStyle(
                                               color: AppTheme.onlineColor,
                                               fontSize: 12)),
@@ -406,18 +398,16 @@ class _CommunityDetailScreenState
                 _WikiTab(communityId: widget.communityId),
                 _ChatTab(communityId: widget.communityId),
                 _MembersTab(
-                    communityId: widget.communityId,
-                    themeColor: themeColor),
+                    communityId: widget.communityId, themeColor: themeColor),
               ],
             ),
           ),
           floatingActionButton: isMember
               ? FloatingActionButton(
-                  onPressed: () => context.push(
-                      '/community/${widget.communityId}/create-post'),
+                  onPressed: () => context
+                      .push('/community/${widget.communityId}/create-post'),
                   backgroundColor: themeColor,
-                  child:
-                      const Icon(Icons.edit_rounded, color: Colors.white),
+                  child: const Icon(Icons.edit_rounded, color: Colors.white),
                 )
               : null,
         );
@@ -427,9 +417,8 @@ class _CommunityDetailScreenState
 
   void _showCommunityOptions(
       BuildContext context, CommunityModel community, String? userRole) {
-    final isStaff = userRole == 'agent' ||
-        userRole == 'leader' ||
-        userRole == 'curator';
+    final isStaff =
+        userRole == 'agent' || userRole == 'leader' || userRole == 'curator';
 
     showModalBottomSheet(
       context: context,
@@ -451,8 +440,7 @@ class _CommunityDetailScreenState
               title: const Text('Leaderboard'),
               onTap: () {
                 Navigator.pop(context);
-                context
-                    .push('/community/${community.id}/leaderboard');
+                context.push('/community/${community.id}/leaderboard');
               },
             ),
             ListTile(
@@ -476,8 +464,8 @@ class _CommunityDetailScreenState
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.flag_rounded,
-                    color: AppTheme.errorColor),
+                leading:
+                    const Icon(Icons.flag_rounded, color: AppTheme.errorColor),
                 title: const Text('Flag Center'),
                 onTap: () {
                   Navigator.pop(context);
@@ -486,8 +474,8 @@ class _CommunityDetailScreenState
               ),
             ],
             ListTile(
-              leading: const Icon(Icons.flag_outlined,
-                  color: AppTheme.errorColor),
+              leading:
+                  const Icon(Icons.flag_outlined, color: AppTheme.errorColor),
               title: const Text('Denunciar',
                   style: TextStyle(color: AppTheme.errorColor)),
               onTap: () => Navigator.pop(context),
@@ -514,7 +502,9 @@ class _CommunityDetailScreenState
                         fontWeight: FontWeight.w600, fontSize: 15)),
                 const SizedBox(height: 12),
               ],
-              Text(community.description.isEmpty ? 'Sem descrição disponível.' : community.description),
+              Text(community.description.isEmpty
+                  ? 'Sem descrição disponível.'
+                  : community.description),
               const SizedBox(height: 16),
               Row(
                 children: [
@@ -739,8 +729,8 @@ class _WikiTabState extends State<_WikiTab> {
                     ?.copyWith(color: AppTheme.textSecondary)),
             const SizedBox(height: 12),
             ElevatedButton.icon(
-              onPressed: () => context.push(
-                  '/community/${widget.communityId}/wiki/create'),
+              onPressed: () =>
+                  context.push('/community/${widget.communityId}/wiki/create'),
               icon: const Icon(Icons.add_rounded),
               label: const Text('Criar Wiki Entry'),
             ),
@@ -761,8 +751,8 @@ class _WikiTabState extends State<_WikiTab> {
                   style: const TextStyle(
                       color: AppTheme.textSecondary, fontSize: 13)),
               TextButton.icon(
-                onPressed: () => context.push(
-                    '/community/${widget.communityId}/wiki/create'),
+                onPressed: () => context
+                    .push('/community/${widget.communityId}/wiki/create'),
                 icon: const Icon(Icons.add_rounded, size: 16),
                 label: const Text('Criar', style: TextStyle(fontSize: 13)),
               ),
@@ -775,14 +765,12 @@ class _WikiTabState extends State<_WikiTab> {
             itemCount: _entries.length,
             itemBuilder: (context, index) {
               final entry = _entries[index];
-              final author =
-                  entry['profiles'] as Map<String, dynamic>?;
+              final author = entry['profiles'] as Map<String, dynamic>?;
 
               return Card(
                 margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
-                  onTap: () =>
-                      context.push('/wiki/${entry['id']}'),
+                  onTap: () => context.push('/wiki/${entry['id']}'),
                   leading: Container(
                     width: 48,
                     height: 48,
@@ -794,8 +782,7 @@ class _WikiTabState extends State<_WikiTab> {
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(10),
                             child: CachedNetworkImage(
-                              imageUrl:
-                                  entry['cover_image_url'] as String,
+                              imageUrl: entry['cover_image_url'] as String,
                               fit: BoxFit.cover,
                             ),
                           )
@@ -811,8 +798,8 @@ class _WikiTabState extends State<_WikiTab> {
                   ),
                   subtitle: Text(
                     'por ${author?['nickname'] ?? 'Anônimo'}',
-                    style: const TextStyle(
-                        color: AppTheme.textHint, fontSize: 12),
+                    style:
+                        const TextStyle(color: AppTheme.textHint, fontSize: 12),
                   ),
                 ),
               );
@@ -892,8 +879,8 @@ class _ChatTabState extends State<_ChatTab> {
       itemBuilder: (context, index) {
         final chat = _chats[index];
         final lastMsg = chat['last_message_preview'] as String?;
-        final lastMsgAt = DateTime.tryParse(
-            chat['last_message_at'] as String? ?? '');
+        final lastMsgAt =
+            DateTime.tryParse(chat['last_message_at'] as String? ?? '');
 
         return Card(
           margin: const EdgeInsets.only(bottom: 8),
@@ -902,8 +889,7 @@ class _ChatTabState extends State<_ChatTab> {
             leading: CircleAvatar(
               backgroundColor: AppTheme.accentColor.withValues(alpha: 0.2),
               backgroundImage: chat['icon_url'] != null
-                  ? CachedNetworkImageProvider(
-                      chat['icon_url'] as String)
+                  ? CachedNetworkImageProvider(chat['icon_url'] as String)
                   : null,
               child: chat['icon_url'] == null
                   ? const Icon(Icons.chat_rounded,
@@ -912,23 +898,21 @@ class _ChatTabState extends State<_ChatTab> {
             ),
             title: Text(
               chat['title'] as String? ?? 'Chat',
-              style: const TextStyle(
-                  fontWeight: FontWeight.w600, fontSize: 14),
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
             subtitle: Text(
               lastMsg ?? 'Sem mensagens',
-              style: const TextStyle(
-                  color: AppTheme.textHint, fontSize: 12),
+              style: const TextStyle(color: AppTheme.textHint, fontSize: 12),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
             trailing: lastMsgAt != null
                 ? Text(
                     timeago.format(lastMsgAt, locale: 'pt_BR'),
-                    style: const TextStyle(
-                        color: AppTheme.textHint, fontSize: 10),
+                    style:
+                        const TextStyle(color: AppTheme.textHint, fontSize: 10),
                   )
                 : null,
           ),
@@ -945,8 +929,7 @@ class _MembersTab extends ConsumerWidget {
   final String communityId;
   final Color themeColor;
 
-  const _MembersTab(
-      {required this.communityId, required this.themeColor});
+  const _MembersTab({required this.communityId, required this.themeColor});
 
   String _roleLabel(String role) {
     switch (role) {
@@ -1012,8 +995,7 @@ class _MembersTab extends ConsumerWidget {
           children: [
             if (staff.isNotEmpty) ...[
               Padding(
-                padding: const EdgeInsets.only(
-                    left: 4, bottom: 8, top: 8),
+                padding: const EdgeInsets.only(left: 4, bottom: 8, top: 8),
                 child: Text(
                   'STAFF (${staff.length})',
                   style: TextStyle(
@@ -1032,8 +1014,7 @@ class _MembersTab extends ConsumerWidget {
               const SizedBox(height: 16),
             ],
             Padding(
-              padding:
-                  const EdgeInsets.only(left: 4, bottom: 8),
+              padding: const EdgeInsets.only(left: 4, bottom: 8),
               child: Text(
                 'MEMBROS (${regular.length})',
                 style: const TextStyle(
@@ -1071,8 +1052,7 @@ class _MemberTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final profile =
-        member['profiles'] as Map<String, dynamic>? ?? {};
+    final profile = member['profiles'] as Map<String, dynamic>? ?? {};
     final userId = profile['id'] as String? ?? member['user_id'] as String?;
     final nickname = profile['nickname'] as String? ?? 'Usuário';
     final avatarUrl = profile['icon_url'] as String?;
@@ -1113,8 +1093,7 @@ class _MemberTile extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: AppTheme.onlineColor,
                     shape: BoxShape.circle,
-                    border: Border.all(
-                        color: AppTheme.scaffoldBg, width: 2),
+                    border: Border.all(color: AppTheme.scaffoldBg, width: 2),
                   ),
                 ),
               ),
@@ -1132,8 +1111,7 @@ class _MemberTile extends StatelessWidget {
             if (role != 'member') ...[
               const SizedBox(width: 6),
               Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: roleColor(role).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(6),
@@ -1151,8 +1129,8 @@ class _MemberTile extends StatelessWidget {
           ],
         ),
         subtitle: Text('Lv.$level',
-            style: TextStyle(
-                color: AppTheme.getLevelColor(level), fontSize: 12)),
+            style:
+                TextStyle(color: AppTheme.getLevelColor(level), fontSize: 12)),
       ),
     );
   }

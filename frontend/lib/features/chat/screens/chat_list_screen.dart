@@ -20,9 +20,11 @@ final chatListProvider = FutureProvider<List<ChatRoomModel>>((ref) async {
 
   return (response as List)
       .where((e) => e['chat_threads'] != null)
-      .map((e) => ChatRoomModel.fromJson(e['chat_threads'] as Map<String, dynamic>))
+      .map((e) =>
+          ChatRoomModel.fromJson(e['chat_threads'] as Map<String, dynamic>))
       .toList()
-    ..sort((a, b) => (b.lastMessageAt ?? b.createdAt).compareTo(a.lastMessageAt ?? a.createdAt));
+    ..sort((a, b) => (b.lastMessageAt ?? b.createdAt)
+        .compareTo(a.lastMessageAt ?? a.createdAt));
 });
 
 /// Tela de lista de chats do usuário.
@@ -63,12 +65,15 @@ class ChatListScreen extends ConsumerWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.chat_bubble_outline_rounded, size: 64, color: AppTheme.textHint),
+                        Icon(Icons.chat_bubble_outline_rounded,
+                            size: 64, color: AppTheme.textHint),
                         SizedBox(height: 16),
-                        Text('Nenhum chat ainda', style: TextStyle(color: AppTheme.textSecondary)),
+                        Text('Nenhum chat ainda',
+                            style: TextStyle(color: AppTheme.textSecondary)),
                         SizedBox(height: 8),
                         Text('Entre em uma comunidade e comece a conversar!',
-                            style: TextStyle(color: AppTheme.textHint, fontSize: 12)),
+                            style: TextStyle(
+                                color: AppTheme.textHint, fontSize: 12)),
                       ],
                     ),
                   ),
@@ -112,7 +117,9 @@ class _ChatRoomTile extends StatelessWidget {
             : null,
         child: chatRoom.iconUrl == null
             ? Icon(
-                chatRoom.type == 'direct' ? Icons.person_rounded : Icons.group_rounded,
+                chatRoom.type == 'direct'
+                    ? Icons.person_rounded
+                    : Icons.group_rounded,
                 color: AppTheme.primaryColor,
               )
             : null,
@@ -126,7 +133,8 @@ class _ChatRoomTile extends StatelessWidget {
       subtitle: chatRoom.lastMessagePreview != null
           ? Text(
               chatRoom.lastMessagePreview!,
-              style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+              style:
+                  const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             )
@@ -153,7 +161,10 @@ class _ChatRoomTile extends StatelessWidget {
               ),
               child: Text(
                 chatRoom.unreadCount > 99 ? '99+' : '${chatRoom.unreadCount}',
-                style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold),
               ),
             ),
         ],

@@ -112,8 +112,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
     // Always have at least the default emoji pack
     _packs.insert(0, {'name': 'Emojis', 'count': _defaultStickers.length});
 
-    _tabController = TabController(
-        length: _packs.length, vsync: this);
+    _tabController = TabController(length: _packs.length, vsync: this);
 
     if (mounted) setState(() => _isLoading = false);
   }
@@ -174,8 +173,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
                       if (packName == 'Emojis') {
                         return _buildEmojiGrid();
                       }
-                      return _buildStickerGrid(
-                          _stickersByPack[packName] ?? []);
+                      return _buildStickerGrid(_stickersByPack[packName] ?? []);
                     }).toList(),
                   ),
                 ),
@@ -208,8 +206,8 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
               borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
-              child: Text(sticker['emoji']!,
-                  style: const TextStyle(fontSize: 32)),
+              child:
+                  Text(sticker['emoji']!, style: const TextStyle(fontSize: 32)),
             ),
           ),
         );
@@ -252,8 +250,8 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
                     child: CachedNetworkImage(
                       imageUrl: imageUrl,
                       fit: BoxFit.contain,
-                      errorWidget: (_, __, ___) => const Center(
-                          child: Icon(Icons.broken_image_rounded)),
+                      errorWidget: (_, __, ___) =>
+                          const Center(child: Icon(Icons.broken_image_rounded)),
                     ),
                   )
                 : Center(

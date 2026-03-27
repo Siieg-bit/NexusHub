@@ -13,7 +13,8 @@ import '../models/post_model.dart';
 /// - Featured posts
 /// ============================================================================
 
-class CommunityFeedNotifier extends FamilyAsyncNotifier<List<PostModel>, String> {
+class CommunityFeedNotifier
+    extends FamilyAsyncNotifier<List<PostModel>, String> {
   int _page = 0;
   bool _hasMore = true;
   static const _pageSize = 20;
@@ -34,7 +35,8 @@ class CommunityFeedNotifier extends FamilyAsyncNotifier<List<PostModel>, String>
         .range(page * _pageSize, (page + 1) * _pageSize - 1);
 
     final list = res as List;
-    final posts = list.map((e) => PostModel.fromJson(e as Map<String, dynamic>)).toList();
+    final posts =
+        list.map((e) => PostModel.fromJson(e as Map<String, dynamic>)).toList();
     _hasMore = posts.length >= _pageSize;
     return posts;
   }
@@ -111,9 +113,8 @@ class CommunityFeedNotifier extends FamilyAsyncNotifier<List<PostModel>, String>
   bool get hasMore => _hasMore;
 }
 
-final communityFeedProvider =
-    AsyncNotifierProvider.family<CommunityFeedNotifier, List<PostModel>, String>(
-        CommunityFeedNotifier.new);
+final communityFeedProvider = AsyncNotifierProvider.family<
+    CommunityFeedNotifier, List<PostModel>, String>(CommunityFeedNotifier.new);
 
 // ── Post Detail ──
 final postDetailProvider = FutureProvider.family<PostModel?, String>(
@@ -139,6 +140,8 @@ final featuredPostsProvider = FutureProvider.family<List<PostModel>, String>(
         .limit(10);
 
     final list = res as List;
-    return list.map((e) => PostModel.fromJson(e as Map<String, dynamic>)).toList();
+    return list
+        .map((e) => PostModel.fromJson(e as Map<String, dynamic>))
+        .toList();
   },
 );

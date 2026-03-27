@@ -111,8 +111,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                                 ),
                                 const Text('Conquistas desbloqueadas',
                                     style: TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 13)),
+                                        color: Colors.white70, fontSize: 13)),
                               ],
                             ),
                           ],
@@ -143,8 +142,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                         ...locked.map((a) => _AchievementTile(
                               achievement: a,
                               isUnlocked: false,
-                              progress:
-                                  _progressMap[a['id'] as String] ?? 0,
+                              progress: _progressMap[a['id'] as String] ?? 0,
                             )),
                       ],
                     ],
@@ -258,8 +256,8 @@ class _AchievementTile extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   description,
-                  style: const TextStyle(
-                      color: AppTheme.textHint, fontSize: 12),
+                  style:
+                      const TextStyle(color: AppTheme.textHint, fontSize: 12),
                   maxLines: 2,
                 ),
                 if (!isUnlocked && progress > 0) ...[
@@ -273,8 +271,8 @@ class _AchievementTile extends StatelessWidget {
                             value: progress / 100,
                             backgroundColor:
                                 AppTheme.dividerColor.withValues(alpha: 0.3),
-                            valueColor: AlwaysStoppedAnimation(
-                                AppTheme.primaryColor),
+                            valueColor:
+                                AlwaysStoppedAnimation(AppTheme.primaryColor),
                             minHeight: 4,
                           ),
                         ),

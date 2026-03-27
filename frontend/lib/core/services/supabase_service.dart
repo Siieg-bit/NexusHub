@@ -30,7 +30,8 @@ class SupabaseService {
   static RealtimeClient get realtime => client.realtime;
 
   /// Chamar funções RPC
-  static Future<dynamic> rpc(String functionName, {Map<String, dynamic>? params}) {
+  static Future<dynamic> rpc(String functionName,
+      {Map<String, dynamic>? params}) {
     return client.rpc(functionName, params: params);
   }
 

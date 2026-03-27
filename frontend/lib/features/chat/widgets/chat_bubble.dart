@@ -152,8 +152,7 @@ class _BubblePainter extends CustomPainter {
       // Bubble com tail à direita
       path.moveTo(radius, 0);
       path.lineTo(size.width - radius - (showTail ? tailWidth : 0), 0);
-      path.quadraticBezierTo(
-          size.width - (showTail ? tailWidth : 0), 0,
+      path.quadraticBezierTo(size.width - (showTail ? tailWidth : 0), 0,
           size.width - (showTail ? tailWidth : 0), radius);
 
       if (showTail) {
@@ -163,11 +162,13 @@ class _BubblePainter extends CustomPainter {
         path.lineTo(size.width - tailWidth - 4, size.height - 4);
       }
 
-      path.lineTo(size.width - (showTail ? tailWidth : 0),
-          size.height - radius);
+      path.lineTo(
+          size.width - (showTail ? tailWidth : 0), size.height - radius);
       path.quadraticBezierTo(
-          size.width - (showTail ? tailWidth : 0), size.height,
-          size.width - radius - (showTail ? tailWidth : 0), size.height);
+          size.width - (showTail ? tailWidth : 0),
+          size.height,
+          size.width - radius - (showTail ? tailWidth : 0),
+          size.height);
       path.lineTo(radius, size.height);
       path.quadraticBezierTo(0, size.height, 0, size.height - radius);
       path.lineTo(0, radius);
@@ -181,8 +182,7 @@ class _BubblePainter extends CustomPainter {
       path.quadraticBezierTo(
           size.width, size.height, size.width - radius, size.height);
       path.lineTo(radius + (showTail ? tailWidth : 0), size.height);
-      path.quadraticBezierTo(
-          showTail ? tailWidth : 0, size.height,
+      path.quadraticBezierTo(showTail ? tailWidth : 0, size.height,
           showTail ? tailWidth : 0, size.height - radius);
 
       if (showTail) {
@@ -194,8 +194,7 @@ class _BubblePainter extends CustomPainter {
 
       path.lineTo(showTail ? tailWidth : 0, radius);
       path.quadraticBezierTo(
-          showTail ? tailWidth : 0, 0,
-          radius + (showTail ? tailWidth : 0), 0);
+          showTail ? tailWidth : 0, 0, radius + (showTail ? tailWidth : 0), 0);
     }
 
     path.close();
@@ -428,9 +427,8 @@ class StreakBar extends StatelessWidget {
                   Text(
                     _dayLabel(i),
                     style: TextStyle(
-                      color: isActive
-                          ? AppTheme.warningColor
-                          : AppTheme.textHint,
+                      color:
+                          isActive ? AppTheme.warningColor : AppTheme.textHint,
                       fontSize: 9,
                       fontWeight:
                           isActive ? FontWeight.w600 : FontWeight.normal,

@@ -144,8 +144,7 @@ class _NotificationSettingsScreenState
                           children: [
                             Text('Notificações Push',
                                 style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16)),
+                                    fontWeight: FontWeight.bold, fontSize: 16)),
                             Text('Ativar/desativar todas',
                                 style: TextStyle(
                                     color: AppTheme.textSecondary,
@@ -155,8 +154,7 @@ class _NotificationSettingsScreenState
                       ),
                       Switch(
                         value: _pushEnabled,
-                        onChanged: (v) =>
-                            setState(() => _pushEnabled = v),
+                        onChanged: (v) => setState(() => _pushEnabled = v),
                         activeColor: AppTheme.primaryColor,
                       ),
                     ],
@@ -175,8 +173,7 @@ class _NotificationSettingsScreenState
                     subtitle: 'Quando alguém curte seu post',
                     value: _pushLikes,
                     color: const Color(0xFFE91E63),
-                    onChanged: (v) =>
-                        setState(() => _pushLikes = v),
+                    onChanged: (v) => setState(() => _pushLikes = v),
                   ),
                   _NotifToggle(
                     icon: Icons.comment_rounded,
@@ -184,8 +181,7 @@ class _NotificationSettingsScreenState
                     subtitle: 'Quando alguém comenta no seu post',
                     value: _pushComments,
                     color: AppTheme.primaryColor,
-                    onChanged: (v) =>
-                        setState(() => _pushComments = v),
+                    onChanged: (v) => setState(() => _pushComments = v),
                   ),
                   _NotifToggle(
                     icon: Icons.person_add_rounded,
@@ -193,8 +189,7 @@ class _NotificationSettingsScreenState
                     subtitle: 'Quando alguém começa a te seguir',
                     value: _pushFollows,
                     color: AppTheme.accentColor,
-                    onChanged: (v) =>
-                        setState(() => _pushFollows = v),
+                    onChanged: (v) => setState(() => _pushFollows = v),
                   ),
                   _NotifToggle(
                     icon: Icons.alternate_email_rounded,
@@ -202,10 +197,8 @@ class _NotificationSettingsScreenState
                     subtitle: 'Quando alguém menciona você',
                     value: _pushMentions,
                     color: const Color(0xFF00BCD4),
-                    onChanged: (v) =>
-                        setState(() => _pushMentions = v),
+                    onChanged: (v) => setState(() => _pushMentions = v),
                   ),
-
                   const SizedBox(height: 16),
                   _SectionTitle(title: 'Chat'),
                   _NotifToggle(
@@ -214,8 +207,7 @@ class _NotificationSettingsScreenState
                     subtitle: 'Novas mensagens no chat',
                     value: _pushChatMessages,
                     color: AppTheme.primaryColor,
-                    onChanged: (v) =>
-                        setState(() => _pushChatMessages = v),
+                    onChanged: (v) => setState(() => _pushChatMessages = v),
                   ),
                   _NotifToggle(
                     icon: Icons.group_add_rounded,
@@ -223,10 +215,8 @@ class _NotificationSettingsScreenState
                     subtitle: 'Convites para entrar em comunidades',
                     value: _pushCommunityInvites,
                     color: AppTheme.successColor,
-                    onChanged: (v) =>
-                        setState(() => _pushCommunityInvites = v),
+                    onChanged: (v) => setState(() => _pushCommunityInvites = v),
                   ),
-
                   const SizedBox(height: 16),
                   _SectionTitle(title: 'Gamificação'),
                   _NotifToggle(
@@ -235,8 +225,7 @@ class _NotificationSettingsScreenState
                     subtitle: 'Quando desbloqueia uma conquista',
                     value: _pushAchievements,
                     color: AppTheme.warningColor,
-                    onChanged: (v) =>
-                        setState(() => _pushAchievements = v),
+                    onChanged: (v) => setState(() => _pushAchievements = v),
                   ),
                   _NotifToggle(
                     icon: Icons.arrow_upward_rounded,
@@ -244,10 +233,8 @@ class _NotificationSettingsScreenState
                     subtitle: 'Quando sobe de nível',
                     value: _pushLevelUp,
                     color: const Color(0xFF9C27B0),
-                    onChanged: (v) =>
-                        setState(() => _pushLevelUp = v),
+                    onChanged: (v) => setState(() => _pushLevelUp = v),
                   ),
-
                   const SizedBox(height: 16),
                   _SectionTitle(title: 'Moderação'),
                   _NotifToggle(
@@ -256,8 +243,7 @@ class _NotificationSettingsScreenState
                     subtitle: 'Avisos, strikes e ações sobre seu conteúdo',
                     value: _pushModeration,
                     color: AppTheme.errorColor,
-                    onChanged: (v) =>
-                        setState(() => _pushModeration = v),
+                    onChanged: (v) => setState(() => _pushModeration = v),
                   ),
                 ],
 
@@ -273,8 +259,7 @@ class _NotificationSettingsScreenState
                   subtitle: 'Sons de notificação dentro do app',
                   value: _inAppSounds,
                   color: AppTheme.textSecondary,
-                  onChanged: (v) =>
-                      setState(() => _inAppSounds = v),
+                  onChanged: (v) => setState(() => _inAppSounds = v),
                 ),
                 _NotifToggle(
                   icon: Icons.vibration_rounded,
@@ -282,8 +267,7 @@ class _NotificationSettingsScreenState
                   subtitle: 'Vibrar ao receber notificações',
                   value: _inAppVibration,
                   color: AppTheme.textSecondary,
-                  onChanged: (v) =>
-                      setState(() => _inAppVibration = v),
+                  onChanged: (v) => setState(() => _inAppVibration = v),
                 ),
                 const SizedBox(height: 32),
               ],

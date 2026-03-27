@@ -31,19 +31,15 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
   Future<void> _loadStats() async {
     try {
       // Contagens básicas
-      final users = await SupabaseService.table('profiles')
-          .select('id')
-          .count();
+      final users =
+          await SupabaseService.table('profiles').select('id').count();
       _totalUsers = users.count;
 
-      final communities = await SupabaseService.table('communities')
-          .select('id')
-          .count();
+      final communities =
+          await SupabaseService.table('communities').select('id').count();
       _totalCommunities = communities.count;
 
-      final posts = await SupabaseService.table('posts')
-          .select('id')
-          .count();
+      final posts = await SupabaseService.table('posts').select('id').count();
       _totalPosts = posts.count;
 
       final flags = await SupabaseService.table('flags')
@@ -175,8 +171,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           ),
           child: Row(
             children: [
-              Icon(Icons.gavel_rounded,
-                  color: AppTheme.warningColor, size: 20),
+              Icon(Icons.gavel_rounded, color: AppTheme.warningColor, size: 20),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -274,8 +269,8 @@ class _StatCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(label,
-              style: const TextStyle(
-                  color: AppTheme.textSecondary, fontSize: 12)),
+              style:
+                  const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
         ],
       ),
     );
@@ -305,13 +300,12 @@ class _ToolItem extends StatelessWidget {
       ),
       child: ListTile(
         leading: Icon(icon, color: AppTheme.primaryColor),
-        title: Text(label,
-            style: const TextStyle(fontWeight: FontWeight.w500)),
+        title: Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
         subtitle: Text(description,
-            style: const TextStyle(
-                color: AppTheme.textSecondary, fontSize: 12)),
-        trailing: const Icon(Icons.chevron_right_rounded,
-            color: AppTheme.textHint),
+            style:
+                const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+        trailing:
+            const Icon(Icons.chevron_right_rounded, color: AppTheme.textHint),
         onTap: onTap,
       ),
     );

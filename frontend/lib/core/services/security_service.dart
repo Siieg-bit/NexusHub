@@ -12,14 +12,12 @@ import 'supabase_service.dart';
 /// - Content Security Policy helpers
 class SecurityService {
   /// Chave secreta para HMAC (em produção, usar variável de ambiente)
-  static const String _hmacSecret =
-      'nexushub_hmac_secret_change_in_production';
+  static const String _hmacSecret = 'nexushub_hmac_secret_change_in_production';
 
   /// Gera assinatura HMAC SHA-256 para uma payload
   static String generateHmac(Map<String, dynamic> payload) {
     final sortedKeys = payload.keys.toList()..sort();
-    final canonicalString =
-        sortedKeys.map((k) => '$k=${payload[k]}').join('&');
+    final canonicalString = sortedKeys.map((k) => '$k=${payload[k]}').join('&');
 
     final hmacSha256 = Hmac(sha256, utf8.encode(_hmacSecret));
     final digest = hmacSha256.convert(utf8.encode(canonicalString));
@@ -52,8 +50,7 @@ class SecurityService {
 
     // Remove event handlers (onclick, onerror, etc.)
     sanitized = sanitized.replaceAll(
-        RegExp(r"""\s+on\w+\s*=\s*["'][^"']*["']""", caseSensitive: false),
-        '');
+        RegExp(r"""\s+on\w+\s*=\s*["'][^"']*["']""", caseSensitive: false), '');
 
     // Remove javascript: URLs
     sanitized = sanitized.replaceAll(
@@ -111,8 +108,7 @@ class SecurityService {
   static bool isValidImageUrl(String url) {
     try {
       final uri = Uri.parse(url);
-      if (!uri.hasScheme ||
-          (!uri.isScheme('https') && !uri.isScheme('http'))) {
+      if (!uri.hasScheme || (!uri.isScheme('https') && !uri.isScheme('http'))) {
         return false;
       }
       final ext = uri.path.toLowerCase();

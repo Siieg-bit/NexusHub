@@ -208,7 +208,8 @@ class _ReportDialogState extends State<ReportDialog> {
                   borderRadius: BorderRadius.circular(12),
                   border: isSelected
                       ? Border.all(
-                          color: Color(type['color'] as int).withValues(alpha: 0.5))
+                          color: Color(type['color'] as int)
+                              .withValues(alpha: 0.5))
                       : null,
                 ),
                 child: Row(
@@ -268,8 +269,8 @@ class _ReportDialogState extends State<ReportDialog> {
                           strokeWidth: 2, color: Colors.white),
                     )
                   : const Text('Enviar Denúncia',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 15)),
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
             ),
           ),
           const SizedBox(height: 16),

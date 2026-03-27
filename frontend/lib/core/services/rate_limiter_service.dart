@@ -100,7 +100,8 @@ class RateLimiterService {
   static Future<bool> _checkServer(String action) async {
     try {
       final limit = _limits[action]!;
-      final result = await SupabaseService.client.rpc('check_rate_limit', params: {
+      final result =
+          await SupabaseService.client.rpc('check_rate_limit', params: {
         'p_action': action,
         'p_max_requests': limit['max'],
         'p_window_seconds': limit['window'],

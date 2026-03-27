@@ -75,8 +75,10 @@ class _AcmScreenState extends State<AcmScreen>
   Future<void> _loadStats() async {
     try {
       // New members in last 7 days
-      final sevenDaysAgo =
-          DateTime.now().subtract(const Duration(days: 7)).toUtc().toIso8601String();
+      final sevenDaysAgo = DateTime.now()
+          .subtract(const Duration(days: 7))
+          .toUtc()
+          .toIso8601String();
       final newMembersRes = await SupabaseService.table('community_members')
           .select('id')
           .eq('community_id', widget.communityId)
@@ -91,8 +93,10 @@ class _AcmScreenState extends State<AcmScreen>
       _pendingFlags = (flagsRes as List).length;
 
       // Moderation actions in last 30 days
-      final thirtyDaysAgo =
-          DateTime.now().subtract(const Duration(days: 30)).toUtc().toIso8601String();
+      final thirtyDaysAgo = DateTime.now()
+          .subtract(const Duration(days: 30))
+          .toUtc()
+          .toIso8601String();
       final modRes = await SupabaseService.table('moderation_logs')
           .select('id')
           .eq('community_id', widget.communityId)
@@ -211,15 +215,24 @@ class _AcmScreenState extends State<AcmScreen>
   // ========================================================================
   Widget _buildModulesTab() {
     final modules = [
-      _ModuleItem('post', 'Posts', Icons.article_rounded, 'Permitir criação de posts'),
-      _ModuleItem('chat', 'Chat', Icons.chat_rounded, 'Habilitar chats na comunidade'),
-      _ModuleItem('catalog', 'Catálogo (Wiki)', Icons.auto_stories_rounded, 'Habilitar wiki/catálogo'),
-      _ModuleItem('featured', 'Featured', Icons.star_rounded, 'Permitir destaque de conteúdo'),
-      _ModuleItem('ranking', 'Ranking', Icons.leaderboard_rounded, 'Habilitar leaderboard'),
-      _ModuleItem('sharedFolder', 'Shared Folder', Icons.folder_shared_rounded, 'Pasta compartilhada'),
-      _ModuleItem('influencer', 'Influencer', Icons.verified_rounded, 'Sistema de influenciadores'),
-      _ModuleItem('externalContent', 'Conteúdo Externo', Icons.link_rounded, 'Permitir links externos'),
-      _ModuleItem('topicCategories', 'Categorias', Icons.category_rounded, 'Categorias de tópicos'),
+      _ModuleItem(
+          'post', 'Posts', Icons.article_rounded, 'Permitir criação de posts'),
+      _ModuleItem(
+          'chat', 'Chat', Icons.chat_rounded, 'Habilitar chats na comunidade'),
+      _ModuleItem('catalog', 'Catálogo (Wiki)', Icons.auto_stories_rounded,
+          'Habilitar wiki/catálogo'),
+      _ModuleItem('featured', 'Featured', Icons.star_rounded,
+          'Permitir destaque de conteúdo'),
+      _ModuleItem('ranking', 'Ranking', Icons.leaderboard_rounded,
+          'Habilitar leaderboard'),
+      _ModuleItem('sharedFolder', 'Shared Folder', Icons.folder_shared_rounded,
+          'Pasta compartilhada'),
+      _ModuleItem('influencer', 'Influencer', Icons.verified_rounded,
+          'Sistema de influenciadores'),
+      _ModuleItem('externalContent', 'Conteúdo Externo', Icons.link_rounded,
+          'Permitir links externos'),
+      _ModuleItem('topicCategories', 'Categorias', Icons.category_rounded,
+          'Categorias de tópicos'),
     ];
 
     return ListView.builder(
@@ -260,8 +273,7 @@ class _AcmScreenState extends State<AcmScreen>
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Text('Tipo de Entrada',
-            style: Theme.of(context).textTheme.titleLarge),
+        Text('Tipo de Entrada', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
         _AccessOption(
           icon: Icons.public_rounded,
@@ -285,8 +297,7 @@ class _AcmScreenState extends State<AcmScreen>
           onTap: () => setState(() => _joinType = 'invite'),
         ),
         const SizedBox(height: 32),
-        Text('Visibilidade',
-            style: Theme.of(context).textTheme.titleLarge),
+        Text('Visibilidade', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
         _AccessOption(
           icon: Icons.visibility_rounded,
@@ -378,14 +389,28 @@ class _AcmScreenState extends State<AcmScreen>
                 spacing: 10,
                 runSpacing: 10,
                 children: [
-                  '#F44336', '#E91E63', '#9C27B0', '#673AB7',
-                  '#3F51B5', '#2196F3', '#03A9F4', '#00BCD4',
-                  '#009688', '#4CAF50', '#8BC34A', '#CDDC39',
-                  '#FFC107', '#FF9800', '#FF5722', '#795548',
-                  '#607D8B', '#000000',
+                  '#F44336',
+                  '#E91E63',
+                  '#9C27B0',
+                  '#673AB7',
+                  '#3F51B5',
+                  '#2196F3',
+                  '#03A9F4',
+                  '#00BCD4',
+                  '#009688',
+                  '#4CAF50',
+                  '#8BC34A',
+                  '#CDDC39',
+                  '#FFC107',
+                  '#FF9800',
+                  '#FF5722',
+                  '#795548',
+                  '#607D8B',
+                  '#000000',
                 ].map((hex) {
                   final c = _parseColor(hex);
-                  final isSelected = _themeColor.toLowerCase() == hex.toLowerCase();
+                  final isSelected =
+                      _themeColor.toLowerCase() == hex.toLowerCase();
                   return GestureDetector(
                     onTap: () => setState(() => _themeColor = hex),
                     child: Container(
@@ -399,7 +424,11 @@ class _AcmScreenState extends State<AcmScreen>
                           width: 3,
                         ),
                         boxShadow: isSelected
-                            ? [BoxShadow(color: c.withValues(alpha: 0.5), blurRadius: 8)]
+                            ? [
+                                BoxShadow(
+                                    color: c.withValues(alpha: 0.5),
+                                    blurRadius: 8)
+                              ]
                             : null,
                       ),
                       child: isSelected
@@ -462,7 +491,9 @@ class _AcmScreenState extends State<AcmScreen>
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16),
                     child: Image.network(_iconUrl,
-                        width: 80, height: 80, fit: BoxFit.cover,
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Container(
                               width: 80,
                               height: 80,
@@ -517,7 +548,9 @@ class _AcmScreenState extends State<AcmScreen>
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: Image.network(_bannerUrl,
-                      height: 100, width: double.infinity, fit: BoxFit.cover,
+                      height: 100,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => Container(
                             height: 100,
                             color: AppTheme.cardColorLight,
@@ -589,8 +622,7 @@ class _AcmScreenState extends State<AcmScreen>
             color: const Color(0xFF00BCD4),
           ),
           const SizedBox(height: 24),
-          Text('Moderação',
-              style: Theme.of(context).textTheme.titleMedium),
+          Text('Moderação', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 12),
           _StatCard(
             icon: Icons.flag_rounded,
@@ -619,8 +651,12 @@ class _AcmScreenState extends State<AcmScreen>
                 _InfoRow('Tipo de Entrada', _joinType.toUpperCase()),
                 _InfoRow('Visibilidade', _listedStatus.toUpperCase()),
                 _InfoRow('Cor Tema', _themeColor),
-                _InfoRow('Módulos Ativos',
-                    _config.entries.where((e) => e.value == true).length.toString()),
+                _InfoRow(
+                    'Módulos Ativos',
+                    _config.entries
+                        .where((e) => e.value == true)
+                        .length
+                        .toString()),
               ],
             ),
           ),
@@ -767,11 +803,11 @@ class _InfoRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label,
-              style: const TextStyle(
-                  color: AppTheme.textSecondary, fontSize: 13)),
+              style:
+                  const TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
           Text(value,
-              style: const TextStyle(
-                  fontWeight: FontWeight.w600, fontSize: 13)),
+              style:
+                  const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
         ],
       ),
     );

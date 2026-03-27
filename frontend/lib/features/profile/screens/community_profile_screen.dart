@@ -21,8 +21,7 @@ class CommunityProfileScreen extends StatefulWidget {
   });
 
   @override
-  State<CommunityProfileScreen> createState() =>
-      _CommunityProfileScreenState();
+  State<CommunityProfileScreen> createState() => _CommunityProfileScreenState();
 }
 
 class _CommunityProfileScreenState extends State<CommunityProfileScreen>
@@ -74,9 +73,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           .eq('profile_wall_id', widget.userId)
           .order('created_at', ascending: false)
           .limit(30);
-      _wallComments = (wallRes as List)
-          .map((e) => CommentModel.fromJson(e))
-          .toList();
+      _wallComments =
+          (wallRes as List).map((e) => CommentModel.fromJson(e)).toList();
 
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
@@ -202,14 +200,11 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            _StatBadge(
-                                label: 'Nível', value: level.toString()),
+                            _StatBadge(label: 'Nível', value: level.toString()),
                             _StatBadge(
                                 label: 'Reputação',
                                 value: formatCount(reputation)),
-                            _StatBadge(
-                                label: 'Streak',
-                                value: '$streak dias'),
+                            _StatBadge(label: 'Streak', value: '$streak dias'),
                           ],
                         ),
                         const SizedBox(height: 8),
@@ -219,8 +214,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                           child: LinearProgressIndicator(
                             value: progress,
                             backgroundColor: Colors.white24,
-                            valueColor: const AlwaysStoppedAnimation(
-                                Colors.white),
+                            valueColor:
+                                const AlwaysStoppedAnimation(Colors.white),
                             minHeight: 6,
                           ),
                         ),
@@ -405,21 +400,18 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                         children: [
                           CircleAvatar(
                             radius: 18,
-                            backgroundImage:
-                                comment.author?.iconUrl != null
-                                    ? CachedNetworkImageProvider(
-                                        comment.author!.iconUrl!)
-                                    : null,
+                            backgroundImage: comment.author?.iconUrl != null
+                                ? CachedNetworkImageProvider(
+                                    comment.author!.iconUrl!)
+                                : null,
                             child: comment.author?.iconUrl == null
-                                ? const Icon(Icons.person_rounded,
-                                    size: 18)
+                                ? const Icon(Icons.person_rounded, size: 18)
                                 : null,
                           ),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   comment.author?.nickname ?? 'Anônimo',
@@ -451,24 +443,20 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           Text('Bio', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           Text(_user!.bio,
-              style: const TextStyle(
-                  color: AppTheme.textSecondary, height: 1.5)),
+              style:
+                  const TextStyle(color: AppTheme.textSecondary, height: 1.5)),
           const SizedBox(height: 24),
         ],
-        Text('Informações',
-            style: Theme.of(context).textTheme.titleMedium),
+        Text('Informações', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
-        _InfoRow(
-            label: 'Amino ID', value: _user?.aminoId ?? 'Não definido'),
+        _InfoRow(label: 'Amino ID', value: _user?.aminoId ?? 'Não definido'),
         _InfoRow(
             label: 'Entrou em',
             value: _membership?['joined_at'] != null
                 ? _formatDate(
                     DateTime.parse(_membership!['joined_at'] as String))
                 : '--'),
-        _InfoRow(
-            label: 'Posts',
-            value: _userPosts.length.toString()),
+        _InfoRow(label: 'Posts', value: _userPosts.length.toString()),
       ],
     );
   }
@@ -490,9 +478,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           .order('created_at', ascending: false)
           .limit(30);
       setState(() {
-        _wallComments = (wallRes as List)
-            .map((e) => CommentModel.fromJson(e))
-            .toList();
+        _wallComments =
+            (wallRes as List).map((e) => CommentModel.fromJson(e)).toList();
       });
     } catch (e) {
       if (mounted) {
@@ -546,10 +533,8 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: const TextStyle(color: AppTheme.textSecondary)),
-          Text(value,
-              style: const TextStyle(fontWeight: FontWeight.w500)),
+          Text(label, style: const TextStyle(color: AppTheme.textSecondary)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w500)),
         ],
       ),
     );

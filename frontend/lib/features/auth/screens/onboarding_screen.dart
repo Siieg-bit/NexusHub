@@ -50,7 +50,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               alignment: Alignment.topRight,
               child: TextButton(
                 onPressed: () => context.go('/login'),
-                child: const Text('Pular', style: TextStyle(color: AppTheme.textSecondary)),
+                child: const Text('Pular',
+                    style: TextStyle(color: AppTheme.textSecondary)),
               ),
             ),
 

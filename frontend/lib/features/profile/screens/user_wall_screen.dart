@@ -29,7 +29,8 @@ class _UserWallScreenState extends State<UserWallScreen> {
   Future<void> _loadMessages() async {
     try {
       final res = await SupabaseService.table('wall_messages')
-          .select('*, profiles!wall_messages_author_id_fkey(nickname, icon_url)')
+          .select(
+              '*, profiles!wall_messages_author_id_fkey(nickname, icon_url)')
           .eq('target_user_id', widget.userId)
           .order('created_at', ascending: false)
           .limit(50);
@@ -66,9 +67,7 @@ class _UserWallScreenState extends State<UserWallScreen> {
 
   Future<void> _deleteMessage(String messageId) async {
     try {
-      await SupabaseService.table('wall_messages')
-          .delete()
-          .eq('id', messageId);
+      await SupabaseService.table('wall_messages').delete().eq('id', messageId);
       await _loadMessages();
     } catch (e) {
       if (mounted) {
@@ -109,8 +108,8 @@ class _UserWallScreenState extends State<UserWallScreen> {
                                 size: 64, color: AppTheme.textHint),
                             const SizedBox(height: 16),
                             const Text('Nenhuma mensagem no mural',
-                                style: TextStyle(
-                                    color: AppTheme.textSecondary)),
+                                style:
+                                    TextStyle(color: AppTheme.textSecondary)),
                           ],
                         ),
                       )
@@ -121,55 +120,43 @@ class _UserWallScreenState extends State<UserWallScreen> {
                           itemCount: _messages.length,
                           itemBuilder: (context, index) {
                             final msg = _messages[index];
-                            final author = msg['profiles']
-                                as Map<String, dynamic>?;
-                            final authorId =
-                                msg['author_id'] as String?;
+                            final author =
+                                msg['profiles'] as Map<String, dynamic>?;
+                            final authorId = msg['author_id'] as String?;
                             final createdAt = DateTime.tryParse(
-                                    msg['created_at'] as String? ??
-                                        '') ??
+                                    msg['created_at'] as String? ?? '') ??
                                 DateTime.now();
                             final canDelete = isOwnWall ||
-                                authorId ==
-                                    SupabaseService.currentUserId;
+                                authorId == SupabaseService.currentUserId;
 
                             return Container(
-                              margin:
-                                  const EdgeInsets.only(bottom: 12),
+                              margin: const EdgeInsets.only(bottom: 12),
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
                                 color: AppTheme.cardColor,
-                                borderRadius:
-                                    BorderRadius.circular(14),
+                                borderRadius: BorderRadius.circular(14),
                               ),
                               child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
                                     children: [
                                       GestureDetector(
                                         onTap: () {
                                           if (authorId != null) {
-                                            context.push(
-                                                '/user/$authorId');
+                                            context.push('/user/$authorId');
                                           }
                                         },
                                         child: CircleAvatar(
                                           radius: 16,
-                                          backgroundImage: author?[
-                                                      'icon_url'] !=
-                                                  null
-                                              ? CachedNetworkImageProvider(
-                                                  author!['icon_url']
-                                                      as String)
-                                              : null,
-                                          child: author?[
-                                                      'icon_url'] ==
-                                                  null
-                                              ? const Icon(
-                                                  Icons
-                                                      .person_rounded,
+                                          backgroundImage:
+                                              author?['icon_url'] != null
+                                                  ? CachedNetworkImageProvider(
+                                                      author!['icon_url']
+                                                          as String)
+                                                  : null,
+                                          child: author?['icon_url'] == null
+                                              ? const Icon(Icons.person_rounded,
                                                   size: 16)
                                               : null,
                                         ),
@@ -178,26 +165,20 @@ class _UserWallScreenState extends State<UserWallScreen> {
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment:
-                                              CrossAxisAlignment
-                                                  .start,
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              author?['nickname']
-                                                      as String? ??
+                                              author?['nickname'] as String? ??
                                                   'Anônimo',
                                               style: const TextStyle(
-                                                  fontWeight:
-                                                      FontWeight
-                                                          .w600,
+                                                  fontWeight: FontWeight.w600,
                                                   fontSize: 13),
                                             ),
                                             Text(
-                                              timeago.format(
-                                                  createdAt,
+                                              timeago.format(createdAt,
                                                   locale: 'pt_BR'),
                                               style: const TextStyle(
-                                                  color: AppTheme
-                                                      .textHint,
+                                                  color: AppTheme.textHint,
                                                   fontSize: 11),
                                             ),
                                           ],
@@ -206,23 +187,18 @@ class _UserWallScreenState extends State<UserWallScreen> {
                                       if (canDelete)
                                         IconButton(
                                           icon: const Icon(
-                                              Icons
-                                                  .delete_outline_rounded,
+                                              Icons.delete_outline_rounded,
                                               size: 18,
-                                              color: AppTheme
-                                                  .textHint),
-                                          onPressed: () =>
-                                              _deleteMessage(
-                                                  msg['id']
-                                                      as String),
+                                              color: AppTheme.textHint),
+                                          onPressed: () => _deleteMessage(
+                                              msg['id'] as String),
                                         ),
                                     ],
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
                                     msg['content'] as String? ?? '',
-                                    style: const TextStyle(
-                                        fontSize: 14),
+                                    style: const TextStyle(fontSize: 14),
                                   ),
                                 ],
                               ),
@@ -255,8 +231,8 @@ class _UserWallScreenState extends State<UserWallScreen> {
                     decoration: const InputDecoration(
                       hintText: 'Escreva no mural...',
                       border: InputBorder.none,
-                      hintStyle: TextStyle(
-                          color: AppTheme.textHint, fontSize: 14),
+                      hintStyle:
+                          TextStyle(color: AppTheme.textHint, fontSize: 14),
                     ),
                     maxLines: 3,
                     minLines: 1,
@@ -268,8 +244,7 @@ class _UserWallScreenState extends State<UserWallScreen> {
                       ? const SizedBox(
                           width: 20,
                           height: 20,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2),
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.send_rounded,
                           color: AppTheme.primaryColor),

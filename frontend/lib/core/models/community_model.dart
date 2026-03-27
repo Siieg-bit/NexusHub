@@ -97,8 +97,10 @@ class CommunityModel {
       configuration: json['configuration'] as Map<String, dynamic>? ?? {},
       status: json['status'] as String? ?? 'ok',
       probationStatus: json['probation_status'] as int? ?? 0,
-      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ?? DateTime.now(),
-      updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '') ?? DateTime.now(),
+      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ??
+          DateTime.now(),
+      updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '') ??
+          DateTime.now(),
       isMember: json['is_member'] as bool?,
     );
   }

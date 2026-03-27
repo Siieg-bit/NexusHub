@@ -126,8 +126,7 @@ class AdService {
             .maybeSingle();
         final balance = (current?['balance'] ?? 0) as num;
         await SupabaseService.table('wallets')
-            .update({'balance': balance + coins})
-            .eq('user_id', userId);
+            .update({'balance': balance + coins}).eq('user_id', userId);
       } catch (e2) {
         debugPrint('[AdService] Erro ao creditar moedas: $e2');
       }

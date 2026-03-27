@@ -90,7 +90,8 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.block_rounded,
-                          size: 64, color: AppTheme.textHint.withValues(alpha: 0.3)),
+                          size: 64,
+                          color: AppTheme.textHint.withValues(alpha: 0.3)),
                       const SizedBox(height: 16),
                       const Text('Nenhum usuário bloqueado',
                           style: TextStyle(
@@ -149,15 +150,14 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                                   Text(
                                     'Bloqueado em ${blockedAt.day}/${blockedAt.month}/${blockedAt.year}',
                                     style: const TextStyle(
-                                        color: AppTheme.textHint,
-                                        fontSize: 11),
+                                        color: AppTheme.textHint, fontSize: 11),
                                   ),
                               ],
                             ),
                           ),
                           TextButton(
-                            onPressed: () => _unblockUser(
-                                block['id'] as String, nickname),
+                            onPressed: () =>
+                                _unblockUser(block['id'] as String, nickname),
                             style: TextButton.styleFrom(
                               foregroundColor: AppTheme.errorColor,
                             ),

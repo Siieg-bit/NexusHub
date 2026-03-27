@@ -131,13 +131,16 @@ class UserModel {
           ? DateTime.tryParse(json['last_checkin_at'] as String)
           : null,
       brokenStreaks: json['broken_streaks'] as int? ?? 0,
-      hasCompletedOnboarding: json['has_completed_onboarding'] as bool? ?? false,
+      hasCompletedOnboarding:
+          json['has_completed_onboarding'] as bool? ?? false,
       onlineStatus: json['online_status'] as int? ?? 2,
       lastSeenAt: json['last_seen_at'] != null
           ? DateTime.tryParse(json['last_seen_at'] as String)
           : null,
-      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ?? DateTime.now(),
-      updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '') ?? DateTime.now(),
+      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ??
+          DateTime.now(),
+      updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '') ??
+          DateTime.now(),
       isFollowing: json['is_following'] as bool?,
       isFollowedBy: json['is_followed_by'] as bool?,
     );
@@ -200,7 +203,8 @@ class UserModel {
       consecutiveCheckinDays: consecutiveCheckinDays,
       lastCheckinAt: lastCheckinAt,
       brokenStreaks: brokenStreaks,
-      hasCompletedOnboarding: hasCompletedOnboarding ?? this.hasCompletedOnboarding,
+      hasCompletedOnboarding:
+          hasCompletedOnboarding ?? this.hasCompletedOnboarding,
       onlineStatus: onlineStatus ?? this.onlineStatus,
       lastSeenAt: lastSeenAt,
       createdAt: createdAt,

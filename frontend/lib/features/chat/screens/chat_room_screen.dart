@@ -160,8 +160,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(0,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut);
+            duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
       }
     });
   }
@@ -216,14 +215,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
     try {
       final userId = SupabaseService.currentUserId ?? 'unknown';
-      final path =
-          'chat/$userId/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final path = 'chat/$userId/${DateTime.now().millisecondsSinceEpoch}.jpg';
       final bytes = await image.readAsBytes();
       await SupabaseService.storage
           .from('chat-media')
           .uploadBinary(path, bytes);
-      final url =
-          SupabaseService.storage.from('chat-media').getPublicUrl(path);
+      final url = SupabaseService.storage.from('chat-media').getPublicUrl(path);
       await _sendMessage(type: 'image', mediaUrl: url);
     } catch (e) {
       if (mounted) {
@@ -309,8 +306,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(threadTitle,
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 16)),
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             if (threadType == 'group')
               Text('$memberCount membros',
                   style: const TextStyle(
@@ -345,8 +342,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               }
             },
             itemBuilder: (ctx) => [
-              const PopupMenuItem(
-                  value: 'members', child: Text('Membros')),
+              const PopupMenuItem(value: 'members', child: Text('Membros')),
               const PopupMenuItem(
                   value: 'settings', child: Text('Configurações')),
               const PopupMenuItem(
@@ -402,8 +398,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                 size: 64, color: AppTheme.textHint),
                             SizedBox(height: 16),
                             Text('Nenhuma mensagem ainda',
-                                style: TextStyle(
-                                    color: AppTheme.textSecondary)),
+                                style:
+                                    TextStyle(color: AppTheme.textSecondary)),
                             Text('Comece a conversa!',
                                 style: TextStyle(
                                     color: AppTheme.textHint, fontSize: 12)),
@@ -418,16 +414,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         itemCount: _messages.length,
                         itemBuilder: (context, index) {
                           final message = _messages[index];
-                          final isMe =
-                              message.authorId == currentUserId;
-                          final showAvatar =
-                              index == _messages.length - 1 ||
-                                  _messages[index + 1].authorId !=
-                                      message.authorId;
+                          final isMe = message.authorId == currentUserId;
+                          final showAvatar = index == _messages.length - 1 ||
+                              _messages[index + 1].authorId != message.authorId;
 
                           return GestureDetector(
-                            onLongPress: () =>
-                                _showMessageActions(message),
+                            onLongPress: () => _showMessageActions(message),
                             child: _MessageBubble(
                               message: message,
                               isMe: isMe,
@@ -479,8 +471,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.close_rounded, size: 18),
-                    onPressed: () =>
-                        setState(() => _replyingTo = null),
+                    onPressed: () => setState(() => _replyingTo = null),
                   ),
                 ],
               ),
@@ -493,8 +484,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
             decoration: const BoxDecoration(
               color: AppTheme.surfaceColor,
-              border:
-                  Border(top: BorderSide(color: AppTheme.dividerColor)),
+              border: Border(top: BorderSide(color: AppTheme.dividerColor)),
             ),
             child: SafeArea(
               child: Row(
@@ -530,13 +520,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(
-                                Icons.emoji_emotions_outlined,
-                                color: AppTheme.textHint,
-                                size: 22),
+                            icon: const Icon(Icons.emoji_emotions_outlined,
+                                color: AppTheme.textHint, size: 22),
                             onPressed: () {
-                              setState(() =>
-                                  _showEmojiPicker = !_showEmojiPicker);
+                              setState(
+                                  () => _showEmojiPicker = !_showEmojiPicker);
                             },
                           ),
                         ],
@@ -621,9 +609,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     if (sticker != null) {
                       final emoji = sticker['emoji'];
                       if (emoji != null && emoji.isNotEmpty) {
-                        await _sendMessage(
-                            type: 'sticker',
-                            metadata: {'emoji': emoji, 'sticker_id': sticker['sticker_id']});
+                        await _sendMessage(type: 'sticker', metadata: {
+                          'emoji': emoji,
+                          'sticker_id': sticker['sticker_id']
+                        });
                       } else {
                         await _sendMessage(
                             type: 'sticker',
@@ -697,8 +686,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   onTap: () {
                     Navigator.pop(ctx);
                     _sendMessage(
-                        type: 'voice_chat',
-                        metadata: {'status': 'invite'});
+                        type: 'voice_chat', metadata: {'status': 'invite'});
                   },
                 ),
                 _MediaOptionItem(
@@ -708,8 +696,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   onTap: () {
                     Navigator.pop(ctx);
                     _sendMessage(
-                        type: 'video_chat',
-                        metadata: {'status': 'invite'});
+                        type: 'video_chat', metadata: {'status': 'invite'});
                   },
                 ),
                 _MediaOptionItem(
@@ -719,8 +706,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   onTap: () {
                     Navigator.pop(ctx);
                     _sendMessage(
-                        type: 'screening_room',
-                        metadata: {'status': 'invite'});
+                        type: 'screening_room', metadata: {'status': 'invite'});
                   },
                 ),
                 _MediaOptionItem(
@@ -755,18 +741,19 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               children: [
                 TextField(
                   controller: questionCtrl,
-                  decoration:
-                      const InputDecoration(labelText: 'Pergunta'),
+                  decoration: const InputDecoration(labelText: 'Pergunta'),
                 ),
                 const SizedBox(height: 8),
-                ...List.generate(optionCtrls.length, (i) => Padding(
-                      padding: const EdgeInsets.only(bottom: 4),
-                      child: TextField(
-                        controller: optionCtrls[i],
-                        decoration: InputDecoration(
-                            labelText: 'Opção ${i + 1}'),
-                      ),
-                    )),
+                ...List.generate(
+                    optionCtrls.length,
+                    (i) => Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: TextField(
+                            controller: optionCtrls[i],
+                            decoration:
+                                InputDecoration(labelText: 'Opção ${i + 1}'),
+                          ),
+                        )),
                 TextButton.icon(
                   onPressed: () => setDialogState(
                       () => optionCtrls.add(TextEditingController())),
@@ -824,9 +811,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
-              _sendMessage(
-                  type: 'link',
-                  metadata: {'url': linkCtrl.text});
+              _sendMessage(type: 'link', metadata: {'url': linkCtrl.text});
               linkCtrl.dispose();
             },
             child: const Text('Enviar'),
@@ -862,7 +847,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                             color: AppTheme.cardColor,
                             shape: BoxShape.circle,
                           ),
-                          child: Text(emoji, style: const TextStyle(fontSize: 22)),
+                          child:
+                              Text(emoji, style: const TextStyle(fontSize: 22)),
                         ),
                       ))
                   .toList(),
@@ -881,8 +867,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               title: const Text('Copiar'),
               onTap: () {
                 Navigator.pop(ctx);
-                Clipboard.setData(
-                    ClipboardData(text: message.content ?? ''));
+                Clipboard.setData(ClipboardData(text: message.content ?? ''));
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Copiado!')),
                 );
@@ -934,8 +919,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text('Mensagens Fixadas',
-                style: TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 16)),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 12),
             ..._pinnedMessages.map((m) => Container(
                   margin: const EdgeInsets.only(bottom: 8),
@@ -967,8 +951,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 color: AppTheme.warningColor,
                 shape: BoxShape.circle,
               ),
-              constraints:
-                  const BoxConstraints(minWidth: 14, minHeight: 14),
+              constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
               child: Text(
                 count.toString(),
                 style: const TextStyle(
@@ -1009,16 +992,14 @@ class _MessageBubble extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Center(
           child: Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
               color: AppTheme.cardColorLight,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
               message.content ?? '',
-              style:
-                  const TextStyle(color: AppTheme.textHint, fontSize: 12),
+              style: const TextStyle(color: AppTheme.textHint, fontSize: 12),
             ),
           ),
         ),
@@ -1041,19 +1022,15 @@ class _MessageBubble extends StatelessWidget {
               onTap: () => context.push('/user/${message.authorId}'),
               child: CircleAvatar(
                 radius: 16,
-                backgroundColor:
-                    AppTheme.primaryColor.withValues(alpha: 0.3),
+                backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.3),
                 backgroundImage: message.author?.iconUrl != null
-                    ? CachedNetworkImageProvider(
-                        message.author!.iconUrl!)
+                    ? CachedNetworkImageProvider(message.author!.iconUrl!)
                     : null,
                 child: message.author?.iconUrl == null
                     ? Text(
-                        (message.author?.nickname ?? '?')[0]
-                            .toUpperCase(),
+                        (message.author?.nickname ?? '?')[0].toUpperCase(),
                         style: const TextStyle(
-                            fontSize: 11,
-                            color: AppTheme.primaryColor),
+                            fontSize: 11, color: AppTheme.primaryColor),
                       )
                     : null,
               ),
@@ -1063,17 +1040,16 @@ class _MessageBubble extends StatelessWidget {
           const SizedBox(width: 8),
           Flexible(
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 14, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
                 color: isMe ? AppTheme.primaryColor : AppTheme.cardColor,
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(16),
                   topRight: const Radius.circular(16),
-                  bottomLeft: Radius.circular(
-                      isMe ? 16 : (showAvatar ? 4 : 16)),
-                  bottomRight: Radius.circular(
-                      isMe ? (showAvatar ? 4 : 16) : 16),
+                  bottomLeft:
+                      Radius.circular(isMe ? 16 : (showAvatar ? 4 : 16)),
+                  bottomRight:
+                      Radius.circular(isMe ? (showAvatar ? 4 : 16) : 16),
                 ),
               ),
               child: Column(
@@ -1085,9 +1061,7 @@ class _MessageBubble extends StatelessWidget {
                       child: Text(
                         message.author?.nickname ?? 'Usuário',
                         style: TextStyle(
-                          color: isMe
-                              ? Colors.white70
-                              : AppTheme.primaryLight,
+                          color: isMe ? Colors.white70 : AppTheme.primaryLight,
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                         ),
@@ -1101,8 +1075,7 @@ class _MessageBubble extends StatelessWidget {
                     child: Text(
                       _formatTime(message.createdAt),
                       style: TextStyle(
-                        color:
-                            isMe ? Colors.white54 : AppTheme.textHint,
+                        color: isMe ? Colors.white54 : AppTheme.textHint,
                         fontSize: 10,
                       ),
                     ),
@@ -1174,8 +1147,7 @@ class _MessageBubble extends StatelessWidget {
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.play_circle_rounded,
-                color: textColor, size: 32),
+            Icon(Icons.play_circle_rounded, color: textColor, size: 32),
             const SizedBox(width: 8),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1203,8 +1175,8 @@ class _MessageBubble extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
           ),
           child: const Center(
-            child: Icon(Icons.play_circle_rounded,
-                color: Colors.white, size: 48),
+            child:
+                Icon(Icons.play_circle_rounded, color: Colors.white, size: 48),
           ),
         );
 
@@ -1236,8 +1208,7 @@ class _MessageBubble extends StatelessWidget {
               const SizedBox(width: 8),
               Text(label,
                   style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFFFF4081))),
+                      fontWeight: FontWeight.w600, color: Color(0xFFFF4081))),
             ],
           ),
         );
@@ -1266,8 +1237,7 @@ class _MessageBubble extends StatelessWidget {
 
       case 'poll':
         final question = message.metadata?['question'] ?? '';
-        final options =
-            (message.metadata?['options'] as List<dynamic>?) ?? [];
+        final options = (message.metadata?['options'] as List<dynamic>?) ?? [];
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1279,8 +1249,8 @@ class _MessageBubble extends StatelessWidget {
             const SizedBox(height: 8),
             ...options.map((opt) => Container(
                   margin: const EdgeInsets.only(bottom: 4),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
                     color: textColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
@@ -1436,7 +1406,8 @@ class _MediaOptionItem extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(label,
-              style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+              style:
+                  const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
         ],
       ),
     );

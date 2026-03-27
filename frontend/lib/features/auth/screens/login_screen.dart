@@ -77,7 +77,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     prefixIcon: Icon(Icons.email_outlined),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Informe seu email';
+                    if (value == null || value.isEmpty)
+                      return 'Informe seu email';
                     if (!value.contains('@')) return 'Email inválido';
                     return null;
                   },
@@ -100,7 +101,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Informe sua senha';
+                    if (value == null || value.isEmpty)
+                      return 'Informe sua senha';
                     if (value.length < 6) return 'Mínimo 6 caracteres';
                     return null;
                   },
@@ -129,11 +131,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.error_outline, color: AppTheme.errorColor, size: 20),
+                        const Icon(Icons.error_outline,
+                            color: AppTheme.errorColor, size: 20),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(authState.error!,
-                              style: const TextStyle(color: AppTheme.errorColor, fontSize: 13)),
+                              style: const TextStyle(
+                                  color: AppTheme.errorColor, fontSize: 13)),
                         ),
                       ],
                     ),
@@ -164,13 +168,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 // Divisor
                 Row(
                   children: [
-                    const Expanded(child: Divider(color: AppTheme.dividerColor)),
+                    const Expanded(
+                        child: Divider(color: AppTheme.dividerColor)),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text('ou',
                           style: TextStyle(color: AppTheme.textHint)),
                     ),
-                    const Expanded(child: Divider(color: AppTheme.dividerColor)),
+                    const Expanded(
+                        child: Divider(color: AppTheme.dividerColor)),
                   ],
                 ),
 
@@ -180,7 +186,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
-                    onPressed: () => ref.read(authProvider.notifier).signInWithGoogle(),
+                    onPressed: () =>
+                        ref.read(authProvider.notifier).signInWithGoogle(),
                     icon: const Icon(Icons.g_mobiledata_rounded, size: 28),
                     label: const Text('Continuar com Google'),
                   ),

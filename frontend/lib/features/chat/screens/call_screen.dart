@@ -162,9 +162,7 @@ class _CallScreenState extends State<CallScreen> {
 
                   // ── Video/Audio Grid ──
                   Expanded(
-                    child: isVideo
-                        ? _buildVideoGrid()
-                        : _buildAudioGrid(),
+                    child: isVideo ? _buildVideoGrid() : _buildAudioGrid(),
                   ),
 
                   // ── Screening Room: Shared screen area ──
@@ -242,8 +240,8 @@ class _CallScreenState extends State<CallScreen> {
                   ),
                   const SizedBox(width: 6),
                   Text(_elapsed,
-                      style: const TextStyle(
-                          color: Colors.white60, fontSize: 14)),
+                      style:
+                          const TextStyle(color: Colors.white60, fontSize: 14)),
                 ],
               ),
             ],
@@ -413,7 +411,8 @@ class _CallScreenState extends State<CallScreen> {
                   decoration: BoxDecoration(
                     color: AppTheme.successColor,
                     shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFF16213E), width: 2),
+                    border:
+                        Border.all(color: const Color(0xFF16213E), width: 2),
                   ),
                   child: const Icon(Icons.mic_rounded,
                       color: Colors.white, size: 12),
@@ -447,9 +446,10 @@ class _CallScreenState extends State<CallScreen> {
           if (isSpeaking)
             Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: _AudioLevelBar(level: _audioLevels.values.isNotEmpty
-                  ? _audioLevels.values.first / 255
-                  : 0),
+              child: _AudioLevelBar(
+                  level: _audioLevels.values.isNotEmpty
+                      ? _audioLevels.values.first / 255
+                      : 0),
             ),
         ],
       ),
@@ -471,8 +471,7 @@ class _CallScreenState extends State<CallScreen> {
                     fontWeight: FontWeight.bold)),
           ),
           const SizedBox(height: 16),
-          Text(name,
-              style: const TextStyle(color: Colors.white, fontSize: 18)),
+          Text(name, style: const TextStyle(color: Colors.white, fontSize: 18)),
         ],
       ),
     );

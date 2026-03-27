@@ -14,7 +14,8 @@ final globalFeedProvider = FutureProvider<List<PostModel>>((ref) async {
 
   // Buscar posts das comunidades que o usuário participa
   final response = await SupabaseService.table('posts')
-      .select('*, profiles!posts_author_id_fkey(*), communities!posts_community_id_fkey(name, icon_url, theme_color)')
+      .select(
+          '*, profiles!posts_author_id_fkey(*), communities!posts_community_id_fkey(name, icon_url, theme_color)')
       .eq('status', 'published')
       .order('created_at', ascending: false)
       .limit(30);
@@ -52,7 +53,8 @@ class GlobalFeedScreen extends ConsumerWidget {
                     ),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.hub_rounded, color: Colors.white, size: 20),
+                  child: const Icon(Icons.hub_rounded,
+                      color: Colors.white, size: 20),
                 ),
                 const SizedBox(width: 10),
                 const Text('NexusHub'),
@@ -84,7 +86,8 @@ class GlobalFeedScreen extends ConsumerWidget {
               height: 90,
               child: ListView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 children: [
                   _QuickAction(
                     icon: Icons.add_circle_rounded,
@@ -149,7 +152,8 @@ class GlobalFeedScreen extends ConsumerWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline_rounded, size: 48, color: AppTheme.errorColor),
+                    const Icon(Icons.error_outline_rounded,
+                        size: 48, color: AppTheme.errorColor),
                     const SizedBox(height: 16),
                     Text('Erro ao carregar feed: $error'),
                     const SizedBox(height: 8),
@@ -168,12 +172,15 @@ class GlobalFeedScreen extends ConsumerWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.explore_rounded, size: 64, color: AppTheme.textHint),
+                        Icon(Icons.explore_rounded,
+                            size: 64, color: AppTheme.textHint),
                         SizedBox(height: 16),
                         Text('Seu feed está vazio',
-                            style: TextStyle(color: AppTheme.textSecondary, fontSize: 16)),
+                            style: TextStyle(
+                                color: AppTheme.textSecondary, fontSize: 16)),
                         SizedBox(height: 8),
-                        Text('Explore e entre em comunidades para ver posts aqui!',
+                        Text(
+                            'Explore e entre em comunidades para ver posts aqui!',
                             style: TextStyle(color: AppTheme.textHint)),
                       ],
                     ),
@@ -232,7 +239,8 @@ class _QuickAction extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               label,
-              style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary),
+              style:
+                  const TextStyle(fontSize: 10, color: AppTheme.textSecondary),
               textAlign: TextAlign.center,
               maxLines: 2,
             ),

@@ -19,7 +19,13 @@ class _StoreScreenState extends State<StoreScreen>
   bool _isLoading = true;
   int _userCoins = 0;
 
-  final _tabs = const ['Todos', 'Avatar Frames', 'Chat Bubbles', 'Stickers', 'Backgrounds'];
+  final _tabs = const [
+    'Todos',
+    'Avatar Frames',
+    'Chat Bubbles',
+    'Stickers',
+    'Backgrounds'
+  ];
 
   @override
   void initState() {
@@ -56,7 +62,13 @@ class _StoreScreenState extends State<StoreScreen>
 
   List<Map<String, dynamic>> _filterItems(int tabIndex) {
     if (tabIndex == 0) return _items;
-    final types = ['', 'avatar_frame', 'chat_bubble', 'sticker_pack', 'profile_background'];
+    final types = [
+      '',
+      'avatar_frame',
+      'chat_bubble',
+      'sticker_pack',
+      'profile_background'
+    ];
     return _items.where((i) => i['type'] == types[tabIndex]).toList();
   }
 
@@ -98,7 +110,8 @@ class _StoreScreenState extends State<StoreScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Store', style: TextStyle(fontWeight: FontWeight.bold)),
+        title:
+            const Text('Store', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           // Saldo de moedas
           Container(

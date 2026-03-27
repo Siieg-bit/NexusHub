@@ -249,27 +249,23 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                         children: [
                           CircleAvatar(
                             radius: 24,
-                            backgroundImage:
-                                _targetUser!['icon_url'] != null
-                                    ? CachedNetworkImageProvider(
-                                        _targetUser!['icon_url']
-                                            as String)
-                                    : null,
+                            backgroundImage: _targetUser!['icon_url'] != null
+                                ? CachedNetworkImageProvider(
+                                    _targetUser!['icon_url'] as String)
+                                : null,
                             child: _targetUser!['icon_url'] == null
                                 ? const Icon(Icons.person_rounded)
                                 : null,
                           ),
                           const SizedBox(width: 12),
                           Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 _targetUser!['nickname'] as String? ??
                                     'Usuário',
                                 style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 16),
+                                    fontWeight: FontWeight.w600, fontSize: 16),
                               ),
                               Text(
                                 'Nível ${_targetUser!['level'] ?? 1}',
@@ -286,15 +282,14 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
 
                   // Seleção de ação
                   const Text('Tipo de Ação',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16)),
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   const SizedBox(height: 12),
                   ..._actions.map((action) {
                     final id = action['id'] as String;
                     final isSelected = _selectedAction == id;
                     return GestureDetector(
-                      onTap: () =>
-                          setState(() => _selectedAction = id),
+                      onTap: () => setState(() => _selectedAction = id),
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 8),
                         padding: const EdgeInsets.all(14),
@@ -313,14 +308,11 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                         child: Row(
                           children: [
                             Icon(action['icon'] as IconData,
-                                color:
-                                    Color(action['color'] as int),
-                                size: 22),
+                                color: Color(action['color'] as int), size: 22),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     action['label'] as String,
@@ -339,8 +331,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                             ),
                             if (isSelected)
                               Icon(Icons.check_circle_rounded,
-                                  color:
-                                      Color(action['color'] as int)),
+                                  color: Color(action['color'] as int)),
                           ],
                         ),
                       ),
@@ -362,43 +353,38 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                           label: '1h',
                           hours: 1,
                           selected: _banDurationHours,
-                          onTap: () =>
-                              setState(() => _banDurationHours = 1),
+                          onTap: () => setState(() => _banDurationHours = 1),
                         ),
                         _DurationChip(
                           label: '6h',
                           hours: 6,
                           selected: _banDurationHours,
-                          onTap: () =>
-                              setState(() => _banDurationHours = 6),
+                          onTap: () => setState(() => _banDurationHours = 6),
                         ),
                         _DurationChip(
                           label: '24h',
                           hours: 24,
                           selected: _banDurationHours,
-                          onTap: () =>
-                              setState(() => _banDurationHours = 24),
+                          onTap: () => setState(() => _banDurationHours = 24),
                         ),
                         _DurationChip(
                           label: '7 dias',
                           hours: 168,
                           selected: _banDurationHours,
-                          onTap: () =>
-                              setState(() => _banDurationHours = 168),
+                          onTap: () => setState(() => _banDurationHours = 168),
                         ),
                         _DurationChip(
                           label: '30 dias',
                           hours: 720,
                           selected: _banDurationHours,
-                          onTap: () =>
-                              setState(() => _banDurationHours = 720),
+                          onTap: () => setState(() => _banDurationHours = 720),
                         ),
                         _DurationChip(
                           label: 'Permanente',
                           hours: 87600,
                           selected: _banDurationHours,
-                          onTap: () => setState(
-                              () => _banDurationHours = 87600),
+                          onTap: () =>
+                              setState(() => _banDurationHours = 87600),
                         ),
                       ],
                     ),
@@ -407,8 +393,8 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                   // Motivo
                   const SizedBox(height: 16),
                   const Text('Motivo',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16)),
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   const SizedBox(height: 8),
                   TextField(
                     controller: _reasonController,
@@ -439,8 +425,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                       ),
                       child: const Text('Executar Ação',
                           style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold)),
+                              fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],
@@ -469,8 +454,7 @@ class _DurationChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
               ? AppTheme.errorColor.withValues(alpha: 0.15)

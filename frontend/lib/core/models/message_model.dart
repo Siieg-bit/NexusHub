@@ -90,8 +90,7 @@ class MessageModel {
           : (json['author'] != null
               ? UserModel.fromJson(json['author'] as Map<String, dynamic>)
               : (json['sender'] != null
-                  ? UserModel.fromJson(
-                      json['sender'] as Map<String, dynamic>)
+                  ? UserModel.fromJson(json['sender'] as Map<String, dynamic>)
                   : null)),
     );
   }

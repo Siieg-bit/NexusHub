@@ -107,8 +107,8 @@ class _WalletScreenState extends State<WalletScreen>
                     child: Column(
                       children: [
                         const Text('Saldo',
-                            style: TextStyle(
-                                color: Colors.white70, fontSize: 14)),
+                            style:
+                                TextStyle(color: Colors.white70, fontSize: 14)),
                         const SizedBox(height: 4),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -136,9 +136,7 @@ class _WalletScreenState extends State<WalletScreen>
                               value: formatCount(_totalXp),
                             ),
                             Container(
-                                width: 1,
-                                height: 30,
-                                color: Colors.white30),
+                                width: 1, height: 30, color: Colors.white30),
                             _WalletStat(
                               icon: Icons.arrow_upward_rounded,
                               label: 'Nível',
@@ -277,20 +275,18 @@ class _WalletScreenState extends State<WalletScreen>
                             padding: EdgeInsets.all(16),
                             child: Center(
                               child: Text('Nenhuma transação ainda',
-                                  style: TextStyle(
-                                      color: AppTheme.textSecondary)),
+                                  style:
+                                      TextStyle(color: AppTheme.textSecondary)),
                             ),
                           )
                         else
                           ...(_transactions.take(20).map((tx) {
                             final amount = tx['amount'] as int? ?? 0;
                             final type = tx['type'] as String? ?? '';
-                            final desc =
-                                tx['description'] as String? ?? type;
+                            final desc = tx['description'] as String? ?? type;
                             final isPositive = amount >= 0;
                             final createdAt = tx['created_at'] != null
-                                ? DateTime.parse(
-                                    tx['created_at'] as String)
+                                ? DateTime.parse(tx['created_at'] as String)
                                 : DateTime.now();
 
                             return ListTile(
@@ -321,8 +317,7 @@ class _WalletScreenState extends State<WalletScreen>
                               subtitle: Text(
                                 '${createdAt.day}/${createdAt.month}/${createdAt.year}',
                                 style: const TextStyle(
-                                    fontSize: 11,
-                                    color: AppTheme.textHint),
+                                    fontSize: 11, color: AppTheme.textHint),
                               ),
                               trailing: Text(
                                 '${isPositive ? '+' : ''}$amount',
@@ -375,7 +370,8 @@ class _WalletScreenState extends State<WalletScreen>
             ),
             const SizedBox(height: 8),
             Text('Saldo atual: $_coins coins',
-                style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+                style: const TextStyle(
+                    color: AppTheme.textSecondary, fontSize: 12)),
           ],
         ),
         actions: [
@@ -462,7 +458,8 @@ class _WalletScreenState extends State<WalletScreen>
                   return ChoiceChip(
                     label: Text('$amount'),
                     selected: isSelected,
-                    selectedColor: const Color(0xFFE91E63).withValues(alpha: 0.2),
+                    selectedColor:
+                        const Color(0xFFE91E63).withValues(alpha: 0.2),
                     onSelected: (_) {
                       setDialogState(() => selectedAmount = amount);
                     },
@@ -471,7 +468,8 @@ class _WalletScreenState extends State<WalletScreen>
               ),
               const SizedBox(height: 8),
               Text('Custo: $selectedAmount coins',
-                  style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+                  style: const TextStyle(
+                      color: AppTheme.textSecondary, fontSize: 12)),
             ],
           ),
           actions: [
@@ -499,8 +497,7 @@ class _WalletScreenState extends State<WalletScreen>
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                          content: Text(
-                              '$selectedAmount props enviados!')),
+                          content: Text('$selectedAmount props enviados!')),
                     );
                   }
                 } catch (e) {
@@ -513,7 +510,8 @@ class _WalletScreenState extends State<WalletScreen>
               },
               style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFE91E63)),
-              child: const Text('Enviar', style: TextStyle(color: Colors.white)),
+              child:
+                  const Text('Enviar', style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -580,9 +578,7 @@ class _ActionCard extends StatelessWidget {
             const SizedBox(height: 6),
             Text(label,
                 style: TextStyle(
-                    color: color,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600)),
+                    color: color, fontSize: 12, fontWeight: FontWeight.w600)),
           ],
         ),
       ),
@@ -623,8 +619,7 @@ class _EarnRow extends StatelessWidget {
             child: Text(title, style: const TextStyle(fontSize: 13)),
           ),
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
               color: AppTheme.warningColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),

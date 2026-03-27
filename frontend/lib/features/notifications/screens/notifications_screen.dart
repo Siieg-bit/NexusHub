@@ -8,7 +8,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 
 /// Provider para notificações do usuário.
-final notificationsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+final notificationsProvider =
+    FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final userId = SupabaseService.currentUserId;
   if (userId == null) return [];
 
@@ -48,7 +49,8 @@ class NotificationsScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.notifications_off_rounded, size: 64, color: AppTheme.textHint),
+                  Icon(Icons.notifications_off_rounded,
+                      size: 64, color: AppTheme.textHint),
                   SizedBox(height: 16),
                   Text('Nenhuma notificação',
                       style: TextStyle(color: AppTheme.textSecondary)),
@@ -59,7 +61,8 @@ class NotificationsScreen extends ConsumerWidget {
 
           return ListView.builder(
             itemCount: notifications.length,
-            itemBuilder: (context, index) => _NotificationTile(data: notifications[index]),
+            itemBuilder: (context, index) =>
+                _NotificationTile(data: notifications[index]),
           );
         },
       ),
@@ -84,26 +87,41 @@ class _NotificationTile extends StatelessWidget {
 
   IconData _getIcon(String type) {
     switch (type) {
-      case 'like': return Icons.favorite_rounded;
-      case 'comment': return Icons.chat_bubble_rounded;
-      case 'follow': return Icons.person_add_rounded;
-      case 'mention': return Icons.alternate_email_rounded;
-      case 'community_invite': return Icons.group_add_rounded;
-      case 'level_up': return Icons.arrow_upward_rounded;
-      case 'achievement': return Icons.emoji_events_rounded;
-      default: return Icons.notifications_rounded;
+      case 'like':
+        return Icons.favorite_rounded;
+      case 'comment':
+        return Icons.chat_bubble_rounded;
+      case 'follow':
+        return Icons.person_add_rounded;
+      case 'mention':
+        return Icons.alternate_email_rounded;
+      case 'community_invite':
+        return Icons.group_add_rounded;
+      case 'level_up':
+        return Icons.arrow_upward_rounded;
+      case 'achievement':
+        return Icons.emoji_events_rounded;
+      default:
+        return Icons.notifications_rounded;
     }
   }
 
   Color _getColor(String type) {
     switch (type) {
-      case 'like': return AppTheme.errorColor;
-      case 'comment': return AppTheme.accentColor;
-      case 'follow': return AppTheme.primaryColor;
-      case 'mention': return AppTheme.warningColor;
-      case 'level_up': return AppTheme.successColor;
-      case 'achievement': return AppTheme.warningColor;
-      default: return AppTheme.textSecondary;
+      case 'like':
+        return AppTheme.errorColor;
+      case 'comment':
+        return AppTheme.accentColor;
+      case 'follow':
+        return AppTheme.primaryColor;
+      case 'mention':
+        return AppTheme.warningColor;
+      case 'level_up':
+        return AppTheme.successColor;
+      case 'achievement':
+        return AppTheme.warningColor;
+      default:
+        return AppTheme.textSecondary;
     }
   }
 
@@ -112,7 +130,8 @@ class _NotificationTile extends StatelessWidget {
     final type = data['notification_type'] as String? ?? 'general';
     final isRead = data['is_read'] as bool? ?? false;
     final actor = data['profiles'] as Map<String, dynamic>?;
-    final createdAt = DateTime.tryParse(data['created_at'] as String? ?? '') ?? DateTime.now();
+    final createdAt = DateTime.tryParse(data['created_at'] as String? ?? '') ??
+        DateTime.now();
 
     return Container(
       color: isRead ? null : AppTheme.primaryColor.withValues(alpha: 0.05),
@@ -121,8 +140,7 @@ class _NotificationTile extends StatelessWidget {
           // Marcar como lida e navegar
           if (!isRead) {
             SupabaseService.table('notifications')
-                .update({'is_read': true})
-                .eq('id', data['id']);
+                .update({'is_read': true}).eq('id', data['id']);
           }
           // Navegar baseado no tipo
           final targetId = data['target_id'] as String?;

@@ -270,8 +270,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                     child: CircularProgressIndicator(
                         strokeWidth: 2, color: Colors.white),
                   )
-                : const Text('Assistir',
-                    style: TextStyle(color: Colors.white)),
+                : const Text('Assistir', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -316,8 +315,8 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                         color: AppTheme.errorColor,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.star,
-                          color: Colors.white, size: 8),
+                      child:
+                          const Icon(Icons.star, color: Colors.white, size: 8),
                     ),
                   ),
               ],
@@ -466,8 +465,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                   // TODO: Implementar fluxo de assinatura
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                        content: Text(
-                            'Assinatura será habilitada em breve!')),
+                        content: Text('Assinatura será habilitada em breve!')),
                   );
                 },
                 style: ElevatedButton.styleFrom(

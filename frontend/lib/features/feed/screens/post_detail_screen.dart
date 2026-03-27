@@ -10,7 +10,8 @@ import '../../../core/models/comment_model.dart';
 import '../../../core/services/supabase_service.dart';
 
 /// Provider para detalhes de um post.
-final postDetailProvider = FutureProvider.family<PostModel, String>((ref, postId) async {
+final postDetailProvider =
+    FutureProvider.family<PostModel, String>((ref, postId) async {
   final response = await SupabaseService.table('posts')
       .select('*, profiles!posts_author_id_fkey(*)')
       .eq('id', postId)
@@ -22,14 +23,17 @@ final postDetailProvider = FutureProvider.family<PostModel, String>((ref, postId
 });
 
 /// Provider para comentários de um post.
-final postCommentsProvider = FutureProvider.family<List<CommentModel>, String>((ref, postId) async {
+final postCommentsProvider =
+    FutureProvider.family<List<CommentModel>, String>((ref, postId) async {
   final response = await SupabaseService.table('comments')
       .select('*, profiles!comments_author_id_fkey(*)')
       .eq('post_id', postId)
       .eq('is_hidden', false)
       .order('created_at', ascending: true);
 
-  return (response as List).map((e) => CommentModel.fromJson(e as Map<String, dynamic>)).toList();
+  return (response as List)
+      .map((e) => CommentModel.fromJson(e as Map<String, dynamic>))
+      .toList();
 });
 
 /// Tela de detalhes de um post com comentários.
@@ -77,7 +81,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
   Future<void> _toggleLike() async {
     try {
-      await SupabaseService.rpc('toggle_post_like', params: {'p_post_id': widget.postId});
+      await SupabaseService.rpc('toggle_post_like',
+          params: {'p_post_id': widget.postId});
       ref.invalidate(postDetailProvider(widget.postId));
     } catch (e) {
       // Silenciar erro
@@ -124,15 +129,19 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             onTap: () => context.push('/user/${post.authorId}'),
                             child: CircleAvatar(
                               radius: 24,
-                              backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.3),
+                              backgroundColor:
+                                  AppTheme.primaryColor.withValues(alpha: 0.3),
                               backgroundImage: post.author?.iconUrl != null
-                                  ? CachedNetworkImageProvider(post.author!.iconUrl!)
+                                  ? CachedNetworkImageProvider(
+                                      post.author!.iconUrl!)
                                   : null,
                               child: post.author?.iconUrl == null
                                   ? Text(
-                                      (post.author?.nickname ?? '?')[0].toUpperCase(),
+                                      (post.author?.nickname ?? '?')[0]
+                                          .toUpperCase(),
                                       style: const TextStyle(
-                                          color: AppTheme.primaryColor, fontWeight: FontWeight.bold),
+                                          color: AppTheme.primaryColor,
+                                          fontWeight: FontWeight.bold),
                                     )
                                   : null,
                             ),
@@ -145,20 +154,25 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                 Row(
                                   children: [
                                     Text(post.author?.nickname ?? 'Usuário',
-                                        style: const TextStyle(fontWeight: FontWeight.w600)),
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.w600)),
                                     if (post.author != null) ...[
                                       const SizedBox(width: 6),
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 2),
                                         decoration: BoxDecoration(
-                                          color: AppTheme.getLevelColor(post.author!.level)
+                                          color: AppTheme.getLevelColor(
+                                                  post.author!.level)
                                               .withValues(alpha: 0.2),
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
                                         ),
                                         child: Text(
                                           'Lv.${post.author!.level}',
                                           style: TextStyle(
-                                            color: AppTheme.getLevelColor(post.author!.level),
+                                            color: AppTheme.getLevelColor(
+                                                post.author!.level),
                                             fontSize: 10,
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -168,8 +182,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                   ],
                                 ),
                                 Text(
-                                  timeago.format(post.createdAt, locale: 'pt_BR'),
-                                  style: const TextStyle(color: AppTheme.textHint, fontSize: 12),
+                                  timeago.format(post.createdAt,
+                                      locale: 'pt_BR'),
+                                  style: const TextStyle(
+                                      color: AppTheme.textHint, fontSize: 12),
                                 ),
                               ],
                             ),
@@ -195,7 +211,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       padding: const EdgeInsets.all(16),
                       child: Text(
                         post.content,
-                        style: const TextStyle(fontSize: 15, height: 1.7, color: AppTheme.textPrimary),
+                        style: const TextStyle(
+                            fontSize: 15,
+                            height: 1.7,
+                            color: AppTheme.textPrimary),
                       ),
                     ),
 
@@ -204,7 +223,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     // ======================================================
                     if (post.mediaUrl != null && post.mediaUrl!.isNotEmpty)
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 4),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),
                           child: CachedNetworkImage(
@@ -219,33 +239,43 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     // AÇÕES
                     // ======================================================
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 8),
                       child: Row(
                         children: [
                           TextButton.icon(
                             onPressed: _toggleLike,
                             icon: Icon(
-                              post.isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                              color: post.isLiked ? AppTheme.errorColor : AppTheme.textSecondary,
+                              post.isLiked
+                                  ? Icons.favorite_rounded
+                                  : Icons.favorite_border_rounded,
+                              color: post.isLiked
+                                  ? AppTheme.errorColor
+                                  : AppTheme.textSecondary,
                             ),
                             label: Text('${post.likesCount}',
                                 style: TextStyle(
-                                    color: post.isLiked ? AppTheme.errorColor : AppTheme.textSecondary)),
+                                    color: post.isLiked
+                                        ? AppTheme.errorColor
+                                        : AppTheme.textSecondary)),
                           ),
                           TextButton.icon(
                             onPressed: () {},
                             icon: const Icon(Icons.chat_bubble_outline_rounded,
                                 color: AppTheme.textSecondary),
                             label: Text('${post.commentsCount}',
-                                style: const TextStyle(color: AppTheme.textSecondary)),
+                                style: const TextStyle(
+                                    color: AppTheme.textSecondary)),
                           ),
                           const Spacer(),
                           Row(
                             children: [
-                              const Icon(Icons.visibility_outlined, size: 16, color: AppTheme.textHint),
+                              const Icon(Icons.visibility_outlined,
+                                  size: 16, color: AppTheme.textHint),
                               const SizedBox(width: 4),
                               Text('${post.viewsCount}',
-                                  style: const TextStyle(color: AppTheme.textHint, fontSize: 12)),
+                                  style: const TextStyle(
+                                      color: AppTheme.textHint, fontSize: 12)),
                             ],
                           ),
                         ],
@@ -266,7 +296,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     commentsAsync.when(
                       loading: () => const Padding(
                         padding: EdgeInsets.all(32),
-                        child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                        child: Center(
+                            child: CircularProgressIndicator(strokeWidth: 2)),
                       ),
                       error: (error, _) => Padding(
                         padding: const EdgeInsets.all(16),
@@ -277,7 +308,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           return const Padding(
                             padding: EdgeInsets.all(32),
                             child: Center(
-                              child: Text('Nenhum comentário ainda. Seja o primeiro!',
+                              child: Text(
+                                  'Nenhum comentário ainda. Seja o primeiro!',
                                   style: TextStyle(color: AppTheme.textHint)),
                             ),
                           );
@@ -287,7 +319,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: comments.length,
-                          itemBuilder: (context, index) => _CommentTile(comment: comments[index]),
+                          itemBuilder: (context, index) =>
+                              _CommentTile(comment: comments[index]),
                         );
                       },
                     ),
@@ -316,7 +349,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         decoration: const InputDecoration(
                           hintText: 'Escreva um comentário...',
                           border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          contentPadding:
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         ),
                         maxLines: 3,
                         minLines: 1,
@@ -326,10 +360,12 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       onPressed: _isSending ? null : _sendComment,
                       icon: _isSending
                           ? const SizedBox(
-                              width: 20, height: 20,
+                              width: 20,
+                              height: 20,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Icon(Icons.send_rounded, color: AppTheme.primaryColor),
+                          : const Icon(Icons.send_rounded,
+                              color: AppTheme.primaryColor),
                     ),
                   ],
                 ),
@@ -365,7 +401,8 @@ class _CommentTile extends StatelessWidget {
               child: comment.author?.iconUrl == null
                   ? Text(
                       (comment.author?.nickname ?? '?')[0].toUpperCase(),
-                      style: const TextStyle(fontSize: 12, color: AppTheme.primaryColor),
+                      style: const TextStyle(
+                          fontSize: 12, color: AppTheme.primaryColor),
                     )
                   : null,
             ),
@@ -378,11 +415,13 @@ class _CommentTile extends StatelessWidget {
                 Row(
                   children: [
                     Text(comment.author?.nickname ?? 'Usuário',
-                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w600, fontSize: 13)),
                     const SizedBox(width: 8),
                     Text(
                       timeago.format(comment.createdAt, locale: 'pt_BR'),
-                      style: const TextStyle(color: AppTheme.textHint, fontSize: 11),
+                      style: const TextStyle(
+                          color: AppTheme.textHint, fontSize: 11),
                     ),
                   ],
                 ),
@@ -396,10 +435,12 @@ class _CommentTile extends StatelessWidget {
                       onTap: () {},
                       child: Row(
                         children: [
-                          const Icon(Icons.favorite_border_rounded, size: 14, color: AppTheme.textHint),
+                          const Icon(Icons.favorite_border_rounded,
+                              size: 14, color: AppTheme.textHint),
                           const SizedBox(width: 4),
                           Text('${comment.likesCount}',
-                              style: const TextStyle(color: AppTheme.textHint, fontSize: 11)),
+                              style: const TextStyle(
+                                  color: AppTheme.textHint, fontSize: 11)),
                         ],
                       ),
                     ),
@@ -407,7 +448,8 @@ class _CommentTile extends StatelessWidget {
                     GestureDetector(
                       onTap: () {},
                       child: const Text('Responder',
-                          style: TextStyle(color: AppTheme.textHint, fontSize: 11)),
+                          style: TextStyle(
+                              color: AppTheme.textHint, fontSize: 11)),
                     ),
                   ],
                 ),

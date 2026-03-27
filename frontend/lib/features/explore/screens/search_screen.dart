@@ -101,8 +101,8 @@ class _SearchScreenState extends State<SearchScreen>
             },
             decoration: InputDecoration(
               hintText: 'Buscar comunidades, pessoas, posts...',
-              hintStyle: const TextStyle(
-                  color: AppTheme.textHint, fontSize: 14),
+              hintStyle:
+                  const TextStyle(color: AppTheme.textHint, fontSize: 14),
               prefixIcon: const Icon(Icons.search_rounded,
                   color: AppTheme.textHint, size: 20),
               suffixIcon: _query.isNotEmpty
@@ -116,8 +116,7 @@ class _SearchScreenState extends State<SearchScreen>
                     )
                   : null,
               border: InputBorder.none,
-              contentPadding:
-                  const EdgeInsets.symmetric(vertical: 10),
+              contentPadding: const EdgeInsets.symmetric(vertical: 10),
             ),
           ),
         ),
@@ -153,8 +152,7 @@ class _SearchScreenState extends State<SearchScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.search_rounded,
-              size: 64, color: AppTheme.textHint),
+          const Icon(Icons.search_rounded, size: 64, color: AppTheme.textHint),
           const SizedBox(height: 16),
           const Text('Busque por comunidades, pessoas ou posts',
               style: TextStyle(color: AppTheme.textSecondary)),
@@ -181,16 +179,14 @@ class _SearchScreenState extends State<SearchScreen>
             backgroundImage: c['icon_url'] != null
                 ? CachedNetworkImageProvider(c['icon_url'] as String)
                 : null,
-            child: c['icon_url'] == null
-                ? const Icon(Icons.groups_rounded)
-                : null,
+            child:
+                c['icon_url'] == null ? const Icon(Icons.groups_rounded) : null,
           ),
           title: Text(c['name'] as String? ?? '',
               style: const TextStyle(fontWeight: FontWeight.w600)),
           subtitle: Text(
             '${c['members_count'] ?? 0} membros',
-            style: const TextStyle(
-                color: AppTheme.textSecondary, fontSize: 12),
+            style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
           ),
         );
       },
@@ -215,16 +211,14 @@ class _SearchScreenState extends State<SearchScreen>
             backgroundImage: u['icon_url'] != null
                 ? CachedNetworkImageProvider(u['icon_url'] as String)
                 : null,
-            child: u['icon_url'] == null
-                ? const Icon(Icons.person_rounded)
-                : null,
+            child:
+                u['icon_url'] == null ? const Icon(Icons.person_rounded) : null,
           ),
           title: Text(u['nickname'] as String? ?? '',
               style: const TextStyle(fontWeight: FontWeight.w600)),
           subtitle: Text(
             'Nível ${u['level'] ?? 1}',
-            style: const TextStyle(
-                color: AppTheme.textSecondary, fontSize: 12),
+            style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
           ),
         );
       },
@@ -262,8 +256,7 @@ class _SearchScreenState extends State<SearchScreen>
               overflow: TextOverflow.ellipsis),
           subtitle: Text(
             'por ${author?['nickname'] ?? 'Anônimo'}',
-            style: const TextStyle(
-                color: AppTheme.textSecondary, fontSize: 12),
+            style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
           ),
         );
       },

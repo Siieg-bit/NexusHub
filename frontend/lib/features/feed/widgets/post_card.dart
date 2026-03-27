@@ -97,7 +97,8 @@ class _PostCardState extends State<PostCard> {
         decoration: BoxDecoration(
           color: AppTheme.cardColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.dividerColor.withValues(alpha: 0.3)),
+          border:
+              Border.all(color: AppTheme.dividerColor.withValues(alpha: 0.3)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,7 +109,8 @@ class _PostCardState extends State<PostCard> {
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Text(
                   _post.title!,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 16),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -160,16 +162,22 @@ class _PostCardState extends State<PostCard> {
                 padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
                 child: Wrap(
                   spacing: 6,
-                  children: _post.tags.take(3).map((tag) => Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text('#$tag',
-                        style: const TextStyle(
-                            color: AppTheme.primaryLight, fontSize: 11)),
-                  )).toList(),
+                  children: _post.tags
+                      .take(3)
+                      .map((tag) => Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color:
+                                  AppTheme.primaryColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text('#$tag',
+                                style: const TextStyle(
+                                    color: AppTheme.primaryLight,
+                                    fontSize: 11)),
+                          ))
+                      .toList(),
                 ),
               ),
 
@@ -236,8 +244,7 @@ class _PostCardState extends State<PostCard> {
                         child: Text(
                           'Lv.${_post.author!.level}',
                           style: TextStyle(
-                            color:
-                                AppTheme.getLevelColor(_post.author!.level),
+                            color: AppTheme.getLevelColor(_post.author!.level),
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
@@ -278,8 +285,7 @@ class _PostCardState extends State<PostCard> {
           ),
           if (_post.isFeatured || _post.isPinned)
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: AppTheme.warningColor.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
@@ -370,7 +376,9 @@ class _PostCardState extends State<PostCard> {
                 ),
                 child: Row(
                   children: [
-                    Expanded(child: Text(text, style: const TextStyle(fontSize: 13))),
+                    Expanded(
+                        child:
+                            Text(text, style: const TextStyle(fontSize: 13))),
                     if (_selectedPollOption != null) ...[
                       Text('${(pct * 100).toStringAsFixed(0)}%',
                           style: TextStyle(
@@ -390,8 +398,8 @@ class _PostCardState extends State<PostCard> {
             Padding(
               padding: const EdgeInsets.only(top: 4),
               child: Text('$totalVotes votos',
-                  style: const TextStyle(
-                      color: AppTheme.textHint, fontSize: 11)),
+                  style:
+                      const TextStyle(color: AppTheme.textHint, fontSize: 11)),
             ),
         ],
       ),
@@ -464,8 +472,8 @@ class _PostCardState extends State<PostCard> {
                 onTap: () => _answerQuiz(i),
                 child: Container(
                   margin: const EdgeInsets.only(bottom: 6),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   decoration: BoxDecoration(
                     color: bgColor,
                     borderRadius: BorderRadius.circular(8),
@@ -502,7 +510,8 @@ class _PostCardState extends State<PostCard> {
         decoration: BoxDecoration(
           color: const Color(0xFF1A237E).withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFF3F51B5).withValues(alpha: 0.3)),
+          border:
+              Border.all(color: const Color(0xFF3F51B5).withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
@@ -648,9 +657,8 @@ class _PostCardState extends State<PostCard> {
           ),
           _ActionButton(
             icon: Icons.chat_bubble_outline_rounded,
-            label: _post.commentsCount > 0
-                ? '${_post.commentsCount}'
-                : 'Comentar',
+            label:
+                _post.commentsCount > 0 ? '${_post.commentsCount}' : 'Comentar',
             onTap: () => context.push('/post/${_post.id}'),
           ),
           _ActionButton(

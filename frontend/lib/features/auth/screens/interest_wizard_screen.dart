@@ -24,25 +24,31 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
   bool _isLoading = false;
 
   static const _interestCategories = [
-    _InterestItem('Anime & Manga', Icons.movie_filter_rounded, Color(0xFFE91E63)),
+    _InterestItem(
+        'Anime & Manga', Icons.movie_filter_rounded, Color(0xFFE91E63)),
     _InterestItem('K-Pop', Icons.music_note_rounded, Color(0xFF9C27B0)),
     _InterestItem('Gaming', Icons.sports_esports_rounded, Color(0xFF4CAF50)),
     _InterestItem('Art & Design', Icons.palette_rounded, Color(0xFFFF9800)),
     _InterestItem('Fashion', Icons.checkroom_rounded, Color(0xFFE040FB)),
-    _InterestItem('Books & Writing', Icons.menu_book_rounded, Color(0xFF795548)),
+    _InterestItem(
+        'Books & Writing', Icons.menu_book_rounded, Color(0xFF795548)),
     _InterestItem('Movies & TV', Icons.theaters_rounded, Color(0xFFF44336)),
     _InterestItem('Music', Icons.headphones_rounded, Color(0xFF2196F3)),
     _InterestItem('Photography', Icons.camera_alt_rounded, Color(0xFF607D8B)),
     _InterestItem('Science', Icons.science_rounded, Color(0xFF00BCD4)),
     _InterestItem('Sports', Icons.fitness_center_rounded, Color(0xFFFF5722)),
     _InterestItem('Technology', Icons.computer_rounded, Color(0xFF3F51B5)),
-    _InterestItem('Cosplay', Icons.face_retouching_natural_rounded, Color(0xFFFF4081)),
-    _InterestItem('Spirituality', Icons.self_improvement_rounded, Color(0xFF8BC34A)),
-    _InterestItem('Food & Cooking', Icons.restaurant_rounded, Color(0xFFFFEB3B)),
+    _InterestItem(
+        'Cosplay', Icons.face_retouching_natural_rounded, Color(0xFFFF4081)),
+    _InterestItem(
+        'Spirituality', Icons.self_improvement_rounded, Color(0xFF8BC34A)),
+    _InterestItem(
+        'Food & Cooking', Icons.restaurant_rounded, Color(0xFFFFEB3B)),
     _InterestItem('Pets & Animals', Icons.pets_rounded, Color(0xFF009688)),
     _InterestItem('Travel', Icons.flight_rounded, Color(0xFF03A9F4)),
     _InterestItem('Horror', Icons.dark_mode_rounded, Color(0xFF424242)),
-    _InterestItem('Memes & Humor', Icons.sentiment_very_satisfied_rounded, Color(0xFFFFC107)),
+    _InterestItem('Memes & Humor', Icons.sentiment_very_satisfied_rounded,
+        Color(0xFFFFC107)),
     _InterestItem('Languages', Icons.translate_rounded, Color(0xFF673AB7)),
     _InterestItem('DIY & Crafts', Icons.handyman_rounded, Color(0xFFCDDC39)),
     _InterestItem('Comics', Icons.auto_stories_rounded, Color(0xFFFF6F00)),
@@ -90,15 +96,15 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
 
       // Salvar interesses selecionados
       if (_selectedInterests.isNotEmpty) {
-        final interests = _selectedInterests.map((name) => {
-          'user_id': userId,
-          'name': name,
-        }).toList();
+        final interests = _selectedInterests
+            .map((name) => {
+                  'user_id': userId,
+                  'name': name,
+                })
+            .toList();
 
         // Deletar interesses antigos e inserir novos
-        await SupabaseService.table('interests')
-            .delete()
-            .eq('user_id', userId);
+        await SupabaseService.table('interests').delete().eq('user_id', userId);
         await SupabaseService.table('interests').insert(interests);
       }
 
@@ -215,7 +221,8 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
                 end: Alignment.bottomRight,
               ),
             ),
-            child: const Icon(Icons.waving_hand_rounded, size: 56, color: Colors.white),
+            child: const Icon(Icons.waving_hand_rounded,
+                size: 56, color: Colors.white),
           ),
           const SizedBox(height: 32),
           Text(
@@ -228,17 +235,17 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
             'Vamos personalizar sua experiência. Em poucos passos, '
             'você estará conectado com comunidades incríveis!',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: AppTheme.textSecondary,
-              height: 1.6,
-            ),
+                  color: AppTheme.textSecondary,
+                  height: 1.6,
+                ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
           Text(
             'Adicione uma bio para que outros membros te conheçam:',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppTheme.textHint,
-            ),
+                  color: AppTheme.textHint,
+                ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
@@ -277,7 +284,8 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
               shape: BoxShape.circle,
               color: AppTheme.primaryColor.withValues(alpha: 0.15),
             ),
-            child: const Icon(Icons.badge_rounded, size: 48, color: AppTheme.primaryColor),
+            child: const Icon(Icons.badge_rounded,
+                size: 48, color: AppTheme.primaryColor),
           ),
           const SizedBox(height: 32),
           Text(
@@ -290,9 +298,9 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
             'Seu ID único é como outros membros vão te encontrar. '
             'Escolha algo memorável!',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: AppTheme.textSecondary,
-              height: 1.5,
-            ),
+                  color: AppTheme.textSecondary,
+                  height: 1.5,
+                ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
@@ -304,7 +312,8 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
               prefixIcon: const Icon(Icons.alternate_email_rounded),
               counterStyle: const TextStyle(color: AppTheme.textHint),
               suffixIcon: _aminoIdController.text.length >= 3
-                  ? const Icon(Icons.check_circle_rounded, color: AppTheme.successColor)
+                  ? const Icon(Icons.check_circle_rounded,
+                      color: AppTheme.successColor)
                   : null,
             ),
             onChanged: (_) => setState(() {}),
@@ -342,8 +351,8 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
           child: Text(
             'Selecione pelo menos 3 categorias para personalizarmos suas recomendações.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppTheme.textSecondary,
-            ),
+                  color: AppTheme.textSecondary,
+                ),
             textAlign: TextAlign.center,
           ),
         ),
@@ -399,16 +408,20 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
                       children: [
                         Icon(
                           item.icon,
-                          color: isSelected ? item.color : AppTheme.textSecondary,
+                          color:
+                              isSelected ? item.color : AppTheme.textSecondary,
                           size: 32,
                         ),
                         const SizedBox(height: 8),
                         Text(
                           item.name,
                           style: TextStyle(
-                            color: isSelected ? item.color : AppTheme.textPrimary,
+                            color:
+                                isSelected ? item.color : AppTheme.textPrimary,
                             fontSize: 11,
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.normal,
                           ),
                           textAlign: TextAlign.center,
                           maxLines: 2,
@@ -417,7 +430,8 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
                         if (isSelected)
                           Padding(
                             padding: const EdgeInsets.only(top: 4),
-                            child: Icon(Icons.check_circle_rounded, color: item.color, size: 16),
+                            child: Icon(Icons.check_circle_rounded,
+                                color: item.color, size: 16),
                           ),
                       ],
                     ),
@@ -454,7 +468,8 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
               shape: BoxShape.circle,
               color: AppTheme.successColor.withValues(alpha: 0.15),
             ),
-            child: const Icon(Icons.celebration_rounded, size: 48, color: AppTheme.successColor),
+            child: const Icon(Icons.celebration_rounded,
+                size: 48, color: AppTheme.successColor),
           ),
           const SizedBox(height: 24),
           Text(
@@ -467,9 +482,9 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
             'Seus interesses foram salvos. Agora vamos encontrar '
             'as melhores comunidades para você!',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: AppTheme.textSecondary,
-              height: 1.5,
-            ),
+                  color: AppTheme.textSecondary,
+                  height: 1.5,
+                ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
@@ -481,11 +496,13 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
             children: _selectedInterests.map((interest) {
               final item = _interestCategories.firstWhere(
                 (i) => i.name == interest,
-                orElse: () => _InterestItem(interest, Icons.star_rounded, AppTheme.primaryColor),
+                orElse: () => _InterestItem(
+                    interest, Icons.star_rounded, AppTheme.primaryColor),
               );
               return Chip(
                 avatar: Icon(item.icon, size: 16, color: item.color),
-                label: Text(interest, style: TextStyle(color: item.color, fontSize: 12)),
+                label: Text(interest,
+                    style: TextStyle(color: item.color, fontSize: 12)),
                 backgroundColor: item.color.withValues(alpha: 0.15),
                 side: BorderSide.none,
               );
@@ -500,7 +517,8 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
                   ? const SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white),
                     )
                   : const Text('Explorar Comunidades'),
             ),

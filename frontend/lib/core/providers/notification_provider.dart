@@ -135,8 +135,7 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
   Future<void> markAsRead(String notificationId) async {
     try {
       await SupabaseService.table('notifications')
-          .update({'is_read': true})
-          .eq('id', notificationId);
+          .update({'is_read': true}).eq('id', notificationId);
 
       final current = state.valueOrNull;
       if (current == null) return;

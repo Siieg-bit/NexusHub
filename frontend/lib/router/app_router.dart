@@ -60,7 +60,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           state.matchedLocation == '/interest-wizard';
 
       if (!isAuth && !isAuthRoute) return '/onboarding';
-      if (isAuth && isAuthRoute && state.matchedLocation != '/interest-wizard') {
+      if (isAuth &&
+          isAuthRoute &&
+          state.matchedLocation != '/interest-wizard') {
         return '/explore';
       }
       return null;

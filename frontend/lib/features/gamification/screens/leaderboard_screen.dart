@@ -8,8 +8,10 @@ import '../../../core/services/supabase_service.dart';
 
 /// Provider para leaderboard de uma comunidade.
 final leaderboardProvider =
-    FutureProvider.family<List<Map<String, dynamic>>, String>((ref, communityId) async {
-  final result = await SupabaseService.rpc('get_community_leaderboard', params: {
+    FutureProvider.family<List<Map<String, dynamic>>, String>(
+        (ref, communityId) async {
+  final result =
+      await SupabaseService.rpc('get_community_leaderboard', params: {
     'p_community_id': communityId,
     'p_limit': 50,
   });
@@ -86,7 +88,9 @@ class LeaderboardScreen extends ConsumerWidget {
               // ============================================================
               // LISTA RESTANTE
               // ============================================================
-              ...members.skip(3).map((member) => _LeaderboardTile(data: member)),
+              ...members
+                  .skip(3)
+                  .map((member) => _LeaderboardTile(data: member)),
             ],
           );
         },
@@ -137,7 +141,8 @@ class _PodiumItem extends StatelessWidget {
           ),
           Text(
             '${data['community_reputation'] ?? 0} rep',
-            style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold),
+            style: TextStyle(
+                color: color, fontSize: 11, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           // Podium
@@ -145,7 +150,8 @@ class _PodiumItem extends StatelessWidget {
             height: height * 0.5,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.2),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(8)),
               border: Border.all(color: color.withValues(alpha: 0.5)),
             ),
             child: Center(
@@ -206,7 +212,8 @@ class _LeaderboardTile extends StatelessWidget {
               child: data['icon_url'] == null
                   ? Text(
                       ((data['nickname'] as String?) ?? '?')[0].toUpperCase(),
-                      style: const TextStyle(color: AppTheme.primaryColor, fontSize: 14),
+                      style: const TextStyle(
+                          color: AppTheme.primaryColor, fontSize: 14),
                     )
                   : null,
             ),
@@ -223,16 +230,19 @@ class _LeaderboardTile extends StatelessWidget {
                         style: const TextStyle(fontWeight: FontWeight.w600)),
                     const SizedBox(width: 6),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: AppTheme.getLevelColor(data['level'] as int? ?? 1)
-                            .withValues(alpha: 0.2),
+                        color:
+                            AppTheme.getLevelColor(data['level'] as int? ?? 1)
+                                .withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         'Lv.${data['level'] ?? 1}',
                         style: TextStyle(
-                          color: AppTheme.getLevelColor(data['level'] as int? ?? 1),
+                          color: AppTheme.getLevelColor(
+                              data['level'] as int? ?? 1),
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                         ),
@@ -262,7 +272,8 @@ class _LeaderboardTile extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 4),
-          const Icon(Icons.star_rounded, color: AppTheme.warningColor, size: 16),
+          const Icon(Icons.star_rounded,
+              color: AppTheme.warningColor, size: 16),
         ],
       ),
     );

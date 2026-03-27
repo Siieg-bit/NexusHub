@@ -9,7 +9,8 @@ import '../../../core/services/supabase_service.dart';
 import '../../auth/providers/auth_provider.dart';
 
 /// Provider para comunidades do usuário (Home).
-final userCommunitiesProvider = FutureProvider<List<CommunityModel>>((ref) async {
+final userCommunitiesProvider =
+    FutureProvider<List<CommunityModel>>((ref) async {
   final userId = SupabaseService.currentUserId;
   if (userId == null) return [];
 
@@ -20,12 +21,14 @@ final userCommunitiesProvider = FutureProvider<List<CommunityModel>>((ref) async
       .order('joined_at', ascending: false);
 
   return (response as List)
-      .map((e) => CommunityModel.fromJson(e['communities'] as Map<String, dynamic>))
+      .map((e) =>
+          CommunityModel.fromJson(e['communities'] as Map<String, dynamic>))
       .toList();
 });
 
 /// Provider para comunidades sugeridas (Explorar).
-final suggestedCommunitiesProvider = FutureProvider<List<CommunityModel>>((ref) async {
+final suggestedCommunitiesProvider =
+    FutureProvider<List<CommunityModel>>((ref) async {
   final response = await SupabaseService.table('communities')
       .select()
       .eq('is_active', true)
@@ -46,7 +49,8 @@ class CommunityListScreen extends ConsumerStatefulWidget {
   const CommunityListScreen({super.key, this.isExplore = false});
 
   @override
-  ConsumerState<CommunityListScreen> createState() => _CommunityListScreenState();
+  ConsumerState<CommunityListScreen> createState() =>
+      _CommunityListScreenState();
 }
 
 class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
@@ -89,13 +93,16 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              widget.isExplore ? 'Explorar' : 'Minhas Comunidades',
+                              widget.isExplore
+                                  ? 'Explorar'
+                                  : 'Minhas Comunidades',
                               style: Theme.of(context).textTheme.headlineMedium,
                             ),
                             if (!widget.isExplore && user != null)
                               Text(
                                 'Olá, ${user.nickname}!',
-                                style: const TextStyle(color: AppTheme.textSecondary),
+                                style: const TextStyle(
+                                    color: AppTheme.textSecondary),
                               ),
                           ],
                         ),
@@ -107,7 +114,8 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                               icon: Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.warningColor.withValues(alpha: 0.15),
+                                  color: AppTheme.warningColor
+                                      .withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: const Icon(Icons.calendar_today_rounded,
@@ -122,7 +130,8 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                               icon: Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                                  color: AppTheme.primaryColor
+                                      .withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: const Icon(Icons.notifications_outlined,
@@ -152,7 +161,8 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                   hintText: widget.isExplore
                       ? 'Buscar comunidades...'
                       : 'Pesquisar nas suas comunidades...',
-                  prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.textHint),
+                  prefixIcon: const Icon(Icons.search_rounded,
+                      color: AppTheme.textHint),
                   suffixIcon: _searchQuery.isNotEmpty
                       ? IconButton(
                           icon: const Icon(Icons.clear_rounded),
@@ -179,7 +189,8 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, size: 48, color: AppTheme.errorColor),
+                    const Icon(Icons.error_outline,
+                        size: 48, color: AppTheme.errorColor),
                     const SizedBox(height: 16),
                     Text('Erro ao carregar comunidades',
                         style: Theme.of(context).textTheme.titleMedium),
@@ -204,8 +215,12 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                   ? communities
                   : communities
                       .where((c) =>
-                          c.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                          c.tagline.toLowerCase().contains(_searchQuery.toLowerCase()))
+                          c.name
+                              .toLowerCase()
+                              .contains(_searchQuery.toLowerCase()) ||
+                          c.tagline
+                              .toLowerCase()
+                              .contains(_searchQuery.toLowerCase()))
                       .toList();
 
               if (filtered.isEmpty) {
@@ -215,7 +230,9 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          widget.isExplore ? Icons.explore_off_rounded : Icons.group_off_rounded,
+                          widget.isExplore
+                              ? Icons.explore_off_rounded
+                              : Icons.group_off_rounded,
                           size: 64,
                           color: AppTheme.textHint,
                         ),
@@ -224,9 +241,10 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                           widget.isExplore
                               ? 'Nenhuma comunidade encontrada'
                               : 'Você ainda não entrou em nenhuma comunidade',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: AppTheme.textSecondary,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    color: AppTheme.textSecondary,
+                                  ),
                           textAlign: TextAlign.center,
                         ),
                         if (!widget.isExplore) ...[
@@ -245,7 +263,8 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
 
               return SliverList(
                 delegate: SliverChildBuilderDelegate(
-                  (context, index) => _CommunityCard(community: filtered[index]),
+                  (context, index) =>
+                      _CommunityCard(community: filtered[index]),
                   childCount: filtered.length,
                 ),
               );
@@ -289,13 +308,15 @@ class _CommunityCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppTheme.cardColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.dividerColor.withValues(alpha: 0.3)),
+          border:
+              Border.all(color: AppTheme.dividerColor.withValues(alpha: 0.3)),
         ),
         child: Column(
           children: [
             // Banner
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(16)),
               child: SizedBox(
                 height: 100,
                 width: double.infinity,
@@ -306,7 +327,10 @@ class _CommunityCard extends StatelessWidget {
                         placeholder: (_, __) => Container(
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                              colors: [themeColor, themeColor.withValues(alpha: 0.5)],
+                              colors: [
+                                themeColor,
+                                themeColor.withValues(alpha: 0.5)
+                              ],
                             ),
                           ),
                         ),
@@ -314,7 +338,10 @@ class _CommunityCard extends StatelessWidget {
                     : Container(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [themeColor, themeColor.withValues(alpha: 0.5)],
+                            colors: [
+                              themeColor,
+                              themeColor.withValues(alpha: 0.5)
+                            ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
@@ -335,7 +362,8 @@ class _CommunityCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: themeColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: themeColor.withValues(alpha: 0.5)),
+                      border:
+                          Border.all(color: themeColor.withValues(alpha: 0.5)),
                     ),
                     child: community.iconUrl != null
                         ? ClipRRect(
@@ -345,7 +373,8 @@ class _CommunityCard extends StatelessWidget {
                               fit: BoxFit.cover,
                             ),
                           )
-                        : Icon(Icons.groups_rounded, color: themeColor, size: 28),
+                        : Icon(Icons.groups_rounded,
+                            color: themeColor, size: 28),
                   ),
                   const SizedBox(width: 12),
 
@@ -389,7 +418,8 @@ class _CommunityCard extends StatelessWidget {
                       ),
                       const Text(
                         'membros',
-                        style: TextStyle(color: AppTheme.textHint, fontSize: 10),
+                        style:
+                            TextStyle(color: AppTheme.textHint, fontSize: 10),
                       ),
                     ],
                   ),

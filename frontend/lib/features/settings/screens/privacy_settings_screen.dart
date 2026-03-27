@@ -49,14 +49,11 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
           _showOnlineStatus = res['show_online_status'] as bool? ?? true;
           _allowDMs = res['allow_dms'] as bool? ?? true;
           _allowChatInvites = res['allow_chat_invites'] as bool? ?? true;
-          _showCommunitiesList =
-              res['show_communities_list'] as bool? ?? true;
-          _showFollowersList =
-              res['show_followers_list'] as bool? ?? true;
+          _showCommunitiesList = res['show_communities_list'] as bool? ?? true;
+          _showFollowersList = res['show_followers_list'] as bool? ?? true;
           _allowMentions = res['allow_mentions'] as bool? ?? true;
           _showRecentPosts = res['show_recent_posts'] as bool? ?? true;
-          _allowSearchByName =
-              res['allow_search_by_name'] as bool? ?? true;
+          _allowSearchByName = res['allow_search_by_name'] as bool? ?? true;
           _showWall = res['show_wall'] as bool? ?? true;
           _whoCanFollow = res['who_can_follow'] as String? ?? 'everyone';
         });
@@ -129,24 +126,21 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                   title: 'Perfil Público',
                   subtitle: 'Qualquer pessoa pode ver seu perfil',
                   value: _profilePublic,
-                  onChanged: (v) =>
-                      setState(() => _profilePublic = v),
+                  onChanged: (v) => setState(() => _profilePublic = v),
                 ),
                 _SettingToggle(
                   icon: Icons.circle,
                   title: 'Status Online',
                   subtitle: 'Mostrar quando você está online',
                   value: _showOnlineStatus,
-                  onChanged: (v) =>
-                      setState(() => _showOnlineStatus = v),
+                  onChanged: (v) => setState(() => _showOnlineStatus = v),
                 ),
                 _SettingToggle(
                   icon: Icons.article_rounded,
                   title: 'Posts Recentes',
                   subtitle: 'Mostrar posts recentes no perfil',
                   value: _showRecentPosts,
-                  onChanged: (v) =>
-                      setState(() => _showRecentPosts = v),
+                  onChanged: (v) => setState(() => _showRecentPosts = v),
                 ),
                 _SettingToggle(
                   icon: Icons.dashboard_rounded,
@@ -167,24 +161,21 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                   title: 'Mensagens Diretas',
                   subtitle: 'Permitir que outros enviem DMs',
                   value: _allowDMs,
-                  onChanged: (v) =>
-                      setState(() => _allowDMs = v),
+                  onChanged: (v) => setState(() => _allowDMs = v),
                 ),
                 _SettingToggle(
                   icon: Icons.group_add_rounded,
                   title: 'Convites para Chat',
                   subtitle: 'Permitir convites para chats em grupo',
                   value: _allowChatInvites,
-                  onChanged: (v) =>
-                      setState(() => _allowChatInvites = v),
+                  onChanged: (v) => setState(() => _allowChatInvites = v),
                 ),
                 _SettingToggle(
                   icon: Icons.alternate_email_rounded,
                   title: 'Menções',
                   subtitle: 'Permitir que outros mencionem você',
                   value: _allowMentions,
-                  onChanged: (v) =>
-                      setState(() => _allowMentions = v),
+                  onChanged: (v) => setState(() => _allowMentions = v),
                 ),
 
                 const SizedBox(height: 24),
@@ -198,24 +189,21 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                   title: 'Lista de Comunidades',
                   subtitle: 'Mostrar comunidades que você participa',
                   value: _showCommunitiesList,
-                  onChanged: (v) =>
-                      setState(() => _showCommunitiesList = v),
+                  onChanged: (v) => setState(() => _showCommunitiesList = v),
                 ),
                 _SettingToggle(
                   icon: Icons.people_rounded,
                   title: 'Lista de Seguidores',
                   subtitle: 'Mostrar seus seguidores/seguindo',
                   value: _showFollowersList,
-                  onChanged: (v) =>
-                      setState(() => _showFollowersList = v),
+                  onChanged: (v) => setState(() => _showFollowersList = v),
                 ),
                 _SettingToggle(
                   icon: Icons.search_rounded,
                   title: 'Busca por Nome',
                   subtitle: 'Permitir que encontrem você por nome',
                   value: _allowSearchByName,
-                  onChanged: (v) =>
-                      setState(() => _allowSearchByName = v),
+                  onChanged: (v) => setState(() => _allowSearchByName = v),
                 ),
 
                 const SizedBox(height: 24),
@@ -241,22 +229,19 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                         label: 'Todos',
                         value: 'everyone',
                         groupValue: _whoCanFollow,
-                        onChanged: (v) =>
-                            setState(() => _whoCanFollow = v!),
+                        onChanged: (v) => setState(() => _whoCanFollow = v!),
                       ),
                       _RadioOption(
                         label: 'Apenas quem eu sigo de volta',
                         value: 'mutual',
                         groupValue: _whoCanFollow,
-                        onChanged: (v) =>
-                            setState(() => _whoCanFollow = v!),
+                        onChanged: (v) => setState(() => _whoCanFollow = v!),
                       ),
                       _RadioOption(
                         label: 'Ninguém',
                         value: 'nobody',
                         groupValue: _whoCanFollow,
-                        onChanged: (v) =>
-                            setState(() => _whoCanFollow = v!),
+                        onChanged: (v) => setState(() => _whoCanFollow = v!),
                       ),
                     ],
                   ),
@@ -279,17 +264,14 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                         leading: const Icon(Icons.download_rounded,
                             color: AppTheme.primaryColor),
                         title: const Text('Exportar Meus Dados'),
-                        subtitle: const Text(
-                            'Baixar uma cópia dos seus dados',
+                        subtitle: const Text('Baixar uma cópia dos seus dados',
                             style: TextStyle(fontSize: 12)),
-                        trailing: const Icon(
-                            Icons.chevron_right_rounded,
+                        trailing: const Icon(Icons.chevron_right_rounded,
                             color: AppTheme.textHint),
                         onTap: () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                                content: Text(
-                                    'Exportação em desenvolvimento')),
+                                content: Text('Exportação em desenvolvimento')),
                           );
                         },
                       ),
@@ -298,8 +280,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                         leading: const Icon(Icons.block_rounded,
                             color: AppTheme.textSecondary),
                         title: const Text('Usuários Bloqueados'),
-                        trailing: const Icon(
-                            Icons.chevron_right_rounded,
+                        trailing: const Icon(Icons.chevron_right_rounded,
                             color: AppTheme.textHint),
                         onTap: () {
                           // TODO: Navegar para lista de bloqueados
@@ -320,8 +301,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                                   'Tem certeza? Esta ação é irreversível e todos os seus dados serão apagados.'),
                               actions: [
                                 TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(ctx),
+                                    onPressed: () => Navigator.pop(ctx),
                                     child: const Text('Cancelar')),
                                 ElevatedButton(
                                   onPressed: () {
@@ -329,8 +309,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                                     // TODO: Delete account flow
                                   },
                                   style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          AppTheme.errorColor),
+                                      backgroundColor: AppTheme.errorColor),
                                   child: const Text('Excluir'),
                                 ),
                               ],

@@ -9,7 +9,8 @@ class LiveScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Live', style: TextStyle(fontWeight: FontWeight.bold)),
+        title:
+            const Text('Live', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             icon: const Icon(Icons.videocam_rounded),

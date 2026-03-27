@@ -176,11 +176,13 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
     final listView = ListView.builder(
       controller: widget.shrinkWrap ? null : _scrollController,
       shrinkWrap: widget.shrinkWrap,
-      physics: widget.physics ?? (widget.shrinkWrap
-          ? const NeverScrollableScrollPhysics()
-          : const AlwaysScrollableScrollPhysics()),
+      physics: widget.physics ??
+          (widget.shrinkWrap
+              ? const NeverScrollableScrollPhysics()
+              : const AlwaysScrollableScrollPhysics()),
       padding: widget.padding ?? const EdgeInsets.symmetric(vertical: 8),
-      itemCount: _items.length + (widget.header != null ? 1 : 0) + (_hasMore ? 1 : 0),
+      itemCount:
+          _items.length + (widget.header != null ? 1 : 0) + (_hasMore ? 1 : 0),
       itemBuilder: (context, index) {
         // Header
         if (widget.header != null && index == 0) {

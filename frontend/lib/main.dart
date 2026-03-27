@@ -108,8 +108,10 @@ class NexusHubApp extends ConsumerWidget {
       SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
-        systemNavigationBarColor: isDark ? AppTheme.bottomNavBg : AppTheme.bottomNavBgLight,
-        systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+        systemNavigationBarColor:
+            isDark ? AppTheme.bottomNavBg : AppTheme.bottomNavBgLight,
+        systemNavigationBarIconBrightness:
+            isDark ? Brightness.light : Brightness.dark,
       ),
     );
 

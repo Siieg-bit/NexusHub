@@ -75,7 +75,8 @@ class Validators {
   }
 
   /// Confirmação de senha
-  static String? Function(String?) confirmPassword(String password, [String? message]) {
+  static String? Function(String?) confirmPassword(String password,
+      [String? message]) {
     return (value) {
       if (value != password) {
         return message ?? 'As senhas não coincidem';
@@ -148,7 +149,8 @@ class Validators {
   }
 
   /// Número dentro de um range
-  static String? Function(String?) numberRange(int min, int max, [String? message]) {
+  static String? Function(String?) numberRange(int min, int max,
+      [String? message]) {
     return (value) {
       if (value == null || value.trim().isEmpty) {
         return 'Valor é obrigatório';
@@ -162,7 +164,8 @@ class Validators {
   }
 
   /// Combinar múltiplos validadores
-  static String? Function(String?) compose(List<String? Function(String?)> validators) {
+  static String? Function(String?) compose(
+      List<String? Function(String?)> validators) {
     return (value) {
       for (final validator in validators) {
         final result = validator(value);

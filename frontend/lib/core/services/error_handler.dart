@@ -159,7 +159,8 @@ class ErrorHandler {
     if (code == '23505') {
       if (msg.contains('nickname')) return 'Este nickname já está em uso.';
       if (msg.contains('email')) return 'Este email já está cadastrado.';
-      if (msg.contains('community_members')) return 'Você já é membro desta comunidade.';
+      if (msg.contains('community_members'))
+        return 'Você já é membro desta comunidade.';
       return 'Este item já existe.';
     }
     // Foreign key violation
@@ -189,7 +190,8 @@ class ErrorHandler {
     if (code == 'P0001') {
       // Tentar extrair mensagem amigável
       if (msg.contains('insufficient')) return 'Saldo insuficiente.';
-      if (msg.contains('not a member')) return 'Você não é membro desta comunidade.';
+      if (msg.contains('not a member'))
+        return 'Você não é membro desta comunidade.';
       if (msg.contains('already')) return 'Esta ação já foi realizada.';
       if (msg.contains('rate limit')) return 'Muitas tentativas. Aguarde.';
       return error.message;

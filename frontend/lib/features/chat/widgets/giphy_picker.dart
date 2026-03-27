@@ -159,8 +159,7 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text('Powered by GIPHY',
-                      style:
-                          TextStyle(fontSize: 10, color: AppTheme.textHint)),
+                      style: TextStyle(fontSize: 10, color: AppTheme.textHint)),
                 ),
               ],
             ),

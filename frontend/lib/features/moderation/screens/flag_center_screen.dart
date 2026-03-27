@@ -52,13 +52,11 @@ class _FlagCenterScreenState extends State<FlagCenterScreen>
 
   Future<void> _resolveFlag(String flagId, String action) async {
     try {
-      await SupabaseService.table('flags')
-          .update({
-            'status': action,
-            'resolved_by': SupabaseService.currentUserId,
-            'resolved_at': DateTime.now().toUtc().toIso8601String(),
-          })
-          .eq('id', flagId);
+      await SupabaseService.table('flags').update({
+        'status': action,
+        'resolved_by': SupabaseService.currentUserId,
+        'resolved_at': DateTime.now().toUtc().toIso8601String(),
+      }).eq('id', flagId);
       await _loadFlags();
     } catch (e) {
       if (mounted) {
@@ -220,8 +218,7 @@ class _FlagCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: _flagTypeColor(type).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
@@ -238,8 +235,8 @@ class _FlagCard extends StatelessWidget {
               const Spacer(),
               if (!isPending)
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: status == 'approved'
                         ? AppTheme.successColor.withValues(alpha: 0.15)

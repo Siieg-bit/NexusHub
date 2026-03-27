@@ -77,8 +77,10 @@ class ChatRoomModel {
       lastMessagePreview: json['last_message_preview'] as String?,
       lastMessageAuthor: json['last_message_author'] as String?,
       status: json['status'] as String? ?? 'ok',
-      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ?? DateTime.now(),
-      updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '') ?? DateTime.now(),
+      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ??
+          DateTime.now(),
+      updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '') ??
+          DateTime.now(),
       unreadCount: json['unread_count'] as int? ?? 0,
     );
   }
