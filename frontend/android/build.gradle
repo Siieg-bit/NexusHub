@@ -26,10 +26,10 @@ subprojects {
 subprojects {
     project.evaluationDependsOn(':app')
 
-    // Force consistent JVM target across all subprojects
+    // Force consistent JVM target (17) across all subprojects for both Java and Kotlin
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
         kotlinOptions {
-            jvmTarget = '1.8'
+            jvmTarget = '17'
         }
     }
 }
