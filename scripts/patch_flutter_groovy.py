@@ -11,7 +11,12 @@ Root cause:
   `pluginProject.afterEvaluate {}` on those already-evaluated projects, Gradle
   throws an exception.
 
-Fix:
+Scope:
+  This patch only applies to Flutter <= 3.29.x, which uses a Groovy-based
+  flutter.groovy plugin. Flutter 3.30+ migrated to a Kotlin DSL plugin and does
+  NOT have this file. In that case, this script exits successfully without changes.
+
+Fix (Flutter <= 3.29.x):
   1. Add a `safeAfterEvaluate(project, action)` helper that runs `action` immediately
      if the project is already evaluated, or defers via `afterEvaluate` if not.
   2. Replace all `pluginProject.afterEvaluate {` calls with `safeAfterEvaluate(pluginProject) {`.
@@ -26,7 +31,7 @@ import os
 import subprocess
 
 def find_flutter_groovy():
-    """Find the flutter.groovy file in the Flutter SDK."""
+    """Find the flutter.groovy file in the Flutter SDK. Returns None if not found (Flutter 3.30+)."""
     # Try to find flutter binary
     flutter_bin = subprocess.run(['which', 'flutter'], capture_output=True, text=True).stdout.strip()
     if not flutter_bin:
@@ -40,8 +45,10 @@ def find_flutter_groovy():
     groovy_path = os.path.join(flutter_root, 'packages', 'flutter_tools', 'gradle', 'src', 'main', 'groovy', 'flutter.groovy')
     
     if not os.path.exists(groovy_path):
-        print(f"ERROR: flutter.groovy not found at {groovy_path}")
-        sys.exit(1)
+        # Flutter 3.30+ uses Kotlin DSL — no flutter.groovy exists. This is expected.
+        print(f"INFO: flutter.groovy not found at {groovy_path}")
+        print("INFO: This Flutter version uses Kotlin DSL (3.30+). No Groovy patch needed.")
+        return None
     
     return groovy_path
 
@@ -137,5 +144,8 @@ def apply_patch(groovy_path):
 
 if __name__ == '__main__':
     groovy_path = find_flutter_groovy()
+    if groovy_path is None:
+        # Flutter 3.30+ — no patch needed, exit successfully
+        sys.exit(0)
     success = apply_patch(groovy_path)
     sys.exit(0 if success else 1)
