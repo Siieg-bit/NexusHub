@@ -112,11 +112,20 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   Future<void> _loadPinnedMessages() async {
     try {
+      // Busca o pinned_message_id do thread e carrega a mensagem fixada
+      final threadData = await SupabaseService.table('chat_threads')
+          .select('pinned_message_id')
+          .eq('id', widget.threadId)
+          .single();
+      final pinnedId = threadData['pinned_message_id'] as String?;
+      if (pinnedId == null) {
+        if (mounted) setState(() => _pinnedMessages = []);
+        return;
+      }
       final res = await SupabaseService.table('chat_messages')
           .select('*, profiles!chat_messages_author_id_fkey(*)')
-          .eq('thread_id', widget.threadId)
-          .eq('is_pinned', true)
-          .order('created_at', ascending: false);
+          .eq('id', pinnedId)
+          .limit(1);
       if (mounted) {
         setState(() {
           _pinnedMessages = List<Map<String, dynamic>>.from(res as List);
@@ -168,6 +177,32 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // ========================================================================
   // ENVIAR MENSAGEM (suporta todos os tipos)
   // ========================================================================
+  /// Mapeia tipos de mensagem do app para os valores válidos do enum no banco.
+  String _mapMessageType(String type) {
+    const validTypes = {
+      'text', 'strike', 'voice_note', 'sticker', 'video',
+      'share_url', 'share_user', 'system_deleted', 'system_join',
+      'system_leave', 'system_voice_start', 'system_voice_end',
+      'system_screen_start', 'system_screen_end', 'system_tip',
+      'system_pin', 'system_unpin', 'system_removed', 'system_admin_delete',
+    };
+    if (validTypes.contains(type)) return type;
+    // Mapeamento de tipos do app para tipos válidos do enum
+    switch (type) {
+      case 'image': return 'text';   // imagem enviada como texto com media_url
+      case 'gif':   return 'text';   // gif enviado como texto com media_url
+      case 'audio': return 'voice_note';
+      case 'reply': return 'text';   // reply usa reply_to_id + tipo text
+      case 'voice_chat': return 'system_voice_start';
+      case 'video_chat': return 'system_voice_start';
+      case 'screening_room': return 'system_screen_start';
+      case 'poll': return 'text';    // poll enviado como texto com conteúdo JSON
+      case 'link': return 'share_url';
+      case 'tip': return 'system_tip';
+      default: return 'text';
+    }
+  }
+
   Future<void> _sendMessage({
     String type = 'text',
     String? mediaUrl,
@@ -180,18 +215,44 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     setState(() => _isSending = true);
 
     try {
+      final mappedType = _mapMessageType(type);
+
+      // Conteúdo: para poll, serializa as opções; para link, usa a URL
+      String? content;
+      if (text.isNotEmpty) {
+        content = text;
+      } else if (type == 'poll' && metadata != null) {
+        content = metadata['question'] as String? ?? '';
+      } else if (type == 'link' && metadata != null) {
+        content = metadata['url'] as String? ?? '';
+      }
+
       final payload = <String, dynamic>{
         'thread_id': widget.threadId,
         'author_id': SupabaseService.currentUserId,
-        'content': text.isNotEmpty ? text : null,
-        'type': type,
-        'media_url': mediaUrl,
-        'metadata': metadata,
+        'content': content,
+        'type': mappedType,
       };
+
+      if (mediaUrl != null) payload['media_url'] = mediaUrl;
+
+      // Tipo de mídia para imagens e gifs
+      if (type == 'image') payload['media_type'] = 'image';
+      if (type == 'gif') payload['media_type'] = 'gif';
+
+      // Para sticker, usar os campos corretos da tabela
+      if (type == 'sticker' && metadata != null) {
+        payload['sticker_id'] = metadata['sticker_id'];
+        payload['sticker_url'] = metadata['sticker_url'] ?? mediaUrl;
+      }
+
+      // Para link compartilhado
+      if (type == 'link' && metadata != null) {
+        payload['shared_url'] = metadata['url'];
+      }
 
       if (_replyingTo != null) {
         payload['reply_to_id'] = _replyingTo!.id;
-        payload['type'] = 'reply';
         setState(() => _replyingTo = null);
       }
 
@@ -309,8 +370,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   Future<void> _pinMessage(String messageId) async {
     try {
-      await SupabaseService.table('chat_messages')
-          .update({'is_pinned': true}).eq('id', messageId);
+      // Atualiza o pinned_message_id no chat_thread (a coluna is_pinned não existe em chat_messages)
+      await SupabaseService.table('chat_threads')
+          .update({'pinned_message_id': messageId}).eq('id', widget.threadId);
       await _loadPinnedMessages();
     } catch (_) {}
   }

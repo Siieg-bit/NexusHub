@@ -704,11 +704,11 @@ class ProfileScreen extends ConsumerWidget {
             ),
             _optionTile(Icons.comment_rounded, 'Ver Mural', () {
               Navigator.pop(ctx);
-              context.push('/profile/$userId/wall');
+              context.push('/user/$userId/wall');
             }),
             _optionTile(Icons.people_rounded, 'Seguidores', () {
               Navigator.pop(ctx);
-              context.push('/followers/$userId');
+              context.push('/user/$userId/followers');
             }),
             _optionTile(Icons.flag_rounded, 'Denunciar', () {
               Navigator.pop(ctx);

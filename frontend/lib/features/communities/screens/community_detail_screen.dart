@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/models/community_model.dart';
 import '../../../core/models/post_model.dart';
+import '../../../core/models/user_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../core/utils/amino_animations.dart';
@@ -76,6 +77,21 @@ final communityMembershipProvider =
       .eq('user_id', userId)
       .maybeSingle();
   return response;
+});
+
+final currentUserProfileProvider =
+    FutureProvider<UserModel?>((ref) async {
+  final userId = SupabaseService.currentUserId;
+  if (userId == null) return null;
+  try {
+    final response = await SupabaseService.table('profiles')
+        .select()
+        .eq('id', userId)
+        .single();
+    return UserModel.fromJson(response as Map<String, dynamic>);
+  } catch (_) {
+    return null;
+  }
 });
 
 // =============================================================================
@@ -229,7 +245,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
           backgroundColor: AppTheme.scaffoldBg,
           drawer: CommunityDrawer(
             community: community,
-            currentUser: null,
+            currentUser: ref.watch(currentUserProfileProvider).valueOrNull,
             userRole: userRole,
           ),
           body: NestedScrollView(

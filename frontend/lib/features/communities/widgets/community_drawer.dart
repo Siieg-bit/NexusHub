@@ -262,9 +262,19 @@ class CommunityDrawer extends StatelessWidget {
                           left: 0,
                           right: 0,
                           child: Column(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               // Avatar simples sem anel (estilo Amino original)
-                              Stack(
+                              GestureDetector(
+                                onTap: currentUser != null
+                                    ? () {
+                                        Navigator.pop(context);
+                                        context.push(
+                                          '/community/${community.id}/profile/${currentUser!.id}',
+                                        );
+                                      }
+                                    : null,
+                                child: Stack(
                                 alignment: Alignment.center,
                                 children: [
                                   Container(
@@ -310,6 +320,7 @@ class CommunityDrawer extends StatelessWidget {
                                     ),
                                   ),
                                 ],
+                              ),
                               ),
                               const SizedBox(height: 6),
                               // User name

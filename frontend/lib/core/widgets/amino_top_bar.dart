@@ -61,7 +61,7 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
           children: [
             // ── Avatar do usuário ──
             GestureDetector(
-              onTap: onAvatarTap ?? () => context.push('/profile/${SupabaseService.currentUserId ?? ""}'),
+              onTap: onAvatarTap ?? () => context.push('/profile'),
               child: Container(
                 width: 34,
                 height: 34,
