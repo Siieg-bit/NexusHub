@@ -367,14 +367,18 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
 
 // ============================================================================
 // CARD DE COMUNIDADE — Estilo Amino original
-// Ícone pequeno no canto superior esquerdo com borda colorida,
-// nome na parte inferior esquerda sobre gradiente,
-// barra verde CHECK IN na base do card
+// Ícone quadrado arredondado no canto superior esquerdo, parcialmente
+// FORA do card (metade sai para cima), banner preenche o card,
+// nome na parte inferior, barra verde CHECK IN na base.
 // ============================================================================
 class _AminoCommunityCard extends StatelessWidget {
   final CommunityModel community;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
+
+  // Tamanho do ícone e quanto ele sai do card
+  static const double _iconSize = 32;
+  static const double _iconOverflow = 10; // pixels que saem acima do card
 
   const _AminoCommunityCard({
     required this.community,
@@ -394,175 +398,179 @@ class _AminoCommunityCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = _parseColor(community.themeColor);
 
+    // O card inteiro é envolvido em um Stack com clipBehavior.none
+    // para permitir que o ícone saia do card.
     return GestureDetector(
       onTap: onTap,
       onLongPress: onLongPress,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+      child: Padding(
+        // Padding superior para dar espaço ao ícone que sai do card
+        padding: const EdgeInsets.only(top: _iconOverflow),
+        child: Stack(
+          clipBehavior: Clip.none,
           children: [
-            // ── Imagem de capa com ícone e nome ──
-            AspectRatio(
-              aspectRatio: 0.82,
-              child: Stack(
-                fit: StackFit.expand,
+            // ── Card principal (banner + nome + CHECK IN) ──
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Imagem de capa (preenche todo o card)
-                  community.bannerUrl != null
-                      ? CachedNetworkImage(
-                          imageUrl: community.bannerUrl!,
-                          fit: BoxFit.cover,
-                          memCacheWidth: 400,
-                          memCacheHeight: 500,
-                          placeholder: (_, __) => Container(
-                            decoration: BoxDecoration(
+                  // Banner com nome
+                  AspectRatio(
+                    aspectRatio: 0.82,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        // Imagem de capa
+                        community.bannerUrl != null
+                            ? CachedNetworkImage(
+                                imageUrl: community.bannerUrl!,
+                                fit: BoxFit.cover,
+                                memCacheWidth: 400,
+                                memCacheHeight: 500,
+                                placeholder: (_, __) => Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [color, color.withValues(alpha: 0.5)],
+                                    ),
+                                  ),
+                                ),
+                                errorWidget: (_, __, ___) => Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [color, color.withValues(alpha: 0.5)],
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Icon(Icons.groups_rounded,
+                                        color: Colors.white.withValues(alpha: 0.3),
+                                        size: 32),
+                                  ),
+                                ),
+                              )
+                            : Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [color, color.withValues(alpha: 0.5)],
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Icon(Icons.groups_rounded,
+                                      color: Colors.white.withValues(alpha: 0.3),
+                                      size: 32),
+                                ),
+                              ),
+
+                        // Gradiente escuro na parte inferior
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: 70,
+                          child: Container(
+                            decoration: const BoxDecoration(
                               gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [color, color.withValues(alpha: 0.5)],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent,
+                                  Color(0xCC000000),
+                                ],
                               ),
                             ),
                           ),
-                          errorWidget: (_, __, ___) => Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [color, color.withValues(alpha: 0.5)],
-                              ),
-                            ),
-                            child: Center(
-                              child: Icon(Icons.groups_rounded,
-                                  color: Colors.white.withValues(alpha: 0.3),
-                                  size: 32),
-                            ),
-                          ),
-                        )
-                      : Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [color, color.withValues(alpha: 0.5)],
-                            ),
-                          ),
-                          child: Center(
-                            child: Icon(Icons.groups_rounded,
-                                color: Colors.white.withValues(alpha: 0.3),
-                                size: 32),
-                          ),
                         ),
 
-                  // Gradiente escuro na parte inferior
-                  Positioned(
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: 70,
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Color(0xCC000000),
-                          ],
+                        // Nome da comunidade — parte inferior
+                        Positioned(
+                          bottom: 6,
+                          left: 8,
+                          right: 8,
+                          child: Text(
+                            community.name,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                              height: 1.2,
+                              shadows: [
+                                Shadow(color: Colors.black, blurRadius: 6),
+                                Shadow(color: Colors.black, blurRadius: 3),
+                              ],
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
 
-                  // Ícone pequeno — canto superior esquerdo
-                  Positioned(
-                    top: 6,
-                    left: 6,
-                    child: Container(
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(7),
-                        border: Border.all(color: color, width: 2),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.5),
-                            blurRadius: 4,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: community.iconUrl != null
-                          ? CachedNetworkImage(
-                              imageUrl: community.iconUrl!,
-                              fit: BoxFit.cover,
-                              memCacheWidth: 56,
-                              memCacheHeight: 56,
-                            )
-                          : Container(
-                              color: AppTheme.cardColor,
-                              child: Icon(Icons.groups_rounded,
-                                  color: AppTheme.textHint, size: 14),
-                            ),
-                    ),
-                  ),
-
-                  // Nome da comunidade — parte inferior esquerda
-                  Positioned(
-                    bottom: 6,
-                    left: 8,
-                    right: 8,
-                    child: Text(
-                      community.name,
-                      style: const TextStyle(
+                  // Barra CHECK IN verde na base
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    color: AppTheme.primaryColor,
+                    child: const Text(
+                      'CHECK IN',
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 13,
+                        fontSize: 11,
                         fontWeight: FontWeight.w800,
-                        height: 1.2,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black,
-                            blurRadius: 6,
-                          ),
-                          Shadow(
-                            color: Colors.black,
-                            blurRadius: 3,
-                          ),
-                        ],
+                        letterSpacing: 0.5,
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
                     ),
                   ),
                 ],
               ),
             ),
 
-            // ── Barra CHECK IN verde na base ──
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              color: AppTheme.primaryColor,
-              child: const Text(
-                'CHECK IN',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.5,
+            // ── Ícone da comunidade — sobrepõe a borda superior do card ──
+            Positioned(
+              top: -_iconOverflow,
+              left: 8,
+              child: Container(
+                width: _iconSize,
+                height: _iconSize,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: AppTheme.cardColor,
+                  border: Border.all(color: color, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
                 ),
-                textAlign: TextAlign.center,
+                clipBehavior: Clip.antiAlias,
+                child: community.iconUrl != null
+                    ? CachedNetworkImage(
+                        imageUrl: community.iconUrl!,
+                        fit: BoxFit.cover,
+                        memCacheWidth: 64,
+                        memCacheHeight: 64,
+                      )
+                    : Icon(Icons.groups_rounded,
+                        color: AppTheme.textHint, size: 16),
               ),
             ),
           ],
