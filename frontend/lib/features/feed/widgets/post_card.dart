@@ -167,38 +167,38 @@ class _PostCardState extends State<PostCard>
             // ── Type-specific content ──
             _buildTypeSpecificContent(),
 
-            // ── Media ──
+            // ── Media (formato square 1:1) ──
             if (_post.mediaUrl != null && _post.mediaUrl!.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: CachedNetworkImage(
-                    imageUrl: _post.mediaUrl!,
-                    height: 180,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    placeholder: (_, __) => Container(
-                      height: 180,
-                      decoration: BoxDecoration(
-                        color: AppTheme.surfaceColor,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          color: AppTheme.primaryColor,
-                          strokeWidth: 2,
+                child: AspectRatio(
+                  aspectRatio: 1.0,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: CachedNetworkImage(
+                      imageUrl: _post.mediaUrl!,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      placeholder: (_, __) => Container(
+                        decoration: BoxDecoration(
+                          color: AppTheme.surfaceColor,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: AppTheme.primaryColor,
+                            strokeWidth: 2,
+                          ),
                         ),
                       ),
-                    ),
-                    errorWidget: (_, __, ___) => Container(
-                      height: 180,
-                      decoration: BoxDecoration(
-                        color: AppTheme.surfaceColor,
-                        borderRadius: BorderRadius.circular(10),
+                      errorWidget: (_, __, ___) => Container(
+                        decoration: BoxDecoration(
+                          color: AppTheme.surfaceColor,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.broken_image_rounded,
+                            color: AppTheme.textHint),
                       ),
-                      child: const Icon(Icons.broken_image_rounded,
-                          color: AppTheme.textHint),
                     ),
                   ),
                 ),

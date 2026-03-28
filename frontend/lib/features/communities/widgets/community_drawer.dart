@@ -483,12 +483,21 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                           badge: 0,
                           onTap: () {
                             Navigator.pop(context);
-                            context.push('/chats');
+                            context.go('/chats');
+                          },
+                        ),
+                        _AminoDrawerItem(
+                          icon: Icons.people_rounded,
+                          label: 'Membros',
+                          color: const Color(0xFF9C27B0),
+                          onTap: () {
+                            Navigator.pop(context);
+                            context.push('/community/${widget.community.id}/members');
                           },
                         ),
                         _AminoDrawerItem(
                           icon: Icons.auto_stories_rounded,
-                          label: 'Catálogo',
+                          label: 'Wiki',
                           color: const Color(0xFFFF9800),
                           onTap: () {
                             Navigator.pop(context);
@@ -496,12 +505,12 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                           },
                         ),
                         _AminoDrawerItem(
-                          icon: Icons.forum_rounded,
-                          label: 'Chats Públicos',
-                          color: AppTheme.primaryColor,
+                          icon: Icons.leaderboard_rounded,
+                          label: 'Ranking',
+                          color: const Color(0xFFFFD700),
                           onTap: () {
                             Navigator.pop(context);
-                            context.push('/chats');
+                            context.push('/community/${widget.community.id}/leaderboard');
                           },
                         ),
                         _AminoDrawerItem(

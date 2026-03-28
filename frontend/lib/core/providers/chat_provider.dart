@@ -26,9 +26,9 @@ class ChatThreadsNotifier extends AsyncNotifier<List<Map<String, dynamic>>> {
     final userId = SupabaseService.currentUserId;
     if (userId == null) return [];
 
-    final res = await SupabaseService.table('thread_participants')
+    final res = await SupabaseService.table('chat_members')
         .select(
-            'thread_id, chat_threads!inner(*, messages(content, created_at, sender_id))')
+            'thread_id, chat_threads!inner(*, chat_messages(content, created_at, author_id))')
         .eq('user_id', userId)
         .order('updated_at', referencedTable: 'chat_threads', ascending: false)
         .limit(50);
@@ -71,8 +71,8 @@ class ThreadMessagesNotifier
   }
 
   Future<List<MessageModel>> _fetchPage(String threadId, int page) async {
-    final res = await SupabaseService.table('messages')
-        .select('*, profiles!messages_sender_id_fkey(nickname, icon_url)')
+    final res = await SupabaseService.table('chat_messages')
+        .select('*, profiles!chat_messages_author_id_fkey(nickname, icon_url)')
         .eq('thread_id', threadId)
         .order('created_at', ascending: false)
         .range(page * _pageSize, (page + 1) * _pageSize - 1);
@@ -95,7 +95,7 @@ class ThreadMessagesNotifier
         .onPostgresChanges(
           event: PostgresChangeEvent.insert,
           schema: 'public',
-          table: 'messages',
+          table: 'chat_messages',
           filter: PostgresChangeFilter(
             type: PostgresChangeFilterType.eq,
             column: 'thread_id',
@@ -131,11 +131,11 @@ class ThreadMessagesNotifier
       final userId = SupabaseService.currentUserId;
       if (userId == null) return false;
 
-      await SupabaseService.table('messages').insert({
+      await SupabaseService.table('chat_messages').insert({
         'thread_id': arg,
-        'sender_id': userId,
+        'author_id': userId,
         'content': content,
-        'message_type': type,
+        'type': type,
         if (metadata != null) 'metadata': metadata,
       });
 
@@ -151,8 +151,8 @@ class ThreadMessagesNotifier
 
   Future<bool> deleteMessage(String messageId) async {
     try {
-      await SupabaseService.table('messages').update({
-        'message_type': 'deleted',
+      await SupabaseService.table('chat_messages').update({
+        'type': 'system_deleted',
         'content': 'Mensagem apagada',
       }).eq('id', messageId);
 

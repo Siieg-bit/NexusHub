@@ -112,13 +112,10 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _tabs = const [
-            'Regras',
+    'Regras',
     'Destaque',
     'Recentes',
     'Chats',
-    'Membros',
-    'Wiki',
-    'Ranking',
   ];
 
   @override
@@ -521,10 +518,6 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                     ref: ref,
                     isFeatured: false),
                 _ChatTab(communityId: widget.communityId),
-                _MembersTab(
-                    communityId: widget.communityId, themeColor: themeColor),
-                _WikiTab(communityId: widget.communityId),
-                _LeaderboardTab(communityId: widget.communityId),
               ],
             ),
           ),
