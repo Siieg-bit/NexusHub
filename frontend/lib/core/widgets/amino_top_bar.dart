@@ -30,6 +30,23 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
     this.onNotificationTap,
   });
 
+  /// Formata moedas com separador de milhar (ex: 882.947)
+  static String _formatCoins(int coins) {
+    if (coins >= 1000000) {
+      return '${(coins / 1000000).toStringAsFixed(1)}M';
+    }
+    if (coins >= 1000) {
+      final str = coins.toString();
+      final buffer = StringBuffer();
+      for (int i = 0; i < str.length; i++) {
+        if (i > 0 && (str.length - i) % 3 == 0) buffer.write('.');
+        buffer.write(str[i]);
+      }
+      return buffer.toString();
+    }
+    return coins.toString();
+  }
+
   @override
   Size get preferredSize => const Size.fromHeight(56);
 
@@ -86,7 +103,7 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
                 child: Container(
                   height: 34,
                   decoration: BoxDecoration(
-                    color: AppTheme.surfaceColor,
+                    color: Colors.white.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(17),
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -134,26 +151,50 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
 
             const SizedBox(width: 8),
 
-            // ── Badge de Moedas ──
+            // ── Badge de Moedas (LARANJA/DOURADO — Amino original) ──
             GestureDetector(
               onTap: onCoinsTap ?? () => context.push('/wallet'),
               child: Container(
                 height: 28,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFF9800), Color(0xFFFFB74D)],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      '🪙',
-                      style: TextStyle(fontSize: 12),
+                    // Amino Coin icon — círculo com "A"
+                    Container(
+                      width: 16,
+                      height: 16,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'A',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w900,
+                            height: 1.0,
+                          ),
+                        ),
+                      ),
                     ),
-                    const SizedBox(width: 3),
+                    const SizedBox(width: 4),
                     Text(
-                      coins.toString(),
+                      _formatCoins(coins),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 12,

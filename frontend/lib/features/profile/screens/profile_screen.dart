@@ -11,6 +11,7 @@ import '../../../core/services/iap_service.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../chat/widgets/chat_bubble.dart'; // AvatarWithFrame, AminoPlusBadge, StreakBar
 import '../../feed/widgets/post_card.dart';
+import '../../../core/widgets/amino_particles_bg.dart';
 
 /// Provider para perfil de um usuário.
 final userProfileProvider =
@@ -77,7 +78,9 @@ final equippedItemsProvider =
 });
 
 // =============================================================================
-// PROFILE SCREEN — Estilo Amino Apps
+// PROFILE SCREEN — Estilo Amino Apps (layout fiel ao original)
+// Avatar à ESQUERDA, sem anel verde, stats em 2 cards translúcidos,
+// top bar com moedas + compartilhar + menu
 // =============================================================================
 
 class ProfileScreen extends ConsumerWidget {
@@ -99,7 +102,7 @@ class ProfileScreen extends ConsumerWidget {
         backgroundColor: AppTheme.scaffoldBg,
         body: const Center(
           child: CircularProgressIndicator(
-              color: AppTheme.primaryColor, strokeWidth: 2),
+              color: AppTheme.accentColor, strokeWidth: 2),
         ),
       ),
       error: (error, _) => Scaffold(
@@ -132,476 +135,531 @@ class ProfileScreen extends ConsumerWidget {
 
         return Scaffold(
           backgroundColor: AppTheme.scaffoldBg,
-          body: CustomScrollView(
-            slivers: [
-              // ================================================================
-              // HEADER DO PERFIL — Estilo Amino
-              // ================================================================
-              SliverAppBar(
-                expandedHeight: 320,
-                pinned: true,
-                backgroundColor: AppTheme.scaffoldBg,
-                elevation: 0,
-                leading: Container(
-                  margin: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
+          body: AminoParticlesBg(
+            child: CustomScrollView(
+              slivers: [
+                // ==============================================================
+                // TOP BAR — Estilo Amino original
+                // [<] [Badge Moedas Laranja] [Compartilhar] [Menu ≡]
+                // ==============================================================
+                SliverAppBar(
+                  pinned: true,
+                  backgroundColor: AppTheme.scaffoldBg.withValues(alpha: 0.9),
+                  elevation: 0,
+                  leading: IconButton(
                     icon: const Icon(Icons.arrow_back_ios_rounded,
-                        color: Colors.white, size: 18),
+                        color: Colors.white, size: 20),
                     onPressed: () => context.pop(),
                   ),
-                ),
-                actions: [
-                  Container(
-                    margin: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      shape: BoxShape.circle,
-                    ),
-                    child: isOwnProfile
-                        ? IconButton(
-                            icon: const Icon(Icons.settings_rounded,
-                                color: Colors.white, size: 18),
-                            onPressed: () => context.push('/settings'),
-                          )
-                        : IconButton(
-                            icon: const Icon(Icons.more_horiz_rounded,
-                                color: Colors.white, size: 18),
-                            onPressed: () => _showUserOptions(context, user),
-                          ),
-                  ),
-                ],
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      // Banner
-                      if (user.bannerUrl != null)
-                        CachedNetworkImage(
-                            imageUrl: user.bannerUrl!, fit: BoxFit.cover)
-                      else
-                        Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                AppTheme.primaryColor,
-                                AppTheme.primaryDark,
-                                AppTheme.scaffoldBg,
-                              ],
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              stops: const [0.0, 0.5, 1.0],
-                            ),
-                          ),
+                  title: // Badge de moedas laranja centralizada
+                      GestureDetector(
+                    onTap: () => context.push('/wallet'),
+                    child: Container(
+                      height: 28,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFF9800), Color(0xFFFFB74D)],
                         ),
-                      // Gradient overlay
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.transparent,
-                              Colors.transparent,
-                              AppTheme.scaffoldBg.withValues(alpha: 0.7),
-                              AppTheme.scaffoldBg,
-                            ],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            stops: const [0.0, 0.3, 0.7, 1.0],
-                          ),
-                        ),
+                        borderRadius: BorderRadius.circular(14),
                       ),
-                      // Profile info
-                      Positioned(
-                        bottom: 16,
-                        left: 16,
-                        right: 16,
-                        child: Column(
-                          children: [
-                            // Avatar com Frame e Amino+ badge — gradient ring
-                            Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                // Gradient ring
-                                Container(
-                                  width: 96,
-                                  height: 96,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: const LinearGradient(
-                                      colors: [
-                                        AppTheme.primaryColor,
-                                        AppTheme.accentColor,
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: AppTheme.primaryColor
-                                            .withValues(alpha: 0.4),
-                                        blurRadius: 16,
-                                        spreadRadius: 2,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                // Avatar or Frame
-                                AvatarWithFrame(
-                                  avatarUrl: user.iconUrl,
-                                  frameUrl: frameUrl,
-                                  size: 88,
-                                  showAminoPlus: isAminoPlus,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            // Nome + badges
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    user.nickname,
-                                    style: const TextStyle(
-                                      color: AppTheme.textPrimary,
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 22,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                if (user.isNicknameVerified) ...[
-                                  const SizedBox(width: 6),
-                                  const Icon(Icons.verified_rounded,
-                                      color: AppTheme.accentColor, size: 20),
-                                ],
-                                if (isAminoPlus) ...[
-                                  const SizedBox(width: 8),
-                                  const AminoPlusBadge(),
-                                ],
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Text('@${user.aminoId}',
-                                style: TextStyle(
-                                    color: Colors.grey[500], fontSize: 13)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // ================================================================
-              // LEVEL & XP BAR — Estilo Amino
-              // ================================================================
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: _LevelBar(user: user),
-                ),
-              ),
-
-              // ================================================================
-              // STATS — Estilo Amino
-              // ================================================================
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    decoration: BoxDecoration(
-                      color: AppTheme.surfaceColor,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.05)),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _StatItem(label: 'Posts', value: user.postsCount),
-                        _divider(),
-                        _StatItem(
-                            label: 'Seguidores', value: user.followersCount),
-                        _divider(),
-                        _StatItem(
-                            label: 'Seguindo', value: user.followingCount),
-                        _divider(),
-                        _StatItem(label: 'Rep', value: user.reputation),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              // ================================================================
-              // AÇÕES: Editar / Seguir + Free Coins — Estilo Amino
-              // ================================================================
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: isOwnProfile
-                      ? Row(
-                          children: [
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () => context.push('/profile/edit'),
-                                child: Container(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 12),
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.surfaceColor,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                        color: Colors.white
-                                            .withValues(alpha: 0.08)),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.edit_rounded,
-                                          size: 16, color: Colors.grey[400]),
-                                      const SizedBox(width: 8),
-                                      Text('Editar Perfil',
-                                          style: TextStyle(
-                                              color: Colors.grey[300],
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 13)),
-                                    ],
-                                  ),
-                                ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 16,
+                            height: 16,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
                               ),
                             ),
-                            const SizedBox(width: 10),
-                            _FreeCoinsBadge(
-                              onTap: () => context.push('/wallet'),
+                            child: const Center(
+                              child: Text('A',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w900,
+                                      height: 1.0)),
                             ),
-                          ],
-                        )
-                      : Row(
-                          children: [
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () => _toggleFollow(ref, user),
-                                child: Container(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 12),
-                                  decoration: BoxDecoration(
-                                    color: user.isFollowing == true
-                                        ? AppTheme.surfaceColor
-                                        : AppTheme.primaryColor,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: user.isFollowing == true
-                                        ? Border.all(
-                                            color: AppTheme.primaryColor
-                                                .withValues(alpha: 0.3))
-                                        : null,
-                                    boxShadow: user.isFollowing == true
-                                        ? null
-                                        : [
-                                            BoxShadow(
-                                              color: AppTheme.primaryColor
-                                                  .withValues(alpha: 0.3),
-                                              blurRadius: 8,
-                                              offset: const Offset(0, 2),
-                                            ),
-                                          ],
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            _formatCoins(user.coins),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Container(
+                            width: 16,
+                            height: 16,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.3),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.add,
+                                color: Colors.white, size: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  centerTitle: true,
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.share_outlined,
+                          color: Colors.white, size: 22),
+                      onPressed: () {/* TODO: Share profile */},
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        isOwnProfile
+                            ? Icons.menu_rounded
+                            : Icons.more_horiz_rounded,
+                        color: Colors.white,
+                        size: 22,
+                      ),
+                      onPressed: isOwnProfile
+                          ? () => context.push('/settings')
+                          : () => _showUserOptions(context, user),
+                    ),
+                  ],
+                ),
+
+                // ==============================================================
+                // PROFILE HEADER — Avatar à ESQUERDA + Editar Perfil à direita
+                // Estilo Amino original: sem anel verde, sem SliverAppBar expandida
+                // ==============================================================
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Avatar à ESQUERDA (sem gradient ring)
+                        AvatarWithFrame(
+                          avatarUrl: user.iconUrl,
+                          frameUrl: frameUrl,
+                          size: 80,
+                          showAminoPlus: isAminoPlus,
+                        ),
+                        const SizedBox(width: 16),
+                        // Info + Botão Editar à direita
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 8),
+                              // Nome + badges
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      user.nickname,
+                                      style: const TextStyle(
+                                        color: AppTheme.textPrimary,
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 20,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
-                                  child: Center(
+                                  if (isAminoPlus) ...[
+                                    const SizedBox(width: 6),
+                                    const AminoPlusBadge(),
+                                  ],
+                                  if (user.isNicknameVerified) ...[
+                                    const SizedBox(width: 4),
+                                    const Icon(Icons.verified_rounded,
+                                        color: AppTheme.accentColor, size: 18),
+                                  ],
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '@${user.aminoId}',
+                                style: TextStyle(
+                                    color: Colors.grey[500], fontSize: 13),
+                              ),
+                              const SizedBox(height: 10),
+                              // Botão Editar Perfil / Seguir
+                              if (isOwnProfile)
+                                GestureDetector(
+                                  onTap: () => context.push('/profile/edit'),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: Colors.white
+                                            .withValues(alpha: 0.15),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.edit_rounded,
+                                            size: 14, color: Colors.grey[400]),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          'Editar Perfil',
+                                          style: TextStyle(
+                                            color: Colors.grey[300],
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              else
+                                GestureDetector(
+                                  onTap: () => _toggleFollow(ref, user),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: user.isFollowing == true
+                                          ? Colors.transparent
+                                          : AppTheme.accentColor,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: user.isFollowing == true
+                                          ? Border.all(
+                                              color: AppTheme.accentColor)
+                                          : null,
+                                    ),
                                     child: Text(
                                       user.isFollowing == true
                                           ? 'Seguindo'
                                           : 'Seguir',
                                       style: TextStyle(
-                                        color: user.isFollowing == true
-                                            ? AppTheme.primaryColor
-                                            : Colors.white,
+                                        color: Colors.white,
                                         fontWeight: FontWeight.w700,
-                                        fontSize: 14,
+                                        fontSize: 13,
                                       ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            _actionCircle(
-                              Icons.chat_bubble_outline_rounded,
-                              () {/* TODO: DM */},
-                            ),
-                            const SizedBox(width: 8),
-                            _actionCircle(
-                              Icons.comment_rounded,
-                              () => context.push('/profile/$userId/wall'),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                ),
-              ),
-
-              // ================================================================
-              // BIO
-              // ================================================================
-              if (user.bio.isNotEmpty)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 8),
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: AppTheme.surfaceColor,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.05)),
-                      ),
-                      child: Text(user.bio,
-                          style: TextStyle(
-                              color: Colors.grey[400],
-                              height: 1.5,
-                              fontSize: 13)),
+                      ],
                     ),
                   ),
                 ),
 
-              // ================================================================
-              // STREAK BAR (se for próprio perfil)
-              // ================================================================
-              if (isOwnProfile)
+                // ==============================================================
+                // STATS — 2 cards translúcidos lado a lado (Seguidores / Seguindo)
+                // Estilo Amino original
+                // ==============================================================
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () =>
+                                context.push('/followers/$userId'),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.06),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.08),
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    _formatCount(user.followersCount),
+                                    style: const TextStyle(
+                                      color: AppTheme.textPrimary,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 20,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Seguidores',
+                                    style: TextStyle(
+                                        color: Colors.grey[500], fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () =>
+                                context.push('/followers/$userId'),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.06),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.08),
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    _formatCount(user.followingCount),
+                                    style: const TextStyle(
+                                      color: AppTheme.textPrimary,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 20,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Seguindo',
+                                    style: TextStyle(
+                                        color: Colors.grey[500], fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // ==============================================================
+                // BIO — Estilo Amino (texto ciano/azul claro se vazio)
+                // ==============================================================
                 SliverToBoxAdapter(
                   child: Padding(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                    child: streakAsync.when(
-                      loading: () => const SizedBox.shrink(),
-                      error: (_, __) => const SizedBox.shrink(),
-                      data: (streak) => StreakBar(
-                        currentStreak: streak['current_streak'] as int? ?? 0,
-                        maxStreak: streak['max_streak'] as int? ?? 0,
-                        checkInDays: streak['total_check_ins'] as int? ?? 0,
+                    child: user.bio.isNotEmpty
+                        ? Text(
+                            user.bio,
+                            style: TextStyle(
+                              color: Colors.grey[400],
+                              height: 1.5,
+                              fontSize: 13,
+                            ),
+                          )
+                        : isOwnProfile
+                            ? GestureDetector(
+                                onTap: () => context.push('/profile/edit'),
+                                child: const Text(
+                                  'Clique aqui para adicionar sua biografia!',
+                                  style: TextStyle(
+                                    color: AppTheme.accentColor,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                  ),
+                ),
+
+                // ==============================================================
+                // AMINO+ BANNER (se aplicável)
+                // ==============================================================
+                if (isAminoPlus)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.06),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFD700),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text(
+                                'A+',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                'Membro Amino+',
+                                style: TextStyle(
+                                  color: Colors.grey[400],
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                    ),
+                  ),
+
+                // ==============================================================
+                // STREAK BAR (se for próprio perfil)
+                // ==============================================================
+                if (isOwnProfile)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 4),
+                      child: streakAsync.when(
+                        loading: () => const SizedBox.shrink(),
+                        error: (_, __) => const SizedBox.shrink(),
+                        data: (streak) => StreakBar(
+                          currentStreak:
+                              streak['current_streak'] as int? ?? 0,
+                          maxStreak: streak['max_streak'] as int? ?? 0,
+                          checkInDays:
+                              streak['total_check_ins'] as int? ?? 0,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                // ==============================================================
+                // POSTS DO USUÁRIO
+                // ==============================================================
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    child: Row(
+                      children: [
+                        const Text('Posts',
+                            style: TextStyle(
+                                color: AppTheme.textPrimary,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 18)),
+                        const Spacer(),
+                        if (isOwnProfile)
+                          GestureDetector(
+                            onTap: () =>
+                                context.push('/followers/$userId'),
+                            child: Row(
+                              children: [
+                                Icon(Icons.people_outline_rounded,
+                                    size: 14, color: Colors.grey[500]),
+                                const SizedBox(width: 4),
+                                Text('Seguidores',
+                                    style: TextStyle(
+                                        color: Colors.grey[500],
+                                        fontSize: 12)),
+                              ],
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 ),
 
-              // ================================================================
-              // POSTS DO USUÁRIO — Estilo Amino
-              // ================================================================
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Row(
-                    children: [
-                      const Text('Posts',
-                          style: TextStyle(
-                              color: AppTheme.textPrimary,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 18)),
-                      const Spacer(),
-                      if (isOwnProfile)
-                        GestureDetector(
-                          onTap: () => context.push('/followers/$userId'),
-                          child: Row(
-                            children: [
-                              Icon(Icons.people_outline_rounded,
-                                  size: 14, color: Colors.grey[500]),
-                              const SizedBox(width: 4),
-                              Text('Seguidores',
-                                  style: TextStyle(
-                                      color: Colors.grey[500], fontSize: 12)),
-                            ],
+                postsAsync.when(
+                  loading: () => const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.all(32),
+                      child: Center(
+                          child: CircularProgressIndicator(
+                              color: AppTheme.accentColor, strokeWidth: 2)),
+                    ),
+                  ),
+                  error: (error, _) => SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text('Erro: $error',
+                          style: TextStyle(color: Colors.grey[500])),
+                    ),
+                  ),
+                  data: (posts) {
+                    if (posts.isEmpty) {
+                      return SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.all(32),
+                          child: Center(
+                            child: Column(
+                              children: [
+                                Icon(Icons.article_outlined,
+                                    size: 48, color: Colors.grey[700]),
+                                const SizedBox(height: 12),
+                                Text('Nenhum post ainda',
+                                    style: TextStyle(
+                                        color: Colors.grey[500],
+                                        fontWeight: FontWeight.w600)),
+                              ],
+                            ),
                           ),
                         ),
-                    ],
-                  ),
-                ),
-              ),
+                      );
+                    }
 
-              postsAsync.when(
-                loading: () => const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.all(32),
-                    child: Center(
-                        child: CircularProgressIndicator(
-                            color: AppTheme.primaryColor, strokeWidth: 2)),
-                  ),
-                ),
-                error: (error, _) => SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text('Error: $error',
-                        style: TextStyle(color: Colors.grey[500])),
-                  ),
-                ),
-                data: (posts) {
-                  if (posts.isEmpty) {
-                    return SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.all(32),
-                        child: Center(
-                          child: Column(
-                            children: [
-                              Icon(Icons.article_outlined,
-                                  size: 48, color: Colors.grey[700]),
-                              const SizedBox(height: 12),
-                              Text('Nenhum post ainda',
-                                  style: TextStyle(
-                                      color: Colors.grey[500],
-                                      fontWeight: FontWeight.w600)),
-                            ],
-                          ),
-                        ),
+                    return SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) => PostCard(post: posts[index]),
+                        childCount: posts.length,
                       ),
                     );
-                  }
+                  },
+                ),
 
-                  return SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) => PostCard(post: posts[index]),
-                      childCount: posts.length,
-                    ),
-                  );
-                },
-              ),
-
-              const SliverToBoxAdapter(child: SizedBox(height: 80)),
-            ],
+                const SliverToBoxAdapter(child: SizedBox(height: 80)),
+              ],
+            ),
           ),
         );
       },
     );
   }
 
-  Widget _actionCircle(IconData icon, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 44,
-        height: 44,
-        decoration: BoxDecoration(
-          color: AppTheme.surfaceColor,
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-        ),
-        child: Icon(icon, color: Colors.grey[400], size: 18),
-      ),
-    );
+  // ============================================================================
+  // HELPERS
+  // ============================================================================
+
+  static String _formatCoins(int coins) {
+    if (coins >= 1000000) {
+      return '${(coins / 1000000).toStringAsFixed(1)}M';
+    }
+    if (coins >= 1000) {
+      final str = coins.toString();
+      final buffer = StringBuffer();
+      for (int i = 0; i < str.length; i++) {
+        if (i > 0 && (str.length - i) % 3 == 0) buffer.write('.');
+        buffer.write(str[i]);
+      }
+      return buffer.toString();
+    }
+    return coins.toString();
   }
 
-  Widget _divider() {
-    return Container(
-      width: 1,
-      height: 28,
-      color: Colors.white.withValues(alpha: 0.06),
-    );
+  static String _formatCount(int count) {
+    if (count >= 1000000) return '${(count / 1000000).toStringAsFixed(1)}M';
+    if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}K';
+    return count.toString();
   }
 
   Future<void> _toggleFollow(WidgetRef ref, UserModel user) async {
@@ -684,211 +742,5 @@ class ProfileScreen extends ConsumerWidget {
         ),
       ),
     );
-  }
-}
-
-// =============================================================================
-// FREE COINS BADGE — Estilo Amino
-// =============================================================================
-
-class _FreeCoinsBadge extends StatelessWidget {
-  final VoidCallback onTap;
-  const _FreeCoinsBadge({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
-          ),
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFFFD700).withValues(alpha: 0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.monetization_on_rounded, color: Colors.white, size: 16),
-            SizedBox(width: 4),
-            Text(
-              'Moedas Grátis',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w800,
-                fontSize: 11,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// =============================================================================
-// LEVEL BAR — Estilo Amino
-// =============================================================================
-
-class _LevelBar extends StatelessWidget {
-  final UserModel user;
-  const _LevelBar({required this.user});
-
-  @override
-  Widget build(BuildContext context) {
-    final levelColor = AppTheme.getLevelColor(user.level);
-    final progress = (user.reputation % 500) / 500.0;
-
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: levelColor.withValues(alpha: 0.2)),
-      ),
-      child: Row(
-        children: [
-          // Level badge — gradient ring
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [
-                  levelColor,
-                  levelColor.withValues(alpha: 0.6),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: levelColor.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  spreadRadius: 1,
-                ),
-              ],
-            ),
-            child: Center(
-              child: Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceColor,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    '${user.level}',
-                    style: TextStyle(
-                        color: levelColor,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 18),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Nível ${user.level}',
-                        style: TextStyle(
-                            color: levelColor,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 13)),
-                    Text('${user.reputation} Rep',
-                        style: TextStyle(
-                            color: Colors.grey[500], fontSize: 11)),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: progress,
-                    backgroundColor: Colors.white.withValues(alpha: 0.06),
-                    valueColor: AlwaysStoppedAnimation<Color>(levelColor),
-                    minHeight: 6,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          // Coins
-          GestureDetector(
-            onTap: () => context.push('/wallet'),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppTheme.warningColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.monetization_on_rounded,
-                      color: AppTheme.warningColor, size: 16),
-                  const SizedBox(width: 4),
-                  Text('${user.coins}',
-                      style: const TextStyle(
-                          color: AppTheme.warningColor,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 13)),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// =============================================================================
-// STAT ITEM — Estilo Amino
-// =============================================================================
-
-class _StatItem extends StatelessWidget {
-  final String label;
-  final int value;
-  const _StatItem({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          _formatCount(value),
-          style: const TextStyle(
-              fontWeight: FontWeight.w800,
-              fontSize: 18,
-              color: AppTheme.textPrimary),
-        ),
-        const SizedBox(height: 2),
-        Text(label,
-            style: TextStyle(color: Colors.grey[600], fontSize: 11)),
-      ],
-    );
-  }
-
-  String _formatCount(int count) {
-    if (count >= 1000000) return '${(count / 1000000).toStringAsFixed(1)}M';
-    if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}K';
-    return count.toString();
   }
 }

@@ -4,7 +4,9 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/helpers.dart';
 
-/// Wallet / Economia — Saldo, histórico de transações, formas de ganhar moedas.
+/// Carteira / Minha Carteira — Estilo Amino original.
+/// Header azul celeste brilhante com moeda dourada, corpo claro/branco.
+/// Sem misturar XP/Nível. Foco financeiro: saldo, assinaturas, histórico, loja.
 class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key});
 
@@ -12,19 +14,14 @@ class WalletScreen extends StatefulWidget {
   State<WalletScreen> createState() => _WalletScreenState();
 }
 
-class _WalletScreenState extends State<WalletScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _WalletScreenState extends State<WalletScreen> {
   int _coins = 0;
-  int _totalXp = 0;
-  int _level = 1;
   bool _isLoading = true;
   List<Map<String, dynamic>> _transactions = [];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     _loadWallet();
   }
 
@@ -34,15 +31,12 @@ class _WalletScreenState extends State<WalletScreen>
       if (userId == null) return;
 
       final profile = await SupabaseService.table('profiles')
-          .select('coins_count, xp_count, level')
+          .select('coins_count')
           .eq('id', userId)
           .single();
 
       _coins = profile['coins_count'] as int? ?? 0;
-      _totalXp = profile['xp_count'] as int? ?? 0;
-      _level = profile['level'] as int? ?? 1;
 
-      // Carregar transações
       try {
         final txRes = await SupabaseService.table('coin_transactions')
             .select()
@@ -50,9 +44,7 @@ class _WalletScreenState extends State<WalletScreen>
             .order('created_at', ascending: false)
             .limit(50);
         _transactions = List<Map<String, dynamic>>.from(txRes as List);
-      } catch (_) {
-        // Tabela pode não existir ainda
-      }
+      } catch (_) {}
 
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
@@ -60,302 +52,365 @@ class _WalletScreenState extends State<WalletScreen>
     }
   }
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+  String _formatCoins(int coins) {
+    if (coins >= 1000000) return '${(coins / 1000000).toStringAsFixed(1)}M';
+    final str = coins.toString();
+    final buffer = StringBuffer();
+    for (int i = 0; i < str.length; i++) {
+      if (i > 0 && (str.length - i) % 3 == 0) buffer.write('.');
+      buffer.write(str[i]);
+    }
+    return buffer.toString();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: const Text('Carteira',
-            style: TextStyle(
-                fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
-      ),
+      // Corpo com fundo cinza claro (estilo Amino original)
+      backgroundColor: const Color(0xFFF5F5F5),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
-          : SingleChildScrollView(
-              child: Column(
-                children: [
-                  // ===========================================================
-                  // SALDO PRINCIPAL
-                  // ===========================================================
-                  Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.all(16),
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [
-                          AppTheme.primaryColor,
-                          AppTheme.accentColor,
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                          blurRadius: 16,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF00AAFF)))
+          : Column(
+              children: [
+                // =============================================================
+                // HEADER AZUL CELESTE — Estilo Amino "Minha Carteira"
+                // =============================================================
+                Container(
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF00AAFF), Color(0xFF0088DD)],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
                     ),
+                  ),
+                  child: SafeArea(
+                    bottom: false,
                     child: Column(
                       children: [
-                        const Text('Saldo',
-                            style:
-                                TextStyle(color: Colors.white70, fontSize: 14)),
-                        const SizedBox(height: 4),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.monetization_on_rounded,
-                                color: Colors.white, size: 32),
-                            const SizedBox(width: 8),
-                            Text(
-                              formatCount(_coins),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 40,
-                                fontWeight: FontWeight.w800,
+                        // Top bar: voltar + título + comprar
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 4, vertical: 4),
+                          child: Row(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.arrow_back_ios_rounded,
+                                    color: Colors.white, size: 20),
+                                onPressed: () => context.pop(),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            _WalletStat(
-                              icon: Icons.star_rounded,
-                              label: 'XP Total',
-                              value: formatCount(_totalXp),
-                            ),
-                            Container(
-                                width: 1, height: 30, color: Colors.white30),
-                            _WalletStat(
-                              icon: Icons.arrow_upward_rounded,
-                              label: 'Nível',
-                              value: _level.toString(),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // ===========================================================
-                  // AÇÕES RÁPIDAS
-                  // ===========================================================
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: _ActionCard(
-                            icon: Icons.calendar_today_rounded,
-                            label: 'Check-in',
-                            color: AppTheme.warningColor,
-                            onTap: () => context.push('/check-in'),
+                              const Expanded(
+                                child: Text(
+                                  'Minha Carteira',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 17,
+                                  ),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () => context.push('/store/coins'),
+                                child: const Text(
+                                  'Comprar',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _ActionCard(
-                            icon: Icons.shopping_bag_rounded,
-                            label: 'Loja',
-                            color: AppTheme.primaryColor,
-                            onTap: () => context.go('/store'),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _ActionCard(
-                            icon: Icons.card_giftcard_rounded,
-                            label: 'Transferir',
-                            color: AppTheme.accentColor,
-                            onTap: () => _showTransferDialog(),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _ActionCard(
-                            icon: Icons.volunteer_activism_rounded,
-                            label: 'Props',
-                            color: const Color(0xFFE91E63),
-                            onTap: () => _showPropsDialog(),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
 
-                  // ===========================================================
-                  // COMO GANHAR MOEDAS
-                  // ===========================================================
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppTheme.surfaceColor,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.05),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Como ganhar moedas',
-                            style: TextStyle(
-                                fontWeight: FontWeight.w800,
-                                fontSize: 16,
-                                color: AppTheme.textPrimary)),
-                        const SizedBox(height: 12),
-                        const _EarnRow(
-                          icon: Icons.calendar_today_rounded,
-                          title: 'Check-in diário',
-                          reward: '5-25',
-                          color: AppTheme.warningColor,
-                        ),
-                        const _EarnRow(
-                          icon: Icons.article_rounded,
-                          title: 'Criar posts',
-                          reward: '10',
-                          color: AppTheme.primaryColor,
-                        ),
-                        const _EarnRow(
-                          icon: Icons.comment_rounded,
-                          title: 'Comentar',
-                          reward: '2',
-                          color: AppTheme.accentColor,
-                        ),
-                        const _EarnRow(
-                          icon: Icons.quiz_rounded,
-                          title: 'Completar quizzes',
-                          reward: '5-50',
-                          color: Color(0xFF9C27B0),
-                        ),
-                        const _EarnRow(
-                          icon: Icons.emoji_events_rounded,
-                          title: 'Conquistas',
-                          reward: '10-100',
-                          color: Color(0xFFFF5722),
-                        ),
-                        const _EarnRow(
-                          icon: Icons.people_rounded,
-                          title: 'Convidar amigos',
-                          reward: '50',
-                          color: AppTheme.primaryColor,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // ===========================================================
-                  // HISTÓRICO DE TRANSAÇÕES
-                  // ===========================================================
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppTheme.surfaceColor,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.05),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Histórico',
-                            style: TextStyle(
-                                fontWeight: FontWeight.w800,
-                                fontSize: 16,
-                                color: AppTheme.textPrimary)),
-                        const SizedBox(height: 12),
-                        if (_transactions.isEmpty)
-                          Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Center(
-                              child: Text('Nenhuma transação ainda',
-                                  style: TextStyle(color: Colors.grey[500])),
-                            ),
-                          )
-                        else
-                          ...(_transactions.take(20).map((tx) {
-                            final amount = tx['amount'] as int? ?? 0;
-                            final type = tx['type'] as String? ?? '';
-                            final desc = tx['description'] as String? ?? type;
-                            final isPositive = amount >= 0;
-                            final createdAt = tx['created_at'] != null
-                                ? DateTime.parse(tx['created_at'] as String)
-                                : DateTime.now();
-
-                            return ListTile(
-                              dense: true,
-                              contentPadding: EdgeInsets.zero,
-                              leading: Container(
-                                width: 36,
-                                height: 36,
+                        // Moeda dourada grande + saldo
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          child: Column(
+                            children: [
+                              // Moeda dourada grande
+                              Container(
+                                width: 72,
+                                height: 72,
                                 decoration: BoxDecoration(
-                                  color: (isPositive
-                                          ? AppTheme.primaryColor
-                                          : AppTheme.errorColor)
-                                      .withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(10),
+                                  shape: BoxShape.circle,
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color(0xFFFFD700),
+                                      Color(0xFFFFA500),
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFFFFD700)
+                                          .withValues(alpha: 0.4),
+                                      blurRadius: 16,
+                                      spreadRadius: 2,
+                                    ),
+                                  ],
                                 ),
-                                child: Icon(
-                                  isPositive
-                                      ? Icons.arrow_downward_rounded
-                                      : Icons.arrow_upward_rounded,
-                                  color: isPositive
-                                      ? AppTheme.primaryColor
-                                      : AppTheme.errorColor,
-                                  size: 18,
+                                child: const Center(
+                                  child: Text(
+                                    'A',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
                                 ),
                               ),
-                              title: Text(desc,
-                                  style: const TextStyle(
-                                      fontSize: 13,
-                                      color: AppTheme.textPrimary)),
-                              subtitle: Text(
-                                '${createdAt.day}/${createdAt.month}/${createdAt.year}',
-                                style: TextStyle(
-                                    fontSize: 11, color: Colors.grey[500]),
-                              ),
-                              trailing: Text(
-                                '${isPositive ? '+' : ''}$amount',
-                                style: TextStyle(
-                                  color: isPositive
-                                      ? AppTheme.primaryColor
-                                      : AppTheme.errorColor,
+                              const SizedBox(height: 12),
+                              // Saldo
+                              Text(
+                                _formatCoins(_coins),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 36,
                                   fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              const Text(
+                                'Amino Coins',
+                                style: TextStyle(
+                                  color: Colors.white70,
                                   fontSize: 14,
                                 ),
                               ),
-                            );
-                          }).toList()),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 32),
-                ],
-              ),
+                ),
+
+                // =============================================================
+                // CORPO — Fundo claro, seções estilo Amino
+                // =============================================================
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 16),
+
+                        // Seção: Assinaturas
+                        _WalletMenuTile(
+                          icon: Icons.card_membership_rounded,
+                          iconColor: const Color(0xFF4CAF50),
+                          title: 'Assinaturas',
+                          subtitle: 'Gerencie seu Amino+',
+                          onTap: () => context.push('/store'),
+                        ),
+
+                        // Seção: Histórico
+                        _WalletMenuTile(
+                          icon: Icons.history_rounded,
+                          iconColor: const Color(0xFF2196F3),
+                          title: 'Histórico',
+                          subtitle: '${_transactions.length} transações',
+                          onTap: () => _showHistory(),
+                        ),
+
+                        // Seção: Transferir
+                        _WalletMenuTile(
+                          icon: Icons.send_rounded,
+                          iconColor: const Color(0xFF9C27B0),
+                          title: 'Transferir Moedas',
+                          subtitle: 'Envie moedas para um amigo',
+                          onTap: () => _showTransferDialog(),
+                        ),
+
+                        // Seção: Props
+                        _WalletMenuTile(
+                          icon: Icons.volunteer_activism_rounded,
+                          iconColor: const Color(0xFFE91E63),
+                          title: 'Enviar Props',
+                          subtitle: 'Reconheça um membro',
+                          onTap: () => _showPropsDialog(),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Texto "Comprar Moedas"
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            'Comprar Moedas',
+                            style: TextStyle(
+                              color: Colors.grey[500],
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+
+                        // Botão "Visite a loja"
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: GestureDetector(
+                            onTap: () => context.push('/store/coins'),
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF333333),
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.star_rounded,
+                                      color: Color(0xFFFFD700), size: 18),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Visite a loja',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Icon(Icons.star_rounded,
+                                      color: Color(0xFFFFD700), size: 18),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 32),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
     );
   }
 
+  // ===========================================================================
+  // HISTÓRICO — Modal bottom sheet com transações
+  // ===========================================================================
+  void _showHistory() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        maxChildSize: 0.9,
+        minChildSize: 0.4,
+        expand: false,
+        builder: (ctx, scrollCtrl) => Column(
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Histórico de Transações',
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
+                color: Color(0xFF333333),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: _transactions.isEmpty
+                  ? Center(
+                      child: Text('Nenhuma transação ainda',
+                          style: TextStyle(color: Colors.grey[500])),
+                    )
+                  : ListView.separated(
+                      controller: scrollCtrl,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: _transactions.length,
+                      separatorBuilder: (_, __) =>
+                          Divider(color: Colors.grey[200], height: 1),
+                      itemBuilder: (ctx, index) {
+                        final tx = _transactions[index];
+                        final amount = tx['amount'] as int? ?? 0;
+                        final type = tx['type'] as String? ?? '';
+                        final desc =
+                            tx['description'] as String? ?? type;
+                        final isPositive = amount >= 0;
+                        final createdAt = tx['created_at'] != null
+                            ? DateTime.parse(tx['created_at'] as String)
+                            : DateTime.now();
+
+                        return ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: (isPositive
+                                      ? const Color(0xFF4CAF50)
+                                      : const Color(0xFFE53935))
+                                  .withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              isPositive
+                                  ? Icons.arrow_downward_rounded
+                                  : Icons.arrow_upward_rounded,
+                              color: isPositive
+                                  ? const Color(0xFF4CAF50)
+                                  : const Color(0xFFE53935),
+                              size: 18,
+                            ),
+                          ),
+                          title: Text(desc,
+                              style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFF333333))),
+                          subtitle: Text(
+                            '${createdAt.day}/${createdAt.month}/${createdAt.year}',
+                            style: TextStyle(
+                                fontSize: 11, color: Colors.grey[500]),
+                          ),
+                          trailing: Text(
+                            '${isPositive ? '+' : ''}$amount',
+                            style: TextStyle(
+                              color: isPositive
+                                  ? const Color(0xFF4CAF50)
+                                  : const Color(0xFFE53935),
+                              fontWeight: FontWeight.w800,
+                              fontSize: 14,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // TRANSFERIR — Dialog
+  // ===========================================================================
   void _showTransferDialog() {
     final userIdCtrl = TextEditingController();
     final amountCtrl = TextEditingController();
@@ -363,30 +418,29 @@ class _WalletScreenState extends State<WalletScreen>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surfaceColor,
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
         title: const Text('Transferir Moedas',
             style: TextStyle(
-                color: AppTheme.textPrimary, fontWeight: FontWeight.w800)),
+                color: Color(0xFF333333), fontWeight: FontWeight.w800)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: userIdCtrl,
-              style: const TextStyle(color: AppTheme.textPrimary),
+              style: const TextStyle(color: Color(0xFF333333)),
               decoration: InputDecoration(
                 labelText: 'Amino ID do destinatário',
                 labelStyle: TextStyle(color: Colors.grey[500]),
-                prefixIcon:
-                    const Icon(Icons.person_rounded, color: AppTheme.accentColor),
+                prefixIcon: const Icon(Icons.person_rounded,
+                    color: Color(0xFF00AAFF)),
                 enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
                 ),
                 focusedBorder: const UnderlineInputBorder(
-                  borderSide: BorderSide(color: AppTheme.accentColor),
+                  borderSide: BorderSide(color: Color(0xFF00AAFF)),
                 ),
               ),
             ),
@@ -394,22 +448,22 @@ class _WalletScreenState extends State<WalletScreen>
             TextField(
               controller: amountCtrl,
               keyboardType: TextInputType.number,
-              style: const TextStyle(color: AppTheme.textPrimary),
+              style: const TextStyle(color: Color(0xFF333333)),
               decoration: InputDecoration(
                 labelText: 'Quantidade',
                 labelStyle: TextStyle(color: Colors.grey[500]),
                 prefixIcon: const Icon(Icons.monetization_on_rounded,
-                    color: AppTheme.warningColor),
+                    color: Color(0xFFFF9800)),
                 enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
                 ),
                 focusedBorder: const UnderlineInputBorder(
-                  borderSide: BorderSide(color: AppTheme.warningColor),
+                  borderSide: BorderSide(color: Color(0xFFFF9800)),
                 ),
               ),
             ),
             const SizedBox(height: 8),
-            Text('Saldo atual: $_coins coins',
+            Text('Saldo atual: ${_formatCoins(_coins)} coins',
                 style: TextStyle(color: Colors.grey[500], fontSize: 12)),
           ],
         ),
@@ -456,19 +510,11 @@ class _WalletScreenState extends State<WalletScreen>
               }
             },
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppTheme.primaryColor, AppTheme.accentColor],
-                ),
+                color: const Color(0xFF00AAFF),
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
               ),
               child: const Text('Transferir',
                   style: TextStyle(
@@ -480,6 +526,9 @@ class _WalletScreenState extends State<WalletScreen>
     );
   }
 
+  // ===========================================================================
+  // PROPS — Dialog
+  // ===========================================================================
   void _showPropsDialog() {
     final userIdCtrl = TextEditingController();
     int selectedAmount = 10;
@@ -488,18 +537,18 @@ class _WalletScreenState extends State<WalletScreen>
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-          backgroundColor: AppTheme.surfaceColor,
+          backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
           ),
           title: const Row(
             children: [
-              Icon(Icons.volunteer_activism_rounded, color: Color(0xFFE91E63)),
+              Icon(Icons.volunteer_activism_rounded,
+                  color: Color(0xFFE91E63)),
               SizedBox(width: 8),
               Text('Enviar Props',
                   style: TextStyle(
-                      color: AppTheme.textPrimary,
+                      color: Color(0xFF333333),
                       fontWeight: FontWeight.w800)),
             ],
           ),
@@ -508,17 +557,17 @@ class _WalletScreenState extends State<WalletScreen>
             children: [
               TextField(
                 controller: userIdCtrl,
-                style: const TextStyle(color: AppTheme.textPrimary),
+                style: const TextStyle(color: Color(0xFF333333)),
                 decoration: InputDecoration(
                   labelText: 'Amino ID do usuário',
                   labelStyle: TextStyle(color: Colors.grey[500]),
-                  prefixIcon:
-                      const Icon(Icons.person_rounded, color: AppTheme.accentColor),
+                  prefixIcon: const Icon(Icons.person_rounded,
+                      color: Color(0xFF00AAFF)),
                   enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                    borderSide: BorderSide(color: Colors.grey[300]!),
                   ),
                   focusedBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: AppTheme.accentColor),
+                    borderSide: BorderSide(color: Color(0xFF00AAFF)),
                   ),
                 ),
               ),
@@ -526,7 +575,7 @@ class _WalletScreenState extends State<WalletScreen>
               const Text('Quantidade de Props',
                   style: TextStyle(
                       fontWeight: FontWeight.w700,
-                      color: AppTheme.textPrimary)),
+                      color: Color(0xFF333333))),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -537,14 +586,14 @@ class _WalletScreenState extends State<WalletScreen>
                         style: TextStyle(
                             color: isSelected
                                 ? Colors.white
-                                : AppTheme.textPrimary)),
+                                : const Color(0xFF333333))),
                     selected: isSelected,
                     selectedColor: const Color(0xFFE91E63),
-                    backgroundColor: AppTheme.surfaceColor,
+                    backgroundColor: Colors.grey[100],
                     side: BorderSide(
                         color: isSelected
                             ? Colors.transparent
-                            : Colors.white.withValues(alpha: 0.1)),
+                            : Colors.grey[300]!),
                     onSelected: (_) {
                       setDialogState(() => selectedAmount = amount);
                     },
@@ -582,7 +631,8 @@ class _WalletScreenState extends State<WalletScreen>
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                          content: Text('$selectedAmount props enviados!')),
+                          content:
+                              Text('$selectedAmount props enviados!')),
                     );
                   }
                 } catch (e) {
@@ -601,13 +651,6 @@ class _WalletScreenState extends State<WalletScreen>
                     colors: [Color(0xFFE91E63), Color(0xFFC2185B)],
                   ),
                   borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFE91E63).withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
                 ),
                 child: const Text('Enviar',
                     style: TextStyle(
@@ -621,45 +664,21 @@ class _WalletScreenState extends State<WalletScreen>
   }
 }
 
-class _WalletStat extends StatelessWidget {
+// =============================================================================
+// WALLET MENU TILE — Item de menu estilo Amino (fundo branco, ícone colorido)
+// =============================================================================
+class _WalletMenuTile extends StatelessWidget {
   final IconData icon;
-  final String label;
-  final String value;
-
-  const _WalletStat({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Icon(icon, color: Colors.white70, size: 18),
-        const SizedBox(height: 4),
-        Text(value,
-            style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w800)),
-        Text(label,
-            style: TextStyle(color: Colors.grey[500], fontSize: 11)),
-      ],
-    );
-  }
-}
-
-class _ActionCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
+  final Color iconColor;
+  final String title;
+  final String subtitle;
   final VoidCallback onTap;
 
-  const _ActionCard({
+  const _WalletMenuTile({
     required this.icon,
-    required this.label,
-    required this.color,
+    required this.iconColor,
+    required this.title,
+    required this.subtitle,
     required this.onTap,
   });
 
@@ -667,82 +686,57 @@ class _ActionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceColor,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: 6),
-            Text(label,
-                style: TextStyle(
-                    color: color, fontSize: 12, fontWeight: FontWeight.w700)),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+            ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _EarnRow extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String reward;
-  final Color color;
-
-  const _EarnRow({
-    required this.icon,
-    required this.title,
-    required this.reward,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(8),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: iconColor, size: 22),
             ),
-            child: Icon(icon, color: color, size: 16),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(title,
-                style: const TextStyle(
-                    fontSize: 13, color: AppTheme.textPrimary)),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              color: AppTheme.warningColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.monetization_on_rounded,
-                    color: AppTheme.warningColor, size: 12),
-                const SizedBox(width: 3),
-                Text(reward,
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
                     style: const TextStyle(
-                        color: AppTheme.warningColor,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800)),
-              ],
+                      color: Color(0xFF333333),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+            Icon(Icons.chevron_right_rounded,
+                color: Colors.grey[400], size: 22),
+          ],
+        ),
       ),
     );
   }

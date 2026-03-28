@@ -3,10 +3,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/services/ad_service.dart';
 
-/// Tela "Ganhar Moedas Grátis" — lista todas as formas de ganhar coins.
-///
-/// Inclui: assistir anúncios, check-in diário, postar, comentar,
-/// convidar amigos, completar conquistas, etc.
+/// Tela "Ganhar Moedas Grátis" — Estilo Amino original.
+/// Header azul celeste com saldo, corpo claro com cards de atividades.
 class FreeCoinsScreen extends StatefulWidget {
   const FreeCoinsScreen({super.key});
 
@@ -52,11 +50,20 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
     } catch (_) {}
   }
 
+  String _formatCoins(int coins) {
+    if (coins >= 1000000) return '${(coins / 1000000).toStringAsFixed(1)}M';
+    final str = coins.toString();
+    final buffer = StringBuffer();
+    for (int i = 0; i < str.length; i++) {
+      if (i > 0 && (str.length - i) % 3 == 0) buffer.write('.');
+      buffer.write(str[i]);
+    }
+    return buffer.toString();
+  }
+
   Future<void> _watchAd() async {
     if (_adsWatchedToday >= _maxAdsPerDay || _isLoadingAd) return;
-
     setState(() => _isLoadingAd = true);
-
     try {
       const int rewardCoins = 5;
       final success = await AdService.showRewardedAd(rewardCoins: rewardCoins);
@@ -65,12 +72,12 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
           _balance += rewardCoins;
           _adsWatchedToday++;
         });
-
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('+$rewardCoins moedas!', style: const TextStyle(color: AppTheme.textPrimary)),
-              backgroundColor: AppTheme.primaryColor,
+              content: Text('+$rewardCoins moedas!',
+                  style: const TextStyle(color: Colors.white)),
+              backgroundColor: const Color(0xFF4CAF50),
             ),
           );
         }
@@ -79,8 +86,9 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao carregar anúncio: $e', style: const TextStyle(color: AppTheme.textPrimary)),
-            backgroundColor: AppTheme.errorColor,
+            content: Text('Erro ao carregar anúncio: $e',
+                style: const TextStyle(color: Colors.white)),
+            backgroundColor: const Color(0xFFE53935),
           ),
         );
       }
@@ -92,156 +100,190 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
-      appBar: AppBar(
-        backgroundColor: AppTheme.scaffoldBg,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
-        title: const Text(
-          'Ganhar Moedas',
-          style: TextStyle(
-            color: AppTheme.textPrimary,
-            fontWeight: FontWeight.w800,
-            fontSize: 20,
-          ),
-        ),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      backgroundColor: const Color(0xFFF5F5F5),
+      body: Column(
         children: [
-          // ============================================================
-          // SALDO ATUAL
-          // ============================================================
+          // =============================================================
+          // HEADER AZUL CELESTE
+          // =============================================================
           Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppTheme.primaryColor, AppTheme.accentColor],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF00AAFF), Color(0xFF0088DD)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
               ),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
             ),
-            child: Column(
-              children: [
-                Text(
-                  'Seu Saldo',
-                  style: TextStyle(
-                    color: AppTheme.textPrimary.withValues(alpha: 0.8),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+            child: SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 4, vertical: 4),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back_ios_rounded,
+                              color: Colors.white, size: 20),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        const Expanded(
+                          child: Text(
+                            'Ganhar Moedas',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 17,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 48),
+                      ],
+                    ),
                   ),
-                ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: const LinearGradient(
+                              colors: [
+                                Color(0xFFFFD700),
+                                Color(0xFFFFA500),
+                              ],
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFFFD700)
+                                    .withValues(alpha: 0.4),
+                                blurRadius: 10,
+                              ),
+                            ],
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'A',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _formatCoins(_balance),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const Text(
+                          'Amino Coins',
+                          style:
+                              TextStyle(color: Colors.white70, fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // =============================================================
+          // CORPO — Cards de atividades
+          // =============================================================
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                // Assistir Anúncios
+                _SectionTitle(title: 'Assistir Anúncios'),
                 const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.monetization_on_rounded,
-                      color: AppTheme.warningColor,
-                      size: 36,
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      _balance.toString(),
-                      style: const TextStyle(
-                        color: AppTheme.textPrimary,
-                        fontSize: 40,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ],
+                _EarningCard(
+                  icon: Icons.play_circle_filled_rounded,
+                  iconColor: const Color(0xFFE53935),
+                  title: 'Assistir Vídeo',
+                  subtitle:
+                      '$_adsWatchedToday/$_maxAdsPerDay assistidos hoje',
+                  reward: '+5',
+                  onTap:
+                      _adsWatchedToday < _maxAdsPerDay ? _watchAd : null,
+                  isLoading: _isLoadingAd,
                 ),
+                const SizedBox(height: 20),
+
+                // Atividades Diárias
+                _SectionTitle(title: 'Atividades Diárias'),
+                const SizedBox(height: 8),
+                const _EarningCard(
+                  icon: Icons.calendar_today_rounded,
+                  iconColor: Color(0xFF2196F3),
+                  title: 'Check-in Diário',
+                  subtitle: 'Faça check-in todos os dias',
+                  reward: '+5-25',
+                ),
+                const _EarningCard(
+                  icon: Icons.edit_rounded,
+                  iconColor: Color(0xFF4CAF50),
+                  title: 'Criar um Post',
+                  subtitle: 'Publique conteúdo na comunidade',
+                  reward: '+3',
+                ),
+                const _EarningCard(
+                  icon: Icons.comment_rounded,
+                  iconColor: Color(0xFF00BCD4),
+                  title: 'Comentar em Posts',
+                  subtitle: 'Participe das discussões',
+                  reward: '+1',
+                ),
+                const _EarningCard(
+                  icon: Icons.quiz_rounded,
+                  iconColor: Color(0xFFFF9800),
+                  title: 'Responder Quiz',
+                  subtitle: 'Acerte quizzes da comunidade',
+                  reward: '+2',
+                ),
+                const SizedBox(height: 20),
+
+                // Conquistas
+                _SectionTitle(title: 'Conquistas'),
+                const SizedBox(height: 8),
+                const _EarningCard(
+                  icon: Icons.emoji_events_rounded,
+                  iconColor: Color(0xFFFF9800),
+                  title: 'Completar Conquistas',
+                  subtitle: 'Desbloqueie badges e ganhe moedas',
+                  reward: '+10-100',
+                ),
+                const _EarningCard(
+                  icon: Icons.person_add_rounded,
+                  iconColor: Color(0xFF9C27B0),
+                  title: 'Convidar Amigos',
+                  subtitle: 'Ganhe moedas quando amigos se cadastram',
+                  reward: '+50',
+                ),
+                const _EarningCard(
+                  icon: Icons.trending_up_rounded,
+                  iconColor: Color(0xFF2196F3),
+                  title: 'Subir de Nível',
+                  subtitle: 'Ganhe moedas ao subir de nível',
+                  reward: '+20',
+                ),
+                const SizedBox(height: 24),
               ],
             ),
           ),
-          const SizedBox(height: 32),
-
-          // ============================================================
-          // ASSISTIR ANÚNCIOS
-          // ============================================================
-          const _SectionTitle(title: 'Assistir Anúncios'),
-          const SizedBox(height: 12),
-          _EarningCard(
-            icon: Icons.play_circle_filled_rounded,
-            iconColor: AppTheme.errorColor,
-            title: 'Assistir Vídeo',
-            subtitle: '$_adsWatchedToday/$_maxAdsPerDay assistidos hoje',
-            reward: '+5 moedas',
-            onTap: _adsWatchedToday < _maxAdsPerDay ? _watchAd : null,
-            isLoading: _isLoadingAd,
-          ),
-          const SizedBox(height: 32),
-
-          // ============================================================
-          // ATIVIDADES DIÁRIAS
-          // ============================================================
-          const _SectionTitle(title: 'Atividades Diárias'),
-          const SizedBox(height: 12),
-          const _EarningCard(
-            icon: Icons.calendar_today_rounded,
-            iconColor: AppTheme.primaryColor,
-            title: 'Check-in Diário',
-            subtitle: 'Faça check-in todos os dias',
-            reward: '+5-25 moedas',
-          ),
-          const _EarningCard(
-            icon: Icons.edit_rounded,
-            iconColor: AppTheme.accentColor,
-            title: 'Criar um Post',
-            subtitle: 'Publique conteúdo na comunidade',
-            reward: '+3 moedas',
-          ),
-          const _EarningCard(
-            icon: Icons.comment_rounded,
-            iconColor: AppTheme.primaryColor,
-            title: 'Comentar em Posts',
-            subtitle: 'Participe das discussões',
-            reward: '+1 moeda',
-          ),
-          const _EarningCard(
-            icon: Icons.quiz_rounded,
-            iconColor: AppTheme.warningColor,
-            title: 'Responder Quiz',
-            subtitle: 'Acerte quizzes da comunidade',
-            reward: '+2 moedas',
-          ),
-          const SizedBox(height: 32),
-
-          // ============================================================
-          // CONQUISTAS
-          // ============================================================
-          const _SectionTitle(title: 'Conquistas'),
-          const SizedBox(height: 12),
-          const _EarningCard(
-            icon: Icons.emoji_events_rounded,
-            iconColor: AppTheme.warningColor,
-            title: 'Completar Conquistas',
-            subtitle: 'Desbloqueie badges e ganhe moedas',
-            reward: '+10-100 moedas',
-          ),
-          const _EarningCard(
-            icon: Icons.person_add_rounded,
-            iconColor: AppTheme.accentColor,
-            title: 'Convidar Amigos',
-            subtitle: 'Ganhe moedas quando amigos se cadastram',
-            reward: '+50 moedas',
-          ),
-          const _EarningCard(
-            icon: Icons.trending_up_rounded,
-            iconColor: AppTheme.primaryColor,
-            title: 'Subir de Nível',
-            subtitle: 'Ganhe moedas ao subir de nível',
-            reward: '+20 moedas',
-          ),
-          const SizedBox(height: 32),
         ],
       ),
     );
@@ -257,9 +299,9 @@ class _SectionTitle extends StatelessWidget {
     return Text(
       title,
       style: const TextStyle(
-        fontWeight: FontWeight.w800,
-        fontSize: 18,
-        color: AppTheme.textPrimary,
+        fontWeight: FontWeight.w700,
+        fontSize: 16,
+        color: Color(0xFF333333),
       ),
     );
   }
@@ -287,99 +329,112 @@ class _EarningCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.05),
-          width: 1,
-        ),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: iconColor.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(12),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: iconColor, size: 22),
           ),
-          child: Icon(icon, color: iconColor, size: 24),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 15,
-            color: AppTheme.textPrimary,
-          ),
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 4),
-          child: Text(
-            subtitle,
-            style: TextStyle(
-              color: Colors.grey[500],
-              fontSize: 13,
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    color: Color(0xFF333333),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                ),
+              ],
             ),
           ),
-        ),
-        trailing: onTap != null
-            ? GestureDetector(
-                onTap: isLoading ? null : onTap,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        AppTheme.primaryColor,
-                        AppTheme.primaryColor.withValues(alpha: 0.8),
-                      ],
+          // Reward badge
+          onTap != null
+              ? GestureDetector(
+                  onTap: isLoading ? null : onTap,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4CAF50),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
+                    child: isLoading
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white),
+                          )
+                        : Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.monetization_on_rounded,
+                                  color: Colors.white, size: 14),
+                              const SizedBox(width: 4),
+                              Text(
+                                reward,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                )
+              : Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF9800).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.monetization_on_rounded,
+                          color: Color(0xFFFF9800), size: 14),
+                      const SizedBox(width: 4),
+                      Text(
+                        reward,
+                        style: const TextStyle(
+                          color: Color(0xFFFF9800),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ],
                   ),
-                  child: isLoading
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: AppTheme.textPrimary,
-                          ),
-                        )
-                      : Text(
-                          reward,
-                          style: const TextStyle(
-                            color: AppTheme.textPrimary,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
                 ),
-              )
-            : Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  reward,
-                  style: const TextStyle(
-                    color: AppTheme.primaryColor,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
+        ],
       ),
     );
   }
