@@ -366,9 +366,10 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
 }
 
 // ============================================================================
-// CARD DE COMUNIDADE — Estilo Amino original polido
-// 2 colunas, imagem de alta qualidade, ícone + nome na parte inferior,
-// badge CHECK IN no canto superior direito
+// CARD DE COMUNIDADE — Estilo Amino original
+// Ícone pequeno no canto superior esquerdo com borda colorida,
+// nome na parte inferior esquerda sobre gradiente,
+// barra verde CHECK IN na base do card
 // ============================================================================
 class _AminoCommunityCard extends StatelessWidget {
   final CommunityModel community;
@@ -398,16 +399,11 @@ class _AminoCommunityCard extends StatelessWidget {
       onLongPress: onLongPress,
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: const Color(0xFF16162A),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.05),
-            width: 1,
-          ),
+          borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 8,
+              blurRadius: 6,
               offset: const Offset(0, 2),
             ),
           ],
@@ -416,38 +412,25 @@ class _AminoCommunityCard extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // ── Imagem de capa ──
-            Stack(
-              children: [
-                // Imagem de capa com altura fixa
-                SizedBox(
-                  height: 120,
-                  width: double.infinity,
-                  child: community.bannerUrl != null
+            // ── Imagem de capa com ícone e nome ──
+            AspectRatio(
+              aspectRatio: 0.82,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // Imagem de capa (preenche todo o card)
+                  community.bannerUrl != null
                       ? CachedNetworkImage(
                           imageUrl: community.bannerUrl!,
                           fit: BoxFit.cover,
                           memCacheWidth: 400,
-                          memCacheHeight: 240,
+                          memCacheHeight: 500,
                           placeholder: (_, __) => Container(
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
-                                colors: [
-                                  color,
-                                  color.withValues(alpha: 0.6),
-                                ],
-                              ),
-                            ),
-                            child: Center(
-                              child: SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white.withValues(alpha: 0.3),
-                                  strokeWidth: 2,
-                                ),
+                                colors: [color, color.withValues(alpha: 0.5)],
                               ),
                             ),
                           ),
@@ -456,16 +439,13 @@ class _AminoCommunityCard extends StatelessWidget {
                               gradient: LinearGradient(
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
-                                colors: [
-                                  color,
-                                  color.withValues(alpha: 0.6),
-                                ],
+                                colors: [color, color.withValues(alpha: 0.5)],
                               ),
                             ),
                             child: Center(
                               child: Icon(Icons.groups_rounded,
                                   color: Colors.white.withValues(alpha: 0.3),
-                                  size: 36),
+                                  size: 32),
                             ),
                           ),
                         )
@@ -474,144 +454,116 @@ class _AminoCommunityCard extends StatelessWidget {
                             gradient: LinearGradient(
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
-                              colors: [
-                                color,
-                                color.withValues(alpha: 0.6),
-                              ],
+                              colors: [color, color.withValues(alpha: 0.5)],
                             ),
                           ),
                           child: Center(
                             child: Icon(Icons.groups_rounded,
                                 color: Colors.white.withValues(alpha: 0.3),
-                                size: 36),
+                                size: 32),
                           ),
                         ),
-                ),
 
-                // Gradiente escuro na parte inferior da imagem
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: 60,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          const Color(0xFF16162A),
+                  // Gradiente escuro na parte inferior
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: 70,
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Color(0xCC000000),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Ícone pequeno — canto superior esquerdo
+                  Positioned(
+                    top: 6,
+                    left: 6,
+                    child: Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(7),
+                        border: Border.all(color: color, width: 2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.5),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                          ),
                         ],
                       ),
-                    ),
-                  ),
-                ),
-
-                // Badge CHECK IN — canto superior direito (estilo Amino)
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: AppTheme.aminoOrange,
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.aminoOrange.withValues(alpha: 0.4),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: const Text(
-                      'CHECK IN',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 8,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Ícone + Nome + Members — parte inferior
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-                    child: Row(
-                      children: [
-                        // Ícone da comunidade
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            color: AppTheme.cardColor,
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.1),
-                              width: 1,
+                      clipBehavior: Clip.antiAlias,
+                      child: community.iconUrl != null
+                          ? CachedNetworkImage(
+                              imageUrl: community.iconUrl!,
+                              fit: BoxFit.cover,
+                              memCacheWidth: 56,
+                              memCacheHeight: 56,
+                            )
+                          : Container(
+                              color: AppTheme.cardColor,
+                              child: Icon(Icons.groups_rounded,
+                                  color: AppTheme.textHint, size: 14),
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.4),
-                                blurRadius: 4,
-                                offset: const Offset(0, 1),
-                              ),
-                            ],
-                          ),
-                          clipBehavior: Clip.antiAlias,
-                          child: community.iconUrl != null
-                              ? CachedNetworkImage(
-                                  imageUrl: community.iconUrl!,
-                                  fit: BoxFit.cover,
-                                  memCacheWidth: 80,
-                                  memCacheHeight: 80,
-                                )
-                              : Icon(Icons.groups_rounded,
-                                  color: AppTheme.textHint, size: 20),
-                        ),
-                        const SizedBox(width: 8),
-                        // Nome e membros
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                community.name,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  height: 1.2,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                '${_formatCount(community.membersCount)} members',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.5),
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
                     ),
                   ),
+
+                  // Nome da comunidade — parte inferior esquerda
+                  Positioned(
+                    bottom: 6,
+                    left: 8,
+                    right: 8,
+                    child: Text(
+                      community.name,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        height: 1.2,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black,
+                            blurRadius: 6,
+                          ),
+                          Shadow(
+                            color: Colors.black,
+                            blurRadius: 3,
+                          ),
+                        ],
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // ── Barra CHECK IN verde na base ──
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              color: AppTheme.primaryColor,
+              child: const Text(
+                'CHECK IN',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.5,
                 ),
-              ],
+                textAlign: TextAlign.center,
+              ),
             ),
           ],
         ),
