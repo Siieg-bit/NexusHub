@@ -646,9 +646,3 @@ class _RecommendedCommunityTile extends StatelessWidget {
   }
 }
 
-class _CategoryItem {
-  final String name;
-  final IconData icon;
-  final Color color;
-  const _CategoryItem(this.name, this.icon, this.color);
-}

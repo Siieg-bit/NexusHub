@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
-import '../../../core/utils/helpers.dart';
 
 /// Carteira / Minha Carteira — Estilo Amino original.
 /// Header azul celeste brilhante com moeda dourada, corpo claro/branco.

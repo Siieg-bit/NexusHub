@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../config/app_theme.dart';
 import '../../../core/services/iap_service.dart';
 import '../../../core/services/ad_service.dart';
 import '../../../core/services/supabase_service.dart';

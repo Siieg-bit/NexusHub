@@ -648,7 +648,7 @@ class _AminoChatTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    chatRoom.lastMessage ?? 'Sem mensagens',
+                    chatRoom.lastMessagePreview ?? 'Sem mensagens',
                     style: TextStyle(
                       color: hasUnread
                           ? AppTheme.textSecondary
