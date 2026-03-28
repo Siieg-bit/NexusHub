@@ -149,7 +149,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
                 // Header
                 const Padding(
                   padding: EdgeInsets.all(12),
-                  child: Text('Stickers',
+                  child: Text('Figurinhas',
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                 ),

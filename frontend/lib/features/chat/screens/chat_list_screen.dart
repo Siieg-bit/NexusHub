@@ -111,7 +111,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                   // SIDEBAR ESQUERDA — Estilo Amino
                   // ════════════════════════════════════════════════
                   Container(
-                    width: 56,
+                    width: 64,
                     decoration: BoxDecoration(
                       color: AppTheme.surfaceColor.withValues(alpha: 0.5),
                       border: Border(
@@ -470,48 +470,63 @@ class _SidebarIcon extends StatelessWidget {
       onTap: onTap,
       child: Tooltip(
         message: tooltip,
-        child: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: isSelected
-                ? AppTheme.accentColor.withValues(alpha: 0.15)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Icon(
-                icon,
-                color: isSelected ? AppTheme.accentColor : AppTheme.textHint,
-                size: 22,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? AppTheme.accentColor.withValues(alpha: 0.15)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(12),
               ),
-              if (badgeCount > 0)
-                Positioned(
-                  top: 4,
-                  right: 4,
-                  child: Container(
-                    width: 14,
-                    height: 14,
-                    decoration: const BoxDecoration(
-                      color: AppTheme.aminoRed,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Text(
-                        badgeCount > 9 ? '9+' : badgeCount.toString(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 8,
-                          fontWeight: FontWeight.w700,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Icon(
+                    icon,
+                    color: isSelected ? AppTheme.accentColor : AppTheme.textHint,
+                    size: 22,
+                  ),
+                  if (badgeCount > 0)
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: Container(
+                        width: 14,
+                        height: 14,
+                        decoration: const BoxDecoration(
+                          color: AppTheme.aminoRed,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Text(
+                            badgeCount > 9 ? '9+' : badgeCount.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ),
-            ],
-          ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              tooltip,
+              style: TextStyle(
+                color: isSelected ? AppTheme.accentColor : AppTheme.textHint,
+                fontSize: 9,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ),
       ),
     );

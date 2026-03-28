@@ -738,7 +738,7 @@ class _LiveChatroomsSectionState extends State<_LiveChatroomsSection> {
                                     ),
                                   ),
                                   const SizedBox(width: 3),
-                                  const Text('Live',
+                                  const Text('Ao Vivo',
                                       style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 8,
@@ -818,7 +818,7 @@ class _GuidelinesTab extends StatelessWidget {
             Text(
               community.description.isNotEmpty
                   ? community.description
-                  : 'No guidelines have been set for this community yet.',
+                  : 'Nenhuma diretriz foi definida para esta comunidade ainda.',
               style: TextStyle(
                 color: Colors.grey[300],
                 fontSize: 13,
@@ -1044,7 +1044,7 @@ class _WikiTabState extends State<_WikiTab> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                entry['title'] as String? ?? 'Wiki Entry',
+                                entry['title'] as String? ?? 'Entrada Wiki',
                                 style: const TextStyle(
                                     fontWeight: FontWeight.w600,
                                     fontSize: 14,

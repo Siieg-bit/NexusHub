@@ -11,7 +11,7 @@ class PostModel {
   final String? title;
   final String content;
   final String?
-      mediaUrl; // era media_urls (array) → agora media_url (single) + media_list
+      mediaUrl; // campo virtual derivado de media_list (não existe no DB)
   final List<dynamic> mediaList; // JSONB array de mídias adicionais
   final String? coverImageUrl;
   final String? backgroundUrl;
@@ -81,7 +81,11 @@ class PostModel {
       type: json['type'] as String? ?? 'normal',
       title: json['title'] as String?,
       content: json['content'] as String? ?? '',
-      mediaUrl: json['media_url'] as String?,
+      mediaUrl: (json['media_list'] is List && (json['media_list'] as List).isNotEmpty)
+          ? ((json['media_list'] as List).first is Map
+              ? (json['media_list'] as List).first['url'] as String?
+              : (json['media_list'] as List).first as String?)
+          : json['cover_image_url'] as String?,
       mediaList: json['media_list'] as List<dynamic>? ?? [],
       coverImageUrl: json['cover_image_url'] as String?,
       backgroundUrl: json['background_url'] as String?,
@@ -126,7 +130,8 @@ class PostModel {
       'type': type,
       'title': title,
       'content': content,
-      'media_url': mediaUrl,
+      'media_list': mediaUrl != null ? [{'url': mediaUrl, 'type': 'image'}] : [],
+      'cover_image_url': mediaUrl,
       'tags': tags,
       if (pollData != null) 'poll_data': pollData,
       if (quizData != null) 'quiz_data': quizData,

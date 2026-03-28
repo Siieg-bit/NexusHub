@@ -25,35 +25,35 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
 
   static const _interestCategories = [
     _InterestItem(
-        'Anime & Manga', Icons.movie_filter_rounded, Color(0xFFE91E63)),
+        'Anime & Mangá', Icons.movie_filter_rounded, Color(0xFFE91E63)),
     _InterestItem('K-Pop', Icons.music_note_rounded, Color(0xFF9C27B0)),
-    _InterestItem('Gaming', Icons.sports_esports_rounded, Color(0xFF4CAF50)),
-    _InterestItem('Art & Design', Icons.palette_rounded, Color(0xFFFF9800)),
-    _InterestItem('Fashion', Icons.checkroom_rounded, Color(0xFFE040FB)),
+    _InterestItem('Jogos', Icons.sports_esports_rounded, Color(0xFF4CAF50)),
+    _InterestItem('Arte & Design', Icons.palette_rounded, Color(0xFFFF9800)),
+    _InterestItem('Moda', Icons.checkroom_rounded, Color(0xFFE040FB)),
     _InterestItem(
-        'Books & Writing', Icons.menu_book_rounded, Color(0xFF795548)),
-    _InterestItem('Movies & TV', Icons.theaters_rounded, Color(0xFFF44336)),
-    _InterestItem('Music', Icons.headphones_rounded, Color(0xFF2196F3)),
-    _InterestItem('Photography', Icons.camera_alt_rounded, Color(0xFF607D8B)),
-    _InterestItem('Science', Icons.science_rounded, Color(0xFF00BCD4)),
-    _InterestItem('Sports', Icons.fitness_center_rounded, Color(0xFFFF5722)),
-    _InterestItem('Technology', Icons.computer_rounded, Color(0xFF3F51B5)),
+        'Livros & Escrita', Icons.menu_book_rounded, Color(0xFF795548)),
+    _InterestItem('Filmes & Séries', Icons.theaters_rounded, Color(0xFFF44336)),
+    _InterestItem('Música', Icons.headphones_rounded, Color(0xFF2196F3)),
+    _InterestItem('Fotografia', Icons.camera_alt_rounded, Color(0xFF607D8B)),
+    _InterestItem('Ciência', Icons.science_rounded, Color(0xFF00BCD4)),
+    _InterestItem('Esportes', Icons.fitness_center_rounded, Color(0xFFFF5722)),
+    _InterestItem('Tecnologia', Icons.computer_rounded, Color(0xFF3F51B5)),
     _InterestItem(
         'Cosplay', Icons.face_retouching_natural_rounded, Color(0xFFFF4081)),
     _InterestItem(
-        'Spirituality', Icons.self_improvement_rounded, Color(0xFF8BC34A)),
+        'Espiritualidade', Icons.self_improvement_rounded, Color(0xFF8BC34A)),
     _InterestItem(
-        'Food & Cooking', Icons.restaurant_rounded, Color(0xFFFFEB3B)),
-    _InterestItem('Pets & Animals', Icons.pets_rounded, Color(0xFF009688)),
-    _InterestItem('Travel', Icons.flight_rounded, Color(0xFF03A9F4)),
-    _InterestItem('Horror', Icons.dark_mode_rounded, Color(0xFF424242)),
+        'Culinária', Icons.restaurant_rounded, Color(0xFFFFEB3B)),
+    _InterestItem('Pets & Animais', Icons.pets_rounded, Color(0xFF009688)),
+    _InterestItem('Viagem', Icons.flight_rounded, Color(0xFF03A9F4)),
+    _InterestItem('Terror', Icons.dark_mode_rounded, Color(0xFF424242)),
     _InterestItem('Memes & Humor', Icons.sentiment_very_satisfied_rounded,
         Color(0xFFFFC107)),
-    _InterestItem('Languages', Icons.translate_rounded, Color(0xFF673AB7)),
-    _InterestItem('DIY & Crafts', Icons.handyman_rounded, Color(0xFFCDDC39)),
-    _InterestItem('Comics', Icons.auto_stories_rounded, Color(0xFFFF6F00)),
-    _InterestItem('Dance', Icons.nightlife_rounded, Color(0xFFD500F9)),
-    _InterestItem('Nature', Icons.park_rounded, Color(0xFF4CAF50)),
+    _InterestItem('Idiomas', Icons.translate_rounded, Color(0xFF673AB7)),
+    _InterestItem('Faça Você Mesmo', Icons.handyman_rounded, Color(0xFFCDDC39)),
+    _InterestItem('Quadrinhos', Icons.auto_stories_rounded, Color(0xFFFF6F00)),
+    _InterestItem('Dança', Icons.nightlife_rounded, Color(0xFFD500F9)),
+    _InterestItem('Natureza', Icons.park_rounded, Color(0xFF4CAF50)),
   ];
 
   void _nextStep() {

@@ -376,7 +376,7 @@ class StreakBar extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               Text(
-                'Check-in Streak',
+                'Sequência de Check-in',
                 style: TextStyle(
                   color: currentStreak > 0
                       ? AppTheme.textPrimary
@@ -388,7 +388,7 @@ class StreakBar extends StatelessWidget {
               const Spacer(),
               if (maxStreak > 0)
                 Text(
-                  'Record: $maxStreak days',
+                  'Recorde: $maxStreak dias',
                   style: TextStyle(
                     color: Colors.grey[600],
                     fontSize: 11,
@@ -456,7 +456,7 @@ class StreakBar extends StatelessWidget {
                     size: 14, color: AppTheme.warningColor),
                 const SizedBox(width: 4),
                 Text(
-                  '$currentStreak day${currentStreak > 1 ? 's' : ''} in a row',
+                  '$currentStreak dia${currentStreak > 1 ? 's' : ''} seguido${currentStreak > 1 ? 's' : ''}',
                   style: const TextStyle(
                     color: AppTheme.warningColor,
                     fontWeight: FontWeight.bold,
@@ -480,7 +480,7 @@ class StreakBar extends StatelessWidget {
   }
 
   String _dayLabel(int index) {
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const days = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
     final today = DateTime.now().weekday - 1; // 0 = Monday
     final dayIndex = (today - (6 - index)) % 7;
     return days[dayIndex < 0 ? dayIndex + 7 : dayIndex];

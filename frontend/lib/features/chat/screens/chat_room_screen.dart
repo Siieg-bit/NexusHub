@@ -451,7 +451,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     Expanded(
                       child: Text(
                         _pinnedMessages.first['content'] as String? ??
-                            'Pinned message',
+                            'Mensagem fixada',
                         style: TextStyle(
                             fontSize: 12, color: Colors.grey[400]),
                         maxLines: 1,
@@ -489,7 +489,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                   size: 32, color: Colors.grey[700]),
                             ),
                             const SizedBox(height: 16),
-                            Text('No messages yet',
+                            Text('Nenhuma mensagem ainda',
                                 style: TextStyle(
                                     color: Colors.grey[400],
                                     fontSize: 15,
@@ -876,7 +876,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           actions: [
             TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: Text('Cancel',
+                child: Text('Cancelar',
                     style: TextStyle(color: Colors.grey[500]))),
             ElevatedButton(
               onPressed: () {
@@ -898,7 +898,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
               ),
-              child: const Text('Send',
+              child: const Text('Enviar',
                   style: TextStyle(
                       color: Colors.white, fontWeight: FontWeight.w700)),
             ),
@@ -1094,7 +1094,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const Text('Pinned Messages',
+            const Text('Mensagens Fixadas',
                 style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 16,

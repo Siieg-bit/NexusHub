@@ -140,8 +140,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             ? _titleController.text.trim()
             : null,
         'content': _contentController.text.trim(),
-        'media_url': _mediaUrls.isNotEmpty ? _mediaUrls.first : null,
-        'media_list': _mediaUrls.length > 1 ? _mediaUrls.sublist(1) : [],
+        'media_list': _mediaUrls.isNotEmpty
+            ? _mediaUrls.map((url) => {'url': url, 'type': 'image'}).toList()
+            : [],
         'cover_image_url': _coverImageUrl,
         'external_url': _linkController.text.trim().isNotEmpty
             ? _linkController.text.trim()
@@ -461,7 +462,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                         .copyWith(dividerColor: Colors.transparent),
                     child: ExpansionTile(
                       tilePadding: EdgeInsets.zero,
-                      title: Text('Advanced Options',
+                      title: Text('Opções Avançadas',
                           style: TextStyle(
                               fontSize: 13,
                               color: Colors.grey[500],

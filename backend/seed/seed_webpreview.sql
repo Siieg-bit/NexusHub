@@ -99,7 +99,7 @@ UPDATE public.profiles SET
   amino_id = 'nexususer',
   icon_url = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop',
   banner_url = 'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=600&h=400&fit=crop',
-  bio = 'Welcome to my profile! I love anime, gaming and art. Always looking for new friends and communities to join!',
+  bio = 'Bem-vindo ao meu perfil! Amo anime, jogos e arte. Sempre procurando novos amigos e comunidades!',
   level = 16, reputation = 48914, coins = 68,
   consecutive_checkin_days = 318,
   followers_count = 30190, following_count = 24,
@@ -110,7 +110,7 @@ UPDATE public.profiles SET
   nickname = 'OtakuMaster',
   amino_id = 'otakumaster',
   icon_url = 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=100&h=100&fit=crop',
-  bio = 'Anime reviewer and community leader since 2018!',
+  bio = 'Reviewer de anime e líder de comunidade desde 2018!',
   level = 32, reputation = 125600, coins = 450,
   consecutive_checkin_days = 200,
   followers_count = 45000, following_count = 120,
@@ -121,7 +121,7 @@ UPDATE public.profiles SET
   nickname = 'ProGamer99',
   amino_id = 'progamer99',
   icon_url = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop',
-  bio = 'Competitive Valorant player. Also love RPGs and retro games.',
+  bio = 'Jogador competitivo de Valorant. Também amo RPGs e jogos retrô.',
   level = 28, reputation = 89400, coins = 320,
   consecutive_checkin_days = 120,
   followers_count = 15600, following_count = 18,
@@ -132,7 +132,7 @@ UPDATE public.profiles SET
   nickname = 'ArtistaSoul',
   amino_id = 'artistasoul',
   icon_url = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop',
-  bio = 'Digital artist and illustrator. Commissions open!',
+  bio = 'Artista digital e ilustradora. Comissões abertas!',
   level = 19, reputation = 34200, coins = 150,
   consecutive_checkin_days = 60,
   followers_count = 8900, following_count = 45,
@@ -143,7 +143,7 @@ UPDATE public.profiles SET
   nickname = 'MelodyKing',
   amino_id = 'melodyking',
   icon_url = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop',
-  bio = 'K-Pop fan and music enthusiast. BTS ARMY!',
+  bio = 'Fã de K-Pop e entusiasta de música. BTS ARMY!',
   level = 15, reputation = 21300, coins = 200,
   consecutive_checkin_days = 45,
   followers_count = 5600, following_count = 90,
@@ -154,7 +154,7 @@ UPDATE public.profiles SET
   nickname = 'SakuraFan',
   amino_id = 'sakurafan',
   icon_url = 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop',
-  bio = 'Anime fan art creator. Studio Ghibli is life!',
+  bio = 'Criadora de fan art de anime. Studio Ghibli é vida!',
   level = 21, reputation = 67800, coins = 280,
   consecutive_checkin_days = 90,
   followers_count = 12000, following_count = 35,
@@ -165,7 +165,7 @@ UPDATE public.profiles SET
   nickname = 'RetroGamer',
   amino_id = 'retrogamer',
   icon_url = 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop',
-  bio = 'SNES collector. 500+ retro games in my collection.',
+  bio = 'Colecionador de SNES. 500+ jogos retrô na minha coleção.',
   level = 24, reputation = 45600, coins = 180,
   consecutive_checkin_days = 30,
   followers_count = 7800, following_count = 25,
@@ -176,7 +176,7 @@ UPDATE public.profiles SET
   nickname = 'DarkWriter',
   amino_id = 'darkwriter',
   icon_url = 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop',
-  bio = 'Horror writer and movie collector. 500+ movies watched.',
+  bio = 'Escritor de terror e colecionador de filmes. 500+ filmes assistidos.',
   level = 18, reputation = 28900, coins = 100,
   consecutive_checkin_days = 30,
   followers_count = 3400, following_count = 15,
@@ -187,7 +187,7 @@ UPDATE public.profiles SET
   nickname = 'CosplayQueen',
   amino_id = 'cosplayqueen',
   icon_url = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop',
-  bio = 'Professional cosplayer. 100+ cosplays and counting!',
+  bio = 'Cosplayer profissional. 100+ cosplays e contando!',
   level = 26, reputation = 56700, coins = 350,
   consecutive_checkin_days = 15,
   followers_count = 22000, following_count = 50,
@@ -199,21 +199,21 @@ WHERE id = v_u9;
 -- ============================================================================
 
 INSERT INTO public.communities (id, name, tagline, description, icon_url, banner_url, endpoint, agent_id, primary_language, category, members_count, community_heat, listed_status) VALUES
-  (v_c1,  'Anime Amino',       'The biggest anime community!', 'The biggest anime community! Share your love for anime and manga.', 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600&h=300&fit=crop', 'anime',       v_u2, 'en', 'anime',    3253749, 95.0, 'listed'),
-  (v_c2,  'K-Pop Amino',       'For all K-Pop fans!',          'For all K-Pop fans! BTS, BLACKPINK, Stray Kids and more.',         'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=300&fit=crop', 'k-pop',       v_u5, 'en', 'music',    2185430, 88.0, 'listed'),
-  (v_c3,  'Gaming Amino',      'The ultimate gaming community', 'The ultimate gaming community. PC, Console, Mobile.',              'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&h=300&fit=crop', 'gaming',      v_u3, 'en', 'gaming',   2134500, 92.0, 'listed'),
-  (v_c4,  'Art Amino',         'Share your art!',              'Share your art, get feedback, and improve your skills!',            'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=600&h=300&fit=crop', 'art',         v_u4, 'en', 'art',      1498200, 78.0, 'listed'),
-  (v_c5,  'Horror Amino',      'For horror fans!',             'For horror fans! Movies, books, games, creepypasta.',              'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=600&h=300&fit=crop', 'horror',      v_u8, 'en', 'movies',    867800, 65.0, 'listed'),
-  (v_c6,  'Pokemon Amino',     'Gotta catch em all!',          'Gotta catch em all! The Pokemon community.',                       'https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?w=600&h=300&fit=crop', 'pokemon',     v_u7, 'en', 'gaming',   1512300, 82.0, 'listed'),
-  (v_c7,  'Cosplay Amino',     'Show off your cosplays!',      'Show off your cosplays and get tips!',                             'https://images.unsplash.com/photo-1608889825103-eb5ed706fc64?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1608889825103-eb5ed706fc64?w=600&h=300&fit=crop', 'cosplay',     v_u9, 'en', 'cosplay',   754200, 55.0, 'listed'),
-  (v_c8,  'Books Amino',       'For book lovers!',             'For book lovers! Reviews, recommendations and discussions.',        'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=600&h=300&fit=crop', 'books',       v_u8, 'en', 'books',     543100, 45.0, 'listed'),
-  (v_c9,  'Naruto Amino',      'For all Naruto fans!',         'For all Naruto and Boruto fans!',                                  'https://images.unsplash.com/photo-1601850494422-3cf14624b0b3?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1601850494422-3cf14624b0b3?w=600&h=300&fit=crop', 'naruto',      v_u2, 'en', 'anime',    1456000, 80.0, 'listed'),
-  (v_c10, 'Dragon Ball Amino', 'Kamehameha!',                  'Kamehameha! The Dragon Ball community.',                           'https://images.unsplash.com/photo-1614583225154-5fcdda07019e?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1614583225154-5fcdda07019e?w=600&h=300&fit=crop', 'dragonball',  v_u2, 'en', 'anime',     987000, 70.0, 'listed'),
-  (v_c11, 'One Piece Amino',   'Set sail!',                    'Set sail with the Straw Hat crew!',                                'https://images.unsplash.com/photo-1618336753974-aae8e04506aa?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1618336753974-aae8e04506aa?w=600&h=300&fit=crop', 'onepiece',    v_u6, 'en', 'anime',    1890000, 85.0, 'listed'),
-  (v_c12, 'Minecraft Amino',   'Build anything!',              'Build, explore, survive. The Minecraft community.',                 'https://images.unsplash.com/photo-1553481187-be93c21490a9?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1553481187-be93c21490a9?w=600&h=300&fit=crop', 'minecraft',   v_u7, 'en', 'gaming',    890000, 72.0, 'listed'),
-  (v_c13, 'J-Rock Amino',      'Japanese Rock!',               'Japanese Rock and Visual Kei community.',                          'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&h=300&fit=crop', 'jrock',       v_u5, 'en', 'music',     234000, 35.0, 'listed'),
-  (v_c14, 'Digital Art Amino',  'All digital art!',             'Procreate, Photoshop, Clip Studio - all digital art!',             'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=600&h=300&fit=crop', 'digitalart',  v_u4, 'en', 'art',       567000, 50.0, 'listed'),
-  (v_c15, 'Marvel Amino',      'Everything Marvel!',            'Marvel Comics, MCU, and everything Marvel!',                       'https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=600&h=300&fit=crop', 'marvel',      v_u8, 'en', 'movies',   1234000, 75.0, 'listed');
+  (v_c1,  'Anime Amino',       'A maior comunidade de anime!', 'A maior comunidade de anime! Compartilhe seu amor por anime e mangá.', 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600&h=300&fit=crop', 'anime',       v_u2, 'en', 'anime',    3253749, 95.0, 'listed'),
+  (v_c2,  'K-Pop Amino',       'Para todos os fãs de K-Pop!',    'Para todos os fãs de K-Pop! BTS, BLACKPINK, Stray Kids e mais.',         'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=300&fit=crop', 'k-pop',       v_u5, 'en', 'music',    2185430, 88.0, 'listed'),
+  (v_c3,  'Gaming Amino',      'A comunidade gamer definitiva', 'A comunidade gamer definitiva. PC, Console, Mobile.',              'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&h=300&fit=crop', 'gaming',      v_u3, 'en', 'gaming',   2134500, 92.0, 'listed'),
+  (v_c4,  'Art Amino',         'Compartilhe sua arte!',        'Compartilhe sua arte, receba feedback e melhore suas habilidades!',            'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=600&h=300&fit=crop', 'art',         v_u4, 'en', 'art',      1498200, 78.0, 'listed'),
+  (v_c5,  'Horror Amino',      'Para fãs de terror!',            'Para fãs de terror! Filmes, livros, jogos, creepypasta.',              'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=600&h=300&fit=crop', 'horror',      v_u8, 'en', 'movies',    867800, 65.0, 'listed'),
+  (v_c6,  'Pokemon Amino',     'Temos que pegar todos!',       'Temos que pegar todos! A comunidade Pokémon.',                       'https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?w=600&h=300&fit=crop', 'pokemon',     v_u7, 'en', 'gaming',   1512300, 82.0, 'listed'),
+  (v_c7,  'Cosplay Amino',     'Mostre seus cosplays!',        'Mostre seus cosplays e receba dicas!',                             'https://images.unsplash.com/photo-1608889825103-eb5ed706fc64?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1608889825103-eb5ed706fc64?w=600&h=300&fit=crop', 'cosplay',     v_u9, 'en', 'cosplay',   754200, 55.0, 'listed'),
+  (v_c8,  'Books Amino',       'Para amantes de livros!',      'Para amantes de livros! Resenhas, recomendações e discussões.',        'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=600&h=300&fit=crop', 'books',       v_u8, 'en', 'books',     543100, 45.0, 'listed'),
+  (v_c9,  'Naruto Amino',      'Para todos os fãs de Naruto!',   'Para todos os fãs de Naruto e Boruto!',                                  'https://images.unsplash.com/photo-1601850494422-3cf14624b0b3?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1601850494422-3cf14624b0b3?w=600&h=300&fit=crop', 'naruto',      v_u2, 'en', 'anime',    1456000, 80.0, 'listed'),
+  (v_c10, 'Dragon Ball Amino', 'Kamehameha!',                  'Kamehameha! A comunidade Dragon Ball.',                           'https://images.unsplash.com/photo-1614583225154-5fcdda07019e?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1614583225154-5fcdda07019e?w=600&h=300&fit=crop', 'dragonball',  v_u2, 'en', 'anime',     987000, 70.0, 'listed'),
+  (v_c11, 'One Piece Amino',   'Zarpar!',                      'Zarpe com a tripulação do Chapéu de Palha!',                                'https://images.unsplash.com/photo-1618336753974-aae8e04506aa?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1618336753974-aae8e04506aa?w=600&h=300&fit=crop', 'onepiece',    v_u6, 'en', 'anime',    1890000, 85.0, 'listed'),
+  (v_c12, 'Minecraft Amino',   'Construa qualquer coisa!',     'Construa, explore, sobreviva. A comunidade Minecraft.',                 'https://images.unsplash.com/photo-1553481187-be93c21490a9?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1553481187-be93c21490a9?w=600&h=300&fit=crop', 'minecraft',   v_u7, 'en', 'gaming',    890000, 72.0, 'listed'),
+  (v_c13, 'J-Rock Amino',      'Rock Japonês!',                  'Comunidade de Rock Japonês e Visual Kei.',                          'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&h=300&fit=crop', 'jrock',       v_u5, 'en', 'music',     234000, 35.0, 'listed'),
+  (v_c14, 'Digital Art Amino',  'Toda arte digital!',           'Procreate, Photoshop, Clip Studio - toda arte digital!',             'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=600&h=300&fit=crop', 'digitalart',  v_u4, 'en', 'art',       567000, 50.0, 'listed'),
+  (v_c15, 'Marvel Amino',      'Tudo sobre Marvel!',            'Marvel Comics, MCU e tudo sobre Marvel!',                       'https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=200&h=200&fit=crop', 'https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=600&h=300&fit=crop', 'marvel',      v_u8, 'en', 'movies',   1234000, 75.0, 'listed');
 
 -- ============================================================================
 -- PASSO 3: INSERIR MEMBROS DAS COMUNIDADES (com roles e perfis locais)
@@ -349,17 +349,17 @@ INSERT INTO public.poll_options (id, post_id, text, votes_count, sort_order) VAL
   (v_po1, v_p4, 'BLACKPINK - Born Pink II', 145, 1),
   (v_po2, v_p4, 'BTS - Beyond',             98,  2),
   (v_po3, v_p4, 'Stray Kids - MAXIDENT 2',  45,  3),
-  (v_po4, v_p4, 'Other',                    24,  4);
+  (v_po4, v_p4, 'Outro',                    24,  4);
 
 -- ============================================================================
 -- PASSO 6: INSERIR COMENTÁRIOS (no post p1 - Top 10 Animes)
 -- ============================================================================
 
 INSERT INTO public.comments (id, author_id, post_id, content, likes_count, created_at) VALUES
-  (v_cm1, v_u3, v_p1, 'Great list! I would add Solo Leveling Season 2 though.', 23, '2026-03-25T15:00:00Z'),
-  (v_cm2, v_u4, v_p1, 'The animation quality this season is insane!', 15, '2026-03-25T15:30:00Z'),
-  (v_cm3, v_u6, v_p1, 'Where is the romance genre? There are some great ones too!', 8, '2026-03-25T16:00:00Z'),
-  (v_cm4, v_u7, v_p1, 'Solid picks! I would swap #7 and #5 personally.', 5, '2026-03-25T17:00:00Z');
+  (v_cm1, v_u3, v_p1, 'Ótima lista! Mas eu adicionaria Solo Leveling Temporada 2.', 23, '2026-03-25T15:00:00Z'),
+  (v_cm2, v_u4, v_p1, 'A qualidade da animação nessa temporada está insana!', 15, '2026-03-25T15:30:00Z'),
+  (v_cm3, v_u6, v_p1, 'Cadê o gênero romance? Tem uns ótimos também!', 8, '2026-03-25T16:00:00Z'),
+  (v_cm4, v_u7, v_p1, 'Boas escolhas! Eu trocaria o #7 e o #5 pessoalmente.', 5, '2026-03-25T17:00:00Z');
 
 -- ============================================================================
 -- PASSO 7: INSERIR LIKES (para simular os isLiked do web-preview)
@@ -378,21 +378,21 @@ INSERT INTO public.likes (user_id, comment_id) VALUES
 -- ============================================================================
 
 INSERT INTO public.chat_threads (id, community_id, type, title, icon_url, host_id, members_count, last_message_preview, last_message_author, last_message_at) VALUES
-  (v_ch1, v_c1, 'public', 'Anime General Chat', NULL, v_u2, 1245, 'Anyone watching the new season?', 'OtakuMaster', NOW() - INTERVAL '2 minutes'),
-  (v_ch2, v_c3, 'public', 'Gaming Lounge', NULL, v_u3, 890, 'GG everyone! That was intense', 'ProGamer99', NOW() - INTERVAL '5 minutes'),
-  (v_ch3, v_c2, 'public', 'K-Pop Fan Chat', NULL, v_u5, 2100, 'Did you see the new MV?!', 'MelodyKing', NOW() - INTERVAL '15 minutes'),
-  (v_ch4, v_c4, 'public', 'Art Critique Room', NULL, v_u4, 340, 'Love the color palette!', 'ArtistaSoul', NOW() - INTERVAL '1 hour'),
-  (v_ch5, v_c5, 'public', 'Horror Stories', NULL, v_u8, 210, 'That ending was terrifying...', 'DarkWriter', NOW() - INTERVAL '30 minutes'),
-  (v_ch6, v_c1, 'dm', 'Meggie3524', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop', v_u9, 2, 'I want to know how to appeal...', 'Meggie3524', NOW() - INTERVAL '2 minutes'),
-  (v_ch7, v_c3, 'dm', 'De Boeurs', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop', v_u3, 2, 'Want to play ranked later?', 'De Boeurs', NOW() - INTERVAL '1 hour'),
-  (v_ch8, v_c1, 'public', 'Anime Theatre', NULL, v_u6, 525, 'Streaming starts at 8pm!', 'SakuraFan', NOW() - INTERVAL '10 minutes'),
-  (v_ch9, v_c9, 'public', 'Naruto Discussions', NULL, v_u2, 780, 'Boruto manga is getting better', 'HokageFan', NOW() - INTERVAL '20 minutes');
+  (v_ch1, v_c1, 'public', 'Chat Geral de Anime', NULL, v_u2, 1245, 'Alguém assistindo a nova temporada?', 'OtakuMaster', NOW() - INTERVAL '2 minutes'),
+  (v_ch2, v_c3, 'public', 'Sala de Jogos', NULL, v_u3, 890, 'GG galera! Isso foi intenso', 'ProGamer99', NOW() - INTERVAL '5 minutes'),
+  (v_ch3, v_c2, 'public', 'Chat de Fãs de K-Pop', NULL, v_u5, 2100, 'Viram o novo MV?!', 'MelodyKing', NOW() - INTERVAL '15 minutes'),
+  (v_ch4, v_c4, 'public', 'Sala de Crítica de Arte', NULL, v_u4, 340, 'Amei a paleta de cores!', 'ArtistaSoul', NOW() - INTERVAL '1 hour'),
+  (v_ch5, v_c5, 'public', 'Histórias de Terror', NULL, v_u8, 210, 'Aquele final foi aterrorizante...', 'DarkWriter', NOW() - INTERVAL '30 minutes'),
+  (v_ch6, v_c1, 'dm', 'Meggie3524', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop', v_u9, 2, 'Quero saber como apelar...', 'Meggie3524', NOW() - INTERVAL '2 minutes'),
+  (v_ch7, v_c3, 'dm', 'De Boeurs', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop', v_u3, 2, 'Quer jogar ranqueada depois?', 'De Boeurs', NOW() - INTERVAL '1 hour'),
+  (v_ch8, v_c1, 'public', 'Teatro de Anime', NULL, v_u6, 525, 'Streaming começa às 20h!', 'SakuraFan', NOW() - INTERVAL '10 minutes'),
+  (v_ch9, v_c9, 'public', 'Discussões sobre Naruto', NULL, v_u2, 780, 'O mangá do Boruto está melhorando', 'HokageFan', NOW() - INTERVAL '20 minutes');
 
 -- ============================================================================
 -- PASSO 9: INSERIR MEMBROS DOS CHATS
 -- ============================================================================
 
--- Anime General Chat (ch1) - vários membros
+-- Chat Geral de Anime (ch1) - vários membros
 INSERT INTO public.chat_members (thread_id, user_id, unread_count) VALUES
   (v_ch1, v_u1, 3), (v_ch1, v_u2, 0), (v_ch1, v_u3, 0),
   (v_ch1, v_u4, 0), (v_ch1, v_u6, 0), (v_ch1, v_u8, 0);
@@ -421,7 +421,7 @@ INSERT INTO public.chat_members (thread_id, user_id, unread_count) VALUES
 INSERT INTO public.chat_members (thread_id, user_id, unread_count) VALUES
   (v_ch7, v_u1, 0), (v_ch7, v_u3, 0);
 
--- Anime Theatre (ch8)
+-- Teatro de Anime (ch8)
 INSERT INTO public.chat_members (thread_id, user_id, unread_count) VALUES
   (v_ch8, v_u1, 0), (v_ch8, v_u6, 0), (v_ch8, v_u2, 0);
 
@@ -430,32 +430,32 @@ INSERT INTO public.chat_members (thread_id, user_id, unread_count) VALUES
   (v_ch9, v_u1, 5), (v_ch9, v_u2, 0);
 
 -- ============================================================================
--- PASSO 10: INSERIR MENSAGENS DE CHAT (Anime General Chat)
+-- PASSO 10: INSERIR MENSAGENS DE CHAT (Chat Geral de Anime)
 -- ============================================================================
 
 INSERT INTO public.chat_messages (thread_id, author_id, type, content, created_at) VALUES
-  (v_ch1, v_u2, 'system_join', 'Welcome to Anime General Chat! Be respectful and have fun.', NOW() - INTERVAL '3 hours'),
-  (v_ch1, v_u2, 'text', 'Hey everyone! Who is watching the new anime season?', NOW() - INTERVAL '70 minutes'),
-  (v_ch1, v_u6, 'text', 'Me! The new isekai is amazing!', NOW() - INTERVAL '69 minutes'),
-  (v_ch1, v_u3, 'text', 'I prefer the action ones. MAPPA really outdid themselves!', NOW() - INTERVAL '68 minutes'),
-  (v_ch1, v_u4, 'text', 'The art style is incredible. I have been studying their techniques.', NOW() - INTERVAL '67 minutes'),
-  (v_ch1, v_u1, 'text', 'Totally agree! What is everyone top 3 this season?', NOW() - INTERVAL '65 minutes'),
-  (v_ch1, v_u5, 'text', 'Do not forget the OSTs! The music this season is fire!', NOW() - INTERVAL '64 minutes');
+  (v_ch1, v_u2, 'system_join', 'Bem-vindo ao Chat Geral de Anime! Seja respeitoso e divirta-se.', NOW() - INTERVAL '3 hours'),
+  (v_ch1, v_u2, 'text', 'E aí galera! Quem está assistindo a nova temporada de anime?', NOW() - INTERVAL '70 minutes'),
+  (v_ch1, v_u6, 'text', 'Eu! O novo isekai está incrível!', NOW() - INTERVAL '69 minutes'),
+  (v_ch1, v_u3, 'text', 'Eu prefiro os de ação. A MAPPA se superou!', NOW() - INTERVAL '68 minutes'),
+  (v_ch1, v_u4, 'text', 'O estilo de arte é incrível. Tenho estudado as técnicas deles.', NOW() - INTERVAL '67 minutes'),
+  (v_ch1, v_u1, 'text', 'Concordo total! Qual o top 3 de vocês nessa temporada?', NOW() - INTERVAL '65 minutes'),
+  (v_ch1, v_u5, 'text', 'Não esqueçam das OSTs! A música dessa temporada está demais!', NOW() - INTERVAL '64 minutes');
 
 -- ============================================================================
 -- PASSO 11: INSERIR WIKI CATEGORIES E ENTRIES
 -- ============================================================================
 
 INSERT INTO public.wiki_categories (id, community_id, name, sort_order) VALUES
-  (v_wc1, v_c1, 'General', 1),
+  (v_wc1, v_c1, 'Geral', 1),
   (v_wc2, v_c1, 'Rankings', 2),
-  (v_wc3, v_c1, 'Database', 3);
+  (v_wc3, v_c1, 'Banco de Dados', 3);
 
 INSERT INTO public.wiki_entries (id, community_id, author_id, category_id, title, content, cover_image_url, views_count, status) VALUES
-  (v_w1, v_c1, v_u2, v_wc1, 'Getting Started Guide', 'Welcome to Anime Amino! This guide will help you get started...', 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=300&h=200&fit=crop', 12450, 'ok'),
-  (v_w2, v_c1, v_u2, v_wc1, 'Community Rules & Guidelines', 'Please read and follow these rules to keep our community safe...', NULL, 8920, 'ok'),
-  (v_w3, v_c1, v_u6, v_wc2, 'Anime Tier List 2026', 'Our community-voted tier list for the best anime of 2026...', 'https://images.unsplash.com/photo-1618336753974-aae8e04506aa?w=300&h=200&fit=crop', 5670, 'ok'),
-  (v_w4, v_c1, v_u2, v_wc3, 'Character Encyclopedia', 'A comprehensive database of anime characters...', 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=300&h=200&fit=crop', 15230, 'ok');
+  (v_w1, v_c1, v_u2, v_wc1, 'Guia de Início Rápido', 'Bem-vindo ao Anime Amino! Este guia vai te ajudar a começar...', 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=300&h=200&fit=crop', 12450, 'ok'),
+  (v_w2, v_c1, v_u2, v_wc1, 'Regras e Diretrizes da Comunidade', 'Por favor, leia e siga estas regras para manter nossa comunidade segura...', NULL, 8920, 'ok'),
+  (v_w3, v_c1, v_u6, v_wc2, 'Tier List de Anime 2026', 'Nossa tier list votada pela comunidade dos melhores animes de 2026...', 'https://images.unsplash.com/photo-1618336753974-aae8e04506aa?w=300&h=200&fit=crop', 5670, 'ok'),
+  (v_w4, v_c1, v_u2, v_wc3, 'Enciclopédia de Personagens', 'Um banco de dados completo de personagens de anime...', 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=300&h=200&fit=crop', 15230, 'ok');
 
 -- ============================================================================
 -- PASSO 12: INSERIR FOLLOWS (relações de seguir)

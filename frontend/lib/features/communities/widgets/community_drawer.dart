@@ -263,7 +263,7 @@ class CommunityDrawer extends StatelessWidget {
                           right: 0,
                           child: Column(
                             children: [
-                              // Avatar com gradient ring (estilo web-preview)
+                              // Avatar simples sem anel (estilo Amino original)
                               Stack(
                                 alignment: Alignment.center,
                                 children: [
@@ -272,26 +272,14 @@ class CommunityDrawer extends StatelessWidget {
                                     height: 68,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      gradient: const LinearGradient(
-                                        colors: [
-                                          Color(0xFF60A5FA),
-                                          Color(0xFFA855F7),
-                                        ],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
+                                      border: Border.all(
+                                        color: Colors.white.withValues(alpha: 0.3),
+                                        width: 2,
                                       ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: const Color(0xFF60A5FA)
-                                              .withValues(alpha: 0.3),
-                                          blurRadius: 12,
-                                        ),
-                                      ],
                                     ),
-                                    padding: const EdgeInsets.all(2),
                                     child: CircleAvatar(
                                       radius: 32,
-                                      backgroundColor: AppTheme.scaffoldBg,
+                                      backgroundColor: AppTheme.surfaceColor,
                                       backgroundImage:
                                           currentUser?.iconUrl != null
                                               ? CachedNetworkImageProvider(

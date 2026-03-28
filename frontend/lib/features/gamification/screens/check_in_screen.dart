@@ -109,7 +109,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                    'Streak restored! $_consecutiveDays consecutive days.'),
+                    'Streak restaurada! $_consecutiveDays dias consecutivos.'),
                 backgroundColor: AppTheme.primaryColor,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
@@ -209,7 +209,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
               color: AppTheme.textPrimary, size: 20),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Daily Check-in',
+        title: const Text('Check-in Diário',
             style: TextStyle(
                 fontWeight: FontWeight.w800,
                 fontSize: 18,
@@ -249,7 +249,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             // STREAK COUNTER
             // ================================================================
             Text(
-              _checkedIn ? 'Check-in Complete!' : 'Daily Check-in',
+              _checkedIn ? 'Check-in Completo!' : 'Check-in Diário',
               style: const TextStyle(
                   fontWeight: FontWeight.w800,
                   fontSize: 24,
@@ -258,8 +258,8 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             const SizedBox(height: 8),
             Text(
               _checkedIn
-                  ? 'Day $_consecutiveDays streak!'
-                  : 'Check in to earn rewards',
+                  ? 'Dia $_consecutiveDays de sequência!'
+                  : 'Faça check-in para ganhar recompensas',
               style: TextStyle(color: Colors.grey[500], fontSize: 14),
             ),
 
@@ -282,7 +282,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                   final isCompleted = index < _consecutiveDays % 7;
                   final isToday = index == _consecutiveDays % 7;
                   return _DayCircle(
-                    day: ['M', 'T', 'W', 'T', 'F', 'S', 'S'][index],
+                    day: ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'][index],
                     isCompleted: isCompleted,
                     isToday: isToday && !_checkedIn,
                     isTodayCompleted: isToday && _checkedIn,
@@ -313,7 +313,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                 ),
                 child: Column(
                   children: [
-                    const Text('Rewards',
+                    const Text('Recompensas',
                         style: TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 16,
@@ -334,7 +334,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                         ),
                         _RewardItem(
                           icon: Icons.monetization_on_rounded,
-                          label: '+$_coinsEarned Coins',
+                          label: '+$_coinsEarned Moedas',
                           color: AppTheme.warningColor,
                         ),
                       ],
@@ -384,7 +384,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                               Icon(Icons.local_fire_department_rounded,
                                   color: Colors.white, size: 22),
                               SizedBox(width: 8),
-                              Text('Check In',
+                              Text('Fazer Check-in',
                                   style: TextStyle(
                                       fontSize: 17,
                                       fontWeight: FontWeight.w800,
@@ -426,24 +426,24 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('How it works',
+                  const Text('Como funciona',
                       style: TextStyle(
                           fontWeight: FontWeight.w700,
                           color: AppTheme.textPrimary)),
                   const SizedBox(height: 10),
                   _InfoRow(
                       icon: Icons.calendar_today_rounded,
-                      text: 'Check in every day to maintain your streak'),
+                      text: 'Faça check-in todos os dias para manter sua sequência'),
                   _InfoRow(
                       icon: Icons.trending_up_rounded,
                       text:
-                          'Higher streak = more XP and coins'),
+                          'Sequência maior = mais XP e moedas'),
                   _InfoRow(
                       icon: Icons.star_rounded,
-                      text: '7 consecutive days = special bonus!'),
+                      text: '7 dias consecutivos = bônus especial!'),
                   _InfoRow(
                       icon: Icons.warning_amber_rounded,
-                      text: 'Miss a day and streak resets to 1'),
+                      text: 'Perca um dia e a sequência volta para 1'),
                 ],
               ),
             ),
@@ -509,7 +509,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
               Icon(Icons.casino_rounded,
                   color: AppTheme.warningColor, size: 20),
               const SizedBox(width: 8),
-              const Text('Lucky Draw',
+              const Text('Sorteio',
                   style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 16,
@@ -554,7 +554,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                     Icon(Icons.casino_rounded,
                         color: Colors.white, size: 18),
                     SizedBox(width: 6),
-                    Text('Spin',
+                    Text('Girar',
                         style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w800,
@@ -586,7 +586,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
               Icon(Icons.build_circle_rounded,
                   color: AppTheme.errorColor, size: 20),
               const SizedBox(width: 8),
-              const Text('Streak Lost',
+              const Text('Sequência Perdida',
                   style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 16,
@@ -595,7 +595,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
           ),
           const SizedBox(height: 8),
           Text(
-            'You lost your streak! Spend coins to recover it.',
+            'Você perdeu sua sequência! Gaste moedas para recuperá-la.',
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.grey[500], fontSize: 13),
           ),
@@ -622,7 +622,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                   Icon(Icons.monetization_on_rounded,
                       color: Colors.white, size: 16),
                   SizedBox(width: 6),
-                  Text('Repair (50 coins)',
+                  Text('Reparar (50 moedas)',
                       style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,

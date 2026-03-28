@@ -206,7 +206,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                 ),
                 child: const Center(
                   child: Text(
-                    'CRIE A SUA',
+                    'CRIE SUA COMUNIDADE',
                     style: TextStyle(
                       color: AppTheme.accentColor,
                       fontSize: 15,
@@ -297,7 +297,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                   border: Border.all(color: AppTheme.accentColor, width: 1.5),
                 ),
                 child: const Text(
-                  'CRIE A SUA',
+                  'CRIE SUA COMUNIDADE',
                   style: TextStyle(
                     color: AppTheme.accentColor,
                     fontWeight: FontWeight.w800,

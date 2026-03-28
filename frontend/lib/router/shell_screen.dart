@@ -87,8 +87,8 @@ class ShellScreen extends StatelessWidget {
                       badgeCount: 0,
                     ),
                     _AminoNavItem(
-                      icon: Icons.storefront_outlined,
-                      activeIcon: Icons.storefront_rounded,
+                      icon: Icons.shopping_bag_outlined,
+                      activeIcon: Icons.shopping_bag_rounded,
                       label: 'Loja',
                       isSelected: selectedIndex == 3,
                       onTap: () => _onItemTapped(context, 3),

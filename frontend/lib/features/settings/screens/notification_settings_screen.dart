@@ -298,7 +298,7 @@ class _NotificationSettingsScreenState
                   ),
                   _NotifToggle(
                     icon: Icons.arrow_upward_rounded,
-                    title: 'Level Up',
+                    title: 'Subiu de Nível',
                     subtitle: 'Quando sobe de nível',
                     value: _pushLevelUp,
                     color: const Color(0xFF9C27B0),

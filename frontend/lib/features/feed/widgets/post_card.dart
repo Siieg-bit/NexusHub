@@ -384,7 +384,7 @@ class _PostCardState extends State<PostCard>
                   Icon(Icons.star_rounded,
                       size: 10, color: AppTheme.warningColor),
                   SizedBox(width: 2),
-                  Text('Featured',
+                  Text('Destaque',
                       style: TextStyle(
                           color: AppTheme.warningColor,
                           fontSize: 8,

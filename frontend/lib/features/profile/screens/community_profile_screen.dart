@@ -274,7 +274,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                 unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
                 tabs: const [
                   Tab(text: 'Posts'),
-                  Tab(text: 'The Wall'),
+                  Tab(text: 'Mural'),
                   Tab(text: 'Sobre'),
                 ],
               ),
