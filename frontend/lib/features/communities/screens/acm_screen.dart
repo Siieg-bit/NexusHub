@@ -4,7 +4,8 @@ import '../../../core/models/community_model.dart';
 import '../../../core/services/supabase_service.dart';
 
 /// ACM — Amino Community Manager.
-/// Gerenciamento de módulos (JSONB), Join Types, customização visual e estatísticas.
+/// Gerenciamento de módulos (JSONB), Join Types, customização visual,
+/// home layout e estatísticas.
 class AcmScreen extends StatefulWidget {
   final String communityId;
   const AcmScreen({super.key, required this.communityId});
@@ -31,6 +32,9 @@ class _AcmScreenState extends State<AcmScreen>
   String _bannerUrl = '';
   String _welcomeMessage = '';
 
+  // Home Layout customization
+  Map<String, dynamic> _homeLayout = {};
+
   // Stats (loaded from DB)
   int _newMembers7d = 0;
   int _pendingFlags = 0;
@@ -38,7 +42,7 @@ class _AcmScreenState extends State<AcmScreen>
   int _totalPosts = 0;
   int _totalChats = 0;
 
-  final _tabs = const ['Módulos', 'Acesso', 'Visual', 'Stats'];
+  final _tabs = const ['Módulos', 'Acesso', 'Visual', 'Home', 'Stats'];
 
   @override
   void initState() {
@@ -62,6 +66,8 @@ class _AcmScreenState extends State<AcmScreen>
       _iconUrl = res['icon_url'] as String? ?? '';
       _bannerUrl = res['banner_url'] as String? ?? '';
       _welcomeMessage = res['welcome_message'] as String? ?? '';
+      _homeLayout = Map<String, dynamic>.from(
+          res['home_layout'] as Map<String, dynamic>? ?? _defaultHomeLayout());
 
       // Load real stats
       await _loadStats();
@@ -74,7 +80,6 @@ class _AcmScreenState extends State<AcmScreen>
 
   Future<void> _loadStats() async {
     try {
-      // New members in last 7 days
       final sevenDaysAgo = DateTime.now()
           .subtract(const Duration(days: 7))
           .toUtc()
@@ -85,14 +90,12 @@ class _AcmScreenState extends State<AcmScreen>
           .gte('joined_at', sevenDaysAgo);
       _newMembers7d = (newMembersRes as List).length;
 
-      // Pending flags
       final flagsRes = await SupabaseService.table('flags')
           .select('id')
           .eq('community_id', widget.communityId)
           .eq('status', 'pending');
       _pendingFlags = (flagsRes as List).length;
 
-      // Moderation actions in last 30 days
       final thirtyDaysAgo = DateTime.now()
           .subtract(const Duration(days: 30))
           .toUtc()
@@ -103,21 +106,17 @@ class _AcmScreenState extends State<AcmScreen>
           .gte('created_at', thirtyDaysAgo);
       _modActions30d = (modRes as List).length;
 
-      // Total posts
       final postsRes = await SupabaseService.table('posts')
           .select('id')
           .eq('community_id', widget.communityId)
           .eq('status', 'ok');
       _totalPosts = (postsRes as List).length;
 
-      // Total chats
       final chatsRes = await SupabaseService.table('chat_threads')
           .select('id')
           .eq('community_id', widget.communityId);
       _totalChats = (chatsRes as List).length;
-    } catch (_) {
-      // Stats are best-effort
-    }
+    } catch (_) {}
   }
 
   Map<String, dynamic> _defaultConfig() => {
@@ -132,6 +131,30 @@ class _AcmScreenState extends State<AcmScreen>
         'topicCategories': true,
       };
 
+  Map<String, dynamic> _defaultHomeLayout() => {
+        'sections_order': ['header', 'check_in', 'live_chats', 'tabs'],
+        'sections_visible': {
+          'check_in': true,
+          'live_chats': true,
+          'featured_posts': true,
+          'latest_feed': true,
+          'public_chats': true,
+          'guidelines': true,
+        },
+        'featured_type': 'list',
+        'welcome_banner': {
+          'enabled': false,
+          'image_url': null,
+          'text': null,
+          'link': null,
+        },
+        'pinned_chat_ids': [],
+        'bottom_bar': {
+          'show_online_count': true,
+          'show_create_button': true,
+        },
+      };
+
   Future<void> _saveConfig() async {
     try {
       final updates = <String, dynamic>{
@@ -140,6 +163,7 @@ class _AcmScreenState extends State<AcmScreen>
         'listed_status': _listedStatus,
         'theme_color': _themeColor,
         'welcome_message': _welcomeMessage,
+        'home_layout': _homeLayout,
       };
       if (_iconUrl.isNotEmpty) updates['icon_url'] = _iconUrl;
       if (_bannerUrl.isNotEmpty) updates['banner_url'] = _bannerUrl;
@@ -149,7 +173,13 @@ class _AcmScreenState extends State<AcmScreen>
           .eq('id', widget.communityId);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Configurações salvas!')),
+          SnackBar(
+            content: const Text('Configurações salvas!'),
+            backgroundColor: AppTheme.primaryColor,
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
         );
       }
     } catch (e) {
@@ -204,12 +234,15 @@ class _AcmScreenState extends State<AcmScreen>
                 ],
               ),
               child: const Text('Salvar',
-                  style: TextStyle(fontWeight: FontWeight.w800, color: Colors.white)),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w800, color: Colors.white)),
             ),
           ),
         ],
         bottom: TabBar(
           controller: _tabController,
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
           labelColor: AppTheme.primaryColor,
           unselectedLabelColor: Colors.grey[500],
           indicatorColor: AppTheme.primaryColor,
@@ -224,6 +257,7 @@ class _AcmScreenState extends State<AcmScreen>
                 _buildModulesTab(),
                 _buildAccessTab(),
                 _buildVisualTab(),
+                _buildHomeLayoutTab(),
                 _buildStatsTab(),
               ],
             ),
@@ -245,8 +279,8 @@ class _AcmScreenState extends State<AcmScreen>
           'Permitir destaque de conteúdo'),
       _ModuleItem('ranking', 'Ranking', Icons.leaderboard_rounded,
           'Habilitar leaderboard'),
-      _ModuleItem('sharedFolder', 'Pasta Compartilhada', Icons.folder_shared_rounded,
-          'Pasta compartilhada'),
+      _ModuleItem('sharedFolder', 'Pasta Compartilhada',
+          Icons.folder_shared_rounded, 'Pasta compartilhada'),
       _ModuleItem('influencer', 'Influenciador', Icons.verified_rounded,
           'Sistema de influenciadores'),
       _ModuleItem('externalContent', 'Conteúdo Externo', Icons.link_rounded,
@@ -274,8 +308,7 @@ class _AcmScreenState extends State<AcmScreen>
             title: Text(mod.label,
                 style: const TextStyle(fontWeight: FontWeight.w500)),
             subtitle: Text(mod.description,
-                style: TextStyle(
-                    color: Colors.grey[500], fontSize: 12)),
+                style: TextStyle(color: Colors.grey[500], fontSize: 12)),
             value: isEnabled,
             activeColor: AppTheme.primaryColor,
             onChanged: (val) {
@@ -364,7 +397,7 @@ class _AcmScreenState extends State<AcmScreen>
   }
 
   // ========================================================================
-  // TAB: Visual (com color picker funcional e image URL inputs)
+  // TAB: Visual
   // ========================================================================
   Widget _buildVisualTab() {
     final currentColor = _parseColor(_themeColor);
@@ -462,7 +495,6 @@ class _AcmScreenState extends State<AcmScreen>
                 }).toList(),
               ),
               const SizedBox(height: 12),
-              // Custom hex input
               TextField(
                 controller: TextEditingController(text: _themeColor),
                 onChanged: (v) {
@@ -607,7 +639,323 @@ class _AcmScreenState extends State<AcmScreen>
   }
 
   // ========================================================================
-  // TAB: Stats (com dados reais do banco)
+  // TAB: Home Layout — Customização da página inicial
+  // ========================================================================
+  Widget _buildHomeLayoutTab() {
+    final visible = Map<String, dynamic>.from(
+        _homeLayout['sections_visible'] as Map<String, dynamic>? ?? {});
+    final bottomBar = Map<String, dynamic>.from(
+        _homeLayout['bottom_bar'] as Map<String, dynamic>? ?? {});
+    final welcomeBanner = Map<String, dynamic>.from(
+        _homeLayout['welcome_banner'] as Map<String, dynamic>? ?? {});
+    final featuredType =
+        _homeLayout['featured_type'] as String? ?? 'list';
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        // ---- SEÇÕES VISÍVEIS ----
+        Text('Seções da Página Inicial',
+            style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: 6),
+        Text('Escolha quais seções serão exibidas na home da comunidade.',
+            style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+        const SizedBox(height: 16),
+
+        ..._buildSectionToggles(visible),
+
+        const SizedBox(height: 24),
+
+        // ---- TIPO DE DESTAQUE ----
+        Text('Estilo dos Destaques',
+            style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            _FeaturedStyleOption(
+              icon: Icons.list_rounded,
+              label: 'Lista',
+              isSelected: featuredType == 'list',
+              onTap: () {
+                setState(() => _homeLayout['featured_type'] = 'list');
+              },
+            ),
+            const SizedBox(width: 8),
+            _FeaturedStyleOption(
+              icon: Icons.grid_view_rounded,
+              label: 'Grid',
+              isSelected: featuredType == 'grid',
+              onTap: () {
+                setState(() => _homeLayout['featured_type'] = 'grid');
+              },
+            ),
+            const SizedBox(width: 8),
+            _FeaturedStyleOption(
+              icon: Icons.view_carousel_rounded,
+              label: 'Carrossel',
+              isSelected: featuredType == 'carousel',
+              onTap: () {
+                setState(() => _homeLayout['featured_type'] = 'carousel');
+              },
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 24),
+
+        // ---- WELCOME BANNER ----
+        Text('Banner de Boas-Vindas',
+            style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: 6),
+        Text('Um banner customizado exibido no topo da home.',
+            style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+        const SizedBox(height: 12),
+
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceColor,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+          ),
+          child: Column(
+            children: [
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Ativar Banner',
+                    style: TextStyle(fontWeight: FontWeight.w500)),
+                value: welcomeBanner['enabled'] as bool? ?? false,
+                activeColor: AppTheme.primaryColor,
+                onChanged: (val) {
+                  setState(() {
+                    welcomeBanner['enabled'] = val;
+                    _homeLayout['welcome_banner'] = welcomeBanner;
+                  });
+                },
+              ),
+              if (welcomeBanner['enabled'] == true) ...[
+                const SizedBox(height: 8),
+                TextField(
+                  controller: TextEditingController(
+                      text: welcomeBanner['text'] as String? ?? ''),
+                  onChanged: (v) {
+                    welcomeBanner['text'] = v;
+                    _homeLayout['welcome_banner'] = welcomeBanner;
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Texto do banner (ex: Bem-vindo!)',
+                    prefixIcon:
+                        const Icon(Icons.text_fields_rounded, size: 18),
+                    filled: true,
+                    fillColor: AppTheme.scaffoldBg,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                    isDense: true,
+                  ),
+                  style: const TextStyle(fontSize: 13),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: TextEditingController(
+                      text: welcomeBanner['image_url'] as String? ?? ''),
+                  onChanged: (v) {
+                    welcomeBanner['image_url'] = v.isEmpty ? null : v;
+                    _homeLayout['welcome_banner'] = welcomeBanner;
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'URL da imagem do banner (opcional)',
+                    prefixIcon: const Icon(Icons.image_rounded, size: 18),
+                    filled: true,
+                    fillColor: AppTheme.scaffoldBg,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                    isDense: true,
+                  ),
+                  style: const TextStyle(fontSize: 13),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: TextEditingController(
+                      text: welcomeBanner['link'] as String? ?? ''),
+                  onChanged: (v) {
+                    welcomeBanner['link'] = v.isEmpty ? null : v;
+                    _homeLayout['welcome_banner'] = welcomeBanner;
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Link ao clicar (opcional)',
+                    prefixIcon: const Icon(Icons.link_rounded, size: 18),
+                    filled: true,
+                    fillColor: AppTheme.scaffoldBg,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                    isDense: true,
+                  ),
+                  style: const TextStyle(fontSize: 13),
+                ),
+              ],
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        // ---- BOTTOM BAR ----
+        Text('Barra Inferior',
+            style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(height: 6),
+        Text('Configure a barra de navegação inferior da comunidade.',
+            style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+        const SizedBox(height: 12),
+
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceColor,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+          ),
+          child: Column(
+            children: [
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Mostrar Membros Online',
+                    style: TextStyle(fontWeight: FontWeight.w500)),
+                subtitle: Text('Exibe contagem de online na bottom bar',
+                    style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                value: bottomBar['show_online_count'] as bool? ?? true,
+                activeColor: AppTheme.primaryColor,
+                onChanged: (val) {
+                  setState(() {
+                    bottomBar['show_online_count'] = val;
+                    _homeLayout['bottom_bar'] = bottomBar;
+                  });
+                },
+              ),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Mostrar Botão Criar (+)',
+                    style: TextStyle(fontWeight: FontWeight.w500)),
+                subtitle: Text('Botão central para criar posts',
+                    style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                value: bottomBar['show_create_button'] as bool? ?? true,
+                activeColor: AppTheme.primaryColor,
+                onChanged: (val) {
+                  setState(() {
+                    bottomBar['show_create_button'] = val;
+                    _homeLayout['bottom_bar'] = bottomBar;
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        // ---- RESET ----
+        Center(
+          child: TextButton.icon(
+            onPressed: () {
+              setState(() {
+                _homeLayout = _defaultHomeLayout();
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('Layout resetado para o padrão'),
+                  backgroundColor: AppTheme.warningColor,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                ),
+              );
+            },
+            icon: Icon(Icons.restore_rounded, color: Colors.grey[500]),
+            label: Text('Resetar para Padrão',
+                style: TextStyle(color: Colors.grey[500])),
+          ),
+        ),
+        const SizedBox(height: 32),
+      ],
+    );
+  }
+
+  List<Widget> _buildSectionToggles(Map<String, dynamic> visible) {
+    final sections = [
+      _SectionToggle(
+        key: 'check_in',
+        icon: Icons.check_circle_rounded,
+        label: 'Check-In',
+        description: 'Barra de check-in diário com streak',
+      ),
+      _SectionToggle(
+        key: 'live_chats',
+        icon: Icons.live_tv_rounded,
+        label: 'Chats ao Vivo',
+        description: 'Carrossel horizontal de chatrooms ativos',
+      ),
+      _SectionToggle(
+        key: 'guidelines',
+        icon: Icons.gavel_rounded,
+        label: 'Regras',
+        description: 'Aba de regras/guidelines da comunidade',
+      ),
+      _SectionToggle(
+        key: 'featured_posts',
+        icon: Icons.star_rounded,
+        label: 'Destaque',
+        description: 'Aba de posts em destaque',
+      ),
+      _SectionToggle(
+        key: 'latest_feed',
+        icon: Icons.new_releases_rounded,
+        label: 'Feed Recente',
+        description: 'Aba de posts mais recentes',
+      ),
+      _SectionToggle(
+        key: 'public_chats',
+        icon: Icons.chat_bubble_rounded,
+        label: 'Chats Públicos',
+        description: 'Aba de chats públicos da comunidade',
+      ),
+    ];
+
+    return sections.map((s) {
+      final isEnabled = visible[s.key] as bool? ?? true;
+      return Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        ),
+        child: SwitchListTile(
+          secondary: Icon(s.icon,
+              color: isEnabled ? AppTheme.primaryColor : Colors.grey[600]),
+          title: Text(s.label,
+              style: const TextStyle(fontWeight: FontWeight.w500)),
+          subtitle: Text(s.description,
+              style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+          value: isEnabled,
+          activeColor: AppTheme.primaryColor,
+          onChanged: (val) {
+            setState(() {
+              visible[s.key] = val;
+              _homeLayout['sections_visible'] = visible;
+            });
+          },
+        ),
+      );
+    }).toList();
+  }
+
+  // ========================================================================
+  // TAB: Stats
   // ========================================================================
   Widget _buildStatsTab() {
     return RefreshIndicator(
@@ -667,9 +1015,9 @@ class _AcmScreenState extends State<AcmScreen>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-            color: AppTheme.surfaceColor,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+              color: AppTheme.surfaceColor,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
             ),
             child: Column(
               children: [
@@ -703,6 +1051,76 @@ class _ModuleItem {
   const _ModuleItem(this.key, this.label, this.icon, this.description);
 }
 
+class _SectionToggle {
+  final String key;
+  final IconData icon;
+  final String label;
+  final String description;
+  const _SectionToggle({
+    required this.key,
+    required this.icon,
+    required this.label,
+    required this.description,
+  });
+}
+
+class _FeaturedStyleOption extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _FeaturedStyleOption({
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppTheme.primaryColor.withValues(alpha: 0.15)
+                : AppTheme.surfaceColor,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected
+                  ? AppTheme.primaryColor
+                  : Colors.white.withValues(alpha: 0.05),
+              width: isSelected ? 2 : 1,
+            ),
+          ),
+          child: Column(
+            children: [
+              Icon(icon,
+                  color: isSelected
+                      ? AppTheme.primaryColor
+                      : Colors.grey[600],
+                  size: 24),
+              const SizedBox(height: 6),
+              Text(label,
+                  style: TextStyle(
+                    color: isSelected
+                        ? AppTheme.primaryColor
+                        : AppTheme.textSecondary,
+                    fontSize: 11,
+                    fontWeight:
+                        isSelected ? FontWeight.w700 : FontWeight.w500,
+                  )),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _AccessOption extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -731,15 +1149,19 @@ class _AccessOption extends StatelessWidget {
               : AppTheme.surfaceColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppTheme.primaryColor : Colors.white.withValues(alpha: 0.05),
+            color: isSelected
+                ? AppTheme.primaryColor
+                : Colors.white.withValues(alpha: 0.05),
             width: isSelected ? 2 : 1,
           ),
-          boxShadow: isSelected ? [
-            BoxShadow(
-              color: AppTheme.primaryColor.withValues(alpha: 0.2),
-              blurRadius: 8,
-            )
-          ] : null,
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                    blurRadius: 8,
+                  )
+                ]
+              : null,
         ),
         child: Row(
           children: [
@@ -754,14 +1176,13 @@ class _AccessOption extends StatelessWidget {
                       style: const TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 2),
                   Text(description,
-                      style: TextStyle(
-                          color: Colors.grey[500], fontSize: 12)),
+                      style:
+                          TextStyle(color: Colors.grey[500], fontSize: 12)),
                 ],
               ),
             ),
             if (isSelected)
-              Icon(Icons.check_circle_rounded,
-                  color: AppTheme.primaryColor),
+              Icon(Icons.check_circle_rounded, color: AppTheme.primaryColor),
           ],
         ),
       ),
@@ -788,9 +1209,9 @@ class _StatCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-            color: AppTheme.surfaceColor,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        color: AppTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Row(
         children: [
@@ -835,8 +1256,7 @@ class _InfoRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label,
-              style:
-                  TextStyle(color: Colors.grey[500], fontSize: 13)),
+              style: TextStyle(color: Colors.grey[500], fontSize: 13)),
           Text(value,
               style:
                   const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
