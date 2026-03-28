@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/models/community_model.dart';
 import '../../../core/models/user_model.dart';
-// helpers and amino_animations available if needed
+import '../../../core/services/supabase_service.dart';
+import '../screens/community_list_screen.dart'; // para checkInStatusProvider
 
 /// Drawer estilo Amino Apps — web-preview fiel.
 /// Estrutura: sidebar de comunidades (60px) + painel principal (280px).
-class CommunityDrawer extends StatelessWidget {
+class CommunityDrawer extends ConsumerStatefulWidget {
   final CommunityModel community;
   final UserModel? currentUser;
   final String? userRole;
@@ -20,6 +23,13 @@ class CommunityDrawer extends StatelessWidget {
     this.userRole,
   });
 
+  @override
+  ConsumerState<CommunityDrawer> createState() => _CommunityDrawerState();
+}
+
+class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
+  bool _isCheckingIn = false;
+
   Color _parseColor(String hex) {
     try {
       return Color(int.parse(hex.replaceFirst('#', '0xFF')));
@@ -29,35 +39,75 @@ class CommunityDrawer extends StatelessWidget {
   }
 
   bool get _isStaff =>
-      userRole == 'agent' ||
-      userRole == 'leader' ||
-      userRole == 'curator' ||
-      userRole == 'moderator' ||
-      userRole == 'admin';
+      widget.userRole == 'agent' ||
+      widget.userRole == 'leader' ||
+      widget.userRole == 'curator' ||
+      widget.userRole == 'moderator' ||
+      widget.userRole == 'admin';
 
-  bool get _isLeader => userRole == 'agent' || userRole == 'leader';
+  bool get _isLeader => widget.userRole == 'agent' || widget.userRole == 'leader';
 
-  // ignore: unused_element
-  String _roleLabel(String role) {
-    switch (role) {
-      case 'agent':
-        return 'Agent';
-      case 'leader':
-        return 'Leader';
-      case 'curator':
-        return 'Curator';
-      case 'moderator':
-        return 'Moderator';
-      case 'admin':
-        return 'Admin';
-      default:
-        return 'Member';
+  Future<void> _doCheckIn() async {
+    if (_isCheckingIn) return;
+    setState(() => _isCheckingIn = true);
+
+    try {
+      final result = await SupabaseService.rpc('daily_checkin', params: {
+        'p_community_id': widget.community.id,
+      });
+
+      ref.invalidate(checkInStatusProvider);
+
+      if (mounted) {
+        final data = result as Map<String, dynamic>?;
+        if (data != null && data['success'] == true) {
+          final streak = data['streak'] as int? ?? 1;
+          final coins = data['coins_earned'] as int? ?? 0;
+          HapticFeedback.mediumImpact();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Check-in feito! Sequência: $streak dia${streak > 1 ? 's' : ''} (+$coins moedas)',
+              ),
+              backgroundColor: AppTheme.accentColor,
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        } else if (data != null && data['error'] == 'already_checked_in') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Você já fez check-in hoje nesta comunidade!'),
+              backgroundColor: Colors.orange,
+              behavior: SnackBarBehavior.floating,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro no check-in: $e'),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isCheckingIn = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final themeColor = _parseColor(community.themeColor);
+    final themeColor = _parseColor(widget.community.themeColor);
+    final checkInStatus = ref.watch(checkInStatusProvider);
+    final statusMap = checkInStatus.valueOrNull ?? {};
+    final myStatus = statusMap[widget.community.id];
+    final hasCheckedIn = myStatus?['has_checkin_today'] as bool? ?? false;
+    final streak = myStatus?['consecutive_checkin_days'] as int? ?? 0;
 
     return Drawer(
       backgroundColor: AppTheme.scaffoldBg,
@@ -125,9 +175,9 @@ class CommunityDrawer extends StatelessWidget {
                             ),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(10),
-                              child: community.iconUrl != null
+                              child: widget.community.iconUrl != null
                                   ? CachedNetworkImage(
-                                      imageUrl: community.iconUrl!,
+                                      imageUrl: widget.community.iconUrl!,
                                       width: 40,
                                       height: 40,
                                       fit: BoxFit.cover,
@@ -188,9 +238,9 @@ class CommunityDrawer extends StatelessWidget {
                       fit: StackFit.expand,
                       children: [
                         // Cover image
-                        if (community.bannerUrl != null)
+                        if (widget.community.bannerUrl != null)
                           CachedNetworkImage(
-                            imageUrl: community.bannerUrl!,
+                            imageUrl: widget.community.bannerUrl!,
                             fit: BoxFit.cover,
                           )
                         else
@@ -241,7 +291,7 @@ class CommunityDrawer extends StatelessWidget {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                community.name.toUpperCase(),
+                                widget.community.name.toUpperCase(),
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 18,
@@ -262,15 +312,14 @@ class CommunityDrawer extends StatelessWidget {
                           left: 0,
                           right: 0,
                           child: Column(
-                            mainAxisSize: MainAxisSize.min,
                             children: [
                               // Avatar simples sem anel (estilo Amino original)
                               GestureDetector(
-                                onTap: currentUser != null
+                                onTap: widget.currentUser != null
                                     ? () {
                                         Navigator.pop(context);
                                         context.push(
-                                          '/community/${community.id}/profile/${currentUser!.id}',
+                                          '/community/${widget.community.id}/profile/${widget.currentUser!.id}',
                                         );
                                       }
                                     : null,
@@ -291,11 +340,11 @@ class CommunityDrawer extends StatelessWidget {
                                       radius: 32,
                                       backgroundColor: AppTheme.surfaceColor,
                                       backgroundImage:
-                                          currentUser?.iconUrl != null
+                                          widget.currentUser?.iconUrl != null
                                               ? CachedNetworkImageProvider(
-                                                  currentUser!.iconUrl!)
+                                                  widget.currentUser!.iconUrl!)
                                               : null,
-                                      child: currentUser?.iconUrl == null
+                                      child: widget.currentUser?.iconUrl == null
                                           ? const Icon(Icons.person_rounded,
                                               color: Colors.white70, size: 28)
                                           : null,
@@ -325,7 +374,7 @@ class CommunityDrawer extends StatelessWidget {
                               const SizedBox(height: 6),
                               // User name
                               Text(
-                                currentUser?.nickname ?? 'Meu Perfil',
+                                widget.currentUser?.nickname ?? 'Meu Perfil',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 13,
@@ -333,37 +382,79 @@ class CommunityDrawer extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(height: 8),
-                              // Check In button
-                              GestureDetector(
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  context.push('/check-in');
-                                },
-                                child: Container(
+                              // Check In button ou Streak badge
+                              if (!hasCheckedIn)
+                                GestureDetector(
+                                  onTap: _isCheckingIn ? null : _doCheckIn,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 24, vertical: 7),
+                                    decoration: BoxDecoration(
+                                      color: _isCheckingIn
+                                          ? AppTheme.primaryColor.withValues(alpha: 0.5)
+                                          : AppTheme.primaryColor,
+                                      borderRadius: BorderRadius.circular(8),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppTheme.primaryColor
+                                              .withValues(alpha: 0.2),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: _isCheckingIn
+                                        ? const SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        : const Text(
+                                            'Check In',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                  ),
+                                )
+                              else
+                                // Streak badge — já fez check-in hoje
+                                Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 24, vertical: 7),
+                                      horizontal: 16, vertical: 7),
                                   decoration: BoxDecoration(
-                                    color: AppTheme.primaryColor,
+                                    color: AppTheme.surfaceColor,
                                     borderRadius: BorderRadius.circular(8),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: AppTheme.primaryColor
-                                            .withValues(alpha: 0.2),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
+                                    border: Border.all(
+                                      color: AppTheme.warningColor.withValues(alpha: 0.4),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(
+                                        Icons.local_fire_department_rounded,
+                                        color: AppTheme.warningColor,
+                                        size: 16,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '$streak dia${streak > 1 ? 's' : ''}',
+                                        style: const TextStyle(
+                                          color: AppTheme.warningColor,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w700,
+                                        ),
                                       ),
                                     ],
                                   ),
-                                  child: const Text(
-                                    'Check In',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
                                 ),
-                              ),
                             ],
                           ),
                         ),
@@ -401,7 +492,7 @@ class CommunityDrawer extends StatelessWidget {
                           color: const Color(0xFFFF9800),
                           onTap: () {
                             Navigator.pop(context);
-                            context.push('/community/${community.id}/wiki');
+                            context.push('/community/${widget.community.id}/wiki');
                           },
                         ),
                         _AminoDrawerItem(
@@ -471,7 +562,7 @@ class CommunityDrawer extends StatelessWidget {
                             onTap: () {
                               Navigator.pop(context);
                               context
-                                  .push('/community/${community.id}/acm');
+                                  .push('/community/${widget.community.id}/acm');
                             },
                             child: Container(
                               margin:
@@ -551,7 +642,7 @@ class CommunityDrawer extends StatelessWidget {
                             onTap: () {
                               Navigator.pop(context);
                               context.push(
-                                  '/community/${community.id}/flags');
+                                  '/community/${widget.community.id}/flags');
                             },
                           ),
                           _AminoDrawerItem(
@@ -561,7 +652,7 @@ class CommunityDrawer extends StatelessWidget {
                             onTap: () {
                               Navigator.pop(context);
                               context
-                                  .push('/community/${community.id}/acm');
+                                  .push('/community/${widget.community.id}/acm');
                             },
                           ),
                         ],

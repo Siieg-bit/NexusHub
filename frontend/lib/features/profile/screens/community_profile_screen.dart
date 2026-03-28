@@ -103,7 +103,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
     final progress = levelProgress(xp);
     final role = _membership?['role'] as String? ?? 'member';
     final titles = (_membership?['custom_titles'] as List<dynamic>?) ?? [];
-    final streak = _membership?['check_in_streak'] as int? ?? 0;
+    final streak = _membership?['consecutive_checkin_days'] as int? ?? 0;
 
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBg,
@@ -253,8 +253,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: StreakBar(
                 currentStreak: streak,
-                maxStreak: _membership?['max_streak'] as int? ?? 0,
-                checkInDays: _membership?['total_check_ins'] as int? ?? 0,
+                maxStreak: streak, // max_streak não existe no schema, usar streak atual
+                checkInDays: streak, // total_check_ins não existe no schema
               ),
             ),
           ),

@@ -29,6 +29,41 @@ final userCommunitiesProvider =
       .toList();
 });
 
+/// Provider para status de check-in de todas as comunidades do usuário.
+/// Retorna Map<communityId, {has_checkin_today, consecutive_checkin_days}>.
+final checkInStatusProvider =
+    FutureProvider<Map<String, Map<String, dynamic>>>((ref) async {
+  final userId = SupabaseService.currentUserId;
+  if (userId == null) return {};
+
+  final response = await SupabaseService.table('community_members')
+      .select('community_id, has_checkin_today, consecutive_checkin_days, last_checkin_at')
+      .eq('user_id', userId)
+      .eq('is_banned', false);
+
+  final Map<String, Map<String, dynamic>> result = {};
+  for (final row in (response as List)) {
+    final communityId = row['community_id'] as String;
+    final lastCheckin = row['last_checkin_at'] as String?;
+    // Derivar has_checkin_today comparando last_checkin_at com data UTC atual.
+    // O campo has_checkin_today pode estar stale se não há cron de reset,
+    // então usamos last_checkin_at como fonte de verdade.
+    bool checkedInToday = false;
+    if (lastCheckin != null) {
+      final lastDate = DateTime.parse(lastCheckin).toUtc();
+      final nowUtc = DateTime.now().toUtc();
+      checkedInToday = lastDate.year == nowUtc.year &&
+          lastDate.month == nowUtc.month &&
+          lastDate.day == nowUtc.day;
+    }
+    result[communityId] = {
+      'has_checkin_today': checkedInToday,
+      'consecutive_checkin_days': row['consecutive_checkin_days'] as int? ?? 0,
+    };
+  }
+  return result;
+});
+
 /// Provider para comunidades sugeridas.
 final suggestedCommunitiesProvider =
     FutureProvider<List<CommunityModel>>((ref) async {
@@ -84,6 +119,8 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
   @override
   Widget build(BuildContext context) {
     final communitiesAsync = ref.watch(userCommunitiesProvider);
+    // Observar status de check-in para rebuild automático
+    ref.watch(checkInStatusProvider);
 
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBg,
@@ -124,6 +161,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
       color: AppTheme.primaryColor,
       onRefresh: () async {
         ref.invalidate(userCommunitiesProvider);
+        ref.invalidate(checkInStatusProvider);
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -159,6 +197,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                       padding: const EdgeInsets.only(right: 8),
                       child: _AminoCommunityCard(
                         community: communities[index],
+                        ref: ref,
                         onTap: () => context
                             .push('/community/${communities[index].id}'),
                         onLongPress: () {
@@ -232,7 +271,10 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => _CommunityPreviewSheet(community: community),
+      builder: (_) => _CommunityPreviewSheet(
+        community: community,
+        ref: ref,
+      ),
     );
   }
 
@@ -306,7 +348,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
             onTap: () => ref.invalidate(userCommunitiesProvider),
             child: Container(
               padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               decoration: BoxDecoration(
                 color: AppTheme.primaryColor,
                 borderRadius: BorderRadius.circular(16),
@@ -337,11 +379,13 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
 // - Nome da comunidade na parte inferior da imagem, branco bold
 // - Botão CHECK IN: retângulo arredondado ciano SEPARADO na base do card
 //   com padding lateral (NÃO full-width colado na borda)
+//   → DESAPARECE após check-in feito (mostra streak badge no lugar)
 // - Ícone flutuante no canto superior esquerdo, parcialmente fora do card
 //   com borda colorida (themeColor)
 // ============================================================================
-class _AminoCommunityCard extends StatelessWidget {
+class _AminoCommunityCard extends StatefulWidget {
   final CommunityModel community;
+  final WidgetRef ref;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
 
@@ -351,9 +395,17 @@ class _AminoCommunityCard extends StatelessWidget {
 
   const _AminoCommunityCard({
     required this.community,
+    required this.ref,
     required this.onTap,
     required this.onLongPress,
   });
+
+  @override
+  State<_AminoCommunityCard> createState() => _AminoCommunityCardState();
+}
+
+class _AminoCommunityCardState extends State<_AminoCommunityCard> {
+  bool _isCheckingIn = false;
 
   Color _parseColor(String hex) {
     try {
@@ -363,21 +415,80 @@ class _AminoCommunityCard extends StatelessWidget {
     }
   }
 
+  Future<void> _doCheckIn() async {
+    if (_isCheckingIn) return;
+    setState(() => _isCheckingIn = true);
+
+    try {
+      final result = await SupabaseService.rpc('daily_checkin', params: {
+        'p_community_id': widget.community.id,
+      });
+
+      // Invalidar o provider para atualizar o status em todos os cards
+      widget.ref.invalidate(checkInStatusProvider);
+
+      if (mounted) {
+        final data = result as Map<String, dynamic>?;
+        if (data != null && data['success'] == true) {
+          final streak = data['streak'] as int? ?? 1;
+          final coins = data['coins_earned'] as int? ?? 0;
+          HapticFeedback.mediumImpact();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Check-in feito! Sequência: $streak dia${streak > 1 ? 's' : ''} (+$coins moedas)',
+              ),
+              backgroundColor: AppTheme.accentColor,
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        } else if (data != null && data['error'] == 'already_checked_in') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Você já fez check-in hoje nesta comunidade!'),
+              backgroundColor: Colors.orange,
+              behavior: SnackBarBehavior.floating,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro no check-in: $e'),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isCheckingIn = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final color = _parseColor(community.themeColor);
+    final color = _parseColor(widget.community.themeColor);
+    final checkInStatus = widget.ref.watch(checkInStatusProvider);
+    final statusMap = checkInStatus.valueOrNull ?? {};
+    final myStatus = statusMap[widget.community.id];
+    final hasCheckedIn = myStatus?['has_checkin_today'] as bool? ?? false;
+    final streak = myStatus?['consecutive_checkin_days'] as int? ?? 0;
 
     return GestureDetector(
-      onTap: onTap,
-      onLongPress: onLongPress,
+      onTap: widget.onTap,
+      onLongPress: widget.onLongPress,
       child: SizedBox(
-        width: _cardWidth,
+        width: _AminoCommunityCard._cardWidth,
         child: Stack(
           clipBehavior: Clip.none,
           children: [
             // ── Card principal (com margem top para o ícone flutuante) ──
             Positioned.fill(
-              top: _iconOverflow,
+              top: _AminoCommunityCard._iconOverflow,
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
@@ -399,9 +510,9 @@ class _AminoCommunityCard extends StatelessWidget {
                         fit: StackFit.expand,
                         children: [
                           // Imagem
-                          community.bannerUrl != null
+                          widget.community.bannerUrl != null
                               ? CachedNetworkImage(
-                                  imageUrl: community.bannerUrl!,
+                                  imageUrl: widget.community.bannerUrl!,
                                   fit: BoxFit.cover,
                                   memCacheWidth: 360,
                                   memCacheHeight: 480,
@@ -454,7 +565,7 @@ class _AminoCommunityCard extends StatelessWidget {
                             left: 6,
                             right: 6,
                             child: Text(
-                              community.name,
+                              widget.community.name,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 11,
@@ -479,29 +590,82 @@ class _AminoCommunityCard extends StatelessWidget {
                       ),
                     ),
 
-                    // ── Botão CHECK IN ──
-                    // Retângulo arredondado ciano com padding lateral
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(6, 4, 6, 5),
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppTheme.accentColor,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: const Text(
-                          'CHECK IN',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.5,
+                    // ── Botão CHECK IN ou Streak Badge ──
+                    if (!hasCheckedIn)
+                      // Botão CHECK IN — visível apenas se não fez check-in hoje
+                      GestureDetector(
+                        onTap: _isCheckingIn ? null : _doCheckIn,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(6, 4, 6, 5),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            decoration: BoxDecoration(
+                              color: _isCheckingIn
+                                  ? AppTheme.accentColor.withValues(alpha: 0.5)
+                                  : AppTheme.accentColor,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: _isCheckingIn
+                                ? const SizedBox(
+                                    height: 14,
+                                    child: Center(
+                                      child: SizedBox(
+                                        width: 12,
+                                        height: 12,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 1.5,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                : const Text(
+                                    'CHECK IN',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.5,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
                           ),
-                          textAlign: TextAlign.center,
+                        ),
+                      )
+                    else
+                      // Streak badge — mostra quando já fez check-in hoje
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(6, 4, 6, 5),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 3),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2A2A5E),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.local_fire_department_rounded,
+                                color: AppTheme.warningColor,
+                                size: 12,
+                              ),
+                              const SizedBox(width: 2),
+                              Text(
+                                '$streak dia${streak > 1 ? 's' : ''}',
+                                style: const TextStyle(
+                                  color: AppTheme.warningColor,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -512,8 +676,8 @@ class _AminoCommunityCard extends StatelessWidget {
               top: 0,
               left: 4,
               child: Container(
-                width: _iconSize,
-                height: _iconSize,
+                width: _AminoCommunityCard._iconSize,
+                height: _AminoCommunityCard._iconSize,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
                   color: const Color(0xFF1A1A2E),
@@ -527,9 +691,9 @@ class _AminoCommunityCard extends StatelessWidget {
                   ],
                 ),
                 clipBehavior: Clip.antiAlias,
-                child: community.iconUrl != null
+                child: widget.community.iconUrl != null
                     ? CachedNetworkImage(
-                        imageUrl: community.iconUrl!,
+                        imageUrl: widget.community.iconUrl!,
                         fit: BoxFit.cover,
                         memCacheWidth: 96,
                         memCacheHeight: 96,
@@ -600,10 +764,21 @@ class _JoinCommunityCard extends StatelessWidget {
 // ============================================================================
 // PREVIEW DA COMUNIDADE — Bottom sheet (long press)
 // ============================================================================
-class _CommunityPreviewSheet extends StatelessWidget {
+class _CommunityPreviewSheet extends StatefulWidget {
   final CommunityModel community;
+  final WidgetRef ref;
 
-  const _CommunityPreviewSheet({required this.community});
+  const _CommunityPreviewSheet({
+    required this.community,
+    required this.ref,
+  });
+
+  @override
+  State<_CommunityPreviewSheet> createState() => _CommunityPreviewSheetState();
+}
+
+class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
+  bool _isCheckingIn = false;
 
   Color _parseColor(String hex) {
     try {
@@ -619,9 +794,67 @@ class _CommunityPreviewSheet extends StatelessWidget {
     return count.toString();
   }
 
+  Future<void> _doCheckIn() async {
+    if (_isCheckingIn) return;
+    setState(() => _isCheckingIn = true);
+
+    try {
+      final result = await SupabaseService.rpc('daily_checkin', params: {
+        'p_community_id': widget.community.id,
+      });
+
+      widget.ref.invalidate(checkInStatusProvider);
+
+      if (mounted) {
+        final data = result as Map<String, dynamic>?;
+        if (data != null && data['success'] == true) {
+          final streak = data['streak'] as int? ?? 1;
+          final coins = data['coins_earned'] as int? ?? 0;
+          HapticFeedback.mediumImpact();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Check-in feito! Sequência: $streak dia${streak > 1 ? 's' : ''} (+$coins moedas)',
+              ),
+              backgroundColor: AppTheme.accentColor,
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        } else if (data != null && data['error'] == 'already_checked_in') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Você já fez check-in hoje nesta comunidade!'),
+              backgroundColor: Colors.orange,
+              behavior: SnackBarBehavior.floating,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro no check-in: $e'),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isCheckingIn = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final color = _parseColor(community.themeColor);
+    final color = _parseColor(widget.community.themeColor);
+    final checkInStatus = widget.ref.watch(checkInStatusProvider);
+    final statusMap = checkInStatus.valueOrNull ?? {};
+    final myStatus = statusMap[widget.community.id];
+    final hasCheckedIn = myStatus?['has_checkin_today'] as bool? ?? false;
+    final streak = myStatus?['consecutive_checkin_days'] as int? ?? 0;
 
     return Container(
       decoration: const BoxDecoration(
@@ -651,9 +884,9 @@ class _CommunityPreviewSheet extends StatelessWidget {
                 child: SizedBox(
                   height: 140,
                   width: double.infinity,
-                  child: community.bannerUrl != null
+                  child: widget.community.bannerUrl != null
                       ? CachedNetworkImage(
-                          imageUrl: community.bannerUrl!,
+                          imageUrl: widget.community.bannerUrl!,
                           fit: BoxFit.cover,
                           placeholder: (_, __) => Container(
                             decoration: BoxDecoration(
@@ -714,9 +947,9 @@ class _CommunityPreviewSheet extends StatelessWidget {
                     border: Border.all(color: color, width: 2),
                   ),
                   clipBehavior: Clip.antiAlias,
-                  child: community.iconUrl != null
+                  child: widget.community.iconUrl != null
                       ? CachedNetworkImage(
-                          imageUrl: community.iconUrl!,
+                          imageUrl: widget.community.iconUrl!,
                           fit: BoxFit.cover,
                         )
                       : Icon(Icons.groups_rounded,
@@ -728,7 +961,7 @@ class _CommunityPreviewSheet extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        community.name,
+                        widget.community.name,
                         style: const TextStyle(
                           color: AppTheme.textPrimary,
                           fontSize: 16,
@@ -737,10 +970,10 @@ class _CommunityPreviewSheet extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      if (community.tagline.isNotEmpty) ...[
+                      if (widget.community.tagline.isNotEmpty) ...[
                         const SizedBox(height: 2),
                         Text(
-                          community.tagline,
+                          widget.community.tagline,
                           style: const TextStyle(
                             color: AppTheme.textSecondary,
                             fontSize: 11,
@@ -765,26 +998,34 @@ class _CommunityPreviewSheet extends StatelessWidget {
               children: [
                 _StatChip(
                   icon: Icons.people_rounded,
-                  label: '${_formatCount(community.membersCount)} membros',
+                  label: '${_formatCount(widget.community.membersCount)} membros',
                   color: AppTheme.accentColor,
                 ),
                 const SizedBox(width: 8),
                 _StatChip(
                   icon: Icons.article_rounded,
-                  label: '${_formatCount(community.postsCount)} posts',
+                  label: '${_formatCount(widget.community.postsCount)} posts',
                   color: AppTheme.aminoPurple,
                 ),
+                if (hasCheckedIn && streak > 0) ...[
+                  const SizedBox(width: 8),
+                  _StatChip(
+                    icon: Icons.local_fire_department_rounded,
+                    label: '$streak dia${streak > 1 ? 's' : ''}',
+                    color: AppTheme.warningColor,
+                  ),
+                ],
               ],
             ),
           ),
 
           // Descrição
-          if (community.description.isNotEmpty) ...[
+          if (widget.community.description.isNotEmpty) ...[
             const SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                community.description,
+                widget.community.description,
                 style: const TextStyle(
                   color: AppTheme.textSecondary,
                   fontSize: 12,
@@ -811,7 +1052,7 @@ class _CommunityPreviewSheet extends StatelessWidget {
                   child: GestureDetector(
                     onTap: () {
                       Navigator.pop(context);
-                      context.push('/community/${community.id}');
+                      context.push('/community/${widget.community.id}');
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 11),
@@ -832,30 +1073,64 @@ class _CommunityPreviewSheet extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: Container(
+                // Botão Check In ou badge de streak
+                if (!hasCheckedIn)
+                  GestureDetector(
+                    onTap: _isCheckingIn ? null : _doCheckIn,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 11),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentColor,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: _isCheckingIn
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text(
+                              'Check In',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                    ),
+                  )
+                else
+                  Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 11),
+                        horizontal: 12, vertical: 11),
                     decoration: BoxDecoration(
                       color: AppTheme.cardColor,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.4),
+                          color: AppTheme.warningColor.withValues(alpha: 0.4),
                           width: 1),
                     ),
-                    child: const Text(
-                      'Check In',
-                      style: TextStyle(
-                        color: AppTheme.primaryColor,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.local_fire_department_rounded,
+                            color: AppTheme.warningColor, size: 16),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$streak dia${streak > 1 ? 's' : ''}',
+                          style: const TextStyle(
+                            color: AppTheme.warningColor,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
               ],
             ),
           ),
