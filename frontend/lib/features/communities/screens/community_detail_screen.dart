@@ -12,6 +12,7 @@ import '../../../core/utils/helpers.dart';
 import '../../../core/utils/amino_animations.dart';
 import '../../feed/widgets/post_card.dart';
 import '../widgets/community_drawer.dart';
+import 'community_list_screen.dart'; // para checkInStatusProvider
 
 // =============================================================================
 // PROVIDERS
@@ -561,15 +562,25 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
 
 // =============================================================================
 // CHECK-IN BAR — Estilo Amino (streak progress + botão verde)
+// Só aparece se o usuário ainda NÃO fez check-in hoje.
 // =============================================================================
-class _CheckInBar extends StatelessWidget {
+class _CheckInBar extends ConsumerWidget {
   final String communityId;
   final Color themeColor;
 
   const _CheckInBar({required this.communityId, required this.themeColor});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final checkInStatus = ref.watch(checkInStatusProvider);
+    final statusMap = checkInStatus.valueOrNull ?? {};
+    final myStatus = statusMap[communityId];
+    final hasCheckedIn = myStatus?['has_checkin_today'] as bool? ?? false;
+    final streak = myStatus?['consecutive_checkin_days'] as int? ?? 0;
+
+    // Se já fez check-in hoje, não mostra a barra
+    if (hasCheckedIn) return const SizedBox.shrink();
+
     return Container(
       color: AppTheme.cardColor,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -584,7 +595,7 @@ class _CheckInBar extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          // 7-day streak bar
+          // 7-day streak bar (preenche de acordo com o streak real)
           Row(
             children: List.generate(7, (i) {
               return Expanded(
@@ -592,7 +603,7 @@ class _CheckInBar extends StatelessWidget {
                   height: 6,
                   margin: EdgeInsets.only(right: i < 6 ? 3 : 0),
                   decoration: BoxDecoration(
-                    color: i < 3
+                    color: i < (streak % 7)
                         ? AppTheme.primaryColor
                         : AppTheme.dividerColor,
                     borderRadius: BorderRadius.circular(3),
@@ -618,7 +629,6 @@ class _CheckInBar extends StatelessWidget {
                     fontWeight: FontWeight.w700, fontSize: 14),
               ),
               child: const Text('Check In'),
-              // Label already matches Amino style
             ),
           ),
         ],
