@@ -45,8 +45,6 @@ final suggestedCommunitiesProvider =
 });
 
 /// Tela de Comunidades — réplica fiel do Amino Apps.
-/// Layout: AminoTopBar + "Minhas Comunidades" (grid 3 colunas com CHECK IN)
-/// + "Long press the card to change position" + botão "CREATE YOUR OWN"
 class CommunityListScreen extends ConsumerStatefulWidget {
   final bool isExplore;
 
@@ -60,8 +58,6 @@ class CommunityListScreen extends ConsumerStatefulWidget {
 class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
   String? _avatarUrl;
   int _coins = 0;
-  bool _isReordering = false;
-  List<CommunityModel> _reorderList = [];
 
   @override
   void initState() {
@@ -95,7 +91,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
       body: AminoParticlesBg(
         child: Column(
           children: [
-            // ── Top Bar Amino ──
+            // ── Top Bar ──
             AminoTopBar(
               avatarUrl: _avatarUrl,
               coins: _coins,
@@ -117,13 +113,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                   if (communities.isEmpty) {
                     return _buildEmptyState();
                   }
-                  // Inicializa a lista de reordenação se necessário
-                  if (_reorderList.isEmpty ||
-                      _reorderList.length != communities.length) {
-                    _reorderList = List.from(communities);
-                  }
-                  return _buildCommunityList(
-                      _isReordering ? _reorderList : communities);
+                  return _buildCommunityList(communities);
                 },
               ),
             ),
@@ -134,13 +124,12 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
   }
 
   // ==========================================================================
-  // LISTA DE COMUNIDADES — Estilo Amino
+  // LISTA DE COMUNIDADES
   // ==========================================================================
   Widget _buildCommunityList(List<CommunityModel> communities) {
     return RefreshIndicator(
       color: AppTheme.primaryColor,
       onRefresh: () async {
-        _reorderList = [];
         ref.invalidate(userCommunitiesProvider);
       },
       child: ListView(
@@ -157,21 +146,20 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.textPrimary,
+                letterSpacing: -0.3,
               ),
             ),
           ),
 
-          // ── Grid de comunidades (estilo Amino: 3 colunas) ──
+          // ── Grid 2 colunas (estilo Amino original) ──
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: _isReordering
-                ? _buildReorderGrid(communities)
-                : _buildStaticGrid(communities),
+            child: _buildGrid(communities),
           ),
 
-          // ── Texto "Long press the card to change position" ──
+          // ── Texto "Long press" ──
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 14),
+            padding: const EdgeInsets.symmetric(vertical: 16),
             child: Center(
               child: Text(
                 'Pressione e segure o card para mudar a posição',
@@ -184,9 +172,9 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
             ),
           ),
 
-          // ── Botão "CRIE SUA COMUNIDADE" (estilo Amino: borda ciano/teal) ──
+          // ── Botão "CRIE SUA COMUNIDADE" ──
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: GestureDetector(
               onTap: () => context.push('/community/create'),
               child: Container(
@@ -220,43 +208,45 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
     );
   }
 
-  // Grid estático (3 colunas) com toque para preview e long press para reordenar
-  Widget _buildStaticGrid(List<CommunityModel> communities) {
-    // Calcula o número de linhas necessárias (incluindo o card "Join")
-    final totalItems = communities.length + 1;
-    final rows = (totalItems / 3).ceil();
+  // Grid 2 colunas (fiel ao Amino original)
+  Widget _buildGrid(List<CommunityModel> communities) {
+    final totalItems = communities.length + 1; // +1 para "Join a community"
+    final rows = (totalItems / 2).ceil();
 
     return Column(
       children: List.generate(rows, (rowIndex) {
-        final startIndex = rowIndex * 3;
+        final startIndex = rowIndex * 2;
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: List.generate(3, (colIndex) {
+            children: List.generate(2, (colIndex) {
               final itemIndex = startIndex + colIndex;
               if (itemIndex < communities.length) {
                 return Expanded(
                   child: Padding(
                     padding: EdgeInsets.only(
-                      left: colIndex > 0 ? 6 : 0,
-                      right: colIndex < 2 ? 6 : 0,
+                      left: colIndex > 0 ? 5 : 0,
+                      right: colIndex < 1 ? 5 : 0,
                     ),
                     child: _AminoCommunityCard(
                       community: communities[itemIndex],
-                      onTap: () => _showCommunityPreview(
-                          context, communities[itemIndex]),
-                      onLongPress: () => _enterReorderMode(communities),
+                      onTap: () =>
+                          context.push('/community/${communities[itemIndex].id}'),
+                      onLongPress: () {
+                        HapticFeedback.mediumImpact();
+                        _showCommunityPreview(
+                            context, communities[itemIndex]);
+                      },
                     ),
                   ),
                 );
               } else if (itemIndex == communities.length) {
-                // Card "Join a community"
                 return Expanded(
                   child: Padding(
                     padding: EdgeInsets.only(
-                      left: colIndex > 0 ? 6 : 0,
-                      right: colIndex < 2 ? 6 : 0,
+                      left: colIndex > 0 ? 5 : 0,
+                      right: colIndex < 1 ? 5 : 0,
                     ),
                     child: _JoinCommunityCard(
                       onTap: () => context.go('/explore'),
@@ -264,7 +254,6 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                   ),
                 );
               } else {
-                // Célula vazia para completar a linha
                 return const Expanded(child: SizedBox.shrink());
               }
             }),
@@ -274,99 +263,29 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
     );
   }
 
-  // Grid de reordenação com drag & drop
-  Widget _buildReorderGrid(List<CommunityModel> communities) {
-    return Column(
-      children: [
-        // Aviso de modo reordenação
-        Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: AppTheme.accentColor.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-                color: AppTheme.accentColor.withValues(alpha: 0.4), width: 1),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.drag_indicator_rounded,
-                  color: AppTheme.accentColor, size: 18),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Arraste os cards para reordenar',
-                  style: TextStyle(
-                      color: AppTheme.accentColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600),
-                ),
-              ),
-              GestureDetector(
-                onTap: () => setState(() => _isReordering = false),
-                child: Text(
-                  'Concluir',
-                  style: TextStyle(
-                      color: AppTheme.primaryColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700),
-                ),
-              ),
-            ],
-          ),
-        ),
-        // Grid reordenável
-        ReorderableWrap(
-          communities: communities,
-          onReorder: (oldIndex, newIndex) {
-            setState(() {
-              final item = _reorderList.removeAt(oldIndex);
-              _reorderList.insert(newIndex, item);
-            });
-          },
-        ),
-      ],
-    );
-  }
-
-  void _enterReorderMode(List<CommunityModel> communities) {
-    HapticFeedback.mediumImpact();
-    setState(() {
-      _reorderList = List.from(communities);
-      _isReordering = true;
-    });
-  }
-
-  // ==========================================================================
-  // PREVIEW DA COMUNIDADE — Bottom sheet estilo Amino
-  // ==========================================================================
+  // ── Preview da comunidade (long press) ──
   void _showCommunityPreview(BuildContext context, CommunityModel community) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (ctx) => _CommunityPreviewSheet(community: community),
+      builder: (_) => _CommunityPreviewSheet(community: community),
     );
   }
 
-  // ==========================================================================
-  // ESTADO VAZIO — Estilo Amino
-  // ==========================================================================
+  // ── Estado vazio ──
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.grid_view_rounded,
-              size: 64,
-              color: AppTheme.textHint.withValues(alpha: 0.5),
-            ),
+            Icon(Icons.groups_rounded,
+                color: AppTheme.textHint, size: 64),
             const SizedBox(height: 16),
             const Text(
-              'Nenhuma comunidade ainda',
+              'Nenhuma comunidade',
               style: TextStyle(
                 color: AppTheme.textPrimary,
                 fontSize: 18,
@@ -374,8 +293,8 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              'Entre em comunidades para encontrar pessoas com os mesmos interesses!',
+            const Text(
+              'Explore e entre em comunidades para começar!',
               style: TextStyle(
                 color: AppTheme.textSecondary,
                 fontSize: 14,
@@ -387,90 +306,17 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
               onTap: () => context.go('/explore'),
               child: Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryColor,
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.explore_rounded, color: Colors.white, size: 20),
-                    SizedBox(width: 8),
-                    Text(
-                      'Explorar Comunidades',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            GestureDetector(
-              onTap: () => context.push('/community/create'),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                decoration: BoxDecoration(
-                  color: Colors.transparent,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: AppTheme.accentColor, width: 1.5),
-                ),
-                child: const Text(
-                  'CRIE SUA COMUNIDADE',
-                  style: TextStyle(
-                    color: AppTheme.accentColor,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
-                    letterSpacing: 1.0,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildErrorState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline_rounded,
-                size: 48, color: AppTheme.errorColor.withValues(alpha: 0.7)),
-            const SizedBox(height: 16),
-            const Text(
-              'Erro ao carregar comunidades',
-              style: TextStyle(
-                color: AppTheme.textPrimary,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 16),
-            GestureDetector(
-              onTap: () => ref.invalidate(userCommunitiesProvider),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
                 decoration: BoxDecoration(
                   color: AppTheme.primaryColor,
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: const Text(
-                  'Tentar novamente',
+                  'Explorar Comunidades',
                   style: TextStyle(
                     color: Colors.white,
+                    fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    fontSize: 16,
                   ),
                 ),
               ),
@@ -480,64 +326,59 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
       ),
     );
   }
-}
 
-// ============================================================================
-// REORDERABLE WRAP — Grid reordenável simples
-// ============================================================================
-class ReorderableWrap extends StatelessWidget {
-  final List<CommunityModel> communities;
-  final void Function(int oldIndex, int newIndex) onReorder;
-
-  const ReorderableWrap({
-    super.key,
-    required this.communities,
-    required this.onReorder,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ReorderableListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      buildDefaultDragHandles: false,
-      itemCount: communities.length,
-      onReorder: onReorder,
-      itemBuilder: (context, index) {
-        final community = communities[index];
-        return ReorderableDragStartListener(
-          key: ValueKey(community.id),
-          index: index,
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: _AminoCommunityCard(
-              community: community,
-              isDragging: true,
-              onTap: () {},
-              onLongPress: () {},
+  // ── Estado de erro ──
+  Widget _buildErrorState() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.error_outline_rounded,
+              color: AppTheme.errorColor, size: 48),
+          const SizedBox(height: 12),
+          const Text(
+            'Erro ao carregar comunidades',
+            style: TextStyle(color: AppTheme.textPrimary, fontSize: 16),
+          ),
+          const SizedBox(height: 12),
+          GestureDetector(
+            onTap: () => ref.invalidate(userCommunitiesProvider),
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppTheme.accentColor,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Text(
+                'Tentar novamente',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600),
+              ),
             ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 }
 
 // ============================================================================
-// CARD DE COMUNIDADE — Estilo Amino fiel ao APK original
-// 3 colunas, ícone no canto superior esquerdo, imagem de fundo, CHECK IN
+// CARD DE COMUNIDADE — Estilo Amino original polido
+// 2 colunas, imagem de alta qualidade, ícone + nome na parte inferior,
+// badge CHECK IN no canto superior direito
 // ============================================================================
 class _AminoCommunityCard extends StatelessWidget {
   final CommunityModel community;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
-  final bool isDragging;
 
   const _AminoCommunityCard({
     required this.community,
     required this.onTap,
     required this.onLongPress,
-    this.isDragging = false,
   });
 
   Color _parseColor(String hex) {
@@ -555,181 +396,238 @@ class _AminoCommunityCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       onLongPress: onLongPress,
-      child: AspectRatio(
-        aspectRatio: 0.72, // proporção fiel ao APK (mais alto que largo)
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            color: AppTheme.cardColor,
-            boxShadow: isDragging
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.4),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    )
-                  ]
-                : null,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: const Color(0xFF16162A),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.05),
+            width: 1,
           ),
-          clipBehavior: Clip.antiAlias,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // ── Imagem de fundo (banner) cobrindo todo o card ──
-              if (community.bannerUrl != null)
-                CachedNetworkImage(
-                  imageUrl: community.bannerUrl!,
-                  fit: BoxFit.cover,
-                  memCacheWidth: 300, // otimização de memória
-                  placeholder: (_, __) => Container(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // ── Imagem de capa ──
+            Stack(
+              children: [
+                // Imagem de capa com altura fixa
+                SizedBox(
+                  height: 120,
+                  width: double.infinity,
+                  child: community.bannerUrl != null
+                      ? CachedNetworkImage(
+                          imageUrl: community.bannerUrl!,
+                          fit: BoxFit.cover,
+                          memCacheWidth: 400,
+                          memCacheHeight: 240,
+                          placeholder: (_, __) => Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  color,
+                                  color.withValues(alpha: 0.6),
+                                ],
+                              ),
+                            ),
+                            child: Center(
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white.withValues(alpha: 0.3),
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            ),
+                          ),
+                          errorWidget: (_, __, ___) => Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  color,
+                                  color.withValues(alpha: 0.6),
+                                ],
+                              ),
+                            ),
+                            child: Center(
+                              child: Icon(Icons.groups_rounded,
+                                  color: Colors.white.withValues(alpha: 0.3),
+                                  size: 36),
+                            ),
+                          ),
+                        )
+                      : Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                color,
+                                color.withValues(alpha: 0.6),
+                              ],
+                            ),
+                          ),
+                          child: Center(
+                            child: Icon(Icons.groups_rounded,
+                                color: Colors.white.withValues(alpha: 0.3),
+                                size: 36),
+                          ),
+                        ),
+                ),
+
+                // Gradiente escuro na parte inferior da imagem
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: 60,
+                  child: Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [color, color.withValues(alpha: 0.5)],
+                        colors: [
+                          Colors.transparent,
+                          const Color(0xFF16162A),
+                        ],
                       ),
                     ),
-                  ),
-                  errorWidget: (_, __, ___) => Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [color, color.withValues(alpha: 0.5)],
-                      ),
-                    ),
-                    child: Center(
-                      child: Icon(Icons.groups_rounded,
-                          color: Colors.white38, size: 32),
-                    ),
-                  ),
-                )
-              else
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [color, color.withValues(alpha: 0.5)],
-                    ),
-                  ),
-                  child: Center(
-                    child: Icon(Icons.groups_rounded,
-                        color: Colors.white38, size: 32),
                   ),
                 ),
 
-              // ── Gradiente escuro na parte inferior ──
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: 80,
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withValues(alpha: 0.80),
+                // Badge CHECK IN — canto superior direito (estilo Amino)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: AppTheme.aminoOrange,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.aminoOrange.withValues(alpha: 0.4),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Text(
+                      'CHECK IN',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 8,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Ícone + Nome + Members — parte inferior
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+                    child: Row(
+                      children: [
+                        // Ícone da comunidade
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            color: AppTheme.cardColor,
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.1),
+                              width: 1,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.4),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: community.iconUrl != null
+                              ? CachedNetworkImage(
+                                  imageUrl: community.iconUrl!,
+                                  fit: BoxFit.cover,
+                                  memCacheWidth: 80,
+                                  memCacheHeight: 80,
+                                )
+                              : Icon(Icons.groups_rounded,
+                                  color: AppTheme.textHint, size: 20),
+                        ),
+                        const SizedBox(width: 8),
+                        // Nome e membros
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                community.name,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  height: 1.2,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '${_formatCount(community.membersCount)} members',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.5),
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 ),
-              ),
-
-              // ── Ícone da comunidade — canto superior ESQUERDO (fiel ao APK) ──
-              Positioned(
-                top: 6,
-                left: 6,
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    color: AppTheme.cardColor.withValues(alpha: 0.9),
-                    border: Border.all(
-                      color: color.withValues(alpha: 0.8),
-                      width: 1.5,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.3),
-                        blurRadius: 4,
-                        offset: const Offset(0, 1),
-                      ),
-                    ],
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: community.iconUrl != null
-                      ? CachedNetworkImage(
-                          imageUrl: community.iconUrl!,
-                          fit: BoxFit.cover,
-                          memCacheWidth: 64,
-                        )
-                      : Icon(Icons.groups_rounded,
-                          color: AppTheme.textHint, size: 18),
-                ),
-              ),
-
-              // ── Nome da comunidade — acima do botão CHECK IN ──
-              Positioned(
-                bottom: 30,
-                left: 6,
-                right: 6,
-                child: Text(
-                  community.name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black54,
-                        blurRadius: 4,
-                        offset: Offset(0, 1),
-                      ),
-                    ],
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.left,
-                ),
-              ),
-
-              // ── Botão CHECK IN — verde Amino, largura total ──
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  decoration: const BoxDecoration(
-                    color: AppTheme.primaryColor, // verde Amino #2DBE60
-                  ),
-                  child: const Text(
-                    'CHECK IN',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 9,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.8,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
+
+  String _formatCount(int count) {
+    if (count >= 1000000) return '${(count / 1000000).toStringAsFixed(1)}M';
+    if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}K';
+    return count.toString();
+  }
 }
 
 // ============================================================================
-// CARD "JOIN A COMMUNITY" — Estilo Amino (card cinza com ícone +)
+// CARD "JOIN A COMMUNITY"
 // ============================================================================
 class _JoinCommunityCard extends StatelessWidget {
   final VoidCallback onTap;
@@ -739,42 +637,46 @@ class _JoinCommunityCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: AspectRatio(
-        aspectRatio: 0.72,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            color: AppTheme.surfaceColor.withValues(alpha: 0.6),
-            border: Border.all(
-              color: AppTheme.dividerColor.withValues(alpha: 0.4),
-              width: 1,
+      child: Container(
+        height: 120,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: AppTheme.surfaceColor.withValues(alpha: 0.5),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.05),
+            width: 1,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppTheme.cardColor.withValues(alpha: 0.6),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.08),
+                  width: 1,
+                ),
+              ),
+              child: Icon(Icons.add,
+                  color: AppTheme.textSecondary.withValues(alpha: 0.7),
+                  size: 24),
             ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: AppTheme.cardColor,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.add,
-                    color: AppTheme.textSecondary, size: 26),
+            const SizedBox(height: 10),
+            Text(
+              'Entrar em uma\ncomunidade',
+              style: TextStyle(
+                color: AppTheme.textSecondary.withValues(alpha: 0.7),
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                height: 1.3,
               ),
-              const SizedBox(height: 10),
-              const Text(
-                'Entrar em uma\ncomunidade',
-                style: TextStyle(
-                  color: AppTheme.textSecondary,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );
@@ -782,8 +684,7 @@ class _JoinCommunityCard extends StatelessWidget {
 }
 
 // ============================================================================
-// PREVIEW DA COMUNIDADE — Bottom sheet estilo Amino
-// Aparece ao primeiro toque no card, com botão "Entrar" ou "Abrir"
+// PREVIEW DA COMUNIDADE — Bottom sheet (long press)
 // ============================================================================
 class _CommunityPreviewSheet extends StatelessWidget {
   final CommunityModel community;
@@ -820,20 +721,19 @@ class _CommunityPreviewSheet extends StatelessWidget {
           Container(
             width: 36,
             height: 4,
-            margin: const EdgeInsets.only(top: 12, bottom: 0),
+            margin: const EdgeInsets.only(top: 12),
             decoration: BoxDecoration(
               color: Colors.grey[700],
               borderRadius: BorderRadius.circular(2),
             ),
           ),
 
-          // ── Banner da comunidade ──
+          // ── Banner ──
           Stack(
             children: [
-              // Imagem de capa
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(20)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(20)),
                 child: SizedBox(
                   height: 160,
                   width: double.infinity,
@@ -865,7 +765,6 @@ class _CommunityPreviewSheet extends StatelessWidget {
                         ),
                 ),
               ),
-              // Gradiente inferior sobre o banner
               Positioned(
                 bottom: 0,
                 left: 0,
@@ -892,7 +791,6 @@ class _CommunityPreviewSheet extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
             child: Row(
               children: [
-                // Ícone
                 Container(
                   width: 56,
                   height: 56,
@@ -918,7 +816,6 @@ class _CommunityPreviewSheet extends StatelessWidget {
                           color: AppTheme.textHint, size: 28),
                 ),
                 const SizedBox(width: 14),
-                // Nome e tagline
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -994,7 +891,7 @@ class _CommunityPreviewSheet extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          // ── Botões de ação ──
+          // ── Botões ──
           Padding(
             padding: EdgeInsets.only(
               left: 20,
@@ -1003,7 +900,6 @@ class _CommunityPreviewSheet extends StatelessWidget {
             ),
             child: Row(
               children: [
-                // Botão "Abrir" — abre a comunidade
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
@@ -1029,11 +925,9 @@ class _CommunityPreviewSheet extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 10),
-                // Botão "Check In"
                 GestureDetector(
                   onTap: () {
                     Navigator.pop(context);
-                    context.push('/check-in');
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(
