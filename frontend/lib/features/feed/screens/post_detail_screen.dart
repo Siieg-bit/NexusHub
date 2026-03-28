@@ -95,8 +95,18 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     final commentsAsync = ref.watch(postCommentsProvider(widget.postId));
 
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
       appBar: AppBar(
-        title: const Text('Post'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text(
+          'Post',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            color: AppTheme.textPrimary,
+          ),
+        ),
+        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
         actions: [
           IconButton(
             icon: const Icon(Icons.bookmark_border_rounded),
@@ -109,8 +119,17 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         ],
       ),
       body: postAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Erro: $error')),
+        loading: () => const Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+          ),
+        ),
+        error: (error, _) => Center(
+          child: Text(
+            'Erro: $error',
+            style: const TextStyle(color: AppTheme.errorColor),
+          ),
+        ),
         data: (post) => Column(
           children: [
             Expanded(
@@ -127,23 +146,37 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         children: [
                           GestureDetector(
                             onTap: () => context.push('/user/${post.authorId}'),
-                            child: CircleAvatar(
-                              radius: 24,
-                              backgroundColor:
-                                  AppTheme.primaryColor.withValues(alpha: 0.3),
-                              backgroundImage: post.author?.iconUrl != null
-                                  ? CachedNetworkImageProvider(
-                                      post.author!.iconUrl!)
-                                  : null,
-                              child: post.author?.iconUrl == null
-                                  ? Text(
-                                      (post.author?.nickname ?? '?')[0]
-                                          .toUpperCase(),
-                                      style: const TextStyle(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: AppTheme.primaryColor.withValues(alpha: 0.5),
+                                  width: 2,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                                    blurRadius: 8,
+                                    spreadRadius: 1,
+                                  ),
+                                ],
+                              ),
+                              child: CircleAvatar(
+                                radius: 24,
+                                backgroundColor: AppTheme.surfaceColor,
+                                backgroundImage: post.author?.iconUrl != null
+                                    ? CachedNetworkImageProvider(post.author!.iconUrl!)
+                                    : null,
+                                child: post.author?.iconUrl == null
+                                    ? Text(
+                                        (post.author?.nickname ?? '?')[0].toUpperCase(),
+                                        style: const TextStyle(
                                           color: AppTheme.primaryColor,
-                                          fontWeight: FontWeight.bold),
-                                    )
-                                  : null,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      )
+                                    : null,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -153,39 +186,53 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                               children: [
                                 Row(
                                   children: [
-                                    Text(post.author?.nickname ?? 'Usuário',
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.w600)),
+                                    Text(
+                                      post.author?.nickname ?? 'Usuário',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        color: AppTheme.textPrimary,
+                                        fontSize: 16,
+                                      ),
+                                    ),
                                     if (post.author != null) ...[
-                                      const SizedBox(width: 6),
+                                      const SizedBox(width: 8),
                                       Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 6, vertical: 2),
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                         decoration: BoxDecoration(
-                                          color: AppTheme.getLevelColor(
-                                                  post.author!.level)
-                                              .withValues(alpha: 0.2),
-                                          borderRadius:
-                                              BorderRadius.circular(8),
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              AppTheme.getLevelColor(post.author!.level),
+                                              AppTheme.getLevelColor(post.author!.level).withValues(alpha: 0.7),
+                                            ],
+                                          ),
+                                          borderRadius: BorderRadius.circular(12),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: AppTheme.getLevelColor(post.author!.level).withValues(alpha: 0.3),
+                                              blurRadius: 4,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
                                         ),
                                         child: Text(
                                           'Lv.${post.author!.level}',
-                                          style: TextStyle(
-                                            color: AppTheme.getLevelColor(
-                                                post.author!.level),
+                                          style: const TextStyle(
+                                            color: Colors.white,
                                             fontSize: 10,
-                                            fontWeight: FontWeight.bold,
+                                            fontWeight: FontWeight.w800,
                                           ),
                                         ),
                                       ),
                                     ],
                                   ],
                                 ),
+                                const SizedBox(height: 4),
                                 Text(
-                                  timeago.format(post.createdAt,
-                                      locale: 'pt_BR'),
-                                  style: const TextStyle(
-                                      color: AppTheme.textHint, fontSize: 12),
+                                  timeago.format(post.createdAt, locale: 'pt_BR'),
+                                  style: TextStyle(
+                                    color: Colors.grey[500],
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ],
                             ),
@@ -200,8 +247,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     if (post.title != null && post.title!.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(post.title!,
-                            style: Theme.of(context).textTheme.headlineSmall),
+                        child: Text(
+                          post.title!,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
                       ),
 
                     // ======================================================
@@ -212,9 +265,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       child: Text(
                         post.content,
                         style: const TextStyle(
-                            fontSize: 15,
-                            height: 1.7,
-                            color: AppTheme.textPrimary),
+                          fontSize: 15,
+                          height: 1.7,
+                          color: AppTheme.textPrimary,
+                        ),
                       ),
                     ),
 
@@ -223,14 +277,28 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     // ======================================================
                     if (post.mediaUrl != null && post.mediaUrl!.isNotEmpty)
                       Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 4),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: CachedNetworkImage(
-                            imageUrl: post.mediaUrl!,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.05),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.2),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: CachedNetworkImage(
+                              imageUrl: post.mediaUrl!,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
                       ),
@@ -239,78 +307,92 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     // AÇÕES
                     // ======================================================
                     Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                       child: Row(
                         children: [
                           TextButton.icon(
                             onPressed: _toggleLike,
-                            icon: Icon(
-                              post.isLiked
-                                  ? Icons.favorite_rounded
-                                  : Icons.favorite_border_rounded,
-                              color: post.isLiked
-                                  ? AppTheme.errorColor
-                                  : AppTheme.textSecondary,
+                            style: TextButton.styleFrom(
+                              foregroundColor: post.isLiked ? AppTheme.errorColor : Colors.grey[500],
                             ),
-                            label: Text('${post.likesCount}',
-                                style: TextStyle(
-                                    color: post.isLiked
-                                        ? AppTheme.errorColor
-                                        : AppTheme.textSecondary)),
+                            icon: Icon(
+                              post.isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                            ),
+                            label: Text(
+                              '${post.likesCount}',
+                              style: const TextStyle(fontWeight: FontWeight.w700),
+                            ),
                           ),
                           TextButton.icon(
                             onPressed: () {},
-                            icon: const Icon(Icons.chat_bubble_outline_rounded,
-                                color: AppTheme.textSecondary),
-                            label: Text('${post.commentsCount}',
-                                style: const TextStyle(
-                                    color: AppTheme.textSecondary)),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.grey[500],
+                            ),
+                            icon: const Icon(Icons.chat_bubble_outline_rounded),
+                            label: Text(
+                              '${post.commentsCount}',
+                              style: const TextStyle(fontWeight: FontWeight.w700),
+                            ),
                           ),
                           const Spacer(),
                           Row(
                             children: [
-                              const Icon(Icons.visibility_outlined,
-                                  size: 16, color: AppTheme.textHint),
+                              Icon(Icons.visibility_outlined, size: 16, color: Colors.grey[600]),
                               const SizedBox(width: 4),
-                              Text('${post.viewsCount}',
-                                  style: const TextStyle(
-                                      color: AppTheme.textHint, fontSize: 12)),
+                              Text(
+                                '${post.viewsCount}',
+                                style: TextStyle(color: Colors.grey[600], fontSize: 12, fontWeight: FontWeight.w600),
+                              ),
+                              const SizedBox(width: 16),
                             ],
                           ),
                         ],
                       ),
                     ),
 
-                    const Divider(color: AppTheme.dividerColor),
+                    Divider(color: Colors.white.withValues(alpha: 0.05), thickness: 1),
 
                     // ======================================================
                     // COMENTÁRIOS
                     // ======================================================
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                      child: Text('Comentários',
-                          style: Theme.of(context).textTheme.titleMedium),
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                      child: const Text(
+                        'Comentários',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
                     ),
 
                     commentsAsync.when(
                       loading: () => const Padding(
                         padding: EdgeInsets.all(32),
                         child: Center(
-                            child: CircularProgressIndicator(strokeWidth: 2)),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+                          ),
+                        ),
                       ),
                       error: (error, _) => Padding(
                         padding: const EdgeInsets.all(16),
-                        child: Text('Erro ao carregar comentários: $error'),
+                        child: Text(
+                          'Erro ao carregar comentários: $error',
+                          style: const TextStyle(color: AppTheme.errorColor),
+                        ),
                       ),
                       data: (comments) {
                         if (comments.isEmpty) {
-                          return const Padding(
-                            padding: EdgeInsets.all(32),
+                          return Padding(
+                            padding: const EdgeInsets.all(32),
                             child: Center(
                               child: Text(
-                                  'Nenhum comentário ainda. Seja o primeiro!',
-                                  style: TextStyle(color: AppTheme.textHint)),
+                                'Nenhum comentário ainda. Seja o primeiro!',
+                                style: TextStyle(color: Colors.grey[500]),
+                              ),
                             ),
                           );
                         }
@@ -319,8 +401,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: comments.length,
-                          itemBuilder: (context, index) =>
-                              _CommentTile(comment: comments[index]),
+                          itemBuilder: (context, index) => _CommentTile(comment: comments[index]),
                         );
                       },
                     ),
@@ -335,37 +416,79 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             // INPUT DE COMENTÁRIO
             // ======================================================
             Container(
-              padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
-              decoration: const BoxDecoration(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+              decoration: BoxDecoration(
                 color: AppTheme.surfaceColor,
-                border: Border(top: BorderSide(color: AppTheme.dividerColor)),
+                border: Border(
+                  top: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, -2),
+                  ),
+                ],
               ),
               child: SafeArea(
                 child: Row(
                   children: [
                     Expanded(
-                      child: TextField(
-                        controller: _commentController,
-                        decoration: const InputDecoration(
-                          hintText: 'Escreva um comentário...',
-                          border: InputBorder.none,
-                          contentPadding:
-                              EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppTheme.scaffoldBg,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
                         ),
-                        maxLines: 3,
-                        minLines: 1,
+                        child: TextField(
+                          controller: _commentController,
+                          style: const TextStyle(color: AppTheme.textPrimary),
+                          decoration: InputDecoration(
+                            hintText: 'Escreva um comentário...',
+                            hintStyle: TextStyle(color: Colors.grey[600]),
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          ),
+                          maxLines: 3,
+                          minLines: 1,
+                        ),
                       ),
                     ),
-                    IconButton(
-                      onPressed: _isSending ? null : _sendComment,
-                      icon: _isSending
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.send_rounded,
-                              color: AppTheme.primaryColor),
+                    const SizedBox(width: 12),
+                    GestureDetector(
+                      onTap: _isSending ? null : _sendComment,
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: _isSending
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              )
+                            : const Icon(
+                                Icons.send_rounded,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                      ),
                     ),
                   ],
                 ),
@@ -386,77 +509,103 @@ class _CommentTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          GestureDetector(
-            onTap: () => context.push('/user/${comment.authorId}'),
-            child: CircleAvatar(
-              radius: 16,
-              backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.3),
-              backgroundImage: comment.author?.iconUrl != null
-                  ? CachedNetworkImageProvider(comment.author!.iconUrl!)
-                  : null,
-              child: comment.author?.iconUrl == null
-                  ? Text(
-                      (comment.author?.nickname ?? '?')[0].toUpperCase(),
-                      style: const TextStyle(
-                          fontSize: 12, color: AppTheme.primaryColor),
-                    )
-                  : null,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(comment.author?.nickname ?? 'Usuário',
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GestureDetector(
+              onTap: () => context.push('/user/${comment.authorId}'),
+              child: CircleAvatar(
+                radius: 18,
+                backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.2),
+                backgroundImage: comment.author?.iconUrl != null
+                    ? CachedNetworkImageProvider(comment.author!.iconUrl!)
+                    : null,
+                child: comment.author?.iconUrl == null
+                    ? Text(
+                        (comment.author?.nickname ?? '?')[0].toUpperCase(),
                         style: const TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 13)),
-                    const SizedBox(width: 8),
-                    Text(
-                      timeago.format(comment.createdAt, locale: 'pt_BR'),
-                      style: const TextStyle(
-                          color: AppTheme.textHint, fontSize: 11),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(comment.content,
-                    style: const TextStyle(fontSize: 13, height: 1.4)),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () {},
-                      child: Row(
-                        children: [
-                          const Icon(Icons.favorite_border_rounded,
-                              size: 14, color: AppTheme.textHint),
-                          const SizedBox(width: 4),
-                          Text('${comment.likesCount}',
-                              style: const TextStyle(
-                                  color: AppTheme.textHint, fontSize: 11)),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    GestureDetector(
-                      onTap: () {},
-                      child: const Text('Responder',
-                          style: TextStyle(
-                              color: AppTheme.textHint, fontSize: 11)),
-                    ),
-                  ],
-                ),
-              ],
+                          fontSize: 14,
+                          color: AppTheme.primaryColor,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      )
+                    : null,
+              ),
             ),
-          ),
-        ],
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        comment.author?.nickname ?? 'Usuário',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        timeago.format(comment.createdAt, locale: 'pt_BR'),
+                        style: TextStyle(color: Colors.grey[600], fontSize: 11),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    comment.content,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      height: 1.4,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () {},
+                        child: Row(
+                          children: [
+                            Icon(Icons.favorite_border_rounded, size: 16, color: Colors.grey[500]),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${comment.likesCount}',
+                              style: TextStyle(color: Colors.grey[500], fontSize: 12, fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 20),
+                      GestureDetector(
+                        onTap: () {},
+                        child: Text(
+                          'Responder',
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

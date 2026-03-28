@@ -109,18 +109,56 @@ class _NotificationSettingsScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
       appBar: AppBar(
-        title: const Text('Notificações',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        title: const Text(
+          'Notificações',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            color: AppTheme.textPrimary,
+          ),
+        ),
         actions: [
-          TextButton(
-            onPressed: _saveSettings,
-            child: const Text('Salvar'),
+          GestureDetector(
+            onTap: _saveSettings,
+            child: Container(
+              margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              alignment: Alignment.center,
+              child: const Text(
+                'Salvar',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                ),
+              ),
+            ),
           ),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: AppTheme.primaryColor,
+              ),
+            )
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
@@ -128,27 +166,55 @@ class _NotificationSettingsScreenState
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(14),
+                    color: AppTheme.surfaceColor,
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                        color: AppTheme.primaryColor.withValues(alpha: 0.2)),
+                      color: Colors.white.withValues(alpha: 0.05),
+                    ),
+                    boxShadow: [
+                      if (_pushEnabled)
+                        BoxShadow(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                    ],
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.notifications_rounded,
-                          color: AppTheme.primaryColor, size: 28),
-                      const SizedBox(width: 12),
-                      const Expanded(
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.notifications_rounded,
+                          color: AppTheme.primaryColor,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Notificações Push',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 16)),
-                            Text('Ativar/desativar todas',
-                                style: TextStyle(
-                                    color: AppTheme.textSecondary,
-                                    fontSize: 12)),
+                            const Text(
+                              'Notificações Push',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 16,
+                                color: AppTheme.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Ativar/desativar todas',
+                              style: TextStyle(
+                                color: Colors.grey[500],
+                                fontSize: 13,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -156,17 +222,20 @@ class _NotificationSettingsScreenState
                         value: _pushEnabled,
                         onChanged: (v) => setState(() => _pushEnabled = v),
                         activeColor: AppTheme.primaryColor,
+                        activeTrackColor: AppTheme.primaryColor.withValues(alpha: 0.3),
+                        inactiveThumbColor: Colors.grey[400],
+                        inactiveTrackColor: Colors.grey[800],
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
 
                 // ============================================================
                 // CATEGORIAS
                 // ============================================================
                 if (_pushEnabled) ...[
-                  _SectionTitle(title: 'Social'),
+                  const _SectionTitle(title: 'Social'),
                   _NotifToggle(
                     icon: Icons.favorite_rounded,
                     title: 'Curtidas',
@@ -199,8 +268,8 @@ class _NotificationSettingsScreenState
                     color: const Color(0xFF00BCD4),
                     onChanged: (v) => setState(() => _pushMentions = v),
                   ),
-                  const SizedBox(height: 16),
-                  _SectionTitle(title: 'Chat'),
+                  const SizedBox(height: 24),
+                  const _SectionTitle(title: 'Chat'),
                   _NotifToggle(
                     icon: Icons.chat_rounded,
                     title: 'Mensagens',
@@ -217,8 +286,8 @@ class _NotificationSettingsScreenState
                     color: AppTheme.successColor,
                     onChanged: (v) => setState(() => _pushCommunityInvites = v),
                   ),
-                  const SizedBox(height: 16),
-                  _SectionTitle(title: 'Gamificação'),
+                  const SizedBox(height: 24),
+                  const _SectionTitle(title: 'Gamificação'),
                   _NotifToggle(
                     icon: Icons.emoji_events_rounded,
                     title: 'Conquistas',
@@ -235,8 +304,8 @@ class _NotificationSettingsScreenState
                     color: const Color(0xFF9C27B0),
                     onChanged: (v) => setState(() => _pushLevelUp = v),
                   ),
-                  const SizedBox(height: 16),
-                  _SectionTitle(title: 'Moderação'),
+                  const SizedBox(height: 24),
+                  const _SectionTitle(title: 'Moderação'),
                   _NotifToggle(
                     icon: Icons.gavel_rounded,
                     title: 'Ações de Moderação',
@@ -252,13 +321,13 @@ class _NotificationSettingsScreenState
                 // ============================================================
                 // IN-APP
                 // ============================================================
-                _SectionTitle(title: 'In-App'),
+                const _SectionTitle(title: 'In-App'),
                 _NotifToggle(
                   icon: Icons.volume_up_rounded,
                   title: 'Sons',
                   subtitle: 'Sons de notificação dentro do app',
                   value: _inAppSounds,
-                  color: AppTheme.textSecondary,
+                  color: Colors.grey[500]!,
                   onChanged: (v) => setState(() => _inAppSounds = v),
                 ),
                 _NotifToggle(
@@ -266,7 +335,7 @@ class _NotificationSettingsScreenState
                   title: 'Vibração',
                   subtitle: 'Vibrar ao receber notificações',
                   value: _inAppVibration,
-                  color: AppTheme.textSecondary,
+                  color: Colors.grey[500]!,
                   onChanged: (v) => setState(() => _inAppVibration = v),
                 ),
                 const SizedBox(height: 32),
@@ -283,13 +352,14 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 12, left: 4),
       child: Text(
         title,
         style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 15,
+          fontWeight: FontWeight.w800,
+          fontSize: 16,
           color: AppTheme.textPrimary,
+          letterSpacing: 0.5,
         ),
       ),
     );
@@ -316,41 +386,57 @@ class _NotifToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 6),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
-        borderRadius: BorderRadius.circular(12),
+        color: AppTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.05),
+        ),
       ),
       child: Row(
         children: [
           Container(
-            width: 32,
-            height: 32,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: color, size: 16),
+            child: Icon(icon, color: color, size: 20),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w500, fontSize: 14)),
-                Text(subtitle,
-                    style: const TextStyle(
-                        color: AppTheme.textHint, fontSize: 11)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: Colors.grey[500],
+                    fontSize: 13,
+                  ),
+                ),
               ],
             ),
           ),
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: AppTheme.primaryColor,
+            activeColor: color,
+            activeTrackColor: color.withValues(alpha: 0.3),
+            inactiveThumbColor: Colors.grey[400],
+            inactiveTrackColor: Colors.grey[800],
           ),
         ],
       ),

@@ -31,15 +31,36 @@ class LeaderboardScreen extends ConsumerWidget {
     final leaderboardAsync = ref.watch(leaderboardProvider(communityId));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Ranking')),
+      backgroundColor: AppTheme.scaffoldBg,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text(
+          'Ranking',
+          style: TextStyle(
+            color: AppTheme.textPrimary,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+      ),
       body: leaderboardAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Erro: $error')),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: AppTheme.primaryColor),
+        ),
+        error: (error, _) => Center(
+          child: Text(
+            'Erro: $error',
+            style: const TextStyle(color: AppTheme.errorColor),
+          ),
+        ),
         data: (members) {
           if (members.isEmpty) {
-            return const Center(
-              child: Text('Nenhum membro no ranking ainda',
-                  style: TextStyle(color: AppTheme.textSecondary)),
+            return Center(
+              child: Text(
+                'Nenhum membro no ranking ainda',
+                style: TextStyle(color: Colors.grey[500]),
+              ),
             );
           }
 
@@ -119,39 +140,70 @@ class _PodiumItem extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           // Avatar
-          CircleAvatar(
-            radius: rank == 1 ? 32 : 24,
-            backgroundColor: color.withValues(alpha: 0.3),
-            backgroundImage: data['icon_url'] != null
-                ? CachedNetworkImageProvider(data['icon_url'] as String)
-                : null,
-            child: data['icon_url'] == null
-                ? Text(
-                    ((data['nickname'] as String?) ?? '?')[0].toUpperCase(),
-                    style: TextStyle(color: color, fontWeight: FontWeight.bold),
-                  )
-                : null,
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: rank == 1
+                  ? [
+                      BoxShadow(
+                        color: color.withValues(alpha: 0.3),
+                        blurRadius: 12,
+                        spreadRadius: 2,
+                      )
+                    ]
+                  : null,
+            ),
+            child: CircleAvatar(
+              radius: rank == 1 ? 32 : 24,
+              backgroundColor: color.withValues(alpha: 0.2),
+              backgroundImage: data['icon_url'] != null
+                  ? CachedNetworkImageProvider(data['icon_url'] as String)
+                  : null,
+              child: data['icon_url'] == null
+                  ? Text(
+                      ((data['nickname'] as String?) ?? '?')[0].toUpperCase(),
+                      style: TextStyle(
+                        color: color,
+                        fontWeight: FontWeight.w800,
+                        fontSize: rank == 1 ? 24 : 18,
+                      ),
+                    )
+                  : null,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             data['nickname'] as String? ?? 'Usuário',
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+            style: const TextStyle(
+              color: AppTheme.textPrimary,
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
           Text(
             '${data['community_reputation'] ?? 0} rep',
             style: TextStyle(
-                color: color, fontSize: 11, fontWeight: FontWeight.bold),
+              color: color,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+            ),
           ),
           const SizedBox(height: 8),
           // Podium
           Container(
             height: height * 0.5,
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.2),
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(8)),
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  color.withValues(alpha: 0.3),
+                  color.withValues(alpha: 0.05),
+                ],
+              ),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
               border: Border.all(color: color.withValues(alpha: 0.5)),
             ),
             child: Center(
@@ -159,7 +211,7 @@ class _PodiumItem extends StatelessWidget {
                 '#$rank',
                 style: TextStyle(
                   color: color,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w800,
                   fontSize: rank == 1 ? 24 : 18,
                 ),
               ),
@@ -181,11 +233,12 @@ class _LeaderboardTile extends StatelessWidget {
     final rank = data['rank'] as num? ?? 0;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
-        borderRadius: BorderRadius.circular(12),
+        color: AppTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Row(
         children: [
@@ -194,9 +247,10 @@ class _LeaderboardTile extends StatelessWidget {
             width: 32,
             child: Text(
               '#$rank',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textSecondary,
+              style: TextStyle(
+                fontWeight: FontWeight.w800,
+                color: Colors.grey[500],
+                fontSize: 16,
               ),
             ),
           ),
@@ -204,7 +258,7 @@ class _LeaderboardTile extends StatelessWidget {
           GestureDetector(
             onTap: () => context.push('/user/${data['user_id']}'),
             child: CircleAvatar(
-              radius: 20,
+              radius: 24,
               backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.2),
               backgroundImage: data['icon_url'] != null
                   ? CachedNetworkImageProvider(data['icon_url'] as String)
@@ -213,12 +267,15 @@ class _LeaderboardTile extends StatelessWidget {
                   ? Text(
                       ((data['nickname'] as String?) ?? '?')[0].toUpperCase(),
                       style: const TextStyle(
-                          color: AppTheme.primaryColor, fontSize: 14),
+                        color: AppTheme.primaryColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
                     )
                   : null,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           // Info
           Expanded(
             child: Column(
@@ -226,54 +283,93 @@ class _LeaderboardTile extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(data['nickname'] as String? ?? 'Usuário',
-                        style: const TextStyle(fontWeight: FontWeight.w600)),
-                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        data['nickname'] as String? ?? 'Usuário',
+                        style: const TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                        color:
-                            AppTheme.getLevelColor(data['level'] as int? ?? 1)
-                                .withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(8),
+                        color: AppTheme.getLevelColor(data['level'] as int? ?? 1)
+                            .withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: AppTheme.getLevelColor(data['level'] as int? ?? 1)
+                              .withValues(alpha: 0.3),
+                        ),
                       ),
                       child: Text(
                         'Lv.${data['level'] ?? 1}',
                         style: TextStyle(
-                          color: AppTheme.getLevelColor(
-                              data['level'] as int? ?? 1),
+                          color: AppTheme.getLevelColor(data['level'] as int? ?? 1),
                           fontSize: 10,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
                     ),
                   ],
                 ),
-                if (data['role'] != null && data['role'] != 'member')
+                if (data['role'] != null && data['role'] != 'member') ...[
+                  const SizedBox(height: 4),
                   Text(
                     (data['role'] as String).toUpperCase(),
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: AppTheme.accentColor,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
                     ),
                   ),
+                ],
               ],
             ),
           ),
+          const SizedBox(width: 12),
           // Reputation
-          Text(
-            '${data['community_reputation'] ?? 0}',
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              color: AppTheme.warningColor,
-              fontSize: 16,
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '${data['community_reputation'] ?? 0}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.warningColor,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(
+                    Icons.star_rounded,
+                    color: AppTheme.warningColor,
+                    size: 18,
+                  ),
+                ],
+              ),
+              Text(
+                'REP',
+                style: TextStyle(
+                  color: Colors.grey[500],
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 4),
-          const Icon(Icons.star_rounded,
-              color: AppTheme.warningColor, size: 16),
         ],
       ),
     );

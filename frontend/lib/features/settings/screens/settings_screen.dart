@@ -28,22 +28,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surfaceColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+        ),
         title: const Row(
           children: [
             Icon(Icons.download_rounded, color: AppTheme.primaryColor),
             SizedBox(width: 8),
-            Text('Exportar Dados'),
+            Text('Exportar Dados', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w800)),
           ],
         ),
-        content: const Text(
+        content: Text(
             'Vamos preparar um arquivo com todos os seus dados (perfil, posts, comentários, mensagens). '
-            'Você receberá uma notificação quando estiver pronto.'),
+            'Você receberá uma notificação quando estiver pronto.',
+            style: TextStyle(color: Colors.grey[500])),
         actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancelar')),
-          ElevatedButton(
-            onPressed: () async {
+          GestureDetector(
+            onTap: () => Navigator.pop(ctx),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text('Cancelar', style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w700)),
+            ),
+          ),
+          GestureDetector(
+            onTap: () async {
               Navigator.pop(ctx);
               try {
                 await SupabaseService.rpc('request_data_export');
@@ -62,7 +72,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 }
               }
             },
-            child: const Text('Solicitar'),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                ),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Text('Solicitar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+            ),
           ),
         ],
       ),
@@ -73,27 +99,49 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final confirm1 = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surfaceColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+        ),
         title: const Row(
           children: [
             Icon(Icons.warning_rounded, color: AppTheme.errorColor),
             SizedBox(width: 8),
-            Text('Excluir Conta'),
+            Text('Excluir Conta', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w800)),
           ],
         ),
-        content: const Text(
+        content: Text(
             'Esta ação é IRREVERSÍVEL. Todos os seus dados, posts, comentários, '
             'mensagens e itens comprados serão permanentemente deletados.\n\n'
-            'Tem certeza que deseja continuar?'),
+            'Tem certeza que deseja continuar?',
+            style: TextStyle(color: Colors.grey[500])),
         actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancelar')),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style:
-                ElevatedButton.styleFrom(backgroundColor: AppTheme.errorColor),
-            child: const Text('Sim, excluir',
-                style: TextStyle(color: Colors.white)),
+          GestureDetector(
+            onTap: () => Navigator.pop(ctx, false),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text('Cancelar', style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w700)),
+            ),
+          ),
+          GestureDetector(
+            onTap: () => Navigator.pop(ctx, true),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppTheme.errorColor,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.errorColor.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Text('Sim, excluir',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+            ),
           ),
         ],
       ),
@@ -106,36 +154,67 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final confirm2 = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Confirmação Final'),
+        backgroundColor: AppTheme.surfaceColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+        ),
+        title: const Text('Confirmação Final', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w800)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-                'Digite "EXCLUIR" para confirmar a exclusão permanente da sua conta.'),
+            Text(
+                'Digite "EXCLUIR" para confirmar a exclusão permanente da sua conta.',
+                style: TextStyle(color: Colors.grey[500])),
             const SizedBox(height: 12),
             TextField(
               controller: confirmCtrl,
-              decoration: const InputDecoration(
+              style: const TextStyle(color: AppTheme.textPrimary),
+              decoration: InputDecoration(
                 hintText: 'EXCLUIR',
-                border: OutlineInputBorder(),
+                hintStyle: TextStyle(color: Colors.grey[600]),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppTheme.errorColor),
+                ),
               ),
             ),
           ],
         ),
         actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancelar')),
-          ElevatedButton(
-            onPressed: () {
+          GestureDetector(
+            onTap: () => Navigator.pop(ctx, false),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text('Cancelar', style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w700)),
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
               if (confirmCtrl.text.trim() == 'EXCLUIR') {
                 Navigator.pop(ctx, true);
               }
             },
-            style:
-                ElevatedButton.styleFrom(backgroundColor: AppTheme.errorColor),
-            child: const Text('Excluir Permanentemente',
-                style: TextStyle(color: Colors.white)),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppTheme.errorColor,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.errorColor.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Text('Excluir Permanentemente',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+            ),
           ),
         ],
       ),
@@ -176,12 +255,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         title: const Text('Configurações',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+            style: TextStyle(fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
+        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
@@ -197,23 +280,42 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppTheme.cardColor,
+                      color: AppTheme.surfaceColor,
                       borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: Row(
                       children: [
-                        CircleAvatar(
-                          radius: 28,
-                          backgroundColor:
-                              AppTheme.primaryColor.withValues(alpha: 0.2),
-                          backgroundImage: _profile?['icon_url'] != null
-                              ? CachedNetworkImageProvider(
-                                  _profile!['icon_url'] as String)
-                              : null,
-                          child: _profile?['icon_url'] == null
-                              ? const Icon(Icons.person_rounded,
-                                  color: AppTheme.primaryColor, size: 28)
-                              : null,
+                        Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                                blurRadius: 8,
+                              ),
+                            ],
+                          ),
+                          child: CircleAvatar(
+                            radius: 28,
+                            backgroundColor:
+                                AppTheme.primaryColor.withValues(alpha: 0.2),
+                            backgroundImage: _profile?['icon_url'] != null
+                                ? CachedNetworkImageProvider(
+                                    _profile!['icon_url'] as String)
+                                : null,
+                            child: _profile?['icon_url'] == null
+                                ? const Icon(Icons.person_rounded,
+                                    color: AppTheme.primaryColor, size: 28)
+                                : null,
+                          ),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
@@ -223,19 +325,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               Text(
                                 _profile?['nickname'] as String? ?? 'Usuário',
                                 style: const TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 16),
+                                    color: AppTheme.textPrimary,
+                                    fontWeight: FontWeight.w800, fontSize: 16),
                               ),
                               Text(
                                 'Nível ${_profile?['level'] ?? 1}',
-                                style: const TextStyle(
-                                    color: AppTheme.textSecondary,
-                                    fontSize: 12),
+                                style: TextStyle(
+                                    color: Colors.grey[500],
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700),
                               ),
                             ],
                           ),
                         ),
-                        const Icon(Icons.chevron_right_rounded,
-                            color: AppTheme.textHint),
+                        Icon(Icons.chevron_right_rounded,
+                            color: Colors.grey[600]),
                       ],
                     ),
                   ),
@@ -245,7 +349,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // ============================================================
                 // CONTA
                 // ============================================================
-                _SectionLabel(title: 'Conta'),
+                const _SectionLabel(title: 'Conta'),
                 _SettingsGroup(items: [
                   _SettingsItem(
                     icon: Icons.person_rounded,
@@ -275,7 +379,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // ============================================================
                 // PREFERÊNCIAS
                 // ============================================================
-                _SectionLabel(title: 'Preferências'),
+                const _SectionLabel(title: 'Preferências'),
                 _SettingsGroup(items: [
                   _SettingsItem(
                     icon: Icons.notifications_rounded,
@@ -305,7 +409,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // ============================================================
                 // GAMIFICAÇÃO
                 // ============================================================
-                _SectionLabel(title: 'Gamificação'),
+                const _SectionLabel(title: 'Gamificação'),
                 _SettingsGroup(items: [
                   _SettingsItem(
                     icon: Icons.account_balance_wallet_rounded,
@@ -328,7 +432,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // ============================================================
                 // SEGURANÇA
                 // ============================================================
-                _SectionLabel(title: 'Segurança'),
+                const _SectionLabel(title: 'Segurança'),
                 _SettingsGroup(items: [
                   _SettingsItem(
                     icon: Icons.block_rounded,
@@ -346,7 +450,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // ============================================================
                 // SUPORTE
                 // ============================================================
-                _SectionLabel(title: 'Suporte'),
+                const _SectionLabel(title: 'Suporte'),
                 _SettingsGroup(items: [
                   _SettingsItem(
                     icon: Icons.help_rounded,
@@ -382,7 +486,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // ============================================================
                 // DADOS
                 // ============================================================
-                _SectionLabel(title: 'Dados'),
+                const _SectionLabel(title: 'Dados'),
                 _SettingsGroup(items: [
                   _SettingsItem(
                     icon: Icons.download_rounded,
@@ -400,45 +504,71 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // ============================================================
                 // LOGOUT
                 // ============================================================
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: OutlinedButton.icon(
-                    onPressed: () async {
-                      final confirm = await showDialog<bool>(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          title: const Text('Sair'),
-                          content: const Text(
-                              'Tem certeza que deseja sair da sua conta?'),
-                          actions: [
-                            TextButton(
-                                onPressed: () => Navigator.pop(ctx, false),
-                                child: const Text('Cancelar')),
-                            ElevatedButton(
-                              onPressed: () => Navigator.pop(ctx, true),
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppTheme.errorColor),
-                              child: const Text('Sair'),
-                            ),
-                          ],
+                GestureDetector(
+                  onTap: () async {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        backgroundColor: AppTheme.surfaceColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
                         ),
-                      );
-
-                      if (confirm == true && mounted) {
-                        await SupabaseService.client.auth.signOut();
-                        if (mounted) context.go('/login');
-                      }
-                    },
-                    icon: const Icon(Icons.logout_rounded,
-                        color: AppTheme.errorColor),
-                    label: const Text('Sair da Conta',
-                        style: TextStyle(color: AppTheme.errorColor)),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppTheme.errorColor),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        title: const Text('Sair', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w800)),
+                        content: Text(
+                            'Tem certeza que deseja sair da sua conta?',
+                            style: TextStyle(color: Colors.grey[500])),
+                        actions: [
+                          GestureDetector(
+                            onTap: () => Navigator.pop(ctx, false),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              child: Text('Cancelar', style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w700)),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () => Navigator.pop(ctx, true),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: AppTheme.errorColor,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppTheme.errorColor.withValues(alpha: 0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Text('Sair', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+                            ),
+                          ),
+                        ],
                       ),
+                    );
+
+                    if (confirm == true && mounted) {
+                      await SupabaseService.client.auth.signOut();
+                      if (mounted) context.go('/login');
+                    }
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppTheme.errorColor),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.logout_rounded, color: AppTheme.errorColor),
+                        SizedBox(width: 8),
+                        Text('Sair da Conta',
+                            style: TextStyle(color: AppTheme.errorColor, fontWeight: FontWeight.w800)),
+                      ],
                     ),
                   ),
                 ),
@@ -459,10 +589,10 @@ class _SectionLabel extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         title,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
+        style: TextStyle(
+          fontWeight: FontWeight.w800,
           fontSize: 15,
-          color: AppTheme.textSecondary,
+          color: Colors.grey[500],
         ),
       ),
     );
@@ -477,8 +607,9 @@ class _SettingsGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
-        borderRadius: BorderRadius.circular(14),
+        color: AppTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
         children: items.asMap().entries.map((entry) {
@@ -486,7 +617,7 @@ class _SettingsGroup extends StatelessWidget {
           final item = entry.value;
           return Column(
             children: [
-              if (index > 0) const Divider(height: 1, indent: 52),
+              if (index > 0) Divider(height: 1, indent: 52, color: Colors.white.withValues(alpha: 0.05)),
               item,
             ],
           );
@@ -514,13 +645,13 @@ class _SettingsItem extends StatelessWidget {
     return ListTile(
       leading: Icon(icon, color: AppTheme.primaryColor, size: 22),
       title: Text(title,
-          style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+          style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w700, fontSize: 14)),
       subtitle: subtitle != null
           ? Text(subtitle!,
-              style: const TextStyle(color: AppTheme.textHint, fontSize: 11))
+              style: TextStyle(color: Colors.grey[600], fontSize: 11))
           : null,
-      trailing: const Icon(Icons.chevron_right_rounded,
-          color: AppTheme.textHint, size: 20),
+      trailing: Icon(Icons.chevron_right_rounded,
+          color: Colors.grey[600], size: 20),
       onTap: onTap,
     );
   }
@@ -541,10 +672,10 @@ class _ThemeToggleItem extends StatelessWidget {
         size: 22,
       ),
       title: const Text('Aparência',
-          style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+          style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w700, fontSize: 14)),
       subtitle: Text(
         isDark ? 'Tema escuro' : 'Tema claro',
-        style: const TextStyle(color: AppTheme.textHint, fontSize: 11),
+        style: TextStyle(color: Colors.grey[600], fontSize: 11),
       ),
       trailing: Switch(
         value: isDark,

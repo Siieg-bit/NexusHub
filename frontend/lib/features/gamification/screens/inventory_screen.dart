@@ -91,13 +91,26 @@ class _InventoryScreenState extends State<InventoryScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(isEquipped ? 'Item desequipado' : 'Item equipado!'),
+            backgroundColor: AppTheme.surfaceColor,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+            ),
           ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: $e')),
+          SnackBar(
+            content: Text('Erro: $e', style: const TextStyle(color: Colors.white)),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
         );
       }
     }
@@ -112,21 +125,37 @@ class _InventoryScreenState extends State<InventoryScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
       appBar: AppBar(
-        title: const Text('Inventário',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        title: const Text(
+          'Inventário',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            color: AppTheme.textPrimary,
+          ),
+        ),
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
           labelColor: AppTheme.primaryColor,
-          unselectedLabelColor: AppTheme.textSecondary,
+          unselectedLabelColor: Colors.grey[500],
           indicatorColor: AppTheme.primaryColor,
+          dividerColor: Colors.transparent,
           tabAlignment: TabAlignment.start,
+          labelStyle: const TextStyle(fontWeight: FontWeight.w700),
+          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
           tabs: _tabs.map((t) => Tab(text: t)).toList(),
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: AppTheme.primaryColor,
+              ),
+            )
           : TabBarView(
               controller: _tabController,
               children: List.generate(
@@ -143,17 +172,51 @@ class _InventoryScreenState extends State<InventoryScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.inventory_2_rounded,
-                size: 64, color: AppTheme.textHint),
+            Icon(
+              Icons.inventory_2_rounded,
+              size: 64,
+              color: Colors.grey[600],
+            ),
             const SizedBox(height: 16),
-            const Text('Nenhum item',
-                style: TextStyle(color: AppTheme.textSecondary)),
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: () {
+            Text(
+              'Nenhum item',
+              style: TextStyle(
+                color: Colors.grey[500],
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 24),
+            GestureDetector(
+              onTap: () {
                 // Navegar para a loja
               },
-              child: const Text('Ir para a Loja'),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Text(
+                  'Ir para a Loja',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -166,7 +229,7 @@ class _InventoryScreenState extends State<InventoryScreen>
         crossAxisCount: 3,
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
-        childAspectRatio: 0.8,
+        childAspectRatio: 0.75,
       ),
       itemCount: items.length,
       itemBuilder: (context, index) {
@@ -180,12 +243,23 @@ class _InventoryScreenState extends State<InventoryScreen>
           onTap: () => _toggleEquip(item),
           child: Container(
             decoration: BoxDecoration(
-              color: AppTheme.cardColor,
-              borderRadius: BorderRadius.circular(14),
+              color: AppTheme.surfaceColor,
+              borderRadius: BorderRadius.circular(16),
               border: isEquipped
                   ? Border.all(color: AppTheme.primaryColor, width: 2)
                   : Border.all(
-                      color: AppTheme.dividerColor.withValues(alpha: 0.3)),
+                      color: Colors.white.withValues(alpha: 0.05),
+                      width: 1,
+                    ),
+              boxShadow: isEquipped
+                  ? [
+                      BoxShadow(
+                        color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                        blurRadius: 8,
+                        spreadRadius: 1,
+                      )
+                    ]
+                  : null,
             ),
             child: Column(
               children: [
@@ -196,44 +270,59 @@ class _InventoryScreenState extends State<InventoryScreen>
                         width: double.infinity,
                         decoration: BoxDecoration(
                           borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(14)),
+                            top: Radius.circular(14),
+                          ),
                           color: AppTheme.primaryColor.withValues(alpha: 0.08),
                         ),
                         child: imageUrl != null
                             ? ClipRRect(
                                 borderRadius: const BorderRadius.vertical(
-                                    top: Radius.circular(14)),
+                                  top: Radius.circular(14),
+                                ),
                                 child: CachedNetworkImage(
                                   imageUrl: imageUrl,
                                   fit: BoxFit.cover,
                                 ),
                               )
-                            : const Center(
-                                child: Icon(Icons.auto_awesome_rounded,
-                                    color: AppTheme.textHint, size: 32)),
+                            : Icon(
+                                Icons.auto_awesome_rounded,
+                                color: Colors.grey[600],
+                                size: 32,
+                              ),
                       ),
                       if (isEquipped)
                         Positioned(
-                          top: 4,
-                          right: 4,
+                          top: 6,
+                          right: 6,
                           child: Container(
-                            padding: const EdgeInsets.all(3),
+                            padding: const EdgeInsets.all(4),
                             decoration: const BoxDecoration(
-                              color: AppTheme.primaryColor,
+                              gradient: LinearGradient(
+                                colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.check_rounded,
-                                color: Colors.white, size: 12),
+                            child: const Icon(
+                              Icons.check_rounded,
+                              color: Colors.white,
+                              size: 12,
+                            ),
                           ),
                         ),
                     ],
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(6),
+                  padding: const EdgeInsets.all(8),
                   child: Text(
                     name,
-                    style: const TextStyle(fontSize: 11),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textPrimary,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,

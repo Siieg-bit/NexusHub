@@ -69,12 +69,17 @@ class _WalletScreenState extends State<WalletScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         title: const Text('Carteira',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+            style: TextStyle(
+                fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
+        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
           : SingleChildScrollView(
               child: Column(
                 children: [
@@ -86,10 +91,9 @@ class _WalletScreenState extends State<WalletScreen>
                     margin: const EdgeInsets.all(16),
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
+                      gradient: const LinearGradient(
                         colors: [
                           AppTheme.primaryColor,
-                          AppTheme.primaryColor.withValues(alpha: 0.7),
                           AppTheme.accentColor,
                         ],
                         begin: Alignment.topLeft,
@@ -121,7 +125,7 @@ class _WalletScreenState extends State<WalletScreen>
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 40,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
                           ],
@@ -202,51 +206,56 @@ class _WalletScreenState extends State<WalletScreen>
                     margin: const EdgeInsets.symmetric(horizontal: 16),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppTheme.cardColor,
+                      color: AppTheme.surfaceColor,
                       borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.05),
+                      ),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text('Como ganhar moedas',
                             style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16)),
+                                fontWeight: FontWeight.w800,
+                                fontSize: 16,
+                                color: AppTheme.textPrimary)),
                         const SizedBox(height: 12),
-                        _EarnRow(
+                        const _EarnRow(
                           icon: Icons.calendar_today_rounded,
                           title: 'Check-in diário',
                           reward: '5-25',
                           color: AppTheme.warningColor,
                         ),
-                        _EarnRow(
+                        const _EarnRow(
                           icon: Icons.article_rounded,
                           title: 'Criar posts',
                           reward: '10',
                           color: AppTheme.primaryColor,
                         ),
-                        _EarnRow(
+                        const _EarnRow(
                           icon: Icons.comment_rounded,
                           title: 'Comentar',
                           reward: '2',
                           color: AppTheme.accentColor,
                         ),
-                        _EarnRow(
+                        const _EarnRow(
                           icon: Icons.quiz_rounded,
                           title: 'Completar quizzes',
                           reward: '5-50',
-                          color: const Color(0xFF9C27B0),
+                          color: Color(0xFF9C27B0),
                         ),
-                        _EarnRow(
+                        const _EarnRow(
                           icon: Icons.emoji_events_rounded,
                           title: 'Conquistas',
                           reward: '10-100',
-                          color: const Color(0xFFFF5722),
+                          color: Color(0xFFFF5722),
                         ),
-                        _EarnRow(
+                        const _EarnRow(
                           icon: Icons.people_rounded,
                           title: 'Convidar amigos',
                           reward: '50',
-                          color: AppTheme.successColor,
+                          color: AppTheme.primaryColor,
                         ),
                       ],
                     ),
@@ -260,23 +269,27 @@ class _WalletScreenState extends State<WalletScreen>
                     margin: const EdgeInsets.symmetric(horizontal: 16),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppTheme.cardColor,
+                      color: AppTheme.surfaceColor,
                       borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.05),
+                      ),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text('Histórico',
                             style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16)),
+                                fontWeight: FontWeight.w800,
+                                fontSize: 16,
+                                color: AppTheme.textPrimary)),
                         const SizedBox(height: 12),
                         if (_transactions.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.all(16),
+                          Padding(
+                            padding: const EdgeInsets.all(16),
                             child: Center(
                               child: Text('Nenhuma transação ainda',
-                                  style:
-                                      TextStyle(color: AppTheme.textSecondary)),
+                                  style: TextStyle(color: Colors.grey[500])),
                             ),
                           )
                         else
@@ -297,7 +310,7 @@ class _WalletScreenState extends State<WalletScreen>
                                 height: 36,
                                 decoration: BoxDecoration(
                                   color: (isPositive
-                                          ? AppTheme.successColor
+                                          ? AppTheme.primaryColor
                                           : AppTheme.errorColor)
                                       .withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(10),
@@ -307,25 +320,27 @@ class _WalletScreenState extends State<WalletScreen>
                                       ? Icons.arrow_downward_rounded
                                       : Icons.arrow_upward_rounded,
                                   color: isPositive
-                                      ? AppTheme.successColor
+                                      ? AppTheme.primaryColor
                                       : AppTheme.errorColor,
                                   size: 18,
                                 ),
                               ),
                               title: Text(desc,
-                                  style: const TextStyle(fontSize: 13)),
+                                  style: const TextStyle(
+                                      fontSize: 13,
+                                      color: AppTheme.textPrimary)),
                               subtitle: Text(
                                 '${createdAt.day}/${createdAt.month}/${createdAt.year}',
-                                style: const TextStyle(
-                                    fontSize: 11, color: AppTheme.textHint),
+                                style: TextStyle(
+                                    fontSize: 11, color: Colors.grey[500]),
                               ),
                               trailing: Text(
                                 '${isPositive ? '+' : ''}$amount',
                                 style: TextStyle(
                                   color: isPositive
-                                      ? AppTheme.successColor
+                                      ? AppTheme.primaryColor
                                       : AppTheme.errorColor,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w800,
                                   fontSize: 14,
                                 ),
                               ),
@@ -348,38 +363,63 @@ class _WalletScreenState extends State<WalletScreen>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Transferir Moedas'),
+        backgroundColor: AppTheme.surfaceColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+        ),
+        title: const Text('Transferir Moedas',
+            style: TextStyle(
+                color: AppTheme.textPrimary, fontWeight: FontWeight.w800)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: userIdCtrl,
-              decoration: const InputDecoration(
+              style: const TextStyle(color: AppTheme.textPrimary),
+              decoration: InputDecoration(
                 labelText: 'Amino ID do destinatário',
-                prefixIcon: Icon(Icons.person_rounded),
+                labelStyle: TextStyle(color: Colors.grey[500]),
+                prefixIcon:
+                    const Icon(Icons.person_rounded, color: AppTheme.accentColor),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                ),
+                focusedBorder: const UnderlineInputBorder(
+                  borderSide: BorderSide(color: AppTheme.accentColor),
+                ),
               ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: amountCtrl,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
+              style: const TextStyle(color: AppTheme.textPrimary),
+              decoration: InputDecoration(
                 labelText: 'Quantidade',
-                prefixIcon: Icon(Icons.monetization_on_rounded),
+                labelStyle: TextStyle(color: Colors.grey[500]),
+                prefixIcon: const Icon(Icons.monetization_on_rounded,
+                    color: AppTheme.warningColor),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                ),
+                focusedBorder: const UnderlineInputBorder(
+                  borderSide: BorderSide(color: AppTheme.warningColor),
+                ),
               ),
             ),
             const SizedBox(height: 8),
             Text('Saldo atual: $_coins coins',
-                style: const TextStyle(
-                    color: AppTheme.textSecondary, fontSize: 12)),
+                style: TextStyle(color: Colors.grey[500], fontSize: 12)),
           ],
         ),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancelar')),
-          ElevatedButton(
-            onPressed: () async {
+              child: Text('Cancelar',
+                  style: TextStyle(color: Colors.grey[500]))),
+          GestureDetector(
+            onTap: () async {
               final amount = int.tryParse(amountCtrl.text) ?? 0;
               final targetAminoId = userIdCtrl.text.trim();
               Navigator.pop(ctx);
@@ -415,7 +455,25 @@ class _WalletScreenState extends State<WalletScreen>
                 }
               }
             },
-            child: const Text('Transferir'),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Text('Transferir',
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w700)),
+            ),
           ),
         ],
       ),
@@ -430,11 +488,19 @@ class _WalletScreenState extends State<WalletScreen>
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
+          backgroundColor: AppTheme.surfaceColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+          ),
           title: const Row(
             children: [
               Icon(Icons.volunteer_activism_rounded, color: Color(0xFFE91E63)),
               SizedBox(width: 8),
-              Text('Enviar Props'),
+              Text('Enviar Props',
+                  style: TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontWeight: FontWeight.w800)),
             ],
           ),
           content: Column(
@@ -442,24 +508,43 @@ class _WalletScreenState extends State<WalletScreen>
             children: [
               TextField(
                 controller: userIdCtrl,
-                decoration: const InputDecoration(
+                style: const TextStyle(color: AppTheme.textPrimary),
+                decoration: InputDecoration(
                   labelText: 'Amino ID do usuário',
-                  prefixIcon: Icon(Icons.person_rounded),
+                  labelStyle: TextStyle(color: Colors.grey[500]),
+                  prefixIcon:
+                      const Icon(Icons.person_rounded, color: AppTheme.accentColor),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                  ),
+                  focusedBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(color: AppTheme.accentColor),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
               const Text('Quantidade de Props',
-                  style: TextStyle(fontWeight: FontWeight.w500)),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textPrimary)),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
                 children: [5, 10, 25, 50, 100].map((amount) {
                   final isSelected = selectedAmount == amount;
                   return ChoiceChip(
-                    label: Text('$amount'),
+                    label: Text('$amount',
+                        style: TextStyle(
+                            color: isSelected
+                                ? Colors.white
+                                : AppTheme.textPrimary)),
                     selected: isSelected,
-                    selectedColor:
-                        const Color(0xFFE91E63).withValues(alpha: 0.2),
+                    selectedColor: const Color(0xFFE91E63),
+                    backgroundColor: AppTheme.surfaceColor,
+                    side: BorderSide(
+                        color: isSelected
+                            ? Colors.transparent
+                            : Colors.white.withValues(alpha: 0.1)),
                     onSelected: (_) {
                       setDialogState(() => selectedAmount = amount);
                     },
@@ -468,16 +553,16 @@ class _WalletScreenState extends State<WalletScreen>
               ),
               const SizedBox(height: 8),
               Text('Custo: $selectedAmount coins',
-                  style: const TextStyle(
-                      color: AppTheme.textSecondary, fontSize: 12)),
+                  style: TextStyle(color: Colors.grey[500], fontSize: 12)),
             ],
           ),
           actions: [
             TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('Cancelar')),
-            ElevatedButton(
-              onPressed: () async {
+                child: Text('Cancelar',
+                    style: TextStyle(color: Colors.grey[500]))),
+            GestureDetector(
+              onTap: () async {
                 final targetAminoId = userIdCtrl.text.trim();
                 Navigator.pop(ctx);
                 if (targetAminoId.isEmpty) return;
@@ -508,10 +593,26 @@ class _WalletScreenState extends State<WalletScreen>
                   }
                 }
               },
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE91E63)),
-              child:
-                  const Text('Enviar', style: TextStyle(color: Colors.white)),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFE91E63), Color(0xFFC2185B)],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFE91E63).withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Text('Enviar',
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.w700)),
+              ),
             ),
           ],
         ),
@@ -541,9 +642,9 @@ class _WalletStat extends StatelessWidget {
             style: const TextStyle(
                 color: Colors.white,
                 fontSize: 18,
-                fontWeight: FontWeight.bold)),
+                fontWeight: FontWeight.w800)),
         Text(label,
-            style: const TextStyle(color: Colors.white54, fontSize: 11)),
+            style: TextStyle(color: Colors.grey[500], fontSize: 11)),
       ],
     );
   }
@@ -569,8 +670,9 @@ class _ActionCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
+          color: AppTheme.surfaceColor,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         ),
         child: Column(
           children: [
@@ -578,7 +680,7 @@ class _ActionCard extends StatelessWidget {
             const SizedBox(height: 6),
             Text(label,
                 style: TextStyle(
-                    color: color, fontSize: 12, fontWeight: FontWeight.w600)),
+                    color: color, fontSize: 12, fontWeight: FontWeight.w700)),
           ],
         ),
       ),
@@ -616,7 +718,9 @@ class _EarnRow extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(title, style: const TextStyle(fontSize: 13)),
+            child: Text(title,
+                style: const TextStyle(
+                    fontSize: 13, color: AppTheme.textPrimary)),
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -634,7 +738,7 @@ class _EarnRow extends StatelessWidget {
                     style: const TextStyle(
                         color: AppTheme.warningColor,
                         fontSize: 11,
-                        fontWeight: FontWeight.bold)),
+                        fontWeight: FontWeight.w800)),
               ],
             ),
           ),

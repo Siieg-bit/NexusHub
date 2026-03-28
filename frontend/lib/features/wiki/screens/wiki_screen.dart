@@ -76,19 +76,50 @@ class _WikiListScreenState extends State<WikiListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
       appBar: AppBar(
+        backgroundColor: AppTheme.scaffoldBg,
+        elevation: 0,
         title: const Text('Catálogo',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+            style: TextStyle(
+                fontWeight: FontWeight.w800,
+                color: AppTheme.textPrimary,
+                fontSize: 20)),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add_rounded),
-            onPressed: () =>
+          GestureDetector(
+            onTap: () =>
                 context.push('/community/${widget.communityId}/wiki/create'),
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.5),
+                    blurRadius: 8,
+                    spreadRadius: 1,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.add_rounded, color: AppTheme.textPrimary),
+            ),
           ),
         ],
+        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: AppTheme.primaryColor,
+              ),
+            )
           : Column(
               children: [
                 Padding(
@@ -96,13 +127,15 @@ class _WikiListScreenState extends State<WikiListScreen> {
                   child: TextField(
                     controller: _searchController,
                     onChanged: (_) => setState(() {}),
+                    style: const TextStyle(color: AppTheme.textPrimary),
                     decoration: InputDecoration(
                       hintText: 'Buscar no catálogo...',
-                      prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                      hintStyle: TextStyle(color: AppTheme.textSecondary),
+                      prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppTheme.textSecondary),
                       filled: true,
-                      fillColor: AppTheme.cardColor,
+                      fillColor: AppTheme.surfaceColor,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(16),
                         borderSide: BorderSide.none,
                       ),
                       contentPadding: const EdgeInsets.symmetric(
@@ -112,7 +145,7 @@ class _WikiListScreenState extends State<WikiListScreen> {
                 ),
                 if (_categories.isNotEmpty)
                   SizedBox(
-                    height: 36,
+                    height: 40,
                     child: ListView(
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -134,7 +167,7 @@ class _WikiListScreenState extends State<WikiListScreen> {
                 const SizedBox(height: 8),
                 Expanded(
                   child: _filteredEntries.isEmpty
-                      ? const Center(
+                      ? Center(
                           child: Text('Nenhuma entrada encontrada',
                               style: TextStyle(color: AppTheme.textSecondary)),
                         )
@@ -180,22 +213,35 @@ class _CategoryChip extends StatelessWidget {
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(right: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
               ? AppTheme.primaryColor.withValues(alpha: 0.15)
-              : AppTheme.cardColor,
-          borderRadius: BorderRadius.circular(16),
+              : AppTheme.surfaceColor,
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: isSelected ? AppTheme.primaryColor : AppTheme.dividerColor,
+            color: isSelected
+                ? AppTheme.primaryColor
+                : Colors.white.withValues(alpha: 0.05),
+            width: 1.2,
           ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    spreadRadius: 1,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Text(
           label,
           style: TextStyle(
             color: isSelected ? AppTheme.primaryColor : AppTheme.textSecondary,
-            fontSize: 12,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            fontSize: 13,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
           ),
         ),
       ),
@@ -219,10 +265,17 @@ class _WikiEntryCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: AppTheme.cardColor,
-          borderRadius: BorderRadius.circular(12),
-          border:
-              Border.all(color: AppTheme.dividerColor.withValues(alpha: 0.3)),
+          color: AppTheme.surfaceColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.primaryColor.withValues(alpha: 0.1),
+              blurRadius: 6,
+              spreadRadius: 1,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -232,13 +285,13 @@ class _WikiEntryCard extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(12)),
+                      const BorderRadius.vertical(top: Radius.circular(16)),
                   color: AppTheme.primaryColor.withValues(alpha: 0.1),
                 ),
                 child: imageUrl != null
                     ? ClipRRect(
                         borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(12)),
+                            top: Radius.circular(16)),
                         child: CachedNetworkImage(
                           imageUrl: imageUrl,
                           fit: BoxFit.cover,
@@ -247,13 +300,13 @@ class _WikiEntryCard extends StatelessWidget {
                       )
                     : const Center(
                         child: Icon(Icons.auto_stories_rounded,
-                            color: AppTheme.textHint, size: 36)),
+                            color: Colors.grey, size: 36)),
               ),
             ),
             Expanded(
               flex: 2,
               child: Padding(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -262,16 +315,18 @@ class _WikiEntryCard extends StatelessWidget {
                         category.toUpperCase(),
                         style: TextStyle(
                           color: AppTheme.primaryColor,
-                          fontSize: 9,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
                           letterSpacing: 0.5,
                         ),
                       ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     Text(
                       title,
                       style: const TextStyle(
-                          fontWeight: FontWeight.w600, fontSize: 13),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                          color: AppTheme.textPrimary),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -389,14 +444,25 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        backgroundColor: AppTheme.scaffoldBg,
+        body: Center(
+            child: CircularProgressIndicator(
+          color: AppTheme.primaryColor,
+        )),
       );
     }
 
     if (_entry == null) {
       return Scaffold(
-        appBar: AppBar(),
-        body: const Center(child: Text('Entrada não encontrada')),
+        backgroundColor: AppTheme.scaffoldBg,
+        appBar: AppBar(
+          backgroundColor: AppTheme.scaffoldBg,
+          elevation: 0,
+          iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        ),
+        body: Center(
+            child: Text('Entrada não encontrada',
+                style: TextStyle(color: AppTheme.textSecondary))),
       );
     }
 
@@ -408,11 +474,15 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
     final infoboxData = _entry!['infobox'] as Map<String, dynamic>?;
 
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
+            backgroundColor: AppTheme.scaffoldBg,
             expandedHeight: coverUrl != null ? 200 : 0,
             pinned: true,
+            elevation: 0,
+            iconTheme: const IconThemeData(color: AppTheme.textPrimary),
             flexibleSpace: coverUrl != null
                 ? FlexibleSpaceBar(
                     background: CachedNetworkImage(
@@ -422,7 +492,8 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                   )
                 : null,
             title: Text(title,
-                style: const TextStyle(fontWeight: FontWeight.bold)),
+                style: const TextStyle(
+                    fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
           ),
           SliverToBoxAdapter(
             child: Padding(
@@ -433,17 +504,17 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                   if (category != null)
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
+                          horizontal: 14, vertical: 6),
                       decoration: BoxDecoration(
                         color: AppTheme.primaryColor.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(
                         category,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: AppTheme.primaryColor,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -453,38 +524,42 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppTheme.cardColor,
-                        borderRadius: BorderRadius.circular(12),
+                        color: AppTheme.surfaceColor,
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                             color:
-                                AppTheme.dividerColor.withValues(alpha: 0.5)),
+                                Colors.white.withValues(alpha: 0.05)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text('Informações',
                               style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 15)),
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 16,
+                                  color: AppTheme.textPrimary)),
                           const SizedBox(height: 8),
                           ...infoboxData.entries.map((e) => Padding(
                                 padding:
-                                    const EdgeInsets.symmetric(vertical: 4),
+                                    const EdgeInsets.symmetric(vertical: 6),
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     SizedBox(
-                                      width: 100,
+                                      width: 110,
                                       child: Text(
                                         e.key,
                                         style: const TextStyle(
                                             color: AppTheme.textSecondary,
-                                            fontSize: 13),
+                                            fontSize: 14),
                                       ),
                                     ),
                                     Expanded(
                                       child: Text(
                                         e.value.toString(),
-                                        style: const TextStyle(fontSize: 13),
+                                        style: const TextStyle(
+                                            fontSize: 14,
+                                            color: AppTheme.textPrimary),
                                       ),
                                     ),
                                   ],
@@ -498,37 +573,44 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                   Text(
                     content,
                     style: const TextStyle(
-                        fontSize: 15, height: 1.7, color: AppTheme.textPrimary),
+                        fontSize: 16,
+                        height: 1.7,
+                        color: AppTheme.textPrimary),
                   ),
                   const SizedBox(height: 24),
                   if (author != null)
                     Row(
                       children: [
                         CircleAvatar(
-                          radius: 16,
+                          radius: 18,
                           backgroundImage: author['icon_url'] != null
                               ? CachedNetworkImageProvider(
                                   author['icon_url'] as String)
                               : null,
+                          backgroundColor: AppTheme.surfaceColor,
                           child: author['icon_url'] == null
-                              ? const Icon(Icons.person_rounded, size: 16)
+                              ? const Icon(Icons.person_rounded,
+                                  size: 18, color: AppTheme.textSecondary)
                               : null,
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 10),
                         Text(
                           'Por ${author['nickname'] ?? 'Anônimo'}',
                           style: const TextStyle(
-                              color: AppTheme.textSecondary, fontSize: 13),
+                              color: AppTheme.textSecondary, fontSize: 14),
                         ),
                       ],
                     ),
 
                   // ── My Rating ──
                   const SizedBox(height: 24),
-                  const Divider(),
+                  Divider(color: Colors.white.withValues(alpha: 0.05)),
                   const SizedBox(height: 12),
                   Text('Minha Avaliação',
-                      style: Theme.of(context).textTheme.titleMedium),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 18,
+                          color: AppTheme.textPrimary)),
                   const SizedBox(height: 8),
                   Row(
                     children: List.generate(5, (i) {
@@ -540,76 +622,123 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                               ? Icons.star_rounded
                               : Icons.star_border_rounded,
                           color: star <= _userRating
-                              ? Colors.amber
-                              : AppTheme.textHint,
-                          size: 32,
+                              ? AppTheme.warningColor
+                              : Colors.grey.withValues(alpha: 0.3),
+                          size: 34,
+                          shadows: star <= _userRating
+                              ? [
+                                  BoxShadow(
+                                    color: AppTheme.warningColor.withValues(alpha: 0.6),
+                                    blurRadius: 8,
+                                    spreadRadius: 1,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ]
+                              : null,
                         ),
                       );
                     }),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
                     'Média: ${_avgRating.toStringAsFixed(1)} ($_totalRatings avaliações)',
                     style: const TextStyle(
-                        color: AppTheme.textSecondary, fontSize: 12),
+                        color: AppTheme.textSecondary, fontSize: 13),
                   ),
 
                   // ── What I Like ──
                   const SizedBox(height: 24),
-                  const Divider(),
+                  Divider(color: Colors.white.withValues(alpha: 0.05)),
                   const SizedBox(height: 12),
                   Text('O que eu gosto',
-                      style: Theme.of(context).textTheme.titleMedium),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 18,
+                          color: AppTheme.textPrimary)),
                   const SizedBox(height: 8),
                   Row(
                     children: [
                       Expanded(
                         child: TextField(
                           controller: _whatILikeController,
+                          style: const TextStyle(color: AppTheme.textPrimary),
                           decoration: InputDecoration(
                             hintText: 'Escreva o que você gosta...',
+                            hintStyle: TextStyle(color: AppTheme.textSecondary),
                             filled: true,
-                            fillColor: AppTheme.cardColor,
+                            fillColor: AppTheme.surfaceColor,
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(16),
                               borderSide: BorderSide.none,
                             ),
                             isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 12),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      IconButton(
-                        onPressed: _submitWhatILike,
-                        icon: const Icon(Icons.send_rounded,
-                            color: AppTheme.primaryColor),
+                      const SizedBox(width: 12),
+                      GestureDetector(
+                        onTap: _submitWhatILike,
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.primaryColor.withValues(alpha: 0.5),
+                                blurRadius: 8,
+                                spreadRadius: 1,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(Icons.send_rounded,
+                              color: AppTheme.textPrimary, size: 24),
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   ..._whatILikeList.map((item) {
                     final profile = item['profiles'] as Map<String, dynamic>?;
                     return Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: AppTheme.cardColor,
-                        borderRadius: BorderRadius.circular(10),
+                        color: AppTheme.surfaceColor,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.primaryColor.withValues(alpha: 0.05),
+                            blurRadius: 6,
+                            spreadRadius: 1,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           CircleAvatar(
-                            radius: 14,
+                            radius: 16,
+                            backgroundColor: AppTheme.scaffoldBg,
                             backgroundImage: profile?['icon_url'] != null
                                 ? CachedNetworkImageProvider(
                                     profile!['icon_url'] as String)
                                 : null,
                             child: profile?['icon_url'] == null
-                                ? const Icon(Icons.person, size: 14)
+                                ? const Icon(Icons.person,
+                                    size: 16, color: AppTheme.textSecondary)
                                 : null,
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -617,13 +746,15 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                                 Text(
                                   profile?['nickname'] ?? 'Anônimo',
                                   style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 12),
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 14,
+                                      color: AppTheme.textPrimary),
                                 ),
-                                const SizedBox(height: 2),
+                                const SizedBox(height: 4),
                                 Text(
                                   item['content'] as String? ?? '',
-                                  style: const TextStyle(fontSize: 13),
+                                  style: const TextStyle(
+                                      fontSize: 14, color: AppTheme.textPrimary),
                                 ),
                               ],
                             ),
@@ -729,22 +860,59 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
       appBar: AppBar(
+        backgroundColor: AppTheme.scaffoldBg,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
         title: const Text('Nova Entrada Wiki',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+            style: TextStyle(
+                fontWeight: FontWeight.w800,
+                color: AppTheme.textPrimary,
+                fontSize: 20)),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: ElevatedButton(
-              onPressed: _isSubmitting ? null : _submit,
+          GestureDetector(
+            onTap: _isSubmitting ? null : _submit,
+            child: Container(
+              margin: const EdgeInsets.only(right: 12, top: 8, bottom: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+              decoration: BoxDecoration(
+                gradient: _isSubmitting
+                    ? LinearGradient(
+                        colors: [
+                          AppTheme.primaryColor.withValues(alpha: 0.5),
+                          AppTheme.accentColor.withValues(alpha: 0.5)
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      )
+                    : const LinearGradient(
+                        colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.5),
+                    blurRadius: 8,
+                    spreadRadius: 1,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
               child: _isSubmitting
                   ? const SizedBox(
-                      width: 16,
-                      height: 16,
+                      width: 18,
+                      height: 18,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
+                          strokeWidth: 2, color: AppTheme.textPrimary),
                     )
-                  : const Text('Publicar'),
+                  : const Text('Publicar',
+                      style: TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16)),
             ),
           ),
         ],
@@ -756,91 +924,179 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
           children: [
             TextField(
               controller: _coverUrlController,
-              decoration: const InputDecoration(
+              style: const TextStyle(color: AppTheme.textPrimary),
+              decoration: InputDecoration(
                 hintText: 'URL da imagem de capa',
-                prefixIcon: Icon(Icons.image_rounded, size: 20),
+                hintStyle: TextStyle(color: AppTheme.textSecondary),
+                prefixIcon: const Icon(Icons.image_rounded,
+                    size: 20, color: AppTheme.textSecondary),
+                filled: true,
+                fillColor: AppTheme.surfaceColor,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _categoryController,
-              decoration: const InputDecoration(
+              style: const TextStyle(color: AppTheme.textPrimary),
+              decoration: InputDecoration(
                 hintText: 'Categoria (ex: Personagens, Itens...)',
-                prefixIcon: Icon(Icons.category_rounded, size: 20),
+                hintStyle: TextStyle(color: AppTheme.textSecondary),
+                prefixIcon: const Icon(Icons.category_rounded,
+                    size: 20, color: AppTheme.textSecondary),
+                filled: true,
+                fillColor: AppTheme.surfaceColor,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _titleController,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.textPrimary),
               decoration: const InputDecoration(
                 hintText: 'Título da entrada...',
                 border: InputBorder.none,
-                hintStyle: TextStyle(color: AppTheme.textHint),
+                hintStyle: TextStyle(color: AppTheme.textSecondary),
               ),
             ),
             TextField(
               controller: _contentController,
-              style: const TextStyle(fontSize: 15, height: 1.6),
+              style: const TextStyle(
+                  fontSize: 16, height: 1.6, color: AppTheme.textPrimary),
               decoration: const InputDecoration(
                 hintText: 'Conteúdo detalhado...',
                 border: InputBorder.none,
-                hintStyle: TextStyle(color: AppTheme.textHint),
+                hintStyle: TextStyle(color: AppTheme.textSecondary),
               ),
               maxLines: null,
               minLines: 8,
             ),
-            const Divider(height: 32),
+            Divider(
+              height: 32,
+              color: Colors.white.withValues(alpha: 0.05),
+              thickness: 1,
+            ),
             Row(
               children: [
-                Text('Infobox', style: Theme.of(context).textTheme.titleMedium),
+                Text('Infobox',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 18,
+                        color: AppTheme.textPrimary)),
                 const Spacer(),
-                TextButton.icon(
-                  onPressed: () {
+                GestureDetector(
+                  onTap: () {
                     setState(() => _infoboxFields.add(_InfoboxField()));
                   },
-                  icon: const Icon(Icons.add_rounded, size: 18),
-                  label: const Text('Campo'),
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: AppTheme.primaryColor),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: const [
+                        Icon(Icons.add_rounded,
+                            size: 18, color: AppTheme.primaryColor),
+                        SizedBox(width: 6),
+                        Text('Campo',
+                            style: TextStyle(
+                                color: AppTheme.primaryColor,
+                                fontWeight: FontWeight.w700)),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             ...List.generate(_infoboxFields.length, (i) {
               final f = _infoboxFields[i];
               return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.only(bottom: 12),
                 child: Row(
                   children: [
                     Expanded(
                       flex: 2,
                       child: TextField(
                         controller: f.keyController,
-                        decoration: const InputDecoration(
+                        style: const TextStyle(color: AppTheme.textPrimary),
+                        decoration: InputDecoration(
                           hintText: 'Campo',
+                          hintStyle: TextStyle(color: AppTheme.textSecondary),
+                          filled: true,
+                          fillColor: AppTheme.surfaceColor,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
                           isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 12),
                     Expanded(
                       flex: 3,
                       child: TextField(
                         controller: f.valueController,
-                        decoration: const InputDecoration(
+                        style: const TextStyle(color: AppTheme.textPrimary),
+                        decoration: InputDecoration(
                           hintText: 'Valor',
+                          hintStyle: TextStyle(color: AppTheme.textSecondary),
+                          filled: true,
+                          fillColor: AppTheme.surfaceColor,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
                           isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
                         ),
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.remove_circle_rounded,
-                          color: AppTheme.errorColor, size: 20),
-                      onPressed: () {
+                    GestureDetector(
+                      onTap: () {
                         setState(() {
                           _infoboxFields[i].dispose();
                           _infoboxFields.removeAt(i);
                         });
                       },
+                      child: Container(
+                        margin: const EdgeInsets.only(left: 12),
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: AppTheme.errorColor.withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.remove_circle_rounded,
+                            color: AppTheme.errorColor, size: 24),
+                      ),
                     ),
                   ],
                 ),

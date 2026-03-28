@@ -92,7 +92,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        backgroundColor: AppTheme.scaffoldBg,
+        body: Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)),
       );
     }
 
@@ -105,6 +106,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
     final streak = _membership?['check_in_streak'] as int? ?? 0;
 
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
       body: CustomScrollView(
         slivers: [
           // ============================================================
@@ -113,6 +115,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           SliverAppBar(
             expandedHeight: 280,
             pinned: true,
+            backgroundColor: AppTheme.scaffoldBg,
+            elevation: 0,
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 fit: StackFit.expand,
@@ -122,8 +126,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          AppTheme.primaryColor,
-                          AppTheme.primaryColor.withValues(alpha: 0.5),
+                          AppTheme.primaryColor.withValues(alpha: 0.8),
+                          AppTheme.scaffoldBg,
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
@@ -151,26 +155,35 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                             Text(
                               _user?.nickname ?? 'Usuário',
                               style: const TextStyle(
-                                color: Colors.white,
+                                color: AppTheme.textPrimary,
                                 fontSize: 22,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
                             if (role != 'member') ...[
                               const SizedBox(width: 8),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 2),
+                                    horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: Colors.white24,
-                                  borderRadius: BorderRadius.circular(8),
+                                  gradient: const LinearGradient(
+                                    colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                                  ),
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
                                 ),
                                 child: Text(
                                   role.toUpperCase(),
                                   style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 10,
-                                      fontWeight: FontWeight.bold),
+                                      fontWeight: FontWeight.w800),
                                 ),
                               ),
                             ],
@@ -182,16 +195,21 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                           Wrap(
                             spacing: 6,
                             children: titles
-                                .map((t) => Chip(
-                                      label: Text(t.toString(),
-                                          style: const TextStyle(
-                                              fontSize: 10,
-                                              color: Colors.white)),
-                                      backgroundColor: Colors.white24,
-                                      side: BorderSide.none,
-                                      materialTapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                      visualDensity: VisualDensity.compact,
+                                .map((t) => Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.surfaceColor,
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                                      ),
+                                      child: Text(
+                                        t.toString(),
+                                        style: const TextStyle(
+                                          fontSize: 10,
+                                          color: AppTheme.textPrimary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
                                     ))
                                 .toList(),
                           ),
@@ -207,15 +225,15 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                             _StatBadge(label: 'Streak', value: '$streak dias'),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 12),
                         // Level progress bar
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(8),
                           child: LinearProgressIndicator(
                             value: progress,
-                            backgroundColor: Colors.white24,
+                            backgroundColor: Colors.white.withValues(alpha: 0.1),
                             valueColor:
-                                const AlwaysStoppedAnimation(Colors.white),
+                                const AlwaysStoppedAnimation(AppTheme.primaryColor),
                             minHeight: 6,
                           ),
                         ),
@@ -250,8 +268,10 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
               TabBar(
                 controller: _tabController,
                 labelColor: AppTheme.primaryColor,
-                unselectedLabelColor: AppTheme.textSecondary,
+                unselectedLabelColor: Colors.grey[500],
                 indicatorColor: AppTheme.primaryColor,
+                labelStyle: const TextStyle(fontWeight: FontWeight.w700),
+                unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
                 tabs: const [
                   Tab(text: 'Posts'),
                   Tab(text: 'The Wall'),
@@ -281,9 +301,9 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
 
   Widget _buildPostsTab() {
     if (_userPosts.isEmpty) {
-      return const Center(
+      return Center(
         child: Text('Nenhum post nesta comunidade',
-            style: TextStyle(color: AppTheme.textSecondary)),
+            style: TextStyle(color: Colors.grey[500])),
       );
     }
     return ListView.builder(
@@ -297,8 +317,9 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.cardColor,
-              borderRadius: BorderRadius.circular(12),
+              color: AppTheme.surfaceColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -307,32 +328,34 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                   Text(
                     post['title'] as String,
                     style: const TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: 15),
+                        color: AppTheme.textPrimary,
+                        fontWeight: FontWeight.w700, 
+                        fontSize: 15),
                   ),
                 const SizedBox(height: 4),
                 Text(
                   post['content'] as String? ?? '',
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      color: AppTheme.textSecondary, fontSize: 13),
+                  style: TextStyle(
+                      color: Colors.grey[500], fontSize: 13),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Row(
                   children: [
                     Icon(Icons.favorite_rounded,
-                        size: 14, color: AppTheme.textHint),
+                        size: 16, color: Colors.grey[500]),
                     const SizedBox(width: 4),
                     Text('${post['likes_count'] ?? 0}',
-                        style: const TextStyle(
-                            color: AppTheme.textHint, fontSize: 12)),
+                        style: TextStyle(
+                            color: Colors.grey[500], fontSize: 12, fontWeight: FontWeight.w600)),
                     const SizedBox(width: 16),
                     Icon(Icons.comment_rounded,
-                        size: 14, color: AppTheme.textHint),
+                        size: 16, color: Colors.grey[500]),
                     const SizedBox(width: 4),
                     Text('${post['comments_count'] ?? 0}',
-                        style: const TextStyle(
-                            color: AppTheme.textHint, fontSize: 12)),
+                        style: TextStyle(
+                            color: Colors.grey[500], fontSize: 12, fontWeight: FontWeight.w600)),
                   ],
                 ),
               ],
@@ -354,13 +377,23 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
               Expanded(
                 child: TextField(
                   controller: _wallController,
+                  style: const TextStyle(color: AppTheme.textPrimary),
                   decoration: InputDecoration(
                     hintText: 'Escreva no mural...',
+                    hintStyle: TextStyle(color: Colors.grey[500]),
                     filled: true,
-                    fillColor: AppTheme.cardColor,
+                    fillColor: AppTheme.surfaceColor,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(24),
-                      borderSide: BorderSide.none,
+                      borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      borderSide: const BorderSide(color: AppTheme.primaryColor),
                     ),
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 10),
@@ -368,10 +401,25 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                 ),
               ),
               const SizedBox(width: 8),
-              IconButton(
-                icon: const Icon(Icons.send_rounded,
-                    color: AppTheme.primaryColor),
-                onPressed: () => _postWallComment(),
+              GestureDetector(
+                onTap: () => _postWallComment(),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+                ),
               ),
             ],
           ),
@@ -379,9 +427,9 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
         // Lista de comentários
         Expanded(
           child: _wallComments.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text('Nenhum comentário no mural',
-                      style: TextStyle(color: AppTheme.textSecondary)),
+                      style: TextStyle(color: Colors.grey[500])),
                 )
               : ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -389,26 +437,28 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                   itemBuilder: (context, index) {
                     final comment = _wallComments[index];
                     return Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppTheme.cardColor,
-                        borderRadius: BorderRadius.circular(12),
+                        color: AppTheme.surfaceColor,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           CircleAvatar(
-                            radius: 18,
+                            radius: 20,
+                            backgroundColor: AppTheme.scaffoldBg,
                             backgroundImage: comment.author?.iconUrl != null
                                 ? CachedNetworkImageProvider(
                                     comment.author!.iconUrl!)
                                 : null,
                             child: comment.author?.iconUrl == null
-                                ? const Icon(Icons.person_rounded, size: 18)
+                                ? const Icon(Icons.person_rounded, size: 20, color: AppTheme.textPrimary)
                                 : null,
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -416,12 +466,13 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                 Text(
                                   comment.author?.nickname ?? 'Anônimo',
                                   style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 13),
+                                      color: AppTheme.textPrimary,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 14),
                                 ),
-                                const SizedBox(height: 2),
+                                const SizedBox(height: 4),
                                 Text(comment.content,
-                                    style: const TextStyle(fontSize: 13)),
+                                    style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13)),
                               ],
                             ),
                           ),
@@ -440,23 +491,37 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
       padding: const EdgeInsets.all(16),
       children: [
         if (_user != null && _user!.bio.isNotEmpty) ...[
-          Text('Bio', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
+          const Text('Bio', style: TextStyle(color: AppTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 12),
           Text(_user!.bio,
               style:
-                  const TextStyle(color: AppTheme.textSecondary, height: 1.5)),
+                  TextStyle(color: Colors.grey[500], height: 1.5, fontSize: 14)),
           const SizedBox(height: 24),
         ],
-        Text('Informações', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 8),
-        _InfoRow(label: 'Amino ID', value: _user?.aminoId ?? 'Não definido'),
-        _InfoRow(
-            label: 'Entrou em',
-            value: _membership?['joined_at'] != null
-                ? _formatDate(
-                    DateTime.parse(_membership!['joined_at'] as String))
-                : '--'),
-        _InfoRow(label: 'Posts', value: _userPosts.length.toString()),
+        const Text('Informações', style: TextStyle(color: AppTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.w800)),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+          ),
+          child: Column(
+            children: [
+              _InfoRow(label: 'Amino ID', value: _user?.aminoId ?? 'Não definido'),
+              const Divider(color: Colors.white10, height: 24),
+              _InfoRow(
+                  label: 'Entrou em',
+                  value: _membership?['joined_at'] != null
+                      ? _formatDate(
+                          DateTime.parse(_membership!['joined_at'] as String))
+                      : '--'),
+              const Divider(color: Colors.white10, height: 24),
+              _InfoRow(label: 'Posts', value: _userPosts.length.toString()),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -510,12 +575,12 @@ class _StatBadge extends StatelessWidget {
       children: [
         Text(value,
             style: const TextStyle(
-                color: Colors.white,
+                color: AppTheme.textPrimary,
                 fontSize: 16,
-                fontWeight: FontWeight.bold)),
-        const SizedBox(height: 2),
+                fontWeight: FontWeight.w800)),
+        const SizedBox(height: 4),
         Text(label,
-            style: const TextStyle(color: Colors.white70, fontSize: 11)),
+            style: TextStyle(color: Colors.grey[500], fontSize: 12, fontWeight: FontWeight.w600)),
       ],
     );
   }
@@ -528,15 +593,12 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(color: AppTheme.textSecondary)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w500)),
-        ],
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w500)),
+        Text(value, style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w700)),
+      ],
     );
   }
 }

@@ -71,6 +71,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
         : ref.watch(userCommunitiesProvider);
 
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
       body: CustomScrollView(
         slivers: [
           // ================================================================
@@ -80,6 +81,8 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
             floating: true,
             snap: true,
             expandedHeight: 120,
+            backgroundColor: AppTheme.scaffoldBg,
+            elevation: 0,
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 padding: const EdgeInsets.fromLTRB(20, 60, 20, 0),
@@ -96,46 +99,58 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                               widget.isExplore
                                   ? 'Explorar'
                                   : 'Minhas Comunidades',
-                              style: Theme.of(context).textTheme.headlineMedium,
+                              style: const TextStyle(
+                                color: AppTheme.textPrimary,
+                                fontSize: 28,
+                                fontWeight: FontWeight.w800,
+                              ),
                             ),
                             if (!widget.isExplore && user != null)
                               Text(
                                 'Olá, ${user.nickname}!',
-                                style: const TextStyle(
-                                    color: AppTheme.textSecondary),
+                                style: TextStyle(
+                                  color: Colors.grey[500],
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                           ],
                         ),
                         Row(
                           children: [
                             // Check-in button
-                            IconButton(
-                              onPressed: () => context.push('/check-in'),
-                              icon: Container(
-                                padding: const EdgeInsets.all(8),
+                            GestureDetector(
+                              onTap: () => context.push('/check-in'),
+                              child: Container(
+                                padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.warningColor
-                                      .withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(12),
+                                  color: AppTheme.warningColor.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: AppTheme.warningColor.withValues(alpha: 0.3),
+                                  ),
                                 ),
                                 child: const Icon(Icons.calendar_today_rounded,
-                                    color: AppTheme.warningColor, size: 20),
+                                    color: AppTheme.warningColor, size: 22),
                               ),
                             ),
+                            const SizedBox(width: 12),
                             // Notificações
-                            IconButton(
-                              onPressed: () {
+                            GestureDetector(
+                              onTap: () {
                                 // TODO: Tela de notificações
                               },
-                              icon: Container(
-                                padding: const EdgeInsets.all(8),
+                              child: Container(
+                                padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.primaryColor
-                                      .withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(12),
+                                  color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                                  ),
                                 ),
                                 child: const Icon(Icons.notifications_outlined,
-                                    color: AppTheme.primaryColor, size: 20),
+                                    color: AppTheme.primaryColor, size: 22),
                               ),
                             ),
                           ],
@@ -154,24 +169,37 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-              child: TextField(
-                controller: _searchController,
-                onChanged: (value) => setState(() => _searchQuery = value),
-                decoration: InputDecoration(
-                  hintText: widget.isExplore
-                      ? 'Buscar comunidades...'
-                      : 'Pesquisar nas suas comunidades...',
-                  prefixIcon: const Icon(Icons.search_rounded,
-                      color: AppTheme.textHint),
-                  suffixIcon: _searchQuery.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear_rounded),
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() => _searchQuery = '');
-                          },
-                        )
-                      : null,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceColor,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.05),
+                  ),
+                ),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: (value) => setState(() => _searchQuery = value),
+                  style: const TextStyle(color: AppTheme.textPrimary),
+                  decoration: InputDecoration(
+                    hintText: widget.isExplore
+                        ? 'Buscar comunidades...'
+                        : 'Pesquisar nas suas comunidades...',
+                    hintStyle: TextStyle(color: Colors.grey[600]),
+                    prefixIcon: Icon(Icons.search_rounded,
+                        color: Colors.grey[500]),
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: Icon(Icons.clear_rounded, color: Colors.grey[500]),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() => _searchQuery = '');
+                            },
+                          )
+                        : null,
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  ),
                 ),
               ),
             ),
@@ -182,7 +210,11 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
           // ================================================================
           communitiesAsync.when(
             loading: () => const SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+                ),
+              ),
             ),
             error: (error, stack) => SliverFillRemaining(
               child: Center(
@@ -192,18 +224,47 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                     const Icon(Icons.error_outline,
                         size: 48, color: AppTheme.errorColor),
                     const SizedBox(height: 16),
-                    Text('Erro ao carregar comunidades',
-                        style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: () {
+                    const Text(
+                      'Erro ao carregar comunidades',
+                      style: TextStyle(
+                        color: AppTheme.textPrimary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    GestureDetector(
+                      onTap: () {
                         if (widget.isExplore) {
                           ref.invalidate(suggestedCommunitiesProvider);
                         } else {
                           ref.invalidate(userCommunitiesProvider);
                         }
                       },
-                      child: const Text('Tentar novamente'),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                          ),
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Text(
+                          'Tentar novamente',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -234,25 +295,55 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                               ? Icons.explore_off_rounded
                               : Icons.group_off_rounded,
                           size: 64,
-                          color: AppTheme.textHint,
+                          color: Colors.grey[600],
                         ),
                         const SizedBox(height: 16),
                         Text(
                           widget.isExplore
                               ? 'Nenhuma comunidade encontrada'
                               : 'Você ainda não entrou em nenhuma comunidade',
-                          style:
-                              Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    color: AppTheme.textSecondary,
-                                  ),
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         if (!widget.isExplore) ...[
-                          const SizedBox(height: 16),
-                          ElevatedButton.icon(
-                            onPressed: () => context.go('/explore'),
-                            icon: const Icon(Icons.explore_rounded),
-                            label: const Text('Explorar Comunidades'),
+                          const SizedBox(height: 24),
+                          GestureDetector(
+                            onTap: () => context.go('/explore'),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                                ),
+                                borderRadius: BorderRadius.circular(24),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.explore_rounded, color: Colors.white, size: 20),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Explorar Comunidades',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ],
                       ],
@@ -273,10 +364,26 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
         ],
       ),
       floatingActionButton: !widget.isExplore
-          ? FloatingActionButton(
-              onPressed: () => context.push('/community/create'),
-              backgroundColor: AppTheme.primaryColor,
-              child: const Icon(Icons.add_rounded, color: Colors.white),
+          ? Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.4),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: FloatingActionButton(
+                onPressed: () => context.push('/community/create'),
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
+              ),
             )
           : null,
     );
@@ -304,24 +411,34 @@ class _CommunityCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => context.push('/community/${community.id}'),
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: AppTheme.cardColor,
+          color: AppTheme.surfaceColor,
           borderRadius: BorderRadius.circular(16),
-          border:
-              Border.all(color: AppTheme.dividerColor.withValues(alpha: 0.3)),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.05),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           children: [
             // Banner
             ClipRRect(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
               child: SizedBox(
-                height: 100,
+                height: 120,
                 width: double.infinity,
-                child: community.bannerUrl != null
-                    ? CachedNetworkImage(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    if (community.bannerUrl != null)
+                      CachedNetworkImage(
                         imageUrl: community.bannerUrl!,
                         fit: BoxFit.cover,
                         placeholder: (_, __) => Container(
@@ -335,7 +452,8 @@ class _CommunityCard extends StatelessWidget {
                           ),
                         ),
                       )
-                    : Container(
+                    else
+                      Container(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
@@ -347,36 +465,59 @@ class _CommunityCard extends StatelessWidget {
                           ),
                         ),
                       ),
+                    // Gradient overlay for better text visibility if needed
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            AppTheme.surfaceColor.withValues(alpha: 0.8),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
 
             // Info
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
                   // Ícone da comunidade
                   Container(
-                    width: 50,
-                    height: 50,
+                    width: 56,
+                    height: 56,
                     decoration: BoxDecoration(
-                      color: themeColor.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12),
-                      border:
-                          Border.all(color: themeColor.withValues(alpha: 0.5)),
+                      color: themeColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: themeColor.withValues(alpha: 0.3),
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: themeColor.withValues(alpha: 0.2),
+                          blurRadius: 8,
+                        ),
+                      ],
                     ),
                     child: community.iconUrl != null
                         ? ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(14),
                             child: CachedNetworkImage(
                               imageUrl: community.iconUrl!,
                               fit: BoxFit.cover,
                             ),
                           )
                         : Icon(Icons.groups_rounded,
-                            color: themeColor, size: 28),
+                            color: themeColor, size: 32),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 16),
 
                   // Nome e tagline
                   Expanded(
@@ -385,17 +526,22 @@ class _CommunityCard extends StatelessWidget {
                       children: [
                         Text(
                           community.name,
-                          style: Theme.of(context).textTheme.titleLarge,
+                          style: const TextStyle(
+                            color: AppTheme.textPrimary,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         if (community.tagline.isNotEmpty) ...[
-                          const SizedBox(height: 2),
+                          const SizedBox(height: 4),
                           Text(
                             community.tagline,
-                            style: const TextStyle(
-                              color: AppTheme.textSecondary,
-                              fontSize: 12,
+                            style: TextStyle(
+                              color: Colors.grey[500],
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -406,22 +552,35 @@ class _CommunityCard extends StatelessWidget {
                   ),
 
                   // Membros
-                  Column(
-                    children: [
-                      Text(
-                        _formatCount(community.membersCount),
-                        style: TextStyle(
-                          color: themeColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: themeColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: themeColor.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          _formatCount(community.membersCount),
+                          style: TextStyle(
+                            color: themeColor,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                          ),
                         ),
-                      ),
-                      const Text(
-                        'membros',
-                        style:
-                            TextStyle(color: AppTheme.textHint, fontSize: 10),
-                      ),
-                    ],
+                        Text(
+                          'membros',
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

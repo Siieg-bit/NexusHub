@@ -76,14 +76,24 @@ class _FlagCenterScreenState extends State<FlagCenterScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
       appBar: AppBar(
-        title: const Text('Flag Center',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text(
+          'Flag Center',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            color: AppTheme.textPrimary,
+          ),
+        ),
+        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppTheme.primaryColor,
-          unselectedLabelColor: AppTheme.textSecondary,
+          unselectedLabelColor: Colors.grey[500],
           indicatorColor: AppTheme.primaryColor,
+          dividerColor: Colors.white.withValues(alpha: 0.05),
           tabs: [
             Tab(text: 'Pendentes (${_pendingFlags.length})'),
             const Tab(text: 'Resolvidas'),
@@ -91,7 +101,11 @@ class _FlagCenterScreenState extends State<FlagCenterScreen>
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: AppTheme.primaryColor,
+              ),
+            )
           : TabBarView(
               controller: _tabController,
               children: [
@@ -112,14 +126,18 @@ class _FlagCenterScreenState extends State<FlagCenterScreen>
             Icon(
               isPending ? Icons.check_circle_rounded : Icons.history_rounded,
               size: 64,
-              color: AppTheme.textHint,
+              color: Colors.grey[600],
             ),
             const SizedBox(height: 16),
             Text(
               isPending
                   ? 'Nenhuma denúncia pendente'
                   : 'Nenhuma denúncia resolvida',
-              style: const TextStyle(color: AppTheme.textSecondary),
+              style: TextStyle(
+                color: Colors.grey[500],
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ),
@@ -128,6 +146,8 @@ class _FlagCenterScreenState extends State<FlagCenterScreen>
 
     return RefreshIndicator(
       onRefresh: _loadFlags,
+      color: AppTheme.primaryColor,
+      backgroundColor: AppTheme.surfaceColor,
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: flags.length,
@@ -161,17 +181,17 @@ class _FlagCard extends StatelessWidget {
   Color _flagTypeColor(String type) {
     switch (type) {
       case 'bullying':
-        return Colors.red;
+        return AppTheme.errorColor;
       case 'art_theft':
-        return Colors.orange;
+        return AppTheme.warningColor;
       case 'inappropriate_content':
-        return Colors.purple;
+        return Colors.purpleAccent;
       case 'spam':
         return Colors.amber;
       case 'off_topic':
-        return Colors.blue;
+        return AppTheme.accentColor;
       default:
-        return AppTheme.textSecondary;
+        return Colors.grey[500]!;
     }
   }
 
@@ -200,16 +220,25 @@ class _FlagCard extends StatelessWidget {
     final status = flag['status'] as String? ?? 'pending';
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
-        borderRadius: BorderRadius.circular(12),
+        color: AppTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isPending
               ? AppTheme.warningColor.withValues(alpha: 0.3)
-              : AppTheme.dividerColor,
+              : Colors.white.withValues(alpha: 0.05),
         ),
+        boxShadow: isPending
+            ? [
+                BoxShadow(
+                  color: AppTheme.warningColor.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                )
+              ]
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -218,17 +247,20 @@ class _FlagCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: _flagTypeColor(type).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: _flagTypeColor(type).withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Text(
                   _flagTypeLabel(type),
                   style: TextStyle(
                     color: _flagTypeColor(type),
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -236,75 +268,134 @@ class _FlagCard extends StatelessWidget {
               if (!isPending)
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: status == 'approved'
-                        ? AppTheme.successColor.withValues(alpha: 0.15)
+                        ? AppTheme.primaryColor.withValues(alpha: 0.15)
                         : AppTheme.errorColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: status == 'approved'
+                          ? AppTheme.primaryColor.withValues(alpha: 0.3)
+                          : AppTheme.errorColor.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Text(
                     status == 'approved' ? 'Aprovada' : 'Rejeitada',
                     style: TextStyle(
                       color: status == 'approved'
-                          ? AppTheme.successColor
+                          ? AppTheme.primaryColor
                           : AppTheme.errorColor,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           // Reporter
           Row(
             children: [
               CircleAvatar(
-                radius: 14,
+                radius: 16,
+                backgroundColor: Colors.white.withValues(alpha: 0.1),
                 backgroundImage: reporter?['avatar_url'] != null
                     ? CachedNetworkImageProvider(
                         reporter!['avatar_url'] as String)
                     : null,
                 child: reporter?['avatar_url'] == null
-                    ? const Icon(Icons.person_rounded, size: 14)
+                    ? Icon(Icons.person_rounded,
+                        size: 16, color: Colors.grey[500])
                     : null,
               ),
-              const SizedBox(width: 8),
-              Text(
-                'Reportado por ${reporter?['nickname'] ?? 'Anônimo'}',
-                style: const TextStyle(
-                    color: AppTheme.textSecondary, fontSize: 12),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Reportado por ${reporter?['nickname'] ?? 'Anônimo'}',
+                  style: TextStyle(
+                    color: Colors.grey[500],
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
             ],
           ),
           if (reason.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(reason, style: const TextStyle(fontSize: 13)),
+            const SizedBox(height: 12),
+            Text(
+              reason,
+              style: const TextStyle(
+                color: AppTheme.textPrimary,
+                fontSize: 14,
+                height: 1.4,
+              ),
+            ),
           ],
           // Ações
           if (isPending) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
-                    onPressed: onReject,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppTheme.textSecondary,
-                      side: const BorderSide(color: AppTheme.dividerColor),
+                  child: GestureDetector(
+                    onTap: onReject,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.08),
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        'Rejeitar',
+                        style: TextStyle(
+                          color: Colors.grey[500],
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
                     ),
-                    child: const Text('Rejeitar'),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: ElevatedButton(
-                    onPressed: onApprove,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.errorColor,
+                  child: GestureDetector(
+                    onTap: onApprove,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppTheme.errorColor,
+                            AppTheme.errorColor.withValues(alpha: 0.8),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.errorColor.withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      alignment: Alignment.center,
+                      child: const Text(
+                        'Tomar Ação',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
                     ),
-                    child: const Text('Tomar Ação'),
                   ),
                 ),
               ],

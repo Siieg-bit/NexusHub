@@ -189,7 +189,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         'metadata': metadata,
       };
 
-      // Se respondendo a outra mensagem
       if (_replyingTo != null) {
         payload['reply_to_id'] = _replyingTo!.id;
         payload['type'] = 'reply';
@@ -200,7 +199,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao enviar: $e')),
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: AppTheme.errorColor,
+          ),
         );
       }
     } finally {
@@ -225,7 +227,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro no upload: $e')),
+          SnackBar(
+            content: Text('Upload error: $e'),
+            backgroundColor: AppTheme.errorColor,
+          ),
         );
       }
     }
@@ -237,23 +242,44 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     final result = await showDialog<int>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Enviar Gorjeta'),
+        backgroundColor: AppTheme.surfaceColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Send Tip',
+            style: TextStyle(
+                color: AppTheme.textPrimary, fontWeight: FontWeight.w700)),
         content: TextField(
           controller: amountController,
           keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            labelText: 'Quantidade de moedas',
-            prefixIcon: Icon(Icons.monetization_on_rounded),
+          style: const TextStyle(color: AppTheme.textPrimary),
+          decoration: InputDecoration(
+            labelText: 'Amount of coins',
+            labelStyle: TextStyle(color: Colors.grey[500]),
+            prefixIcon: const Icon(Icons.monetization_on_rounded,
+                color: AppTheme.warningColor),
+            filled: true,
+            fillColor: AppTheme.cardColor,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
           ),
         ),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancelar')),
+              child: Text('Cancel',
+                  style: TextStyle(color: Colors.grey[500]))),
           ElevatedButton(
             onPressed: () =>
                 Navigator.pop(ctx, int.tryParse(amountController.text)),
-            child: const Text('Enviar'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.warningColor,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text('Send',
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -277,7 +303,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         'user_id': SupabaseService.currentUserId,
         'emoji': emoji,
       });
-      // Recarregar mensagens para atualizar reações
       await _loadMessages();
     } catch (_) {}
   }
@@ -291,7 +316,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   // ========================================================================
-  // BUILD
+  // BUILD — Estilo Amino Apps
   // ========================================================================
   @override
   Widget build(BuildContext context) {
@@ -299,63 +324,111 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     final threadTitle = _threadInfo?['title'] as String? ?? 'Chat';
     final threadType = _threadInfo?['type'] as String? ?? 'group';
     final memberCount = _threadInfo?['member_count'] as int? ?? 0;
+    final threadIcon = _threadInfo?['icon_url'] as String?;
 
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
+      // ── AppBar estilo Amino ──
       appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        backgroundColor: AppTheme.scaffoldBg,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_rounded,
+              color: AppTheme.textPrimary, size: 20),
+          onPressed: () => context.pop(),
+        ),
+        titleSpacing: 0,
+        title: Row(
           children: [
-            Text(threadTitle,
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            if (threadType == 'group')
-              Text('$memberCount membros',
-                  style: const TextStyle(
-                      fontSize: 11, color: AppTheme.textSecondary)),
+            // Thread avatar
+            CircleAvatar(
+              radius: 18,
+              backgroundColor: AppTheme.surfaceColor,
+              backgroundImage: threadIcon != null
+                  ? CachedNetworkImageProvider(threadIcon)
+                  : null,
+              child: threadIcon == null
+                  ? Icon(
+                      threadType == 'direct'
+                          ? Icons.person_rounded
+                          : Icons.group_rounded,
+                      color: Colors.grey[500],
+                      size: 16,
+                    )
+                  : null,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(threadTitle,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                          color: AppTheme.textPrimary)),
+                  if (threadType == 'group')
+                    Text('$memberCount members',
+                        style: TextStyle(
+                            fontSize: 11, color: Colors.grey[500])),
+                ],
+              ),
+            ),
           ],
         ),
         actions: [
           // Pinned messages
           if (_pinnedMessages.isNotEmpty)
-            IconButton(
-              icon: badges_icon(Icons.push_pin_rounded, _pinnedMessages.length),
-              onPressed: () => _showPinnedMessages(),
+            GestureDetector(
+              onTap: _showPinnedMessages,
+              child: _badgeIcon(Icons.push_pin_rounded, _pinnedMessages.length),
             ),
           // Voice chat
-          IconButton(
-            icon: const Icon(Icons.mic_rounded),
-            onPressed: () => _sendMessage(
+          GestureDetector(
+            onTap: () => _sendMessage(
               type: 'voice_chat',
               metadata: {'status': 'invite'},
+            ),
+            child: Container(
+              width: 34,
+              height: 34,
+              margin: const EdgeInsets.only(right: 4),
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceColor,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.mic_rounded, color: Colors.grey[500], size: 16),
             ),
           ),
           // Menu
           PopupMenuButton<String>(
+            icon: Icon(Icons.more_vert_rounded, color: Colors.grey[500]),
+            color: AppTheme.surfaceColor,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             onSelected: (val) {
               switch (val) {
                 case 'members':
-                  break; // TODO
+                  break;
                 case 'settings':
-                  break; // TODO
+                  break;
                 case 'leave':
-                  break; // TODO
+                  break;
               }
             },
             itemBuilder: (ctx) => [
-              const PopupMenuItem(value: 'members', child: Text('Membros')),
-              const PopupMenuItem(
-                  value: 'settings', child: Text('Configurações')),
-              const PopupMenuItem(
-                  value: 'leave',
-                  child: Text('Sair do Chat',
-                      style: TextStyle(color: AppTheme.errorColor))),
+              _buildPopupItem('members', Icons.people_rounded, 'Members'),
+              _buildPopupItem('settings', Icons.settings_rounded, 'Settings'),
+              _buildPopupItem(
+                  'leave', Icons.exit_to_app_rounded, 'Leave Chat',
+                  isDestructive: true),
             ],
           ),
         ],
       ),
       body: Column(
         children: [
-          // Pinned message banner
+          // ── Pinned message banner ──
           if (_pinnedMessages.isNotEmpty)
             GestureDetector(
               onTap: _showPinnedMessages,
@@ -363,7 +436,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 width: double.infinity,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                color: AppTheme.warningColor.withValues(alpha: 0.1),
+                decoration: BoxDecoration(
+                  color: AppTheme.warningColor.withValues(alpha: 0.08),
+                  border: Border(
+                    bottom: BorderSide(
+                        color: AppTheme.warningColor.withValues(alpha: 0.2)),
+                  ),
+                ),
                 child: Row(
                   children: [
                     const Icon(Icons.push_pin_rounded,
@@ -372,12 +451,15 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     Expanded(
                       child: Text(
                         _pinnedMessages.first['content'] as String? ??
-                            'Mensagem fixada',
-                        style: const TextStyle(fontSize: 12),
+                            'Pinned message',
+                        style: TextStyle(
+                            fontSize: 12, color: Colors.grey[400]),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    Icon(Icons.keyboard_arrow_right_rounded,
+                        size: 16, color: Colors.grey[600]),
                   ],
                 ),
               ),
@@ -388,21 +470,34 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           // ================================================================
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(
+                    child: CircularProgressIndicator(
+                        color: AppTheme.primaryColor, strokeWidth: 2))
                 : _messages.isEmpty
-                    ? const Center(
+                    ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.chat_bubble_outline_rounded,
-                                size: 64, color: AppTheme.textHint),
-                            SizedBox(height: 16),
-                            Text('Nenhuma mensagem ainda',
-                                style:
-                                    TextStyle(color: AppTheme.textSecondary)),
-                            Text('Comece a conversa!',
+                            Container(
+                              width: 72,
+                              height: 72,
+                              decoration: BoxDecoration(
+                                color: AppTheme.surfaceColor,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(Icons.chat_bubble_outline_rounded,
+                                  size: 32, color: Colors.grey[700]),
+                            ),
+                            const SizedBox(height: 16),
+                            Text('No messages yet',
                                 style: TextStyle(
-                                    color: AppTheme.textHint, fontSize: 12)),
+                                    color: Colors.grey[400],
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600)),
+                            const SizedBox(height: 6),
+                            Text('Start the conversation!',
+                                style: TextStyle(
+                                    color: Colors.grey[600], fontSize: 12)),
                           ],
                         ),
                       )
@@ -438,13 +533,16 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           if (_replyingTo != null)
             Container(
               padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
-              color: AppTheme.cardColor,
+              color: AppTheme.surfaceColor,
               child: Row(
                 children: [
                   Container(
                     width: 3,
                     height: 32,
-                    color: AppTheme.primaryColor,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryColor,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -453,7 +551,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          _replyingTo!.author?.nickname ?? 'Usuário',
+                          _replyingTo!.author?.nickname ?? 'User',
                           style: const TextStyle(
                               color: AppTheme.primaryColor,
                               fontSize: 12,
@@ -461,56 +559,78 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         ),
                         Text(
                           _replyingTo!.content ?? '',
-                          style: const TextStyle(
-                              fontSize: 12, color: AppTheme.textSecondary),
+                          style: TextStyle(
+                              fontSize: 12, color: Colors.grey[500]),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.close_rounded, size: 18),
-                    onPressed: () => setState(() => _replyingTo = null),
+                  GestureDetector(
+                    onTap: () => setState(() => _replyingTo = null),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Icon(Icons.close_rounded,
+                          size: 18, color: Colors.grey[500]),
+                    ),
                   ),
                 ],
               ),
             ),
 
           // ================================================================
-          // INPUT DE MENSAGEM
+          // INPUT DE MENSAGEM — Estilo Amino
           // ================================================================
           Container(
             padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppTheme.surfaceColor,
-              border: Border(top: BorderSide(color: AppTheme.dividerColor)),
+              border: Border(
+                top: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+              ),
             ),
             child: SafeArea(
+              top: false,
               child: Row(
                 children: [
                   // Botão de mídia (+)
-                  IconButton(
-                    icon: const Icon(Icons.add_circle_outline_rounded,
-                        color: AppTheme.primaryLight),
-                    onPressed: () => _showMediaOptions(context),
+                  GestureDetector(
+                    onTap: () => _showMediaOptions(context),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.add_rounded,
+                          color: AppTheme.primaryColor, size: 20),
+                    ),
                   ),
+                  const SizedBox(width: 8),
                   // Input
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
                         color: AppTheme.cardColor,
                         borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.05)),
                       ),
                       child: Row(
                         children: [
                           Expanded(
                             child: TextField(
                               controller: _messageController,
-                              decoration: const InputDecoration(
-                                hintText: 'Mensagem...',
+                              style: const TextStyle(
+                                  color: AppTheme.textPrimary, fontSize: 14),
+                              decoration: InputDecoration(
+                                hintText: 'Message...',
+                                hintStyle: TextStyle(
+                                    color: Colors.grey[600], fontSize: 14),
                                 border: InputBorder.none,
-                                contentPadding: EdgeInsets.symmetric(
+                                contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 16, vertical: 10),
                               ),
                               maxLines: 4,
@@ -519,36 +639,40 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                               onSubmitted: (_) => _sendMessage(),
                             ),
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.emoji_emotions_outlined,
-                                color: AppTheme.textHint, size: 22),
-                            onPressed: () {
+                          GestureDetector(
+                            onTap: () {
                               setState(
                                   () => _showEmojiPicker = !_showEmojiPicker);
                             },
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: Icon(Icons.emoji_emotions_outlined,
+                                  color: Colors.grey[600], size: 20),
+                            ),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: 8),
                   // Botão enviar
-                  Container(
-                    decoration: const BoxDecoration(
-                      color: AppTheme.primaryColor,
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      onPressed: _isSending ? null : _sendMessage,
-                      icon: _isSending
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
+                  GestureDetector(
+                    onTap: _isSending ? null : () => _sendMessage(),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: const BoxDecoration(
+                        color: AppTheme.primaryColor,
+                        shape: BoxShape.circle,
+                      ),
+                      child: _isSending
+                          ? const Padding(
+                              padding: EdgeInsets.all(10),
                               child: CircularProgressIndicator(
                                   strokeWidth: 2, color: Colors.white),
                             )
                           : const Icon(Icons.send_rounded,
-                              color: Colors.white, size: 20),
+                              color: Colors.white, size: 18),
                     ),
                   ),
                 ],
@@ -561,22 +685,37 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   // ========================================================================
-  // MEDIA OPTIONS BOTTOM SHEET (19+ tipos)
+  // MEDIA OPTIONS BOTTOM SHEET (19+ tipos) — Estilo Amino
   // ========================================================================
   void _showMediaOptions(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => Container(
+      backgroundColor: AppTheme.surfaceColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            // Handle bar
+            Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[700],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Wrap(
+              spacing: 16,
+              runSpacing: 16,
               children: [
                 _MediaOptionItem(
                   icon: Icons.image_rounded,
-                  label: 'Imagem',
+                  label: 'Image',
                   color: AppTheme.primaryColor,
                   onTap: () {
                     Navigator.pop(ctx);
@@ -584,80 +723,45 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   },
                 ),
                 _MediaOptionItem(
-                  icon: Icons.gif_box_rounded,
+                  icon: Icons.gif_rounded,
                   label: 'GIF',
-                  color: AppTheme.accentColor,
+                  color: const Color(0xFF9C27B0),
                   onTap: () async {
                     Navigator.pop(ctx);
                     final gifUrl = await GiphyPicker.show(context);
-                    if (gifUrl != null && gifUrl.isNotEmpty) {
-                      await _sendMessage(
-                          type: 'gif',
-                          mediaUrl: gifUrl,
-                          metadata: {'source': 'giphy'});
+                    if (gifUrl != null) {
+                      _sendMessage(type: 'gif', mediaUrl: gifUrl);
                     }
                   },
                 ),
                 _MediaOptionItem(
-                  icon: Icons.sticky_note_2_rounded,
+                  icon: Icons.emoji_emotions_rounded,
                   label: 'Sticker',
-                  color: AppTheme.warningColor,
+                  color: const Color(0xFFFF9800),
                   onTap: () async {
                     Navigator.pop(ctx);
-                    final sticker = await StickerPicker.show(context,
-                        communityId: _threadInfo?['community_id'] as String?);
+                    final sticker = await StickerPicker.show(context);
                     if (sticker != null) {
-                      final emoji = sticker['emoji'];
-                      if (emoji != null && emoji.isNotEmpty) {
-                        await _sendMessage(type: 'sticker', metadata: {
-                          'emoji': emoji,
-                          'sticker_id': sticker['sticker_id']
-                        });
-                      } else {
-                        await _sendMessage(
-                            type: 'sticker',
-                            mediaUrl: sticker['sticker_url'],
-                            metadata: {'sticker_id': sticker['sticker_id']});
-                      }
+                      _sendMessage(
+                        type: 'sticker',
+                        mediaUrl: sticker['sticker_url'],
+                        metadata: sticker,
+                      );
                     }
                   },
                 ),
                 _MediaOptionItem(
                   icon: Icons.mic_rounded,
-                  label: 'Áudio',
+                  label: 'Audio',
                   color: const Color(0xFFE91E63),
                   onTap: () {
                     Navigator.pop(ctx);
-                    // TODO: Voice recorder
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _MediaOptionItem(
-                  icon: Icons.videocam_rounded,
-                  label: 'Vídeo',
-                  color: const Color(0xFF9C27B0),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    // TODO: Video picker
-                  },
-                ),
-                _MediaOptionItem(
-                  icon: Icons.attach_file_rounded,
-                  label: 'Arquivo',
-                  color: const Color(0xFF607D8B),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    // TODO: File picker
+                    // TODO: Record audio
                   },
                 ),
                 _MediaOptionItem(
                   icon: Icons.poll_rounded,
-                  label: 'Enquete',
+                  label: 'Poll',
                   color: const Color(0xFF00BCD4),
                   onTap: () {
                     Navigator.pop(ctx);
@@ -666,23 +770,17 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 ),
                 _MediaOptionItem(
                   icon: Icons.monetization_on_rounded,
-                  label: 'Gorjeta',
+                  label: 'Tip',
                   color: AppTheme.warningColor,
                   onTap: () {
                     Navigator.pop(ctx);
-                    // TODO: Select user then tip
+                    // TODO: Select user to tip
                   },
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
                 _MediaOptionItem(
                   icon: Icons.headset_mic_rounded,
-                  label: 'Voice Chat',
-                  color: const Color(0xFFFF4081),
+                  label: 'Voice',
+                  color: const Color(0xFF4CAF50),
                   onTap: () {
                     Navigator.pop(ctx);
                     _sendMessage(
@@ -691,8 +789,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 ),
                 _MediaOptionItem(
                   icon: Icons.video_call_rounded,
-                  label: 'Video Chat',
-                  color: const Color(0xFF4CAF50),
+                  label: 'Video',
+                  color: const Color(0xFF2196F3),
                   onTap: () {
                     Navigator.pop(ctx);
                     _sendMessage(
@@ -734,31 +832,43 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-          title: const Text('Criar Enquete'),
+          backgroundColor: AppTheme.surfaceColor,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Create Poll',
+              style: TextStyle(
+                  color: AppTheme.textPrimary, fontWeight: FontWeight.w700)),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextField(
-                  controller: questionCtrl,
-                  decoration: const InputDecoration(labelText: 'Pergunta'),
-                ),
+                _dialogInput(questionCtrl, 'Question'),
                 const SizedBox(height: 8),
                 ...List.generate(
                     optionCtrls.length,
                     (i) => Padding(
                           padding: const EdgeInsets.only(bottom: 4),
-                          child: TextField(
-                            controller: optionCtrls[i],
-                            decoration:
-                                InputDecoration(labelText: 'Opção ${i + 1}'),
-                          ),
+                          child: _dialogInput(optionCtrls[i], 'Option ${i + 1}'),
                         )),
-                TextButton.icon(
-                  onPressed: () => setDialogState(
+                GestureDetector(
+                  onTap: () => setDialogState(
                       () => optionCtrls.add(TextEditingController())),
-                  icon: const Icon(Icons.add_rounded, size: 16),
-                  label: const Text('Opção'),
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.add_rounded,
+                            size: 16, color: AppTheme.primaryColor),
+                        const SizedBox(width: 4),
+                        Text('Add Option',
+                            style: TextStyle(
+                                color: AppTheme.primaryColor,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -766,7 +876,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           actions: [
             TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('Cancelar')),
+                child: Text('Cancel',
+                    style: TextStyle(color: Colors.grey[500]))),
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(ctx);
@@ -782,7 +893,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   c.dispose();
                 }
               },
-              child: const Text('Enviar'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryColor,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+              child: const Text('Send',
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w700)),
             ),
           ],
         ),
@@ -795,43 +913,86 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Compartilhar Link'),
-        content: TextField(
-          controller: linkCtrl,
-          decoration: const InputDecoration(
-            hintText: 'https://...',
-            prefixIcon: Icon(Icons.link_rounded),
-          ),
-          keyboardType: TextInputType.url,
-        ),
+        backgroundColor: AppTheme.surfaceColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Share Link',
+            style: TextStyle(
+                color: AppTheme.textPrimary, fontWeight: FontWeight.w700)),
+        content: _dialogInput(linkCtrl, 'https://...', icon: Icons.link_rounded),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancelar')),
+              child: Text('Cancel',
+                  style: TextStyle(color: Colors.grey[500]))),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
               _sendMessage(type: 'link', metadata: {'url': linkCtrl.text});
               linkCtrl.dispose();
             },
-            child: const Text('Enviar'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryColor,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text('Send',
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w700)),
           ),
         ],
       ),
     );
   }
 
+  Widget _dialogInput(TextEditingController controller, String hint,
+      {IconData? icon}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.cardColor,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+      ),
+      child: TextField(
+        controller: controller,
+        style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(color: Colors.grey[700], fontSize: 13),
+          prefixIcon:
+              icon != null ? Icon(icon, size: 18, color: Colors.grey[600]) : null,
+          border: InputBorder.none,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        ),
+      ),
+    );
+  }
+
   // ========================================================================
-  // MESSAGE ACTIONS (Long Press)
+  // MESSAGE ACTIONS (Long Press) — Estilo Amino
   // ========================================================================
   void _showMessageActions(MessageModel message) {
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => Container(
+      backgroundColor: AppTheme.surfaceColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Handle bar
+            Container(
+              width: 36,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: Colors.grey[700],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
             // Quick reactions
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -854,55 +1015,57 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   .toList(),
             ),
             const SizedBox(height: 16),
-            ListTile(
-              leading: const Icon(Icons.reply_rounded),
-              title: const Text('Responder'),
-              onTap: () {
-                Navigator.pop(ctx);
-                setState(() => _replyingTo = message);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.copy_rounded),
-              title: const Text('Copiar'),
-              onTap: () {
-                Navigator.pop(ctx);
-                Clipboard.setData(ClipboardData(text: message.content ?? ''));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Copiado!')),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.forward_rounded),
-              title: const Text('Encaminhar'),
-              onTap: () {
-                Navigator.pop(ctx);
-                // TODO: Forward message
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.push_pin_rounded),
-              title: const Text('Fixar Mensagem'),
-              onTap: () {
-                Navigator.pop(ctx);
-                _pinMessage(message.id);
-              },
-            ),
+            _actionTile(Icons.reply_rounded, 'Reply', () {
+              Navigator.pop(ctx);
+              setState(() => _replyingTo = message);
+            }),
+            _actionTile(Icons.copy_rounded, 'Copy', () {
+              Navigator.pop(ctx);
+              Clipboard.setData(ClipboardData(text: message.content ?? ''));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Copied!'),
+                  backgroundColor: AppTheme.primaryColor,
+                ),
+              );
+            }),
+            _actionTile(Icons.forward_rounded, 'Forward', () {
+              Navigator.pop(ctx);
+              // TODO: Forward message
+            }),
+            _actionTile(Icons.push_pin_rounded, 'Pin Message', () {
+              Navigator.pop(ctx);
+              _pinMessage(message.id);
+            }),
             if (message.authorId == SupabaseService.currentUserId)
-              ListTile(
-                leading: const Icon(Icons.delete_rounded,
-                    color: AppTheme.errorColor),
-                title: const Text('Apagar',
-                    style: TextStyle(color: AppTheme.errorColor)),
-                onTap: () async {
-                  Navigator.pop(ctx);
-                  await SupabaseService.table('chat_messages')
-                      .delete()
-                      .eq('id', message.id);
-                  setState(() => _messages.remove(message));
-                },
-              ),
+              _actionTile(Icons.delete_rounded, 'Delete', () async {
+                Navigator.pop(ctx);
+                await SupabaseService.table('chat_messages')
+                    .delete()
+                    .eq('id', message.id);
+                setState(() => _messages.remove(message));
+              }, isDestructive: true),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _actionTile(IconData icon, String label, VoidCallback onTap,
+      {bool isDestructive = false}) {
+    final color = isDestructive ? AppTheme.errorColor : Colors.grey[400];
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(width: 12),
+            Text(label,
+                style: TextStyle(
+                    color: color, fontSize: 14, fontWeight: FontWeight.w500)),
           ],
         ),
       ),
@@ -912,14 +1075,30 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   void _showPinnedMessages() {
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => Container(
+      backgroundColor: AppTheme.surfaceColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Mensagens Fixadas',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Container(
+              width: 36,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: Colors.grey[700],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const Text('Pinned Messages',
+                style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                    color: AppTheme.textPrimary)),
             const SizedBox(height: 12),
             ..._pinnedMessages.map((m) => Container(
                   margin: const EdgeInsets.only(bottom: 8),
@@ -927,9 +1106,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   decoration: BoxDecoration(
                     color: AppTheme.cardColor,
                     borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.05)),
                   ),
                   child: Text(m['content'] as String? ?? '',
-                      style: const TextStyle(fontSize: 13)),
+                      style: TextStyle(
+                          fontSize: 13, color: Colors.grey[300])),
                 )),
           ],
         ),
@@ -937,38 +1119,74 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     );
   }
 
-  Widget badges_icon(IconData icon, int count) {
-    return Stack(
-      children: [
-        Icon(icon),
-        if (count > 0)
-          Positioned(
-            right: 0,
-            top: 0,
-            child: Container(
-              padding: const EdgeInsets.all(2),
-              decoration: const BoxDecoration(
-                color: AppTheme.warningColor,
-                shape: BoxShape.circle,
-              ),
-              constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
-              child: Text(
-                count.toString(),
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 8,
-                    fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
+  Widget _badgeIcon(IconData icon, int count) {
+    return Container(
+      width: 34,
+      height: 34,
+      margin: const EdgeInsets.only(right: 4),
+      child: Stack(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceColor,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: Colors.grey[500], size: 16),
+          ),
+          if (count > 0)
+            Positioned(
+              right: 0,
+              top: 0,
+              child: Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  color: AppTheme.warningColor,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppTheme.scaffoldBg, width: 1.5),
+                ),
+                constraints:
+                    const BoxConstraints(minWidth: 14, minHeight: 14),
+                child: Text(
+                  '$count',
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 8,
+                      fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
+    );
+  }
+
+  PopupMenuItem<String> _buildPopupItem(
+      String value, IconData icon, String label,
+      {bool isDestructive = false}) {
+    return PopupMenuItem(
+      value: value,
+      child: Row(
+        children: [
+          Icon(icon,
+              size: 18,
+              color: isDestructive ? AppTheme.errorColor : Colors.grey[400]),
+          const SizedBox(width: 10),
+          Text(label,
+              style: TextStyle(
+                  color:
+                      isDestructive ? AppTheme.errorColor : Colors.grey[300],
+                  fontSize: 13)),
+        ],
+      ),
     );
   }
 }
 
 // ============================================================================
-// MESSAGE BUBBLE (suporta todos os 19+ tipos)
+// MESSAGE BUBBLE (suporta todos os 19+ tipos) — Estilo Amino
 // ============================================================================
 
 class _MessageBubble extends StatelessWidget {
@@ -994,12 +1212,12 @@ class _MessageBubble extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: AppTheme.cardColorLight,
+              color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
               message.content ?? '',
-              style: const TextStyle(color: AppTheme.textHint, fontSize: 12),
+              style: TextStyle(color: Colors.grey[500], fontSize: 12),
             ),
           ),
         ),
@@ -1022,15 +1240,15 @@ class _MessageBubble extends StatelessWidget {
               onTap: () => context.push('/user/${message.authorId}'),
               child: CircleAvatar(
                 radius: 16,
-                backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.3),
+                backgroundColor: AppTheme.surfaceColor,
                 backgroundImage: message.author?.iconUrl != null
                     ? CachedNetworkImageProvider(message.author!.iconUrl!)
                     : null,
                 child: message.author?.iconUrl == null
                     ? Text(
                         (message.author?.nickname ?? '?')[0].toUpperCase(),
-                        style: const TextStyle(
-                            fontSize: 11, color: AppTheme.primaryColor),
+                        style: TextStyle(
+                            fontSize: 11, color: Colors.grey[400]),
                       )
                     : null,
               ),
@@ -1042,7 +1260,9 @@ class _MessageBubble extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: isMe ? AppTheme.primaryColor : AppTheme.cardColor,
+                color: isMe
+                    ? AppTheme.primaryColor
+                    : AppTheme.surfaceColor,
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(16),
                   topRight: const Radius.circular(16),
@@ -1059,11 +1279,11 @@ class _MessageBubble extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 4),
                       child: Text(
-                        message.author?.nickname ?? 'Usuário',
+                        message.author?.nickname ?? 'User',
                         style: TextStyle(
-                          color: isMe ? Colors.white70 : AppTheme.primaryLight,
+                          color: AppTheme.primaryColor,
                           fontSize: 11,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -1075,7 +1295,9 @@ class _MessageBubble extends StatelessWidget {
                     child: Text(
                       _formatTime(message.createdAt),
                       style: TextStyle(
-                        color: isMe ? Colors.white54 : AppTheme.textHint,
+                        color: isMe
+                            ? Colors.white.withValues(alpha: 0.6)
+                            : Colors.grey[600],
                         fontSize: 10,
                       ),
                     ),
@@ -1105,7 +1327,7 @@ class _MessageBubble extends StatelessWidget {
             ),
           );
         }
-        return Text(message.content ?? '[Imagem]',
+        return Text(message.content ?? '[Image]',
             style: TextStyle(color: textColor, fontSize: 14));
 
       case 'gif':
@@ -1152,7 +1374,8 @@ class _MessageBubble extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Áudio', style: TextStyle(color: textColor, fontSize: 13)),
+                Text('Audio',
+                    style: TextStyle(color: textColor, fontSize: 13)),
                 Container(
                   width: 120,
                   height: 4,
@@ -1195,20 +1418,25 @@ class _MessageBubble extends StatelessWidget {
             : isVideo
                 ? 'Video Chat'
                 : 'Screening Room';
+        final accentColor = isVoice
+            ? const Color(0xFF4CAF50)
+            : isVideo
+                ? const Color(0xFF2196F3)
+                : const Color(0xFFFF5722);
         return Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: const Color(0xFFFF4081).withValues(alpha: 0.15),
+            color: accentColor.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, color: const Color(0xFFFF4081)),
+              Icon(icon, color: accentColor),
               const SizedBox(width: 8),
               Text(label,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w600, color: Color(0xFFFF4081))),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w600, color: accentColor)),
             ],
           ),
         );
@@ -1227,7 +1455,7 @@ class _MessageBubble extends StatelessWidget {
               const Icon(Icons.monetization_on_rounded,
                   color: AppTheme.warningColor),
               const SizedBox(width: 8),
-              Text('$amount moedas',
+              Text('$amount coins',
                   style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       color: AppTheme.warningColor)),
@@ -1310,14 +1538,18 @@ class _MessageBubble extends StatelessWidget {
               decoration: BoxDecoration(
                 border: Border(
                   left: BorderSide(
-                      color: isMe ? Colors.white54 : AppTheme.primaryColor,
+                      color: isMe
+                          ? Colors.white.withValues(alpha: 0.5)
+                          : AppTheme.primaryColor,
                       width: 3),
                 ),
               ),
               child: Text(
-                'Em resposta...',
+                'Replying...',
                 style: TextStyle(
-                  color: isMe ? Colors.white54 : AppTheme.textSecondary,
+                  color: isMe
+                      ? Colors.white.withValues(alpha: 0.6)
+                      : Colors.grey[500],
                   fontSize: 11,
                   fontStyle: FontStyle.italic,
                 ),
@@ -1335,8 +1567,8 @@ class _MessageBubble extends StatelessWidget {
         final sharedType = type == 'shared_post'
             ? 'Post'
             : type == 'shared_user'
-                ? 'Perfil'
-                : 'Comunidade';
+                ? 'Profile'
+                : 'Community';
         return Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
@@ -1348,7 +1580,7 @@ class _MessageBubble extends StatelessWidget {
             children: [
               Icon(Icons.share_rounded, color: textColor, size: 16),
               const SizedBox(width: 8),
-              Text('$sharedType compartilhado',
+              Text('Shared $sharedType',
                   style: TextStyle(
                       color: textColor,
                       fontSize: 13,
@@ -1372,7 +1604,7 @@ class _MessageBubble extends StatelessWidget {
 }
 
 // ============================================================================
-// MEDIA OPTION ITEM
+// MEDIA OPTION ITEM — Estilo Amino
 // ============================================================================
 
 class _MediaOptionItem extends StatelessWidget {
@@ -1406,8 +1638,7 @@ class _MediaOptionItem extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(label,
-              style:
-                  const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+              style: TextStyle(fontSize: 11, color: Colors.grey[500])),
         ],
       ),
     );

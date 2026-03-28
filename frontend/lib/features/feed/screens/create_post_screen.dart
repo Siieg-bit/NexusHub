@@ -4,7 +4,8 @@ import 'package:image_picker/image_picker.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 
-/// Editor rico de criação de posts — suporta os 9 tipos exatos do Amino:
+/// Editor rico de criação de posts — estilo Amino Apps.
+/// Suporta os 9 tipos exatos do Amino:
 /// Normal (0), Crosspost (1), Repost (2), Q&A (3), Poll (4),
 /// Link Externo (5), Quiz Interativo (6), Imagem (7), Post Externo (8).
 class CreatePostScreen extends StatefulWidget {
@@ -57,20 +58,25 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
     try {
       final userId = SupabaseService.currentUserId ?? 'unknown';
-      final path = 'posts/$userId/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final path =
+          'posts/$userId/${DateTime.now().millisecondsSinceEpoch}.jpg';
       final bytes = await image.readAsBytes();
 
       await SupabaseService.storage
           .from('post-media')
           .uploadBinary(path, bytes);
 
-      final url = SupabaseService.storage.from('post-media').getPublicUrl(path);
+      final url =
+          SupabaseService.storage.from('post-media').getPublicUrl(path);
 
       setState(() => _mediaUrls.add(url));
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro no upload: $e')),
+          SnackBar(
+            content: Text('Erro no upload: $e'),
+            backgroundColor: AppTheme.errorColor,
+          ),
         );
       }
     }
@@ -91,13 +97,17 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           .from('post-media')
           .uploadBinary(path, bytes);
 
-      final url = SupabaseService.storage.from('post-media').getPublicUrl(path);
+      final url =
+          SupabaseService.storage.from('post-media').getPublicUrl(path);
 
       setState(() => _coverImageUrl = url);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro no upload: $e')),
+          SnackBar(
+            content: Text('Erro no upload: $e'),
+            backgroundColor: AppTheme.errorColor,
+          ),
         );
       }
     }
@@ -108,7 +118,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         _contentController.text.trim().isEmpty &&
         _selectedType != 'image') {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Preencha o título ou conteúdo')),
+        const SnackBar(
+          content: Text('Preencha o título ou conteúdo'),
+          backgroundColor: AppTheme.errorColor,
+        ),
       );
       return;
     }
@@ -199,13 +212,19 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       if (mounted) {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Post criado com sucesso!')),
+          const SnackBar(
+            content: Text('Post criado com sucesso!'),
+            backgroundColor: AppTheme.successColor,
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: $e')),
+          SnackBar(
+            content: Text('Erro: $e'),
+            backgroundColor: AppTheme.errorColor,
+          ),
         );
       }
     } finally {
@@ -231,191 +250,273 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
+      // ── AppBar estilo Amino (escuro, minimalista) ──
       appBar: AppBar(
-        title: const Text('Criar Post',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: AppTheme.scaffoldBg,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.close_rounded, color: AppTheme.textPrimary),
+          onPressed: () => context.pop(),
+        ),
+        title: const Text(
+          'Create Post',
+          style: TextStyle(
+            color: AppTheme.textPrimary,
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+          ),
+        ),
+        centerTitle: true,
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: ElevatedButton(
-              onPressed: _isSubmitting ? null : _submitPost,
-              style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.only(right: 12),
+            child: GestureDetector(
+              onTap: _isSubmitting ? null : _submitPost,
+              child: Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                decoration: BoxDecoration(
+                  color: _isSubmitting
+                      ? AppTheme.primaryColor.withValues(alpha: 0.5)
+                      : AppTheme.primaryColor,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: _isSubmitting
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Text(
+                        'Post',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
               ),
-              child: _isSubmitting
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
-                    )
-                  : const Text('Publicar'),
             ),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ============================================================
-            // SELETOR DE TIPO
-            // ============================================================
-            Text('Tipo de Post',
-                style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 44,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: _postTypes.length,
-                itemBuilder: (context, index) {
-                  final type = _postTypes[index];
-                  final isSelected = _selectedType == type.value;
-                  return GestureDetector(
-                    onTap: () => setState(() => _selectedType = type.value),
-                    child: Container(
-                      margin: const EdgeInsets.only(right: 8),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? AppTheme.primaryColor.withValues(alpha: 0.15)
-                            : AppTheme.cardColor,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: isSelected
-                              ? AppTheme.primaryColor
-                              : AppTheme.dividerColor,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(type.icon,
-                              size: 16,
-                              color: isSelected
-                                  ? AppTheme.primaryColor
-                                  : AppTheme.textSecondary),
-                          const SizedBox(width: 6),
-                          Text(
-                            type.label,
-                            style: TextStyle(
-                              color: isSelected
-                                  ? AppTheme.primaryColor
-                                  : AppTheme.textSecondary,
-                              fontSize: 12,
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.normal,
-                            ),
-                          ),
-                        ],
-                      ),
+      body: Column(
+        children: [
+          // ── Type selector (horizontal scroll) ──
+          Container(
+            height: 48,
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                    color: Colors.white.withValues(alpha: 0.05)),
+              ),
+            ),
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              itemCount: _postTypes.length,
+              itemBuilder: (context, index) {
+                final type = _postTypes[index];
+                final isSelected = _selectedType == type.value;
+                return GestureDetector(
+                  onTap: () => setState(() => _selectedType = type.value),
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 6),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 8),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppTheme.primaryColor.withValues(alpha: 0.15)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(20),
+                      border: isSelected
+                          ? Border.all(
+                              color:
+                                  AppTheme.primaryColor.withValues(alpha: 0.4))
+                          : null,
                     ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // ============================================================
-            // CAMPOS COMUNS
-            // ============================================================
-            // Cover image
-            GestureDetector(
-              onTap: _pickCoverImage,
-              child: Container(
-                width: double.infinity,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: AppTheme.cardColor,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppTheme.dividerColor),
-                  image: _coverImageUrl != null
-                      ? DecorationImage(
-                          image: NetworkImage(_coverImageUrl!),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                ),
-                child: _coverImageUrl == null
-                    ? Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(Icons.add_photo_alternate_rounded,
-                              color: AppTheme.textHint, size: 32),
-                          SizedBox(height: 4),
-                          Text('Adicionar Capa',
-                              style: TextStyle(
-                                  color: AppTheme.textHint, fontSize: 12)),
-                        ],
-                      )
-                    : null,
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Título
-            TextField(
-              controller: _titleController,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              decoration: const InputDecoration(
-                hintText: 'Título do post...',
-                border: InputBorder.none,
-                hintStyle: TextStyle(color: AppTheme.textHint),
-              ),
-              maxLines: 1,
-            ),
-
-            // Conteúdo
-            TextField(
-              controller: _contentController,
-              style: const TextStyle(fontSize: 15, height: 1.6),
-              decoration: const InputDecoration(
-                hintText: 'Escreva seu conteúdo aqui...',
-                border: InputBorder.none,
-                hintStyle: TextStyle(color: AppTheme.textHint),
-              ),
-              maxLines: null,
-              minLines: 6,
-            ),
-
-            // ============================================================
-            // CAMPOS ESPECÍFICOS POR TIPO
-            // ============================================================
-            if (_selectedType == 'poll') _buildPollEditor(),
-            if (_selectedType == 'quiz') _buildQuizEditor(),
-            if (_selectedType == 'link' || _selectedType == 'external')
-              _buildLinkEditor(),
-            if (_selectedType == 'image') _buildImageEditor(),
-
-            const SizedBox(height: 16),
-
-            // ============================================================
-            // TOOLBAR DE FORMATAÇÃO
-            // ============================================================
-            _buildToolbar(),
-
-            // Background URL
-            const SizedBox(height: 16),
-            ExpansionTile(
-              title: const Text('Opções Avançadas',
-                  style: TextStyle(fontSize: 14)),
-              children: [
-                TextField(
-                  controller: _backgroundUrlController,
-                  decoration: const InputDecoration(
-                    hintText: 'URL do background customizado',
-                    prefixIcon: Icon(Icons.wallpaper_rounded, size: 20),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(type.icon,
+                            size: 14,
+                            color: isSelected
+                                ? AppTheme.primaryColor
+                                : Colors.grey[600]),
+                        const SizedBox(width: 6),
+                        Text(
+                          type.label,
+                          style: TextStyle(
+                            color: isSelected
+                                ? AppTheme.primaryColor
+                                : Colors.grey[600],
+                            fontSize: 12,
+                            fontWeight: isSelected
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-              ],
+                );
+              },
             ),
-          ],
+          ),
+
+          // ── Body ──
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Cover image picker
+                  GestureDetector(
+                    onTap: _pickCoverImage,
+                    child: Container(
+                      width: double.infinity,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        color: AppTheme.cardColor,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.05)),
+                        image: _coverImageUrl != null
+                            ? DecorationImage(
+                                image: NetworkImage(_coverImageUrl!),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
+                      ),
+                      child: _coverImageUrl == null
+                          ? Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.add_photo_alternate_rounded,
+                                    color: Colors.grey[600], size: 28),
+                                const SizedBox(height: 4),
+                                Text('Add Cover Image',
+                                    style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 11)),
+                              ],
+                            )
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Title (borderless, large)
+                  TextField(
+                    controller: _titleController,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textPrimary,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'Title...',
+                      border: InputBorder.none,
+                      hintStyle: TextStyle(
+                          color: Colors.grey[700],
+                          fontWeight: FontWeight.w700),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    maxLines: 1,
+                  ),
+
+                  // Content (borderless, relaxed)
+                  TextField(
+                    controller: _contentController,
+                    style: TextStyle(
+                      fontSize: 15,
+                      height: 1.6,
+                      color: Colors.grey[300],
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'Write your content here...',
+                      border: InputBorder.none,
+                      hintStyle: TextStyle(color: Colors.grey[700]),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    maxLines: null,
+                    minLines: 6,
+                  ),
+
+                  // Type-specific editors
+                  if (_selectedType == 'poll') _buildPollEditor(),
+                  if (_selectedType == 'quiz') _buildQuizEditor(),
+                  if (_selectedType == 'link' || _selectedType == 'external')
+                    _buildLinkEditor(),
+                  if (_selectedType == 'image') _buildImageEditor(),
+
+                  // Advanced options
+                  const SizedBox(height: 16),
+                  Theme(
+                    data: Theme.of(context)
+                        .copyWith(dividerColor: Colors.transparent),
+                    child: ExpansionTile(
+                      tilePadding: EdgeInsets.zero,
+                      title: Text('Advanced Options',
+                          style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey[500],
+                              fontWeight: FontWeight.w500)),
+                      iconColor: Colors.grey[600],
+                      collapsedIconColor: Colors.grey[600],
+                      children: [
+                        _buildAminoInput(
+                          controller: _backgroundUrlController,
+                          hint: 'Custom background URL',
+                          icon: Icons.wallpaper_rounded,
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // ── Bottom toolbar ──
+          _buildToolbar(),
+        ],
+      ),
+    );
+  }
+
+  // ========================================================================
+  // AMINO INPUT FIELD (estilo escuro, sem borda visível)
+  // ========================================================================
+  Widget _buildAminoInput({
+    required TextEditingController controller,
+    required String hint,
+    IconData? icon,
+    TextInputType? keyboardType,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.cardColor,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+      ),
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        style: const TextStyle(fontSize: 13, color: AppTheme.textPrimary),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(color: Colors.grey[700], fontSize: 13),
+          prefixIcon:
+              icon != null ? Icon(icon, size: 18, color: Colors.grey[600]) : null,
+          border: InputBorder.none,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         ),
       ),
     );
@@ -429,9 +530,17 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
-        const Divider(),
-        Text('Opções da Enquete',
-            style: Theme.of(context).textTheme.titleMedium),
+        Container(
+          width: double.infinity,
+          height: 1,
+          color: Colors.white.withValues(alpha: 0.05),
+        ),
+        const SizedBox(height: 12),
+        Text('Poll Options',
+            style: TextStyle(
+                color: Colors.grey[400],
+                fontSize: 13,
+                fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
         ...List.generate(_pollOptions.length, (i) {
           return Padding(
@@ -439,19 +548,16 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             child: Row(
               children: [
                 Expanded(
-                  child: TextField(
+                  child: _buildAminoInput(
                     controller: _pollOptions[i],
-                    decoration: InputDecoration(
-                      hintText: 'Opção ${i + 1}',
-                      prefixIcon: Icon(Icons.circle_outlined,
-                          size: 16, color: AppTheme.textHint),
-                    ),
+                    hint: 'Option ${i + 1}',
+                    icon: Icons.circle_outlined,
                   ),
                 ),
                 if (_pollOptions.length > 2)
                   IconButton(
                     icon: const Icon(Icons.remove_circle_rounded,
-                        color: AppTheme.errorColor, size: 20),
+                        color: AppTheme.errorColor, size: 18),
                     onPressed: () {
                       setState(() {
                         _pollOptions[i].dispose();
@@ -463,12 +569,25 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             ),
           );
         }),
-        TextButton.icon(
-          onPressed: () {
-            setState(() => _pollOptions.add(TextEditingController()));
-          },
-          icon: const Icon(Icons.add_rounded, size: 18),
-          label: const Text('Adicionar Opção'),
+        GestureDetector(
+          onTap: () =>
+              setState(() => _pollOptions.add(TextEditingController())),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.add_rounded,
+                    size: 16, color: AppTheme.primaryColor),
+                const SizedBox(width: 6),
+                Text('Add Option',
+                    style: TextStyle(
+                        color: AppTheme.primaryColor,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600)),
+              ],
+            ),
+          ),
         ),
       ],
     );
@@ -482,44 +601,62 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
-        const Divider(),
-        Text('Perguntas do Quiz',
-            style: Theme.of(context).textTheme.titleMedium),
+        Container(
+          width: double.infinity,
+          height: 1,
+          color: Colors.white.withValues(alpha: 0.05),
+        ),
+        const SizedBox(height: 12),
+        Text('Quiz Questions',
+            style: TextStyle(
+                color: Colors.grey[400],
+                fontSize: 13,
+                fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
         ...List.generate(_quizQuestions.length, (qi) {
           final q = _quizQuestions[qi];
           return Container(
-            margin: const EdgeInsets.only(bottom: 16),
+            margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: AppTheme.cardColor,
               borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Text('Pergunta ${qi + 1}',
-                        style: const TextStyle(fontWeight: FontWeight.w600)),
+                    Text('Question ${qi + 1}',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                            color: AppTheme.textPrimary)),
                     const Spacer(),
                     if (_quizQuestions.length > 1)
-                      IconButton(
-                        icon: const Icon(Icons.delete_rounded,
-                            color: AppTheme.errorColor, size: 20),
-                        onPressed: () {
+                      GestureDetector(
+                        onTap: () {
                           setState(() {
                             _quizQuestions[qi].dispose();
                             _quizQuestions.removeAt(qi);
                           });
                         },
+                        child: const Icon(Icons.delete_rounded,
+                            color: AppTheme.errorColor, size: 18),
                       ),
                   ],
                 ),
+                const SizedBox(height: 8),
                 TextField(
                   controller: q.questionController,
-                  decoration: const InputDecoration(
-                    hintText: 'Digite a pergunta...',
+                  style: const TextStyle(
+                      fontSize: 13, color: AppTheme.textPrimary),
+                  decoration: InputDecoration(
+                    hintText: 'Type the question...',
+                    hintStyle: TextStyle(color: Colors.grey[700], fontSize: 13),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -535,13 +672,22 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                             setState(() => q.correctIndex = v ?? 0);
                           },
                           activeColor: AppTheme.successColor,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                          visualDensity: VisualDensity.compact,
                         ),
                         Expanded(
                           child: TextField(
                             controller: q.options[oi],
+                            style: const TextStyle(
+                                fontSize: 12, color: AppTheme.textPrimary),
                             decoration: InputDecoration(
-                              hintText: 'Opção ${oi + 1}',
+                              hintText: 'Option ${oi + 1}',
+                              hintStyle: TextStyle(
+                                  color: Colors.grey[700], fontSize: 12),
+                              border: InputBorder.none,
                               isDense: true,
+                              contentPadding: EdgeInsets.zero,
                             ),
                           ),
                         ),
@@ -549,23 +695,48 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     ),
                   );
                 }),
-                TextButton.icon(
-                  onPressed: () {
-                    setState(() => q.options.add(TextEditingController()));
-                  },
-                  icon: const Icon(Icons.add_rounded, size: 16),
-                  label: const Text('Opção', style: TextStyle(fontSize: 12)),
+                GestureDetector(
+                  onTap: () => setState(
+                      () => q.options.add(TextEditingController())),
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.add_rounded,
+                            size: 14, color: AppTheme.primaryColor),
+                        const SizedBox(width: 4),
+                        Text('Option',
+                            style: TextStyle(
+                                color: AppTheme.primaryColor,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
           );
         }),
-        TextButton.icon(
-          onPressed: () {
-            setState(() => _quizQuestions.add(_QuizQuestion()));
-          },
-          icon: const Icon(Icons.add_rounded, size: 18),
-          label: const Text('Adicionar Pergunta'),
+        GestureDetector(
+          onTap: () => setState(() => _quizQuestions.add(_QuizQuestion())),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.add_rounded,
+                    size: 16, color: AppTheme.primaryColor),
+                const SizedBox(width: 6),
+                Text('Add Question',
+                    style: TextStyle(
+                        color: AppTheme.primaryColor,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600)),
+              ],
+            ),
+          ),
         ),
       ],
     );
@@ -579,15 +750,22 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
-        const Divider(),
-        Text('Link Externo', style: Theme.of(context).textTheme.titleMedium),
+        Container(
+          width: double.infinity,
+          height: 1,
+          color: Colors.white.withValues(alpha: 0.05),
+        ),
+        const SizedBox(height: 12),
+        Text('External Link',
+            style: TextStyle(
+                color: Colors.grey[400],
+                fontSize: 13,
+                fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
-        TextField(
+        _buildAminoInput(
           controller: _linkController,
-          decoration: const InputDecoration(
-            hintText: 'https://...',
-            prefixIcon: Icon(Icons.link_rounded),
-          ),
+          hint: 'https://...',
+          icon: Icons.link_rounded,
           keyboardType: TextInputType.url,
         ),
       ],
@@ -602,8 +780,17 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
-        const Divider(),
-        Text('Imagens', style: Theme.of(context).textTheme.titleMedium),
+        Container(
+          width: double.infinity,
+          height: 1,
+          color: Colors.white.withValues(alpha: 0.05),
+        ),
+        const SizedBox(height: 12),
+        Text('Images',
+            style: TextStyle(
+                color: Colors.grey[400],
+                fontSize: 13,
+                fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -615,7 +802,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(10),
                         image: DecorationImage(
                           image: NetworkImage(url),
                           fit: BoxFit.cover,
@@ -623,18 +810,18 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                       ),
                     ),
                     Positioned(
-                      top: 2,
-                      right: 2,
+                      top: 4,
+                      right: 4,
                       child: GestureDetector(
                         onTap: () => setState(() => _mediaUrls.remove(url)),
                         child: Container(
-                          padding: const EdgeInsets.all(2),
-                          decoration: const BoxDecoration(
-                            color: Colors.black54,
+                          padding: const EdgeInsets.all(3),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.6),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(Icons.close_rounded,
-                              color: Colors.white, size: 14),
+                              color: Colors.white, size: 12),
                         ),
                       ),
                     ),
@@ -647,11 +834,12 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 height: 80,
                 decoration: BoxDecoration(
                   color: AppTheme.cardColor,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppTheme.dividerColor),
+                  borderRadius: BorderRadius.circular(10),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.05)),
                 ),
-                child: const Icon(Icons.add_photo_alternate_rounded,
-                    color: AppTheme.textHint),
+                child: Icon(Icons.add_photo_alternate_rounded,
+                    color: Colors.grey[600], size: 24),
               ),
             ),
           ],
@@ -661,33 +849,34 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   }
 
   // ========================================================================
-  // TOOLBAR DE FORMATAÇÃO
+  // BOTTOM TOOLBAR — Estilo Amino (flutuante, escuro)
   // ========================================================================
   Widget _buildToolbar() {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       decoration: BoxDecoration(
         color: AppTheme.cardColor,
-        borderRadius: BorderRadius.circular(12),
+        border: Border(
+          top: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+        ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _ToolbarButton(Icons.image_rounded, 'Imagem', _pickImage),
-          _ToolbarButton(Icons.gif_rounded, 'GIF', () {/* TODO: Giphy */}),
-          _ToolbarButton(Icons.music_note_rounded, 'Música', () {
-            /* TODO: SoundCloud */
-          }),
-          _ToolbarButton(Icons.format_bold_rounded, 'Negrito', () {
-            /* TODO: Bold */
-          }),
-          _ToolbarButton(Icons.format_italic_rounded, 'Itálico', () {
-            /* TODO: Italic */
-          }),
-          _ToolbarButton(Icons.format_strikethrough_rounded, 'Riscado', () {
-            /* TODO: Strikethrough */
-          }),
-        ],
+      child: SafeArea(
+        top: false,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _ToolbarButton(Icons.image_rounded, 'Image', _pickImage),
+            _ToolbarButton(Icons.gif_rounded, 'GIF', () {/* TODO: Giphy */}),
+            _ToolbarButton(
+                Icons.music_note_rounded, 'Music', () {/* TODO: SoundCloud */}),
+            _ToolbarButton(
+                Icons.format_bold_rounded, 'Bold', () {/* TODO: Bold */}),
+            _ToolbarButton(
+                Icons.format_italic_rounded, 'Italic', () {/* TODO: Italic */}),
+            _ToolbarButton(Icons.format_strikethrough_rounded, 'Strike',
+                () {/* TODO: Strikethrough */}),
+          ],
+        ),
       ),
     );
   }
@@ -734,8 +923,8 @@ class _ToolbarButton extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Icon(icon, color: AppTheme.textSecondary, size: 22),
+          padding: const EdgeInsets.all(10),
+          child: Icon(icon, color: Colors.grey[500], size: 20),
         ),
       ),
     );

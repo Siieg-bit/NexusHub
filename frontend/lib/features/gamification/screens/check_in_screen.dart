@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../auth/providers/auth_provider.dart';
 
-/// Tela de check-in diário com gamificação.
+/// Tela de check-in diário com gamificação — Estilo Amino Apps.
 class CheckInScreen extends ConsumerStatefulWidget {
   const CheckInScreen({super.key});
 
@@ -14,31 +15,50 @@ class CheckInScreen extends ConsumerStatefulWidget {
 }
 
 class _CheckInScreenState extends ConsumerState<CheckInScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   bool _isLoading = false;
   bool _checkedIn = false;
   int _consecutiveDays = 0;
   int _xpEarned = 0;
   int _coinsEarned = 0;
-  late AnimationController _animController;
-  late Animation<double> _scaleAnimation;
+
+  late AnimationController _pulseController;
+  late AnimationController _celebrateController;
+  late Animation<double> _pulseAnimation;
+  late Animation<double> _celebrateScale;
+  late Animation<double> _celebrateOpacity;
 
   @override
   void initState() {
     super.initState();
-    _animController = AnimationController(
+    _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.08).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
-      CurvedAnimation(parent: _animController, curve: Curves.elasticOut),
+
+    _celebrateController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
     );
+    _celebrateScale = Tween<double>(begin: 0.5, end: 1.0).animate(
+      CurvedAnimation(parent: _celebrateController, curve: Curves.elasticOut),
+    );
+    _celebrateOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+          parent: _celebrateController,
+          curve: const Interval(0.0, 0.4, curve: Curves.easeIn)),
+    );
+
     _loadCheckInStatus();
   }
 
   @override
   void dispose() {
-    _animController.dispose();
+    _pulseController.dispose();
+    _celebrateController.dispose();
     super.dispose();
   }
 
@@ -54,58 +74,6 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
   bool _luckyDrawUsed = false;
   int _luckyDrawPrize = 0;
 
-  Widget _buildLuckyDrawSection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppTheme.warningColor.withValues(alpha: 0.15),
-            AppTheme.accentColor.withValues(alpha: 0.15)
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.warningColor.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        children: [
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.casino_rounded, color: AppTheme.warningColor),
-              SizedBox(width: 8),
-              Text('Lucky Draw',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            ],
-          ),
-          const SizedBox(height: 8),
-          if (_luckyDrawUsed && _luckyDrawPrize > 0)
-            Text('Parabéns! Você ganhou $_luckyDrawPrize coins extras!',
-                style: const TextStyle(
-                    color: AppTheme.successColor, fontWeight: FontWeight.w600))
-          else if (_luckyDrawUsed)
-            const Text('Não foi dessa vez. Tente novamente amanhã!',
-                style: TextStyle(color: AppTheme.textSecondary))
-          else ...[
-            const Text('Tente a sorte para ganhar coins extras!',
-                style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
-            const SizedBox(height: 12),
-            ElevatedButton.icon(
-              onPressed: _doLuckyDraw,
-              icon: const Icon(Icons.casino_rounded, color: Colors.white),
-              label: const Text('Girar', style: TextStyle(color: Colors.white)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.warningColor,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
   Future<void> _doLuckyDraw() async {
     try {
       final result = await SupabaseService.rpc('play_lucky_draw');
@@ -119,57 +87,12 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
         setState(() => _luckyDrawUsed = true);
       }
     } catch (_) {
-      // Fallback: simulate locally if RPC doesn't exist yet
       setState(() {
         _luckyDrawUsed = true;
-        // 30% chance of winning 5-50 coins
         final rng = DateTime.now().millisecondsSinceEpoch % 10;
         _luckyDrawPrize = rng < 3 ? (rng + 1) * 10 : 0;
       });
     }
-  }
-
-  Widget _buildStreakRepairSection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.errorColor.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.errorColor.withValues(alpha: 0.2)),
-      ),
-      child: Column(
-        children: [
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.build_circle_rounded, color: AppTheme.errorColor),
-              SizedBox(width: 8),
-              Text('Streak Perdida',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            ],
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Você perdeu sua streak! Gaste coins para recuperá-la.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
-          ),
-          const SizedBox(height: 12),
-          ElevatedButton.icon(
-            onPressed: _repairStreak,
-            icon: const Icon(Icons.monetization_on_rounded,
-                color: Colors.white, size: 18),
-            label: const Text('Reparar (50 coins)',
-                style: TextStyle(color: Colors.white)),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.errorColor,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> _repairStreak() async {
@@ -185,16 +108,26 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                  content: Text(
-                      'Streak restaurada! $_consecutiveDays dias consecutivos.')),
+                content: Text(
+                    'Streak restored! $_consecutiveDays consecutive days.'),
+                backgroundColor: AppTheme.primaryColor,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
             );
           }
         } else {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                  content: Text(
-                      data['message'] as String? ?? 'Coins insuficientes')),
+                content: Text(
+                    data['message'] as String? ?? 'Not enough coins'),
+                backgroundColor: AppTheme.errorColor,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
             );
           }
         }
@@ -202,7 +135,13 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: $e')),
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10)),
+          ),
         );
       }
     }
@@ -223,16 +162,20 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             _xpEarned = data['xp_earned'] as int? ?? 0;
             _coinsEarned = data['coins_earned'] as int? ?? 0;
           });
-          _animController.forward();
+          _pulseController.stop();
+          _celebrateController.forward();
         } else {
-          setState(() {
-            _checkedIn = true;
-          });
+          setState(() => _checkedIn = true);
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                  content: Text(
-                      data['message'] as String? ?? 'Já fez check-in hoje!')),
+                content: Text(
+                    data['message'] as String? ?? 'Already checked in today!'),
+                backgroundColor: AppTheme.warningColor,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
             );
           }
         }
@@ -240,7 +183,13 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: $e')),
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10)),
+          ),
         );
       }
     } finally {
@@ -251,89 +200,98 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Check-in Diário')),
+      backgroundColor: AppTheme.scaffoldBg,
+      appBar: AppBar(
+        backgroundColor: AppTheme.scaffoldBg,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_rounded,
+              color: AppTheme.textPrimary, size: 20),
+          onPressed: () => context.pop(),
+        ),
+        title: const Text('Daily Check-in',
+            style: TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 18,
+                color: AppTheme.textPrimary)),
+        centerTitle: true,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
 
             // ================================================================
-            // ÍCONE PRINCIPAL
+            // ÍCONE PRINCIPAL — Amino style com glow
             // ================================================================
-            ScaleTransition(
-              scale: _scaleAnimation,
-              child: Container(
-                width: 140,
-                height: 140,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: _checkedIn
-                        ? [AppTheme.successColor, AppTheme.accentColor]
-                        : [AppTheme.warningColor, AppTheme.primaryColor],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: (_checkedIn
-                              ? AppTheme.successColor
-                              : AppTheme.warningColor)
-                          .withValues(alpha: 0.3),
-                      blurRadius: 20,
-                      spreadRadius: 5,
+            _checkedIn
+                ? ScaleTransition(
+                    scale: _celebrateScale,
+                    child: FadeTransition(
+                      opacity: _celebrateOpacity,
+                      child: _buildMainIcon(true),
                     ),
-                  ],
-                ),
-                child: Icon(
-                  _checkedIn
-                      ? Icons.check_circle_rounded
-                      : Icons.calendar_today_rounded,
-                  size: 64,
-                  color: Colors.white,
-                ),
-              ),
-            ),
+                  )
+                : AnimatedBuilder(
+                    animation: _pulseAnimation,
+                    builder: (context, child) {
+                      return Transform.scale(
+                        scale: _pulseAnimation.value,
+                        child: _buildMainIcon(false),
+                      );
+                    },
+                  ),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: 28),
 
             // ================================================================
-            // STREAK
+            // STREAK COUNTER
             // ================================================================
             Text(
-              _checkedIn ? 'Check-in Realizado!' : 'Check-in Diário',
-              style: Theme.of(context).textTheme.headlineMedium,
+              _checkedIn ? 'Check-in Complete!' : 'Daily Check-in',
+              style: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 24,
+                  color: AppTheme.textPrimary),
             ),
             const SizedBox(height: 8),
             Text(
               _checkedIn
-                  ? 'Dia $_consecutiveDays consecutivo!'
-                  : 'Faça check-in para ganhar recompensas',
-              style:
-                  const TextStyle(color: AppTheme.textSecondary, fontSize: 15),
+                  ? 'Day $_consecutiveDays streak!'
+                  : 'Check in to earn rewards',
+              style: TextStyle(color: Colors.grey[500], fontSize: 14),
             ),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: 28),
 
             // ================================================================
-            // DIAS DA SEMANA
+            // DIAS DA SEMANA — Estilo Amino
             // ================================================================
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(7, (index) {
-                final isCompleted = index < _consecutiveDays % 7;
-                final isToday = index == _consecutiveDays % 7;
-                return _DayCircle(
-                  day: ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'][index],
-                  isCompleted: isCompleted,
-                  isToday: isToday && !_checkedIn,
-                  isTodayCompleted: isToday && _checkedIn,
-                );
-              }),
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceColor,
+                borderRadius: BorderRadius.circular(16),
+                border:
+                    Border.all(color: Colors.white.withValues(alpha: 0.05)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: List.generate(7, (index) {
+                  final isCompleted = index < _consecutiveDays % 7;
+                  final isToday = index == _consecutiveDays % 7;
+                  return _DayCircle(
+                    day: ['M', 'T', 'W', 'T', 'F', 'S', 'S'][index],
+                    isCompleted: isCompleted,
+                    isToday: isToday && !_checkedIn,
+                    isTodayCompleted: isToday && _checkedIn,
+                  );
+                }),
+              ),
             ),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
 
             // ================================================================
             // RECOMPENSAS (após check-in)
@@ -342,16 +300,24 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: AppTheme.cardColor,
+                  color: AppTheme.surfaceColor,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                      color: AppTheme.successColor.withValues(alpha: 0.3)),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.2)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.08),
+                      blurRadius: 12,
+                    ),
+                  ],
                 ),
                 child: Column(
                   children: [
-                    const Text('Recompensas',
+                    const Text('Rewards',
                         style: TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 16)),
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                            color: AppTheme.textPrimary)),
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -360,6 +326,11 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                           icon: Icons.star_rounded,
                           label: '+$_xpEarned XP',
                           color: AppTheme.primaryColor,
+                        ),
+                        Container(
+                          width: 1,
+                          height: 36,
+                          color: Colors.white.withValues(alpha: 0.06),
                         ),
                         _RewardItem(
                           icon: Icons.monetization_on_rounded,
@@ -371,80 +342,108 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
             ],
 
             // ================================================================
-            // BOTÃO DE CHECK-IN
+            // BOTÃO DE CHECK-IN — Estilo Amino
             // ================================================================
             if (!_checkedIn)
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _doCheckIn,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.warningColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+              GestureDetector(
+                onTap: _isLoading ? null : _doCheckIn,
+                child: Container(
+                  width: double.infinity,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [
+                        Color(0xFFFF9800),
+                        Color(0xFFFF5722),
+                      ],
                     ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFF9800).withValues(alpha: 0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('Fazer Check-in',
-                          style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white)),
+                  child: Center(
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                                color: Colors.white, strokeWidth: 2),
+                          )
+                        : const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.local_fire_department_rounded,
+                                  color: Colors.white, size: 22),
+                              SizedBox(width: 8),
+                              Text('Check In',
+                                  style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white)),
+                            ],
+                          ),
+                  ),
                 ),
               ),
 
             const SizedBox(height: 16),
 
             // ================================================================
-            // LUCKY DRAW (após check-in, chance de prêmio extra)
+            // LUCKY DRAW — Estilo Amino
             // ================================================================
             if (_checkedIn) _buildLuckyDrawSection(),
 
             const SizedBox(height: 16),
 
             // ================================================================
-            // STREAK REPAIR (se perdeu a streak)
+            // STREAK REPAIR
             // ================================================================
             if (!_checkedIn && _consecutiveDays == 0)
               _buildStreakRepairSection(),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
             // ================================================================
-            // INFO DE STREAK
+            // INFO — Estilo Amino
             // ================================================================
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.cardColor,
-                borderRadius: BorderRadius.circular(12),
+                color: AppTheme.surfaceColor,
+                borderRadius: BorderRadius.circular(16),
+                border:
+                    Border.all(color: Colors.white.withValues(alpha: 0.05)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Como funciona',
-                      style: TextStyle(fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 8),
+                  const Text('How it works',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.textPrimary)),
+                  const SizedBox(height: 10),
                   _InfoRow(
                       icon: Icons.calendar_today_rounded,
-                      text:
-                          'Faça check-in todos os dias para manter sua streak'),
+                      text: 'Check in every day to maintain your streak'),
                   _InfoRow(
                       icon: Icons.trending_up_rounded,
                       text:
-                          'Quanto maior a streak, mais XP e coins você ganha'),
+                          'Higher streak = more XP and coins'),
                   _InfoRow(
                       icon: Icons.star_rounded,
-                      text: '7 dias seguidos = bônus especial!'),
+                      text: '7 consecutive days = special bonus!'),
                   _InfoRow(
-                      icon: Icons.warning_rounded,
-                      text: 'Se perder um dia, a streak volta para 1'),
+                      icon: Icons.warning_amber_rounded,
+                      text: 'Miss a day and streak resets to 1'),
                 ],
               ),
             ),
@@ -453,7 +452,194 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
       ),
     );
   }
+
+  Widget _buildMainIcon(bool completed) {
+    return Container(
+      width: 140,
+      height: 140,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          colors: completed
+              ? [AppTheme.primaryColor, AppTheme.accentColor]
+              : [const Color(0xFFFF9800), const Color(0xFFFF5722)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (completed
+                    ? AppTheme.primaryColor
+                    : const Color(0xFFFF9800))
+                .withValues(alpha: 0.4),
+            blurRadius: 24,
+            spreadRadius: 4,
+          ),
+        ],
+      ),
+      child: Icon(
+        completed
+            ? Icons.check_circle_rounded
+            : Icons.local_fire_department_rounded,
+        size: 64,
+        color: Colors.white,
+      ),
+    );
+  }
+
+  Widget _buildLuckyDrawSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppTheme.warningColor.withValues(alpha: 0.1),
+            AppTheme.accentColor.withValues(alpha: 0.08),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border:
+            Border.all(color: AppTheme.warningColor.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.casino_rounded,
+                  color: AppTheme.warningColor, size: 20),
+              const SizedBox(width: 8),
+              const Text('Lucky Draw',
+                  style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
+                      color: AppTheme.textPrimary)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (_luckyDrawUsed && _luckyDrawPrize > 0)
+            Text('You won $_luckyDrawPrize extra coins!',
+                style: const TextStyle(
+                    color: AppTheme.primaryColor,
+                    fontWeight: FontWeight.w700))
+          else if (_luckyDrawUsed)
+            Text('Better luck next time!',
+                style: TextStyle(color: Colors.grey[500]))
+          else ...[
+            Text('Try your luck for extra coins!',
+                style: TextStyle(color: Colors.grey[500], fontSize: 13)),
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: _doLuckyDraw,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color:
+                          const Color(0xFFFFD700).withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.casino_rounded,
+                        color: Colors.white, size: 18),
+                    SizedBox(width: 6),
+                    Text('Spin',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14)),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStreakRepairSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.errorColor.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(16),
+        border:
+            Border.all(color: AppTheme.errorColor.withValues(alpha: 0.15)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.build_circle_rounded,
+                  color: AppTheme.errorColor, size: 20),
+              const SizedBox(width: 8),
+              const Text('Streak Lost',
+                  style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
+                      color: AppTheme.textPrimary)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'You lost your streak! Spend coins to recover it.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.grey[500], fontSize: 13),
+          ),
+          const SizedBox(height: 12),
+          GestureDetector(
+            onTap: _repairStreak,
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppTheme.errorColor,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.errorColor.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.monetization_on_rounded,
+                      color: Colors.white, size: 16),
+                  SizedBox(width: 6),
+                  Text('Repair (50 coins)',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13)),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
+
+// =============================================================================
+// DAY CIRCLE — Estilo Amino
+// =============================================================================
 
 class _DayCircle extends StatelessWidget {
   final String day;
@@ -470,39 +656,57 @@ class _DayCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color bgColor;
-    Color textColor;
-    if (isTodayCompleted) {
-      bgColor = AppTheme.successColor;
-      textColor = Colors.white;
-    } else if (isCompleted) {
-      bgColor = AppTheme.primaryColor;
-      textColor = Colors.white;
-    } else if (isToday) {
-      bgColor = AppTheme.warningColor.withValues(alpha: 0.3);
-      textColor = AppTheme.warningColor;
-    } else {
-      bgColor = AppTheme.cardColorLight;
-      textColor = AppTheme.textHint;
-    }
+    final bool active = isCompleted || isTodayCompleted;
 
     return Container(
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: bgColor,
         shape: BoxShape.circle,
+        gradient: active
+            ? const LinearGradient(
+                colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : null,
+        color: active
+            ? null
+            : isToday
+                ? const Color(0xFFFF9800).withValues(alpha: 0.2)
+                : AppTheme.surfaceColor,
+        border: isToday && !active
+            ? Border.all(
+                color: const Color(0xFFFF9800).withValues(alpha: 0.5),
+                width: 2)
+            : null,
+        boxShadow: active
+            ? [
+                BoxShadow(
+                  color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                  blurRadius: 6,
+                ),
+              ]
+            : null,
       ),
       child: Center(
-        child: isCompleted || isTodayCompleted
+        child: active
             ? const Icon(Icons.check_rounded, color: Colors.white, size: 18)
             : Text(day,
-                style:
-                    TextStyle(color: textColor, fontWeight: FontWeight.w600)),
+                style: TextStyle(
+                    color: isToday
+                        ? const Color(0xFFFF9800)
+                        : Colors.grey[600],
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12)),
       ),
     );
   }
 }
+
+// =============================================================================
+// REWARD ITEM — Estilo Amino
+// =============================================================================
 
 class _RewardItem extends StatelessWidget {
   final IconData icon;
@@ -516,14 +720,27 @@ class _RewardItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Icon(icon, color: color, size: 32),
-        const SizedBox(height: 4),
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: color, size: 24),
+        ),
+        const SizedBox(height: 6),
         Text(label,
-            style: TextStyle(color: color, fontWeight: FontWeight.bold)),
+            style: TextStyle(
+                color: color, fontWeight: FontWeight.w800, fontSize: 13)),
       ],
     );
   }
 }
+
+// =============================================================================
+// INFO ROW — Estilo Amino
+// =============================================================================
 
 class _InfoRow extends StatelessWidget {
   final IconData icon;
@@ -534,15 +751,15 @@ class _InfoRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 16, color: AppTheme.textSecondary),
+          Icon(icon, size: 14, color: Colors.grey[600]),
           const SizedBox(width: 8),
           Expanded(
             child: Text(text,
-                style: const TextStyle(
-                    color: AppTheme.textSecondary, fontSize: 13)),
+                style: TextStyle(color: Colors.grey[500], fontSize: 12)),
           ),
         ],
       ),

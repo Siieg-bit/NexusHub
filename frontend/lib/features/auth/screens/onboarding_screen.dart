@@ -1,9 +1,12 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../config/app_theme.dart';
+import '../../../core/utils/amino_animations.dart';
 
-/// Tela de onboarding exibida na primeira abertura do app.
+/// Tela de Onboarding — réplica fiel do Amino Apps.
+/// Fundo escuro com gradiente animado, logo centralizado, botões translúcidos.
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -11,159 +14,262 @@ class OnboardingScreen extends StatefulWidget {
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
-  final _pageController = PageController();
-  int _currentPage = 0;
+class _OnboardingScreenState extends State<OnboardingScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _bgController;
 
-  final _pages = const [
-    _OnboardingPage(
-      icon: Icons.groups_rounded,
-      title: 'Comunidades',
-      description: 'Encontre e crie comunidades sobre tudo que você ama. '
-          'Anime, K-Pop, Games, Arte e muito mais!',
-      color: AppTheme.primaryColor,
-    ),
-    _OnboardingPage(
-      icon: Icons.chat_bubble_rounded,
-      title: 'Chat em Tempo Real',
-      description: 'Converse com pessoas que compartilham seus interesses. '
-          'Chat de texto, imagens e muito mais!',
-      color: AppTheme.accentColor,
-    ),
-    _OnboardingPage(
-      icon: Icons.emoji_events_rounded,
-      title: 'Gamificação',
-      description: 'Ganhe XP, suba de nível e desbloqueie conquistas. '
-          'Faça check-in diário e mantenha sua streak!',
-      color: AppTheme.warningColor,
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _bgController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 8),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _bgController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Skip button
-            Align(
-              alignment: Alignment.topRight,
-              child: TextButton(
-                onPressed: () => context.go('/login'),
-                child: const Text('Pular',
-                    style: TextStyle(color: AppTheme.textSecondary)),
+      body: AnimatedBuilder(
+        animation: _bgController,
+        builder: (context, child) {
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppTheme.scaffoldBg,
+                  Color.lerp(
+                    const Color(0xFF0F0F1A),
+                    const Color(0xFF1A2E1A),
+                    _bgController.value * 0.3,
+                  )!,
+                  AppTheme.scaffoldBg,
+                ],
+                stops: [0.0, 0.5 + _bgController.value * 0.2, 1.0],
               ),
             ),
+            child: child,
+          );
+        },
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Column(
+              children: [
+                const Spacer(flex: 2),
 
-            // Pages
-            Expanded(
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: _pages.length,
-                onPageChanged: (index) => setState(() => _currentPage = index),
-                itemBuilder: (context, index) => _pages[index],
-              ),
-            ),
-
-            // Indicators
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                _pages.length,
-                (index) => AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  width: _currentPage == index ? 24 : 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: _currentPage == index
-                        ? AppTheme.primaryColor
-                        : AppTheme.dividerColor,
-                    borderRadius: BorderRadius.circular(4),
+                // Logo e Branding
+                AminoAnimations.scaleIn(
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          gradient: AppTheme.primaryGradient,
+                          borderRadius: BorderRadius.circular(28),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.primaryColor.withValues(alpha: 0.4),
+                              blurRadius: 30,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.hub_rounded,
+                          color: Colors.white,
+                          size: 52,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      const Text(
+                        'NexusHub',
+                        style: TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontSize: 36,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Sua comunidade, seu mundo.',
+                        style: TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            ),
 
-            const SizedBox(height: 40),
+                const Spacer(flex: 1),
 
-            // Buttons
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => context.go('/signup'),
-                      child: const Text('Criar Conta'),
+                // Features Highlights
+                AminoAnimations.slideUp(
+                  delay: const Duration(milliseconds: 200),
+                  child: Column(
+                    children: [
+                      _FeatureRow(
+                        icon: Icons.groups_rounded,
+                        color: AppTheme.primaryColor,
+                        text: 'Milhares de comunidades para explorar',
+                      ),
+                      const SizedBox(height: 16),
+                      _FeatureRow(
+                        icon: Icons.chat_bubble_rounded,
+                        color: AppTheme.accentColor,
+                        text: 'Chat em tempo real com seus amigos',
+                      ),
+                      const SizedBox(height: 16),
+                      _FeatureRow(
+                        icon: Icons.auto_awesome_rounded,
+                        color: AppTheme.aminoMagenta,
+                        text: 'Personalize seu perfil e suba de nível',
+                      ),
+                    ],
+                  ),
+                ),
+
+                const Spacer(flex: 2),
+
+                // Botões de Ação
+                AminoAnimations.slideUp(
+                  delay: const Duration(milliseconds: 400),
+                  child: Column(
+                    children: [
+                      // Botão principal — Criar Conta
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton(
+                          onPressed: () => context.go('/signup'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primaryColor,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            textStyle: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          child: const Text('Criar Conta'),
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // Botão secundário — Login (translúcido com blur)
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(14),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.15),
+                                  width: 1,
+                                ),
+                              ),
+                              child: TextButton(
+                                onPressed: () => context.go('/login'),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: AppTheme.textPrimary,
+                                  textStyle: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                child: const Text('Já tenho conta'),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Termos
+                AminoAnimations.fadeIn(
+                  delay: const Duration(milliseconds: 600),
+                  child: const Text(
+                    'Ao continuar, você concorda com os Termos de Uso\ne Política de Privacidade.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: AppTheme.textHint,
+                      fontSize: 11,
+                      height: 1.4,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: () => context.go('/login'),
-                      child: const Text('Já tenho conta'),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+
+                const SizedBox(height: 24),
+              ],
             ),
-            const SizedBox(height: 32),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _OnboardingPage extends StatelessWidget {
+class _FeatureRow extends StatelessWidget {
   final IconData icon;
-  final String title;
-  final String description;
   final Color color;
+  final String text;
 
-  const _OnboardingPage({
+  const _FeatureRow({
     required this.icon,
-    required this.title,
-    required this.description,
     required this.color,
+    required this.text,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(40),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.15),
-              shape: BoxShape.circle,
+    return Row(
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: color, size: 20),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(
+              color: AppTheme.textPrimary,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
             ),
-            child: Icon(icon, size: 60, color: color),
           ),
-          const SizedBox(height: 40),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.displaySmall,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            description,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppTheme.textSecondary,
-                  height: 1.5,
-                ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

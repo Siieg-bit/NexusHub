@@ -63,16 +63,29 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
         _allAchievements.where((a) => !_unlockedIds.contains(a['id'])).toList();
 
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
       appBar: AppBar(
-        title: const Text('Conquistas',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        title: const Text(
+          'Conquistas',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            color: AppTheme.textPrimary,
+          ),
+        ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(color: AppTheme.primaryColor),
+            )
           : _allAchievements.isEmpty
-              ? const Center(
-                  child: Text('Nenhuma conquista disponível',
-                      style: TextStyle(color: AppTheme.textSecondary)),
+              ? Center(
+                  child: Text(
+                    'Nenhuma conquista disponível',
+                    style: TextStyle(color: Colors.grey[500]),
+                  ),
                 )
               : SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
@@ -91,6 +104,13 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                             ],
                           ),
                           borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.warningColor.withValues(alpha: 0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -106,12 +126,16 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 28,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w800,
                                   ),
                                 ),
-                                const Text('Conquistas desbloqueadas',
-                                    style: TextStyle(
-                                        color: Colors.white70, fontSize: 13)),
+                                const Text(
+                                  'Conquistas desbloqueadas',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 13,
+                                  ),
+                                ),
                               ],
                             ),
                           ],
@@ -121,9 +145,14 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
 
                       // Desbloqueadas
                       if (unlocked.isNotEmpty) ...[
-                        const Text('Desbloqueadas',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16)),
+                        const Text(
+                          'Desbloqueadas',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
                         const SizedBox(height: 12),
                         ...unlocked.map((a) => _AchievementTile(
                               achievement: a,
@@ -135,9 +164,14 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
 
                       // Bloqueadas
                       if (locked.isNotEmpty) ...[
-                        const Text('Em progresso',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16)),
+                        const Text(
+                          'Em progresso',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
                         const SizedBox(height: 12),
                         ...locked.map((a) => _AchievementTile(
                               achievement: a,
@@ -182,19 +216,28 @@ class _AchievementTile extends StatelessWidget {
         rarityColor = const Color(0xFF2196F3);
         break;
       default:
-        rarityColor = AppTheme.textSecondary;
+        rarityColor = Colors.grey[500]!;
     }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: isUnlocked
-            ? AppTheme.warningColor.withValues(alpha: 0.06)
-            : AppTheme.cardColor,
-        borderRadius: BorderRadius.circular(14),
-        border: isUnlocked
-            ? Border.all(color: AppTheme.warningColor.withValues(alpha: 0.3))
+        color: AppTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isUnlocked
+              ? AppTheme.warningColor.withValues(alpha: 0.3)
+              : Colors.white.withValues(alpha: 0.05),
+        ),
+        boxShadow: isUnlocked
+            ? [
+                BoxShadow(
+                  color: AppTheme.warningColor.withValues(alpha: 0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                )
+              ]
             : null,
       ),
       child: Row(
@@ -206,12 +249,12 @@ class _AchievementTile extends StatelessWidget {
             decoration: BoxDecoration(
               color: isUnlocked
                   ? AppTheme.warningColor.withValues(alpha: 0.15)
-                  : AppTheme.dividerColor.withValues(alpha: 0.3),
+                  : Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               Icons.emoji_events_rounded,
-              color: isUnlocked ? AppTheme.warningColor : AppTheme.textHint,
+              color: isUnlocked ? AppTheme.warningColor : Colors.grey[600],
               size: 24,
             ),
           ),
@@ -227,63 +270,63 @@ class _AchievementTile extends StatelessWidget {
                       child: Text(
                         name,
                         style: TextStyle(
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w700,
                           fontSize: 14,
                           color: isUnlocked
                               ? AppTheme.textPrimary
-                              : AppTheme.textSecondary,
+                              : Colors.grey[500],
                         ),
                       ),
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: rarityColor.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         rarity.toUpperCase(),
                         style: TextStyle(
                           color: rarityColor,
                           fontSize: 9,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 4),
                 Text(
                   description,
-                  style:
-                      const TextStyle(color: AppTheme.textHint, fontSize: 12),
+                  style: TextStyle(color: Colors.grey[500], fontSize: 12),
                   maxLines: 2,
                 ),
                 if (!isUnlocked && progress > 0) ...[
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
                   Row(
                     children: [
                       Expanded(
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(20),
                           child: LinearProgressIndicator(
                             value: progress / 100,
                             backgroundColor:
-                                AppTheme.dividerColor.withValues(alpha: 0.3),
-                            valueColor:
-                                AlwaysStoppedAnimation(AppTheme.primaryColor),
-                            minHeight: 4,
+                                Colors.white.withValues(alpha: 0.05),
+                            valueColor: const AlwaysStoppedAnimation(
+                                AppTheme.primaryColor),
+                            minHeight: 6,
                           ),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Text(
                         '$progress%',
-                        style: const TextStyle(
-                            color: AppTheme.textHint,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ],
                   ),
@@ -302,7 +345,7 @@ class _AchievementTile extends StatelessWidget {
                   style: const TextStyle(
                     color: AppTheme.warningColor,
                     fontSize: 10,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ],

@@ -36,12 +36,15 @@ class GlobalFeedScreen extends ConsumerWidget {
     final feedAsync = ref.watch(globalFeedProvider);
 
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
       body: CustomScrollView(
         slivers: [
           // ================================================================
           // HEADER
           // ================================================================
           SliverAppBar(
+            backgroundColor: AppTheme.scaffoldBg,
+            elevation: 0,
             floating: true,
             title: Row(
               children: [
@@ -52,18 +55,32 @@ class GlobalFeedScreen extends ConsumerWidget {
                       colors: [AppTheme.primaryColor, AppTheme.accentColor],
                     ),
                     borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: const Icon(Icons.hub_rounded,
                       color: Colors.white, size: 20),
                 ),
                 const SizedBox(width: 10),
-                const Text('NexusHub'),
+                const Text(
+                  'NexusHub',
+                  style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 20,
+                  ),
+                ),
               ],
             ),
             actions: [
               // Check-in
               IconButton(
-                icon: const Icon(Icons.calendar_today_rounded),
+                icon: const Icon(Icons.calendar_today_rounded, color: AppTheme.textPrimary),
                 onPressed: () => context.push('/check-in'),
                 tooltip: 'Check-in Diário',
               ),
@@ -71,7 +88,7 @@ class GlobalFeedScreen extends ConsumerWidget {
               IconButton(
                 icon: const Badge(
                   smallSize: 8,
-                  child: Icon(Icons.notifications_outlined),
+                  child: Icon(Icons.notifications_outlined, color: AppTheme.textPrimary),
                 ),
                 onPressed: () => context.push('/notifications'),
               ),
@@ -83,7 +100,7 @@ class GlobalFeedScreen extends ConsumerWidget {
           // ================================================================
           SliverToBoxAdapter(
             child: SizedBox(
-              height: 90,
+              height: 100,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 padding:
@@ -110,13 +127,13 @@ class GlobalFeedScreen extends ConsumerWidget {
                   _QuickAction(
                     icon: Icons.quiz_rounded,
                     label: 'Quiz\nDiário',
-                    color: AppTheme.successColor,
+                    color: AppTheme.primaryColor,
                     onTap: () {},
                   ),
                   _QuickAction(
                     icon: Icons.store_rounded,
                     label: 'Loja de\nCoins',
-                    color: Colors.orange,
+                    color: AppTheme.warningColor,
                     onTap: () {},
                   ),
                 ],
@@ -129,14 +146,38 @@ class GlobalFeedScreen extends ConsumerWidget {
           // ================================================================
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Feed', style: Theme.of(context).textTheme.titleLarge),
-                  TextButton(
-                    onPressed: () => ref.invalidate(globalFeedProvider),
-                    child: const Text('Atualizar'),
+                  const Text(
+                    'Feed',
+                    style: TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => ref.invalidate(globalFeedProvider),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: AppTheme.surfaceColor,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.05),
+                        ),
+                      ),
+                      child: const Text(
+                        'Atualizar',
+                        style: TextStyle(
+                          color: AppTheme.primaryColor,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -145,7 +186,7 @@ class GlobalFeedScreen extends ConsumerWidget {
 
           feedAsync.when(
             loading: () => const SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)),
             ),
             error: (error, _) => SliverFillRemaining(
               child: Center(
@@ -155,11 +196,37 @@ class GlobalFeedScreen extends ConsumerWidget {
                     const Icon(Icons.error_outline_rounded,
                         size: 48, color: AppTheme.errorColor),
                     const SizedBox(height: 16),
-                    Text('Erro ao carregar feed: $error'),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: () => ref.invalidate(globalFeedProvider),
-                      child: const Text('Tentar novamente'),
+                    Text(
+                      'Erro ao carregar feed: $error',
+                      style: const TextStyle(color: AppTheme.textPrimary),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    GestureDetector(
+                      onTap: () => ref.invalidate(globalFeedProvider),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                          ),
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Text(
+                          'Tentar novamente',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -167,21 +234,25 @@ class GlobalFeedScreen extends ConsumerWidget {
             ),
             data: (posts) {
               if (posts.isEmpty) {
-                return const SliverFillRemaining(
+                return SliverFillRemaining(
                   child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.explore_rounded,
-                            size: 64, color: AppTheme.textHint),
-                        SizedBox(height: 16),
-                        Text('Seu feed está vazio',
+                            size: 64, color: Colors.grey[600]),
+                        const SizedBox(height: 16),
+                        const Text('Seu feed está vazio',
                             style: TextStyle(
-                                color: AppTheme.textSecondary, fontSize: 16)),
-                        SizedBox(height: 8),
+                                color: AppTheme.textPrimary,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700)),
+                        const SizedBox(height: 8),
                         Text(
-                            'Explore e entre em comunidades para ver posts aqui!',
-                            style: TextStyle(color: AppTheme.textHint)),
+                          'Explore e entre em comunidades para ver posts aqui!',
+                          style: TextStyle(color: Colors.grey[500]),
+                          textAlign: TextAlign.center,
+                        ),
                       ],
                     ),
                   ),
@@ -228,19 +299,32 @@ class _QuickAction extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 44,
-              height: 44,
+              width: 50,
+              height: 50,
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(14),
+                color: AppTheme.surfaceColor,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.05),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-              child: Icon(icon, color: color, size: 22),
+              child: Icon(icon, color: color, size: 24),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
             Text(
               label,
-              style:
-                  const TextStyle(fontSize: 10, color: AppTheme.textSecondary),
+              style: TextStyle(
+                fontSize: 11,
+                color: Colors.grey[500],
+                fontWeight: FontWeight.w600,
+              ),
               textAlign: TextAlign.center,
               maxLines: 2,
             ),

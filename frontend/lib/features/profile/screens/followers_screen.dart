@@ -70,14 +70,24 @@ class _FollowersScreenState extends State<FollowersScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
       appBar: AppBar(
-        title: const Text('Conexões',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        title: const Text(
+          'Conexões',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            color: AppTheme.textPrimary,
+          ),
+        ),
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppTheme.primaryColor,
-          unselectedLabelColor: AppTheme.textSecondary,
+          unselectedLabelColor: Colors.grey[500],
           indicatorColor: AppTheme.primaryColor,
+          dividerColor: Colors.white.withValues(alpha: 0.05),
           tabs: [
             Tab(text: 'Seguidores (${_followers.length})'),
             Tab(text: 'Seguindo (${_following.length})'),
@@ -85,7 +95,11 @@ class _FollowersScreenState extends State<FollowersScreen>
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: AppTheme.primaryColor,
+              ),
+            )
           : TabBarView(
               controller: _tabController,
               children: [
@@ -98,15 +112,18 @@ class _FollowersScreenState extends State<FollowersScreen>
 
   Widget _buildList(List<Map<String, dynamic>> list, String profileKey) {
     if (list.isEmpty) {
-      return const Center(
-        child: Text('Nenhuma conexão',
-            style: TextStyle(color: AppTheme.textSecondary)),
+      return Center(
+        child: Text(
+          'Nenhuma conexão',
+          style: TextStyle(color: Colors.grey[500]),
+        ),
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(12),
+    return ListView.separated(
+      padding: const EdgeInsets.all(16),
       itemCount: list.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final item = list[index];
         final profile = item['profiles'] as Map<String, dynamic>? ?? item;
@@ -115,29 +132,63 @@ class _FollowersScreenState extends State<FollowersScreen>
         final avatarUrl = profile['icon_url'] as String?;
         final level = profile['level'] as int? ?? 1;
 
-        return ListTile(
-          onTap: () {
-            if (userId != null) context.push('/user/$userId');
-          },
-          leading: CircleAvatar(
-            radius: 22,
-            backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.2),
-            backgroundImage: avatarUrl != null
-                ? CachedNetworkImageProvider(avatarUrl)
-                : null,
-            child: avatarUrl == null
-                ? Text(nickname[0].toUpperCase(),
-                    style: const TextStyle(
-                        color: AppTheme.primaryColor,
-                        fontWeight: FontWeight.bold))
-                : null,
+        return Container(
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.05),
+            ),
           ),
-          title: Text(nickname,
-              style: const TextStyle(fontWeight: FontWeight.w600)),
-          subtitle: Text('Nível $level',
-              style:
-                  const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
-          trailing: _FollowButton(targetUserId: userId ?? ''),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            onTap: () {
+              if (userId != null) context.push('/user/$userId');
+            },
+            leading: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                    blurRadius: 8,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: CircleAvatar(
+                radius: 24,
+                backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.2),
+                backgroundImage: avatarUrl != null
+                    ? CachedNetworkImageProvider(avatarUrl)
+                    : null,
+                child: avatarUrl == null
+                    ? Text(
+                        nickname[0].toUpperCase(),
+                        style: const TextStyle(
+                          color: AppTheme.primaryColor,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      )
+                    : null,
+              ),
+            ),
+            title: Text(
+              nickname,
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                color: AppTheme.textPrimary,
+              ),
+            ),
+            subtitle: Text(
+              'Nível $level',
+              style: TextStyle(
+                color: Colors.grey[500],
+                fontSize: 12,
+              ),
+            ),
+            trailing: _FollowButton(targetUserId: userId ?? ''),
+          ),
         );
       },
     );
@@ -204,7 +255,10 @@ class _FollowButtonState extends State<_FollowButton> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: $e')),
+          SnackBar(
+            content: Text('Erro: $e', style: const TextStyle(color: AppTheme.textPrimary)),
+            backgroundColor: AppTheme.errorColor,
+          ),
         );
       }
     }
@@ -216,25 +270,38 @@ class _FollowButtonState extends State<_FollowButton> {
       return const SizedBox.shrink();
     }
 
-    return SizedBox(
-      height: 32,
-      child: OutlinedButton(
-        onPressed: _toggleFollow,
-        style: OutlinedButton.styleFrom(
-          backgroundColor:
-              _isFollowing ? Colors.transparent : AppTheme.primaryColor,
-          foregroundColor: _isFollowing ? AppTheme.textSecondary : Colors.white,
-          side: BorderSide(
-            color: _isFollowing ? AppTheme.dividerColor : AppTheme.primaryColor,
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+    return GestureDetector(
+      onTap: _toggleFollow,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: _isFollowing
+              ? null
+              : const LinearGradient(
+                  colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                ),
+          color: _isFollowing ? Colors.transparent : null,
+          border: _isFollowing
+              ? Border.all(color: Colors.white.withValues(alpha: 0.08))
+              : null,
+          boxShadow: _isFollowing
+              ? null
+              : [
+                  BoxShadow(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
         ),
         child: Text(
           _isFollowing ? 'Seguindo' : 'Seguir',
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: _isFollowing ? Colors.grey[500] : AppTheme.textPrimary,
+          ),
         ),
       ),
     );

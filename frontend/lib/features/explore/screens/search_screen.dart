@@ -83,31 +83,35 @@ class _SearchScreenState extends State<SearchScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
       appBar: AppBar(
+        backgroundColor: AppTheme.scaffoldBg,
+        elevation: 0,
         titleSpacing: 0,
         title: Container(
-          height: 40,
+          height: 44,
           margin: const EdgeInsets.only(right: 16),
           decoration: BoxDecoration(
-            color: AppTheme.cardColor,
-            borderRadius: BorderRadius.circular(12),
+            color: AppTheme.surfaceColor,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
           child: TextField(
             controller: _searchController,
             autofocus: true,
+            style: const TextStyle(color: AppTheme.textPrimary),
             onChanged: (v) {
               _query = v;
               _performSearch(v);
             },
             decoration: InputDecoration(
               hintText: 'Buscar comunidades, pessoas, posts...',
-              hintStyle:
-                  const TextStyle(color: AppTheme.textHint, fontSize: 14),
-              prefixIcon: const Icon(Icons.search_rounded,
-                  color: AppTheme.textHint, size: 20),
+              hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
+              prefixIcon: Icon(Icons.search_rounded,
+                  color: Colors.grey[500], size: 20),
               suffixIcon: _query.isNotEmpty
                   ? IconButton(
-                      icon: const Icon(Icons.close_rounded, size: 18),
+                      icon: Icon(Icons.close_rounded, size: 18, color: Colors.grey[500]),
                       onPressed: () {
                         _searchController.clear();
                         _performSearch('');
@@ -116,15 +120,18 @@ class _SearchScreenState extends State<SearchScreen>
                     )
                   : null,
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(vertical: 10),
+              contentPadding: const EdgeInsets.symmetric(vertical: 12),
             ),
           ),
         ),
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppTheme.primaryColor,
-          unselectedLabelColor: AppTheme.textSecondary,
+          unselectedLabelColor: Colors.grey[500],
           indicatorColor: AppTheme.primaryColor,
+          indicatorWeight: 3,
+          labelStyle: const TextStyle(fontWeight: FontWeight.w700),
+          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
           tabs: [
             Tab(text: 'Comunidades (${_communities.length})'),
             Tab(text: 'Pessoas (${_users.length})'),
@@ -133,7 +140,7 @@ class _SearchScreenState extends State<SearchScreen>
         ),
       ),
       body: _isSearching
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
           : _query.isEmpty
               ? _buildEmptyState()
               : TabBarView(
@@ -152,10 +159,10 @@ class _SearchScreenState extends State<SearchScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.search_rounded, size: 64, color: AppTheme.textHint),
+          Icon(Icons.search_rounded, size: 64, color: Colors.grey[600]),
           const SizedBox(height: 16),
-          const Text('Busque por comunidades, pessoas ou posts',
-              style: TextStyle(color: AppTheme.textSecondary)),
+          Text('Busque por comunidades, pessoas ou posts',
+              style: TextStyle(color: Colors.grey[500], fontSize: 16)),
         ],
       ),
     );
@@ -163,30 +170,55 @@ class _SearchScreenState extends State<SearchScreen>
 
   Widget _buildCommunityResults() {
     if (_communities.isEmpty) {
-      return const Center(
+      return Center(
         child: Text('Nenhuma comunidade encontrada',
-            style: TextStyle(color: AppTheme.textSecondary)),
+            style: TextStyle(color: Colors.grey[500])),
       );
     }
     return ListView.builder(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       itemCount: _communities.length,
       itemBuilder: (context, index) {
         final c = _communities[index];
-        return ListTile(
-          onTap: () => context.push('/community/${c['id']}'),
-          leading: CircleAvatar(
-            backgroundImage: c['icon_url'] != null
-                ? CachedNetworkImageProvider(c['icon_url'] as String)
-                : null,
-            child:
-                c['icon_url'] == null ? const Icon(Icons.groups_rounded) : null,
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
-          title: Text(c['name'] as String? ?? '',
-              style: const TextStyle(fontWeight: FontWeight.w600)),
-          subtitle: Text(
-            '${c['members_count'] ?? 0} membros',
-            style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            onTap: () => context.push('/community/${c['id']}'),
+            leading: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                image: c['icon_url'] != null
+                    ? DecorationImage(
+                        image: CachedNetworkImageProvider(c['icon_url'] as String),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+              ),
+              child: c['icon_url'] == null
+                  ? const Icon(Icons.groups_rounded, color: AppTheme.primaryColor)
+                  : null,
+            ),
+            title: Text(c['name'] as String? ?? '',
+                style: const TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16)),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                '${c['members_count'] ?? 0} membros',
+                style: TextStyle(color: Colors.grey[500], fontSize: 13),
+              ),
+            ),
           ),
         );
       },
@@ -195,30 +227,48 @@ class _SearchScreenState extends State<SearchScreen>
 
   Widget _buildUserResults() {
     if (_users.isEmpty) {
-      return const Center(
+      return Center(
         child: Text('Nenhum usuário encontrado',
-            style: TextStyle(color: AppTheme.textSecondary)),
+            style: TextStyle(color: Colors.grey[500])),
       );
     }
     return ListView.builder(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       itemCount: _users.length,
       itemBuilder: (context, index) {
         final u = _users[index];
-        return ListTile(
-          onTap: () => context.push('/user/${u['id']}'),
-          leading: CircleAvatar(
-            backgroundImage: u['icon_url'] != null
-                ? CachedNetworkImageProvider(u['icon_url'] as String)
-                : null,
-            child:
-                u['icon_url'] == null ? const Icon(Icons.person_rounded) : null,
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
-          title: Text(u['nickname'] as String? ?? '',
-              style: const TextStyle(fontWeight: FontWeight.w600)),
-          subtitle: Text(
-            'Nível ${u['level'] ?? 1}',
-            style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            onTap: () => context.push('/user/${u['id']}'),
+            leading: CircleAvatar(
+              radius: 24,
+              backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
+              backgroundImage: u['icon_url'] != null
+                  ? CachedNetworkImageProvider(u['icon_url'] as String)
+                  : null,
+              child: u['icon_url'] == null
+                  ? const Icon(Icons.person_rounded, color: AppTheme.primaryColor)
+                  : null,
+            ),
+            title: Text(u['nickname'] as String? ?? '',
+                style: const TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16)),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                'Nível ${u['level'] ?? 1}',
+                style: const TextStyle(color: AppTheme.accentColor, fontSize: 13, fontWeight: FontWeight.w600),
+              ),
+            ),
           ),
         );
       },
@@ -227,36 +277,51 @@ class _SearchScreenState extends State<SearchScreen>
 
   Widget _buildPostResults() {
     if (_posts.isEmpty) {
-      return const Center(
+      return Center(
         child: Text('Nenhum post encontrado',
-            style: TextStyle(color: AppTheme.textSecondary)),
+            style: TextStyle(color: Colors.grey[500])),
       );
     }
     return ListView.builder(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       itemCount: _posts.length,
       itemBuilder: (context, index) {
         final p = _posts[index];
         final author = p['profiles'] as Map<String, dynamic>?;
-        return ListTile(
-          onTap: () => context.push('/post/${p['id']}'),
-          leading: Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(Icons.article_rounded,
-                color: AppTheme.primaryColor, size: 22),
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
-          title: Text(p['title'] as String? ?? 'Post',
-              style: const TextStyle(fontWeight: FontWeight.w600),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis),
-          subtitle: Text(
-            'por ${author?['nickname'] ?? 'Anônimo'}',
-            style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            onTap: () => context.push('/post/${p['id']}'),
+            leading: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.article_rounded,
+                  color: AppTheme.primaryColor, size: 24),
+            ),
+            title: Text(p['title'] as String? ?? 'Post',
+                style: const TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                'por ${author?['nickname'] ?? 'Anônimo'}',
+                style: TextStyle(color: Colors.grey[500], fontSize: 13),
+              ),
+            ),
           ),
         );
       },

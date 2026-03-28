@@ -178,20 +178,40 @@ class _AcmScreenState extends State<AcmScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         title: const Text('Community Manager',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+            style: TextStyle(fontWeight: FontWeight.w800)),
         actions: [
-          TextButton(
-            onPressed: _saveConfig,
-            child: const Text('Salvar',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+          GestureDetector(
+            onTap: _saveConfig,
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Text('Salvar',
+                  style: TextStyle(fontWeight: FontWeight.w800, color: Colors.white)),
+            ),
           ),
         ],
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppTheme.primaryColor,
-          unselectedLabelColor: AppTheme.textSecondary,
+          unselectedLabelColor: Colors.grey[500],
           indicatorColor: AppTheme.primaryColor,
           tabs: _tabs.map((t) => Tab(text: t)).toList(),
         ),
@@ -244,17 +264,18 @@ class _AcmScreenState extends State<AcmScreen>
         return Container(
           margin: const EdgeInsets.only(bottom: 8),
           decoration: BoxDecoration(
-            color: AppTheme.cardColor,
+            color: AppTheme.surfaceColor,
             borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
           child: SwitchListTile(
             secondary: Icon(mod.icon,
-                color: isEnabled ? AppTheme.primaryColor : AppTheme.textHint),
+                color: isEnabled ? AppTheme.primaryColor : Colors.grey[600]),
             title: Text(mod.label,
                 style: const TextStyle(fontWeight: FontWeight.w500)),
             subtitle: Text(mod.description,
                 style: const TextStyle(
-                    color: AppTheme.textSecondary, fontSize: 12)),
+                    color: Colors.grey[500], fontSize: 12)),
             value: isEnabled,
             activeColor: AppTheme.primaryColor,
             onChanged: (val) {
@@ -331,7 +352,7 @@ class _AcmScreenState extends State<AcmScreen>
           decoration: InputDecoration(
             hintText: 'Mensagem exibida para novos membros...',
             filled: true,
-            fillColor: AppTheme.cardColor,
+            fillColor: AppTheme.surfaceColor,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
@@ -359,8 +380,9 @@ class _AcmScreenState extends State<AcmScreen>
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppTheme.cardColor,
+            color: AppTheme.surfaceColor,
             borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -471,8 +493,9 @@ class _AcmScreenState extends State<AcmScreen>
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppTheme.cardColor,
+            color: AppTheme.surfaceColor,
             borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -497,7 +520,7 @@ class _AcmScreenState extends State<AcmScreen>
                         errorBuilder: (_, __, ___) => Container(
                               width: 80,
                               height: 80,
-                              color: AppTheme.cardColorLight,
+                              color: AppTheme.surfaceColorLight,
                               child: const Icon(Icons.broken_image_rounded),
                             )),
                   ),
@@ -529,8 +552,9 @@ class _AcmScreenState extends State<AcmScreen>
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppTheme.cardColor,
+            color: AppTheme.surfaceColor,
             borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -553,7 +577,7 @@ class _AcmScreenState extends State<AcmScreen>
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => Container(
                             height: 100,
-                            color: AppTheme.cardColorLight,
+                            color: AppTheme.surfaceColorLight,
                             child: const Center(
                                 child: Icon(Icons.broken_image_rounded)),
                           )),
@@ -643,8 +667,9 @@ class _AcmScreenState extends State<AcmScreen>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.cardColor,
-              borderRadius: BorderRadius.circular(12),
+            color: AppTheme.surfaceColor,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
             ),
             child: Column(
               children: [
@@ -703,17 +728,23 @@ class _AccessOption extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected
               ? AppTheme.primaryColor.withValues(alpha: 0.1)
-              : AppTheme.cardColor,
+              : AppTheme.surfaceColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppTheme.primaryColor : AppTheme.dividerColor,
+            color: isSelected ? AppTheme.primaryColor : Colors.white.withValues(alpha: 0.05),
             width: isSelected ? 2 : 1,
           ),
+          boxShadow: isSelected ? [
+            BoxShadow(
+              color: AppTheme.primaryColor.withValues(alpha: 0.2),
+              blurRadius: 8,
+            )
+          ] : null,
         ),
         child: Row(
           children: [
             Icon(icon,
-                color: isSelected ? AppTheme.primaryColor : AppTheme.textHint),
+                color: isSelected ? AppTheme.primaryColor : Colors.grey[600]),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -724,7 +755,7 @@ class _AccessOption extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(description,
                       style: const TextStyle(
-                          color: AppTheme.textSecondary, fontSize: 12)),
+                          color: Colors.grey[500], fontSize: 12)),
                 ],
               ),
             ),
@@ -757,8 +788,9 @@ class _StatCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
-        borderRadius: BorderRadius.circular(12),
+            color: AppTheme.surfaceColor,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Row(
         children: [
@@ -781,7 +813,7 @@ class _StatCard extends StatelessWidget {
             style: TextStyle(
               color: color,
               fontSize: 18,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ],
@@ -804,7 +836,7 @@ class _InfoRow extends StatelessWidget {
         children: [
           Text(label,
               style:
-                  const TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
+                  const TextStyle(color: Colors.grey[500], fontSize: 13)),
           Text(value,
               style:
                   const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),

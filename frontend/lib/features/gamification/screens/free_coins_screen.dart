@@ -69,8 +69,8 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('+$rewardCoins moedas!'),
-              backgroundColor: AppTheme.successColor,
+              content: Text('+$rewardCoins moedas!', style: const TextStyle(color: AppTheme.textPrimary)),
+              backgroundColor: AppTheme.primaryColor,
             ),
           );
         }
@@ -78,7 +78,10 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao carregar anúncio: $e')),
+          SnackBar(
+            content: Text('Erro ao carregar anúncio: $e', style: const TextStyle(color: AppTheme.textPrimary)),
+            backgroundColor: AppTheme.errorColor,
+          ),
         );
       }
     } finally {
@@ -88,12 +91,20 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
       appBar: AppBar(
-        title: const Text('Ganhar Moedas',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: AppTheme.scaffoldBg,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        title: const Text(
+          'Ganhar Moedas',
+          style: TextStyle(
+            color: AppTheme.textPrimary,
+            fontWeight: FontWeight.w800,
+            fontSize: 20,
+          ),
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -102,30 +113,48 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
           // SALDO ATUAL
           // ============================================================
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Column(
               children: [
-                const Text('Seu Saldo',
-                    style: TextStyle(color: Colors.white70, fontSize: 14)),
-                const SizedBox(height: 4),
+                Text(
+                  'Seu Saldo',
+                  style: TextStyle(
+                    color: AppTheme.textPrimary.withValues(alpha: 0.8),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.monetization_on_rounded,
-                        color: Colors.amber, size: 32),
-                    const SizedBox(width: 8),
+                    const Icon(
+                      Icons.monetization_on_rounded,
+                      color: AppTheme.warningColor,
+                      size: 36,
+                    ),
+                    const SizedBox(width: 12),
                     Text(
                       _balance.toString(),
                       style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textPrimary,
+                        fontSize: 40,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                   ],
@@ -133,92 +162,84 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
 
           // ============================================================
           // ASSISTIR ANÚNCIOS
           // ============================================================
-          _SectionTitle(title: 'Assistir Anúncios', isDark: isDark),
-          const SizedBox(height: 8),
+          const _SectionTitle(title: 'Assistir Anúncios'),
+          const SizedBox(height: 12),
           _EarningCard(
             icon: Icons.play_circle_filled_rounded,
-            iconColor: const Color(0xFFFF6B6B),
+            iconColor: AppTheme.errorColor,
             title: 'Assistir Vídeo',
             subtitle: '$_adsWatchedToday/$_maxAdsPerDay assistidos hoje',
             reward: '+5 moedas',
             onTap: _adsWatchedToday < _maxAdsPerDay ? _watchAd : null,
             isLoading: _isLoadingAd,
-            isDark: isDark,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
 
           // ============================================================
           // ATIVIDADES DIÁRIAS
           // ============================================================
-          _SectionTitle(title: 'Atividades Diárias', isDark: isDark),
-          const SizedBox(height: 8),
-          _EarningCard(
+          const _SectionTitle(title: 'Atividades Diárias'),
+          const SizedBox(height: 12),
+          const _EarningCard(
             icon: Icons.calendar_today_rounded,
-            iconColor: AppTheme.successColor,
+            iconColor: AppTheme.primaryColor,
             title: 'Check-in Diário',
             subtitle: 'Faça check-in todos os dias',
             reward: '+5-25 moedas',
-            isDark: isDark,
           ),
-          _EarningCard(
+          const _EarningCard(
             icon: Icons.edit_rounded,
-            iconColor: AppTheme.primaryColor,
+            iconColor: AppTheme.accentColor,
             title: 'Criar um Post',
             subtitle: 'Publique conteúdo na comunidade',
             reward: '+3 moedas',
-            isDark: isDark,
           ),
-          _EarningCard(
+          const _EarningCard(
             icon: Icons.comment_rounded,
-            iconColor: AppTheme.accentColor,
+            iconColor: AppTheme.primaryColor,
             title: 'Comentar em Posts',
             subtitle: 'Participe das discussões',
             reward: '+1 moeda',
-            isDark: isDark,
           ),
-          _EarningCard(
+          const _EarningCard(
             icon: Icons.quiz_rounded,
             iconColor: AppTheme.warningColor,
             title: 'Responder Quiz',
             subtitle: 'Acerte quizzes da comunidade',
             reward: '+2 moedas',
-            isDark: isDark,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
 
           // ============================================================
           // CONQUISTAS
           // ============================================================
-          _SectionTitle(title: 'Conquistas', isDark: isDark),
-          const SizedBox(height: 8),
-          _EarningCard(
+          const _SectionTitle(title: 'Conquistas'),
+          const SizedBox(height: 12),
+          const _EarningCard(
             icon: Icons.emoji_events_rounded,
-            iconColor: Colors.amber,
+            iconColor: AppTheme.warningColor,
             title: 'Completar Conquistas',
             subtitle: 'Desbloqueie badges e ganhe moedas',
             reward: '+10-100 moedas',
-            isDark: isDark,
           ),
-          _EarningCard(
+          const _EarningCard(
             icon: Icons.person_add_rounded,
-            iconColor: AppTheme.infoColor,
+            iconColor: AppTheme.accentColor,
             title: 'Convidar Amigos',
             subtitle: 'Ganhe moedas quando amigos se cadastram',
             reward: '+50 moedas',
-            isDark: isDark,
           ),
-          _EarningCard(
+          const _EarningCard(
             icon: Icons.trending_up_rounded,
-            iconColor: AppTheme.primaryLight,
+            iconColor: AppTheme.primaryColor,
             title: 'Subir de Nível',
             subtitle: 'Ganhe moedas ao subir de nível',
             reward: '+20 moedas',
-            isDark: isDark,
           ),
           const SizedBox(height: 32),
         ],
@@ -229,17 +250,16 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
 
 class _SectionTitle extends StatelessWidget {
   final String title;
-  final bool isDark;
-  const _SectionTitle({required this.title, required this.isDark});
+  const _SectionTitle({required this.title});
 
   @override
   Widget build(BuildContext context) {
     return Text(
       title,
-      style: TextStyle(
-        fontWeight: FontWeight.bold,
+      style: const TextStyle(
+        fontWeight: FontWeight.w800,
         fontSize: 18,
-        color: isDark ? AppTheme.textPrimary : AppTheme.textPrimaryLight,
+        color: AppTheme.textPrimary,
       ),
     );
   }
@@ -253,7 +273,6 @@ class _EarningCard extends StatelessWidget {
   final String reward;
   final VoidCallback? onTap;
   final bool isLoading;
-  final bool isDark;
 
   const _EarningCard({
     required this.icon,
@@ -263,79 +282,103 @@ class _EarningCard extends StatelessWidget {
     required this.reward,
     this.onTap,
     this.isLoading = false,
-    required this.isDark,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: isDark ? AppTheme.cardColor : Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: isDark
-            ? null
-            : [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+        color: AppTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.05),
+          width: 1,
+        ),
       ),
       child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Container(
-          width: 44,
-          height: 44,
+          width: 48,
+          height: 48,
           decoration: BoxDecoration(
             color: iconColor.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: iconColor, size: 24),
         ),
-        title: Text(title,
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-        subtitle: Text(subtitle,
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 15,
+            color: AppTheme.textPrimary,
+          ),
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text(
+            subtitle,
             style: TextStyle(
-              color:
-                  isDark ? AppTheme.textSecondary : AppTheme.textSecondaryLight,
-              fontSize: 12,
-            )),
+              color: Colors.grey[500],
+              fontSize: 13,
+            ),
+          ),
+        ),
         trailing: onTap != null
-            ? ElevatedButton(
-                onPressed: isLoading ? null : onTap,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.successColor,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  minimumSize: Size.zero,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
+            ? GestureDetector(
+                onTap: isLoading ? null : onTap,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppTheme.primaryColor,
+                        AppTheme.primaryColor.withValues(alpha: 0.8),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: isLoading
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppTheme.textPrimary,
+                          ),
+                        )
+                      : Text(
+                          reward,
+                          style: const TextStyle(
+                            color: AppTheme.textPrimary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
                 ),
-                child: isLoading
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white))
-                    : Text(reward,
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold)),
               )
             : Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppTheme.successColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text(reward,
-                    style: const TextStyle(
-                        color: AppTheme.successColor,
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold)),
+                child: Text(
+                  reward,
+                  style: const TextStyle(
+                    color: AppTheme.primaryColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
               ),
       ),
     );

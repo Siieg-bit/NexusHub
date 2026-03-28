@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 
-/// Custom Chat Bubble com suporte a frames equipáveis.
+/// Custom Chat Bubble com suporte a frames equipáveis — estilo Amino Apps.
 ///
 /// O Amino permite que usuários comprem e equipem "bubble frames" que
 /// alteram a aparência visual dos balões de chat. Este widget implementa:
@@ -30,21 +30,29 @@ class ChatBubble extends StatelessWidget {
     this.maxWidth = 280,
   });
 
-  /// Cor do bubble baseada no role do usuário
+  /// Cor do bubble baseada no role do usuário — estilo Amino
   Color get _roleColor {
     if (bubbleColor != null) return bubbleColor!;
     switch (userRole) {
       case 'agent':
         return const Color(0xFF6C5CE7); // Roxo para Agent
       case 'leader':
-        return const Color(0xFF00B894); // Verde para Leader
+        return AppTheme.primaryColor; // Verde Amino para Leader
       case 'curator':
-        return const Color(0xFF0984E3); // Azul para Curator
+        return const Color(0xFFE040FB); // Rosa/Magenta para Curator
       default:
         return isMine
             ? AppTheme.primaryColor
-            : const Color(0xFF2D2D3A); // Cinza escuro para outros
+            : AppTheme.surfaceColor; // Surface escuro para outros
     }
+  }
+
+  /// Cor do texto baseada no tipo de bubble
+  Color get _textColor {
+    if (isMine || userRole == 'agent' || userRole == 'leader' || userRole == 'curator') {
+      return Colors.white;
+    }
+    return AppTheme.textPrimary;
   }
 
   @override
@@ -82,7 +90,10 @@ class ChatBubble extends StatelessWidget {
               top: 8,
               bottom: 8,
             ),
-            child: child,
+            child: DefaultTextStyle(
+              style: TextStyle(color: _textColor, fontSize: 14),
+              child: child,
+            ),
           ),
         ),
       ),
@@ -139,8 +150,8 @@ class _BubblePainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     final shadowPaint = Paint()
-      ..color = Colors.black.withValues(alpha: 0.08)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+      ..color = Colors.black.withValues(alpha: 0.06)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
 
     const radius = 16.0;
     const tailWidth = 8.0;
@@ -157,7 +168,6 @@ class _BubblePainter extends CustomPainter {
 
       if (showTail) {
         path.lineTo(size.width - tailWidth, size.height - tailHeight - radius);
-        // Tail
         path.lineTo(size.width, size.height - tailHeight + 2);
         path.lineTo(size.width - tailWidth - 4, size.height - 4);
       }
@@ -187,7 +197,6 @@ class _BubblePainter extends CustomPainter {
 
       if (showTail) {
         path.lineTo(tailWidth, tailHeight + radius);
-        // Tail
         path.lineTo(0, tailHeight - 2);
         path.lineTo(tailWidth + 4, 4);
       }
@@ -212,7 +221,7 @@ class _BubblePainter extends CustomPainter {
       showTail != oldDelegate.showTail;
 }
 
-/// Widget para exibir o avatar com frame equipado.
+/// Widget para exibir o avatar com frame equipado — estilo Amino.
 class AvatarWithFrame extends StatelessWidget {
   final String? avatarUrl;
   final String? frameUrl;
@@ -238,13 +247,13 @@ class AvatarWithFrame extends StatelessWidget {
           // Avatar
           CircleAvatar(
             radius: size / 2,
-            backgroundColor: AppTheme.cardColor,
+            backgroundColor: AppTheme.surfaceColor,
             backgroundImage: avatarUrl != null && avatarUrl!.isNotEmpty
                 ? CachedNetworkImageProvider(avatarUrl!)
                 : null,
             child: avatarUrl == null || avatarUrl!.isEmpty
                 ? Icon(Icons.person_rounded,
-                    size: size * 0.5, color: AppTheme.textHint)
+                    size: size * 0.5, color: Colors.grey[600])
                 : null,
           ),
 
@@ -325,7 +334,7 @@ class AminoPlusBadge extends StatelessWidget {
   }
 }
 
-/// Streak Bar visual para o perfil da comunidade.
+/// Streak Bar visual para o perfil da comunidade — estilo Amino.
 class StreakBar extends StatelessWidget {
   final int currentStreak;
   final int maxStreak;
@@ -348,7 +357,7 @@ class StreakBar extends StatelessWidget {
         border: Border.all(
           color: currentStreak > 0
               ? AppTheme.warningColor.withValues(alpha: 0.3)
-              : AppTheme.dividerColor,
+              : Colors.white.withValues(alpha: 0.05),
         ),
       ),
       child: Column(
@@ -362,16 +371,16 @@ class StreakBar extends StatelessWidget {
                     : Icons.local_fire_department_outlined,
                 color: currentStreak > 0
                     ? AppTheme.warningColor
-                    : AppTheme.textHint,
+                    : Colors.grey[600],
                 size: 20,
               ),
               const SizedBox(width: 6),
               Text(
-                'Ofensiva de Check-in',
+                'Check-in Streak',
                 style: TextStyle(
                   color: currentStreak > 0
                       ? AppTheme.textPrimary
-                      : AppTheme.textHint,
+                      : Colors.grey[600],
                   fontWeight: FontWeight.w600,
                   fontSize: 13,
                 ),
@@ -379,9 +388,9 @@ class StreakBar extends StatelessWidget {
               const Spacer(),
               if (maxStreak > 0)
                 Text(
-                  'Recorde: $maxStreak dias',
-                  style: const TextStyle(
-                    color: AppTheme.textHint,
+                  'Record: $maxStreak days',
+                  style: TextStyle(
+                    color: Colors.grey[600],
                     fontSize: 11,
                   ),
                 ),
@@ -401,12 +410,12 @@ class StreakBar extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: isActive
                           ? AppTheme.warningColor.withValues(alpha: 0.2)
-                          : AppTheme.dividerColor.withValues(alpha: 0.3),
+                          : Colors.white.withValues(alpha: 0.03),
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: isActive
                             ? AppTheme.warningColor
-                            : AppTheme.dividerColor,
+                            : Colors.white.withValues(alpha: 0.1),
                         width: 1.5,
                       ),
                     ),
@@ -416,8 +425,8 @@ class StreakBar extends StatelessWidget {
                               size: 16, color: AppTheme.warningColor)
                           : Text(
                               '${i + 1}',
-                              style: const TextStyle(
-                                color: AppTheme.textHint,
+                              style: TextStyle(
+                                color: Colors.grey[600],
                                 fontSize: 11,
                               ),
                             ),
@@ -427,8 +436,9 @@ class StreakBar extends StatelessWidget {
                   Text(
                     _dayLabel(i),
                     style: TextStyle(
-                      color:
-                          isActive ? AppTheme.warningColor : AppTheme.textHint,
+                      color: isActive
+                          ? AppTheme.warningColor
+                          : Colors.grey[600],
                       fontSize: 9,
                       fontWeight:
                           isActive ? FontWeight.w600 : FontWeight.normal,
@@ -446,7 +456,7 @@ class StreakBar extends StatelessWidget {
                     size: 14, color: AppTheme.warningColor),
                 const SizedBox(width: 4),
                 Text(
-                  '$currentStreak dia${currentStreak > 1 ? 's' : ''} seguido${currentStreak > 1 ? 's' : ''}',
+                  '$currentStreak day${currentStreak > 1 ? 's' : ''} in a row',
                   style: const TextStyle(
                     color: AppTheme.warningColor,
                     fontWeight: FontWeight.bold,
@@ -456,8 +466,8 @@ class StreakBar extends StatelessWidget {
                 const Spacer(),
                 Text(
                   'Total: $checkInDays check-ins',
-                  style: const TextStyle(
-                    color: AppTheme.textHint,
+                  style: TextStyle(
+                    color: Colors.grey[600],
                     fontSize: 11,
                   ),
                 ),
@@ -470,7 +480,7 @@ class StreakBar extends StatelessWidget {
   }
 
   String _dayLabel(int index) {
-    const days = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     final today = DateTime.now().weekday - 1; // 0 = Monday
     final dayIndex = (today - (6 - index)) % 7;
     return days[dayIndex < 0 ? dayIndex + 7 : dayIndex];

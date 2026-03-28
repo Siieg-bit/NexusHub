@@ -9,6 +9,7 @@ import '../../../core/models/community_model.dart';
 import '../../../core/models/post_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/helpers.dart';
+import '../../../core/utils/amino_animations.dart';
 import '../../feed/widgets/post_card.dart';
 import '../widgets/community_drawer.dart';
 
@@ -16,7 +17,6 @@ import '../widgets/community_drawer.dart';
 // PROVIDERS
 // =============================================================================
 
-/// Provider para detalhes de uma comunidade.
 final communityDetailProvider =
     FutureProvider.family<CommunityModel, String>((ref, id) async {
   final response =
@@ -24,7 +24,6 @@ final communityDetailProvider =
   return CommunityModel.fromJson(response);
 });
 
-/// Provider para feed de uma comunidade.
 final communityFeedProvider =
     FutureProvider.family<List<PostModel>, String>((ref, communityId) async {
   final response = await SupabaseService.table('posts')
@@ -44,7 +43,6 @@ final communityFeedProvider =
   }).toList();
 });
 
-/// Provider para membros da comunidade.
 final communityMembersProvider =
     FutureProvider.family<List<Map<String, dynamic>>, String>(
         (ref, communityId) async {
@@ -57,7 +55,6 @@ final communityMembersProvider =
   return List<Map<String, dynamic>>.from(response as List);
 });
 
-/// Provider para chats da comunidade.
 final communityChatProvider =
     FutureProvider.family<List<Map<String, dynamic>>, String>(
         (ref, communityId) async {
@@ -69,7 +66,6 @@ final communityChatProvider =
   return List<Map<String, dynamic>>.from(response as List);
 });
 
-/// Provider para verificar membership do usuário.
 final communityMembershipProvider =
     FutureProvider.family<Map<String, dynamic>?, String>(
         (ref, communityId) async {
@@ -84,7 +80,7 @@ final communityMembershipProvider =
 });
 
 // =============================================================================
-// MAIN SCREEN
+// MAIN SCREEN — Estilo Amino Apps (web-preview)
 // =============================================================================
 
 class CommunityDetailScreen extends ConsumerStatefulWidget {
@@ -100,11 +96,21 @@ class CommunityDetailScreen extends ConsumerStatefulWidget {
 class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final _tabs = const [
+    'Guidelines',
+    'Featured',
+    'Latest',
+    'Chats',
+    'Members',
+    'Wiki',
+    'Leaderboard',
+  ];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: _tabs.length, vsync: this);
+    _tabController.index = 1; // Featured como padrão (igual web-preview)
   }
 
   @override
@@ -134,7 +140,13 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
       ref.invalidate(communityDetailProvider(widget.communityId));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Você entrou na comunidade!')),
+          SnackBar(
+            content: const Text('Você entrou na comunidade!'),
+            backgroundColor: AppTheme.primaryColor,
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
         );
       }
     } catch (e) {
@@ -150,8 +162,12 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Sair da comunidade?'),
-        content: const Text('Você pode entrar novamente a qualquer momento.'),
+        backgroundColor: AppTheme.cardColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Sair da comunidade?',
+            style: TextStyle(color: AppTheme.textPrimary)),
+        content: const Text('Você pode entrar novamente a qualquer momento.',
+            style: TextStyle(color: AppTheme.textSecondary)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
@@ -189,11 +205,19 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
         ref.watch(communityMembershipProvider(widget.communityId));
 
     return communityAsync.when(
-      loading: () =>
-          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () => Scaffold(
+        backgroundColor: AppTheme.scaffoldBg,
+        body: Center(
+          child: CircularProgressIndicator(
+              color: AppTheme.primaryColor, strokeWidth: 2.5),
+        ),
+      ),
       error: (error, _) => Scaffold(
-        appBar: AppBar(),
-        body: Center(child: Text('Erro: $error')),
+        backgroundColor: AppTheme.scaffoldBg,
+        appBar: AppBar(backgroundColor: AppTheme.scaffoldBg),
+        body: Center(
+            child: Text('Erro: $error',
+                style: const TextStyle(color: AppTheme.textSecondary))),
       ),
       data: (community) {
         final themeColor = _parseColor(community.themeColor);
@@ -202,6 +226,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
         final userRole = membership?['role'] as String?;
 
         return Scaffold(
+          backgroundColor: AppTheme.scaffoldBg,
           drawer: CommunityDrawer(
             community: community,
             currentUser: null,
@@ -210,23 +235,75 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
           body: NestedScrollView(
             headerSliverBuilder: (context, innerBoxIsScrolled) => [
               // ============================================================
-              // HEADER DA COMUNIDADE
+              // HEADER — Estilo Amino (cover + gradient + info overlay)
               // ============================================================
               SliverAppBar(
-                expandedHeight: 240,
+                expandedHeight: 180,
                 pinned: true,
                 backgroundColor: AppTheme.scaffoldBg,
+                elevation: 0,
                 leading: Builder(
-                  builder: (ctx) => IconButton(
-                    icon: const Icon(Icons.menu_rounded),
-                    onPressed: () => Scaffold.of(ctx).openDrawer(),
+                  builder: (ctx) => Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: GestureDetector(
+                      onTap: () => Scaffold.of(ctx).openDrawer(),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.menu_rounded,
+                            color: Colors.white, size: 20),
+                      ),
+                    ),
                   ),
                 ),
+                actions: [
+                  // Claim gifts (estilo web-preview)
+                  GestureDetector(
+                    onTap: () {/* TODO: claim gifts */},
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryColor,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('🎁 ',
+                              style: TextStyle(fontSize: 11)),
+                          Text('Claim gifts',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  GestureDetector(
+                    onTap: () => context.push('/notifications'),
+                    child: Container(
+                      width: 34,
+                      height: 34,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.notifications_outlined,
+                          color: Colors.white, size: 18),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
                 flexibleSpace: FlexibleSpaceBar(
                   background: Stack(
                     fit: StackFit.expand,
                     children: [
-                      // Banner
+                      // Cover image
                       if (community.bannerUrl != null)
                         CachedNetworkImage(
                           imageUrl: community.bannerUrl!,
@@ -245,147 +322,172 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                             ),
                           ),
                         ),
-                      // Gradient overlay
+                      // Gradient overlay (web-preview: from-black/40 to-[#0f0f1e])
                       Container(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              Colors.transparent,
-                              AppTheme.scaffoldBg.withValues(alpha: 0.8),
+                              Colors.black.withValues(alpha: 0.4),
                               AppTheme.scaffoldBg,
                             ],
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
-                            stops: const [0.3, 0.7, 1.0],
+                            stops: const [0.0, 1.0],
                           ),
                         ),
                       ),
-                      // Info overlay
+                      // Community info overlay
                       Positioned(
-                        bottom: 16,
-                        left: 16,
-                        right: 16,
+                        bottom: 8,
+                        left: 12,
+                        right: 12,
                         child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            // Icon
+                            // Community icon
                             Container(
-                              width: 60,
-                              height: 60,
+                              width: 64,
+                              height: 64,
                               decoration: BoxDecoration(
-                                color: themeColor.withValues(alpha: 0.3),
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: themeColor, width: 2),
-                              ),
-                              child: community.iconUrl != null
-                                  ? ClipRRect(
-                                      borderRadius: BorderRadius.circular(14),
-                                      child: CachedNetworkImage(
-                                        imageUrl: community.iconUrl!,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    )
-                                  : Icon(Icons.groups_rounded,
-                                      color: themeColor, size: 32),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(community.name,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .headlineSmall),
-                                  if (community.tagline.isNotEmpty)
-                                    Text(community.tagline,
-                                        style: const TextStyle(
-                                            color: AppTheme.textSecondary,
-                                            fontSize: 13)),
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      Icon(Icons.people_rounded,
-                                          size: 14, color: themeColor),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                          '${formatCount(community.membersCount)} membros',
-                                          style: TextStyle(
-                                              color: themeColor, fontSize: 12)),
-                                      const SizedBox(width: 12),
-                                      const Icon(Icons.circle,
-                                          size: 6, color: AppTheme.onlineColor),
-                                      const SizedBox(width: 4),
-                                      Text('${community.membersCount} membros',
-                                          style: const TextStyle(
-                                              color: AppTheme.onlineColor,
-                                              fontSize: 12)),
-                                    ],
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                  width: 2,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.3),
+                                    blurRadius: 8,
                                   ),
                                 ],
                               ),
-                            ),
-                            // Join / Leave button
-                            if (!isMember)
-                              ElevatedButton(
-                                onPressed: _joinCommunity,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: themeColor,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 8),
-                                ),
-                                child: const Text('Entrar',
-                                    style: TextStyle(fontSize: 13)),
-                              )
-                            else
-                              OutlinedButton(
-                                onPressed: _leaveCommunity,
-                                style: OutlinedButton.styleFrom(
-                                  side: BorderSide(color: themeColor),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 8),
-                                ),
-                                child: Text('Membro',
-                                    style: TextStyle(
-                                        color: themeColor, fontSize: 12)),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(14),
+                                child: community.iconUrl != null
+                                    ? CachedNetworkImage(
+                                        imageUrl: community.iconUrl!,
+                                        fit: BoxFit.cover,
+                                      )
+                                    : Container(
+                                        color: themeColor,
+                                        child: const Icon(Icons.groups_rounded,
+                                            color: Colors.white70, size: 32),
+                                      ),
                               ),
+                            ),
+                            const SizedBox(width: 12),
+                            // Name + members + leaderboard
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 2),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      community.name,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w900,
+                                        height: 1.1,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        Text(
+                                          '${formatCount(community.membersCount)} Members',
+                                          style: TextStyle(
+                                            color: Colors.grey[300],
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        // Leaderboards pill
+                                        GestureDetector(
+                                          onTap: () {
+                                            _tabController.animateTo(6);
+                                          },
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8, vertical: 3),
+                                            decoration: BoxDecoration(
+                                              color: AppTheme.primaryColor,
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: const Text(
+                                              'Leaderboards',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 9,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
                     ],
                   ),
                 ),
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.search_rounded),
-                    onPressed: () => context.push('/search'),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.more_vert_rounded),
-                    onPressed: () =>
-                        _showCommunityOptions(context, community, userRole),
-                  ),
-                ],
               ),
 
               // ============================================================
-              // TABS
+              // CHECK-IN BAR (se não fez check-in)
+              // ============================================================
+              if (isMember)
+                SliverToBoxAdapter(
+                  child: _CheckInBar(
+                    communityId: widget.communityId,
+                    themeColor: themeColor,
+                  ),
+                ),
+
+              // ============================================================
+              // LIVE CHATROOMS (horizontal scroll)
+              // ============================================================
+              SliverToBoxAdapter(
+                child: _LiveChatroomsSection(
+                  communityId: widget.communityId,
+                  community: community,
+                ),
+              ),
+
+              // ============================================================
+              // TABS — Estilo Amino (scrollable, white indicator)
               // ============================================================
               SliverPersistentHeader(
                 pinned: true,
                 delegate: _SliverTabBarDelegate(
                   TabBar(
                     controller: _tabController,
-                    indicatorColor: themeColor,
-                    labelColor: themeColor,
                     isScrollable: true,
                     tabAlignment: TabAlignment.start,
-                    tabs: const [
-                      Tab(text: 'Feed'),
-                      Tab(text: 'Featured'),
-                      Tab(text: 'Wiki'),
-                      Tab(text: 'Chat'),
-                      Tab(text: 'Membros'),
-                    ],
+                    labelColor: Colors.white,
+                    unselectedLabelColor: AppTheme.textHint,
+                    indicatorColor: Colors.white,
+                    indicatorWeight: 2,
+                    indicatorSize: TabBarIndicatorSize.label,
+                    labelStyle: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 12),
+                    unselectedLabelStyle: const TextStyle(
+                        fontWeight: FontWeight.w500, fontSize: 12),
+                    dividerColor: Colors.transparent,
+                    tabs: _tabs.map((t) {
+                      if (t == 'Chats') return const Tab(text: 'Public Chatrooms');
+                      if (t == 'Latest') return const Tab(text: 'Latest Feed');
+                      return Tab(text: t);
+                    }).toList(),
                   ),
                 ),
               ),
@@ -393,148 +495,121 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             body: TabBarView(
               controller: _tabController,
               children: [
-                _FeedTab(communityId: widget.communityId, ref: ref),
-                _FeaturedTab(communityId: widget.communityId),
-                _WikiTab(communityId: widget.communityId),
+                _GuidelinesTab(community: community),
+                _FeedTab(
+                    communityId: widget.communityId,
+                    ref: ref,
+                    isFeatured: true),
+                _FeedTab(
+                    communityId: widget.communityId,
+                    ref: ref,
+                    isFeatured: false),
                 _ChatTab(communityId: widget.communityId),
                 _MembersTab(
                     communityId: widget.communityId, themeColor: themeColor),
+                _WikiTab(communityId: widget.communityId),
+                _LeaderboardTab(communityId: widget.communityId),
               ],
             ),
           ),
+          // FAB — Estilo Amino (verde, pencil)
           floatingActionButton: isMember
-              ? FloatingActionButton(
-                  onPressed: () => context
-                      .push('/community/${widget.communityId}/create-post'),
-                  backgroundColor: themeColor,
-                  child: const Icon(Icons.edit_rounded, color: Colors.white),
+              ? AminoAnimations.scaleIn(
+                  child: FloatingActionButton(
+                    onPressed: () => context
+                        .push('/community/${widget.communityId}/create-post'),
+                    backgroundColor: AppTheme.primaryColor,
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
+                    child:
+                        const Icon(Icons.edit_rounded, color: Colors.white, size: 22),
+                  ),
                 )
-              : null,
+              : // Botão Join se não é membro
+              AminoAnimations.pulseGlow(
+                  glowColor: AppTheme.primaryColor,
+                  child: FloatingActionButton.extended(
+                    onPressed: _joinCommunity,
+                    backgroundColor: AppTheme.primaryColor,
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
+                    icon: const Icon(Icons.group_add_rounded,
+                        color: Colors.white, size: 20),
+                    label: const Text('Entrar',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14)),
+                  ),
+                ),
         );
       },
     );
   }
+}
 
-  void _showCommunityOptions(
-      BuildContext context, CommunityModel community, String? userRole) {
-    final isStaff =
-        userRole == 'agent' || userRole == 'leader' || userRole == 'curator';
+// =============================================================================
+// CHECK-IN BAR — Estilo Amino (streak progress + botão verde)
+// =============================================================================
+class _CheckInBar extends StatelessWidget {
+  final String communityId;
+  final Color themeColor;
 
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.info_outline_rounded),
-              title: const Text('Sobre a comunidade'),
-              onTap: () {
-                Navigator.pop(context);
-                _showAboutDialog(context, community);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.leaderboard_rounded),
-              title: const Text('Leaderboard'),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/community/${community.id}/leaderboard');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.check_circle_rounded,
-                  color: AppTheme.accentColor),
-              title: const Text('Check-in Diário'),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/check-in');
-              },
-            ),
-            if (isStaff) ...[
-              const Divider(),
-              ListTile(
-                leading:
-                    Icon(Icons.settings_rounded, color: AppTheme.primaryColor),
-                title: const Text('ACM (Configurações)'),
-                onTap: () {
-                  Navigator.pop(context);
-                  context.push('/community/${community.id}/acm');
-                },
-              ),
-              ListTile(
-                leading:
-                    const Icon(Icons.flag_rounded, color: AppTheme.errorColor),
-                title: const Text('Flag Center'),
-                onTap: () {
-                  Navigator.pop(context);
-                  context.push('/community/${community.id}/flags');
-                },
-              ),
-            ],
-            ListTile(
-              leading:
-                  const Icon(Icons.flag_outlined, color: AppTheme.errorColor),
-              title: const Text('Denunciar',
-                  style: TextStyle(color: AppTheme.errorColor)),
-              onTap: () => Navigator.pop(context),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  const _CheckInBar({required this.communityId, required this.themeColor});
 
-  void _showAboutDialog(BuildContext context, CommunityModel community) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(community.name),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (community.tagline.isNotEmpty) ...[
-                Text(community.tagline,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: 15)),
-                const SizedBox(height: 12),
-              ],
-              Text(community.description.isEmpty
-                  ? 'Sem descrição disponível.'
-                  : community.description),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  const Icon(Icons.people_rounded,
-                      size: 16, color: AppTheme.textSecondary),
-                  const SizedBox(width: 4),
-                  Text('${community.membersCount} membros',
-                      style: const TextStyle(
-                          color: AppTheme.textSecondary, fontSize: 13)),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  const Icon(Icons.calendar_today_rounded,
-                      size: 16, color: AppTheme.textSecondary),
-                  const SizedBox(width: 4),
-                  Text(
-                      'Criada em ${community.createdAt.day.toString().padLeft(2, '0')}/${community.createdAt.month.toString().padLeft(2, '0')}/${community.createdAt.year}',
-                      style: const TextStyle(
-                          color: AppTheme.textSecondary, fontSize: 13)),
-                ],
-              ),
-            ],
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: AppTheme.cardColor,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Column(
+        children: [
+          const Text(
+            'Check In to earn a prize',
+            style: TextStyle(
+              color: AppTheme.textPrimary,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Fechar'),
+          const SizedBox(height: 8),
+          // 7-day streak bar
+          Row(
+            children: List.generate(7, (i) {
+              return Expanded(
+                child: Container(
+                  height: 6,
+                  margin: EdgeInsets.only(right: i < 6 ? 3 : 0),
+                  decoration: BoxDecoration(
+                    color: i < 3
+                        ? AppTheme.primaryColor
+                        : AppTheme.dividerColor,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: 10),
+          // Check In button
+          SizedBox(
+            width: double.infinity,
+            height: 40,
+            child: ElevatedButton(
+              onPressed: () => context.push('/check-in'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryColor,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+                textStyle: const TextStyle(
+                    fontWeight: FontWeight.w700, fontSize: 14),
+              ),
+              child: const Text('Check In'),
+            ),
           ),
         ],
       ),
@@ -543,21 +618,242 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
 }
 
 // =============================================================================
-// TAB: Feed (com posts reais)
+// LIVE CHATROOMS SECTION — Estilo Amino (horizontal scroll cards)
+// =============================================================================
+class _LiveChatroomsSection extends StatefulWidget {
+  final String communityId;
+  final CommunityModel community;
+
+  const _LiveChatroomsSection(
+      {required this.communityId, required this.community});
+
+  @override
+  State<_LiveChatroomsSection> createState() => _LiveChatroomsSectionState();
+}
+
+class _LiveChatroomsSectionState extends State<_LiveChatroomsSection> {
+  List<Map<String, dynamic>> _chats = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadChats();
+  }
+
+  Future<void> _loadChats() async {
+    try {
+      final response = await SupabaseService.table('chat_threads')
+          .select()
+          .eq('community_id', widget.communityId)
+          .order('last_message_at', ascending: false)
+          .limit(4);
+      if (mounted) setState(() {
+        _chats = List<Map<String, dynamic>>.from(response as List);
+      });
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_chats.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: SizedBox(
+        height: 120,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: _chats.length,
+          itemBuilder: (context, index) {
+            final chat = _chats[index];
+            return AminoAnimations.cardPress(
+              onTap: () => context.push('/chat/${chat['id']}'),
+              child: Container(
+                width: 140,
+                margin: const EdgeInsets.only(right: 8),
+                decoration: BoxDecoration(
+                  color: AppTheme.cardColor,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppTheme.dividerColor.withValues(alpha: 0.2),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Cover
+                    Expanded(
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          ClipRRect(
+                            borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(12)),
+                            child: chat['icon_url'] != null
+                                ? CachedNetworkImage(
+                                    imageUrl: chat['icon_url'] as String,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Container(
+                                    color: AppTheme.surfaceColor,
+                                    child: const Icon(Icons.chat_rounded,
+                                        color: AppTheme.textHint, size: 24),
+                                  ),
+                          ),
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(12)),
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent,
+                                  AppTheme.cardColor,
+                                ],
+                              ),
+                            ),
+                          ),
+                          // Live indicator
+                          Positioned(
+                            top: 6,
+                            left: 6,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.5),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 5,
+                                    height: 5,
+                                    decoration: const BoxDecoration(
+                                      color: AppTheme.primaryColor,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 3),
+                                  const Text('Live',
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 8,
+                                          fontWeight: FontWeight.w700)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Info
+                    Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            chat['title'] as String? ?? 'Chat',
+                            style: const TextStyle(
+                                color: AppTheme.textPrimary,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// TAB: Guidelines — Estilo Amino
+// =============================================================================
+class _GuidelinesTab extends StatelessWidget {
+  final CommunityModel community;
+  const _GuidelinesTab({required this.community});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(12),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppTheme.cardColor,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.public_rounded,
+                    color: const Color(0xFFFF9800), size: 18),
+                const SizedBox(width: 8),
+                const Text(
+                  'Community Guidelines',
+                  style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              community.description.isNotEmpty
+                  ? community.description
+                  : 'No guidelines have been set for this community yet.',
+              style: TextStyle(
+                color: Colors.grey[300],
+                fontSize: 13,
+                height: 1.6,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// TAB: Feed (Featured / Latest)
 // =============================================================================
 class _FeedTab extends StatelessWidget {
   final String communityId;
   final WidgetRef ref;
+  final bool isFeatured;
 
-  const _FeedTab({required this.communityId, required this.ref});
+  const _FeedTab(
+      {required this.communityId, required this.ref, this.isFeatured = false});
 
   @override
   Widget build(BuildContext context) {
     final feedAsync = ref.watch(communityFeedProvider(communityId));
 
     return feedAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => Center(child: Text('Erro: $error')),
+      loading: () => Center(
+        child: CircularProgressIndicator(
+            color: AppTheme.primaryColor, strokeWidth: 2.5),
+      ),
+      error: (error, _) => Center(
+          child: Text('Erro: $error',
+              style: const TextStyle(color: AppTheme.textSecondary))),
       data: (posts) {
         if (posts.isEmpty) {
           return Center(
@@ -565,28 +861,26 @@ class _FeedTab extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Icon(Icons.article_outlined,
-                    size: 64, color: AppTheme.textHint),
-                const SizedBox(height: 16),
-                Text('Nenhum post ainda',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(color: AppTheme.textSecondary)),
-                const SizedBox(height: 8),
-                const Text('Seja o primeiro a postar!',
-                    style: TextStyle(color: AppTheme.textHint)),
+                    size: 48, color: AppTheme.textHint),
+                const SizedBox(height: 12),
+                Text(
+                  'No posts yet. Be the first to post!',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                ),
               ],
             ),
           );
         }
 
-        return RefreshIndicator(
-          onRefresh: () async =>
-              ref.invalidate(communityFeedProvider(communityId)),
-          child: ListView.builder(
-            padding: const EdgeInsets.only(top: 8, bottom: 80),
-            itemCount: posts.length,
-            itemBuilder: (context, index) => PostCard(post: posts[index]),
+        return ListView.builder(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          itemCount: posts.length,
+          itemBuilder: (context, index) => AminoAnimations.staggerItem(
+            index: index,
+            child: PostCard(
+              post: posts[index],
+              showCommunity: false,
+            ),
           ),
         );
       },
@@ -595,85 +889,11 @@ class _FeedTab extends StatelessWidget {
 }
 
 // =============================================================================
-// TAB: Featured (posts em destaque)
+// TAB: Featured (placeholder — usa FeedTab com isFeatured)
 // =============================================================================
-class _FeaturedTab extends StatefulWidget {
-  final String communityId;
-  const _FeaturedTab({required this.communityId});
-
-  @override
-  State<_FeaturedTab> createState() => _FeaturedTabState();
-}
-
-class _FeaturedTabState extends State<_FeaturedTab> {
-  List<PostModel> _featured = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadFeatured();
-  }
-
-  Future<void> _loadFeatured() async {
-    try {
-      final response = await SupabaseService.table('posts')
-          .select('*, profiles!posts_author_id_fkey(*)')
-          .eq('community_id', widget.communityId)
-          .eq('is_featured', true)
-          .eq('status', 'ok')
-          .order('featured_at', ascending: false)
-          .limit(20);
-
-      _featured = (response as List).map((e) {
-        final map = Map<String, dynamic>.from(e);
-        if (map['profiles'] != null) map['author'] = map['profiles'];
-        return PostModel.fromJson(map);
-      }).toList();
-
-      if (mounted) setState(() => _isLoading = false);
-    } catch (e) {
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_featured.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.star_outline_rounded,
-                size: 64, color: AppTheme.warningColor),
-            const SizedBox(height: 16),
-            Text('Nenhum post em destaque',
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(color: AppTheme.textSecondary)),
-            const SizedBox(height: 8),
-            const Text('Leaders podem destacar posts aqui',
-                style: TextStyle(color: AppTheme.textHint)),
-          ],
-        ),
-      );
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.only(top: 8, bottom: 80),
-      itemCount: _featured.length,
-      itemBuilder: (context, index) => PostCard(post: _featured[index]),
-    );
-  }
-}
 
 // =============================================================================
-// TAB: Wiki (lista inline de wiki entries)
+// TAB: Wiki
 // =============================================================================
 class _WikiTab extends StatefulWidget {
   final String communityId;
@@ -690,10 +910,10 @@ class _WikiTabState extends State<_WikiTab> {
   @override
   void initState() {
     super.initState();
-    _loadWiki();
+    _loadEntries();
   }
 
-  Future<void> _loadWiki() async {
+  Future<void> _loadEntries() async {
     try {
       final response = await SupabaseService.table('wiki_entries')
           .select('*, profiles!wiki_entries_author_id_fkey(nickname, icon_url)')
@@ -711,7 +931,10 @@ class _WikiTabState extends State<_WikiTab> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(
+        child: CircularProgressIndicator(
+            color: AppTheme.primaryColor, strokeWidth: 2.5),
+      );
     }
 
     if (_entries.isEmpty) {
@@ -720,19 +943,22 @@ class _WikiTabState extends State<_WikiTab> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.menu_book_rounded,
-                size: 64, color: AppTheme.textHint),
-            const SizedBox(height: 16),
+                size: 48, color: AppTheme.textHint),
+            const SizedBox(height: 12),
             Text('Catálogo vazio',
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(color: AppTheme.textSecondary)),
+                style: TextStyle(color: Colors.grey[600], fontSize: 13)),
             const SizedBox(height: 12),
             ElevatedButton.icon(
               onPressed: () =>
                   context.push('/community/${widget.communityId}/wiki/create'),
-              icon: const Icon(Icons.add_rounded),
+              icon: const Icon(Icons.add_rounded, size: 18),
               label: const Text('Criar Wiki Entry'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
             ),
           ],
         ),
@@ -741,7 +967,6 @@ class _WikiTabState extends State<_WikiTab> {
 
     return Column(
       children: [
-        // Header com botão de criar
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
           child: Row(
@@ -750,11 +975,21 @@ class _WikiTabState extends State<_WikiTab> {
               Text('${_entries.length} entradas',
                   style: const TextStyle(
                       color: AppTheme.textSecondary, fontSize: 13)),
-              TextButton.icon(
-                onPressed: () => context
+              GestureDetector(
+                onTap: () => context
                     .push('/community/${widget.communityId}/wiki/create'),
-                icon: const Icon(Icons.add_rounded, size: 16),
-                label: const Text('Criar', style: TextStyle(fontSize: 13)),
+                child: Row(
+                  children: [
+                    Icon(Icons.add_rounded,
+                        size: 16, color: AppTheme.primaryColor),
+                    const SizedBox(width: 4),
+                    Text('Criar',
+                        style: TextStyle(
+                            color: AppTheme.primaryColor,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600)),
+                  ],
+                ),
               ),
             ],
           ),
@@ -767,39 +1002,68 @@ class _WikiTabState extends State<_WikiTab> {
               final entry = _entries[index];
               final author = entry['profiles'] as Map<String, dynamic>?;
 
-              return Card(
-                margin: const EdgeInsets.only(bottom: 8),
-                child: ListTile(
+              return AminoAnimations.staggerItem(
+                index: index,
+                child: AminoAnimations.cardPress(
                   onTap: () => context.push('/wiki/${entry['id']}'),
-                  leading: Container(
-                    width: 48,
-                    height: 48,
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(10),
+                      color: AppTheme.cardColor,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppTheme.dividerColor.withValues(alpha: 0.2),
+                      ),
                     ),
-                    child: entry['cover_image_url'] != null
-                        ? ClipRRect(
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(10),
-                            child: CachedNetworkImage(
-                              imageUrl: entry['cover_image_url'] as String,
-                              fit: BoxFit.cover,
-                            ),
-                          )
-                        : const Icon(Icons.auto_stories_rounded,
-                            color: AppTheme.primaryColor),
-                  ),
-                  title: Text(
-                    entry['title'] as String? ?? 'Wiki Entry',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: 14),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  subtitle: Text(
-                    'por ${author?['nickname'] ?? 'Anônimo'}',
-                    style:
-                        const TextStyle(color: AppTheme.textHint, fontSize: 12),
+                          ),
+                          child: entry['cover_image_url'] != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: CachedNetworkImage(
+                                    imageUrl:
+                                        entry['cover_image_url'] as String,
+                                    fit: BoxFit.cover,
+                                  ),
+                                )
+                              : const Icon(Icons.auto_stories_rounded,
+                                  color: AppTheme.primaryColor, size: 22),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                entry['title'] as String? ?? 'Wiki Entry',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                    color: AppTheme.textPrimary),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'por ${author?['nickname'] ?? 'Anônimo'}',
+                                style: const TextStyle(
+                                    color: AppTheme.textHint, fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right_rounded,
+                            color: AppTheme.textHint, size: 20),
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -812,7 +1076,7 @@ class _WikiTabState extends State<_WikiTab> {
 }
 
 // =============================================================================
-// TAB: Chat (lista inline de chats da comunidade)
+// TAB: Chat
 // =============================================================================
 class _ChatTab extends StatefulWidget {
   final String communityId;
@@ -849,7 +1113,10 @@ class _ChatTabState extends State<_ChatTab> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(
+        child: CircularProgressIndicator(
+            color: AppTheme.primaryColor, strokeWidth: 2.5),
+      );
     }
 
     if (_chats.isEmpty) {
@@ -858,16 +1125,10 @@ class _ChatTabState extends State<_ChatTab> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.chat_bubble_outline_rounded,
-                size: 64, color: AppTheme.textHint),
-            const SizedBox(height: 16),
-            Text('Nenhum chat na comunidade',
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(color: AppTheme.textSecondary)),
-            const SizedBox(height: 8),
-            const Text('Participe ou crie uma conversa!',
-                style: TextStyle(color: AppTheme.textHint)),
+                size: 48, color: AppTheme.textHint),
+            const SizedBox(height: 12),
+            Text('No public chatrooms yet',
+                style: TextStyle(color: Colors.grey[600], fontSize: 13)),
           ],
         ),
       );
@@ -878,43 +1139,67 @@ class _ChatTabState extends State<_ChatTab> {
       itemCount: _chats.length,
       itemBuilder: (context, index) {
         final chat = _chats[index];
-        final lastMsg = chat['last_message_preview'] as String?;
-        final lastMsgAt =
-            DateTime.tryParse(chat['last_message_at'] as String? ?? '');
-
-        return Card(
-          margin: const EdgeInsets.only(bottom: 8),
-          child: ListTile(
+        return AminoAnimations.staggerItem(
+          index: index,
+          child: AminoAnimations.cardPress(
             onTap: () => context.push('/chat/${chat['id']}'),
-            leading: CircleAvatar(
-              backgroundColor: AppTheme.accentColor.withValues(alpha: 0.2),
-              backgroundImage: chat['icon_url'] != null
-                  ? CachedNetworkImageProvider(chat['icon_url'] as String)
-                  : null,
-              child: chat['icon_url'] == null
-                  ? const Icon(Icons.chat_rounded,
-                      color: AppTheme.accentColor, size: 20)
-                  : null,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: AppTheme.dividerColor.withValues(alpha: 0.2),
+                    width: 0.5,
+                  ),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceColor,
+                      shape: BoxShape.circle,
+                    ),
+                    child: chat['icon_url'] != null
+                        ? ClipOval(
+                            child: CachedNetworkImage(
+                              imageUrl: chat['icon_url'] as String,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : const Icon(Icons.tag_rounded,
+                            color: AppTheme.textHint, size: 18),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          chat['title'] as String? ?? 'Chat',
+                          style: const TextStyle(
+                              color: AppTheme.textPrimary,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${chat['members_count'] ?? 0} members',
+                          style: TextStyle(
+                              color: Colors.grey[600], fontSize: 10),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.chevron_right_rounded,
+                      color: Colors.grey[600], size: 16),
+                ],
+              ),
             ),
-            title: Text(
-              chat['title'] as String? ?? 'Chat',
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            subtitle: Text(
-              lastMsg ?? 'Sem mensagens',
-              style: const TextStyle(color: AppTheme.textHint, fontSize: 12),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            trailing: lastMsgAt != null
-                ? Text(
-                    timeago.format(lastMsgAt, locale: 'pt_BR'),
-                    style:
-                        const TextStyle(color: AppTheme.textHint, fontSize: 10),
-                  )
-                : null,
           ),
         );
       },
@@ -923,7 +1208,7 @@ class _ChatTabState extends State<_ChatTab> {
 }
 
 // =============================================================================
-// TAB: Membros (lista real de membros da comunidade)
+// TAB: Members
 // =============================================================================
 class _MembersTab extends ConsumerWidget {
   final String communityId;
@@ -966,7 +1251,10 @@ class _MembersTab extends ConsumerWidget {
     final membersAsync = ref.watch(communityMembersProvider(communityId));
 
     return membersAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => Center(
+        child: CircularProgressIndicator(
+            color: AppTheme.primaryColor, strokeWidth: 2.5),
+      ),
       error: (error, _) => Center(child: Text('Erro: $error')),
       data: (members) {
         if (members.isEmpty) {
@@ -976,7 +1264,6 @@ class _MembersTab extends ConsumerWidget {
           );
         }
 
-        // Separar staff e membros comuns
         final staff = members
             .where((m) =>
                 m['role'] == 'agent' ||
@@ -1001,7 +1288,7 @@ class _MembersTab extends ConsumerWidget {
                   style: TextStyle(
                     color: themeColor,
                     fontSize: 11,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w700,
                     letterSpacing: 1,
                   ),
                 ),
@@ -1020,7 +1307,7 @@ class _MembersTab extends ConsumerWidget {
                 style: const TextStyle(
                   color: AppTheme.textSecondary,
                   fontSize: 11,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w700,
                   letterSpacing: 1,
                 ),
               ),
@@ -1037,6 +1324,43 @@ class _MembersTab extends ConsumerWidget {
   }
 }
 
+// =============================================================================
+// TAB: Leaderboard
+// =============================================================================
+class _LeaderboardTab extends StatelessWidget {
+  final String communityId;
+  const _LeaderboardTab({required this.communityId});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.leaderboard_rounded,
+              size: 48, color: AppTheme.textHint),
+          const SizedBox(height: 12),
+          Text('Leaderboard',
+              style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+          const SizedBox(height: 8),
+          GestureDetector(
+            onTap: () =>
+                context.push('/community/$communityId/leaderboard'),
+            child: Text('Ver Leaderboard Completo',
+                style: TextStyle(
+                    color: AppTheme.primaryColor,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// MEMBER TILE — Estilo Amino
+// =============================================================================
 class _MemberTile extends StatelessWidget {
   final Map<String, dynamic> member;
   final String Function(String) roleLabel;
@@ -1060,77 +1384,106 @@ class _MemberTile extends StatelessWidget {
     final isOnline = (profile['online_status'] as int? ?? 2) == 1;
     final role = member['role'] as String? ?? 'member';
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 4),
-      child: ListTile(
-        onTap: () {
-          if (userId != null) {
-            context.push('/community/$communityId/profile/$userId');
-          }
-        },
-        leading: Stack(
-          children: [
-            CircleAvatar(
-              radius: 22,
-              backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.2),
-              backgroundImage: avatarUrl != null
-                  ? CachedNetworkImageProvider(avatarUrl)
-                  : null,
-              child: avatarUrl == null
-                  ? Text(nickname[0].toUpperCase(),
-                      style: const TextStyle(
-                          color: AppTheme.primaryColor,
-                          fontWeight: FontWeight.bold))
-                  : null,
+    return AminoAnimations.cardPress(
+      onTap: () {
+        if (userId != null) {
+          context.push('/community/$communityId/profile/$userId');
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: AppTheme.dividerColor.withValues(alpha: 0.15),
+              width: 0.5,
             ),
-            if (isOnline)
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  width: 12,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: AppTheme.onlineColor,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: AppTheme.scaffoldBg, width: 2),
-                  ),
+          ),
+        ),
+        child: Row(
+          children: [
+            // Avatar com indicador online
+            Stack(
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor:
+                      AppTheme.primaryColor.withValues(alpha: 0.2),
+                  backgroundImage: avatarUrl != null
+                      ? CachedNetworkImageProvider(avatarUrl)
+                      : null,
+                  child: avatarUrl == null
+                      ? Text(nickname[0].toUpperCase(),
+                          style: const TextStyle(
+                              color: AppTheme.primaryColor,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16))
+                      : null,
                 ),
+                if (isOnline)
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: AppTheme.onlineColor,
+                        shape: BoxShape.circle,
+                        border:
+                            Border.all(color: AppTheme.scaffoldBg, width: 2),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(width: 12),
+            // Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(nickname,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                                color: AppTheme.textPrimary),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis),
+                      ),
+                      if (role != 'member') ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: roleColor(role).withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            roleLabel(role),
+                            style: TextStyle(
+                              color: roleColor(role),
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text('Lv.$level',
+                      style: TextStyle(
+                          color: AppTheme.getLevelColor(level), fontSize: 11)),
+                ],
               ),
+            ),
           ],
         ),
-        title: Row(
-          children: [
-            Flexible(
-              child: Text(nickname,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w600, fontSize: 14),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis),
-            ),
-            if (role != 'member') ...[
-              const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: roleColor(role).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  roleLabel(role),
-                  style: TextStyle(
-                    color: roleColor(role),
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-        subtitle: Text('Lv.$level',
-            style:
-                TextStyle(color: AppTheme.getLevelColor(level), fontSize: 12)),
       ),
     );
   }

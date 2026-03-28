@@ -102,25 +102,60 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
       appBar: AppBar(
-        title: const Text('Privacidade',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text(
+          'Privacidade',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            color: AppTheme.textPrimary,
+          ),
+        ),
+        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
         actions: [
-          TextButton(
-            onPressed: _saveSettings,
-            child: const Text('Salvar'),
+          GestureDetector(
+            onTap: _saveSettings,
+            child: Container(
+              margin: const EdgeInsets.only(right: 16, top: 10, bottom: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              alignment: Alignment.center,
+              child: const Text(
+                'Salvar',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                ),
+              ),
+            ),
           ),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(color: AppTheme.primaryColor))
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
                 // ============================================================
                 // PERFIL
                 // ============================================================
-                _SectionHeader(title: 'Perfil'),
+                const _SectionHeader(title: 'Perfil'),
                 _SettingToggle(
                   icon: Icons.public_rounded,
                   title: 'Perfil Público',
@@ -155,7 +190,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                 // ============================================================
                 // COMUNICAÇÃO
                 // ============================================================
-                _SectionHeader(title: 'Comunicação'),
+                const _SectionHeader(title: 'Comunicação'),
                 _SettingToggle(
                   icon: Icons.chat_rounded,
                   title: 'Mensagens Diretas',
@@ -183,7 +218,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                 // ============================================================
                 // VISIBILIDADE
                 // ============================================================
-                _SectionHeader(title: 'Visibilidade'),
+                const _SectionHeader(title: 'Visibilidade'),
                 _SettingToggle(
                   icon: Icons.groups_rounded,
                   title: 'Lista de Comunidades',
@@ -211,19 +246,27 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                 // ============================================================
                 // SEGUIDORES
                 // ============================================================
-                _SectionHeader(title: 'Seguidores'),
+                const _SectionHeader(title: 'Seguidores'),
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppTheme.cardColor,
-                    borderRadius: BorderRadius.circular(12),
+                    color: AppTheme.surfaceColor,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.05),
+                    ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Quem pode te seguir',
-                          style: TextStyle(
-                              fontWeight: FontWeight.w500, fontSize: 14)),
+                      const Text(
+                        'Quem pode te seguir',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
                       const SizedBox(height: 12),
                       _RadioOption(
                         label: 'Todos',
@@ -252,22 +295,36 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                 // ============================================================
                 // DADOS
                 // ============================================================
-                _SectionHeader(title: 'Dados'),
+                const _SectionHeader(title: 'Dados'),
                 Container(
                   decoration: BoxDecoration(
-                    color: AppTheme.cardColor,
-                    borderRadius: BorderRadius.circular(12),
+                    color: AppTheme.surfaceColor,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.05),
+                    ),
                   ),
                   child: Column(
                     children: [
                       ListTile(
                         leading: const Icon(Icons.download_rounded,
                             color: AppTheme.primaryColor),
-                        title: const Text('Exportar Meus Dados'),
-                        subtitle: const Text('Baixar uma cópia dos seus dados',
-                            style: TextStyle(fontSize: 12)),
-                        trailing: const Icon(Icons.chevron_right_rounded,
-                            color: AppTheme.textHint),
+                        title: const Text(
+                          'Exportar Meus Dados',
+                          style: TextStyle(
+                            color: AppTheme.textPrimary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Baixar uma cópia dos seus dados',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[500],
+                          ),
+                        ),
+                        trailing: Icon(Icons.chevron_right_rounded,
+                            color: Colors.grey[600]),
                         onTap: () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -275,42 +332,96 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                           );
                         },
                       ),
-                      const Divider(height: 1),
+                      Divider(
+                          height: 1,
+                          color: Colors.white.withValues(alpha: 0.05)),
                       ListTile(
-                        leading: const Icon(Icons.block_rounded,
-                            color: AppTheme.textSecondary),
-                        title: const Text('Usuários Bloqueados'),
-                        trailing: const Icon(Icons.chevron_right_rounded,
-                            color: AppTheme.textHint),
+                        leading: Icon(Icons.block_rounded,
+                            color: Colors.grey[500]),
+                        title: const Text(
+                          'Usuários Bloqueados',
+                          style: TextStyle(
+                            color: AppTheme.textPrimary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        trailing: Icon(Icons.chevron_right_rounded,
+                            color: Colors.grey[600]),
                         onTap: () {
                           // TODO: Navegar para lista de bloqueados
                         },
                       ),
-                      const Divider(height: 1),
+                      Divider(
+                          height: 1,
+                          color: Colors.white.withValues(alpha: 0.05)),
                       ListTile(
                         leading: const Icon(Icons.delete_forever_rounded,
                             color: AppTheme.errorColor),
-                        title: const Text('Excluir Conta',
-                            style: TextStyle(color: AppTheme.errorColor)),
+                        title: const Text(
+                          'Excluir Conta',
+                          style: TextStyle(
+                            color: AppTheme.errorColor,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                         onTap: () {
                           showDialog(
                             context: context,
                             builder: (ctx) => AlertDialog(
-                              title: const Text('Excluir Conta'),
-                              content: const Text(
-                                  'Tem certeza? Esta ação é irreversível e todos os seus dados serão apagados.'),
+                              backgroundColor: AppTheme.surfaceColor,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                side: BorderSide(
+                                  color: Colors.white.withValues(alpha: 0.05),
+                                ),
+                              ),
+                              title: const Text(
+                                'Excluir Conta',
+                                style: TextStyle(
+                                  color: AppTheme.textPrimary,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              content: Text(
+                                'Tem certeza? Esta ação é irreversível e todos os seus dados serão apagados.',
+                                style: TextStyle(color: Colors.grey[500]),
+                              ),
                               actions: [
                                 TextButton(
-                                    onPressed: () => Navigator.pop(ctx),
-                                    child: const Text('Cancelar')),
-                                ElevatedButton(
-                                  onPressed: () {
+                                  onPressed: () => Navigator.pop(ctx),
+                                  child: Text(
+                                    'Cancelar',
+                                    style: TextStyle(color: Colors.grey[500]),
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () {
                                     Navigator.pop(ctx);
                                     // TODO: Delete account flow
                                   },
-                                  style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppTheme.errorColor),
-                                  child: const Text('Excluir'),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.errorColor,
+                                      borderRadius: BorderRadius.circular(12),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppTheme.errorColor
+                                              .withValues(alpha: 0.3),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: const Text(
+                                      'Excluir',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
@@ -338,9 +449,9 @@ class _SectionHeader extends StatelessWidget {
       child: Text(
         title,
         style: const TextStyle(
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w800,
           fontSize: 16,
-          color: AppTheme.textPrimary,
+          color: AppTheme.primaryColor,
         ),
       ),
     );
@@ -366,25 +477,45 @@ class _SettingToggle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
-        borderRadius: BorderRadius.circular(12),
+        color: AppTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.05),
+        ),
       ),
       child: Row(
         children: [
-          Icon(icon, color: AppTheme.textSecondary, size: 20),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: AppTheme.primaryColor, size: 20),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w500, fontSize: 14)),
-                Text(subtitle,
-                    style: const TextStyle(
-                        color: AppTheme.textHint, fontSize: 11)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: Colors.grey[500],
+                    fontSize: 12,
+                  ),
+                ),
               ],
             ),
           ),
@@ -392,6 +523,9 @@ class _SettingToggle extends StatelessWidget {
             value: value,
             onChanged: onChanged,
             activeColor: AppTheme.primaryColor,
+            activeTrackColor: AppTheme.primaryColor.withValues(alpha: 0.3),
+            inactiveThumbColor: Colors.grey[500],
+            inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
           ),
         ],
       ),
@@ -414,14 +548,26 @@ class _RadioOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RadioListTile<String>(
-      title: Text(label, style: const TextStyle(fontSize: 14)),
-      value: value,
-      groupValue: groupValue,
-      onChanged: onChanged,
-      activeColor: AppTheme.primaryColor,
-      dense: true,
-      contentPadding: EdgeInsets.zero,
+    return Theme(
+      data: Theme.of(context).copyWith(
+        unselectedWidgetColor: Colors.grey[500],
+      ),
+      child: RadioListTile<String>(
+        title: Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            color: AppTheme.textPrimary,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        value: value,
+        groupValue: groupValue,
+        onChanged: onChanged,
+        activeColor: AppTheme.primaryColor,
+        dense: true,
+        contentPadding: EdgeInsets.zero,
+      ),
     );
   }
 }

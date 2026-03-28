@@ -102,32 +102,48 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
   void _showError(String msg) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg), backgroundColor: AppTheme.errorColor),
+      SnackBar(content: Text(msg, style: const TextStyle(color: Colors.white)), backgroundColor: AppTheme.errorColor),
     );
   }
 
   void _showSuccess(String msg) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg), backgroundColor: AppTheme.successColor),
+      SnackBar(content: Text(msg, style: const TextStyle(color: Colors.white)), backgroundColor: AppTheme.primaryColor),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
       appBar: AppBar(
-        title: const Text('Comprar Moedas',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text(
+          'Comprar Moedas',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            color: AppTheme.textPrimary,
+          ),
+        ),
+        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
         actions: [
           TextButton(
             onPressed: _restorePurchases,
-            child: const Text('Restaurar', style: TextStyle(fontSize: 12)),
+            child: const Text(
+              'Restaurar',
+              style: TextStyle(
+                fontSize: 12,
+                color: AppTheme.primaryColor,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -146,7 +162,8 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                     'Pacotes de Moedas',
                     style: TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -166,15 +183,18 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+        gradient: LinearGradient(
+          colors: [
+            AppTheme.warningColor,
+            AppTheme.warningColor.withValues(alpha: 0.8),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+            color: AppTheme.warningColor.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -185,8 +205,9 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
           const Text(
             'Seu Saldo',
             style: TextStyle(
-              color: Colors.white70,
+              color: Colors.black54,
               fontSize: 14,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 8),
@@ -194,14 +215,14 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Icon(Icons.monetization_on_rounded,
-                  color: Colors.white, size: 32),
+                  color: Colors.black87, size: 32),
               const SizedBox(width: 8),
               Text(
                 formatCount(_userCoins),
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: Colors.black87,
                   fontSize: 32,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
             ],
@@ -209,7 +230,11 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
           const SizedBox(height: 4),
           const Text(
             'moedas',
-            style: TextStyle(color: Colors.white70, fontSize: 14),
+            style: TextStyle(
+              color: Colors.black54,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ],
       ),
@@ -221,20 +246,20 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.successColor.withValues(alpha: 0.3)),
+        color: AppTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppTheme.successColor.withValues(alpha: 0.1),
+              color: AppTheme.primaryColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(Icons.play_circle_filled_rounded,
-                color: AppTheme.successColor, size: 32),
+                color: AppTheme.primaryColor, size: 32),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -243,34 +268,61 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
               children: [
                 const Text(
                   'Assistir Anúncio',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                    color: AppTheme.textPrimary,
+                  ),
                 ),
+                const SizedBox(height: 4),
                 Text(
                   'Ganhe 5 moedas grátis ($remaining restantes hoje)',
-                  style: const TextStyle(
-                      color: AppTheme.textSecondary, fontSize: 12),
+                  style: TextStyle(
+                    color: Colors.grey[500],
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
           ),
-          ElevatedButton(
-            onPressed: _isWatchingAd || !AdService.canWatchAd
+          GestureDetector(
+            onTap: _isWatchingAd || !AdService.canWatchAd
                 ? null
                 : _watchAdForCoins,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.successColor,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: _isWatchingAd || !AdService.canWatchAd
+                      ? [Colors.grey[800]!, Colors.grey[700]!]
+                      : [AppTheme.primaryColor, AppTheme.accentColor],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: _isWatchingAd || !AdService.canWatchAd
+                    ? null
+                    : [
+                        BoxShadow(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
               ),
+              child: _isWatchingAd
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Text(
+                      'Assistir',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
             ),
-            child: _isWatchingAd
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Colors.white),
-                  )
-                : const Text('Assistir', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -283,14 +335,23 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
-        borderRadius: BorderRadius.circular(12),
+        color: AppTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isPopular
               ? AppTheme.primaryColor.withValues(alpha: 0.5)
-              : AppTheme.dividerColor.withValues(alpha: 0.3),
+              : Colors.white.withValues(alpha: 0.05),
           width: isPopular ? 2 : 1,
         ),
+        boxShadow: isPopular
+            ? [
+                BoxShadow(
+                  color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                )
+              ]
+            : null,
       ),
       child: Row(
         children: [
@@ -299,24 +360,24 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: AppTheme.warningColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Stack(
+              clipBehavior: Clip.none,
               children: [
                 const Icon(Icons.monetization_on_rounded,
                     color: AppTheme.warningColor, size: 28),
                 if (isPopular)
                   Positioned(
-                    top: -2,
-                    right: -2,
+                    top: -4,
+                    right: -4,
                     child: Container(
                       padding: const EdgeInsets.all(2),
                       decoration: const BoxDecoration(
                         color: AppTheme.errorColor,
                         shape: BoxShape.circle,
                       ),
-                      child:
-                          const Icon(Icons.star, color: Colors.white, size: 8),
+                      child: const Icon(Icons.star, color: Colors.white, size: 10),
                     ),
                   ),
               ],
@@ -333,8 +394,9 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                     Text(
                       '${formatCount(pkg.coins)} Moedas',
                       style: const TextStyle(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w800,
                         fontSize: 16,
+                        color: AppTheme.textPrimary,
                       ),
                     ),
                     if (isPopular) ...[
@@ -343,55 +405,68 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryColor,
-                          borderRadius: BorderRadius.circular(4),
+                          gradient: const LinearGradient(
+                            colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                          ),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Text(
                           'POPULAR',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 9,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
                       ),
                     ],
                   ],
                 ),
-                if (pkg.coins >= 1200)
+                if (pkg.coins >= 1200) ...[
+                  const SizedBox(height: 4),
                   Text(
                     'Melhor custo-benefício!',
                     style: TextStyle(
-                      color: AppTheme.successColor.withValues(alpha: 0.8),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.8),
                       fontSize: 11,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
+                ],
               ],
             ),
           ),
           // Preço
-          ElevatedButton(
-            onPressed: _isPurchasing ? null : () => _purchaseCoins(pkg),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.warningColor,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: _isPurchasing
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Colors.white),
-                  )
-                : Text(
-                    pkg.priceLabel,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
+          GestureDetector(
+            onTap: _isPurchasing ? null : () => _purchaseCoins(pkg),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppTheme.warningColor,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.warningColor.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
+                ],
+              ),
+              child: _isPurchasing
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.black87),
+                    )
+                  : Text(
+                      pkg.priceLabel,
+                      style: const TextStyle(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+            ),
           ),
         ],
       ),
@@ -408,6 +483,13 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF6C5CE7).withValues(alpha: 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -422,7 +504,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 22,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
               const Spacer(),
@@ -438,7 +520,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                     'ATIVO',
                     style: TextStyle(
                       color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w800,
                       fontSize: 11,
                     ),
                   ),
@@ -448,7 +530,11 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
           const SizedBox(height: 12),
           const Text(
             'Desbloqueie recursos exclusivos:',
-            style: TextStyle(color: Colors.white70, fontSize: 13),
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
           ),
           const SizedBox(height: 8),
           _aminoPlusBenefit('Sem anúncios'),
@@ -458,27 +544,36 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
           _aminoPlusBenefit('Acesso antecipado a novidades'),
           const SizedBox(height: 16),
           if (!IAPService.isAminoPlus)
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  // TODO: Implementar fluxo de assinatura
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Assinatura será habilitada em breve!')),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: const Color(0xFF6C5CE7),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+            GestureDetector(
+              onTap: () {
+                // TODO: Implementar fluxo de assinatura
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text('Assinatura será habilitada em breve!')),
+                );
+              },
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
+                alignment: Alignment.center,
                 child: const Text(
                   'Assinar por R\$ 14,90/mês',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: TextStyle(
+                    color: Color(0xFF6C5CE7),
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                  ),
                 ),
               ),
             ),
@@ -495,7 +590,14 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
           const Icon(Icons.check_circle_rounded,
               color: Colors.white70, size: 16),
           const SizedBox(width: 8),
-          Text(text, style: const TextStyle(color: Colors.white, fontSize: 13)),
+          Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ],
       ),
     );

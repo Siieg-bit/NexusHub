@@ -100,19 +100,54 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
       appBar: AppBar(
-        title: const Text('Criar Comunidade'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        title: const Text(
+          'Criar Comunidade',
+          style: TextStyle(
+            color: AppTheme.textPrimary,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
         actions: [
-          TextButton(
-            onPressed: _isLoading ? null : _createCommunity,
-            child: _isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('Criar',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+          GestureDetector(
+            onTap: _isLoading ? null : _createCommunity,
+            child: Container(
+              margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: _isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : const Text(
+                      'Criar',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+            ),
           ),
         ],
       ),
@@ -135,6 +170,9 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                     ],
                   ),
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.05),
+                  ),
                 ),
                 child: const Center(
                   child: Icon(Icons.camera_alt_rounded,
@@ -144,16 +182,15 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
               const SizedBox(height: 24),
 
               // Nome
-              TextFormField(
+              _buildTextField(
                 controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nome da Comunidade *',
-                  hintText: 'Ex: Anime Brasil, K-Pop Universe...',
-                  prefixIcon: Icon(Icons.groups_rounded),
-                ),
+                label: 'Nome da Comunidade *',
+                hint: 'Ex: Anime Brasil, K-Pop Universe...',
+                icon: Icons.groups_rounded,
                 validator: (value) {
-                  if (value == null || value.trim().isEmpty)
+                  if (value == null || value.trim().isEmpty) {
                     return 'Nome é obrigatório';
+                  }
                   if (value.trim().length < 3) return 'Mínimo 3 caracteres';
                   return null;
                 },
@@ -161,95 +198,183 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
               const SizedBox(height: 16),
 
               // Tagline
-              TextFormField(
+              _buildTextField(
                 controller: _taglineController,
-                decoration: const InputDecoration(
-                  labelText: 'Tagline',
-                  hintText: 'Uma frase curta sobre a comunidade',
-                  prefixIcon: Icon(Icons.short_text_rounded),
-                ),
+                label: 'Tagline',
+                hint: 'Uma frase curta sobre a comunidade',
+                icon: Icons.short_text_rounded,
                 maxLength: 100,
               ),
               const SizedBox(height: 16),
 
               // Descrição
-              TextFormField(
+              _buildTextField(
                 controller: _descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Descrição',
-                  hintText: 'Descreva sua comunidade em detalhes...',
-                  prefixIcon: Icon(Icons.description_rounded),
-                  alignLabelWithHint: true,
-                ),
+                label: 'Descrição',
+                hint: 'Descreva sua comunidade em detalhes...',
+                icon: Icons.description_rounded,
                 maxLines: 4,
                 maxLength: 1000,
               ),
               const SizedBox(height: 24),
 
               // Cor do tema
-              Text('Cor do Tema',
-                  style: Theme.of(context).textTheme.titleMedium),
+              const Text(
+                'Cor do Tema',
+                style: TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
               const SizedBox(height: 12),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: _colors.map((color) {
-                  final isSelected = color == _selectedColor;
-                  return GestureDetector(
-                    onTap: () => setState(() => _selectedColor = color),
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: _parseColor(color),
-                        shape: BoxShape.circle,
-                        border: isSelected
-                            ? Border.all(color: Colors.white, width: 3)
-                            : null,
-                        boxShadow: isSelected
-                            ? [
-                                BoxShadow(
-                                  color:
-                                      _parseColor(color).withValues(alpha: 0.5),
-                                  blurRadius: 8,
-                                )
-                              ]
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceColor,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.05),
+                  ),
+                ),
+                child: Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: _colors.map((color) {
+                    final isSelected = color == _selectedColor;
+                    return GestureDetector(
+                      onTap: () => setState(() => _selectedColor = color),
+                      child: Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: _parseColor(color),
+                          shape: BoxShape.circle,
+                          border: isSelected
+                              ? Border.all(color: Colors.white, width: 3)
+                              : Border.all(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                  width: 1,
+                                ),
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: _parseColor(color)
+                                        .withValues(alpha: 0.5),
+                                    blurRadius: 8,
+                                  )
+                                ]
+                              : null,
+                        ),
+                        child: isSelected
+                            ? const Icon(Icons.check_rounded,
+                                color: Colors.white, size: 20)
                             : null,
                       ),
-                      child: isSelected
-                          ? const Icon(Icons.check_rounded,
-                              color: Colors.white, size: 20)
-                          : null,
-                    ),
-                  );
-                }).toList(),
+                    );
+                  }).toList(),
+                ),
               ),
               const SizedBox(height: 24),
 
               // Idioma
-              Text('Idioma Principal',
-                  style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                value: _selectedLanguage,
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.language_rounded),
+              const Text(
+                'Idioma Principal',
+                style: TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
                 ),
-                items: const [
-                  DropdownMenuItem(
-                      value: 'pt-BR', child: Text('Português (Brasil)')),
-                  DropdownMenuItem(value: 'en', child: Text('English')),
-                  DropdownMenuItem(value: 'es', child: Text('Español')),
-                  DropdownMenuItem(value: 'ja', child: Text('日本語')),
-                  DropdownMenuItem(value: 'ko', child: Text('한국어')),
-                ],
-                onChanged: (value) {
-                  if (value != null) setState(() => _selectedLanguage = value);
-                },
+              ),
+              const SizedBox(height: 12),
+              Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceColor,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.05),
+                  ),
+                ),
+                child: DropdownButtonFormField<String>(
+                  value: _selectedLanguage,
+                  dropdownColor: AppTheme.surfaceColor,
+                  style: const TextStyle(color: AppTheme.textPrimary),
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.language_rounded,
+                        color: AppTheme.accentColor),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 16),
+                  ),
+                  items: const [
+                    DropdownMenuItem(
+                        value: 'pt-BR', child: Text('Português (Brasil)')),
+                    DropdownMenuItem(value: 'en', child: Text('English')),
+                    DropdownMenuItem(value: 'es', child: Text('Español')),
+                    DropdownMenuItem(value: 'ja', child: Text('日本語')),
+                    DropdownMenuItem(value: 'ko', child: Text('한국어')),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => _selectedLanguage = value);
+                    }
+                  },
+                ),
               ),
               const SizedBox(height: 40),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+    int maxLines = 1,
+    int? maxLength,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      maxLines: maxLines,
+      maxLength: maxLength,
+      validator: validator,
+      style: const TextStyle(color: AppTheme.textPrimary),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: Colors.grey[500]),
+        hintText: hint,
+        hintStyle: TextStyle(color: Colors.grey[600]),
+        prefixIcon: Icon(icon, color: AppTheme.accentColor),
+        alignLabelWithHint: maxLines > 1,
+        filled: true,
+        fillColor: AppTheme.surfaceColor,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppTheme.primaryColor),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppTheme.errorColor),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppTheme.errorColor),
         ),
       ),
     );

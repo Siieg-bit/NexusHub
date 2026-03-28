@@ -40,15 +40,64 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Desbloquear Usuário'),
-        content: Text('Deseja desbloquear $nickname?'),
+        backgroundColor: AppTheme.surfaceColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+        ),
+        title: const Text(
+          'Desbloquear Usuário',
+          style: TextStyle(
+            color: AppTheme.textPrimary,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        content: Text(
+          'Deseja desbloquear $nickname?',
+          style: TextStyle(color: Colors.grey[500]),
+        ),
         actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancelar')),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Desbloquear'),
+          GestureDetector(
+            onTap: () => Navigator.pop(ctx, false),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                'Cancelar',
+                style: TextStyle(
+                  color: Colors.grey[500],
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: () => Navigator.pop(ctx, true),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Text(
+                'Desbloquear',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -63,13 +112,28 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$nickname desbloqueado')),
+          SnackBar(
+            content: Text('$nickname desbloqueado', style: const TextStyle(color: AppTheme.textPrimary)),
+            backgroundColor: AppTheme.surfaceColor,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+            ),
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: $e')),
+          SnackBar(
+            content: Text('Erro: $e', style: const TextStyle(color: Colors.white)),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
         );
       }
     }
@@ -78,31 +142,54 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
       appBar: AppBar(
-        title: const Text('Usuários Bloqueados',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        title: const Text(
+          'Usuários Bloqueados',
+          style: TextStyle(
+            color: AppTheme.textPrimary,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+              ),
+            )
           : _blockedUsers.isEmpty
               ? Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.block_rounded,
-                          size: 64,
-                          color: AppTheme.textHint.withValues(alpha: 0.3)),
+                      Icon(
+                        Icons.block_rounded,
+                        size: 64,
+                        color: Colors.grey[600]?.withValues(alpha: 0.5),
+                      ),
                       const SizedBox(height: 16),
-                      const Text('Nenhum usuário bloqueado',
-                          style: TextStyle(
-                              color: AppTheme.textSecondary, fontSize: 16)),
-                      const SizedBox(height: 8),
                       const Text(
-                          'Usuários bloqueados não podem ver seu perfil\n'
-                          'nem enviar mensagens para você.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              color: AppTheme.textHint, fontSize: 13)),
+                        'Nenhum usuário bloqueado',
+                        style: TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Usuários bloqueados não podem ver seu perfil\n'
+                        'nem enviar mensagens para você.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: 14,
+                        ),
+                      ),
                     ],
                   ),
                 )
@@ -121,48 +208,85 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                         : null;
 
                     return Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppTheme.cardColor,
-                        borderRadius: BorderRadius.circular(12),
+                        color: AppTheme.surfaceColor,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.05),
+                        ),
                       ),
                       child: Row(
                         children: [
-                          CircleAvatar(
-                            radius: 22,
-                            backgroundImage: iconUrl != null
-                                ? CachedNetworkImageProvider(iconUrl)
-                                : null,
-                            child: iconUrl == null
-                                ? const Icon(Icons.person_rounded)
-                                : null,
+                          Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.1),
+                                width: 2,
+                              ),
+                            ),
+                            child: CircleAvatar(
+                              radius: 24,
+                              backgroundColor: AppTheme.scaffoldBg,
+                              backgroundImage: iconUrl != null
+                                  ? CachedNetworkImageProvider(iconUrl)
+                                  : null,
+                              child: iconUrl == null
+                                  ? Icon(Icons.person_rounded, color: Colors.grey[500])
+                                  : null,
+                            ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 16),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(nickname,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.w600)),
+                                Text(
+                                  nickname,
+                                  style: const TextStyle(
+                                    color: AppTheme.textPrimary,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
                                 if (blockedAt != null)
                                   Text(
                                     'Bloqueado em ${blockedAt.day}/${blockedAt.month}/${blockedAt.year}',
-                                    style: const TextStyle(
-                                        color: AppTheme.textHint, fontSize: 11),
+                                    style: TextStyle(
+                                      color: Colors.grey[500],
+                                      fontSize: 12,
+                                    ),
                                   ),
                               ],
                             ),
                           ),
-                          TextButton(
-                            onPressed: () =>
+                          GestureDetector(
+                            onTap: () =>
                                 _unblockUser(block['id'] as String, nickname),
-                            style: TextButton.styleFrom(
-                              foregroundColor: AppTheme.errorColor,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppTheme.errorColor.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: AppTheme.errorColor.withValues(alpha: 0.3),
+                                ),
+                              ),
+                              child: const Text(
+                                'Desbloquear',
+                                style: TextStyle(
+                                  color: AppTheme.errorColor,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
                             ),
-                            child: const Text('Desbloquear',
-                                style: TextStyle(fontSize: 12)),
                           ),
                         ],
                       ),

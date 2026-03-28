@@ -40,18 +40,35 @@ class _DevicesScreenState extends State<DevicesScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Revogar Dispositivo'),
-        content: const Text('Isso encerrará a sessão neste dispositivo. '
-            'O usuário precisará fazer login novamente.'),
+        backgroundColor: AppTheme.surfaceColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+        ),
+        title: const Text('Revogar Dispositivo', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w800)),
+        content: Text('Isso encerrará a sessão neste dispositivo. '
+            'O usuário precisará fazer login novamente.', style: TextStyle(color: Colors.grey[500])),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancelar')),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style:
-                ElevatedButton.styleFrom(backgroundColor: AppTheme.errorColor),
-            child: const Text('Revogar', style: TextStyle(color: Colors.white)),
+              child: Text('Cancelar', style: TextStyle(color: Colors.grey[500]))),
+          GestureDetector(
+            onTap: () => Navigator.pop(ctx, true),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppTheme.errorColor,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.errorColor.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Text('Revogar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+            ),
           ),
         ],
       ),
@@ -68,13 +85,23 @@ class _DevicesScreenState extends State<DevicesScreen> {
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Dispositivo revogado')),
+          SnackBar(
+            content: const Text('Dispositivo revogado', style: TextStyle(color: AppTheme.textPrimary)),
+            backgroundColor: AppTheme.surfaceColor,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: $e')),
+          SnackBar(
+            content: Text('Erro: $e', style: const TextStyle(color: Colors.white)),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
         );
       }
     }
@@ -84,19 +111,36 @@ class _DevicesScreenState extends State<DevicesScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Revogar Todos os Outros'),
-        content: const Text('Isso encerrará todas as sessões exceto a atual. '
-            'Todos os outros dispositivos precisarão fazer login novamente.'),
+        backgroundColor: AppTheme.surfaceColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+        ),
+        title: const Text('Revogar Todos os Outros', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w800)),
+        content: Text('Isso encerrará todas as sessões exceto a atual. '
+            'Todos os outros dispositivos precisarão fazer login novamente.', style: TextStyle(color: Colors.grey[500])),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancelar')),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style:
-                ElevatedButton.styleFrom(backgroundColor: AppTheme.errorColor),
-            child: const Text('Revogar Todos',
-                style: TextStyle(color: Colors.white)),
+              child: Text('Cancelar', style: TextStyle(color: Colors.grey[500]))),
+          GestureDetector(
+            onTap: () => Navigator.pop(ctx, true),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppTheme.errorColor,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.errorColor.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Text('Revogar Todos',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+            ),
           ),
         ],
       ),
@@ -109,14 +153,23 @@ class _DevicesScreenState extends State<DevicesScreen> {
       await _loadDevices();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Todas as outras sessões foram encerradas')),
+          SnackBar(
+            content: const Text('Todas as outras sessões foram encerradas', style: TextStyle(color: AppTheme.textPrimary)),
+            backgroundColor: AppTheme.surfaceColor,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: $e')),
+          SnackBar(
+            content: Text('Erro: $e', style: const TextStyle(color: Colors.white)),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
         );
       }
     }
@@ -140,20 +193,33 @@ class _DevicesScreenState extends State<DevicesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
         title: const Text('Dispositivos Conectados',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+            style: TextStyle(fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
         actions: [
           if (_devices.length > 1)
-            TextButton(
-              onPressed: _revokeAllOthers,
-              child: const Text('Revogar Outros',
-                  style: TextStyle(color: AppTheme.errorColor, fontSize: 12)),
+            GestureDetector(
+              onTap: _revokeAllOthers,
+              child: Container(
+                margin: const EdgeInsets.only(right: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppTheme.errorColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppTheme.errorColor.withValues(alpha: 0.3)),
+                ),
+                child: const Text('Revogar Outros',
+                    style: TextStyle(color: AppTheme.errorColor, fontSize: 12, fontWeight: FontWeight.w700)),
+              ),
             ),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
           : _devices.isEmpty
               ? Center(
                   child: Column(
@@ -161,11 +227,11 @@ class _DevicesScreenState extends State<DevicesScreen> {
                     children: [
                       Icon(Icons.devices_rounded,
                           size: 64,
-                          color: AppTheme.textHint.withValues(alpha: 0.3)),
+                          color: Colors.grey[600]?.withValues(alpha: 0.3)),
                       const SizedBox(height: 16),
-                      const Text('Nenhum dispositivo registrado',
+                      Text('Nenhum dispositivo registrado',
                           style: TextStyle(
-                              color: AppTheme.textSecondary, fontSize: 16)),
+                              color: Colors.grey[500], fontSize: 16)),
                     ],
                   ),
                 )
@@ -179,24 +245,31 @@ class _DevicesScreenState extends State<DevicesScreen> {
                         margin: const EdgeInsets.only(bottom: 16),
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.08),
-                          borderRadius: BorderRadius.circular(12),
+                          color: AppTheme.surfaceColor,
+                          borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                              color:
-                                  AppTheme.primaryColor.withValues(alpha: 0.2)),
+                              color: Colors.white.withValues(alpha: 0.05)),
                         ),
-                        child: const Row(
+                        child: Row(
                           children: [
-                            Icon(Icons.info_rounded,
-                                color: AppTheme.primaryColor, size: 20),
-                            SizedBox(width: 10),
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.info_rounded,
+                                  color: AppTheme.primaryColor, size: 20),
+                            ),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: Text(
                                 'Gerencie os dispositivos conectados à sua conta. '
                                 'Revogue dispositivos que você não reconhece.',
                                 style: TextStyle(
-                                    fontSize: 12,
-                                    color: AppTheme.textSecondary),
+                                    fontSize: 13,
+                                    color: Colors.grey[500],
+                                    height: 1.4),
                               ),
                             ),
                           ],
@@ -218,98 +291,134 @@ class _DevicesScreenState extends State<DevicesScreen> {
                     final isCurrentDevice =
                         device['is_current'] as bool? ?? false;
                     return Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.all(14),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppTheme.cardColor,
-                        borderRadius: BorderRadius.circular(12),
-                        border: isCurrentDevice
-                            ? Border.all(
-                                color: AppTheme.successColor
-                                    .withValues(alpha: 0.5))
+                        color: AppTheme.surfaceColor,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                            color: isCurrentDevice
+                                ? AppTheme.primaryColor.withValues(alpha: 0.3)
+                                : Colors.white.withValues(alpha: 0.05)),
+                        boxShadow: isCurrentDevice
+                            ? [
+                                BoxShadow(
+                                  color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                )
+                              ]
                             : null,
                       ),
                       child: Row(
                         children: [
                           Container(
-                            width: 44,
-                            height: 44,
+                            width: 48,
+                            height: 48,
                             decoration: BoxDecoration(
-                              color: (isCurrentDevice
-                                      ? AppTheme.successColor
-                                      : AppTheme.primaryColor)
-                                  .withValues(alpha: 0.1),
+                              gradient: isCurrentDevice
+                                  ? LinearGradient(
+                                      colors: [
+                                        AppTheme.primaryColor.withValues(alpha: 0.2),
+                                        AppTheme.accentColor.withValues(alpha: 0.2),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    )
+                                  : null,
+                              color: isCurrentDevice
+                                  ? null
+                                  : Colors.white.withValues(alpha: 0.05),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Icon(
                               _getDeviceIcon(deviceType),
                               color: isCurrentDevice
-                                  ? AppTheme.successColor
-                                  : AppTheme.primaryColor,
+                                  ? AppTheme.primaryColor
+                                  : AppTheme.textPrimary,
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 16),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
                                   children: [
-                                    Text(deviceName,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 14)),
+                                    Expanded(
+                                      child: Text(deviceName,
+                                          style: const TextStyle(
+                                              color: AppTheme.textPrimary,
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: 15)),
+                                    ),
                                     if (isCurrentDevice) ...[
-                                      const SizedBox(width: 6),
+                                      const SizedBox(width: 8),
                                       Container(
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: 6, vertical: 2),
+                                            horizontal: 8, vertical: 4),
                                         decoration: BoxDecoration(
-                                          color: AppTheme.successColor
-                                              .withValues(alpha: 0.15),
+                                          gradient: const LinearGradient(
+                                            colors: [
+                                              AppTheme.primaryColor,
+                                              AppTheme.accentColor,
+                                            ],
+                                          ),
                                           borderRadius:
-                                              BorderRadius.circular(4),
+                                              BorderRadius.circular(20),
                                         ),
                                         child: const Text('Atual',
                                             style: TextStyle(
-                                                color: AppTheme.successColor,
-                                                fontSize: 9,
-                                                fontWeight: FontWeight.bold)),
+                                                color: Colors.white,
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w800)),
                                       ),
                                     ],
                                   ],
                                 ),
-                                const SizedBox(height: 2),
+                                const SizedBox(height: 4),
                                 Text(
                                   [os, browser]
                                       .where((s) => s.isNotEmpty)
                                       .join(' · '),
-                                  style: const TextStyle(
-                                      color: AppTheme.textSecondary,
-                                      fontSize: 11),
+                                  style: TextStyle(
+                                      color: Colors.grey[500],
+                                      fontSize: 12),
                                 ),
-                                if (ipAddress.isNotEmpty)
+                                if (ipAddress.isNotEmpty) ...[
+                                  const SizedBox(height: 2),
                                   Text('IP: $ipAddress',
-                                      style: const TextStyle(
-                                          color: AppTheme.textHint,
-                                          fontSize: 10)),
-                                if (lastSeen != null)
+                                      style: TextStyle(
+                                          color: Colors.grey[600],
+                                          fontSize: 11)),
+                                ],
+                                if (lastSeen != null) ...[
+                                  const SizedBox(height: 2),
                                   Text(
-                                    'Último acesso: ${lastSeen.day}/${lastSeen.month}/${lastSeen.year} ${lastSeen.hour}:${lastSeen.minute.toString().padLeft(2, '0')}',
-                                    style: const TextStyle(
-                                        color: AppTheme.textHint, fontSize: 10),
+                                    'Último acesso: ${lastSeen.day.toString().padLeft(2, '0')}/${lastSeen.month.toString().padLeft(2, '0')}/${lastSeen.year} ${lastSeen.hour.toString().padLeft(2, '0')}:${lastSeen.minute.toString().padLeft(2, '0')}',
+                                    style: TextStyle(
+                                        color: Colors.grey[600], fontSize: 11),
                                   ),
+                                ],
                               ],
                             ),
                           ),
-                          if (!isCurrentDevice)
-                            IconButton(
-                              onPressed: () =>
+                          if (!isCurrentDevice) ...[
+                            const SizedBox(width: 12),
+                            GestureDetector(
+                              onTap: () =>
                                   _revokeDevice(device['id'] as String),
-                              icon: const Icon(Icons.close_rounded,
-                                  color: AppTheme.errorColor, size: 20),
-                              tooltip: 'Revogar',
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.errorColor.withValues(alpha: 0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.close_rounded,
+                                    color: AppTheme.errorColor, size: 20),
+                              ),
                             ),
+                          ],
                         ],
                       ),
                     );

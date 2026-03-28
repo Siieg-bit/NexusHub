@@ -77,10 +77,9 @@ final equippedItemsProvider =
 });
 
 // =============================================================================
-// PROFILE SCREEN
+// PROFILE SCREEN — Estilo Amino Apps
 // =============================================================================
 
-/// Tela de perfil do usuário (próprio ou de outro).
 class ProfileScreen extends ConsumerWidget {
   final String userId;
 
@@ -96,36 +95,84 @@ class ProfileScreen extends ConsumerWidget {
     final isOwnProfile = currentUser?.id == userId;
 
     return profileAsync.when(
-      loading: () =>
-          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () => Scaffold(
+        backgroundColor: AppTheme.scaffoldBg,
+        body: const Center(
+          child: CircularProgressIndicator(
+              color: AppTheme.primaryColor, strokeWidth: 2),
+        ),
+      ),
       error: (error, _) => Scaffold(
-        appBar: AppBar(),
-        body: Center(child: Text('Erro: $error')),
+        backgroundColor: AppTheme.scaffoldBg,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_rounded,
+                color: AppTheme.textPrimary, size: 20),
+            onPressed: () => context.pop(),
+          ),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline_rounded,
+                  size: 48, color: Colors.grey[700]),
+              const SizedBox(height: 12),
+              Text('Error loading profile',
+                  style: TextStyle(color: Colors.grey[500], fontSize: 15)),
+            ],
+          ),
+        ),
       ),
       data: (user) {
         final frameUrl = equippedAsync.valueOrNull?['frame_url'];
         final isAminoPlus = user.isPremium || IAPService.isAminoPlus;
 
         return Scaffold(
+          backgroundColor: AppTheme.scaffoldBg,
           body: CustomScrollView(
             slivers: [
               // ================================================================
-              // HEADER DO PERFIL
+              // HEADER DO PERFIL — Estilo Amino
               // ================================================================
               SliverAppBar(
-                expandedHeight: 300,
+                expandedHeight: 320,
                 pinned: true,
+                backgroundColor: AppTheme.scaffoldBg,
+                elevation: 0,
+                leading: Container(
+                  margin: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_rounded,
+                        color: Colors.white, size: 18),
+                    onPressed: () => context.pop(),
+                  ),
+                ),
                 actions: [
-                  if (isOwnProfile)
-                    IconButton(
-                      icon: const Icon(Icons.settings_rounded),
-                      onPressed: () => context.push('/settings'),
-                    )
-                  else
-                    IconButton(
-                      icon: const Icon(Icons.more_vert_rounded),
-                      onPressed: () => _showUserOptions(context, user),
+                  Container(
+                    margin: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      shape: BoxShape.circle,
                     ),
+                    child: isOwnProfile
+                        ? IconButton(
+                            icon: const Icon(Icons.settings_rounded,
+                                color: Colors.white, size: 18),
+                            onPressed: () => context.push('/settings'),
+                          )
+                        : IconButton(
+                            icon: const Icon(Icons.more_horiz_rounded,
+                                color: Colors.white, size: 18),
+                            onPressed: () => _showUserOptions(context, user),
+                          ),
+                  ),
                 ],
                 flexibleSpace: FlexibleSpaceBar(
                   background: Stack(
@@ -141,10 +188,12 @@ class ProfileScreen extends ConsumerWidget {
                             gradient: LinearGradient(
                               colors: [
                                 AppTheme.primaryColor,
-                                AppTheme.primaryDark
+                                AppTheme.primaryDark,
+                                AppTheme.scaffoldBg,
                               ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              stops: const [0.0, 0.5, 1.0],
                             ),
                           ),
                         ),
@@ -154,12 +203,13 @@ class ProfileScreen extends ConsumerWidget {
                           gradient: LinearGradient(
                             colors: [
                               Colors.transparent,
-                              AppTheme.scaffoldBg.withValues(alpha: 0.5),
+                              Colors.transparent,
+                              AppTheme.scaffoldBg.withValues(alpha: 0.7),
                               AppTheme.scaffoldBg,
                             ],
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
-                            stops: const [0.2, 0.6, 1.0],
+                            stops: const [0.0, 0.3, 0.7, 1.0],
                           ),
                         ),
                       ),
@@ -170,12 +220,42 @@ class ProfileScreen extends ConsumerWidget {
                         right: 16,
                         child: Column(
                           children: [
-                            // Avatar com Frame e Amino+ badge
-                            AvatarWithFrame(
-                              avatarUrl: user.iconUrl,
-                              frameUrl: frameUrl,
-                              size: 88,
-                              showAminoPlus: isAminoPlus,
+                            // Avatar com Frame e Amino+ badge — gradient ring
+                            Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                // Gradient ring
+                                Container(
+                                  width: 96,
+                                  height: 96,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        AppTheme.primaryColor,
+                                        AppTheme.accentColor,
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppTheme.primaryColor
+                                            .withValues(alpha: 0.4),
+                                        blurRadius: 16,
+                                        spreadRadius: 2,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Avatar or Frame
+                                AvatarWithFrame(
+                                  avatarUrl: user.iconUrl,
+                                  frameUrl: frameUrl,
+                                  size: 88,
+                                  showAminoPlus: isAminoPlus,
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 12),
                             // Nome + badges
@@ -185,9 +265,11 @@ class ProfileScreen extends ConsumerWidget {
                                 Flexible(
                                   child: Text(
                                     user.nickname,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headlineSmall,
+                                    style: const TextStyle(
+                                      color: AppTheme.textPrimary,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 22,
+                                    ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
@@ -204,9 +286,8 @@ class ProfileScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 4),
                             Text('@${user.aminoId}',
-                                style: const TextStyle(
-                                    color: AppTheme.textSecondary,
-                                    fontSize: 13)),
+                                style: TextStyle(
+                                    color: Colors.grey[500], fontSize: 13)),
                           ],
                         ),
                       ),
@@ -216,7 +297,7 @@ class ProfileScreen extends ConsumerWidget {
               ),
 
               // ================================================================
-              // LEVEL & XP BAR
+              // LEVEL & XP BAR — Estilo Amino
               // ================================================================
               SliverToBoxAdapter(
                 child: Padding(
@@ -227,85 +308,138 @@ class ProfileScreen extends ConsumerWidget {
               ),
 
               // ================================================================
-              // STATS
+              // STATS — Estilo Amino
               // ================================================================
               SliverToBoxAdapter(
                 child: Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _StatItem(label: 'Posts', value: user.postsCount),
-                      _StatItem(
-                          label: 'Seguidores', value: user.followersCount),
-                      _StatItem(label: 'Seguindo', value: user.followingCount),
-                      _StatItem(label: 'Reputação', value: user.reputation),
-                    ],
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceColor,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.05)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _StatItem(label: 'Posts', value: user.postsCount),
+                        _divider(),
+                        _StatItem(
+                            label: 'Followers', value: user.followersCount),
+                        _divider(),
+                        _StatItem(
+                            label: 'Following', value: user.followingCount),
+                        _divider(),
+                        _StatItem(label: 'Rep', value: user.reputation),
+                      ],
+                    ),
                   ),
                 ),
               ),
 
               // ================================================================
-              // AÇÕES: Editar / Seguir + Free Coins
+              // AÇÕES: Editar / Seguir + Free Coins — Estilo Amino
               // ================================================================
               SliverToBoxAdapter(
                 child: Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: isOwnProfile
-                      ? Column(
+                      ? Row(
                           children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: ElevatedButton.icon(
-                                    onPressed: () =>
-                                        context.push('/profile/edit'),
-                                    icon: const Icon(Icons.edit_rounded,
-                                        size: 18),
-                                    label: const Text('Editar Perfil'),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppTheme.cardColorLight,
-                                      foregroundColor: AppTheme.textPrimary,
-                                    ),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => context.push('/profile/edit'),
+                                child: Container(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.surfaceColor,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                        color: Colors.white
+                                            .withValues(alpha: 0.08)),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.edit_rounded,
+                                          size: 16, color: Colors.grey[400]),
+                                      const SizedBox(width: 8),
+                                      Text('Edit Profile',
+                                          style: TextStyle(
+                                              color: Colors.grey[300],
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 13)),
+                                    ],
                                   ),
                                 ),
-                                const SizedBox(width: 8),
-                                // FREE COINS BUTTON
-                                _FreeCoinsBadge(
-                                  onTap: () => context.push('/wallet'),
-                                ),
-                              ],
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            _FreeCoinsBadge(
+                              onTap: () => context.push('/wallet'),
                             ),
                           ],
                         )
                       : Row(
                           children: [
                             Expanded(
-                              child: ElevatedButton(
-                                onPressed: () => _toggleFollow(ref, user),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: user.isFollowing == true
-                                      ? AppTheme.cardColorLight
-                                      : AppTheme.primaryColor,
+                              child: GestureDetector(
+                                onTap: () => _toggleFollow(ref, user),
+                                child: Container(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: user.isFollowing == true
+                                        ? AppTheme.surfaceColor
+                                        : AppTheme.primaryColor,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: user.isFollowing == true
+                                        ? Border.all(
+                                            color: AppTheme.primaryColor
+                                                .withValues(alpha: 0.3))
+                                        : null,
+                                    boxShadow: user.isFollowing == true
+                                        ? null
+                                        : [
+                                            BoxShadow(
+                                              color: AppTheme.primaryColor
+                                                  .withValues(alpha: 0.3),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      user.isFollowing == true
+                                          ? 'Following'
+                                          : 'Follow',
+                                      style: TextStyle(
+                                        color: user.isFollowing == true
+                                            ? AppTheme.primaryColor
+                                            : Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                                child: Text(user.isFollowing == true
-                                    ? 'Seguindo'
-                                    : 'Seguir'),
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            OutlinedButton(
-                              onPressed: () {/* TODO: DM */},
-                              child:
-                                  const Icon(Icons.chat_bubble_outline_rounded),
+                            const SizedBox(width: 10),
+                            _actionCircle(
+                              Icons.chat_bubble_outline_rounded,
+                              () {/* TODO: DM */},
                             ),
                             const SizedBox(width: 8),
-                            OutlinedButton(
-                              onPressed: () =>
-                                  context.push('/profile/$userId/wall'),
-                              child: const Icon(Icons.comment_rounded),
+                            _actionCircle(
+                              Icons.comment_rounded,
+                              () => context.push('/profile/$userId/wall'),
                             ),
                           ],
                         ),
@@ -318,10 +452,23 @@ class ProfileScreen extends ConsumerWidget {
               if (user.bio.isNotEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(user.bio,
-                        style: const TextStyle(
-                            color: AppTheme.textSecondary, height: 1.5)),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 8),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: AppTheme.surfaceColor,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.05)),
+                      ),
+                      child: Text(user.bio,
+                          style: TextStyle(
+                              color: Colors.grey[400],
+                              height: 1.5,
+                              fontSize: 13)),
+                    ),
                   ),
                 ),
 
@@ -346,22 +493,32 @@ class ProfileScreen extends ConsumerWidget {
                 ),
 
               // ================================================================
-              // POSTS DO USUÁRIO
+              // POSTS DO USUÁRIO — Estilo Amino
               // ================================================================
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                   child: Row(
                     children: [
-                      Text('Posts',
-                          style: Theme.of(context).textTheme.titleLarge),
+                      const Text('Posts',
+                          style: TextStyle(
+                              color: AppTheme.textPrimary,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 18)),
                       const Spacer(),
                       if (isOwnProfile)
-                        TextButton.icon(
-                          onPressed: () => context.push('/followers/$userId'),
-                          icon: const Icon(Icons.people_outline_rounded,
-                              size: 16),
-                          label: const Text('Seguidores'),
+                        GestureDetector(
+                          onTap: () => context.push('/followers/$userId'),
+                          child: Row(
+                            children: [
+                              Icon(Icons.people_outline_rounded,
+                                  size: 14, color: Colors.grey[500]),
+                              const SizedBox(width: 4),
+                              Text('Followers',
+                                  style: TextStyle(
+                                      color: Colors.grey[500], fontSize: 12)),
+                            ],
+                          ),
                         ),
                     ],
                   ),
@@ -373,23 +530,34 @@ class ProfileScreen extends ConsumerWidget {
                   child: Padding(
                     padding: EdgeInsets.all(32),
                     child: Center(
-                        child: CircularProgressIndicator(strokeWidth: 2)),
+                        child: CircularProgressIndicator(
+                            color: AppTheme.primaryColor, strokeWidth: 2)),
                   ),
                 ),
                 error: (error, _) => SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.all(16),
-                    child: Text('Erro: $error'),
+                    child: Text('Error: $error',
+                        style: TextStyle(color: Colors.grey[500])),
                   ),
                 ),
                 data: (posts) {
                   if (posts.isEmpty) {
-                    return const SliverToBoxAdapter(
+                    return SliverToBoxAdapter(
                       child: Padding(
-                        padding: EdgeInsets.all(32),
+                        padding: const EdgeInsets.all(32),
                         child: Center(
-                          child: Text('Nenhum post publicado',
-                              style: TextStyle(color: AppTheme.textHint)),
+                          child: Column(
+                            children: [
+                              Icon(Icons.article_outlined,
+                                  size: 48, color: Colors.grey[700]),
+                              const SizedBox(height: 12),
+                              Text('No posts yet',
+                                  style: TextStyle(
+                                      color: Colors.grey[500],
+                                      fontWeight: FontWeight.w600)),
+                            ],
+                          ),
                         ),
                       ),
                     );
@@ -409,6 +577,30 @@ class ProfileScreen extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget _actionCircle(IconData icon, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceColor,
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        ),
+        child: Icon(icon, color: Colors.grey[400], size: 18),
+      ),
+    );
+  }
+
+  Widget _divider() {
+    return Container(
+      width: 1,
+      height: 28,
+      color: Colors.white.withValues(alpha: 0.06),
     );
   }
 
@@ -434,40 +626,106 @@ class ProfileScreen extends ConsumerWidget {
   void _showUserOptions(BuildContext context, UserModel user) {
     showModalBottomSheet(
       context: context,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
+      backgroundColor: AppTheme.surfaceColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(
-              leading: const Icon(Icons.comment_rounded),
-              title: const Text('Ver Wall'),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/profile/$userId/wall');
-              },
+            // Handle bar
+            Container(
+              width: 36,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: Colors.grey[700],
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-            ListTile(
-              leading: const Icon(Icons.people_rounded),
-              title: const Text('Seguidores'),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/followers/$userId');
-              },
+            _optionTile(Icons.comment_rounded, 'View Wall', () {
+              Navigator.pop(ctx);
+              context.push('/profile/$userId/wall');
+            }),
+            _optionTile(Icons.people_rounded, 'Followers', () {
+              Navigator.pop(ctx);
+              context.push('/followers/$userId');
+            }),
+            _optionTile(Icons.flag_rounded, 'Report', () {
+              Navigator.pop(ctx);
+            }, isDestructive: true),
+            _optionTile(Icons.block_rounded, 'Block', () {
+              Navigator.pop(ctx);
+            }, isDestructive: true),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _optionTile(IconData icon, String label, VoidCallback onTap,
+      {bool isDestructive = false}) {
+    final color = isDestructive ? AppTheme.errorColor : Colors.grey[400];
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(width: 12),
+            Text(label,
+                style: TextStyle(
+                    color: color, fontSize: 14, fontWeight: FontWeight.w500)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// FREE COINS BADGE — Estilo Amino
+// =============================================================================
+
+class _FreeCoinsBadge extends StatelessWidget {
+  final VoidCallback onTap;
+  const _FreeCoinsBadge({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+          ),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-            ListTile(
-              leading:
-                  const Icon(Icons.flag_rounded, color: AppTheme.errorColor),
-              title: const Text('Denunciar',
-                  style: TextStyle(color: AppTheme.errorColor)),
-              onTap: () => Navigator.pop(context),
-            ),
-            ListTile(
-              leading:
-                  const Icon(Icons.block_rounded, color: AppTheme.errorColor),
-              title: const Text('Bloquear',
-                  style: TextStyle(color: AppTheme.errorColor)),
-              onTap: () => Navigator.pop(context),
+          ],
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.monetization_on_rounded, color: Colors.white, size: 16),
+            SizedBox(width: 4),
+            Text(
+              'Free Coins',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+                fontSize: 11,
+              ),
             ),
           ],
         ),
@@ -477,59 +735,7 @@ class ProfileScreen extends ConsumerWidget {
 }
 
 // =============================================================================
-// FREE COINS BADGE
-// =============================================================================
-
-class _FreeCoinsBadge extends StatelessWidget {
-  final VoidCallback onTap;
-  const _FreeCoinsBadge({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
-            ),
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFFFD700).withValues(alpha: 0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.monetization_on_rounded,
-                  color: Colors.white, size: 18),
-              SizedBox(width: 4),
-              Text(
-                'Free Coins',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// =============================================================================
-// LEVEL BAR
+// LEVEL BAR — Estilo Amino
 // =============================================================================
 
 class _LevelBar extends StatelessWidget {
@@ -542,30 +748,53 @@ class _LevelBar extends StatelessWidget {
     final progress = (user.reputation % 500) / 500.0;
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: levelColor.withValues(alpha: 0.3)),
+        color: AppTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: levelColor.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
-          // Level badge
+          // Level badge — gradient ring
           Container(
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: levelColor.withValues(alpha: 0.2),
               shape: BoxShape.circle,
-              border: Border.all(color: levelColor, width: 2),
+              gradient: LinearGradient(
+                colors: [
+                  levelColor,
+                  levelColor.withValues(alpha: 0.6),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: levelColor.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  spreadRadius: 1,
+                ),
+              ],
             ),
             child: Center(
-              child: Text(
-                '${user.level}',
-                style: TextStyle(
-                    color: levelColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18),
+              child: Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceColor,
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(
+                    '${user.level}',
+                    style: TextStyle(
+                        color: levelColor,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 18),
+                  ),
+                ),
               ),
             ),
           ),
@@ -577,20 +806,22 @@ class _LevelBar extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Nível ${user.level}',
+                    Text('Level ${user.level}',
                         style: TextStyle(
-                            color: levelColor, fontWeight: FontWeight.w600)),
+                            color: levelColor,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13)),
                     Text('${user.reputation} Rep',
-                        style: const TextStyle(
-                            color: AppTheme.textSecondary, fontSize: 12)),
+                        style: TextStyle(
+                            color: Colors.grey[500], fontSize: 11)),
                   ],
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
                     value: progress,
-                    backgroundColor: AppTheme.dividerColor,
+                    backgroundColor: Colors.white.withValues(alpha: 0.06),
                     valueColor: AlwaysStoppedAnimation<Color>(levelColor),
                     minHeight: 6,
                   ),
@@ -605,7 +836,7 @@ class _LevelBar extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: AppTheme.warningColor.withValues(alpha: 0.15),
+                color: AppTheme.warningColor.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
@@ -616,7 +847,7 @@ class _LevelBar extends StatelessWidget {
                   Text('${user.coins}',
                       style: const TextStyle(
                           color: AppTheme.warningColor,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w800,
                           fontSize: 13)),
                 ],
               ),
@@ -629,7 +860,7 @@ class _LevelBar extends StatelessWidget {
 }
 
 // =============================================================================
-// STAT ITEM
+// STAT ITEM — Estilo Amino
 // =============================================================================
 
 class _StatItem extends StatelessWidget {
@@ -643,10 +874,14 @@ class _StatItem extends StatelessWidget {
       children: [
         Text(
           _formatCount(value),
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          style: const TextStyle(
+              fontWeight: FontWeight.w800,
+              fontSize: 18,
+              color: AppTheme.textPrimary),
         ),
+        const SizedBox(height: 2),
         Text(label,
-            style: const TextStyle(color: AppTheme.textHint, fontSize: 11)),
+            style: TextStyle(color: Colors.grey[600], fontSize: 11)),
       ],
     );
   }

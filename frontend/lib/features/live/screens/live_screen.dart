@@ -8,12 +8,20 @@ class LiveScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
       appBar: AppBar(
-        title:
-            const Text('Live', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text(
+          'Live',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            color: AppTheme.textPrimary,
+          ),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.videocam_rounded),
+            icon: const Icon(Icons.videocam_rounded, color: AppTheme.textPrimary),
             onPressed: () {/* TODO: Iniciar live */},
           ),
         ],
@@ -27,35 +35,73 @@ class LiveScreen extends StatelessWidget {
               height: 100,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFFFF4081).withValues(alpha: 0.15),
+                color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                    blurRadius: 20,
+                    spreadRadius: 5,
+                  ),
+                ],
               ),
               child: const Icon(
                 Icons.live_tv_rounded,
                 size: 48,
-                color: Color(0xFFFF4081),
+                color: AppTheme.primaryColor,
               ),
             ),
             const SizedBox(height: 24),
             Text(
               'Nenhuma Live Ativa',
-              style: Theme.of(context).textTheme.headlineSmall,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: AppTheme.textPrimary,
+                    fontWeight: FontWeight.w800,
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
               'Voice Chats, Video Chats e Screening Rooms\naparecerão aqui quando estiverem ativos.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppTheme.textSecondary,
+                    color: Colors.grey[500],
                     height: 1.5,
                   ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
-            ElevatedButton.icon(
-              onPressed: () {/* TODO: Criar Voice Chat */},
-              icon: const Icon(Icons.mic_rounded),
-              label: const Text('Iniciar Voice Chat'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF4081),
+            GestureDetector(
+              onTap: () {/* TODO: Criar Voice Chat */},
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(Icons.mic_rounded, color: Colors.white),
+                    SizedBox(width: 8),
+                    Text(
+                      'Iniciar Voice Chat',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],

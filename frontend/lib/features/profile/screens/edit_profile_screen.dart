@@ -72,8 +72,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final user = ref.watch(currentUserProvider);
 
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
       appBar: AppBar(
-        title: const Text('Editar Perfil'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        title: const Text(
+          'Editar Perfil',
+          style: TextStyle(
+            color: AppTheme.textPrimary,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: _isLoading ? null : _saveProfile,
@@ -81,10 +91,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 ? const SizedBox(
                     width: 20,
                     height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+                    ),
                   )
-                : const Text('Salvar',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                : const Text(
+                    'Salvar',
+                    style: TextStyle(
+                      color: AppTheme.primaryColor,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
           ),
         ],
       ),
@@ -98,16 +116,27 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               Center(
                 child: Stack(
                   children: [
-                    CircleAvatar(
-                      radius: 50,
-                      backgroundColor:
-                          AppTheme.primaryColor.withValues(alpha: 0.3),
-                      child: Text(
-                        (user?.nickname ?? '?')[0].toUpperCase(),
-                        style: const TextStyle(
-                          fontSize: 36,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.primaryColor,
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                            blurRadius: 12,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                      child: CircleAvatar(
+                        radius: 50,
+                        backgroundColor: AppTheme.surfaceColor,
+                        child: Text(
+                          (user?.nickname ?? '?')[0].toUpperCase(),
+                          style: const TextStyle(
+                            fontSize: 36,
+                            fontWeight: FontWeight.w800,
+                            color: AppTheme.primaryColor,
+                          ),
                         ),
                       ),
                     ),
@@ -116,12 +145,23 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       right: 0,
                       child: Container(
                         padding: const EdgeInsets.all(8),
-                        decoration: const BoxDecoration(
-                          color: AppTheme.primaryColor,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                           shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppTheme.scaffoldBg,
+                            width: 3,
+                          ),
                         ),
-                        child: const Icon(Icons.camera_alt_rounded,
-                            color: Colors.white, size: 18),
+                        child: const Icon(
+                          Icons.camera_alt_rounded,
+                          color: Colors.white,
+                          size: 18,
+                        ),
                       ),
                     ),
                   ],
@@ -130,15 +170,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               const SizedBox(height: 32),
 
               // Nickname
-              TextFormField(
+              _buildTextField(
                 controller: _nicknameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nickname',
-                  prefixIcon: Icon(Icons.person_outlined),
-                ),
+                label: 'Nickname',
+                icon: Icons.person_outlined,
                 validator: (value) {
-                  if (value == null || value.trim().isEmpty)
+                  if (value == null || value.trim().isEmpty) {
                     return 'Obrigatório';
+                  }
                   if (value.trim().length < 3) return 'Mínimo 3 caracteres';
                   return null;
                 },
@@ -146,29 +185,62 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               const SizedBox(height: 16),
 
               // Amino ID
-              TextFormField(
+              _buildTextField(
                 controller: _aminoIdController,
-                decoration: const InputDecoration(
-                  labelText: 'Amino ID',
-                  prefixIcon: Icon(Icons.alternate_email_rounded),
-                  hintText: 'Seu identificador único',
-                ),
+                label: 'Amino ID',
+                icon: Icons.alternate_email_rounded,
+                hintText: 'Seu identificador único',
               ),
               const SizedBox(height: 16),
 
               // Bio
-              TextFormField(
+              _buildTextField(
                 controller: _bioController,
-                decoration: const InputDecoration(
-                  labelText: 'Bio',
-                  prefixIcon: Icon(Icons.info_outlined),
-                  alignLabelWithHint: true,
-                ),
+                label: 'Bio',
+                icon: Icons.info_outlined,
                 maxLines: 4,
                 maxLength: 500,
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    String? hintText,
+    int maxLines = 1,
+    int? maxLength,
+    String? Function(String?)? validator,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.05),
+        ),
+      ),
+      child: TextFormField(
+        controller: controller,
+        maxLines: maxLines,
+        maxLength: maxLength,
+        validator: validator,
+        style: const TextStyle(color: AppTheme.textPrimary),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(color: Colors.grey[500]),
+          hintText: hintText,
+          hintStyle: TextStyle(color: Colors.grey[600]),
+          prefixIcon: Icon(icon, color: AppTheme.primaryColor),
+          alignLabelWithHint: maxLines > 1,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          counterStyle: TextStyle(color: Colors.grey[600]),
         ),
       ),
     );

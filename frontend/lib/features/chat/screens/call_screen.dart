@@ -137,11 +137,7 @@ class _CallScreenState extends State<CallScreen> {
         : isVideo
             ? 'Video Chat'
             : 'Voice Chat';
-    final bgColor = isScreening
-        ? const Color(0xFF1A1A2E)
-        : isVideo
-            ? const Color(0xFF0D1117)
-            : const Color(0xFF16213E);
+    final bgColor = AppTheme.scaffoldBg;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -189,7 +185,7 @@ class _CallScreenState extends State<CallScreen> {
                       height: 160,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white24, width: 1),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.05), width: 1),
                       ),
                       clipBehavior: Clip.antiAlias,
                       child: CallService.engine != null
@@ -216,7 +212,7 @@ class _CallScreenState extends State<CallScreen> {
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+            icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.textPrimary),
             onPressed: () => Navigator.of(context).pop(),
           ),
           const Spacer(),
@@ -224,9 +220,9 @@ class _CallScreenState extends State<CallScreen> {
             children: [
               Text(title,
                   style: const TextStyle(
-                      color: Colors.white,
+                      color: AppTheme.textPrimary,
                       fontSize: 18,
-                      fontWeight: FontWeight.bold)),
+                      fontWeight: FontWeight.w800)),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -234,14 +230,14 @@ class _CallScreenState extends State<CallScreen> {
                     width: 8,
                     height: 8,
                     decoration: const BoxDecoration(
-                      color: AppTheme.successColor,
+                      color: AppTheme.primaryColor,
                       shape: BoxShape.circle,
                     ),
                   ),
                   const SizedBox(width: 6),
                   Text(_elapsed,
                       style:
-                          const TextStyle(color: Colors.white60, fontSize: 14)),
+                          TextStyle(color: Colors.grey[500], fontSize: 14)),
                 ],
               ),
             ],
@@ -250,19 +246,19 @@ class _CallScreenState extends State<CallScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: AppTheme.successColor.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(12),
+              color: AppTheme.primaryColor.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Icon(Icons.people_rounded,
-                    color: AppTheme.successColor, size: 16),
+                    color: AppTheme.primaryColor, size: 16),
                 const SizedBox(width: 4),
                 Text('${_participants.length + _remoteUsers.length}',
                     style: const TextStyle(
-                        color: AppTheme.successColor,
-                        fontWeight: FontWeight.bold)),
+                        color: AppTheme.primaryColor,
+                        fontWeight: FontWeight.w700)),
               ],
             ),
           ),
@@ -275,7 +271,7 @@ class _CallScreenState extends State<CallScreen> {
   Widget _buildVideoGrid() {
     if (CallService.engine == null) {
       return const Center(
-        child: CircularProgressIndicator(color: Colors.white38),
+        child: CircularProgressIndicator(color: AppTheme.primaryColor),
       );
     }
 
@@ -315,7 +311,7 @@ class _CallScreenState extends State<CallScreen> {
     }
 
     return GridView.builder(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(16),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: videoViews.length <= 1 ? 1 : 2,
         mainAxisSpacing: 8,
@@ -330,14 +326,14 @@ class _CallScreenState extends State<CallScreen> {
   /// Grid de áudio com indicadores de volume
   Widget _buildAudioGrid() {
     if (_participants.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircularProgressIndicator(color: Colors.white38),
-            SizedBox(height: 16),
+            const CircularProgressIndicator(color: AppTheme.primaryColor),
+            const SizedBox(height: 16),
             Text('Aguardando participantes...',
-                style: TextStyle(color: Colors.white60)),
+                style: TextStyle(color: Colors.grey[500])),
           ],
         ),
       );
@@ -368,15 +364,15 @@ class _CallScreenState extends State<CallScreen> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: AppTheme.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         border: isSpeaking
-            ? Border.all(color: AppTheme.successColor, width: 2.5)
-            : Border.all(color: Colors.white10, width: 1),
+            ? Border.all(color: AppTheme.primaryColor, width: 2.5)
+            : Border.all(color: Colors.white.withValues(alpha: 0.05), width: 1),
         boxShadow: isSpeaking
             ? [
                 BoxShadow(
-                  color: AppTheme.successColor.withValues(alpha: 0.3),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.3),
                   blurRadius: 12,
                   spreadRadius: 2,
                 )
@@ -399,9 +395,9 @@ class _CallScreenState extends State<CallScreen> {
                 child: iconUrl == null
                     ? Text(nickname[0].toUpperCase(),
                         style: const TextStyle(
-                            color: Colors.white,
+                            color: AppTheme.textPrimary,
                             fontSize: 28,
-                            fontWeight: FontWeight.bold))
+                            fontWeight: FontWeight.w800))
                     : null,
               ),
               if (isSpeaking)
@@ -409,10 +405,10 @@ class _CallScreenState extends State<CallScreen> {
                   width: 20,
                   height: 20,
                   decoration: BoxDecoration(
-                    color: AppTheme.successColor,
+                    color: AppTheme.primaryColor,
                     shape: BoxShape.circle,
                     border:
-                        Border.all(color: const Color(0xFF16213E), width: 2),
+                        Border.all(color: AppTheme.surfaceColor, width: 2),
                   ),
                   child: const Icon(Icons.mic_rounded,
                       color: Colors.white, size: 12),
@@ -422,9 +418,9 @@ class _CallScreenState extends State<CallScreen> {
           const SizedBox(height: 12),
           Text(nickname,
               style: const TextStyle(
-                  color: Colors.white,
+                  color: AppTheme.textPrimary,
                   fontSize: 14,
-                  fontWeight: FontWeight.w500)),
+                  fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
           Row(
             mainAxisSize: MainAxisSize.min,
@@ -433,13 +429,13 @@ class _CallScreenState extends State<CallScreen> {
                 width: 8,
                 height: 8,
                 decoration: const BoxDecoration(
-                  color: AppTheme.successColor,
+                  color: AppTheme.primaryColor,
                   shape: BoxShape.circle,
                 ),
               ),
               const SizedBox(width: 4),
-              const Text('Conectado',
-                  style: TextStyle(color: Colors.white38, fontSize: 11)),
+              Text('Conectado',
+                  style: TextStyle(color: Colors.grey[500], fontSize: 11)),
             ],
           ),
           // Audio level bar
@@ -466,12 +462,12 @@ class _CallScreenState extends State<CallScreen> {
             backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.3),
             child: Text(name[0].toUpperCase(),
                 style: const TextStyle(
-                    color: Colors.white,
+                    color: AppTheme.textPrimary,
                     fontSize: 36,
-                    fontWeight: FontWeight.bold)),
+                    fontWeight: FontWeight.w800)),
           ),
           const SizedBox(height: 16),
-          Text(name, style: const TextStyle(color: Colors.white, fontSize: 18)),
+          Text(name, style: const TextStyle(color: AppTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.w700)),
         ],
       ),
     );
@@ -482,8 +478,9 @@ class _CallScreenState extends State<CallScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       height: 200,
       decoration: BoxDecoration(
-        color: Colors.black,
+        color: AppTheme.surfaceColor,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05), width: 1),
       ),
       child: _remoteUsers.isNotEmpty && CallService.engine != null
           ? ClipRRect(
@@ -499,14 +496,14 @@ class _CallScreenState extends State<CallScreen> {
                 ),
               ),
             )
-          : const Center(
+          : Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.live_tv_rounded, color: Colors.white24, size: 48),
-                  SizedBox(height: 8),
+                  Icon(Icons.live_tv_rounded, color: Colors.white.withValues(alpha: 0.24), size: 48),
+                  const SizedBox(height: 8),
                   Text('Tela compartilhada aparecerá aqui',
-                      style: TextStyle(color: Colors.white38)),
+                      style: TextStyle(color: Colors.grey[500])),
                 ],
               ),
             ),
@@ -581,7 +578,7 @@ class _AudioLevelBar extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 1),
           decoration: BoxDecoration(
             color: isActive
-                ? AppTheme.successColor
+                ? AppTheme.primaryColor
                 : Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(2),
           ),
@@ -620,23 +617,32 @@ class _ControlButton extends StatelessWidget {
               color: isEnd
                   ? AppTheme.errorColor
                   : isActive
-                      ? Colors.white.withValues(alpha: 0.15)
+                      ? AppTheme.primaryColor.withValues(alpha: 0.15)
                       : Colors.white.withValues(alpha: 0.05),
               shape: BoxShape.circle,
+              border: Border.all(
+                color: isEnd 
+                    ? Colors.transparent 
+                    : isActive 
+                        ? AppTheme.primaryColor.withValues(alpha: 0.5)
+                        : Colors.white.withValues(alpha: 0.05),
+                width: 1,
+              ),
             ),
             child: Icon(icon,
                 color: isEnd
                     ? Colors.white
                     : isActive
-                        ? Colors.white
-                        : Colors.white38,
+                        ? AppTheme.primaryColor
+                        : Colors.grey[500],
                 size: 24),
           ),
           const SizedBox(height: 6),
           Text(label,
               style: TextStyle(
-                  color: isEnd ? AppTheme.errorColor : Colors.white60,
-                  fontSize: 11)),
+                  color: isEnd ? AppTheme.errorColor : Colors.grey[500],
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700)),
         ],
       ),
     );

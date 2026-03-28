@@ -226,12 +226,16 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         title: const Text('Ação de Moderação',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+            style: TextStyle(fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
+        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -242,19 +246,21 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppTheme.cardColor,
-                        borderRadius: BorderRadius.circular(12),
+                        color: AppTheme.surfaceColor,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
                       ),
                       child: Row(
                         children: [
                           CircleAvatar(
                             radius: 24,
+                            backgroundColor: AppTheme.scaffoldBg,
                             backgroundImage: _targetUser!['icon_url'] != null
                                 ? CachedNetworkImageProvider(
                                     _targetUser!['icon_url'] as String)
                                 : null,
                             child: _targetUser!['icon_url'] == null
-                                ? const Icon(Icons.person_rounded)
+                                ? const Icon(Icons.person_rounded, color: AppTheme.textPrimary)
                                 : null,
                           ),
                           const SizedBox(width: 12),
@@ -265,12 +271,13 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                                 _targetUser!['nickname'] as String? ??
                                     'Usuário',
                                 style: const TextStyle(
-                                    fontWeight: FontWeight.w600, fontSize: 16),
+                                    color: AppTheme.textPrimary,
+                                    fontWeight: FontWeight.w700, fontSize: 16),
                               ),
                               Text(
                                 'Nível ${_targetUser!['level'] ?? 1}',
-                                style: const TextStyle(
-                                    color: AppTheme.textSecondary,
+                                style: TextStyle(
+                                    color: Colors.grey[500],
                                     fontSize: 12),
                               ),
                             ],
@@ -283,7 +290,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                   // Seleção de ação
                   const Text('Tipo de Ação',
                       style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w800, fontSize: 16)),
                   const SizedBox(height: 12),
                   ..._actions.map((action) {
                     final id = action['id'] as String;
@@ -297,13 +304,14 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                           color: isSelected
                               ? Color(action['color'] as int)
                                   .withValues(alpha: 0.1)
-                              : AppTheme.cardColor,
-                          borderRadius: BorderRadius.circular(12),
-                          border: isSelected
-                              ? Border.all(
-                                  color: Color(action['color'] as int)
-                                      .withValues(alpha: 0.5))
-                              : null,
+                              : AppTheme.surfaceColor,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isSelected
+                                ? Color(action['color'] as int)
+                                    .withValues(alpha: 0.5)
+                                : Colors.white.withValues(alpha: 0.05),
+                          ),
                         ),
                         child: Row(
                           children: [
@@ -316,14 +324,15 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                                 children: [
                                   Text(
                                     action['label'] as String,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
+                                    style: TextStyle(
+                                        color: isSelected ? Color(action['color'] as int) : AppTheme.textPrimary,
+                                        fontWeight: FontWeight.w700,
                                         fontSize: 14),
                                   ),
                                   Text(
                                     action['description'] as String,
-                                    style: const TextStyle(
-                                        color: AppTheme.textSecondary,
+                                    style: TextStyle(
+                                        color: Colors.grey[500],
                                         fontSize: 11),
                                   ),
                                 ],
@@ -344,10 +353,12 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                     const SizedBox(height: 16),
                     const Text('Duração',
                         style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16)),
+                            color: AppTheme.textPrimary,
+                            fontWeight: FontWeight.w800, fontSize: 16)),
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,
+                      runSpacing: 8,
                       children: [
                         _DurationChip(
                           label: '1h',
@@ -394,38 +405,63 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                   const SizedBox(height: 16),
                   const Text('Motivo',
                       style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w800, fontSize: 16)),
                   const SizedBox(height: 8),
                   TextField(
                     controller: _reasonController,
                     maxLines: 3,
+                    style: const TextStyle(color: AppTheme.textPrimary),
                     decoration: InputDecoration(
                       hintText: 'Descreva o motivo da ação...',
+                      hintStyle: TextStyle(color: Colors.grey[600]),
                       filled: true,
-                      fillColor: AppTheme.cardColor,
+                      fillColor: AppTheme.surfaceColor,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: const BorderSide(color: AppTheme.primaryColor),
                       ),
                     ),
                   ),
                   const SizedBox(height: 24),
 
                   // Botão executar
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: _executeAction,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.errorColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                  GestureDetector(
+                    onTap: _executeAction,
+                    child: Container(
+                      width: double.infinity,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [AppTheme.errorColor, Color(0xFFD32F2F)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.errorColor.withValues(alpha: 0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      alignment: Alignment.center,
+                      child: const Text(
+                        'Executar Ação',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
-                      child: const Text('Executar Ação',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],
@@ -454,21 +490,23 @@ class _DurationChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected
               ? AppTheme.errorColor.withValues(alpha: 0.15)
-              : AppTheme.cardColor,
-          borderRadius: BorderRadius.circular(10),
-          border: isSelected
-              ? Border.all(color: AppTheme.errorColor.withValues(alpha: 0.5))
-              : null,
+              : AppTheme.surfaceColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected 
+                ? AppTheme.errorColor.withValues(alpha: 0.5)
+                : Colors.white.withValues(alpha: 0.05),
+          ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? AppTheme.errorColor : AppTheme.textSecondary,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            color: isSelected ? AppTheme.errorColor : Colors.grey[500],
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
             fontSize: 13,
           ),
         ),

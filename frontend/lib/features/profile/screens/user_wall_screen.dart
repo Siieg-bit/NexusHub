@@ -89,31 +89,43 @@ class _UserWallScreenState extends State<UserWallScreen> {
     final isOwnWall = widget.userId == SupabaseService.currentUserId;
 
     return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
         title: Text(isOwnWall ? 'Meu Mural' : 'Mural',
-            style: const TextStyle(fontWeight: FontWeight.bold)),
+            style: const TextStyle(
+              fontWeight: FontWeight.w800,
+              color: AppTheme.textPrimary,
+            )),
       ),
       body: Column(
         children: [
           // Lista de mensagens
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      color: AppTheme.primaryColor,
+                    ),
+                  )
                 : _messages.isEmpty
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.dashboard_rounded,
-                                size: 64, color: AppTheme.textHint),
+                            Icon(Icons.dashboard_rounded,
+                                size: 64, color: Colors.grey[600]),
                             const SizedBox(height: 16),
-                            const Text('Nenhuma mensagem no mural',
-                                style:
-                                    TextStyle(color: AppTheme.textSecondary)),
+                            Text('Nenhuma mensagem no mural',
+                                style: TextStyle(color: Colors.grey[500])),
                           ],
                         ),
                       )
                     : RefreshIndicator(
+                        color: AppTheme.primaryColor,
+                        backgroundColor: AppTheme.surfaceColor,
                         onRefresh: _loadMessages,
                         child: ListView.builder(
                           padding: const EdgeInsets.all(16),
@@ -133,8 +145,11 @@ class _UserWallScreenState extends State<UserWallScreen> {
                               margin: const EdgeInsets.only(bottom: 12),
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
-                                color: AppTheme.cardColor,
-                                borderRadius: BorderRadius.circular(14),
+                                color: AppTheme.surfaceColor,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.05),
+                                ),
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,18 +162,31 @@ class _UserWallScreenState extends State<UserWallScreen> {
                                             context.push('/user/$authorId');
                                           }
                                         },
-                                        child: CircleAvatar(
-                                          radius: 16,
-                                          backgroundImage:
-                                              author?['icon_url'] != null
-                                                  ? CachedNetworkImageProvider(
-                                                      author!['icon_url']
-                                                          as String)
-                                                  : null,
-                                          child: author?['icon_url'] == null
-                                              ? const Icon(Icons.person_rounded,
-                                                  size: 16)
-                                              : null,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: AppTheme.primaryColor
+                                                  .withValues(alpha: 0.5),
+                                              width: 2,
+                                            ),
+                                          ),
+                                          child: CircleAvatar(
+                                            radius: 16,
+                                            backgroundColor: AppTheme.scaffoldBg,
+                                            backgroundImage:
+                                                author?['icon_url'] != null
+                                                    ? CachedNetworkImageProvider(
+                                                        author!['icon_url']
+                                                            as String)
+                                                    : null,
+                                            child: author?['icon_url'] == null
+                                                ? const Icon(
+                                                    Icons.person_rounded,
+                                                    size: 16,
+                                                    color: AppTheme.textPrimary)
+                                                : null,
+                                          ),
                                         ),
                                       ),
                                       const SizedBox(width: 8),
@@ -171,14 +199,15 @@ class _UserWallScreenState extends State<UserWallScreen> {
                                               author?['nickname'] as String? ??
                                                   'Anônimo',
                                               style: const TextStyle(
-                                                  fontWeight: FontWeight.w600,
-                                                  fontSize: 13),
+                                                  fontWeight: FontWeight.w700,
+                                                  color: AppTheme.textPrimary,
+                                                  fontSize: 14),
                                             ),
                                             Text(
                                               timeago.format(createdAt,
                                                   locale: 'pt_BR'),
-                                              style: const TextStyle(
-                                                  color: AppTheme.textHint,
+                                              style: TextStyle(
+                                                  color: Colors.grey[500],
                                                   fontSize: 11),
                                             ),
                                           ],
@@ -186,19 +215,22 @@ class _UserWallScreenState extends State<UserWallScreen> {
                                       ),
                                       if (canDelete)
                                         IconButton(
-                                          icon: const Icon(
+                                          icon: Icon(
                                               Icons.delete_outline_rounded,
                                               size: 18,
-                                              color: AppTheme.textHint),
+                                              color: Colors.grey[500]),
                                           onPressed: () => _deleteMessage(
                                               msg['id'] as String),
                                         ),
                                     ],
                                   ),
-                                  const SizedBox(height: 8),
+                                  const SizedBox(height: 12),
                                   Text(
                                     msg['content'] as String? ?? '',
-                                    style: const TextStyle(fontSize: 14),
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: AppTheme.textPrimary,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -212,42 +244,78 @@ class _UserWallScreenState extends State<UserWallScreen> {
           Container(
             padding: EdgeInsets.only(
               left: 16,
-              right: 8,
-              top: 8,
-              bottom: MediaQuery.of(context).padding.bottom + 8,
+              right: 16,
+              top: 12,
+              bottom: MediaQuery.of(context).padding.bottom + 12,
             ),
             decoration: BoxDecoration(
-              color: AppTheme.cardColor,
+              color: AppTheme.surfaceColor,
               border: Border(
                 top: BorderSide(
-                    color: AppTheme.dividerColor.withValues(alpha: 0.3)),
+                  color: Colors.white.withValues(alpha: 0.05),
+                ),
               ),
             ),
             child: Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    decoration: const InputDecoration(
-                      hintText: 'Escreva no mural...',
-                      border: InputBorder.none,
-                      hintStyle:
-                          TextStyle(color: AppTheme.textHint, fontSize: 14),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: AppTheme.scaffoldBg,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.05),
+                      ),
                     ),
-                    maxLines: 3,
-                    minLines: 1,
+                    child: TextField(
+                      controller: _messageController,
+                      style: const TextStyle(color: AppTheme.textPrimary),
+                      decoration: InputDecoration(
+                        hintText: 'Escreva no mural...',
+                        border: InputBorder.none,
+                        hintStyle: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: 14,
+                        ),
+                      ),
+                      maxLines: 3,
+                      minLines: 1,
+                    ),
                   ),
                 ),
-                IconButton(
-                  onPressed: _isSending ? null : _sendMessage,
-                  icon: _isSending
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.send_rounded,
-                          color: AppTheme.primaryColor),
+                const SizedBox(width: 12),
+                GestureDetector(
+                  onTap: _isSending ? null : _sendMessage,
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const LinearGradient(
+                        colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: _isSending
+                        ? const Padding(
+                            padding: EdgeInsets.all(14.0),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Icon(Icons.send_rounded, color: Colors.white),
+                  ),
                 ),
               ],
             ),

@@ -1,31 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Tema visual do aplicativo, inspirado no design do Amino
-/// com cores vibrantes e interface moderna. Suporta Dark e Light mode.
+/// Tema visual do NexusHub — réplica fiel do Amino Apps.
+/// Cores extraídas do web-preview (index.css) como verdade absoluta.
 class AppTheme {
   AppTheme._();
 
   // ============================================================================
-  // CORES PRIMÁRIAS (compartilhadas entre temas)
+  // CORES PRIMÁRIAS — AMINO GREEN (verdade absoluta do web-preview)
   // ============================================================================
 
-  static const Color primaryColor = Color(0xFF6C5CE7);
-  static const Color primaryLight = Color(0xFFA29BFE);
-  static const Color primaryDark = Color(0xFF4834D4);
-  static const Color accentColor = Color(0xFF00CEC9);
+  static const Color primaryColor = Color(0xFF2DBE60); // amino-green
+  static const Color primaryLight = Color(0xFF5CD882);
+  static const Color primaryDark = Color(0xFF1E9B4A);
+  static const Color accentColor = Color(0xFF00CEC9); // amino-cyan
   static const Color accentLight = Color(0xFF81ECEC);
 
   // ============================================================================
-  // CORES DE FUNDO — DARK THEME
+  // CORES AMINO EXTRAS (do web-preview CSS)
   // ============================================================================
 
-  static const Color scaffoldBg = Color(0xFF0D0D0D);
-  static const Color surfaceColor = Color(0xFF1A1A2E);
-  static const Color cardColor = Color(0xFF16213E);
-  static const Color cardColorLight = Color(0xFF1E2A4A);
-  static const Color bottomNavBg = Color(0xFF0F0F23);
-  static const Color dividerColor = Color(0xFF2D2D44);
+  static const Color aminoPurple = Color(0xFF7C3AED); // amino-purple
+  static const Color aminoMagenta = Color(0xFFE040FB); // amino-magenta
+  static const Color aminoOrange = Color(0xFFFF9800); // amino-orange
+  static const Color aminoYellow = Color(0xFFFFD54F); // amino-yellow
+  static const Color aminoBlue = Color(0xFF2979FF); // amino-blue
+  static const Color aminoRed = Color(0xFFE53935); // amino-red
+  static const Color aminoCyan = Color(0xFF00BCD4); // amino-cyan (check-in)
+
+  // ============================================================================
+  // CORES DE FUNDO — DARK THEME (padrão do Amino)
+  // ============================================================================
+
+  static const Color scaffoldBg = Color(0xFF0F0F1A); // --background
+  static const Color surfaceColor = Color(0xFF1A1A2E); // --card
+  static const Color cardColor = Color(0xFF1E1E38); // --card levemente mais claro
+  static const Color cardColorLight = Color(0xFF2A2A45); // hover/elevated card
+  static const Color bottomNavBg = Color(0xFF0D0D1A); // --sidebar / amino-nav
+  static const Color dividerColor = Color(0xFF2D2D44); // --border
 
   // ============================================================================
   // CORES DE FUNDO — LIGHT THEME
@@ -42,9 +54,9 @@ class AppTheme {
   // CORES DE TEXTO
   // ============================================================================
 
-  static const Color textPrimary = Color(0xFFEEEEEE);
-  static const Color textSecondary = Color(0xFFAAAAAA);
-  static const Color textHint = Color(0xFF666666);
+  static const Color textPrimary = Color(0xFFF2F2F2); // --foreground
+  static const Color textSecondary = Color(0xFF9999AA); // --muted-foreground
+  static const Color textHint = Color(0xFF666680);
 
   static const Color textPrimaryLight = Color(0xFF1A1A2E);
   static const Color textSecondaryLight = Color(0xFF666680);
@@ -54,12 +66,22 @@ class AppTheme {
   // CORES DE STATUS
   // ============================================================================
 
-  static const Color successColor = Color(0xFF00B894);
-  static const Color errorColor = Color(0xFFE17055);
-  static const Color warningColor = Color(0xFFFDCB6E);
-  static const Color infoColor = Color(0xFF74B9FF);
-  static const Color onlineColor = Color(0xFF55EFC4);
+  static const Color successColor = Color(0xFF2DBE60); // mesmo que primary (Amino)
+  static const Color errorColor = Color(0xFFE53935); // amino-red
+  static const Color warningColor = Color(0xFFFF9800); // amino-orange
+  static const Color infoColor = Color(0xFF2979FF); // amino-blue
+  static const Color onlineColor = Color(0xFF2DBE60); // verde Amino
   static const Color offlineColor = Color(0xFF636E72);
+
+  // ============================================================================
+  // CORES DE BADGES (do web-preview CSS)
+  // ============================================================================
+
+  static const Color badgeLeader = Color(0xFF2DBE60);
+  static const Color badgeCurator = Color(0xFFE040FB);
+  static const Color badgeVerified = Color(0xFFE040FB);
+  static const Color badgeStaff = Color(0xFFE040FB);
+  static const Color badgeAge = Color(0xFF9C27B0);
 
   // ============================================================================
   // CORES DE NÍVEL / GAMIFICAÇÃO
@@ -67,15 +89,20 @@ class AppTheme {
 
   static const List<Color> levelColors = [
     Color(0xFF636E72), // Nível 1-2
-    Color(0xFF00B894), // Nível 3-4
-    Color(0xFF0984E3), // Nível 5-6
-    Color(0xFF6C5CE7), // Nível 7-8
-    Color(0xFFE17055), // Nível 9-10
-    Color(0xFFFDCB6E), // Nível 11-14
+    Color(0xFF2DBE60), // Nível 3-4 (verde Amino)
+    Color(0xFF2979FF), // Nível 5-6 (azul Amino)
+    Color(0xFF7C3AED), // Nível 7-8 (roxo Amino)
+    Color(0xFFE53935), // Nível 9-10 (vermelho Amino)
+    Color(0xFFFF9800), // Nível 11-14 (laranja Amino)
     Color(0xFFFF6B6B), // Nível 15-17
-    Color(0xFFE84393), // Nível 18-19
+    Color(0xFFE040FB), // Nível 18-19 (magenta Amino)
     Color(0xFFFFD700), // Nível 20+
   ];
+
+  /// Gradiente do level badge (estilo Amino: azul)
+  static const Color levelBadgeBg = Color(0xFF1565C0);
+  static const Color levelBadgeFg = Color(0xFF42A5F5);
+  static const Color levelBadgeNum = Color(0xFF0D47A1);
 
   static Color getLevelColor(int level) {
     if (level <= 2) return levelColors[0];
@@ -88,6 +115,30 @@ class AppTheme {
     if (level <= 19) return levelColors[7];
     return levelColors[8];
   }
+
+  // ============================================================================
+  // GRADIENTES AMINO
+  // ============================================================================
+
+  static const LinearGradient primaryGradient = LinearGradient(
+    colors: [Color(0xFF2DBE60), Color(0xFF00CEC9)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient streakGradient = LinearGradient(
+    colors: [Color(0xFFFF9800), Color(0xFFFFB74D)],
+  );
+
+  static const LinearGradient coinsGradient = LinearGradient(
+    colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+  );
+
+  static const LinearGradient levelGradient = LinearGradient(
+    colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 
   // ============================================================================
   // DARK THEME
@@ -141,7 +192,7 @@ class AppTheme {
       appBarTheme: const AppBarTheme(
         backgroundColor: scaffoldBg,
         elevation: 0,
-        centerTitle: true,
+        centerTitle: false, // Amino usa título à esquerda
         iconTheme: IconThemeData(color: textPrimary),
         titleTextStyle: TextStyle(
             color: textPrimary, fontSize: 18, fontWeight: FontWeight.w600),
@@ -151,12 +202,12 @@ class AppTheme {
         selectedItemColor: primaryColor,
         unselectedItemColor: textHint,
         type: BottomNavigationBarType.fixed,
-        elevation: 8,
+        elevation: 0,
       ),
       cardTheme: CardThemeData(
         color: cardColor,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -224,6 +275,12 @@ class AppTheme {
         unselectedLabelColor: textSecondary,
         indicatorColor: primaryColor,
         indicatorSize: TabBarIndicatorSize.label,
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+        elevation: 4,
+        shape: CircleBorder(),
       ),
     );
   }
@@ -300,7 +357,7 @@ class AppTheme {
       appBarTheme: const AppBarTheme(
         backgroundColor: surfaceColorLight,
         elevation: 0,
-        centerTitle: true,
+        centerTitle: false,
         iconTheme: IconThemeData(color: textPrimaryLight),
         titleTextStyle: TextStyle(
             color: textPrimaryLight, fontSize: 18, fontWeight: FontWeight.w600),
@@ -310,13 +367,13 @@ class AppTheme {
         selectedItemColor: primaryColor,
         unselectedItemColor: textHintLight,
         type: BottomNavigationBarType.fixed,
-        elevation: 8,
+        elevation: 0,
       ),
       cardTheme: CardThemeData(
         color: cardColorLt,
         elevation: 1,
         shadowColor: Colors.black12,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -384,6 +441,12 @@ class AppTheme {
         unselectedLabelColor: textSecondaryLight,
         indicatorColor: primaryColor,
         indicatorSize: TabBarIndicatorSize.label,
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+        elevation: 4,
+        shape: CircleBorder(),
       ),
     );
   }
