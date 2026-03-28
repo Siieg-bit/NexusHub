@@ -235,7 +235,7 @@ class _PostCardState extends State<PostCard>
           const SizedBox(width: 6),
           Expanded(
             child: Text(
-              _post.communityId ?? '',
+              _post.communityId,
               style: TextStyle(
                 color: Colors.grey[600],
                 fontSize: 10,

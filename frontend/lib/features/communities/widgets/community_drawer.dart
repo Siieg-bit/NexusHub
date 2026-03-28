@@ -4,8 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/models/community_model.dart';
 import '../../../core/models/user_model.dart';
-import '../../../core/utils/helpers.dart';
-import '../../../core/utils/amino_animations.dart';
+// helpers and amino_animations available if needed
 
 /// Drawer estilo Amino Apps — web-preview fiel.
 /// Estrutura: sidebar de comunidades (60px) + painel principal (280px).
@@ -38,6 +37,7 @@ class CommunityDrawer extends StatelessWidget {
 
   bool get _isLeader => userRole == 'agent' || userRole == 'leader';
 
+  // ignore: unused_element
   String _roleLabel(String role) {
     switch (role) {
       case 'agent':

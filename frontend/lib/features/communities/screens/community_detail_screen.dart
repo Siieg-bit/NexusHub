@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:timeago/timeago.dart' as timeago;
 
 import '../../../config/app_theme.dart';
 import '../../../core/models/community_model.dart';
@@ -158,6 +157,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     }
   }
 
+  // ignore: unused_element
   Future<void> _leaveCommunity() async {
     final confirm = await showDialog<bool>(
       context: context,

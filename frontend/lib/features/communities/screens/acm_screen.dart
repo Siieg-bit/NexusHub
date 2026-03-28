@@ -274,7 +274,7 @@ class _AcmScreenState extends State<AcmScreen>
             title: Text(mod.label,
                 style: const TextStyle(fontWeight: FontWeight.w500)),
             subtitle: Text(mod.description,
-                style: const TextStyle(
+                style: TextStyle(
                     color: Colors.grey[500], fontSize: 12)),
             value: isEnabled,
             activeColor: AppTheme.primaryColor,
@@ -760,7 +760,7 @@ class _AccessOption extends StatelessWidget {
               ),
             ),
             if (isSelected)
-              const Icon(Icons.check_circle_rounded,
+              Icon(Icons.check_circle_rounded,
                   color: AppTheme.primaryColor),
           ],
         ),
@@ -836,7 +836,7 @@ class _InfoRow extends StatelessWidget {
         children: [
           Text(label,
               style:
-                  const TextStyle(color: Colors.grey[500], fontSize: 13)),
+                  TextStyle(color: Colors.grey[500], fontSize: 13)),
           Text(value,
               style:
                   const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
