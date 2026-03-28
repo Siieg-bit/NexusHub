@@ -138,7 +138,9 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                   GestureDetector(
                     onTap: () {
                       Navigator.pop(context);
-                      context.pop();
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (context.mounted) context.pop();
+                      });
                     },
                     child: Column(
                       children: [
@@ -197,7 +199,9 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                           GestureDetector(
                             onTap: () {
                               Navigator.pop(context);
-                              context.push('/explore');
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (context.mounted) context.push('/explore');
+                              });
                             },
                             child: Container(
                               width: 40,
@@ -483,7 +487,9 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                           badge: 0,
                           onTap: () {
                             Navigator.pop(context);
-                            context.go('/chats');
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (context.mounted) context.go('/chats');
+                            });
                           },
                         ),
                         _AminoDrawerItem(
@@ -492,7 +498,9 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                           color: const Color(0xFF9C27B0),
                           onTap: () {
                             Navigator.pop(context);
-                            context.push('/community/${widget.community.id}/members');
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (context.mounted) context.push('/community/${widget.community.id}/members');
+                            });
                           },
                         ),
                         _AminoDrawerItem(
@@ -501,7 +509,9 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                           color: const Color(0xFFFF9800),
                           onTap: () {
                             Navigator.pop(context);
-                            context.push('/community/${widget.community.id}/wiki');
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (context.mounted) context.push('/community/${widget.community.id}/wiki');
+                            });
                           },
                         ),
                         _AminoDrawerItem(
@@ -510,7 +520,9 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                           color: const Color(0xFFFFD700),
                           onTap: () {
                             Navigator.pop(context);
-                            context.push('/community/${widget.community.id}/leaderboard');
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (context.mounted) context.push('/community/${widget.community.id}/leaderboard');
+                            });
                           },
                         ),
                         _AminoDrawerItem(
@@ -570,8 +582,11 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                           GestureDetector(
                             onTap: () {
                               Navigator.pop(context);
-                              context
-                                  .push('/community/${widget.community.id}/acm');
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (context.mounted) {
+                                  context.push('/community/${widget.community.id}/acm');
+                                }
+                              });
                             },
                             child: Container(
                               margin:
@@ -650,8 +665,11 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                             color: AppTheme.errorColor,
                             onTap: () {
                               Navigator.pop(context);
-                              context.push(
-                                  '/community/${widget.community.id}/flags');
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (context.mounted) {
+                                  context.push('/community/${widget.community.id}/flags');
+                                }
+                              });
                             },
                           ),
                           _AminoDrawerItem(
@@ -660,8 +678,11 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                             color: const Color(0xFF2196F3),
                             onTap: () {
                               Navigator.pop(context);
-                              context
-                                  .push('/community/${widget.community.id}/acm');
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (context.mounted) {
+                                  context.push('/community/${widget.community.id}/acm');
+                                }
+                              });
                             },
                           ),
                         ],
