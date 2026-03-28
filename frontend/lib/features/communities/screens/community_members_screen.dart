@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/amino_animations.dart';
+import '../../../core/utils/helpers.dart';
 
 // =============================================================================
 // PROVIDER: Carrega todos os membros da comunidade
@@ -292,7 +293,8 @@ class _MemberTile extends StatelessWidget {
     final userId = profile['id'] as String? ?? member['user_id'] as String?;
     final nickname = profile['nickname'] as String? ?? 'Usuário';
     final avatarUrl = profile['icon_url'] as String?;
-    final level = profile['level'] as int? ?? 1;
+    final reputation = member['local_reputation'] as int? ?? 0;
+    final level = member['local_level'] as int? ?? calculateLevel(reputation);
     final isOnline = (profile['online_status'] as int? ?? 2) == 1;
     final role = member['role'] as String? ?? 'member';
 
@@ -390,7 +392,7 @@ class _MemberTile extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 2),
-                    Text('Lv.$level',
+                    Text('Lv.$level ${levelTitle(level)}',
                         style: TextStyle(
                             color: AppTheme.getLevelColor(level), fontSize: 11)),
                   ],

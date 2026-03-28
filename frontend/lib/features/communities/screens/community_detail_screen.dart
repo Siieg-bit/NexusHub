@@ -564,17 +564,70 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
 // CHECK-IN BAR — Estilo Amino (streak progress + botão verde)
 // Só aparece se o usuário ainda NÃO fez check-in hoje.
 // =============================================================================
-class _CheckInBar extends ConsumerWidget {
+class _CheckInBar extends ConsumerStatefulWidget {
   final String communityId;
   final Color themeColor;
 
   const _CheckInBar({required this.communityId, required this.themeColor});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_CheckInBar> createState() => _CheckInBarState();
+}
+
+class _CheckInBarState extends ConsumerState<_CheckInBar> {
+  bool _loading = false;
+
+  Future<void> _doCheckIn() async {
+    if (_loading) return;
+    setState(() => _loading = true);
+    try {
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) return;
+      final result = await SupabaseService.rpc('perform_checkin', params: {
+        'p_user_id': userId,
+        'p_community_id': widget.communityId,
+      });
+      if (result != null && result['success'] == true) {
+        final repEarned = result['reputation_earned'] as int? ?? 0;
+        final newStreak = result['streak'] as int? ?? 0;
+        final levelUp = result['level_up'] as bool? ?? false;
+        if (mounted) {
+          ref.invalidate(checkInStatusProvider);
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+              levelUp
+                  ? 'Check-in! +$repEarned rep | Streak: $newStreak dias | LEVEL UP!'
+                  : 'Check-in! +$repEarned rep | Streak: $newStreak dias',
+            ),
+            backgroundColor: AppTheme.primaryColor,
+          ));
+        }
+      } else {
+        final error = result?['error'] ?? 'Erro desconhecido';
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('$error'),
+            backgroundColor: AppTheme.errorColor,
+          ));
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Erro: $e'),
+          backgroundColor: AppTheme.errorColor,
+        ));
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final checkInStatus = ref.watch(checkInStatusProvider);
     final statusMap = checkInStatus.valueOrNull ?? {};
-    final myStatus = statusMap[communityId];
+    final myStatus = statusMap[widget.communityId];
     final hasCheckedIn = myStatus?['has_checkin_today'] as bool? ?? false;
     final streak = myStatus?['consecutive_checkin_days'] as int? ?? 0;
 
@@ -586,9 +639,9 @@ class _CheckInBar extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
         children: [
-          const Text(
-            'Faça Check In para ganhar um prêmio',
-            style: TextStyle(
+          Text(
+            'Faça Check In para ganhar +${ReputationRewards.checkIn} rep',
+            style: const TextStyle(
               color: AppTheme.textPrimary,
               fontSize: 13,
               fontWeight: FontWeight.w600,
@@ -618,7 +671,7 @@ class _CheckInBar extends ConsumerWidget {
             width: double.infinity,
             height: 40,
             child: ElevatedButton(
-              onPressed: () => context.push('/check-in'),
+              onPressed: _loading ? null : _doCheckIn,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryColor,
                 foregroundColor: Colors.white,
@@ -628,7 +681,16 @@ class _CheckInBar extends ConsumerWidget {
                 textStyle: const TextStyle(
                     fontWeight: FontWeight.w700, fontSize: 14),
               ),
-              child: const Text('Check In'),
+              child: _loading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Text('Check In'),
             ),
           ),
         ],
@@ -1400,7 +1462,8 @@ class _MemberTile extends StatelessWidget {
     final userId = profile['id'] as String? ?? member['user_id'] as String?;
     final nickname = profile['nickname'] as String? ?? 'Usuário';
     final avatarUrl = profile['icon_url'] as String?;
-    final level = profile['level'] as int? ?? 1;
+    final reputation = member['local_reputation'] as int? ?? 0;
+    final level = member['local_level'] as int? ?? calculateLevel(reputation);
     final isOnline = (profile['online_status'] as int? ?? 2) == 1;
     final role = member['role'] as String? ?? 'member';
 
@@ -1496,7 +1559,7 @@ class _MemberTile extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 2),
-                  Text('Lv.$level',
+                  Text('Lv.$level ${levelTitle(level)}',
                       style: TextStyle(
                           color: AppTheme.getLevelColor(level), fontSize: 11)),
                 ],

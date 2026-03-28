@@ -120,9 +120,11 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
       );
     }
 
-    final xp = _membership?['xp'] as int? ?? 0;
     final reputation = _membership?['local_reputation'] as int? ?? 0;
-    final level = _membership?['local_level'] as int? ?? calculateLevel(xp);
+    final level = _membership?['local_level'] as int? ?? calculateLevel(reputation);
+    final progress = levelProgress(reputation);
+    final repToNext = reputationToNextLevel(reputation);
+    final title = levelTitle(level);
     final role = _membership?['role'] as String? ?? 'member';
     final titles = (_membership?['custom_titles'] as List<dynamic>?) ?? [];
     final streak = _membership?['consecutive_checkin_days'] as int? ?? 0;
@@ -262,59 +264,59 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                         ),
                         const SizedBox(height: 6),
 
-                        // Level badge + Role title
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // Level badge (hexagonal style)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    AppTheme.getLevelColor(level),
-                                    AppTheme.getLevelColor(level)
-                                        .withValues(alpha: 0.7),
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Text(
-                                    'Lv',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  Text(
-                                    '$level',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w900,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (roleTitle != null) ...[
-                              const SizedBox(width: 6),
+                        // Level badge + Level title (estilo Amino: Lv13 Best Wizzard)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 4, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.4),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Level number badge
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 4),
+                                    horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color:
-                                      Colors.white.withValues(alpha: 0.15),
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      AppTheme.getLevelColor(level),
+                                      AppTheme.getLevelColor(level)
+                                          .withValues(alpha: 0.7),
+                                    ],
+                                  ),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Text(
+                                      'Lv',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 8,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    Text(
+                                      '$level',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              // Level title (ex: Explorador, Mestre)
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8),
                                 child: Text(
-                                  roleTitle,
+                                  title,
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 11,
@@ -323,8 +325,29 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                 ),
                               ),
                             ],
-                          ],
+                          ),
                         ),
+                        // Role badge (Líder/Curador) separado
+                        if (roleTitle != null) ...[                          
+                          const SizedBox(height: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color:
+                                  Colors.white.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              roleTitle,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: 8),
 
                         // Custom titles (tags/chips)

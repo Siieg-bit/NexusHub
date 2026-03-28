@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/helpers.dart';
 
 /// Provider para leaderboard de uma comunidade.
 final leaderboardProvider =
@@ -107,11 +108,10 @@ class LeaderboardScreen extends ConsumerWidget {
               const SizedBox(height: 24),
 
               // ============================================================
-              // LISTA RESTANTE
+              // LISTA RESTANTE (rank = index + 1)
               // ============================================================
-              ...members
-                  .skip(3)
-                  .map((member) => _LeaderboardTile(data: member)),
+              ...members.asMap().entries.skip(3).map((entry) =>
+                  _LeaderboardTile(data: entry.value, rank: entry.key + 1)),
             ],
           );
         },
@@ -135,6 +135,9 @@ class _PodiumItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final rep = data['reputation'] as int? ?? 0;
+    final lvl = data['level'] as int? ?? calculateLevel(rep);
+
     return Expanded(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
@@ -182,8 +185,25 @@ class _PodiumItem extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
+          // Level badge
+          Container(
+            margin: const EdgeInsets.only(top: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+            decoration: BoxDecoration(
+              color: AppTheme.getLevelColor(lvl).withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              'Lv.$lvl ${levelTitle(lvl)}',
+              style: TextStyle(
+                color: AppTheme.getLevelColor(lvl),
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
           Text(
-            '${data['community_reputation'] ?? 0} rep',
+            '${formatCount(rep)} rep',
             style: TextStyle(
               color: color,
               fontSize: 11,
@@ -203,7 +223,8 @@ class _PodiumItem extends StatelessWidget {
                   color.withValues(alpha: 0.05),
                 ],
               ),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(12)),
               border: Border.all(color: color.withValues(alpha: 0.5)),
             ),
             child: Center(
@@ -225,12 +246,14 @@ class _PodiumItem extends StatelessWidget {
 
 class _LeaderboardTile extends StatelessWidget {
   final Map<String, dynamic> data;
+  final int rank;
 
-  const _LeaderboardTile({required this.data});
+  const _LeaderboardTile({required this.data, required this.rank});
 
   @override
   Widget build(BuildContext context) {
-    final rank = data['rank'] as num? ?? 0;
+    final rep = data['reputation'] as int? ?? 0;
+    final lvl = data['level'] as int? ?? calculateLevel(rep);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -302,18 +325,18 @@ class _LeaderboardTile extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: AppTheme.getLevelColor(data['level'] as int? ?? 1)
+                        color: AppTheme.getLevelColor(lvl)
                             .withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: AppTheme.getLevelColor(data['level'] as int? ?? 1)
+                          color: AppTheme.getLevelColor(lvl)
                               .withValues(alpha: 0.3),
                         ),
                       ),
                       child: Text(
-                        'Lv.${data['level'] ?? 1}',
+                        'Lv.$lvl ${levelTitle(lvl)}',
                         style: TextStyle(
-                          color: AppTheme.getLevelColor(data['level'] as int? ?? 1),
+                          color: AppTheme.getLevelColor(lvl),
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
                         ),
@@ -345,7 +368,7 @@ class _LeaderboardTile extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    '${data['community_reputation'] ?? 0}',
+                    formatCount(rep),
                     style: const TextStyle(
                       fontWeight: FontWeight.w800,
                       color: AppTheme.warningColor,
