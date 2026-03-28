@@ -4,8 +4,13 @@ import 'package:go_router/go_router.dart';
 import '../../config/app_theme.dart';
 import '../services/supabase_service.dart';
 
-/// Top Bar persistente do Amino original.
-/// Layout: [Avatar] [Barra de Busca + Seletor PT] [Badge Moedas] [+] [Sino]
+/// Top Bar do Amino original — clone pixel-perfect.
+/// Layout: [Avatar] [Barra de Busca (Search + EN▼)] [Pílula Moedas+Add] [Sino]
+///
+/// O widget de moedas e o botão "+" formam uma ÚNICA pílula de cor dupla:
+/// - Metade esquerda: azul celeste com ícone de moeda dourada + valor
+/// - Metade direita: azul cobalto escuro com ícone "+"
+/// A separação de cores é nítida e vertical dentro da pílula.
 class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
   final String? avatarUrl;
   final String? username;
@@ -30,236 +35,258 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
     this.onNotificationTap,
   });
 
-  /// Formata moedas com separador de milhar (ex: 882.947)
-  static String _formatCoins(int coins) {
-    if (coins >= 1000000) {
-      return '${(coins / 1000000).toStringAsFixed(1)}M';
-    }
-    if (coins >= 1000) {
-      final str = coins.toString();
-      final buffer = StringBuffer();
-      for (int i = 0; i < str.length; i++) {
-        if (i > 0 && (str.length - i) % 3 == 0) buffer.write('.');
-        buffer.write(str[i]);
-      }
-      return buffer.toString();
-    }
-    return coins.toString();
-  }
-
   @override
-  Size get preferredSize => const Size.fromHeight(56);
+  Size get preferredSize => const Size.fromHeight(52);
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       bottom: false,
       child: Container(
-        height: 56,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        height: 52,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         child: Row(
           children: [
-            // ── Avatar do usuário ──
-            GestureDetector(
-              onTap: onAvatarTap ?? () => context.push('/profile'),
-              child: Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppTheme.accentColor.withValues(alpha: 0.5),
-                    width: 1.5,
-                  ),
-                ),
-                child: ClipOval(
-                  child: avatarUrl != null && avatarUrl!.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: avatarUrl!,
-                          fit: BoxFit.cover,
-                          placeholder: (_, __) => Container(
-                            color: AppTheme.cardColor,
-                            child: const Icon(Icons.person, color: AppTheme.textHint, size: 18),
-                          ),
-                          errorWidget: (_, __, ___) => Container(
-                            color: AppTheme.cardColor,
-                            child: const Icon(Icons.person, color: AppTheme.textHint, size: 18),
-                          ),
-                        )
-                      : Container(
-                          color: AppTheme.cardColor,
-                          child: const Icon(Icons.person, color: AppTheme.textHint, size: 18),
-                        ),
-                ),
-              ),
-            ),
-
-            const SizedBox(width: 10),
-
-            // ── Barra de Busca ──
-            Expanded(
-              child: GestureDetector(
-                onTap: onSearchTap ?? () => context.push('/search'),
-                child: Container(
-                  height: 34,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(17),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Row(
-                    children: [
-                      Icon(Icons.search_rounded, color: AppTheme.textHint, size: 18),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          'Procurar',
-                          style: TextStyle(
-                            color: AppTheme.textHint,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ),
-                      // Seletor de idioma (visual apenas)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppTheme.cardColor,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'PT',
-                              style: TextStyle(
-                                color: AppTheme.textSecondary,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            Icon(Icons.arrow_drop_down, color: AppTheme.textSecondary, size: 14),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+            // ── Avatar (placeholder neutro, sem borda colorida) ──
+            _buildAvatar(context),
 
             const SizedBox(width: 8),
 
-            // ── Badge de Moedas (LARANJA/DOURADO — Amino original) ──
-            GestureDetector(
-              onTap: onCoinsTap ?? () => context.push('/wallet'),
-              child: Container(
-                height: 28,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFFF9800), Color(0xFFFFB74D)],
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Amino Coin icon — círculo com "A"
-                    Container(
-                      width: 16,
-                      height: 16,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'A',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 9,
-                            fontWeight: FontWeight.w900,
-                            height: 1.0,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _formatCoins(coins),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            // ── Barra de Busca ──
+            _buildSearchBar(context),
 
-            const SizedBox(width: 6),
+            const SizedBox(width: 8),
 
-            // ── Botão + (criar) ──
-            GestureDetector(
-              onTap: onAddTap,
-              child: Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryColor,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.add, color: Colors.white, size: 18),
-              ),
-            ),
+            // ── Pílula unificada: Moedas + Add ──
+            _buildCoinsPill(context),
 
             const SizedBox(width: 6),
 
             // ── Sino de Notificações ──
-            GestureDetector(
-              onTap: onNotificationTap ?? () => context.push('/notifications'),
-              child: Stack(
-                children: [
-                  Icon(
-                    Icons.notifications_outlined,
-                    color: AppTheme.textPrimary,
-                    size: 26,
+            _buildNotificationBell(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Avatar — círculo esbranquiçado/cinza, placeholder neutro sem borda colorida.
+  Widget _buildAvatar(BuildContext context) {
+    return GestureDetector(
+      onTap: onAvatarTap ?? () => context.push('/profile'),
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: const Color(0xFF3A3A5E),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.1),
+            width: 1,
+          ),
+        ),
+        child: ClipOval(
+          child: avatarUrl != null && avatarUrl!.isNotEmpty
+              ? CachedNetworkImage(
+                  imageUrl: avatarUrl!,
+                  fit: BoxFit.cover,
+                  memCacheWidth: 64,
+                  memCacheHeight: 64,
+                  placeholder: (_, __) => _avatarPlaceholder(),
+                  errorWidget: (_, __, ___) => _avatarPlaceholder(),
+                )
+              : _avatarPlaceholder(),
+        ),
+      ),
+    );
+  }
+
+  Widget _avatarPlaceholder() {
+    return Container(
+      color: const Color(0xFF3A3A5E),
+      child: Icon(
+        Icons.person,
+        color: Colors.white.withValues(alpha: 0.35),
+        size: 18,
+      ),
+    );
+  }
+
+  /// Barra de busca — retangular arredondada, cinza escuro translúcido.
+  /// Esquerda: lupa + "Search". Direita: "EN" + seta dropdown.
+  Widget _buildSearchBar(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onSearchTap ?? () => context.push('/search'),
+        child: Container(
+          height: 34,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Row(
+            children: [
+              Icon(
+                Icons.search_rounded,
+                color: Colors.white.withValues(alpha: 0.4),
+                size: 18,
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'Search',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.35),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
                   ),
-                  if (notificationCount > 0)
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      child: Container(
-                        width: 16,
-                        height: 16,
-                        decoration: const BoxDecoration(
-                          color: AppTheme.aminoRed,
-                          shape: BoxShape.circle,
+                ),
+              ),
+              // Dropdown de idioma
+              Text(
+                'EN',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Icon(
+                Icons.arrow_drop_down,
+                color: Colors.white.withValues(alpha: 0.5),
+                size: 16,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Pílula unificada de moedas + botão add.
+  /// Uma ÚNICA pílula com duas metades de cor diferente:
+  /// - Esquerda: azul celeste (#4FC3F7) com ícone de moeda dourada + número
+  /// - Direita: azul cobalto (#1976D2) com ícone "+"
+  /// Separação de cor nítida e vertical.
+  Widget _buildCoinsPill(BuildContext context) {
+    return GestureDetector(
+      onTap: onCoinsTap ?? () => context.push('/wallet'),
+      child: Container(
+        height: 28,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Metade esquerda — azul celeste com moeda + valor
+            Container(
+              height: 28,
+              padding: const EdgeInsets.only(left: 6, right: 4),
+              color: const Color(0xFF4FC3F7), // azul celeste
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Ícone de moeda dourada
+                  Container(
+                    width: 16,
+                    height: 16,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [Color(0xFFFFD700), Color(0xFFFFA000)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(0x40000000),
+                          blurRadius: 2,
+                          offset: Offset(0, 1),
                         ),
-                        child: Center(
-                          child: Text(
-                            notificationCount > 9 ? '9+' : notificationCount.toString(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 8,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
+                      ],
+                    ),
+                    child: const Center(
+                      child: Text(
+                        '\$',
+                        style: TextStyle(
+                          color: Color(0xFF795548),
+                          fontSize: 9,
+                          fontWeight: FontWeight.w900,
+                          height: 1.0,
                         ),
                       ),
                     ),
+                  ),
+                  const SizedBox(width: 3),
+                  Text(
+                    coins.toString(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ],
               ),
             ),
+            // Metade direita — azul cobalto com "+"
+            GestureDetector(
+              onTap: onAddTap,
+              child: Container(
+                height: 28,
+                width: 28,
+                color: const Color(0xFF1565C0), // azul cobalto escuro
+                child: const Center(
+                  child: Icon(
+                    Icons.add,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Sino de notificações — branco, com badge vermelho se houver notificações.
+  Widget _buildNotificationBell(BuildContext context) {
+    return GestureDetector(
+      onTap: onNotificationTap ?? () => context.push('/notifications'),
+      child: SizedBox(
+        width: 28,
+        height: 28,
+        child: Stack(
+          children: [
+            Center(
+              child: Icon(
+                Icons.notifications_none_rounded,
+                color: Colors.white.withValues(alpha: 0.85),
+                size: 24,
+              ),
+            ),
+            if (notificationCount > 0)
+              Positioned(
+                right: 2,
+                top: 2,
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: AppTheme.aminoRed,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFF0F0F1E),
+                      width: 1,
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),

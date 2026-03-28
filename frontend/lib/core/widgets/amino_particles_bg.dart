@@ -1,11 +1,10 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 
-/// Efeito de partículas flutuantes com bokeh (desfoque) do Amino original.
-/// Partículas com blur variável para criar sensação de profundidade:
-/// - Camada de fundo: grandes, muito desfocadas, opacidade baixa
-/// - Camada do meio: médias, desfoque moderado
-/// - Camada da frente: pequenas, nítidas, com glow sutil
+/// Fundo decorativo do Amino original com dois efeitos sobrepostos:
+/// 1. Padrão de rede/radar: grade pontilhada + linhas concêntricas
+///    emanando do centro-superior, criando um efeito de radar sutil.
+/// 2. Partículas flutuantes com bokeh (desfoque) em camadas de profundidade.
 class AminoParticlesBg extends StatefulWidget {
   final Widget child;
   final int particleCount;
@@ -40,30 +39,26 @@ class _AminoParticlesBgState extends State<AminoParticlesBg>
   }
 
   _BokehParticle _generateParticle() {
-    // Camada de profundidade: 0 = fundo (grande, blur alto), 1 = frente (pequena, nítida)
     final depth = _random.nextDouble();
 
-    // Partículas de fundo: grandes (8-20px), blur alto (6-12), opacidade baixa
-    // Partículas de frente: pequenas (2-5px), blur baixo (0-2), opacidade mais alta
     final size = depth < 0.33
-        ? _random.nextDouble() * 12 + 8 // Fundo: 8-20px
+        ? _random.nextDouble() * 12 + 8
         : depth < 0.66
-            ? _random.nextDouble() * 6 + 4 // Meio: 4-10px
-            : _random.nextDouble() * 3 + 2; // Frente: 2-5px
+            ? _random.nextDouble() * 6 + 4
+            : _random.nextDouble() * 3 + 2;
 
     final blur = depth < 0.33
-        ? _random.nextDouble() * 6 + 6 // Fundo: blur 6-12
+        ? _random.nextDouble() * 6 + 6
         : depth < 0.66
-            ? _random.nextDouble() * 3 + 2 // Meio: blur 2-5
-            : _random.nextDouble() * 1.5; // Frente: blur 0-1.5
+            ? _random.nextDouble() * 3 + 2
+            : _random.nextDouble() * 1.5;
 
     final opacity = depth < 0.33
-        ? _random.nextDouble() * 0.06 + 0.02 // Fundo: 0.02-0.08
+        ? _random.nextDouble() * 0.06 + 0.02
         : depth < 0.66
-            ? _random.nextDouble() * 0.08 + 0.04 // Meio: 0.04-0.12
-            : _random.nextDouble() * 0.10 + 0.05; // Frente: 0.05-0.15
+            ? _random.nextDouble() * 0.08 + 0.04
+            : _random.nextDouble() * 0.10 + 0.05;
 
-    // Velocidade inversamente proporcional à profundidade (parallax)
     final speedFactor = depth < 0.33
         ? 0.3
         : depth < 0.66
@@ -78,7 +73,7 @@ class _AminoParticlesBgState extends State<AminoParticlesBg>
       opacity: opacity,
       speedX: (_random.nextDouble() - 0.5) * 0.002 * speedFactor,
       speedY: (_random.nextDouble() - 0.5) * 0.002 * speedFactor,
-      isHexagon: _random.nextDouble() < 0.3, // 30% hexágonos
+      isHexagon: _random.nextDouble() < 0.3,
       phase: _random.nextDouble() * 2 * pi,
       depth: depth,
       glowRadius: depth > 0.66 ? _random.nextDouble() * 4 + 2 : 0,
@@ -96,6 +91,15 @@ class _AminoParticlesBgState extends State<AminoParticlesBg>
     return Stack(
       children: [
         widget.child,
+        // Camada 1: Padrão de rede/radar (estático)
+        Positioned.fill(
+          child: IgnorePointer(
+            child: CustomPaint(
+              painter: _RadarGridPainter(),
+            ),
+          ),
+        ),
+        // Camada 2: Partículas bokeh (animadas)
         Positioned.fill(
           child: IgnorePointer(
             child: AnimatedBuilder(
@@ -117,6 +121,69 @@ class _AminoParticlesBgState extends State<AminoParticlesBg>
   }
 }
 
+// ============================================================================
+// RADAR GRID PAINTER — Padrão de rede do Amino original
+// Grade pontilhada + círculos concêntricos emanando do centro-superior.
+// ============================================================================
+class _RadarGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height * 0.08);
+
+    // ── Círculos concêntricos ──
+    final circlePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.03)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.5;
+
+    final maxRadius = size.height * 1.2;
+    const circleSpacing = 80.0;
+    for (double r = circleSpacing; r < maxRadius; r += circleSpacing) {
+      canvas.drawCircle(center, r, circlePaint);
+    }
+
+    // ── Grade pontilhada ──
+    final dotPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.025)
+      ..style = PaintingStyle.fill;
+
+    const gridSpacing = 40.0;
+    final dotRadius = 1.0;
+
+    for (double x = 0; x < size.width; x += gridSpacing) {
+      for (double y = 0; y < size.height; y += gridSpacing) {
+        // Fade baseado na distância do centro do radar
+        final dist = (Offset(x, y) - center).distance;
+        final fade = (1.0 - (dist / maxRadius)).clamp(0.0, 1.0);
+        if (fade > 0.05) {
+          dotPaint.color = Colors.white.withValues(alpha: 0.025 * fade);
+          canvas.drawCircle(Offset(x, y), dotRadius, dotPaint);
+        }
+      }
+    }
+
+    // ── Linhas radiais sutis ──
+    final linePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.015)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.5;
+
+    const lineCount = 12;
+    for (int i = 0; i < lineCount; i++) {
+      final angle = (2 * pi / lineCount) * i;
+      final endX = center.dx + maxRadius * cos(angle);
+      final endY = center.dy + maxRadius * sin(angle);
+      canvas.drawLine(center, Offset(endX, endY), linePaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// ============================================================================
+// BOKEH PARTICLES
+// ============================================================================
 class _BokehParticle {
   double x;
   double y;
@@ -158,14 +225,12 @@ class _BokehPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Ordenar por profundidade: fundo primeiro, frente por último
     final sorted = List<_BokehParticle>.from(particles)
       ..sort((a, b) => a.depth.compareTo(b.depth));
 
     for (final p in sorted) {
       final time = progress * 2 * pi;
 
-      // Movimento suave com drift + oscilação senoidal
       final dx = p.x * size.width +
           sin(time + p.phase) * (15 + p.size) +
           p.speedX * size.width * progress * 150;
@@ -173,17 +238,14 @@ class _BokehPainter extends CustomPainter {
           cos(time * 0.7 + p.phase) * (10 + p.size * 0.5) +
           p.speedY * size.height * progress * 150;
 
-      // Wrap around
       final px = ((dx % size.width) + size.width) % size.width;
       final py = ((dy % size.height) + size.height) % size.height;
 
-      // Pulsing opacity (respiração suave)
       final pulseOpacity =
           p.opacity * (0.6 + 0.4 * sin(time * 1.5 + p.phase));
 
       final center = Offset(px, py);
 
-      // Glow para partículas da frente
       if (p.glowRadius > 0) {
         final glowPaint = Paint()
           ..color = color.withValues(alpha: pulseOpacity * 0.3)
@@ -192,7 +254,6 @@ class _BokehPainter extends CustomPainter {
         canvas.drawCircle(center, p.size + p.glowRadius, glowPaint);
       }
 
-      // Partícula principal com blur (bokeh)
       final paint = Paint()
         ..color = color.withValues(alpha: pulseOpacity)
         ..style = PaintingStyle.fill;
