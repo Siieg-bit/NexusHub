@@ -390,6 +390,7 @@ class CommunityDrawer extends StatelessWidget {
                           icon: Icons.chat_rounded,
                           label: 'My Chats',
                           color: AppTheme.primaryColor,
+                          badge: 0,
                           onTap: () {
                             Navigator.pop(context);
                             context.push('/chats');

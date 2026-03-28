@@ -754,7 +754,7 @@ class _AccessOption extends StatelessWidget {
                       style: const TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 2),
                   Text(description,
-                      style: const TextStyle(
+                      style: TextStyle(
                           color: Colors.grey[500], fontSize: 12)),
                 ],
               ),
