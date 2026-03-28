@@ -96,13 +96,13 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _tabs = const [
-    'Guidelines',
-    'Featured',
-    'Latest',
+            'Regras',
+    'Destaque',
+    'Recentes',
     'Chats',
-    'Members',
+    'Membros',
     'Wiki',
-    'Leaderboard',
+    'Ranking',
   ];
 
   @override
@@ -274,7 +274,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                         children: [
                           Text('🎁 ',
                               style: TextStyle(fontSize: 11)),
-                          Text('Claim gifts',
+                          Text('Presentes',
                               style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 10,
@@ -398,7 +398,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                                     Row(
                                       children: [
                                         Text(
-                                          '${formatCount(community.membersCount)} Members',
+                                          '${formatCount(community.membersCount)} Membros',
                                           style: TextStyle(
                                             color: Colors.grey[300],
                                             fontSize: 11,
@@ -419,7 +419,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                                                   BorderRadius.circular(12),
                                             ),
                                             child: const Text(
-                                              'Leaderboards',
+                                              'Ranking',
                                               style: TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 9,
@@ -484,8 +484,8 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                         fontWeight: FontWeight.w500, fontSize: 12),
                     dividerColor: Colors.transparent,
                     tabs: _tabs.map((t) {
-                      if (t == 'Chats') return const Tab(text: 'Public Chatrooms');
-                      if (t == 'Latest') return const Tab(text: 'Latest Feed');
+                      if (t == 'Chats') return const Tab(text: 'Chats Públicos');
+                      if (t == 'Recentes') return const Tab(text: 'Feed Recente');
                       return Tab(text: t);
                     }).toList(),
                   ),
@@ -567,7 +567,7 @@ class _CheckInBar extends StatelessWidget {
       child: Column(
         children: [
           const Text(
-            'Check In to earn a prize',
+            'Faça Check In para ganhar um prêmio',
             style: TextStyle(
               color: AppTheme.textPrimary,
               fontSize: 13,
@@ -609,6 +609,7 @@ class _CheckInBar extends StatelessWidget {
                     fontWeight: FontWeight.w700, fontSize: 14),
               ),
               child: const Text('Check In'),
+              // Label already matches Amino style
             ),
           ),
         ],
@@ -864,7 +865,7 @@ class _FeedTab extends StatelessWidget {
                     size: 48, color: AppTheme.textHint),
                 const SizedBox(height: 12),
                 Text(
-                  'No posts yet. Be the first to post!',
+                  'Nenhum post ainda. Seja o primeiro a postar!',
                   style: TextStyle(color: Colors.grey[600], fontSize: 13),
                 ),
               ],
@@ -1127,7 +1128,7 @@ class _ChatTabState extends State<_ChatTab> {
             const Icon(Icons.chat_bubble_outline_rounded,
                 size: 48, color: AppTheme.textHint),
             const SizedBox(height: 12),
-            Text('No public chatrooms yet',
+            Text('Nenhum chat público ainda',
                 style: TextStyle(color: Colors.grey[600], fontSize: 13)),
           ],
         ),
@@ -1188,7 +1189,7 @@ class _ChatTabState extends State<_ChatTab> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '${chat['members_count'] ?? 0} members',
+                          '${chat['members_count'] ?? 0} membros',
                           style: TextStyle(
                               color: Colors.grey[600], fontSize: 10),
                         ),

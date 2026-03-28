@@ -95,7 +95,7 @@ class CommunityDrawer extends StatelessWidget {
                         Icon(Icons.logout_rounded,
                             color: Colors.grey[600], size: 18),
                         const SizedBox(height: 2),
-                        Text('Exit',
+                        Text('Sair',
                             style: TextStyle(
                                 color: Colors.grey[600],
                                 fontSize: 8,
@@ -231,7 +231,7 @@ class CommunityDrawer extends StatelessWidget {
                           child: Column(
                             children: [
                               Text(
-                                'Welcome to',
+                                'Bem-vindo(a) a',
                                 style: TextStyle(
                                   color: Colors.white.withValues(alpha: 0.6),
                                   fontSize: 10,
@@ -326,7 +326,7 @@ class CommunityDrawer extends StatelessWidget {
                               const SizedBox(height: 6),
                               // User name
                               Text(
-                                currentUser?.nickname ?? 'Usuário',
+                                currentUser?.nickname ?? 'Meu Perfil',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 13,
@@ -382,13 +382,13 @@ class CommunityDrawer extends StatelessWidget {
                       children: [
                         _AminoDrawerItem(
                           icon: Icons.star_rounded,
-                          label: 'Home',
+                          label: 'Início',
                           color: AppTheme.primaryColor,
                           onTap: () => Navigator.pop(context),
                         ),
                         _AminoDrawerItem(
                           icon: Icons.chat_rounded,
-                          label: 'My Chats',
+                          label: 'Meus Chats',
                           color: AppTheme.primaryColor,
                           badge: 0,
                           onTap: () {
@@ -398,7 +398,7 @@ class CommunityDrawer extends StatelessWidget {
                         ),
                         _AminoDrawerItem(
                           icon: Icons.auto_stories_rounded,
-                          label: 'Catalog',
+                          label: 'Catálogo',
                           color: const Color(0xFFFF9800),
                           onTap: () {
                             Navigator.pop(context);
@@ -407,7 +407,7 @@ class CommunityDrawer extends StatelessWidget {
                         ),
                         _AminoDrawerItem(
                           icon: Icons.forum_rounded,
-                          label: 'Public Chatrooms',
+                          label: 'Chats Públicos',
                           color: AppTheme.primaryColor,
                           onTap: () {
                             Navigator.pop(context);
@@ -416,7 +416,7 @@ class CommunityDrawer extends StatelessWidget {
                         ),
                         _AminoDrawerItem(
                           icon: Icons.access_time_rounded,
-                          label: 'Latest Feed',
+                          label: 'Feed Recente',
                           color: const Color(0xFF2196F3),
                           onTap: () {
                             Navigator.pop(context);
@@ -425,7 +425,7 @@ class CommunityDrawer extends StatelessWidget {
                         ),
                         _AminoDrawerItem(
                           icon: Icons.public_rounded,
-                          label: 'Guidelines',
+                          label: 'Regras',
                           color: const Color(0xFFFF9800),
                           onTap: () {
                             Navigator.pop(context);
@@ -434,7 +434,7 @@ class CommunityDrawer extends StatelessWidget {
                         ),
                         _AminoDrawerItem(
                           icon: Icons.link_rounded,
-                          label: 'Resource Links',
+                          label: 'Links Úteis',
                           color: const Color(0xFFFF9800),
                           onTap: () {
                             Navigator.pop(context);
@@ -454,7 +454,7 @@ class CommunityDrawer extends StatelessWidget {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('See More...',
+                                Text('Ver Mais...',
                                     style: TextStyle(
                                         color: Colors.grey[500],
                                         fontSize: 13)),
@@ -507,7 +507,7 @@ class CommunityDrawer extends StatelessWidget {
                                           CrossAxisAlignment.start,
                                       children: [
                                         const Text(
-                                          'Edit Community',
+                                          'Editar Comunidade',
                                           style: TextStyle(
                                             color: AppTheme.primaryColor,
                                             fontSize: 13,
@@ -515,7 +515,7 @@ class CommunityDrawer extends StatelessWidget {
                                           ),
                                         ),
                                         Text(
-                                          'Name, description, tags, cover, icon',
+                                          'Nome, descrição, tags, capa, ícone',
                                           style: TextStyle(
                                               color: Colors.grey[600],
                                               fontSize: 9),
@@ -536,7 +536,7 @@ class CommunityDrawer extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 4),
                             child: Text(
-                              'MANAGEMENT',
+                              'GERENCIAMENTO',
                               style: TextStyle(
                                 color: Colors.grey[600],
                                 fontSize: 10,
@@ -547,7 +547,7 @@ class CommunityDrawer extends StatelessWidget {
                           ),
                           _AminoDrawerItem(
                             icon: Icons.flag_rounded,
-                            label: 'Flag Center',
+                            label: 'Central de Denúncias',
                             color: AppTheme.errorColor,
                             onTap: () {
                               Navigator.pop(context);
@@ -557,7 +557,7 @@ class CommunityDrawer extends StatelessWidget {
                           ),
                           _AminoDrawerItem(
                             icon: Icons.analytics_rounded,
-                            label: 'Statistics',
+                            label: 'Estatísticas',
                             color: const Color(0xFF2196F3),
                             onTap: () {
                               Navigator.pop(context);

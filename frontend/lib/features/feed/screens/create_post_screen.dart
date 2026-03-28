@@ -260,7 +260,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           onPressed: () => context.pop(),
         ),
         title: const Text(
-          'Create Post',
+          'Criar Post',
           style: TextStyle(
             color: AppTheme.textPrimary,
             fontWeight: FontWeight.w700,
@@ -290,7 +290,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                             strokeWidth: 2, color: Colors.white),
                       )
                     : const Text(
-                        'Post',
+                        'Postar',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
@@ -399,7 +399,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                                 Icon(Icons.add_photo_alternate_rounded,
                                     color: Colors.grey[600], size: 28),
                                 const SizedBox(height: 4),
-                                Text('Add Cover Image',
+                                Text('Adicionar Capa',
                                     style: TextStyle(
                                         color: Colors.grey[600],
                                         fontSize: 11)),
@@ -419,7 +419,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                       color: AppTheme.textPrimary,
                     ),
                     decoration: InputDecoration(
-                      hintText: 'Title...',
+                      hintText: 'Título...',
                       border: InputBorder.none,
                       hintStyle: TextStyle(
                           color: Colors.grey[700],
@@ -438,7 +438,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                       color: Colors.grey[300],
                     ),
                     decoration: InputDecoration(
-                      hintText: 'Write your content here...',
+                      hintText: 'Escreva seu conteúdo aqui...',
                       border: InputBorder.none,
                       hintStyle: TextStyle(color: Colors.grey[700]),
                       contentPadding: EdgeInsets.zero,
@@ -580,7 +580,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 Icon(Icons.add_rounded,
                     size: 16, color: AppTheme.primaryColor),
                 const SizedBox(width: 6),
-                Text('Add Option',
+                Text('Adicionar Opção',
                     style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontSize: 13,
@@ -729,7 +729,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 Icon(Icons.add_rounded,
                     size: 16, color: AppTheme.primaryColor),
                 const SizedBox(width: 6),
-                Text('Add Question',
+                Text('Adicionar Pergunta',
                     style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontSize: 13,

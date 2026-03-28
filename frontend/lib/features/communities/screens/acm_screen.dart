@@ -245,7 +245,7 @@ class _AcmScreenState extends State<AcmScreen>
           'Permitir destaque de conteúdo'),
       _ModuleItem('ranking', 'Ranking', Icons.leaderboard_rounded,
           'Habilitar leaderboard'),
-      _ModuleItem('sharedFolder', 'Shared Folder', Icons.folder_shared_rounded,
+      _ModuleItem('sharedFolder', 'Pasta Compartilhada', Icons.folder_shared_rounded,
           'Pasta compartilhada'),
       _ModuleItem('influencer', 'Influencer', Icons.verified_rounded,
           'Sistema de influenciadores'),

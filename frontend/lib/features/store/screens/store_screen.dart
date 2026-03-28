@@ -5,7 +5,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/helpers.dart';
 
 /// Tela Store — Loja de itens virtuais (Avatar Frames, Chat Bubbles, Sticker Packs).
-/// Estilo visual Amino Apps.
+/// Design fiel ao Amino Apps: header azul celeste com moeda dourada, banner Amino+.
 class StoreScreen extends StatefulWidget {
   const StoreScreen({super.key});
 
@@ -20,14 +20,8 @@ class _StoreScreenState extends State<StoreScreen>
   bool _isLoading = true;
   int _userCoins = 0;
 
-  final _tabs = const [
-    'All',
-    'Frames',
-    'Bubbles',
-    'Stickers',
-    'Backgrounds',
-  ];
-
+  // Amino original: tabs com ícones
+  final _tabs = const ['Todos', 'Frames', 'Bolhas', 'Stickers', 'Fundos'];
   final _tabIcons = const [
     Icons.storefront_rounded,
     Icons.face_rounded,
@@ -46,8 +40,6 @@ class _StoreScreenState extends State<StoreScreen>
   Future<void> _loadStore() async {
     try {
       final userId = SupabaseService.currentUserId;
-
-      // Carregar moedas do usuário
       if (userId != null) {
         final profile = await SupabaseService.table('profiles')
             .select('coins_count')
@@ -55,14 +47,11 @@ class _StoreScreenState extends State<StoreScreen>
             .single();
         _userCoins = profile['coins_count'] as int? ?? 0;
       }
-
-      // Carregar itens da loja
       final res = await SupabaseService.table('store_items')
           .select()
           .eq('is_active', true)
           .order('created_at', ascending: false);
       _items = List<Map<String, dynamic>>.from(res as List);
-
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
@@ -86,16 +75,14 @@ class _StoreScreenState extends State<StoreScreen>
     if (_userCoins < price) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Not enough coins!'),
+          content: const Text('Moedas insuficientes!'),
           backgroundColor: AppTheme.errorColor,
           behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       );
       return;
     }
-
     try {
       await SupabaseService.client.rpc('purchase_store_item', params: {
         'p_item_id': item['id'],
@@ -104,11 +91,11 @@ class _StoreScreenState extends State<StoreScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${item['name']} purchased!'),
+            content: Text('${item['name']} comprado!'),
             backgroundColor: AppTheme.primaryColor,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       }
@@ -116,11 +103,11 @@ class _StoreScreenState extends State<StoreScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Purchase error: $e'),
+            content: Text('Erro na compra: $e'),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       }
@@ -139,82 +126,268 @@ class _StoreScreenState extends State<StoreScreen>
       backgroundColor: AppTheme.scaffoldBg,
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          // ── AppBar estilo Amino ──
-          SliverAppBar(
-            floating: true,
-            snap: true,
-            backgroundColor: AppTheme.scaffoldBg,
-            elevation: 0,
-            title: const Text('Store',
-                style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 22,
-                    color: AppTheme.textPrimary)),
-            actions: [
-              // Saldo de moedas
-              Container(
-                margin: const EdgeInsets.only(right: 16),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppTheme.warningColor.withValues(alpha: 0.2),
-                      AppTheme.warningColor.withValues(alpha: 0.1),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                      color: AppTheme.warningColor.withValues(alpha: 0.3)),
+          // ================================================================
+          // HEADER AZUL CELESTE — Estilo Amino original
+          // Amino usa um header azul brilhante com moeda dourada grande
+          // ================================================================
+          SliverToBoxAdapter(
+            child: Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFF00B4D8), // Azul celeste brilhante
+                    Color(0xFF0096C7), // Azul celeste mais escuro
+                    Color(0xFF0077B6), // Azul profundo
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+              ),
+              child: SafeArea(
+                bottom: false,
+                child: Column(
                   children: [
-                    const Icon(Icons.monetization_on_rounded,
-                        color: AppTheme.warningColor, size: 18),
-                    const SizedBox(width: 4),
-                    Text(
-                      formatCount(_userCoins),
-                      style: const TextStyle(
-                        color: AppTheme.warningColor,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 14,
+                    // Top row: back + title + saldo
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                      child: Row(
+                        children: [
+                          const Text(
+                            'Loja',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const Spacer(),
+                          // Saldo de moedas — pill dourada
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.monetization_on_rounded,
+                                    color: Color(0xFFFFD700), size: 18),
+                                const SizedBox(width: 4),
+                                Text(
+                                  formatCount(_userCoins),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+
+                    // Moeda dourada grande central — ícone do Amino Store
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // Glow effect
+                          Container(
+                            width: 100,
+                            height: 100,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color:
+                                      const Color(0xFFFFD700).withValues(alpha: 0.4),
+                                  blurRadius: 30,
+                                  spreadRadius: 5,
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Moeda
+                          Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: const LinearGradient(
+                                colors: [
+                                  Color(0xFFFFD700),
+                                  Color(0xFFFFA500),
+                                  Color(0xFFFF8C00),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFFFD700)
+                                      .withValues(alpha: 0.5),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: const Center(
+                              child: Text(
+                                'AC',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 2,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Saldo grande
+                    Text(
+                      '${formatCount(_userCoins)} Moedas',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Compre itens exclusivos para personalizar seu perfil',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // ========================================================
+                    // BANNER AMINO+ — laranja/dourado
+                    // ========================================================
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFF8C00), Color(0xFFFFA500)],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                const Color(0xFFFF8C00).withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.workspace_premium_rounded,
+                                color: Colors.white, size: 20),
+                          ),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Amino+',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                Text(
+                                  'Itens exclusivos e moedas b\u00f4nus!',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Text(
+                              'Assinar',
+                              style: TextStyle(
+                                color: Color(0xFFFF8C00),
+                                fontWeight: FontWeight.w800,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),
-            ],
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(48),
-              child: Container(
-                height: 48,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: TabBar(
-                  controller: _tabController,
-                  isScrollable: true,
-                  tabAlignment: TabAlignment.start,
-                  labelColor: AppTheme.primaryColor,
-                  unselectedLabelColor: Colors.grey[600],
-                  indicatorColor: AppTheme.primaryColor,
-                  indicatorWeight: 3,
-                  indicatorSize: TabBarIndicatorSize.label,
-                  dividerColor: Colors.transparent,
-                  labelStyle: const TextStyle(
-                      fontWeight: FontWeight.w700, fontSize: 13),
-                  unselectedLabelStyle: const TextStyle(
-                      fontWeight: FontWeight.w500, fontSize: 13),
-                  tabs: List.generate(
-                    _tabs.length,
-                    (i) => Tab(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(_tabIcons[i], size: 16),
-                          const SizedBox(width: 6),
-                          Text(_tabs[i]),
-                        ],
-                      ),
+            ),
+          ),
+
+          // ================================================================
+          // TABS — Estilo Amino (scrollable, dentro do body escuro)
+          // ================================================================
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _SliverTabBarDelegate(
+              TabBar(
+                controller: _tabController,
+                isScrollable: true,
+                tabAlignment: TabAlignment.start,
+                labelColor: Colors.white,
+                unselectedLabelColor: AppTheme.textHint,
+                indicatorColor: Colors.white,
+                indicatorWeight: 2.5,
+                indicatorSize: TabBarIndicatorSize.label,
+                dividerColor: Colors.transparent,
+                labelStyle:
+                    const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                unselectedLabelStyle:
+                    const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+                tabs: List.generate(
+                  _tabs.length,
+                  (i) => Tab(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(_tabIcons[i], size: 16),
+                        const SizedBox(width: 6),
+                        Text(_tabs[i]),
+                      ],
                     ),
                   ),
                 ),
@@ -245,7 +418,7 @@ class _StoreScreenState extends State<StoreScreen>
           children: [
             Icon(Icons.storefront_outlined, size: 48, color: Colors.grey[700]),
             const SizedBox(height: 12),
-            Text('No items available',
+            Text('Nenhum item dispon\u00edvel',
                 style: TextStyle(
                     color: Colors.grey[500], fontWeight: FontWeight.w600)),
           ],
@@ -274,9 +447,34 @@ class _StoreScreenState extends State<StoreScreen>
 }
 
 // =============================================================================
+// SLIVER TAB BAR DELEGATE
+// =============================================================================
+class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
+  final TabBar tabBar;
+  _SliverTabBarDelegate(this.tabBar);
+
+  @override
+  double get minExtent => tabBar.preferredSize.height;
+  @override
+  double get maxExtent => tabBar.preferredSize.height;
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: AppTheme.scaffoldBg,
+      child: tabBar,
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _SliverTabBarDelegate oldDelegate) =>
+      tabBar != oldDelegate.tabBar;
+}
+
+// =============================================================================
 // STORE ITEM CARD — Estilo Amino
 // =============================================================================
-
 class _StoreItemCard extends StatefulWidget {
   final Map<String, dynamic> item;
   final VoidCallback onPurchase;
@@ -316,7 +514,7 @@ class _StoreItemCardState extends State<_StoreItemCard>
 
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: AppTheme.cardColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isLimited
@@ -405,7 +603,7 @@ class _StoreItemCardState extends State<_StoreItemCard>
                       },
                     ),
                   ),
-                // LIMITED badge
+                // LIMITADO badge
                 if (isLimited)
                   Positioned(
                     top: 8,
@@ -424,7 +622,7 @@ class _StoreItemCardState extends State<_StoreItemCard>
                         ],
                       ),
                       child: const Text(
-                        'LIMITED',
+                        'LIMITADO',
                         style: TextStyle(
                             color: Colors.white,
                             fontSize: 9,
@@ -542,11 +740,11 @@ class _StoreItemCardState extends State<_StoreItemCard>
       case 'avatar_frame':
         return 'Frame';
       case 'chat_bubble':
-        return 'Bubble';
+        return 'Bolha';
       case 'sticker_pack':
         return 'Sticker';
       case 'profile_background':
-        return 'BG';
+        return 'Fundo';
       default:
         return 'Item';
     }

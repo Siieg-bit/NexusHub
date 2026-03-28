@@ -5,8 +5,8 @@ import 'package:badges/badges.dart' as badges;
 import '../config/app_theme.dart';
 
 /// Tela principal com Bottom Navigation Bar — réplica 1:1 do Amino Apps.
-/// Tabs: Discover, Communities, Live (botão central), Chats, Store.
-/// Fundo com blur translúcido, ícones com animação de escala.
+/// 4 Tabs: Descubra, Comunidades, Chats, Loja (sem Live central).
+/// Ícones outlined, labels em português, cor ativa branca.
 class ShellScreen extends StatelessWidget {
   final Widget child;
   const ShellScreen({super.key, required this.child});
@@ -15,9 +15,9 @@ class ShellScreen extends StatelessWidget {
     final location = GoRouterState.of(context).matchedLocation;
     if (location == '/explore' || location == '/') return 0;
     if (location == '/communities') return 1;
-    if (location == '/live') return 2;
-    if (location == '/chats') return 3;
-    if (location == '/store') return 4;
+    if (location == '/chats') return 2;
+    if (location == '/store') return 3;
+    // Rota /live redireciona para Descubra (tab removida)
     return 0;
   }
 
@@ -30,12 +30,9 @@ class ShellScreen extends StatelessWidget {
         context.go('/communities');
         break;
       case 2:
-        context.go('/live');
-        break;
-      case 3:
         context.go('/chats');
         break;
-      case 4:
+      case 3:
         context.go('/store');
         break;
     }
@@ -53,7 +50,7 @@ class ShellScreen extends StatelessWidget {
           filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
           child: Container(
             decoration: BoxDecoration(
-              color: AppTheme.bottomNavBg.withValues(alpha: 0.92),
+              color: AppTheme.bottomNavBg.withValues(alpha: 0.95),
               border: Border(
                 top: BorderSide(
                   color: AppTheme.dividerColor.withValues(alpha: 0.3),
@@ -63,43 +60,38 @@ class ShellScreen extends StatelessWidget {
             ),
             child: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
+                padding: const EdgeInsets.symmetric(vertical: 6),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _AminoNavItem(
-                      icon: Icons.explore_rounded,
-                      activeIcon: Icons.explore,
-                      label: 'Discover',
+                      icon: Icons.explore_outlined,
+                      activeIcon: Icons.explore_outlined,
+                      label: 'Descubra',
                       isSelected: selectedIndex == 0,
                       onTap: () => _onItemTapped(context, 0),
                     ),
                     _AminoNavItem(
-                      icon: Icons.groups_outlined,
-                      activeIcon: Icons.groups_rounded,
+                      icon: Icons.grid_view_outlined,
+                      activeIcon: Icons.grid_view_rounded,
                       label: 'Comunidades',
                       isSelected: selectedIndex == 1,
                       onTap: () => _onItemTapped(context, 1),
-                    ),
-                    // Botão central LIVE (destaque rosa/magenta como no Amino)
-                    _AminoLiveButton(
-                      isSelected: selectedIndex == 2,
-                      onTap: () => _onItemTapped(context, 2),
                     ),
                     _AminoNavItem(
                       icon: Icons.chat_bubble_outline_rounded,
                       activeIcon: Icons.chat_bubble_rounded,
                       label: 'Chats',
-                      isSelected: selectedIndex == 3,
-                      onTap: () => _onItemTapped(context, 3),
-                      badgeCount: 0, // TODO: conectar com provider de unread
+                      isSelected: selectedIndex == 2,
+                      onTap: () => _onItemTapped(context, 2),
+                      badgeCount: 0,
                     ),
                     _AminoNavItem(
                       icon: Icons.storefront_outlined,
                       activeIcon: Icons.storefront_rounded,
-                      label: 'Store',
-                      isSelected: selectedIndex == 4,
-                      onTap: () => _onItemTapped(context, 4),
+                      label: 'Loja',
+                      isSelected: selectedIndex == 3,
+                      onTap: () => _onItemTapped(context, 3),
                     ),
                   ],
                 ),
@@ -113,7 +105,7 @@ class ShellScreen extends StatelessWidget {
 }
 
 // ==============================================================================
-// NAV ITEM — Ícone + Label com animação de escala
+// NAV ITEM — Ícone outlined + Label, cor ativa branca (estilo Amino)
 // ==============================================================================
 
 class _AminoNavItem extends StatelessWidget {
@@ -135,15 +127,11 @@ class _AminoNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isSelected ? AppTheme.primaryColor : AppTheme.textHint;
+    // Amino original: ativo = branco, inativo = cinza
+    final color = isSelected ? Colors.white : AppTheme.textHint;
     final displayIcon = isSelected ? activeIcon : icon;
 
-    Widget iconWidget = AnimatedScale(
-      scale: isSelected ? 1.15 : 1.0,
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeOut,
-      child: Icon(displayIcon, color: color, size: 24),
-    );
+    Widget iconWidget = Icon(displayIcon, color: color, size: 24);
 
     if (badgeCount > 0) {
       iconWidget = badges.Badge(
@@ -163,110 +151,24 @@ class _AminoNavItem extends StatelessWidget {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
-        width: 60,
+        width: 72,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             iconWidget,
-            const SizedBox(height: 2),
-            AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 200),
+            const SizedBox(height: 4),
+            Text(
+              label,
               style: TextStyle(
                 color: color,
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
               ),
-              child: Text(label),
-            ),
-            // Indicador ativo (bolinha verde Amino)
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              margin: const EdgeInsets.only(top: 3),
-              width: isSelected ? 4 : 0,
-              height: isSelected ? 4 : 0,
-              decoration: BoxDecoration(
-                color: AppTheme.primaryColor,
-                shape: BoxShape.circle,
-              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-// ==============================================================================
-// LIVE BUTTON — Botão central destacado (estilo Amino rosa/magenta)
-// ==============================================================================
-
-class _AminoLiveButton extends StatelessWidget {
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _AminoLiveButton({required this.isSelected, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: isSelected
-                    ? [const Color(0xFFFF4081), const Color(0xFFE040FB)]
-                    : [
-                        const Color(0xFFFF4081).withValues(alpha: 0.3),
-                        const Color(0xFFE040FB).withValues(alpha: 0.3),
-                      ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              shape: BoxShape.circle,
-              boxShadow: isSelected
-                  ? [
-                      BoxShadow(
-                        color: const Color(0xFFFF4081).withValues(alpha: 0.4),
-                        blurRadius: 12,
-                        spreadRadius: 1,
-                      ),
-                    ]
-                  : [],
-            ),
-            child: Icon(
-              Icons.live_tv_rounded,
-              color: isSelected ? Colors.white : Colors.white70,
-              size: 22,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            'Live',
-            style: TextStyle(
-              color: isSelected
-                  ? const Color(0xFFFF4081)
-                  : AppTheme.textHint,
-              fontSize: 10,
-              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
-            ),
-          ),
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            margin: const EdgeInsets.only(top: 3),
-            width: isSelected ? 4 : 0,
-            height: isSelected ? 4 : 0,
-            decoration: const BoxDecoration(
-              color: Color(0xFFFF4081),
-              shape: BoxShape.circle,
-            ),
-          ),
-        ],
       ),
     );
   }

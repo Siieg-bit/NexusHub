@@ -120,7 +120,7 @@ class ProfileScreen extends ConsumerWidget {
               Icon(Icons.error_outline_rounded,
                   size: 48, color: Colors.grey[700]),
               const SizedBox(height: 12),
-              Text('Error loading profile',
+              Text('Erro ao carregar perfil',
                   style: TextStyle(color: Colors.grey[500], fontSize: 15)),
             ],
           ),
@@ -328,10 +328,10 @@ class ProfileScreen extends ConsumerWidget {
                         _StatItem(label: 'Posts', value: user.postsCount),
                         _divider(),
                         _StatItem(
-                            label: 'Followers', value: user.followersCount),
+                            label: 'Seguidores', value: user.followersCount),
                         _divider(),
                         _StatItem(
-                            label: 'Following', value: user.followingCount),
+                            label: 'Seguindo', value: user.followingCount),
                         _divider(),
                         _StatItem(label: 'Rep', value: user.reputation),
                       ],
@@ -369,7 +369,7 @@ class ProfileScreen extends ConsumerWidget {
                                       Icon(Icons.edit_rounded,
                                           size: 16, color: Colors.grey[400]),
                                       const SizedBox(width: 8),
-                                      Text('Edit Profile',
+                                      Text('Editar Perfil',
                                           style: TextStyle(
                                               color: Colors.grey[300],
                                               fontWeight: FontWeight.w600,
@@ -417,8 +417,8 @@ class ProfileScreen extends ConsumerWidget {
                                   child: Center(
                                     child: Text(
                                       user.isFollowing == true
-                                          ? 'Following'
-                                          : 'Follow',
+                                          ? 'Seguindo'
+                                          : 'Seguir',
                                       style: TextStyle(
                                         color: user.isFollowing == true
                                             ? AppTheme.primaryColor
@@ -514,7 +514,7 @@ class ProfileScreen extends ConsumerWidget {
                               Icon(Icons.people_outline_rounded,
                                   size: 14, color: Colors.grey[500]),
                               const SizedBox(width: 4),
-                              Text('Followers',
+                              Text('Seguidores',
                                   style: TextStyle(
                                       color: Colors.grey[500], fontSize: 12)),
                             ],
@@ -552,7 +552,7 @@ class ProfileScreen extends ConsumerWidget {
                               Icon(Icons.article_outlined,
                                   size: 48, color: Colors.grey[700]),
                               const SizedBox(height: 12),
-                              Text('No posts yet',
+                              Text('Nenhum post ainda',
                                   style: TextStyle(
                                       color: Colors.grey[500],
                                       fontWeight: FontWeight.w600)),
@@ -645,18 +645,18 @@ class ProfileScreen extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            _optionTile(Icons.comment_rounded, 'View Wall', () {
+            _optionTile(Icons.comment_rounded, 'Ver Mural', () {
               Navigator.pop(ctx);
               context.push('/profile/$userId/wall');
             }),
-            _optionTile(Icons.people_rounded, 'Followers', () {
+            _optionTile(Icons.people_rounded, 'Seguidores', () {
               Navigator.pop(ctx);
               context.push('/followers/$userId');
             }),
-            _optionTile(Icons.flag_rounded, 'Report', () {
+            _optionTile(Icons.flag_rounded, 'Denunciar', () {
               Navigator.pop(ctx);
             }, isDestructive: true),
-            _optionTile(Icons.block_rounded, 'Block', () {
+            _optionTile(Icons.block_rounded, 'Bloquear', () {
               Navigator.pop(ctx);
             }, isDestructive: true),
           ],
@@ -720,7 +720,7 @@ class _FreeCoinsBadge extends StatelessWidget {
             Icon(Icons.monetization_on_rounded, color: Colors.white, size: 16),
             SizedBox(width: 4),
             Text(
-              'Free Coins',
+              'Moedas Grátis',
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w800,
@@ -806,7 +806,7 @@ class _LevelBar extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Level ${user.level}',
+                    Text('Nível ${user.level}',
                         style: TextStyle(
                             color: levelColor,
                             fontWeight: FontWeight.w700,

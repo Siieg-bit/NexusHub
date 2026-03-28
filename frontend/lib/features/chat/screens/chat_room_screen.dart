@@ -200,7 +200,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e'),
+            content: Text('Erro: $e'),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -228,7 +228,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Upload error: $e'),
+            content: Text('Erro no upload: $e'),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -244,7 +244,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.surfaceColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Send Tip',
+        title: const Text('Enviar Gorjeta',
             style: TextStyle(
                 color: AppTheme.textPrimary, fontWeight: FontWeight.w700)),
         content: TextField(
@@ -252,7 +252,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           keyboardType: TextInputType.number,
           style: const TextStyle(color: AppTheme.textPrimary),
           decoration: InputDecoration(
-            labelText: 'Amount of coins',
+            labelText: 'Quantidade de moedas',
             labelStyle: TextStyle(color: Colors.grey[500]),
             prefixIcon: const Icon(Icons.monetization_on_rounded,
                 color: AppTheme.warningColor),
@@ -267,7 +267,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: Text('Cancel',
+              child: Text('Cancelar',
                   style: TextStyle(color: Colors.grey[500]))),
           ElevatedButton(
             onPressed: () =>
@@ -277,7 +277,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
             ),
-            child: const Text('Send',
+            child: const Text('Enviar',
                 style: TextStyle(
                     color: Colors.white, fontWeight: FontWeight.w700)),
           ),
@@ -417,10 +417,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               }
             },
             itemBuilder: (ctx) => [
-              _buildPopupItem('members', Icons.people_rounded, 'Members'),
-              _buildPopupItem('settings', Icons.settings_rounded, 'Settings'),
+              _buildPopupItem('members', Icons.people_rounded, 'Membros'),
+              _buildPopupItem('settings', Icons.settings_rounded, 'Configurações'),
               _buildPopupItem(
-                  'leave', Icons.exit_to_app_rounded, 'Leave Chat',
+                  'leave', Icons.exit_to_app_rounded, 'Sair do Chat',
                   isDestructive: true),
             ],
           ),
@@ -495,7 +495,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                     fontSize: 15,
                                     fontWeight: FontWeight.w600)),
                             const SizedBox(height: 6),
-                            Text('Start the conversation!',
+                            Text('Comece a conversa!',
                                 style: TextStyle(
                                     color: Colors.grey[600], fontSize: 12)),
                           ],
@@ -835,14 +835,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           backgroundColor: AppTheme.surfaceColor,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('Create Poll',
+          title: const Text('Criar Enquete',
               style: TextStyle(
                   color: AppTheme.textPrimary, fontWeight: FontWeight.w700)),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _dialogInput(questionCtrl, 'Question'),
+                _dialogInput(questionCtrl, 'Pergunta'),
                 const SizedBox(height: 8),
                 ...List.generate(
                     optionCtrls.length,
@@ -861,7 +861,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         Icon(Icons.add_rounded,
                             size: 16, color: AppTheme.primaryColor),
                         const SizedBox(width: 4),
-                        Text('Add Option',
+                        Text('Adicionar Opção',
                             style: TextStyle(
                                 color: AppTheme.primaryColor,
                                 fontSize: 13,
@@ -915,14 +915,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.surfaceColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Share Link',
+        title: const Text('Compartilhar Link',
             style: TextStyle(
                 color: AppTheme.textPrimary, fontWeight: FontWeight.w700)),
         content: _dialogInput(linkCtrl, 'https://...', icon: Icons.link_rounded),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: Text('Cancel',
+              child: Text('Cancelar',
                   style: TextStyle(color: Colors.grey[500]))),
           ElevatedButton(
             onPressed: () {
@@ -935,7 +935,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
             ),
-            child: const Text('Send',
+            child: const Text('Enviar',
                 style: TextStyle(
                     color: Colors.white, fontWeight: FontWeight.w700)),
           ),
@@ -1015,30 +1015,30 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   .toList(),
             ),
             const SizedBox(height: 16),
-            _actionTile(Icons.reply_rounded, 'Reply', () {
+            _actionTile(Icons.reply_rounded, 'Responder', () {
               Navigator.pop(ctx);
               setState(() => _replyingTo = message);
             }),
-            _actionTile(Icons.copy_rounded, 'Copy', () {
+            _actionTile(Icons.copy_rounded, 'Copiar', () {
               Navigator.pop(ctx);
               Clipboard.setData(ClipboardData(text: message.content ?? ''));
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Copied!'),
+                  content: Text('Copiado!'),
                   backgroundColor: AppTheme.primaryColor,
                 ),
               );
             }),
-            _actionTile(Icons.forward_rounded, 'Forward', () {
+            _actionTile(Icons.forward_rounded, 'Encaminhar', () {
               Navigator.pop(ctx);
               // TODO: Forward message
             }),
-            _actionTile(Icons.push_pin_rounded, 'Pin Message', () {
+            _actionTile(Icons.push_pin_rounded, 'Fixar Mensagem', () {
               Navigator.pop(ctx);
               _pinMessage(message.id);
             }),
             if (message.authorId == SupabaseService.currentUserId)
-              _actionTile(Icons.delete_rounded, 'Delete', () async {
+              _actionTile(Icons.delete_rounded, 'Excluir', () async {
                 Navigator.pop(ctx);
                 await SupabaseService.table('chat_messages')
                     .delete()
@@ -1545,7 +1545,7 @@ class _MessageBubble extends StatelessWidget {
                 ),
               ),
               child: Text(
-                'Replying...',
+                'Respondendo...',
                 style: TextStyle(
                   color: isMe
                       ? Colors.white.withValues(alpha: 0.6)
@@ -1567,8 +1567,8 @@ class _MessageBubble extends StatelessWidget {
         final sharedType = type == 'shared_post'
             ? 'Post'
             : type == 'shared_user'
-                ? 'Profile'
-                : 'Community';
+                ? 'Perfil'
+                : 'Comunidade';
         return Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
@@ -1580,7 +1580,7 @@ class _MessageBubble extends StatelessWidget {
             children: [
               Icon(Icons.share_rounded, color: textColor, size: 16),
               const SizedBox(width: 8),
-              Text('Shared $sharedType',
+              Text('$sharedType compartilhado',
                   style: TextStyle(
                       color: textColor,
                       fontSize: 13,

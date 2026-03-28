@@ -2,22 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Tema visual do NexusHub — réplica fiel do Amino Apps.
-/// Cores extraídas do web-preview (index.css) como verdade absoluta.
+/// Cores extraídas do Amino original (APK real) como verdade absoluta.
+/// Fundo roxo-índigo, destaque ciano/teal, verde apenas para CTAs.
 class AppTheme {
   AppTheme._();
 
   // ============================================================================
-  // CORES PRIMÁRIAS — AMINO GREEN (verdade absoluta do web-preview)
+  // CORES PRIMÁRIAS — AMINO (verdade absoluta do app original)
   // ============================================================================
 
-  static const Color primaryColor = Color(0xFF2DBE60); // amino-green
+  /// Verde Amino — usado APENAS para botões CTA (CHECK IN, Join, Entrar)
+  static const Color primaryColor = Color(0xFF2DBE60); // amino-green (CTA only)
   static const Color primaryLight = Color(0xFF5CD882);
   static const Color primaryDark = Color(0xFF1E9B4A);
-  static const Color accentColor = Color(0xFF00CEC9); // amino-cyan
-  static const Color accentLight = Color(0xFF81ECEC);
+
+  /// Ciano/Teal — cor de destaque principal (nav ativa, links, destaques)
+  static const Color accentColor = Color(0xFF00BFA5); // amino-teal (destaque)
+  static const Color accentLight = Color(0xFF64FFDA);
 
   // ============================================================================
-  // CORES AMINO EXTRAS (do web-preview CSS)
+  // CORES AMINO EXTRAS (do app original)
   // ============================================================================
 
   static const Color aminoPurple = Color(0xFF7C3AED); // amino-purple
@@ -29,15 +33,16 @@ class AppTheme {
   static const Color aminoCyan = Color(0xFF00BCD4); // amino-cyan (check-in)
 
   // ============================================================================
-  // CORES DE FUNDO — DARK THEME (padrão do Amino)
+  // CORES DE FUNDO — DARK THEME (padrão do Amino original)
+  // Amino usa roxo-índigo escuro, NÃO preto puro
   // ============================================================================
 
-  static const Color scaffoldBg = Color(0xFF0F0F1A); // --background
-  static const Color surfaceColor = Color(0xFF1A1A2E); // --card
-  static const Color cardColor = Color(0xFF1E1E38); // --card levemente mais claro
-  static const Color cardColorLight = Color(0xFF2A2A45); // hover/elevated card
-  static const Color bottomNavBg = Color(0xFF0D0D1A); // --sidebar / amino-nav
-  static const Color dividerColor = Color(0xFF2D2D44); // --border
+  static const Color scaffoldBg = Color(0xFF1A1A3E); // roxo-índigo escuro
+  static const Color surfaceColor = Color(0xFF22224A); // card/surface roxo
+  static const Color cardColor = Color(0xFF2A2A5E); // card roxo semi-transparente
+  static const Color cardColorLight = Color(0xFF33336A); // hover/elevated card
+  static const Color bottomNavBg = Color(0xFF12122E); // nav bar roxo escuro
+  static const Color dividerColor = Color(0xFF3A3A6E); // borda roxa sutil
 
   // ============================================================================
   // CORES DE FUNDO — LIGHT THEME
@@ -55,8 +60,8 @@ class AppTheme {
   // ============================================================================
 
   static const Color textPrimary = Color(0xFFF2F2F2); // --foreground
-  static const Color textSecondary = Color(0xFF9999AA); // --muted-foreground
-  static const Color textHint = Color(0xFF666680);
+  static const Color textSecondary = Color(0xFF9999BB); // --muted-foreground (tom roxo)
+  static const Color textHint = Color(0xFF666688); // hint com tom roxo
 
   static const Color textPrimaryLight = Color(0xFF1A1A2E);
   static const Color textSecondaryLight = Color(0xFF666680);
@@ -66,7 +71,7 @@ class AppTheme {
   // CORES DE STATUS
   // ============================================================================
 
-  static const Color successColor = Color(0xFF2DBE60); // mesmo que primary (Amino)
+  static const Color successColor = Color(0xFF2DBE60); // verde Amino
   static const Color errorColor = Color(0xFFE53935); // amino-red
   static const Color warningColor = Color(0xFFFF9800); // amino-orange
   static const Color infoColor = Color(0xFF2979FF); // amino-blue
@@ -74,7 +79,7 @@ class AppTheme {
   static const Color offlineColor = Color(0xFF636E72);
 
   // ============================================================================
-  // CORES DE BADGES (do web-preview CSS)
+  // CORES DE BADGES (do Amino original)
   // ============================================================================
 
   static const Color badgeLeader = Color(0xFF2DBE60);
@@ -117,11 +122,21 @@ class AppTheme {
   }
 
   // ============================================================================
+  // CORES ESPECIAIS — WALLET / STORE (Amino original)
+  // ============================================================================
+
+  static const Color walletHeaderBg = Color(0xFF4FC3F7); // azul celeste da carteira
+  static const Color walletHeaderDark = Color(0xFF29B6F6);
+  static const Color aminoPlusBannerStart = Color(0xFFFF9800); // gradiente laranja
+  static const Color aminoPlusBannerEnd = Color(0xFFFFB74D);
+  static const Color coinGold = Color(0xFFFFD700); // moeda dourada
+
+  // ============================================================================
   // GRADIENTES AMINO
   // ============================================================================
 
   static const LinearGradient primaryGradient = LinearGradient(
-    colors: [Color(0xFF2DBE60), Color(0xFF00CEC9)],
+    colors: [Color(0xFF2DBE60), Color(0xFF00BFA5)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -138,6 +153,18 @@ class AppTheme {
     colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient walletGradient = LinearGradient(
+    colors: [Color(0xFF4FC3F7), Color(0xFF29B6F6)],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+
+  static const LinearGradient aminoPlusGradient = LinearGradient(
+    colors: [Color(0xFFFF9800), Color(0xFFFFB74D)],
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
   );
 
   // ============================================================================
@@ -192,14 +219,14 @@ class AppTheme {
       appBarTheme: const AppBarTheme(
         backgroundColor: scaffoldBg,
         elevation: 0,
-        centerTitle: false, // Amino usa título à esquerda
+        centerTitle: false,
         iconTheme: IconThemeData(color: textPrimary),
         titleTextStyle: TextStyle(
             color: textPrimary, fontSize: 18, fontWeight: FontWeight.w600),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: bottomNavBg,
-        selectedItemColor: primaryColor,
+        selectedItemColor: Colors.white,
         unselectedItemColor: textHint,
         type: BottomNavigationBarType.fixed,
         elevation: 0,
@@ -222,7 +249,7 @@ class AppTheme {
             borderSide: const BorderSide(color: dividerColor, width: 1)),
         focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: primaryColor, width: 2)),
+            borderSide: const BorderSide(color: accentColor, width: 2)),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
@@ -239,8 +266,8 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: primaryColor,
-          side: const BorderSide(color: primaryColor, width: 1.5),
+          foregroundColor: accentColor,
+          side: const BorderSide(color: accentColor, width: 1.5),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -248,7 +275,7 @@ class AppTheme {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: cardColorLight,
-        selectedColor: primaryColor.withValues(alpha: 0.3),
+        selectedColor: accentColor.withValues(alpha: 0.3),
         labelStyle: const TextStyle(color: textPrimary, fontSize: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         side: BorderSide.none,
@@ -271,9 +298,9 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
       tabBarTheme: const TabBarThemeData(
-        labelColor: primaryColor,
+        labelColor: Colors.white,
         unselectedLabelColor: textSecondary,
-        indicatorColor: primaryColor,
+        indicatorColor: Colors.white,
         indicatorSize: TabBarIndicatorSize.label,
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
@@ -388,7 +415,7 @@ class AppTheme {
             borderSide: const BorderSide(color: dividerColorLight, width: 1)),
         focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: primaryColor, width: 2)),
+            borderSide: const BorderSide(color: accentColor, width: 2)),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
@@ -405,8 +432,8 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: primaryColor,
-          side: const BorderSide(color: primaryColor, width: 1.5),
+          foregroundColor: accentColor,
+          side: const BorderSide(color: accentColor, width: 1.5),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -414,7 +441,7 @@ class AppTheme {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: cardColorLtAlt,
-        selectedColor: primaryColor.withValues(alpha: 0.15),
+        selectedColor: accentColor.withValues(alpha: 0.15),
         labelStyle: const TextStyle(color: textPrimaryLight, fontSize: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         side: BorderSide.none,

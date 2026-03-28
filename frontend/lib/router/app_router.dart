@@ -93,7 +93,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
 
       // ====================================================================
-      // SHELL (BOTTOM NAVIGATION — 5 TABS)
+      // SHELL (BOTTOM NAVIGATION — 4 TABS: Descubra, Comunidades, Chats, Loja)
       // ====================================================================
       ShellRoute(
         builder: (context, state, child) => ShellScreen(child: child),
@@ -115,19 +115,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             name: 'communities',
             builder: (context, state) => const CommunityListScreen(),
           ),
-          // LIVE (tab 2)
-          GoRoute(
-            path: '/live',
-            name: 'live',
-            builder: (context, state) => const LiveScreen(),
-          ),
-          // CHATS (tab 3)
+          // CHATS (tab 2)
           GoRoute(
             path: '/chats',
             name: 'chats',
             builder: (context, state) => const ChatListScreen(),
           ),
-          // STORE (tab 4)
+          // STORE (tab 3)
           GoRoute(
             path: '/store',
             name: 'store',

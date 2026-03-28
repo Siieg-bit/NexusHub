@@ -122,7 +122,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                    data['message'] as String? ?? 'Not enough coins'),
+                    data['message'] as String? ?? 'Moedas insuficientes'),
                 backgroundColor: AppTheme.errorColor,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
@@ -136,7 +136,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e'),
+            content: Text('Erro: $e'),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -170,7 +170,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                    data['message'] as String? ?? 'Already checked in today!'),
+                    data['message'] as String? ?? 'Você já fez check-in hoje!'),
                 backgroundColor: AppTheme.warningColor,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
@@ -184,7 +184,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e'),
+            content: Text('Erro: $e'),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -518,15 +518,15 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
           ),
           const SizedBox(height: 10),
           if (_luckyDrawUsed && _luckyDrawPrize > 0)
-            Text('You won $_luckyDrawPrize extra coins!',
+            Text('Você ganhou $_luckyDrawPrize moedas extras!',
                 style: const TextStyle(
                     color: AppTheme.primaryColor,
                     fontWeight: FontWeight.w700))
           else if (_luckyDrawUsed)
-            Text('Better luck next time!',
+            Text('Mais sorte na próxima vez!',
                 style: TextStyle(color: Colors.grey[500]))
           else ...[
-            Text('Try your luck for extra coins!',
+            Text('Tente a sorte por moedas extras!',
                 style: TextStyle(color: Colors.grey[500], fontSize: 13)),
             const SizedBox(height: 12),
             GestureDetector(
