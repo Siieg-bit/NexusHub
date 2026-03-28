@@ -148,10 +148,10 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
 
             // ── Grade horizontal de cards ──
             SizedBox(
-              height: 190,
+              height: 195,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.only(left: 12, right: 8, top: 14),
+                padding: const EdgeInsets.only(left: 14, right: 8, top: 18),
                 itemCount: communities.length + 1,
                 itemBuilder: (context, index) {
                   if (index < communities.length) {
@@ -346,8 +346,8 @@ class _AminoCommunityCard extends StatelessWidget {
   final VoidCallback onLongPress;
 
   static const double _cardWidth = 120;
-  static const double _iconSize = 30;
-  static const double _iconOverflow = 12;
+  static const double _iconSize = 34;
+  static const double _iconOverflow = 16;
 
   const _AminoCommunityCard({
     required this.community,
@@ -507,21 +507,21 @@ class _AminoCommunityCard extends StatelessWidget {
               ),
             ),
 
-            // ── Ícone flutuante (canto superior esquerdo, parcialmente fora) ──
+            // ── Ícone flutuante (acima e à esquerda do card, parcialmente fora) ──
             Positioned(
               top: 0,
-              left: 6,
+              left: 4,
               child: Container(
                 width: _iconSize,
                 height: _iconSize,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(7),
-                  color: const Color(0xFF1E1E3A),
-                  border: Border.all(color: color, width: 2),
+                  borderRadius: BorderRadius.circular(8),
+                  color: const Color(0xFF1A1A2E),
+                  border: Border.all(color: color, width: 2.5),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.5),
-                      blurRadius: 4,
+                      color: Colors.black.withValues(alpha: 0.6),
+                      blurRadius: 6,
                       offset: const Offset(0, 2),
                     ),
                   ],
@@ -531,11 +531,11 @@ class _AminoCommunityCard extends StatelessWidget {
                     ? CachedNetworkImage(
                         imageUrl: community.iconUrl!,
                         fit: BoxFit.cover,
-                        memCacheWidth: 64,
-                        memCacheHeight: 64,
+                        memCacheWidth: 96,
+                        memCacheHeight: 96,
                       )
-                    : Icon(Icons.groups_rounded,
-                        color: AppTheme.textHint, size: 14),
+                    : const Icon(Icons.person,
+                        color: Colors.white54, size: 18),
               ),
             ),
           ],
@@ -560,7 +560,7 @@ class _JoinCommunityCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: 120,
-        margin: const EdgeInsets.only(top: 14),
+        margin: const EdgeInsets.only(top: 18),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           color: const Color(0xFF2A2A5E).withValues(alpha: 0.5),
