@@ -49,24 +49,24 @@ class _LiveScreenState extends State<LiveScreen> {
     final result = await showDialog<Map<String, String>>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surfaceColor,
+        backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Criar Screening Room',
             style: TextStyle(
-                color: AppTheme.textPrimary, fontWeight: FontWeight.w800)),
+                color: context.textPrimary, fontWeight: FontWeight.w800)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: titleController,
-              style: const TextStyle(color: AppTheme.textPrimary),
+              style: TextStyle(color: context.textPrimary),
               decoration: InputDecoration(
                 hintText: 'Nome da sala',
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 prefixIcon: const Icon(Icons.live_tv_rounded,
                     color: AppTheme.accentColor),
                 filled: true,
-                fillColor: AppTheme.cardColor,
+                fillColor: context.cardBg,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -186,16 +186,16 @@ class _LiveScreenState extends State<LiveScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
-        backgroundColor: AppTheme.surfaceColor,
+        backgroundColor: context.surfaceColor,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        iconTheme: IconThemeData(color: context.textPrimary),
         title: const Text(
           'Live',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: AppTheme.textPrimary,
+            color: context.textPrimary,
           ),
         ),
       ),
@@ -247,7 +247,7 @@ class _LiveScreenState extends State<LiveScreen> {
               const Text(
                 'Nenhuma Sala Ativa',
                 style: TextStyle(
-                  color: AppTheme.textPrimary,
+                  color: context.textPrimary,
                   fontWeight: FontWeight.w800,
                   fontSize: 20,
                 ),
@@ -290,7 +290,7 @@ class _LiveScreenState extends State<LiveScreen> {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppTheme.cardColor,
+          color: context.cardBg,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
@@ -314,8 +314,8 @@ class _LiveScreenState extends State<LiveScreen> {
                 children: [
                   Text(
                     _typeLabel(type),
-                    style: const TextStyle(
-                      color: AppTheme.textPrimary,
+                    style: TextStyle(
+                      color: context.textPrimary,
                       fontWeight: FontWeight.w700,
                       fontSize: 15,
                     ),
@@ -331,7 +331,7 @@ class _LiveScreenState extends State<LiveScreen> {
                       else
                         CircleAvatar(
                           radius: 8,
-                          backgroundColor: AppTheme.surfaceColor,
+                          backgroundColor: context.surfaceColor,
                           child: Text(creatorName[0].toUpperCase(),
                               style: const TextStyle(fontSize: 8)),
                         ),

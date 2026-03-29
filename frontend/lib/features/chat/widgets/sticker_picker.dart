@@ -126,8 +126,8 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: AppTheme.scaffoldBg,
+      decoration: BoxDecoration(
+        color: context.scaffoldBg,
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: _isLoading
@@ -141,7 +141,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: AppTheme.textHint,
+                      color: context.textHint,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -158,7 +158,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
                   controller: _tabController,
                   isScrollable: true,
                   labelColor: AppTheme.primaryColor,
-                  unselectedLabelColor: AppTheme.textSecondary,
+                  unselectedLabelColor: context.textSecondary,
                   indicatorColor: AppTheme.primaryColor,
                   tabs: _packs
                       .map((p) => Tab(text: p['name'] as String))
@@ -202,7 +202,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
           }),
           child: Container(
             decoration: BoxDecoration(
-              color: AppTheme.cardColor,
+              color: context.cardBg,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
@@ -219,7 +219,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
     if (stickers.isEmpty) {
       return const Center(
         child: Text('Nenhum sticker neste pack',
-            style: TextStyle(color: AppTheme.textSecondary)),
+            style: TextStyle(color: context.textSecondary)),
       );
     }
     return GridView.builder(
@@ -241,7 +241,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
           }),
           child: Container(
             decoration: BoxDecoration(
-              color: AppTheme.cardColor,
+              color: context.cardBg,
               borderRadius: BorderRadius.circular(12),
             ),
             child: imageUrl.isNotEmpty

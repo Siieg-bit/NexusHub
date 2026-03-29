@@ -124,7 +124,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
     ref.watch(checkInStatusProvider);
 
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       body: AminoParticlesBg(
         child: Column(
           children: [
@@ -181,7 +181,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
-                  color: AppTheme.textPrimary,
+                  color: context.textPrimary,
                 ),
               ),
             ),
@@ -288,12 +288,12 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.groups_rounded,
-                color: AppTheme.textHint, size: 48),
+                color: context.textHint, size: 48),
             const SizedBox(height: 12),
             const Text(
               'Nenhuma comunidade',
               style: TextStyle(
-                color: AppTheme.textPrimary,
+                color: context.textPrimary,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
               ),
@@ -302,7 +302,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
             const Text(
               'Explore e entre em comunidades para começar!',
               style: TextStyle(
-                color: AppTheme.textSecondary,
+                color: context.textSecondary,
                 fontSize: 13,
               ),
               textAlign: TextAlign.center,
@@ -343,7 +343,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
           const SizedBox(height: 10),
           const Text(
             'Erro ao carregar comunidades',
-            style: TextStyle(color: AppTheme.textPrimary, fontSize: 14),
+            style: TextStyle(color: context.textPrimary, fontSize: 14),
           ),
           const SizedBox(height: 12),
           GestureDetector(
@@ -643,7 +643,7 @@ class _AminoCommunityCardState extends State<_AminoCommunityCard> {
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(vertical: 3),
                           decoration: BoxDecoration(
-                            color: AppTheme.cardColorLight,
+                            color: context.cardBgLight,
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Row(
@@ -682,7 +682,7 @@ class _AminoCommunityCardState extends State<_AminoCommunityCard> {
                 height: _AminoCommunityCard._iconSize,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
-                  color: AppTheme.scaffoldBg,
+                  color: context.scaffoldBg,
                   border: Border.all(color: color, width: 2.5),
                   boxShadow: [
                     BoxShadow(
@@ -729,7 +729,7 @@ class _JoinCommunityCard extends StatelessWidget {
         margin: const EdgeInsets.only(top: 18),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          color: AppTheme.cardColorLight.withValues(alpha: 0.5),
+          color: context.cardBgLight.withValues(alpha: 0.5),
           border: Border.all(
             color: Colors.white.withValues(alpha: 0.06),
             width: 0.5,
@@ -859,8 +859,8 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
     final streak = myStatus?['consecutive_checkin_days'] as int? ?? 0;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: AppTheme.surfaceColor,
+      decoration: BoxDecoration(
+        color: context.surfaceColor,
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: Column(
@@ -926,7 +926,7 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
-                        AppTheme.surfaceColor.withValues(alpha: 0.9),
+                        context.surfaceColor.withValues(alpha: 0.9),
                       ],
                     ),
                   ),
@@ -945,7 +945,7 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
                   height: 48,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    color: AppTheme.cardColor,
+                    color: context.cardBg,
                     border: Border.all(color: color, width: 2),
                   ),
                   clipBehavior: Clip.antiAlias,
@@ -955,7 +955,7 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
                           fit: BoxFit.cover,
                         )
                       : Icon(Icons.groups_rounded,
-                          color: AppTheme.textHint, size: 24),
+                          color: context.textHint, size: 24),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -964,8 +964,8 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
                     children: [
                       Text(
                         widget.community.name,
-                        style: const TextStyle(
-                          color: AppTheme.textPrimary,
+                        style: TextStyle(
+                          color: context.textPrimary,
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
                         ),
@@ -976,8 +976,8 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
                         const SizedBox(height: 2),
                         Text(
                           widget.community.tagline,
-                          style: const TextStyle(
-                            color: AppTheme.textSecondary,
+                          style: TextStyle(
+                            color: context.textSecondary,
                             fontSize: 11,
                           ),
                           maxLines: 1,
@@ -1028,8 +1028,8 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 widget.community.description,
-                style: const TextStyle(
-                  color: AppTheme.textSecondary,
+                style: TextStyle(
+                  color: context.textSecondary,
                   fontSize: 12,
                   height: 1.4,
                 ),
@@ -1110,7 +1110,7 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 11),
                     decoration: BoxDecoration(
-                      color: AppTheme.cardColor,
+                      color: context.cardBg,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                           color: AppTheme.warningColor.withValues(alpha: 0.4),

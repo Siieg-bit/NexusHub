@@ -230,20 +230,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
     return profileAsync.when(
       loading: () => Scaffold(
-        backgroundColor: AppTheme.scaffoldBg,
+        backgroundColor: context.scaffoldBg,
         body: const Center(
           child: CircularProgressIndicator(
               color: AppTheme.accentColor, strokeWidth: 2),
         ),
       ),
       error: (error, _) => Scaffold(
-        backgroundColor: AppTheme.scaffoldBg,
+        backgroundColor: context.scaffoldBg,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_rounded,
-                color: AppTheme.textPrimary, size: 20),
+            icon: Icon(Icons.arrow_back_ios_rounded,
+                color: context.textPrimary, size: 20),
             onPressed: () => context.pop(),
           ),
         ),
@@ -280,7 +280,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         final isAminoPlus = user.isPremium || IAPService.isAminoPlus;
 
         return Scaffold(
-          backgroundColor: AppTheme.scaffoldBg,
+          backgroundColor: context.scaffoldBg,
           body: NestedScrollView(
             headerSliverBuilder: (context, innerBoxIsScrolled) => [
               // ================================================================
@@ -288,7 +288,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               // ================================================================
               SliverAppBar(
                 pinned: true,
-                backgroundColor: AppTheme.scaffoldBg.withValues(alpha: 0.95),
+                backgroundColor: context.scaffoldBg.withValues(alpha: 0.95),
                 elevation: 0,
                 leading: IconButton(
                   icon: const Icon(Icons.arrow_back_ios_rounded,
@@ -483,8 +483,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           Flexible(
                             child: Text(
                               user.nickname,
-                              style: const TextStyle(
-                                color: AppTheme.textPrimary,
+                              style: TextStyle(
+                                color: context.textPrimary,
                                 fontWeight: FontWeight.w800,
                                 fontSize: 22,
                               ),
@@ -540,8 +540,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                               children: [
                                 Text(
                                   _formatCount(user.followersCount),
-                                  style: const TextStyle(
-                                    color: AppTheme.textPrimary,
+                                  style: TextStyle(
+                                    color: context.textPrimary,
                                     fontWeight: FontWeight.w800,
                                     fontSize: 20,
                                   ),
@@ -575,8 +575,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                               children: [
                                 Text(
                                   _formatCount(user.followingCount),
-                                  style: const TextStyle(
-                                    color: AppTheme.textPrimary,
+                                  style: TextStyle(
+                                    color: context.textPrimary,
                                     fontWeight: FontWeight.w800,
                                     fontSize: 20,
                                   ),
@@ -735,7 +735,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 delegate: _TabBarDelegate(
                   tabBar: TabBar(
                     controller: _tabController,
-                    labelColor: AppTheme.textPrimary,
+                    labelColor: context.textPrimary,
                     unselectedLabelColor: Colors.grey[600],
                     labelStyle: const TextStyle(
                       fontWeight: FontWeight.w800,
@@ -745,7 +745,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       fontWeight: FontWeight.w600,
                       fontSize: 16,
                     ),
-                    indicatorColor: AppTheme.textPrimary,
+                    indicatorColor: context.textPrimary,
                     indicatorWeight: 3,
                     indicatorSize: TabBarIndicatorSize.label,
                     tabs: const [
@@ -822,7 +822,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   void _showUserOptions(BuildContext context, UserModel user) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.surfaceColor,
+      backgroundColor: context.surfaceColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -953,8 +953,8 @@ class _LinkedCommunitiesSection extends ConsumerWidget {
                               children: [
                                 Text(
                                   community.name,
-                                  style: const TextStyle(
-                                    color: AppTheme.textPrimary,
+                                  style: TextStyle(
+                                    color: context.textPrimary,
                                     fontWeight: FontWeight.w700,
                                     fontSize: 13,
                                   ),
@@ -992,14 +992,14 @@ class _LinkedCommunitiesSection extends ConsumerWidget {
       width: 32,
       height: 32,
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Center(
         child: Text(
           community.name.isNotEmpty ? community.name[0].toUpperCase() : '?',
-          style: const TextStyle(
-            color: AppTheme.textPrimary,
+          style: TextStyle(
+            color: context.textPrimary,
             fontWeight: FontWeight.w800,
             fontSize: 14,
           ),
@@ -1088,7 +1088,7 @@ class _WallTab extends ConsumerWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: AppTheme.surfaceColor,
+            color: context.surfaceColor,
             border: Border(
               bottom: BorderSide(
                 color: Colors.white.withValues(alpha: 0.05),
@@ -1100,8 +1100,8 @@ class _WallTab extends ConsumerWidget {
               Expanded(
                 child: TextField(
                   controller: wallController,
-                  style: const TextStyle(
-                      color: AppTheme.textPrimary, fontSize: 14),
+                  style: TextStyle(
+                      color: context.textPrimary, fontSize: 14),
                   decoration: InputDecoration(
                     hintText: 'Escreva no mural...',
                     hintStyle: TextStyle(color: Colors.grey[600], fontSize: 14),
@@ -1175,7 +1175,7 @@ class _WallTab extends ConsumerWidget {
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: AppTheme.surfaceColor,
+                      color: context.surfaceColor,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: Colors.white.withValues(alpha: 0.05),
@@ -1220,8 +1220,8 @@ class _WallTab extends ConsumerWidget {
                                   Text(
                                     profile['nickname'] as String? ??
                                         'Usuário',
-                                    style: const TextStyle(
-                                      color: AppTheme.textPrimary,
+                                    style: TextStyle(
+                                      color: context.textPrimary,
                                       fontWeight: FontWeight.w700,
                                       fontSize: 13,
                                     ),
@@ -1390,7 +1390,7 @@ class _PinnedWikisSectionState extends State<_PinnedWikisSection> {
                   child: Container(
                     width: 140,
                     decoration: BoxDecoration(
-                      color: AppTheme.surfaceColor,
+                      color: context.surfaceColor,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: Colors.white.withValues(alpha: 0.08),
@@ -1443,8 +1443,8 @@ class _PinnedWikisSectionState extends State<_PinnedWikisSection> {
                               children: [
                                 Text(
                                   title,
-                                  style: const TextStyle(
-                                    color: AppTheme.textPrimary,
+                                  style: TextStyle(
+                                    color: context.textPrimary,
                                     fontWeight: FontWeight.w700,
                                     fontSize: 11,
                                   ),
@@ -1496,7 +1496,7 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      color: AppTheme.scaffoldBg,
+      color: context.scaffoldBg,
       child: tabBar,
     );
   }

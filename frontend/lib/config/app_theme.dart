@@ -496,3 +496,33 @@ class AppTheme {
     );
   }
 }
+
+/// Extension em BuildContext para acessar cores theme-aware.
+///
+/// Em vez de usar `AppTheme.scaffoldBg` (sempre dark), use `context.scaffoldBg`
+/// que retorna a cor correta baseada no tema atual (dark ou light).
+///
+/// Exemplo:
+/// ```dart
+/// // ANTES (hardcoded dark):
+/// backgroundColor: AppTheme.scaffoldBg,
+///
+/// // DEPOIS (theme-aware):
+/// backgroundColor: context.scaffoldBg,
+/// ```
+extension NexusColors on BuildContext {
+  bool get _isDark => Theme.of(this).brightness == Brightness.dark;
+
+  // ── Fundos ──
+  Color get scaffoldBg => _isDark ? AppTheme.scaffoldBg : AppTheme.scaffoldBgLight;
+  Color get surfaceColor => _isDark ? AppTheme.surfaceColor : AppTheme.surfaceColorLight;
+  Color get cardBg => _isDark ? AppTheme.cardColor : AppTheme.cardColorLt;
+  Color get cardBgAlt => _isDark ? AppTheme.cardColorLight : AppTheme.cardColorLtAlt;
+  Color get bottomNavBg => _isDark ? AppTheme.bottomNavBg : AppTheme.bottomNavBgLight;
+  Color get dividerClr => _isDark ? AppTheme.dividerColor : AppTheme.dividerColorLight;
+
+  // ── Textos ──
+  Color get textPrimary => _isDark ? AppTheme.textPrimary : AppTheme.textPrimaryLight;
+  Color get textSecondary => _isDark ? AppTheme.textSecondary : AppTheme.textSecondaryLight;
+  Color get textHint => _isDark ? AppTheme.textHint : AppTheme.textHintLight;
+}

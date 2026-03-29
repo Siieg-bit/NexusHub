@@ -310,13 +310,13 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: const Text('Ação de Moderação',
-            style: TextStyle(fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+            style: TextStyle(fontWeight: FontWeight.w800, color: context.textPrimary)),
+        iconTheme: IconThemeData(color: context.textPrimary),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
@@ -330,7 +330,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppTheme.surfaceColor,
+                        color: context.surfaceColor,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
                       ),
@@ -338,13 +338,13 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                         children: [
                           CircleAvatar(
                             radius: 24,
-                            backgroundColor: AppTheme.scaffoldBg,
+                            backgroundColor: context.scaffoldBg,
                             backgroundImage: _targetUser!['icon_url'] != null
                                 ? CachedNetworkImageProvider(
                                     _targetUser!['icon_url'] as String)
                                 : null,
                             child: _targetUser!['icon_url'] == null
-                                ? const Icon(Icons.person_rounded, color: AppTheme.textPrimary)
+                                ? Icon(Icons.person_rounded, color: context.textPrimary)
                                 : null,
                           ),
                           const SizedBox(width: 12),
@@ -354,8 +354,8 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                               Text(
                                 _targetUser!['nickname'] as String? ??
                                     'Usuário',
-                                style: const TextStyle(
-                                    color: AppTheme.textPrimary,
+                                style: TextStyle(
+                                    color: context.textPrimary,
                                     fontWeight: FontWeight.w700, fontSize: 16),
                               ),
                               Text(
@@ -374,7 +374,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                   // Seleção de ação
                   const Text('Tipo de Ação',
                       style:
-                          TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w800, fontSize: 16)),
+                          TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800, fontSize: 16)),
                   const SizedBox(height: 12),
                   ..._actions.map((action) {
                     final id = action['id'] as String;
@@ -388,7 +388,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                           color: isSelected
                               ? Color(action['color'] as int)
                                   .withValues(alpha: 0.1)
-                              : AppTheme.surfaceColor,
+                              : context.surfaceColor,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: isSelected
@@ -409,7 +409,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                                   Text(
                                     action['label'] as String,
                                     style: TextStyle(
-                                        color: isSelected ? Color(action['color'] as int) : AppTheme.textPrimary,
+                                        color: isSelected ? Color(action['color'] as int) : context.textPrimary,
                                         fontWeight: FontWeight.w700,
                                         fontSize: 14),
                                   ),
@@ -437,7 +437,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                     const SizedBox(height: 16),
                     const Text('Duração',
                         style: TextStyle(
-                            color: AppTheme.textPrimary,
+                            color: context.textPrimary,
                             fontWeight: FontWeight.w800, fontSize: 16)),
                     const SizedBox(height: 8),
                     Wrap(
@@ -489,17 +489,17 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                   const SizedBox(height: 16),
                   const Text('Motivo',
                       style:
-                          TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w800, fontSize: 16)),
+                          TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800, fontSize: 16)),
                   const SizedBox(height: 8),
                   TextField(
                     controller: _reasonController,
                     maxLines: 3,
-                    style: const TextStyle(color: AppTheme.textPrimary),
+                    style: TextStyle(color: context.textPrimary),
                     decoration: InputDecoration(
                       hintText: 'Descreva o motivo da ação...',
                       hintStyle: TextStyle(color: Colors.grey[600]),
                       filled: true,
-                      fillColor: AppTheme.surfaceColor,
+                      fillColor: context.surfaceColor,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                         borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
@@ -578,7 +578,7 @@ class _DurationChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected
               ? AppTheme.errorColor.withValues(alpha: 0.15)
-              : AppTheme.surfaceColor,
+              : context.surfaceColor,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected 

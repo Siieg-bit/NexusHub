@@ -85,7 +85,7 @@ class BlockContentRenderer extends StatelessWidget {
         content,
         textAlign: alignment,
         style: TextStyle(
-          color: AppTheme.textPrimary,
+          color: context.textPrimary,
           fontSize: 15,
           height: 1.65,
           fontWeight: isBold ? FontWeight.w700 : FontWeight.w400,
@@ -107,7 +107,7 @@ class BlockContentRenderer extends StatelessWidget {
       child: Text(
         content,
         style: TextStyle(
-          color: AppTheme.textPrimary,
+          color: context.textPrimary,
           fontSize: fontSize,
           fontWeight: FontWeight.w800,
           height: 1.3,
@@ -135,7 +135,7 @@ class BlockContentRenderer extends StatelessWidget {
             fit: BoxFit.cover,
             placeholder: (_, __) => Container(
               height: 200,
-              color: AppTheme.cardColor,
+              color: context.cardBg,
               child: const Center(
                 child: CircularProgressIndicator(
                   color: AppTheme.accentColor,
@@ -145,10 +145,10 @@ class BlockContentRenderer extends StatelessWidget {
             ),
             errorWidget: (_, __, ___) => Container(
               height: 120,
-              color: AppTheme.cardColor,
+              color: context.cardBg,
               child: const Center(
                 child: Icon(Icons.broken_image_rounded,
-                    color: AppTheme.textHint, size: 32),
+                    color: context.textHint, size: 32),
               ),
             ),
           ),
@@ -163,8 +163,8 @@ class BlockContentRenderer extends StatelessWidget {
             ),
             child: Text(
               caption,
-              style: const TextStyle(
-                color: AppTheme.textSecondary,
+              style: TextStyle(
+                color: context.textSecondary,
                 fontSize: 12,
                 fontStyle: FontStyle.italic,
                 height: 1.4,
@@ -189,7 +189,7 @@ class BlockContentRenderer extends StatelessWidget {
             width: 4,
             height: 4,
             decoration: BoxDecoration(
-              color: AppTheme.textHint.withValues(alpha: 0.4),
+              color: context.textHint.withValues(alpha: 0.4),
               shape: BoxShape.circle,
             ),
           ),
@@ -198,7 +198,7 @@ class BlockContentRenderer extends StatelessWidget {
             width: 4,
             height: 4,
             decoration: BoxDecoration(
-              color: AppTheme.textHint.withValues(alpha: 0.4),
+              color: context.textHint.withValues(alpha: 0.4),
               shape: BoxShape.circle,
             ),
           ),
@@ -207,7 +207,7 @@ class BlockContentRenderer extends StatelessWidget {
             width: 4,
             height: 4,
             decoration: BoxDecoration(
-              color: AppTheme.textHint.withValues(alpha: 0.4),
+              color: context.textHint.withValues(alpha: 0.4),
               shape: BoxShape.circle,
             ),
           ),
@@ -240,7 +240,7 @@ class BlockContentRenderer extends StatelessWidget {
         child: Text(
           content,
           style: TextStyle(
-            color: AppTheme.textPrimary.withValues(alpha: 0.85),
+            color: context.textPrimary.withValues(alpha: 0.85),
             fontSize: 14,
             fontStyle: FontStyle.italic,
             height: 1.5,
@@ -261,10 +261,10 @@ class BlockContentRenderer extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppTheme.cardColor,
+          color: context.cardBg,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: AppTheme.dividerColor.withValues(alpha: 0.2),
+            color: context.dividerClr.withValues(alpha: 0.2),
           ),
         ),
         child: Row(
@@ -298,8 +298,8 @@ class BlockContentRenderer extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       preview,
-                      style: const TextStyle(
-                        color: AppTheme.textSecondary,
+                      style: TextStyle(
+                        color: context.textSecondary,
                         fontSize: 11,
                       ),
                       maxLines: 2,
@@ -363,8 +363,8 @@ class BlockContentPreview extends StatelessWidget {
         if (textContent.isNotEmpty)
           Text(
             textContent,
-            style: const TextStyle(
-              color: AppTheme.textSecondary,
+            style: TextStyle(
+              color: context.textSecondary,
               fontSize: 13,
               height: 1.4,
             ),
@@ -382,7 +382,7 @@ class BlockContentPreview extends StatelessWidget {
               fit: BoxFit.cover,
               placeholder: (_, __) => Container(
                 height: 120,
-                color: AppTheme.cardColor,
+                color: context.cardBg,
               ),
               errorWidget: (_, __, ___) => const SizedBox.shrink(),
             ),

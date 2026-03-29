@@ -81,18 +81,18 @@ class CommunityMembersScreen extends ConsumerWidget {
     final membersAsync = ref.watch(allCommunityMembersProvider(communityId));
 
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
-        backgroundColor: AppTheme.scaffoldBg,
+        backgroundColor: context.scaffoldBg,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.textPrimary),
+          icon: Icon(Icons.arrow_back_rounded, color: context.textPrimary),
           onPressed: () => context.pop(),
         ),
         title: const Text(
           'Membros',
           style: TextStyle(
-            color: AppTheme.textPrimary,
+            color: context.textPrimary,
             fontSize: 18,
             fontWeight: FontWeight.w700,
           ),
@@ -106,12 +106,12 @@ class CommunityMembersScreen extends ConsumerWidget {
         ),
         error: (error, _) => Center(
             child: Text('Erro: $error',
-                style: const TextStyle(color: AppTheme.textSecondary))),
+                style: TextStyle(color: context.textSecondary))),
         data: (members) {
           if (members.isEmpty) {
             return const Center(
               child: Text('Nenhum membro',
-                  style: TextStyle(color: AppTheme.textSecondary)),
+                  style: TextStyle(color: context.textSecondary)),
             );
           }
 
@@ -209,7 +209,7 @@ class CommunityMembersScreen extends ConsumerWidget {
               _SectionHeader(
                 title: 'MEMBROS',
                 count: regular.length,
-                color: AppTheme.textSecondary,
+                color: context.textSecondary,
               ),
               ...regular.asMap().entries.map((entry) => _MemberTile(
                   index: entry.key,
@@ -311,7 +311,7 @@ class _MemberTile extends StatelessWidget {
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: AppTheme.dividerColor.withValues(alpha: 0.15),
+                color: context.dividerClr.withValues(alpha: 0.15),
                 width: 0.5,
               ),
             ),
@@ -335,10 +335,10 @@ class _MemberTile extends StatelessWidget {
                       children: [
                         Flexible(
                           child: Text(nickname,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 14,
-                                  color: AppTheme.textPrimary),
+                                  color: context.textPrimary),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis),
                         ),

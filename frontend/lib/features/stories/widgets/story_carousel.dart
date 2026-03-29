@@ -134,7 +134,7 @@ class _StoryCarouselState extends State<StoryCarousel> {
                   height: 60,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppTheme.cardColor,
+                    color: context.cardBg,
                     border: Border.all(
                       color: AppTheme.accentColor.withValues(alpha: 0.3),
                       width: 2,
@@ -149,7 +149,7 @@ class _StoryCarouselState extends State<StoryCarousel> {
             const Text(
               'Seu Story',
               style: TextStyle(
-                color: AppTheme.textPrimary,
+                color: context.textPrimary,
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
               ),
@@ -209,18 +209,18 @@ class _StoryCarouselState extends State<StoryCarousel> {
               child: Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppTheme.scaffoldBg, width: 2),
+                  border: Border.all(color: context.scaffoldBg, width: 2),
                 ),
                 child: CircleAvatar(
                   radius: 26,
-                  backgroundColor: AppTheme.cardColor,
+                  backgroundColor: context.cardBg,
                   backgroundImage:
                       avatarUrl != null ? NetworkImage(avatarUrl) : null,
                   child: avatarUrl == null
                       ? Text(
                           username[0].toUpperCase(),
-                          style: const TextStyle(
-                            color: AppTheme.textPrimary,
+                          style: TextStyle(
+                            color: context.textPrimary,
                             fontWeight: FontWeight.w700,
                           ),
                         )
@@ -235,7 +235,7 @@ class _StoryCarouselState extends State<StoryCarousel> {
                 username,
                 style: TextStyle(
                   color: hasUnviewed
-                      ? AppTheme.textPrimary
+                      ? context.textPrimary
                       : Colors.grey[600],
                   fontSize: 10,
                   fontWeight:

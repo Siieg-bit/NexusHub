@@ -91,7 +91,7 @@ class MusicEmbedWidget extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          color: isDark ? AppTheme.cardColor : Colors.white,
+          color: isDark ? context.cardBg : Colors.white,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: _platformColor.withValues(alpha: 0.3),
@@ -216,8 +216,8 @@ class MusicEmbedWidget extends StatelessWidget {
                             fontWeight: FontWeight.w600,
                             fontSize: 14,
                             color: isDark
-                                ? AppTheme.textPrimary
-                                : AppTheme.textPrimaryLight,
+                                ? context.textPrimary
+                                : context.textPrimaryLight,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -229,8 +229,8 @@ class MusicEmbedWidget extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 12,
                               color: isDark
-                                  ? AppTheme.textSecondary
-                                  : AppTheme.textSecondaryLight,
+                                  ? context.textSecondary
+                                  : context.textSecondaryLight,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,

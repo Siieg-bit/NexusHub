@@ -42,9 +42,9 @@ class _ShimmerLoadingState extends State<ShimmerLoading>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final baseColor = isDark ? AppTheme.cardColor : const Color(0xFFE0E0E8);
+    final baseColor = isDark ? context.cardBg : const Color(0xFFE0E0E8);
     final highlightColor =
-        isDark ? AppTheme.cardColorLight : const Color(0xFFF5F5F8);
+        isDark ? context.cardBgLight : const Color(0xFFF5F5F8);
 
     return AnimatedBuilder(
       animation: _animation,
@@ -86,7 +86,7 @@ class ShimmerBox extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: isDark ? AppTheme.cardColor : const Color(0xFFE0E0E8),
+        color: isDark ? context.cardBg : const Color(0xFFE0E0E8),
         borderRadius: BorderRadius.circular(borderRadius),
       ),
     );
@@ -106,7 +106,7 @@ class ShimmerCircle extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: isDark ? AppTheme.cardColor : const Color(0xFFE0E0E8),
+        color: isDark ? context.cardBg : const Color(0xFFE0E0E8),
         shape: BoxShape.circle,
       ),
     );
@@ -124,7 +124,7 @@ class PostCardSkeleton extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppTheme.cardColor,
+          color: context.cardBg,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -216,7 +216,7 @@ class CommunityCardSkeleton extends StatelessWidget {
         width: 140,
         margin: const EdgeInsets.only(right: 12),
         decoration: BoxDecoration(
-          color: AppTheme.cardColor,
+          color: context.cardBg,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(

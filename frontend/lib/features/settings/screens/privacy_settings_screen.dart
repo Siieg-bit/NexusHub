@@ -103,7 +103,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -111,10 +111,10 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
           'Privacidade',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: AppTheme.textPrimary,
+            color: context.textPrimary,
           ),
         ),
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        iconTheme: IconThemeData(color: context.textPrimary),
         actions: [
           GestureDetector(
             onTap: _saveSettings,
@@ -251,7 +251,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppTheme.surfaceColor,
+                    color: context.surfaceColor,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: Colors.white.withValues(alpha: 0.05),
@@ -265,7 +265,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 14,
-                          color: AppTheme.textPrimary,
+                          color: context.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -299,7 +299,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                 const _SectionHeader(title: 'Dados'),
                 Container(
                   decoration: BoxDecoration(
-                    color: AppTheme.surfaceColor,
+                    color: context.surfaceColor,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: Colors.white.withValues(alpha: 0.05),
@@ -313,7 +313,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                         title: const Text(
                           'Exportar Meus Dados',
                           style: TextStyle(
-                            color: AppTheme.textPrimary,
+                            color: context.textPrimary,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -342,7 +342,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                         title: const Text(
                           'Usuários Bloqueados',
                           style: TextStyle(
-                            color: AppTheme.textPrimary,
+                            color: context.textPrimary,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -369,7 +369,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                           showDialog(
                             context: context,
                             builder: (ctx) => AlertDialog(
-                              backgroundColor: AppTheme.surfaceColor,
+                              backgroundColor: context.surfaceColor,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                                 side: BorderSide(
@@ -379,7 +379,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                               title: const Text(
                                 'Excluir Conta',
                                 style: TextStyle(
-                                  color: AppTheme.textPrimary,
+                                  color: context.textPrimary,
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
@@ -404,7 +404,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                                       builder: (ctx2) {
                                         final confirmCtrl = TextEditingController();
                                         return AlertDialog(
-                                          backgroundColor: AppTheme.surfaceColor,
+                                          backgroundColor: context.surfaceColor,
                                           title: const Text('Confirmar Exclus\u00e3o',
                                               style: TextStyle(color: AppTheme.errorColor)),
                                           content: Column(
@@ -415,12 +415,12 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                                               const SizedBox(height: 12),
                                               TextField(
                                                 controller: confirmCtrl,
-                                                style: const TextStyle(color: AppTheme.textPrimary),
+                                                style: TextStyle(color: context.textPrimary),
                                                 decoration: InputDecoration(
                                                   hintText: 'EXCLUIR',
                                                   hintStyle: TextStyle(color: Colors.grey[600]),
                                                   filled: true,
-                                                  fillColor: AppTheme.scaffoldBg,
+                                                  fillColor: context.scaffoldBg,
                                                   border: OutlineInputBorder(
                                                     borderRadius: BorderRadius.circular(12),
                                                     borderSide: BorderSide.none,
@@ -551,7 +551,7 @@ class _SettingToggle extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.05),
@@ -574,10 +574,10 @@ class _SettingToggle extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
-                    color: AppTheme.textPrimary,
+                    color: context.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -627,9 +627,9 @@ class _RadioOption extends StatelessWidget {
       child: RadioListTile<String>(
         title: Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
-            color: AppTheme.textPrimary,
+            color: context.textPrimary,
             fontWeight: FontWeight.w500,
           ),
         ),

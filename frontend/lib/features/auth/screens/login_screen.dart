@@ -47,7 +47,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final authState = ref.watch(authProvider);
 
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -66,11 +66,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: AppTheme.cardColor,
+                        color: context.cardBg,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.arrow_back_rounded,
-                          color: AppTheme.textPrimary, size: 20),
+                      child: Icon(Icons.arrow_back_rounded,
+                          color: context.textPrimary, size: 20),
                     ),
                   ),
                 ),
@@ -85,7 +85,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       const Text(
                         'Bem-vindo\nde volta!',
                         style: TextStyle(
-                          color: AppTheme.textPrimary,
+                          color: context.textPrimary,
                           fontSize: 32,
                           fontWeight: FontWeight.w800,
                           height: 1.1,
@@ -95,7 +95,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       const Text(
                         'Faça login para continuar',
                         style: TextStyle(
-                          color: AppTheme.textSecondary,
+                          color: context.textSecondary,
                           fontSize: 15,
                         ),
                       ),
@@ -139,7 +139,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         _obscurePassword
                             ? Icons.visibility_off_outlined
                             : Icons.visibility_outlined,
-                        color: AppTheme.textHint,
+                        color: context.textHint,
                         size: 20,
                       ),
                     ),
@@ -262,19 +262,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Expanded(
                       child: Container(
                         height: 0.5,
-                        color: AppTheme.dividerColor,
+                        color: context.dividerClr,
                       ),
                     ),
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 16),
                       child: Text('ou',
                           style: TextStyle(
-                              color: AppTheme.textHint, fontSize: 13)),
+                              color: context.textHint, fontSize: 13)),
                     ),
                     Expanded(
                       child: Container(
                         height: 0.5,
-                        color: AppTheme.dividerColor,
+                        color: context.dividerClr,
                       ),
                     ),
                   ],
@@ -304,11 +304,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             onPressed: () => ref
                                 .read(authProvider.notifier)
                                 .signInWithGoogle(),
-                            icon: const Icon(Icons.g_mobiledata_rounded,
-                                size: 28, color: AppTheme.textPrimary),
+                            icon: Icon(Icons.g_mobiledata_rounded,
+                                size: 28, color: context.textPrimary),
                             label: const Text('Continuar com Google'),
                             style: TextButton.styleFrom(
-                              foregroundColor: AppTheme.textPrimary,
+                              foregroundColor: context.textPrimary,
                               textStyle: const TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
@@ -330,7 +330,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     children: [
                       const Text('Não tem conta? ',
                           style: TextStyle(
-                              color: AppTheme.textSecondary, fontSize: 14)),
+                              color: context.textSecondary, fontSize: 14)),
                       GestureDetector(
                         onTap: () => context.go('/signup'),
                         child: const Text('Criar conta',
@@ -383,12 +383,12 @@ class _AminoTextField extends StatelessWidget {
       controller: controller,
       obscureText: obscureText,
       keyboardType: keyboardType,
-      style: const TextStyle(color: AppTheme.textPrimary, fontSize: 15),
+      style: TextStyle(color: context.textPrimary, fontSize: 15),
       validator: validator,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(color: AppTheme.textHint, fontSize: 15),
-        prefixIcon: Icon(icon, color: AppTheme.textHint, size: 20),
+        hintStyle: TextStyle(color: context.textHint, fontSize: 15),
+        prefixIcon: Icon(icon, color: context.textHint, size: 20),
         suffixIcon: suffixIcon != null
             ? Padding(
                 padding: const EdgeInsets.only(right: 12),
@@ -396,7 +396,7 @@ class _AminoTextField extends StatelessWidget {
               )
             : null,
         filled: true,
-        fillColor: AppTheme.cardColor,
+        fillColor: context.cardBg,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,
@@ -404,7 +404,7 @@ class _AminoTextField extends StatelessWidget {
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(
-            color: AppTheme.dividerColor.withValues(alpha: 0.5),
+            color: context.dividerClr.withValues(alpha: 0.5),
             width: 1,
           ),
         ),

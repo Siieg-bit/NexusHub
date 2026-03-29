@@ -72,15 +72,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final user = ref.watch(currentUserProvider);
 
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        iconTheme: IconThemeData(color: context.textPrimary),
         title: const Text(
           'Editar Perfil',
           style: TextStyle(
-            color: AppTheme.textPrimary,
+            color: context.textPrimary,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -129,7 +129,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       ),
                       child: CircleAvatar(
                         radius: 50,
-                        backgroundColor: AppTheme.surfaceColor,
+                        backgroundColor: context.surfaceColor,
                         child: Text(
                           (user?.nickname ?? '?')[0].toUpperCase(),
                           style: const TextStyle(
@@ -153,7 +153,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           ),
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: AppTheme.scaffoldBg,
+                            color: context.scaffoldBg,
                             width: 3,
                           ),
                         ),
@@ -219,7 +219,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.05),
@@ -230,7 +230,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         maxLines: maxLines,
         maxLength: maxLength,
         validator: validator,
-        style: const TextStyle(color: AppTheme.textPrimary),
+        style: TextStyle(color: context.textPrimary),
         decoration: InputDecoration(
           labelText: label,
           labelStyle: TextStyle(color: Colors.grey[500]),

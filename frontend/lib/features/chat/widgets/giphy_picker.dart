@@ -123,8 +123,8 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: AppTheme.scaffoldBg,
+      decoration: BoxDecoration(
+        color: context.scaffoldBg,
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: Column(
@@ -136,7 +136,7 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppTheme.textHint,
+                color: context.textHint,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -155,11 +155,11 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppTheme.cardColor,
+                    color: context.cardBg,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text('Powered by GIPHY',
-                      style: TextStyle(fontSize: 10, color: AppTheme.textHint)),
+                      style: TextStyle(fontSize: 10, color: context.textHint)),
                 ),
               ],
             ),
@@ -176,7 +176,7 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
               decoration: InputDecoration(
                 hintText: 'Buscar GIFs...',
                 prefixIcon:
-                    const Icon(Icons.search_rounded, color: AppTheme.textHint),
+                    Icon(Icons.search_rounded, color: context.textHint),
                 suffixIcon: _query.isNotEmpty
                     ? IconButton(
                         icon: const Icon(Icons.clear_rounded, size: 18),
@@ -188,7 +188,7 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
                       )
                     : null,
                 filled: true,
-                fillColor: AppTheme.cardColor,
+                fillColor: context.cardBg,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -206,7 +206,7 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
                 : _gifs.isEmpty
                     ? const Center(
                         child: Text('Nenhum GIF encontrado',
-                            style: TextStyle(color: AppTheme.textSecondary)),
+                            style: TextStyle(color: context.textSecondary)),
                       )
                     : GridView.builder(
                         controller: widget.scrollController,
@@ -234,7 +234,7 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
                                 previewUrl,
                                 fit: BoxFit.cover,
                                 errorBuilder: (_, __, ___) => Container(
-                                  color: AppTheme.cardColor,
+                                  color: context.cardBg,
                                   child: const Center(
                                       child: Icon(Icons.broken_image_rounded)),
                                 ),

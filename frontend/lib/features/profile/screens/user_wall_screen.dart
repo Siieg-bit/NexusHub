@@ -90,15 +90,15 @@ class _UserWallScreenState extends State<UserWallScreen> {
     final isOwnWall = widget.userId == SupabaseService.currentUserId;
 
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        iconTheme: IconThemeData(color: context.textPrimary),
         title: Text(isOwnWall ? 'Meu Mural' : 'Mural',
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.w800,
-              color: AppTheme.textPrimary,
+              color: context.textPrimary,
             )),
       ),
       body: Column(
@@ -126,7 +126,7 @@ class _UserWallScreenState extends State<UserWallScreen> {
                       )
                     : RefreshIndicator(
                         color: AppTheme.primaryColor,
-                        backgroundColor: AppTheme.surfaceColor,
+                        backgroundColor: context.surfaceColor,
                         onRefresh: _loadMessages,
                         child: ListView.builder(
                           padding: const EdgeInsets.all(16),
@@ -146,7 +146,7 @@ class _UserWallScreenState extends State<UserWallScreen> {
                               margin: const EdgeInsets.only(bottom: 12),
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
-                                color: AppTheme.surfaceColor,
+                                color: context.surfaceColor,
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
                                   color: Colors.white.withValues(alpha: 0.05),
@@ -174,7 +174,7 @@ class _UserWallScreenState extends State<UserWallScreen> {
                                           ),
                                           child: CircleAvatar(
                                             radius: 16,
-                                            backgroundColor: AppTheme.scaffoldBg,
+                                            backgroundColor: context.scaffoldBg,
                                             backgroundImage:
                                                 author?['icon_url'] != null
                                                     ? CachedNetworkImageProvider(
@@ -182,10 +182,10 @@ class _UserWallScreenState extends State<UserWallScreen> {
                                                             as String)
                                                     : null,
                                             child: author?['icon_url'] == null
-                                                ? const Icon(
+                                                ? Icon(
                                                     Icons.person_rounded,
                                                     size: 16,
-                                                    color: AppTheme.textPrimary)
+                                                    color: context.textPrimary)
                                                 : null,
                                           ),
                                         ),
@@ -199,9 +199,9 @@ class _UserWallScreenState extends State<UserWallScreen> {
                                             Text(
                                               author?['nickname'] as String? ??
                                                   'Anônimo',
-                                              style: const TextStyle(
+                                              style: TextStyle(
                                                   fontWeight: FontWeight.w700,
-                                                  color: AppTheme.textPrimary,
+                                                  color: context.textPrimary,
                                                   fontSize: 14),
                                             ),
                                             Text(
@@ -228,9 +228,9 @@ class _UserWallScreenState extends State<UserWallScreen> {
                                   const SizedBox(height: 12),
                                   Text(
                                     msg['content'] as String? ?? '',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 14,
-                                      color: AppTheme.textPrimary,
+                                      color: context.textPrimary,
                                     ),
                                   ),
                                 ],
@@ -250,7 +250,7 @@ class _UserWallScreenState extends State<UserWallScreen> {
               bottom: MediaQuery.of(context).padding.bottom + 12,
             ),
             decoration: BoxDecoration(
-              color: AppTheme.surfaceColor,
+              color: context.surfaceColor,
               border: Border(
                 top: BorderSide(
                   color: Colors.white.withValues(alpha: 0.05),
@@ -263,7 +263,7 @@ class _UserWallScreenState extends State<UserWallScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
-                      color: AppTheme.scaffoldBg,
+                      color: context.scaffoldBg,
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
                         color: Colors.white.withValues(alpha: 0.05),
@@ -271,7 +271,7 @@ class _UserWallScreenState extends State<UserWallScreen> {
                     ),
                     child: TextField(
                       controller: _messageController,
-                      style: const TextStyle(color: AppTheme.textPrimary),
+                      style: TextStyle(color: context.textPrimary),
                       decoration: InputDecoration(
                         hintText: 'Escreva no mural...',
                         border: InputBorder.none,

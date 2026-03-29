@@ -184,7 +184,7 @@ class _VoiceRecorderState extends State<VoiceRecorder>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
+        color: context.cardBg,
         border: Border(
           top: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
@@ -237,8 +237,8 @@ class _VoiceRecorderState extends State<VoiceRecorder>
                     const SizedBox(width: 8),
                     Text(
                       _formatDuration(_seconds),
-                      style: const TextStyle(
-                        color: AppTheme.textPrimary,
+                      style: TextStyle(
+                        color: context.textPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                         fontFeatures: [FontFeature.tabularFigures()],

@@ -58,7 +58,7 @@ class ShellScreen extends StatelessWidget {
           filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
           child: Container(
             decoration: BoxDecoration(
-              color: AppTheme.bottomNavBg.withValues(alpha: 0.95),
+              color: context.bottomNavBg.withValues(alpha: 0.95),
               border: const Border(
                 top: BorderSide(
                   color: Color(0x10FFFFFF),

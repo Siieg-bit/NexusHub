@@ -131,7 +131,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       body: SafeArea(
         child: Column(
           children: [
@@ -168,7 +168,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
               if (_currentStep > 0)
                 GestureDetector(
                   onTap: _prevStep,
-                  child: const Icon(Icons.arrow_back_ios_rounded, size: 20, color: AppTheme.textPrimary),
+                  child: Icon(Icons.arrow_back_ios_rounded, size: 20, color: context.textPrimary),
                 )
               else
                 const SizedBox(width: 20),
@@ -235,8 +235,8 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
           const SizedBox(height: 32),
           Text(
             'Bem-vindo ao NexusHub!',
-            style: const TextStyle(
-              color: AppTheme.textPrimary,
+            style: TextStyle(
+              color: context.textPrimary,
               fontSize: 28,
               fontWeight: FontWeight.w800,
             ),
@@ -267,13 +267,13 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
             controller: _bioController,
             maxLines: 3,
             maxLength: 200,
-            style: const TextStyle(color: AppTheme.textPrimary),
+            style: TextStyle(color: context.textPrimary),
             decoration: InputDecoration(
               hintText: 'Conte um pouco sobre você...',
               hintStyle: TextStyle(color: Colors.grey[600]),
               counterStyle: TextStyle(color: Colors.grey[600]),
               filled: true,
-              fillColor: AppTheme.surfaceColor,
+              fillColor: context.surfaceColor,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
                 borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
@@ -324,8 +324,8 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
           const SizedBox(height: 32),
           Text(
             'Escolha seu ID',
-            style: const TextStyle(
-              color: AppTheme.textPrimary,
+            style: TextStyle(
+              color: context.textPrimary,
               fontSize: 28,
               fontWeight: FontWeight.w800,
             ),
@@ -346,14 +346,14 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
           TextField(
             controller: _aminoIdController,
             maxLength: 24,
-            style: const TextStyle(color: AppTheme.textPrimary),
+            style: TextStyle(color: context.textPrimary),
             decoration: InputDecoration(
               hintText: 'ex: gamer_pro_2026',
               hintStyle: TextStyle(color: Colors.grey[600]),
               prefixIcon: const Icon(Icons.alternate_email_rounded, color: AppTheme.primaryColor),
               counterStyle: TextStyle(color: Colors.grey[600]),
               filled: true,
-              fillColor: AppTheme.surfaceColor,
+              fillColor: context.surfaceColor,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
                 borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
@@ -394,8 +394,8 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
         const SizedBox(height: 16),
         Text(
           'O que te interessa?',
-          style: const TextStyle(
-            color: AppTheme.textPrimary,
+          style: TextStyle(
+            color: context.textPrimary,
             fontSize: 24,
             fontWeight: FontWeight.w800,
           ),
@@ -453,7 +453,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
                     decoration: BoxDecoration(
                       color: isSelected
                           ? item.color.withValues(alpha: 0.25)
-                          : AppTheme.surfaceColor,
+                          : context.surfaceColor,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: isSelected ? item.color : Colors.white.withValues(alpha: 0.05),
@@ -481,7 +481,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
                           item.name,
                           style: TextStyle(
                             color:
-                                isSelected ? item.color : AppTheme.textPrimary,
+                                isSelected ? item.color : context.textPrimary,
                             fontSize: 11,
                             fontWeight: isSelected
                                 ? FontWeight.w700
@@ -542,8 +542,8 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
           const SizedBox(height: 24),
           Text(
             'Tudo Pronto!',
-            style: const TextStyle(
-              color: AppTheme.textPrimary,
+            style: TextStyle(
+              color: context.textPrimary,
               fontSize: 28,
               fontWeight: FontWeight.w800,
             ),
@@ -640,7 +640,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
                   end: Alignment.centerRight,
                 )
               : null,
-          color: isEnabled ? null : AppTheme.surfaceColor,
+          color: isEnabled ? null : context.surfaceColor,
           boxShadow: isEnabled
               ? [
                   BoxShadow(

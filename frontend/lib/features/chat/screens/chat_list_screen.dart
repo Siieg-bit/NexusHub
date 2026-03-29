@@ -93,7 +93,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
     final communitiesAsync = ref.watch(chatCommunitiesProvider);
 
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       body: AminoParticlesBg(
         child: Column(
           children: [
@@ -106,7 +106,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
               onAddTap: () {
                 showModalBottomSheet(
                   context: context,
-                  backgroundColor: AppTheme.surfaceColor,
+                  backgroundColor: context.surfaceColor,
                   shape: const RoundedRectangleBorder(
                     borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                   ),
@@ -117,7 +117,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                       children: [
                         const Text('Novo Chat',
                             style: TextStyle(
-                                color: AppTheme.textPrimary,
+                                color: context.textPrimary,
                                 fontSize: 18,
                                 fontWeight: FontWeight.w800)),
                         const SizedBox(height: 20),
@@ -134,7 +134,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                           ),
                           title: const Text('Chat Privado',
                               style: TextStyle(
-                                  color: AppTheme.textPrimary,
+                                  color: context.textPrimary,
                                   fontWeight: FontWeight.w600)),
                           subtitle: Text('Iniciar conversa com um usu\u00e1rio',
                               style: TextStyle(color: Colors.grey[500], fontSize: 12)),
@@ -156,7 +156,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                           ),
                           title: const Text('Chat em Grupo',
                               style: TextStyle(
-                                  color: AppTheme.textPrimary,
+                                  color: context.textPrimary,
                                   fontWeight: FontWeight.w600)),
                           subtitle: Text('Criar um grupo com v\u00e1rios membros',
                               style: TextStyle(color: Colors.grey[500], fontSize: 12)),
@@ -183,10 +183,10 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                   Container(
                     width: 64,
                     decoration: BoxDecoration(
-                      color: AppTheme.surfaceColor.withValues(alpha: 0.5),
+                      color: context.surfaceColor.withValues(alpha: 0.5),
                       border: Border(
                         right: BorderSide(
-                          color: AppTheme.dividerColor.withValues(alpha: 0.3),
+                          color: context.dividerClr.withValues(alpha: 0.3),
                           width: 0.5,
                         ),
                       ),
@@ -220,7 +220,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                         Container(
                           width: 28,
                           height: 1,
-                          color: AppTheme.dividerColor.withValues(alpha: 0.4),
+                          color: context.dividerClr.withValues(alpha: 0.4),
                         ),
 
                         const SizedBox(height: 4),
@@ -258,14 +258,14 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                               width: 36,
                               height: 36,
                               decoration: BoxDecoration(
-                                color: AppTheme.cardColor,
+                                color: context.cardBg,
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: AppTheme.dividerColor.withValues(alpha: 0.4),
+                                  color: context.dividerClr.withValues(alpha: 0.4),
                                 ),
                               ),
-                              child: const Icon(Icons.add,
-                                  color: AppTheme.textSecondary, size: 20),
+                              child: Icon(Icons.add,
+                                  color: context.textSecondary, size: 20),
                             ),
                           ),
                         ),
@@ -289,11 +289,11 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(Icons.error_outline_rounded,
-                                size: 48, color: AppTheme.textHint),
+                                size: 48, color: context.textHint),
                             const SizedBox(height: 12),
                             Text('Erro ao carregar chats',
                                 style: TextStyle(
-                                    color: AppTheme.textSecondary, fontSize: 14)),
+                                    color: context.textSecondary, fontSize: 14)),
                           ],
                         ),
                       ),
@@ -349,7 +349,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: AppTheme.textPrimary,
+              color: context.textPrimary,
             ),
           ),
         ),
@@ -360,7 +360,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
             height: 120,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              color: AppTheme.cardColor,
+              color: context.cardBg,
             ),
             clipBehavior: Clip.antiAlias,
             child: Stack(
@@ -474,21 +474,21 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppTheme.surfaceColor,
+                color: context.surfaceColor,
                 shape: BoxShape.circle,
               ),
               child: Icon(Icons.chat_bubble_outline_rounded,
-                  size: 36, color: AppTheme.textHint),
+                  size: 36, color: context.textHint),
             ),
             const SizedBox(height: 16),
             const Text('Nenhum chat ainda',
                 style: TextStyle(
-                    color: AppTheme.textPrimary,
+                    color: context.textPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             Text('Entre em uma comunidade e comece a conversar!',
-                style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                style: TextStyle(color: context.textSecondary, fontSize: 13),
                 textAlign: TextAlign.center),
             const SizedBox(height: 24),
             GestureDetector(
@@ -557,7 +557,7 @@ class _SidebarIcon extends StatelessWidget {
                 children: [
                   Icon(
                     icon,
-                    color: isSelected ? AppTheme.accentColor : AppTheme.textHint,
+                    color: isSelected ? AppTheme.accentColor : context.textHint,
                     size: 22,
                   ),
                   if (badgeCount > 0)
@@ -590,7 +590,7 @@ class _SidebarIcon extends StatelessWidget {
             Text(
               tooltip,
               style: TextStyle(
-                color: isSelected ? AppTheme.accentColor : AppTheme.textHint,
+                color: isSelected ? AppTheme.accentColor : context.textHint,
                 fontSize: 9,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
@@ -630,7 +630,7 @@ class _SidebarCommunityIcon extends StatelessWidget {
             border: isSelected
                 ? Border.all(color: AppTheme.accentColor, width: 2)
                 : Border.all(
-                    color: AppTheme.dividerColor.withValues(alpha: 0.3),
+                    color: context.dividerClr.withValues(alpha: 0.3),
                     width: 1),
           ),
           clipBehavior: Clip.antiAlias,
@@ -639,20 +639,20 @@ class _SidebarCommunityIcon extends StatelessWidget {
                   imageUrl: community.iconUrl!,
                   fit: BoxFit.cover,
                   placeholder: (_, __) => Container(
-                    color: AppTheme.cardColor,
+                    color: context.cardBg,
                     child: Icon(Icons.groups_rounded,
-                        color: AppTheme.textHint, size: 16),
+                        color: context.textHint, size: 16),
                   ),
                   errorWidget: (_, __, ___) => Container(
-                    color: AppTheme.cardColor,
+                    color: context.cardBg,
                     child: Icon(Icons.groups_rounded,
-                        color: AppTheme.textHint, size: 16),
+                        color: context.textHint, size: 16),
                   ),
                 )
               : Container(
-                  color: AppTheme.cardColor,
+                  color: context.cardBg,
                   child: Icon(Icons.groups_rounded,
-                      color: AppTheme.textHint, size: 16),
+                      color: context.textHint, size: 16),
                 ),
         ),
       ),
@@ -696,7 +696,7 @@ class _AminoChatTile extends StatelessWidget {
                   Text(
                     chatRoom.title,
                     style: TextStyle(
-                      color: AppTheme.textPrimary,
+                      color: context.textPrimary,
                       fontSize: 14,
                       fontWeight: hasUnread ? FontWeight.w700 : FontWeight.w500,
                     ),
@@ -708,8 +708,8 @@ class _AminoChatTile extends StatelessWidget {
                     chatRoom.lastMessagePreview ?? 'Sem mensagens',
                     style: TextStyle(
                       color: hasUnread
-                          ? AppTheme.textSecondary
-                          : AppTheme.textHint,
+                          ? context.textSecondary
+                          : context.textHint,
                       fontSize: 12,
                       fontWeight: hasUnread ? FontWeight.w500 : FontWeight.w400,
                     ),
@@ -729,7 +729,7 @@ class _AminoChatTile extends StatelessWidget {
                       ? timeago.format(chatRoom.lastMessageAt!, locale: 'pt_BR')
                       : '',
                   style: TextStyle(
-                    color: hasUnread ? AppTheme.accentColor : AppTheme.textHint,
+                    color: hasUnread ? AppTheme.accentColor : context.textHint,
                     fontSize: 10,
                     fontWeight: hasUnread ? FontWeight.w600 : FontWeight.w400,
                   ),

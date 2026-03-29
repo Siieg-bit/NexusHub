@@ -247,24 +247,24 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
     final result = await showDialog<Map<String, String>>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surfaceColor,
+        backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Adicionar Vídeo',
             style: TextStyle(
-                color: AppTheme.textPrimary, fontWeight: FontWeight.w800)),
+                color: context.textPrimary, fontWeight: FontWeight.w800)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: urlController,
-              style: const TextStyle(color: AppTheme.textPrimary),
+              style: TextStyle(color: context.textPrimary),
               decoration: InputDecoration(
                 hintText: 'Cole o link do vídeo (YouTube, etc.)',
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 prefixIcon: const Icon(Icons.link_rounded,
                     color: AppTheme.accentColor),
                 filled: true,
-                fillColor: AppTheme.cardColor,
+                fillColor: context.cardBg,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -274,14 +274,14 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
             const SizedBox(height: 12),
             TextField(
               controller: titleController,
-              style: const TextStyle(color: AppTheme.textPrimary),
+              style: TextStyle(color: context.textPrimary),
               decoration: InputDecoration(
                 hintText: 'Título do vídeo (opcional)',
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 prefixIcon: const Icon(Icons.title_rounded,
                     color: AppTheme.accentColor),
                 filled: true,
-                fillColor: AppTheme.cardColor,
+                fillColor: context.cardBg,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -395,7 +395,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: context.surfaceColor,
         border: Border(
           bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
@@ -404,8 +404,8 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
         children: [
           GestureDetector(
             onTap: _leaveRoom,
-            child: const Icon(Icons.arrow_back_rounded,
-                color: AppTheme.textPrimary, size: 24),
+            child: Icon(Icons.arrow_back_rounded,
+                color: context.textPrimary, size: 24),
           ),
           const SizedBox(width: 12),
           Container(
@@ -420,7 +420,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
           const Text(
             'SCREENING ROOM',
             style: TextStyle(
-              color: AppTheme.textPrimary,
+              color: context.textPrimary,
               fontWeight: FontWeight.w800,
               fontSize: 14,
               letterSpacing: 1.2,
@@ -626,7 +626,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
       height: 56,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: context.surfaceColor,
         border: Border(
           bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
@@ -655,14 +655,14 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
                         children: [
                           CircleAvatar(
                             radius: 16,
-                            backgroundColor: AppTheme.cardColor,
+                            backgroundColor: context.cardBg,
                             backgroundImage: avatarUrl != null
                                 ? NetworkImage(avatarUrl)
                                 : null,
                             child: avatarUrl == null
                                 ? Text(username[0].toUpperCase(),
-                                    style: const TextStyle(
-                                        color: AppTheme.textPrimary,
+                                    style: TextStyle(
+                                        color: context.textPrimary,
                                         fontSize: 12))
                                 : null,
                           ),
@@ -677,7 +677,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
                                   color: AppTheme.warningColor,
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                      color: AppTheme.surfaceColor, width: 2),
+                                      color: context.surfaceColor, width: 2),
                                 ),
                                 child: const Icon(Icons.star_rounded,
                                     color: Colors.white, size: 8),
@@ -744,11 +744,11 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
               if (!isMe) ...[
                 CircleAvatar(
                   radius: 12,
-                  backgroundColor: AppTheme.cardColor,
+                  backgroundColor: context.cardBg,
                   child: Text(
                     (msg['user_id'] as String? ?? '?')[0].toUpperCase(),
-                    style: const TextStyle(
-                        color: AppTheme.textPrimary, fontSize: 10),
+                    style: TextStyle(
+                        color: context.textPrimary, fontSize: 10),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -760,13 +760,13 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
                   decoration: BoxDecoration(
                     color: isMe
                         ? AppTheme.primaryColor.withValues(alpha: 0.2)
-                        : AppTheme.cardColor,
+                        : context.cardBg,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Text(
                     msg['text'] as String? ?? '',
-                    style: const TextStyle(
-                        color: AppTheme.textPrimary, fontSize: 13),
+                    style: TextStyle(
+                        color: context.textPrimary, fontSize: 13),
                   ),
                 ),
               ),
@@ -781,7 +781,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: context.surfaceColor,
         border: Border(
           top: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
@@ -793,13 +793,13 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  color: AppTheme.cardColor,
+                  color: context.cardBg,
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: TextField(
                   controller: _chatController,
-                  style: const TextStyle(
-                      color: AppTheme.textPrimary, fontSize: 14),
+                  style: TextStyle(
+                      color: context.textPrimary, fontSize: 14),
                   decoration: InputDecoration(
                     hintText: 'Diga algo...',
                     hintStyle: TextStyle(color: Colors.grey[600], fontSize: 14),

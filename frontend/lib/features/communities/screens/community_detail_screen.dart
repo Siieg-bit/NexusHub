@@ -265,18 +265,18 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
 
     return communityAsync.when(
       loading: () => Scaffold(
-        backgroundColor: AppTheme.scaffoldBg,
+        backgroundColor: context.scaffoldBg,
         body: Center(
           child: CircularProgressIndicator(
               color: AppTheme.primaryColor, strokeWidth: 2.5),
         ),
       ),
       error: (error, _) => Scaffold(
-        backgroundColor: AppTheme.scaffoldBg,
-        appBar: AppBar(backgroundColor: AppTheme.scaffoldBg),
+        backgroundColor: context.scaffoldBg,
+        appBar: AppBar(backgroundColor: context.scaffoldBg),
         body: Center(
             child: Text('Erro: $error',
-                style: const TextStyle(color: AppTheme.textSecondary))),
+                style: TextStyle(color: context.textSecondary))),
       ),
       data: (community) {
         final themeColor = _parseColor(community.themeColor);
@@ -306,7 +306,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             userRole: userRole,
           ),
           child: Scaffold(
-            backgroundColor: AppTheme.scaffoldBg,
+            backgroundColor: context.scaffoldBg,
           body: _bottomIndex == 0
               ? _buildHomePage(
                   community, themeColor, isMember, userRole, layout,
@@ -380,7 +380,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
         SliverAppBar(
           expandedHeight: 180,
           pinned: true,
-          backgroundColor: AppTheme.scaffoldBg,
+          backgroundColor: context.scaffoldBg,
           elevation: 0,
           leading: Builder(
             builder: (ctx) => Padding(
@@ -405,7 +405,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                 // Presentes diários da comunidade
                 showModalBottomSheet(
                   context: context,
-                  backgroundColor: AppTheme.surfaceColor,
+                  backgroundColor: context.surfaceColor,
                   shape: const RoundedRectangleBorder(
                     borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                   ),
@@ -416,7 +416,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                       children: [
                         const Text('\uD83C\uDF81 Presentes Di\u00e1rios',
                             style: TextStyle(
-                                color: AppTheme.textPrimary,
+                                color: context.textPrimary,
                                 fontSize: 18,
                                 fontWeight: FontWeight.w800)),
                         const SizedBox(height: 16),
@@ -521,7 +521,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                     gradient: LinearGradient(
                       colors: [
                         Colors.black.withValues(alpha: 0.4),
-                        AppTheme.scaffoldBg,
+                        context.scaffoldBg,
                       ],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
@@ -670,15 +670,15 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                       child: Text(
                         welcomeBanner['text'] as String? ??
                             'Bem-vindo à comunidade!',
-                        style: const TextStyle(
-                          color: AppTheme.textPrimary,
+                        style: TextStyle(
+                          color: context.textPrimary,
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
-                    const Icon(Icons.chevron_right_rounded,
-                        color: AppTheme.textHint, size: 20),
+                    Icon(Icons.chevron_right_rounded,
+                        color: context.textHint, size: 20),
                   ],
                 ),
               ),
@@ -713,7 +713,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                 isScrollable: true,
                 tabAlignment: TabAlignment.start,
                 labelColor: Colors.white,
-                unselectedLabelColor: AppTheme.textHint,
+                unselectedLabelColor: context.textHint,
                 indicatorColor: Colors.white,
                 indicatorWeight: 2,
                 indicatorSize: TabBarIndicatorSize.label,
@@ -753,7 +753,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             )
           : const Center(
               child: Text('Nenhuma seção habilitada',
-                  style: TextStyle(color: AppTheme.textSecondary)),
+                  style: TextStyle(color: context.textSecondary)),
             ),
     );
   }
@@ -774,13 +774,13 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
               children: [
                 GestureDetector(
                   onTap: () => setState(() => _bottomIndex = 0),
-                  child: const Icon(Icons.arrow_back_rounded,
-                      color: AppTheme.textPrimary),
+                  child: Icon(Icons.arrow_back_rounded,
+                      color: context.textPrimary),
                 ),
                 const SizedBox(width: 12),
                 const Text('Membros Online',
                     style: TextStyle(
-                        color: AppTheme.textPrimary,
+                        color: context.textPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.w700)),
               ],
@@ -795,7 +795,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             ),
             error: (e, _) => Center(
                 child: Text('Erro: $e',
-                    style: const TextStyle(color: AppTheme.textSecondary))),
+                    style: TextStyle(color: context.textSecondary))),
             data: (members) {
               final onlineMembers = members.where((m) {
                 final p = m['profiles'] as Map<String, dynamic>? ?? {};
@@ -845,7 +845,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                           border: Border(
                             bottom: BorderSide(
                               color:
-                                  AppTheme.dividerColor.withValues(alpha: 0.15),
+                                  context.dividerClr.withValues(alpha: 0.15),
                               width: 0.5,
                             ),
                           ),
@@ -878,7 +878,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                                       color: AppTheme.onlineColor,
                                       shape: BoxShape.circle,
                                       border: Border.all(
-                                          color: AppTheme.scaffoldBg, width: 2),
+                                          color: context.scaffoldBg, width: 2),
                                     ),
                                   ),
                                 ),
@@ -890,10 +890,10 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(nickname,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                           fontWeight: FontWeight.w600,
                                           fontSize: 14,
-                                          color: AppTheme.textPrimary)),
+                                          color: context.textPrimary)),
                                   const SizedBox(height: 2),
                                   Text(
                                       'Lv.$level ${levelTitle(level)}',
@@ -931,13 +931,13 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
               children: [
                 GestureDetector(
                   onTap: () => setState(() => _bottomIndex = 0),
-                  child: const Icon(Icons.arrow_back_rounded,
-                      color: AppTheme.textPrimary),
+                  child: Icon(Icons.arrow_back_rounded,
+                      color: context.textPrimary),
                 ),
                 const SizedBox(width: 12),
                 const Text('Chats',
                     style: TextStyle(
-                        color: AppTheme.textPrimary,
+                        color: context.textPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.w700)),
                 const Spacer(),
@@ -968,7 +968,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     if (userId == null) {
       return const Center(
           child: Text('Faça login para ver seu perfil',
-              style: TextStyle(color: AppTheme.textSecondary)));
+              style: TextStyle(color: context.textSecondary)));
     }
 
     return Column(
@@ -980,13 +980,13 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
               children: [
                 GestureDetector(
                   onTap: () => setState(() => _bottomIndex = 0),
-                  child: const Icon(Icons.arrow_back_rounded,
-                      color: AppTheme.textPrimary),
+                  child: Icon(Icons.arrow_back_rounded,
+                      color: context.textPrimary),
                 ),
                 const SizedBox(width: 12),
                 const Text('Meu Perfil',
                     style: TextStyle(
-                        color: AppTheme.textPrimary,
+                        color: context.textPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.w700)),
                 const Spacer(),
@@ -1007,8 +1007,8 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.person_rounded,
-                    size: 48, color: AppTheme.textHint),
+                Icon(Icons.person_rounded,
+                    size: 48, color: context.textHint),
                 const SizedBox(height: 12),
                 ElevatedButton(
                   onPressed: () => context.push(
@@ -1109,14 +1109,14 @@ class _CheckInBarState extends ConsumerState<_CheckInBar> {
     if (hasCheckedIn) return const SizedBox.shrink();
 
     return Container(
-      color: AppTheme.cardColor,
+      color: context.cardBg,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
         children: [
           Text(
             'Faça Check In para ganhar +${ReputationRewards.checkIn} rep',
-            style: const TextStyle(
-              color: AppTheme.textPrimary,
+            style: TextStyle(
+              color: context.textPrimary,
               fontSize: 13,
               fontWeight: FontWeight.w600,
             ),
@@ -1133,7 +1133,7 @@ class _CheckInBarState extends ConsumerState<_CheckInBar> {
                   decoration: BoxDecoration(
                     color: filled
                         ? AppTheme.primaryColor
-                        : AppTheme.dividerColor,
+                        : context.dividerClr,
                     borderRadius: BorderRadius.circular(3),
                   ),
                   child: filled
@@ -1143,7 +1143,7 @@ class _CheckInBarState extends ConsumerState<_CheckInBar> {
                             width: 8,
                             height: 8,
                             decoration: BoxDecoration(
-                              color: AppTheme.dividerColor,
+                              color: context.dividerClr,
                               shape: BoxShape.circle,
                               border: Border.all(
                                   color: Colors.grey[700]!, width: 1),
@@ -1246,10 +1246,10 @@ class _LiveChatroomsSectionState extends State<_LiveChatroomsSection> {
                 width: 150,
                 margin: const EdgeInsets.only(right: 8),
                 decoration: BoxDecoration(
-                  color: AppTheme.cardColor,
+                  color: context.cardBg,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppTheme.dividerColor.withValues(alpha: 0.2),
+                    color: context.dividerClr.withValues(alpha: 0.2),
                   ),
                 ),
                 child: Column(
@@ -1269,9 +1269,9 @@ class _LiveChatroomsSectionState extends State<_LiveChatroomsSection> {
                                     fit: BoxFit.cover,
                                   )
                                 : Container(
-                                    color: AppTheme.surfaceColor,
-                                    child: const Icon(Icons.chat_rounded,
-                                        color: AppTheme.textHint, size: 24),
+                                    color: context.surfaceColor,
+                                    child: Icon(Icons.chat_rounded,
+                                        color: context.textHint, size: 24),
                                   ),
                           ),
                           Container(
@@ -1283,7 +1283,7 @@ class _LiveChatroomsSectionState extends State<_LiveChatroomsSection> {
                                 end: Alignment.bottomCenter,
                                 colors: [
                                   Colors.transparent,
-                                  AppTheme.cardColor,
+                                  context.cardBg,
                                 ],
                               ),
                             ),
@@ -1354,8 +1354,8 @@ class _LiveChatroomsSectionState extends State<_LiveChatroomsSection> {
                       padding: const EdgeInsets.all(8),
                       child: Text(
                         chat['title'] as String? ?? 'Chat',
-                        style: const TextStyle(
-                            color: AppTheme.textPrimary,
+                        style: TextStyle(
+                            color: context.textPrimary,
                             fontSize: 11,
                             fontWeight: FontWeight.w600),
                         maxLines: 1,
@@ -1386,7 +1386,7 @@ class _GuidelinesTab extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       child: Container(
         decoration: BoxDecoration(
-          color: AppTheme.cardColor,
+          color: context.cardBg,
           borderRadius: BorderRadius.circular(12),
         ),
         padding: const EdgeInsets.all(16),
@@ -1401,7 +1401,7 @@ class _GuidelinesTab extends StatelessWidget {
                 const Text(
                   'Community Guidelines',
                   style: TextStyle(
-                    color: AppTheme.textPrimary,
+                    color: context.textPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
@@ -1448,15 +1448,15 @@ class _FeedTab extends StatelessWidget {
       ),
       error: (error, _) => Center(
           child: Text('Erro: $error',
-              style: const TextStyle(color: AppTheme.textSecondary))),
+              style: TextStyle(color: context.textSecondary))),
       data: (posts) {
         if (posts.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.article_outlined,
-                    size: 48, color: AppTheme.textHint),
+                Icon(Icons.article_outlined,
+                    size: 48, color: context.textHint),
                 const SizedBox(height: 12),
                 Text(
                   'Nenhum post ainda. Seja o primeiro a postar!',
@@ -1485,7 +1485,7 @@ class _FeedTab extends StatelessWidget {
                       border: Border(
                         bottom: BorderSide(
                           color:
-                              AppTheme.dividerColor.withValues(alpha: 0.15),
+                              context.dividerClr.withValues(alpha: 0.15),
                           width: 0.5,
                         ),
                       ),
@@ -1504,8 +1504,8 @@ class _FeedTab extends StatelessWidget {
                         Expanded(
                           child: Text(
                             post.title ?? '',
-                            style: const TextStyle(
-                              color: AppTheme.textPrimary,
+                            style: TextStyle(
+                              color: context.textPrimary,
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
                             ),
@@ -1610,8 +1610,8 @@ class _ChatTabState extends State<_ChatTab> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.chat_bubble_outline_rounded,
-                size: 48, color: AppTheme.textHint),
+            Icon(Icons.chat_bubble_outline_rounded,
+                size: 48, color: context.textHint),
             const SizedBox(height: 12),
             Text('Nenhum chat público ainda',
                 style: TextStyle(color: Colors.grey[600], fontSize: 13)),
@@ -1634,7 +1634,7 @@ class _ChatTabState extends State<_ChatTab> {
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
-                    color: AppTheme.dividerColor.withValues(alpha: 0.2),
+                    color: context.dividerClr.withValues(alpha: 0.2),
                     width: 0.5,
                   ),
                 ),
@@ -1645,7 +1645,7 @@ class _ChatTabState extends State<_ChatTab> {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: AppTheme.surfaceColor,
+                      color: context.surfaceColor,
                       shape: BoxShape.circle,
                     ),
                     child: chat['icon_url'] != null
@@ -1655,8 +1655,8 @@ class _ChatTabState extends State<_ChatTab> {
                               fit: BoxFit.cover,
                             ),
                           )
-                        : const Icon(Icons.tag_rounded,
-                            color: AppTheme.textHint, size: 18),
+                        : Icon(Icons.tag_rounded,
+                            color: context.textHint, size: 18),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -1665,8 +1665,8 @@ class _ChatTabState extends State<_ChatTab> {
                       children: [
                         Text(
                           chat['title'] as String? ?? 'Chat',
-                          style: const TextStyle(
-                              color: AppTheme.textPrimary,
+                          style: TextStyle(
+                              color: context.textPrimary,
                               fontWeight: FontWeight.w600,
                               fontSize: 13),
                           maxLines: 1,
@@ -1711,7 +1711,7 @@ class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      color: AppTheme.scaffoldBg,
+      color: context.scaffoldBg,
       child: tabBar,
     );
   }

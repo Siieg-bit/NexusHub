@@ -120,8 +120,8 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
       context: context,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
-        decoration: const BoxDecoration(
-          color: AppTheme.surfaceColor,
+        decoration: BoxDecoration(
+          color: context.surfaceColor,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         padding: const EdgeInsets.all(20),
@@ -140,7 +140,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
             const Text(
               'Upload para Shared Folder',
               style: TextStyle(
-                color: AppTheme.textPrimary,
+                color: context.textPrimary,
                 fontWeight: FontWeight.w800,
                 fontSize: 18,
               ),
@@ -278,11 +278,11 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surfaceColor,
+        backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Excluir arquivo',
             style: TextStyle(
-                color: AppTheme.textPrimary, fontWeight: FontWeight.w700)),
+                color: context.textPrimary, fontWeight: FontWeight.w700)),
         content: const Text('Tem certeza que deseja excluir este arquivo?',
             style: TextStyle(color: Colors.grey)),
         actions: [
@@ -336,11 +336,11 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
-        backgroundColor: AppTheme.surfaceColor,
+        backgroundColor: context.surfaceColor,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        iconTheme: IconThemeData(color: context.textPrimary),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -348,7 +348,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
               'Shared Folder',
               style: TextStyle(
                 fontWeight: FontWeight.w800,
-                color: AppTheme.textPrimary,
+                color: context.textPrimary,
                 fontSize: 18,
               ),
             ),
@@ -520,7 +520,7 @@ class _UploadOption extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: AppTheme.cardColor,
+          color: context.cardBg,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -537,8 +537,8 @@ class _UploadOption extends StatelessWidget {
             const SizedBox(width: 14),
             Text(
               label,
-              style: const TextStyle(
-                color: AppTheme.textPrimary,
+              style: TextStyle(
+                color: context.textPrimary,
                 fontWeight: FontWeight.w600,
                 fontSize: 15,
               ),
@@ -576,7 +576,7 @@ class _ImageTile extends StatelessWidget {
               url,
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => Container(
-                color: AppTheme.cardColor,
+                color: context.cardBg,
                 child: Icon(Icons.broken_image_rounded,
                     color: Colors.grey[700], size: 32),
               ),
@@ -641,7 +641,7 @@ class _ImageTile extends StatelessWidget {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.surfaceColor,
+      backgroundColor: context.surfaceColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -720,7 +720,7 @@ class _FileTile extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
+        color: context.cardBg,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
@@ -742,8 +742,8 @@ class _FileTile extends StatelessWidget {
               children: [
                 Text(
                   name,
-                  style: const TextStyle(
-                    color: AppTheme.textPrimary,
+                  style: TextStyle(
+                    color: context.textPrimary,
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),

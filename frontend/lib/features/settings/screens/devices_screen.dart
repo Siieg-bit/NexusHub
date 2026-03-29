@@ -40,12 +40,12 @@ class _DevicesScreenState extends State<DevicesScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surfaceColor,
+        backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
-        title: const Text('Revogar Dispositivo', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w800)),
+        title: const Text('Revogar Dispositivo', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
         content: Text('Isso encerrará a sessão neste dispositivo. '
             'O usuário precisará fazer login novamente.', style: TextStyle(color: Colors.grey[500])),
         actions: [
@@ -86,8 +86,8 @@ class _DevicesScreenState extends State<DevicesScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Dispositivo revogado', style: TextStyle(color: AppTheme.textPrimary)),
-            backgroundColor: AppTheme.surfaceColor,
+            content: const Text('Dispositivo revogado', style: TextStyle(color: context.textPrimary)),
+            backgroundColor: context.surfaceColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
           ),
@@ -111,12 +111,12 @@ class _DevicesScreenState extends State<DevicesScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surfaceColor,
+        backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
-        title: const Text('Revogar Todos os Outros', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w800)),
+        title: const Text('Revogar Todos os Outros', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
         content: Text('Isso encerrará todas as sessões exceto a atual. '
             'Todos os outros dispositivos precisarão fazer login novamente.', style: TextStyle(color: Colors.grey[500])),
         actions: [
@@ -154,8 +154,8 @@ class _DevicesScreenState extends State<DevicesScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Todas as outras sessões foram encerradas', style: TextStyle(color: AppTheme.textPrimary)),
-            backgroundColor: AppTheme.surfaceColor,
+            content: const Text('Todas as outras sessões foram encerradas', style: TextStyle(color: context.textPrimary)),
+            backgroundColor: context.surfaceColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
           ),
@@ -193,13 +193,13 @@ class _DevicesScreenState extends State<DevicesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        iconTheme: IconThemeData(color: context.textPrimary),
         title: const Text('Dispositivos Conectados',
-            style: TextStyle(fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
+            style: TextStyle(fontWeight: FontWeight.w800, color: context.textPrimary)),
         actions: [
           if (_devices.length > 1)
             GestureDetector(
@@ -245,7 +245,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                         margin: const EdgeInsets.only(bottom: 16),
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: AppTheme.surfaceColor,
+                          color: context.surfaceColor,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                               color: Colors.white.withValues(alpha: 0.05)),
@@ -294,7 +294,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                       margin: const EdgeInsets.only(bottom: 12),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppTheme.surfaceColor,
+                        color: context.surfaceColor,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                             color: isCurrentDevice
@@ -335,7 +335,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                               _getDeviceIcon(deviceType),
                               color: isCurrentDevice
                                   ? AppTheme.primaryColor
-                                  : AppTheme.textPrimary,
+                                  : context.textPrimary,
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -347,8 +347,8 @@ class _DevicesScreenState extends State<DevicesScreen> {
                                   children: [
                                     Expanded(
                                       child: Text(deviceName,
-                                          style: const TextStyle(
-                                              color: AppTheme.textPrimary,
+                                          style: TextStyle(
+                                              color: context.textPrimary,
                                               fontWeight: FontWeight.w700,
                                               fontSize: 15)),
                                     ),

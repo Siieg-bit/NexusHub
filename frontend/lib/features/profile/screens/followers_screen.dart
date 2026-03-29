@@ -70,16 +70,16 @@ class _FollowersScreenState extends State<FollowersScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        iconTheme: IconThemeData(color: context.textPrimary),
         title: const Text(
           'Conexões',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: AppTheme.textPrimary,
+            color: context.textPrimary,
           ),
         ),
         bottom: TabBar(
@@ -134,7 +134,7 @@ class _FollowersScreenState extends State<FollowersScreen>
 
         return Container(
           decoration: BoxDecoration(
-            color: AppTheme.surfaceColor,
+            color: context.surfaceColor,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.05),
@@ -152,9 +152,9 @@ class _FollowersScreenState extends State<FollowersScreen>
             ),
             title: Text(
               nickname,
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.w700,
-                color: AppTheme.textPrimary,
+                color: context.textPrimary,
               ),
             ),
             subtitle: Text(
@@ -242,7 +242,7 @@ class _FollowButtonState extends State<_FollowButton> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro: $e', style: const TextStyle(color: AppTheme.textPrimary)),
+            content: Text('Erro: $e', style: TextStyle(color: context.textPrimary)),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -286,7 +286,7 @@ class _FollowButtonState extends State<_FollowButton> {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w700,
-            color: _isFollowing ? Colors.grey[500] : AppTheme.textPrimary,
+            color: _isFollowing ? Colors.grey[500] : context.textPrimary,
           ),
         ),
       ),

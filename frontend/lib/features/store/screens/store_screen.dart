@@ -123,7 +123,7 @@ class _StoreScreenState extends State<StoreScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           // ================================================================
@@ -369,7 +369,7 @@ class _StoreScreenState extends State<StoreScreen>
                 isScrollable: true,
                 tabAlignment: TabAlignment.start,
                 labelColor: Colors.white,
-                unselectedLabelColor: AppTheme.textHint,
+                unselectedLabelColor: context.textHint,
                 indicatorColor: Colors.white,
                 indicatorWeight: 2.5,
                 indicatorSize: TabBarIndicatorSize.label,
@@ -462,7 +462,7 @@ class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      color: AppTheme.scaffoldBg,
+      color: context.scaffoldBg,
       child: tabBar,
     );
   }
@@ -514,7 +514,7 @@ class _StoreItemCardState extends State<_StoreItemCard>
 
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
+        color: context.cardBg,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isLimited
@@ -670,10 +670,10 @@ class _StoreItemCardState extends State<_StoreItemCard>
               children: [
                 Text(
                   name,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 13,
-                      color: AppTheme.textPrimary),
+                      color: context.textPrimary),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

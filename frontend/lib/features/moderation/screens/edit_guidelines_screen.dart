@@ -135,7 +135,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -143,10 +143,10 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
           'Editar Guidelines',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: AppTheme.textPrimary,
+            color: context.textPrimary,
           ),
         ),
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        iconTheme: IconThemeData(color: context.textPrimary),
         actions: [
           if (_hasChanges)
             GestureDetector(
@@ -230,7 +230,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppTheme.surfaceColor,
+                    color: context.surfaceColor,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: Colors.white.withValues(alpha: 0.08),
@@ -247,8 +247,8 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
                       const SizedBox(width: 6),
                       Text(
                         section['title'] as String,
-                        style: const TextStyle(
-                          color: AppTheme.textPrimary,
+                        style: TextStyle(
+                          color: context.textPrimary,
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
@@ -266,7 +266,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
           child: Container(
             margin: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.surfaceColor,
+              color: context.surfaceColor,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: Colors.white.withValues(alpha: 0.05),
@@ -277,8 +277,8 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
               maxLines: null,
               expands: true,
               textAlignVertical: TextAlignVertical.top,
-              style: const TextStyle(
-                color: AppTheme.textPrimary,
+              style: TextStyle(
+                color: context.textPrimary,
                 fontSize: 14,
                 height: 1.6,
               ),
@@ -384,8 +384,8 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
             padding: const EdgeInsets.only(top: 20, bottom: 10),
             child: Text(
               line.substring(2),
-              style: const TextStyle(
-                color: AppTheme.textPrimary,
+              style: TextStyle(
+                color: context.textPrimary,
                 fontSize: 22,
                 fontWeight: FontWeight.w900,
               ),
@@ -414,8 +414,8 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
                 Expanded(
                   child: Text(
                     line.substring(2),
-                    style: const TextStyle(
-                      color: AppTheme.textPrimary,
+                    style: TextStyle(
+                      color: context.textPrimary,
                       fontSize: 14,
                       height: 1.5,
                     ),
@@ -456,8 +456,8 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
                   Expanded(
                     child: Text(
                       match.group(2)!,
-                      style: const TextStyle(
-                        color: AppTheme.textPrimary,
+                      style: TextStyle(
+                        color: context.textPrimary,
                         fontSize: 14,
                         height: 1.5,
                       ),
@@ -479,8 +479,8 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
           padding: const EdgeInsets.symmetric(vertical: 2),
           child: Text(
             line,
-            style: const TextStyle(
-              color: AppTheme.textPrimary,
+            style: TextStyle(
+              color: context.textPrimary,
               fontSize: 14,
               height: 1.5,
             ),

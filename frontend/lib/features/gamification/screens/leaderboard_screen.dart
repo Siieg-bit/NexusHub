@@ -32,18 +32,18 @@ class LeaderboardScreen extends ConsumerWidget {
     final leaderboardAsync = ref.watch(leaderboardProvider(communityId));
 
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: const Text(
           'Ranking',
           style: TextStyle(
-            color: AppTheme.textPrimary,
+            color: context.textPrimary,
             fontWeight: FontWeight.w800,
           ),
         ),
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        iconTheme: IconThemeData(color: context.textPrimary),
       ),
       body: leaderboardAsync.when(
         loading: () => const Center(
@@ -151,8 +151,8 @@ class _PodiumItem extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             data['nickname'] as String? ?? 'Usuário',
-            style: const TextStyle(
-              color: AppTheme.textPrimary,
+            style: TextStyle(
+              color: context.textPrimary,
               fontWeight: FontWeight.w700,
               fontSize: 12,
             ),
@@ -233,7 +233,7 @@ class _LeaderboardTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
@@ -269,8 +269,8 @@ class _LeaderboardTile extends StatelessWidget {
                     Expanded(
                       child: Text(
                         data['nickname'] as String? ?? 'Usuário',
-                        style: const TextStyle(
-                          color: AppTheme.textPrimary,
+                        style: TextStyle(
+                          color: context.textPrimary,
                           fontWeight: FontWeight.w700,
                           fontSize: 16,
                         ),

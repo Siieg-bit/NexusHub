@@ -31,7 +31,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surfaceColor,
+        backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
@@ -40,7 +40,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           children: [
             Icon(Icons.download_rounded, color: AppTheme.primaryColor),
             SizedBox(width: 8),
-            Text('Exportar Dados', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w800)),
+            Text('Exportar Dados', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
           ],
         ),
         content: Text(
@@ -102,7 +102,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final confirm1 = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surfaceColor,
+        backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
@@ -111,7 +111,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           children: [
             Icon(Icons.warning_rounded, color: AppTheme.errorColor),
             SizedBox(width: 8),
-            Text('Excluir Conta', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w800)),
+            Text('Excluir Conta', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
           ],
         ),
         content: Text(
@@ -157,12 +157,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final confirm2 = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surfaceColor,
+        backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
-        title: const Text('Confirmação Final', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w800)),
+        title: const Text('Confirmação Final', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -172,7 +172,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const SizedBox(height: 12),
             TextField(
               controller: confirmCtrl,
-              style: const TextStyle(color: AppTheme.textPrimary),
+              style: TextStyle(color: context.textPrimary),
               decoration: InputDecoration(
                 hintText: 'EXCLUIR',
                 hintStyle: TextStyle(color: Colors.grey[600]),
@@ -258,13 +258,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: const Text('Configurações',
-            style: TextStyle(fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+            style: TextStyle(fontWeight: FontWeight.w800, color: context.textPrimary)),
+        iconTheme: IconThemeData(color: context.textPrimary),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
@@ -283,7 +283,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppTheme.surfaceColor,
+                      color: context.surfaceColor,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
                       boxShadow: [
@@ -327,8 +327,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             children: [
                               Text(
                                 _profile?['nickname'] as String? ?? 'Usuário',
-                                style: const TextStyle(
-                                    color: AppTheme.textPrimary,
+                                style: TextStyle(
+                                    color: context.textPrimary,
                                     fontWeight: FontWeight.w800, fontSize: 16),
                               ),
                               Text(
@@ -372,17 +372,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             text: SupabaseService.client.auth.currentUser?.email ?? '',
                           );
                           return AlertDialog(
-                            backgroundColor: AppTheme.surfaceColor,
+                            backgroundColor: context.surfaceColor,
                             title: const Text('Alterar Email',
-                                style: TextStyle(color: AppTheme.textPrimary)),
+                                style: TextStyle(color: context.textPrimary)),
                             content: TextField(
                               controller: emailCtrl,
-                              style: const TextStyle(color: AppTheme.textPrimary),
+                              style: TextStyle(color: context.textPrimary),
                               decoration: InputDecoration(
                                 hintText: 'Novo email',
                                 hintStyle: TextStyle(color: Colors.grey[600]),
                                 filled: true,
-                                fillColor: AppTheme.scaffoldBg,
+                                fillColor: context.scaffoldBg,
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: BorderSide.none,
@@ -475,7 +475,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       final currentLocale = ref.read(localeProvider);
                       showModalBottomSheet(
                         context: context,
-                        backgroundColor: AppTheme.surfaceColor,
+                        backgroundColor: context.surfaceColor,
                         shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                         ),
@@ -486,14 +486,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             children: [
                               const Text('Idioma',
                                   style: TextStyle(
-                                      color: AppTheme.textPrimary,
+                                      color: context.textPrimary,
                                       fontSize: 18,
                                       fontWeight: FontWeight.w800)),
                               const SizedBox(height: 16),
                               ...AppLocale.values.map((locale) => ListTile(
                                 leading: Text(locale.flag, style: const TextStyle(fontSize: 24)),
                                 title: Text(locale.label,
-                                    style: const TextStyle(color: AppTheme.textPrimary)),
+                                    style: TextStyle(color: context.textPrimary)),
                                 trailing: currentLocale == locale
                                     ? const Icon(Icons.check_circle_rounded, color: AppTheme.primaryColor)
                                     : null,
@@ -523,7 +523,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       final confirm = await showDialog<bool>(
                         context: context,
                         builder: (ctx) => AlertDialog(
-                          backgroundColor: AppTheme.surfaceColor,
+                          backgroundColor: context.surfaceColor,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                             side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
@@ -532,7 +532,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             children: [
                               Icon(Icons.cleaning_services_rounded, color: AppTheme.accentColor),
                               SizedBox(width: 8),
-                              Text('Limpar Cache', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w800)),
+                              Text('Limpar Cache', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
                             ],
                           ),
                           content: Text(
@@ -634,12 +634,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       showDialog(
                         context: context,
                         builder: (ctx) => AlertDialog(
-                          backgroundColor: AppTheme.surfaceColor,
+                          backgroundColor: context.surfaceColor,
                           title: const Text('Central de Ajuda',
-                              style: TextStyle(color: AppTheme.textPrimary)),
+                              style: TextStyle(color: context.textPrimary)),
                           content: const Text(
                             'Para suporte, entre em contato:\n\n\u2022 Email: suporte@nexushub.app\n\u2022 Discord: discord.gg/nexushub\n\u2022 FAQ: nexushub.app/faq',
-                            style: TextStyle(color: AppTheme.textSecondary),
+                            style: TextStyle(color: context.textSecondary),
                           ),
                           actions: [
                             TextButton(
@@ -660,18 +660,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         builder: (ctx) {
                           final bugCtrl = TextEditingController();
                           return AlertDialog(
-                            backgroundColor: AppTheme.surfaceColor,
+                            backgroundColor: context.surfaceColor,
                             title: const Text('Reportar Bug',
-                                style: TextStyle(color: AppTheme.textPrimary)),
+                                style: TextStyle(color: context.textPrimary)),
                             content: TextField(
                               controller: bugCtrl,
                               maxLines: 5,
-                              style: const TextStyle(color: AppTheme.textPrimary),
+                              style: TextStyle(color: context.textPrimary),
                               decoration: InputDecoration(
                                 hintText: 'Descreva o bug encontrado...',
                                 hintStyle: TextStyle(color: Colors.grey[600]),
                                 filled: true,
-                                fillColor: AppTheme.scaffoldBg,
+                                fillColor: context.scaffoldBg,
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: BorderSide.none,
@@ -747,12 +747,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     final confirm = await showDialog<bool>(
                       context: context,
                       builder: (ctx) => AlertDialog(
-                        backgroundColor: AppTheme.surfaceColor,
+                        backgroundColor: context.surfaceColor,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
                         ),
-                        title: const Text('Sair', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w800)),
+                        title: const Text('Sair', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
                         content: Text(
                             'Tem certeza que deseja sair da sua conta?',
                             style: TextStyle(color: Colors.grey[500])),
@@ -845,7 +845,7 @@ class _SettingsGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
@@ -883,7 +883,7 @@ class _SettingsItem extends StatelessWidget {
     return ListTile(
       leading: Icon(icon, color: AppTheme.primaryColor, size: 22),
       title: Text(title,
-          style: const TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w700, fontSize: 14)),
+          style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w700, fontSize: 14)),
       subtitle: subtitle != null
           ? Text(subtitle!,
               style: TextStyle(color: Colors.grey[600], fontSize: 11))
@@ -910,7 +910,7 @@ class _ThemeToggleItem extends StatelessWidget {
         size: 22,
       ),
       title: const Text('Aparência',
-          style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w700, fontSize: 14)),
+          style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w700, fontSize: 14)),
       subtitle: Text(
         isDark ? 'Tema escuro' : 'Tema claro',
         style: TextStyle(color: Colors.grey[600], fontSize: 11),

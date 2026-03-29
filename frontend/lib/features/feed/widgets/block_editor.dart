@@ -394,10 +394,10 @@ class _BlockWidget extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 4),
           child: TextField(
             controller: block.controller,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w800,
-              color: AppTheme.textPrimary,
+              color: context.textPrimary,
               height: 1.4,
             ),
             decoration: InputDecoration(
@@ -417,7 +417,7 @@ class _BlockWidget extends StatelessWidget {
           return Container(
             height: 180,
             decoration: BoxDecoration(
-              color: AppTheme.cardColor,
+              color: context.cardBg,
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Center(
@@ -441,7 +441,7 @@ class _BlockWidget extends StatelessWidget {
             child: Container(
               height: 120,
               decoration: BoxDecoration(
-                color: AppTheme.cardColor,
+                color: context.cardBg,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: AppTheme.accentColor.withValues(alpha: 0.2),
@@ -476,7 +476,7 @@ class _BlockWidget extends StatelessWidget {
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Container(
                   height: 120,
-                  color: AppTheme.cardColor,
+                  color: context.cardBg,
                   child: const Center(
                     child: Icon(Icons.broken_image_rounded,
                         color: Colors.grey, size: 32),
@@ -541,7 +541,7 @@ class _AddBlockBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor.withValues(alpha: 0.5),
+        color: context.cardBg.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.white.withValues(alpha: 0.03)),
       ),
@@ -672,10 +672,10 @@ class BlockContentRenderer extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 8, top: 12),
               child: Text(
                 text,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
-                  color: AppTheme.textPrimary,
+                  color: context.textPrimary,
                   height: 1.4,
                 ),
               ),
@@ -695,7 +695,7 @@ class BlockContentRenderer extends StatelessWidget {
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Container(
                           height: 120,
-                          color: AppTheme.cardColor,
+                          color: context.cardBg,
                           child: const Center(
                             child: Icon(Icons.broken_image_rounded,
                                 color: Colors.grey, size: 32),

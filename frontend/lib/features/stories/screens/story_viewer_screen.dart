@@ -129,7 +129,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
             content: Text('$reaction enviado!'),
             duration: const Duration(seconds: 1),
             behavior: SnackBarBehavior.floating,
-            backgroundColor: AppTheme.surfaceColor,
+            backgroundColor: context.surfaceColor,
           ),
         );
       }
@@ -304,7 +304,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
                 children: [
                   CircleAvatar(
                     radius: 16,
-                    backgroundColor: AppTheme.cardColor,
+                    backgroundColor: context.cardBg,
                     backgroundImage:
                         avatarUrl != null ? NetworkImage(avatarUrl) : null,
                     child: avatarUrl == null

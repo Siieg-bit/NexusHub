@@ -34,7 +34,7 @@ class AminoBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: context.surfaceColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
@@ -46,8 +46,8 @@ class AminoBottomNavBar extends StatelessWidget {
       child: SafeArea(
         child: CustomPaint(
           painter: _NavBarPainter(
-            color: AppTheme.surfaceColor,
-            borderColor: AppTheme.dividerColor.withValues(alpha: 0.3),
+            color: context.surfaceColor,
+            borderColor: context.dividerClr.withValues(alpha: 0.3),
             showNotch: showCreate,
           ),
           child: SizedBox(

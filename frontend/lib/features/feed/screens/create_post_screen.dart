@@ -355,19 +355,19 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       // ── AppBar estilo Amino (escuro, minimalista) ──
       appBar: AppBar(
-        backgroundColor: AppTheme.scaffoldBg,
+        backgroundColor: context.scaffoldBg,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close_rounded, color: AppTheme.textPrimary),
+          icon: Icon(Icons.close_rounded, color: context.textPrimary),
           onPressed: () => context.pop(),
         ),
         title: const Text(
           'Criar Post',
           style: TextStyle(
-            color: AppTheme.textPrimary,
+            color: context.textPrimary,
             fontWeight: FontWeight.w700,
             fontSize: 16,
           ),
@@ -486,7 +486,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                       width: double.infinity,
                       height: 120,
                       decoration: BoxDecoration(
-                        color: AppTheme.cardColor,
+                        color: context.cardBg,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                             color: Colors.white.withValues(alpha: 0.05)),
@@ -518,10 +518,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   // Title (borderless, large)
                   TextField(
                     controller: _titleController,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
-                      color: AppTheme.textPrimary,
+                      color: context.textPrimary,
                     ),
                     decoration: InputDecoration(
                       hintText: 'Título...',
@@ -545,7 +545,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                           decoration: BoxDecoration(
                             color: _useBlogEditor
                                 ? AppTheme.accentColor.withValues(alpha: 0.15)
-                                : AppTheme.cardColor,
+                                : context.cardBg,
                             borderRadius: BorderRadius.circular(20),
                             border: _useBlogEditor
                                 ? Border.all(color: AppTheme.accentColor.withValues(alpha: 0.4))
@@ -663,14 +663,14 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
+        color: context.cardBg,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,
-        style: const TextStyle(fontSize: 13, color: AppTheme.textPrimary),
+        style: TextStyle(fontSize: 13, color: context.textPrimary),
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: TextStyle(color: Colors.grey[700], fontSize: 13),
@@ -781,7 +781,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppTheme.cardColor,
+              color: context.cardBg,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
             ),
@@ -791,10 +791,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 Row(
                   children: [
                     Text('Question ${qi + 1}',
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 13,
-                            color: AppTheme.textPrimary)),
+                            color: context.textPrimary)),
                     const Spacer(),
                     if (_quizQuestions.length > 1)
                       GestureDetector(
@@ -812,8 +812,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 const SizedBox(height: 8),
                 TextField(
                   controller: q.questionController,
-                  style: const TextStyle(
-                      fontSize: 13, color: AppTheme.textPrimary),
+                  style: TextStyle(
+                      fontSize: 13, color: context.textPrimary),
                   decoration: InputDecoration(
                     hintText: 'Type the question...',
                     hintStyle: TextStyle(color: Colors.grey[700], fontSize: 13),
@@ -841,8 +841,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                         Expanded(
                           child: TextField(
                             controller: q.options[oi],
-                            style: const TextStyle(
-                                fontSize: 12, color: AppTheme.textPrimary),
+                            style: TextStyle(
+                                fontSize: 12, color: context.textPrimary),
                             decoration: InputDecoration(
                               hintText: 'Option ${oi + 1}',
                               hintStyle: TextStyle(
@@ -995,7 +995,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: AppTheme.cardColor,
+                  color: context.cardBg,
                   borderRadius: BorderRadius.circular(10),
                   border:
                       Border.all(color: Colors.white.withValues(alpha: 0.05)),
@@ -1017,7 +1017,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
+        color: context.cardBg,
         border: Border(
           top: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),

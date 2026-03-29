@@ -71,7 +71,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -79,7 +79,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           'Admin Panel',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: AppTheme.textPrimary,
+            color: context.textPrimary,
           ),
         ),
         bottom: TabBar(
@@ -179,7 +179,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppTheme.surfaceColor,
+            color: context.surfaceColor,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.05),
@@ -203,10 +203,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                   children: [
                     Text(
                       action['action'] as String? ?? 'Ação',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 15,
-                        color: AppTheme.textPrimary,
+                        color: context.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -235,9 +235,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surfaceColor,
+        backgroundColor: context.surfaceColor,
         title: const Text('Enviar Broadcast',
-            style: TextStyle(color: AppTheme.textPrimary)),
+            style: TextStyle(color: context.textPrimary)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -247,12 +247,12 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
             TextField(
               controller: msgCtrl,
               maxLines: 4,
-              style: const TextStyle(color: AppTheme.textPrimary),
+              style: TextStyle(color: context.textPrimary),
               decoration: InputDecoration(
                 hintText: 'Digite a mensagem...',
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 filled: true,
-                fillColor: AppTheme.scaffoldBg,
+                fillColor: context.scaffoldBg,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -364,7 +364,7 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.05),
@@ -433,7 +433,7 @@ class _ToolItem extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceColor,
+          color: context.surfaceColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: Colors.white.withValues(alpha: 0.05),
@@ -456,10 +456,10 @@ class _ToolItem extends StatelessWidget {
                 children: [
                   Text(
                     label,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 16,
-                      color: AppTheme.textPrimary,
+                      color: context.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 4),

@@ -168,18 +168,18 @@ class _EditCommunityProfileScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
-        backgroundColor: AppTheme.scaffoldBg,
+        backgroundColor: context.scaffoldBg,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close_rounded, color: AppTheme.textPrimary),
+          icon: Icon(Icons.close_rounded, color: context.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text(
           'Editar Perfil',
           style: TextStyle(
-            color: AppTheme.textPrimary,
+            color: context.textPrimary,
             fontSize: 17,
             fontWeight: FontWeight.w700,
           ),
@@ -247,7 +247,7 @@ class _EditCommunityProfileScreenState
                       width: double.infinity,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
-                        color: AppTheme.cardColor,
+                        color: context.cardBg,
                         image: _localBannerUrl != null
                             ? DecorationImage(
                                 image: NetworkImage(_localBannerUrl!),
@@ -260,12 +260,12 @@ class _EditCommunityProfileScreenState
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(Icons.add_photo_alternate_rounded,
-                                    color: AppTheme.textHint, size: 36),
+                                    color: context.textHint, size: 36),
                                 const SizedBox(height: 4),
                                 Text(
                                   'Toque para adicionar banner',
                                   style: TextStyle(
-                                    color: AppTheme.textHint,
+                                    color: context.textHint,
                                     fontSize: 12,
                                   ),
                                 ),
@@ -321,13 +321,13 @@ class _EditCommunityProfileScreenState
                         children: [
                           CircleAvatar(
                             radius: 48,
-                            backgroundColor: AppTheme.cardColor,
+                            backgroundColor: context.cardBg,
                             backgroundImage: _localIconUrl != null
                                 ? NetworkImage(_localIconUrl!)
                                 : null,
                             child: _localIconUrl == null
-                                ? const Icon(Icons.person_rounded,
-                                    color: AppTheme.textHint, size: 40)
+                                ? Icon(Icons.person_rounded,
+                                    color: context.textHint, size: 40)
                                 : null,
                           ),
                           Positioned(
@@ -339,7 +339,7 @@ class _EditCommunityProfileScreenState
                                 color: AppTheme.accentColor,
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: AppTheme.scaffoldBg,
+                                  color: context.scaffoldBg,
                                   width: 2,
                                 ),
                               ),
@@ -417,7 +417,7 @@ class _EditCommunityProfileScreenState
                             'Estas configurações se aplicam apenas a esta comunidade. '
                             'Campos vazios usarão seu perfil global.',
                             style: TextStyle(
-                              color: AppTheme.textSecondary,
+                              color: context.textSecondary,
                               fontSize: 12,
                               height: 1.4,
                             ),
@@ -447,8 +447,8 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text.toUpperCase(),
-      style: const TextStyle(
-        color: AppTheme.textSecondary,
+      style: TextStyle(
+        color: context.textSecondary,
         fontSize: 11,
         fontWeight: FontWeight.w700,
         letterSpacing: 1.2,
@@ -476,20 +476,20 @@ class _AminoTextField extends StatelessWidget {
       controller: controller,
       maxLines: maxLines,
       maxLength: maxLength,
-      style: const TextStyle(
-        color: AppTheme.textPrimary,
+      style: TextStyle(
+        color: context.textPrimary,
         fontSize: 15,
       ),
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: TextStyle(
-          color: AppTheme.textHint,
+          color: context.textHint,
           fontSize: 14,
         ),
         filled: true,
-        fillColor: AppTheme.cardColor,
+        fillColor: context.cardBg,
         counterStyle: TextStyle(
-          color: AppTheme.textHint,
+          color: context.textHint,
           fontSize: 11,
         ),
         contentPadding:
@@ -497,14 +497,14 @@ class _AminoTextField extends StatelessWidget {
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(
-            color: AppTheme.dividerColor,
+            color: context.dividerClr,
             width: 0.5,
           ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(
-            color: AppTheme.dividerColor,
+            color: context.dividerClr,
             width: 0.5,
           ),
         ),

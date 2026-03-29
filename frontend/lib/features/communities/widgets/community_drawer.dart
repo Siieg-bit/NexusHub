@@ -113,7 +113,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
     final streak = myStatus?['consecutive_checkin_days'] as int? ?? 0;
 
     return Drawer(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       width: MediaQuery.of(context).size.width * 0.85,
       shape: const RoundedRectangleBorder(),
       child: SafeArea(
@@ -210,7 +210,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                               width: 40,
                               height: 40,
                               decoration: BoxDecoration(
-                                color: AppTheme.surfaceColor,
+                                color: context.surfaceColor,
                                 shape: BoxShape.circle,
                                 border: Border.all(
                                   color: Colors.white.withValues(alpha: 0.1),
@@ -271,9 +271,9 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
                               colors: [
-                                AppTheme.scaffoldBg.withValues(alpha: 0.0),
-                                AppTheme.scaffoldBg.withValues(alpha: 0.4),
-                                AppTheme.scaffoldBg,
+                                context.scaffoldBg.withValues(alpha: 0.0),
+                                context.scaffoldBg.withValues(alpha: 0.4),
+                                context.scaffoldBg,
                               ],
                               stops: const [0.0, 0.5, 1.0],
                             ),
@@ -345,7 +345,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                                     ),
                                     child: CircleAvatar(
                                       radius: 32,
-                                      backgroundColor: AppTheme.surfaceColor,
+                                      backgroundColor: context.surfaceColor,
                                       backgroundImage:
                                           widget.currentUser?.iconUrl != null
                                               ? CachedNetworkImageProvider(
@@ -368,7 +368,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                                         color: const Color(0xFF2563EB),
                                         shape: BoxShape.circle,
                                         border: Border.all(
-                                            color: AppTheme.scaffoldBg,
+                                            color: context.scaffoldBg,
                                             width: 2),
                                       ),
                                       child: const Icon(Icons.add_rounded,
@@ -435,7 +435,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16, vertical: 7),
                                   decoration: BoxDecoration(
-                                    color: AppTheme.surfaceColor,
+                                    color: context.surfaceColor,
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
                                       color: AppTheme.warningColor.withValues(alpha: 0.4),
@@ -766,8 +766,8 @@ class _AminoDrawerItem extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: const TextStyle(
-                  color: AppTheme.textPrimary,
+                style: TextStyle(
+                  color: context.textPrimary,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),

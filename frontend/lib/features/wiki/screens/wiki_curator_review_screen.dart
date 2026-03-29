@@ -131,20 +131,20 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
     return showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.cardColor,
+        backgroundColor: context.cardBg,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Motivo da rejeição',
             style: TextStyle(
-                color: AppTheme.textPrimary, fontWeight: FontWeight.w800)),
+                color: context.textPrimary, fontWeight: FontWeight.w800)),
         content: TextField(
           controller: controller,
-          style: const TextStyle(color: AppTheme.textPrimary),
+          style: TextStyle(color: context.textPrimary),
           maxLines: 3,
           decoration: InputDecoration(
             hintText: 'Descreva o que precisa ser corrigido...',
-            hintStyle: TextStyle(color: AppTheme.textSecondary),
+            hintStyle: TextStyle(color: context.textSecondary),
             filled: true,
-            fillColor: AppTheme.surfaceColor,
+            fillColor: context.surfaceColor,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
@@ -155,7 +155,7 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text('Cancelar',
-                style: TextStyle(color: AppTheme.textSecondary)),
+                style: TextStyle(color: context.textSecondary)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -178,17 +178,17 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
-        backgroundColor: AppTheme.scaffoldBg,
+        backgroundColor: context.scaffoldBg,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        iconTheme: IconThemeData(color: context.textPrimary),
         title: Row(
           children: [
             const Text('Revisão de Wiki',
                 style: TextStyle(
                     fontWeight: FontWeight.w800,
-                    color: AppTheme.textPrimary,
+                    color: context.textPrimary,
                     fontSize: 20)),
             const SizedBox(width: 8),
             if (_pendingEntries.isNotEmpty)
@@ -226,13 +226,13 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
                       const SizedBox(height: 16),
                       const Text('Nenhuma wiki pendente',
                           style: TextStyle(
-                              color: AppTheme.textSecondary,
+                              color: context.textSecondary,
                               fontSize: 16,
                               fontWeight: FontWeight.w600)),
                       const SizedBox(height: 8),
                       Text('Todas as submissões foram revisadas.',
                           style: TextStyle(
-                              color: AppTheme.textHint, fontSize: 14)),
+                              color: context.textHint, fontSize: 14)),
                     ],
                   ),
                 )
@@ -285,7 +285,7 @@ class _PendingWikiCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
-          color: AppTheme.cardColor,
+          color: context.cardBg,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: AppTheme.warningColor.withValues(alpha: 0.3),
@@ -340,7 +340,7 @@ class _PendingWikiCard extends StatelessWidget {
                   const Spacer(),
                   Text(timeago.format(createdAt, locale: 'pt_BR'),
                       style:
-                          TextStyle(color: AppTheme.textHint, fontSize: 11)),
+                          TextStyle(color: context.textHint, fontSize: 11)),
                 ],
               ),
             ),
@@ -370,16 +370,16 @@ class _PendingWikiCard extends StatelessWidget {
 
                   // Title
                   Text(title,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 18,
-                          color: AppTheme.textPrimary)),
+                          color: context.textPrimary)),
                   const SizedBox(height: 8),
 
                   // Content preview
                   Text(content,
                       style: TextStyle(
-                          color: AppTheme.textSecondary,
+                          color: context.textSecondary,
                           fontSize: 14,
                           height: 1.5),
                       maxLines: 4,
@@ -398,8 +398,8 @@ class _PendingWikiCard extends StatelessWidget {
                         const SizedBox(width: 8),
                         Text(
                           author['nickname'] as String? ?? 'Anonimo',
-                          style: const TextStyle(
-                              color: AppTheme.textSecondary,
+                          style: TextStyle(
+                              color: context.textSecondary,
                               fontSize: 13,
                               fontWeight: FontWeight.w600),
                         ),

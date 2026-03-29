@@ -174,7 +174,7 @@ class _ReportDialogState extends State<ReportDialog> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppTheme.dividerColor,
+                color: context.dividerClr,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -187,7 +187,7 @@ class _ReportDialogState extends State<ReportDialog> {
           const SizedBox(height: 4),
           const Text(
             'Selecione o motivo da denúncia',
-            style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+            style: TextStyle(color: context.textSecondary, fontSize: 13),
           ),
           const SizedBox(height: 16),
 
@@ -204,7 +204,7 @@ class _ReportDialogState extends State<ReportDialog> {
                 decoration: BoxDecoration(
                   color: isSelected
                       ? Color(type['color'] as int).withValues(alpha: 0.1)
-                      : AppTheme.cardColor,
+                      : context.cardBg,
                   borderRadius: BorderRadius.circular(12),
                   border: isSelected
                       ? Border.all(
@@ -240,7 +240,7 @@ class _ReportDialogState extends State<ReportDialog> {
             decoration: InputDecoration(
               hintText: 'Detalhes adicionais (opcional)...',
               filled: true,
-              fillColor: AppTheme.cardColor,
+              fillColor: context.cardBg,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,

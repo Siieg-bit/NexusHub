@@ -114,7 +114,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
-        backgroundColor: AppTheme.scaffoldBg,
+        backgroundColor: context.scaffoldBg,
         body: Center(
             child: CircularProgressIndicator(
                 color: AppTheme.primaryColor, strokeWidth: 2)),
@@ -154,7 +154,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           // ==================================================================
@@ -163,7 +163,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           SliverAppBar(
             expandedHeight: 420,
             pinned: true,
-            backgroundColor: AppTheme.scaffoldBg,
+            backgroundColor: context.scaffoldBg,
             elevation: 0,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_ios_rounded,
@@ -230,8 +230,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                         gradient: LinearGradient(
                           colors: [
                             Colors.transparent,
-                            AppTheme.scaffoldBg.withValues(alpha: 0.8),
-                            AppTheme.scaffoldBg,
+                            context.scaffoldBg.withValues(alpha: 0.8),
+                            context.scaffoldBg,
                           ],
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
@@ -258,8 +258,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                         // Nome
                         Text(
                           displayName,
-                          style: const TextStyle(
-                            color: AppTheme.textPrimary,
+                          style: TextStyle(
+                            color: context.textPrimary,
                             fontSize: 22,
                             fontWeight: FontWeight.w800,
                           ),
@@ -689,8 +689,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                       children: [
                         Text(
                           formatCount(reputation),
-                          style: const TextStyle(
-                            color: AppTheme.textPrimary,
+                          style: TextStyle(
+                            color: context.textPrimary,
                             fontSize: 28,
                             fontWeight: FontWeight.w900,
                           ),
@@ -714,8 +714,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                         children: [
                           Text(
                             formatCount(_followingCount),
-                            style: const TextStyle(
-                              color: AppTheme.textPrimary,
+                            style: TextStyle(
+                              color: context.textPrimary,
                               fontSize: 28,
                               fontWeight: FontWeight.w900,
                             ),
@@ -740,8 +740,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                         children: [
                           Text(
                             formatCount(_followersCount),
-                            style: const TextStyle(
-                              color: AppTheme.textPrimary,
+                            style: TextStyle(
+                              color: context.textPrimary,
                               fontSize: 28,
                               fontWeight: FontWeight.w900,
                             ),
@@ -771,7 +771,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
               margin: const EdgeInsets.fromLTRB(0, 8, 0, 0),
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
               decoration: BoxDecoration(
-                color: AppTheme.surfaceColor,
+                color: context.surfaceColor,
                 border: Border(
                   top: BorderSide(
                       color: Colors.white.withValues(alpha: 0.05)),
@@ -788,7 +788,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                       const Text(
                         'Biografia',
                         style: TextStyle(
-                          color: AppTheme.textPrimary,
+                          color: context.textPrimary,
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
                         ),
@@ -900,7 +900,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
-                color: AppTheme.surfaceColor,
+                color: context.surfaceColor,
                 border: Border(
                   bottom: BorderSide(
                       color: Colors.white.withValues(alpha: 0.05)),
@@ -959,7 +959,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                         margin: const EdgeInsets.only(bottom: 12),
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: AppTheme.surfaceColor,
+                          color: context.surfaceColor,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                               color:
@@ -971,8 +971,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                             if (post['title'] != null)
                               Text(
                                 post['title'] as String,
-                                style: const TextStyle(
-                                    color: AppTheme.textPrimary,
+                                style: TextStyle(
+                                    color: context.textPrimary,
                                     fontWeight: FontWeight.w700,
                                     fontSize: 15),
                               ),
@@ -1032,7 +1032,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppTheme.surfaceColor,
+            color: context.surfaceColor,
             border: Border(
               bottom: BorderSide(
                   color: Colors.white.withValues(alpha: 0.05)),
@@ -1043,14 +1043,14 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
               Expanded(
                 child: TextField(
                   controller: _wallController,
-                  style: const TextStyle(
-                      color: AppTheme.textPrimary, fontSize: 14),
+                  style: TextStyle(
+                      color: context.textPrimary, fontSize: 14),
                   decoration: InputDecoration(
                     hintText: 'Escreva no mural...',
                     hintStyle:
                         TextStyle(color: Colors.grey[600], fontSize: 14),
                     filled: true,
-                    fillColor: AppTheme.scaffoldBg,
+                    fillColor: context.scaffoldBg,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20),
                       borderSide: BorderSide.none,
@@ -1092,7 +1092,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                       margin: const EdgeInsets.only(bottom: 10),
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: AppTheme.surfaceColor,
+                        color: context.surfaceColor,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                             color:
@@ -1106,16 +1106,16 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                 '/user/${comment.authorId}'),
                             child: CircleAvatar(
                               radius: 18,
-                              backgroundColor: AppTheme.scaffoldBg,
+                              backgroundColor: context.scaffoldBg,
                               backgroundImage:
                                   comment.author?.iconUrl != null
                                       ? CachedNetworkImageProvider(
                                           comment.author!.iconUrl!)
                                       : null,
                               child: comment.author?.iconUrl == null
-                                  ? const Icon(Icons.person_rounded,
+                                  ? Icon(Icons.person_rounded,
                                       size: 18,
-                                      color: AppTheme.textPrimary)
+                                      color: context.textPrimary)
                                   : null,
                             ),
                           ),
@@ -1127,8 +1127,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                               children: [
                                 Text(
                                   comment.author?.nickname ?? 'Anônimo',
-                                  style: const TextStyle(
-                                      color: AppTheme.textPrimary,
+                                  style: TextStyle(
+                                      color: context.textPrimary,
                                       fontWeight: FontWeight.w700,
                                       fontSize: 13),
                                 ),
@@ -1234,7 +1234,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           child: Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: AppTheme.surfaceColor,
+              color: context.surfaceColor,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
             ),
@@ -1257,8 +1257,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                     children: [
                       Text(
                         post['title'] as String? ?? 'Sem título',
-                        style: const TextStyle(
-                          color: AppTheme.textPrimary,
+                        style: TextStyle(
+                          color: context.textPrimary,
                           fontWeight: FontWeight.w700,
                           fontSize: 14,
                         ),
@@ -1303,7 +1303,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
         gradient: LinearGradient(
           colors: [
             AppTheme.primaryColor.withValues(alpha: 0.6),
-            AppTheme.scaffoldBg,
+            context.scaffoldBg,
           ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -1364,7 +1364,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
   void _showOptions(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.surfaceColor,
+      backgroundColor: context.surfaceColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -1439,7 +1439,7 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      color: AppTheme.surfaceColor,
+      color: context.surfaceColor,
       child: tabBar,
     );
   }

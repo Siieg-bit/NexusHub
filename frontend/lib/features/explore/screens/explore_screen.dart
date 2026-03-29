@@ -132,7 +132,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       body: AminoParticlesBg(
         child: Column(
           children: [
@@ -246,7 +246,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   margin: const EdgeInsets.symmetric(horizontal: 4),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    color: AppTheme.cardColor,
+                    color: context.cardBg,
                   ),
                   clipBehavior: Clip.antiAlias,
                   child: Stack(
@@ -258,7 +258,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           imageUrl: community.bannerUrl!,
                           fit: BoxFit.cover,
                           placeholder: (_, __) => Container(
-                            color: AppTheme.cardColor,
+                            color: context.cardBg,
                           ),
                           errorWidget: (_, __, ___) => Container(
                             decoration: BoxDecoration(
@@ -314,7 +314,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                               height: 36,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(10),
-                                color: AppTheme.cardColor,
+                                color: context.cardBg,
                               ),
                               clipBehavior: Clip.antiAlias,
                               child: community.iconUrl != null
@@ -322,8 +322,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                       imageUrl: community.iconUrl!,
                                       fit: BoxFit.cover,
                                     )
-                                  : const Icon(Icons.groups_rounded,
-                                      color: AppTheme.textHint, size: 20),
+                                  : Icon(Icons.groups_rounded,
+                                      color: context.textHint, size: 20),
                             ),
                             const SizedBox(width: 10),
                             Expanded(
@@ -392,7 +392,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               decoration: BoxDecoration(
                 color: _currentBanner == i
                     ? Colors.white
-                    : AppTheme.textHint.withValues(alpha: 0.4),
+                    : context.textHint.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(3),
               ),
             ),
@@ -413,10 +413,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(title,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.textPrimary)),
+                  color: context.textPrimary)),
           if (onSeeAll != null)
             GestureDetector(
               onTap: onSeeAll,
@@ -476,7 +476,7 @@ class _MyCommunityCard extends StatelessWidget {
         margin: const EdgeInsets.only(right: 12),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          color: AppTheme.cardColor,
+          color: context.cardBg,
         ),
         clipBehavior: Clip.antiAlias,
         child: Stack(
@@ -552,7 +552,7 @@ class _MyCommunityCard extends StatelessWidget {
                   height: 44,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    color: AppTheme.cardColor.withValues(alpha: 0.8),
+                    color: context.cardBg.withValues(alpha: 0.8),
                     border: Border.all(
                       color: Colors.white.withValues(alpha: 0.2),
                       width: 1,
@@ -564,8 +564,8 @@ class _MyCommunityCard extends StatelessWidget {
                           imageUrl: community.iconUrl!,
                           fit: BoxFit.cover,
                         )
-                      : const Icon(Icons.groups_rounded,
-                          color: AppTheme.textHint, size: 22),
+                      : Icon(Icons.groups_rounded,
+                          color: context.textHint, size: 22),
                 ),
               ),
             ),
@@ -641,7 +641,7 @@ class _NewCommunityCard extends StatelessWidget {
         margin: const EdgeInsets.only(right: 12),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          color: AppTheme.cardColor,
+          color: context.cardBg,
         ),
         clipBehavior: Clip.antiAlias,
         child: Stack(
@@ -716,7 +716,7 @@ class _NewCommunityCard extends StatelessWidget {
                     height: 32,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
-                      color: AppTheme.cardColor,
+                      color: context.cardBg,
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: community.iconUrl != null
@@ -724,8 +724,8 @@ class _NewCommunityCard extends StatelessWidget {
                             imageUrl: community.iconUrl!,
                             fit: BoxFit.cover,
                           )
-                        : const Icon(Icons.groups_rounded,
-                            color: AppTheme.textHint, size: 16),
+                        : Icon(Icons.groups_rounded,
+                            color: context.textHint, size: 16),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -785,7 +785,7 @@ class _ForYouPostTile extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppTheme.cardColor.withValues(alpha: 0.6),
+          color: context.cardBg.withValues(alpha: 0.6),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -829,7 +829,7 @@ class _ForYouPostTile extends StatelessWidget {
                           child: Text(
                             community['name'] as String? ?? '',
                             style: TextStyle(
-                              color: AppTheme.textHint,
+                              color: context.textHint,
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
                             ),
@@ -844,10 +844,10 @@ class _ForYouPostTile extends StatelessWidget {
                   if (title.isNotEmpty)
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
-                        color: AppTheme.textPrimary,
+                        color: context.textPrimary,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -859,7 +859,7 @@ class _ForYouPostTile extends StatelessWidget {
                     Text(
                       content,
                       style: TextStyle(
-                        color: AppTheme.textSecondary,
+                        color: context.textSecondary,
                         fontSize: 12,
                         height: 1.3,
                       ),
@@ -896,7 +896,7 @@ class _ForYouPostTile extends StatelessWidget {
                           child: Text(
                             author['nickname'] as String? ?? '',
                             style: TextStyle(
-                              color: AppTheme.textHint,
+                              color: context.textHint,
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
                             ),
@@ -907,18 +907,18 @@ class _ForYouPostTile extends StatelessWidget {
                         const SizedBox(width: 8),
                       ],
                       Icon(Icons.favorite_rounded,
-                          size: 12, color: AppTheme.textHint),
+                          size: 12, color: context.textHint),
                       const SizedBox(width: 2),
                       Text('$likesCount',
                           style: TextStyle(
-                              color: AppTheme.textHint, fontSize: 11)),
+                              color: context.textHint, fontSize: 11)),
                       const SizedBox(width: 8),
                       Icon(Icons.chat_bubble_rounded,
-                          size: 12, color: AppTheme.textHint),
+                          size: 12, color: context.textHint),
                       const SizedBox(width: 2),
                       Text('$commentsCount',
                           style: TextStyle(
-                              color: AppTheme.textHint, fontSize: 11)),
+                              color: context.textHint, fontSize: 11)),
                     ],
                   ),
                 ],
@@ -944,7 +944,7 @@ class _RecommendedCommunityTile extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: AppTheme.cardColor.withValues(alpha: 0.6),
+          color: context.cardBg.withValues(alpha: 0.6),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -955,14 +955,14 @@ class _RecommendedCommunityTile extends StatelessWidget {
               height: 48,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(14),
-                color: AppTheme.surfaceColor,
+                color: context.surfaceColor,
               ),
               clipBehavior: Clip.antiAlias,
               child: community.iconUrl != null
                   ? CachedNetworkImage(
                       imageUrl: community.iconUrl!, fit: BoxFit.cover)
-                  : const Icon(Icons.groups_rounded,
-                      color: AppTheme.textHint, size: 24),
+                  : Icon(Icons.groups_rounded,
+                      color: context.textHint, size: 24),
             ),
             const SizedBox(width: 12),
             // Info
@@ -971,15 +971,15 @@ class _RecommendedCommunityTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(community.name,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
-                          color: AppTheme.textPrimary)),
+                          color: context.textPrimary)),
                   const SizedBox(height: 2),
                   Text(
                     '${formatCount(community.membersCount)} membros',
-                    style: const TextStyle(
-                        color: AppTheme.textSecondary, fontSize: 12),
+                    style: TextStyle(
+                        color: context.textSecondary, fontSize: 12),
                   ),
                 ],
               ),

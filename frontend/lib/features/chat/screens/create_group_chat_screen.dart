@@ -222,19 +222,19 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
-        backgroundColor: AppTheme.scaffoldBg,
+        backgroundColor: context.scaffoldBg,
         elevation: 0,
         title: const Text(
           'Criar Grupo',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: AppTheme.textPrimary,
+            color: context.textPrimary,
             fontSize: 18,
           ),
         ),
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        iconTheme: IconThemeData(color: context.textPrimary),
         actions: [
           if (_currentStep == 2)
             TextButton(
@@ -304,7 +304,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
           height: isCurrent ? 32 : 24,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: isActive ? AppTheme.primaryColor : AppTheme.surfaceColor,
+            color: isActive ? AppTheme.primaryColor : context.surfaceColor,
             border: Border.all(
               color: isActive
                   ? AppTheme.primaryColor
@@ -335,7 +335,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
         Text(
           label,
           style: TextStyle(
-            color: isActive ? AppTheme.textPrimary : Colors.grey[600],
+            color: isActive ? context.textPrimary : Colors.grey[600],
             fontSize: 10,
             fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
           ),
@@ -421,7 +421,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
               decoration: BoxDecoration(
                 color: isSelected
                     ? AppTheme.primaryColor.withValues(alpha: 0.15)
-                    : AppTheme.surfaceColor,
+                    : context.surfaceColor,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: isSelected
@@ -437,21 +437,21 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                     height: 44,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
-                      color: AppTheme.cardColor,
+                      color: context.cardBg,
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: iconUrl != null
                         ? CachedNetworkImage(
                             imageUrl: iconUrl, fit: BoxFit.cover)
-                        : const Icon(Icons.groups_rounded,
-                            color: AppTheme.textHint, size: 22),
+                        : Icon(Icons.groups_rounded,
+                            color: context.textHint, size: 22),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
                     child: Text(
                       name,
                       style: TextStyle(
-                        color: AppTheme.textPrimary,
+                        color: context.textPrimary,
                         fontWeight:
                             isSelected ? FontWeight.w700 : FontWeight.w500,
                         fontSize: 15,
@@ -483,7 +483,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
           child: Container(
             height: 140,
             decoration: BoxDecoration(
-              color: AppTheme.surfaceColor,
+              color: context.surfaceColor,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: Colors.white.withValues(alpha: 0.08),
@@ -521,12 +521,12 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
         const SizedBox(height: 8),
         TextField(
           controller: _nameController,
-          style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16),
+          style: TextStyle(color: context.textPrimary, fontSize: 16),
           decoration: InputDecoration(
             hintText: 'Ex: Fan Club do Anime',
             hintStyle: TextStyle(color: Colors.grey[600]),
             filled: true,
-            fillColor: AppTheme.surfaceColor,
+            fillColor: context.surfaceColor,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
@@ -546,13 +546,13 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
         const SizedBox(height: 8),
         TextField(
           controller: _descriptionController,
-          style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
+          style: TextStyle(color: context.textPrimary, fontSize: 14),
           maxLines: 3,
           decoration: InputDecoration(
             hintText: 'Descreva o grupo...',
             hintStyle: TextStyle(color: Colors.grey[600]),
             filled: true,
-            fillColor: AppTheme.surfaceColor,
+            fillColor: context.surfaceColor,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
@@ -567,7 +567,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppTheme.surfaceColor,
+            color: context.surfaceColor,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -584,8 +584,8 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                   children: [
                     Text(
                       _isPublic ? 'Chat Publico' : 'Chat Privado',
-                      style: const TextStyle(
-                        color: AppTheme.textPrimary,
+                      style: TextStyle(
+                        color: context.textPrimary,
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
                       ),
@@ -697,14 +697,14 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
           child: TextField(
             controller: _searchController,
-            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
+            style: TextStyle(color: context.textPrimary, fontSize: 14),
             decoration: InputDecoration(
               hintText: 'Buscar membros...',
               hintStyle: TextStyle(color: Colors.grey[600]),
               prefixIcon:
                   Icon(Icons.search_rounded, color: Colors.grey[600], size: 20),
               filled: true,
-              fillColor: AppTheme.surfaceColor,
+              fillColor: context.surfaceColor,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
@@ -850,8 +850,8 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                                     children: [
                                       Text(
                                         nickname,
-                                        style: const TextStyle(
-                                          color: AppTheme.textPrimary,
+                                        style: TextStyle(
+                                          color: context.textPrimary,
                                           fontWeight: FontWeight.w600,
                                           fontSize: 14,
                                         ),

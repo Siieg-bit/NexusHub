@@ -125,16 +125,16 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
         _allAchievements.where((a) => !_unlockedIds.contains(a['id'])).toList();
 
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        iconTheme: IconThemeData(color: context.textPrimary),
         title: const Text(
           'Conquistas',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: AppTheme.textPrimary,
+            color: context.textPrimary,
           ),
         ),
       ),
@@ -221,7 +221,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                           style: TextStyle(
                             fontWeight: FontWeight.w800,
                             fontSize: 16,
-                            color: AppTheme.textPrimary,
+                            color: context.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -240,7 +240,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                           style: TextStyle(
                             fontWeight: FontWeight.w800,
                             fontSize: 16,
-                            color: AppTheme.textPrimary,
+                            color: context.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -294,7 +294,7 @@ class _AchievementTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isUnlocked
@@ -344,7 +344,7 @@ class _AchievementTile extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                           fontSize: 14,
                           color: isUnlocked
-                              ? AppTheme.textPrimary
+                              ? context.textPrimary
                               : Colors.grey[500],
                         ),
                       ),

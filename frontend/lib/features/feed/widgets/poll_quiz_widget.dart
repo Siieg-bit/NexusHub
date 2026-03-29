@@ -130,7 +130,7 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
+        color: context.cardBg,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: AppTheme.accentColor.withValues(alpha: 0.15),
@@ -157,7 +157,7 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
                 '$_totalVotes votos',
                 style: TextStyle(
                   fontSize: 12,
-                  color: AppTheme.textHint,
+                  color: context.textHint,
                 ),
               ),
             ],
@@ -186,7 +186,7 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
                   border: Border.all(
                     color: isSelected
                         ? AppTheme.accentColor
-                        : AppTheme.dividerColor,
+                        : context.dividerClr,
                     width: isSelected ? 1.5 : 0.5,
                   ),
                 ),
@@ -204,7 +204,7 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
                               decoration: BoxDecoration(
                                 color: isSelected
                                     ? AppTheme.accentColor.withValues(alpha: 0.15)
-                                    : AppTheme.textHint.withValues(alpha: 0.05),
+                                    : context.textHint.withValues(alpha: 0.05),
                               ),
                             ),
                           ),
@@ -223,7 +223,7 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: AppTheme.textHint,
+                                    color: context.textHint,
                                     width: 1.5,
                                   ),
                                 ),
@@ -247,7 +247,7 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
                                 text,
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: AppTheme.textPrimary,
+                                  color: context.textPrimary,
                                   fontWeight: isSelected
                                       ? FontWeight.w700
                                       : FontWeight.w400,
@@ -262,7 +262,7 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
                                   fontWeight: FontWeight.w700,
                                   color: isSelected
                                       ? AppTheme.accentColor
-                                      : AppTheme.textSecondary,
+                                      : context.textSecondary,
                                 ),
                               ),
                           ],
@@ -394,7 +394,7 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
+        color: context.cardBg,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: AppTheme.accentColor.withValues(alpha: 0.15),
@@ -418,10 +418,10 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
         const SizedBox(height: 12),
         Text(
           'Resultado: $_score/${_questions.length}',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w800,
-            color: AppTheme.textPrimary,
+            color: context.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
@@ -429,7 +429,7 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
           '${(pct * 100).toStringAsFixed(0)}% de acerto',
           style: TextStyle(
             fontSize: 14,
-            color: AppTheme.textSecondary,
+            color: context.textSecondary,
           ),
         ),
         const SizedBox(height: 16),
@@ -503,7 +503,7 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
           borderRadius: BorderRadius.circular(4),
           child: LinearProgressIndicator(
             value: (_currentQuestion + 1) / _questions.length,
-            backgroundColor: AppTheme.dividerColor,
+            backgroundColor: context.dividerClr,
             valueColor:
                 const AlwaysStoppedAnimation<Color>(AppTheme.accentColor),
             minHeight: 4,
@@ -515,10 +515,10 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
         // Pergunta
         Text(
           questionText,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
-            color: AppTheme.textPrimary,
+            color: context.textPrimary,
             height: 1.4,
           ),
         ),
@@ -536,8 +536,8 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
           final isCorrect = i == correctIndex;
           final isSelected = _selectedOption == i;
 
-          Color bgColor = AppTheme.scaffoldBg;
-          Color borderColor = AppTheme.dividerColor;
+          Color bgColor = context.scaffoldBg;
+          Color borderColor = context.dividerClr;
           IconData? trailingIcon;
           Color? trailingColor;
 
@@ -583,7 +583,7 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
                       border: Border.all(
                         color: isSelected
                             ? Colors.transparent
-                            : AppTheme.textHint,
+                            : context.textHint,
                         width: 1.5,
                       ),
                     ),
@@ -601,7 +601,7 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
                                 fontWeight: FontWeight.w700,
                                 color: isSelected
                                     ? Colors.white
-                                    : AppTheme.textHint,
+                                    : context.textHint,
                               ),
                             ),
                     ),
@@ -611,7 +611,7 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
                       optText,
                       style: TextStyle(
                         fontSize: 14,
-                        color: AppTheme.textPrimary,
+                        color: context.textPrimary,
                         fontWeight:
                             isSelected ? FontWeight.w700 : FontWeight.w400,
                       ),
@@ -646,7 +646,7 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
                       q['explanation'] as String,
                       style: TextStyle(
                         fontSize: 12,
-                        color: AppTheme.textSecondary,
+                        color: context.textSecondary,
                         height: 1.4,
                       ),
                     ),

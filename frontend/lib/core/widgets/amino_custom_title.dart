@@ -121,10 +121,10 @@ class AminoCustomTitleList extends StatelessWidget {
             ),
             child: Text(
               '+${titles.length - maxVisible}',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
-                color: AppTheme.textSecondary,
+                color: context.textSecondary,
               ),
             ),
           ),

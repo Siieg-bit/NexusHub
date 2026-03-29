@@ -208,7 +208,7 @@ class _AcmScreenState extends State<AcmScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -298,7 +298,7 @@ class _AcmScreenState extends State<AcmScreen>
         return Container(
           margin: const EdgeInsets.only(bottom: 8),
           decoration: BoxDecoration(
-            color: AppTheme.surfaceColor,
+            color: context.surfaceColor,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
@@ -385,7 +385,7 @@ class _AcmScreenState extends State<AcmScreen>
           decoration: InputDecoration(
             hintText: 'Mensagem exibida para novos membros...',
             filled: true,
-            fillColor: AppTheme.surfaceColor,
+            fillColor: context.surfaceColor,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
@@ -413,7 +413,7 @@ class _AcmScreenState extends State<AcmScreen>
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppTheme.surfaceColor,
+            color: context.surfaceColor,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
@@ -506,7 +506,7 @@ class _AcmScreenState extends State<AcmScreen>
                   hintText: '#RRGGBB',
                   prefixIcon: const Icon(Icons.tag_rounded, size: 18),
                   filled: true,
-                  fillColor: AppTheme.scaffoldBg,
+                  fillColor: context.scaffoldBg,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide.none,
@@ -525,7 +525,7 @@ class _AcmScreenState extends State<AcmScreen>
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppTheme.surfaceColor,
+            color: context.surfaceColor,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
@@ -552,7 +552,7 @@ class _AcmScreenState extends State<AcmScreen>
                         errorBuilder: (_, __, ___) => Container(
                               width: 80,
                               height: 80,
-                              color: AppTheme.surfaceColorLight,
+                              color: context.surfaceColorLight,
                               child: const Icon(Icons.broken_image_rounded),
                             )),
                   ),
@@ -565,7 +565,7 @@ class _AcmScreenState extends State<AcmScreen>
                   hintText: 'URL da imagem do ícone',
                   prefixIcon: const Icon(Icons.link_rounded, size: 18),
                   filled: true,
-                  fillColor: AppTheme.scaffoldBg,
+                  fillColor: context.scaffoldBg,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide.none,
@@ -584,7 +584,7 @@ class _AcmScreenState extends State<AcmScreen>
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppTheme.surfaceColor,
+            color: context.surfaceColor,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
@@ -609,7 +609,7 @@ class _AcmScreenState extends State<AcmScreen>
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => Container(
                             height: 100,
-                            color: AppTheme.surfaceColorLight,
+                            color: context.surfaceColorLight,
                             child: const Center(
                                 child: Icon(Icons.broken_image_rounded)),
                           )),
@@ -622,7 +622,7 @@ class _AcmScreenState extends State<AcmScreen>
                   hintText: 'URL da imagem do banner',
                   prefixIcon: const Icon(Icons.link_rounded, size: 18),
                   filled: true,
-                  fillColor: AppTheme.scaffoldBg,
+                  fillColor: context.scaffoldBg,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide.none,
@@ -714,7 +714,7 @@ class _AcmScreenState extends State<AcmScreen>
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppTheme.surfaceColor,
+            color: context.surfaceColor,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
@@ -747,7 +747,7 @@ class _AcmScreenState extends State<AcmScreen>
                     prefixIcon:
                         const Icon(Icons.text_fields_rounded, size: 18),
                     filled: true,
-                    fillColor: AppTheme.scaffoldBg,
+                    fillColor: context.scaffoldBg,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide.none,
@@ -768,7 +768,7 @@ class _AcmScreenState extends State<AcmScreen>
                     hintText: 'URL da imagem do banner (opcional)',
                     prefixIcon: const Icon(Icons.image_rounded, size: 18),
                     filled: true,
-                    fillColor: AppTheme.scaffoldBg,
+                    fillColor: context.scaffoldBg,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide.none,
@@ -789,7 +789,7 @@ class _AcmScreenState extends State<AcmScreen>
                     hintText: 'Link ao clicar (opcional)',
                     prefixIcon: const Icon(Icons.link_rounded, size: 18),
                     filled: true,
-                    fillColor: AppTheme.scaffoldBg,
+                    fillColor: context.scaffoldBg,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide.none,
@@ -816,7 +816,7 @@ class _AcmScreenState extends State<AcmScreen>
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppTheme.surfaceColor,
+            color: context.surfaceColor,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
@@ -930,7 +930,7 @@ class _AcmScreenState extends State<AcmScreen>
       return Container(
         margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceColor,
+          color: context.surfaceColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         ),
@@ -1015,7 +1015,7 @@ class _AcmScreenState extends State<AcmScreen>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.surfaceColor,
+              color: context.surfaceColor,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
             ),
@@ -1087,7 +1087,7 @@ class _FeaturedStyleOption extends StatelessWidget {
           decoration: BoxDecoration(
             color: isSelected
                 ? AppTheme.primaryColor.withValues(alpha: 0.15)
-                : AppTheme.surfaceColor,
+                : context.surfaceColor,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected
@@ -1108,7 +1108,7 @@ class _FeaturedStyleOption extends StatelessWidget {
                   style: TextStyle(
                     color: isSelected
                         ? AppTheme.primaryColor
-                        : AppTheme.textSecondary,
+                        : context.textSecondary,
                     fontSize: 11,
                     fontWeight:
                         isSelected ? FontWeight.w700 : FontWeight.w500,
@@ -1146,7 +1146,7 @@ class _AccessOption extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected
               ? AppTheme.primaryColor.withValues(alpha: 0.1)
-              : AppTheme.surfaceColor,
+              : context.surfaceColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected
@@ -1209,7 +1209,7 @@ class _StatCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),

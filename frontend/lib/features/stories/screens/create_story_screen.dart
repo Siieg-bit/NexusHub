@@ -255,7 +255,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                   borderRadius: BorderRadius.circular(16),
                   color: _type == 'text'
                       ? _bgColors[_selectedBgIndex]
-                      : AppTheme.cardColor,
+                      : context.cardBg,
                   image: _type == 'image' && _mediaUrl != null
                       ? DecorationImage(
                           image: NetworkImage(_mediaUrl!),

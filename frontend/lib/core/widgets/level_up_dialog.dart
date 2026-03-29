@@ -211,7 +211,7 @@ class _LevelUpContentState extends State<_LevelUpContent>
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
-                        color: AppTheme.textSecondary,
+                        color: context.textSecondary,
                         letterSpacing: 4,
                       ),
                     ),
@@ -301,7 +301,7 @@ class _LevelUpContentState extends State<_LevelUpContent>
                       'Novo título desbloqueado!',
                       style: TextStyle(
                         fontSize: 13,
-                        color: AppTheme.textSecondary,
+                        color: context.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 40),

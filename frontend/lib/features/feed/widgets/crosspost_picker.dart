@@ -74,7 +74,7 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
@@ -89,7 +89,7 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
               const Text(
                 'Crosspost para:',
                 style: TextStyle(
-                  color: AppTheme.textPrimary,
+                  color: context.textPrimary,
                   fontWeight: FontWeight.w700,
                   fontSize: 15,
                 ),
@@ -158,8 +158,8 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
               children: [
                 Text(
                   community['name'] as String? ?? 'Comunidade',
-                  style: const TextStyle(
-                    color: AppTheme.textPrimary,
+                  style: TextStyle(
+                    color: context.textPrimary,
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
                   ),
@@ -217,7 +217,7 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
   void _showCommunityPicker() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -245,7 +245,7 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
               child: Text(
                 'Selecionar Comunidade',
                 style: TextStyle(
-                  color: AppTheme.textPrimary,
+                  color: context.textPrimary,
                   fontWeight: FontWeight.w800,
                   fontSize: 18,
                 ),
@@ -288,7 +288,7 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
                             return Container(
                               margin: const EdgeInsets.only(bottom: 8),
                               decoration: BoxDecoration(
-                                color: AppTheme.surfaceColor,
+                                color: context.surfaceColor,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                     color:
@@ -323,8 +323,8 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
                                 ),
                                 title: Text(
                                   c['name'] as String? ?? '',
-                                  style: const TextStyle(
-                                    color: AppTheme.textPrimary,
+                                  style: TextStyle(
+                                    color: context.textPrimary,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
@@ -333,10 +333,10 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
                                   style: TextStyle(
                                       color: Colors.grey[500], fontSize: 12),
                                 ),
-                                trailing: const Icon(
+                                trailing: Icon(
                                     Icons.arrow_forward_ios_rounded,
                                     size: 16,
-                                    color: AppTheme.textHint),
+                                    color: context.textHint),
                               ),
                             );
                           },

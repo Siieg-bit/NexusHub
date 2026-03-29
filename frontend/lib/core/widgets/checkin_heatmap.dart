@@ -110,7 +110,7 @@ class CheckinHeatmap extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
+        color: context.cardBg,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
@@ -126,7 +126,7 @@ class CheckinHeatmap extends StatelessWidget {
               const Text(
                 'Histórico de Check-in',
                 style: TextStyle(
-                  color: AppTheme.textPrimary,
+                  color: context.textPrimary,
                   fontWeight: FontWeight.w700,
                   fontSize: 15,
                 ),

@@ -31,14 +31,14 @@ class NotificationsScreen extends ConsumerWidget {
     final notificationsAsync = ref.watch(notificationsProvider);
 
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
-        backgroundColor: AppTheme.scaffoldBg,
+        backgroundColor: context.scaffoldBg,
         elevation: 0,
         title: const Text(
           'Notificações',
           style: TextStyle(
-            color: AppTheme.textPrimary,
+            color: context.textPrimary,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -49,7 +49,7 @@ class NotificationsScreen extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               margin: const EdgeInsets.only(right: 16),
               decoration: BoxDecoration(
-                color: AppTheme.surfaceColor,
+                color: context.surfaceColor,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: Colors.white.withValues(alpha: 0.05),
@@ -207,7 +207,7 @@ class _NotificationTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceColor,
+          color: context.surfaceColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isRead
@@ -253,10 +253,10 @@ class _NotificationTile extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: AppTheme.surfaceColor,
+                      color: context.surfaceColor,
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: AppTheme.surfaceColor,
+                        color: context.surfaceColor,
                         width: 2,
                       ),
                     ),
@@ -273,7 +273,7 @@ class _NotificationTile extends StatelessWidget {
                   Text(
                     data['content'] as String? ?? 'Notificação',
                     style: TextStyle(
-                      color: AppTheme.textPrimary,
+                      color: context.textPrimary,
                       fontSize: 14,
                       fontWeight: isRead ? FontWeight.w500 : FontWeight.w700,
                     ),

@@ -139,7 +139,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     final commentsAsync = ref.watch(postCommentsProvider(widget.postId));
 
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -147,10 +147,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           'Post',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: AppTheme.textPrimary,
+            color: context.textPrimary,
           ),
         ),
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        iconTheme: IconThemeData(color: context.textPrimary),
         actions: [
           IconButton(
             icon: Icon(
@@ -176,7 +176,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert_rounded),
-            color: AppTheme.surfaceColor,
+            color: context.surfaceColor,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -195,15 +195,15 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   final confirm = await showDialog<bool>(
                     context: context,
                     builder: (ctx) => AlertDialog(
-                      backgroundColor: AppTheme.surfaceColor,
+                      backgroundColor: context.surfaceColor,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
                       title: const Text('Deletar Post',
-                          style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w700)),
+                          style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w700)),
                       content: const Text(
                         'Tem certeza que deseja deletar este post? Esta ação não pode ser desfeita.',
-                        style: TextStyle(color: AppTheme.textSecondary),
+                        style: TextStyle(color: context.textSecondary),
                       ),
                       actions: [
                         TextButton(
@@ -267,9 +267,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   value: 'copy_link',
                   child: Row(
                     children: [
-                      Icon(Icons.link_rounded, size: 18, color: AppTheme.textSecondary),
+                      Icon(Icons.link_rounded, size: 18, color: context.textSecondary),
                       SizedBox(width: 10),
-                      Text('Copiar Link', style: TextStyle(color: AppTheme.textPrimary)),
+                      Text('Copiar Link', style: TextStyle(color: context.textPrimary)),
                     ],
                   ),
                 ),
@@ -279,7 +279,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     children: [
                       Icon(Icons.flag_rounded, size: 18, color: Colors.orange),
                       SizedBox(width: 10),
-                      Text('Reportar', style: TextStyle(color: AppTheme.textPrimary)),
+                      Text('Reportar', style: TextStyle(color: context.textPrimary)),
                     ],
                   ),
                 ),
@@ -340,9 +340,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                   children: [
                                     Text(
                                       post.author?.nickname ?? 'Usuário',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontWeight: FontWeight.w700,
-                                        color: AppTheme.textPrimary,
+                                        color: context.textPrimary,
                                         fontSize: 16,
                                       ),
                                     ),
@@ -401,10 +401,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
                           post.title!,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w800,
-                            color: AppTheme.textPrimary,
+                            color: context.textPrimary,
                           ),
                         ),
                       ),
@@ -466,10 +466,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         padding: const EdgeInsets.all(16),
                         child: Text(
                           post.content,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 15,
                             height: 1.7,
-                            color: AppTheme.textPrimary,
+                            color: context.textPrimary,
                           ),
                         ),
                       ),
@@ -583,7 +583,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
-                          color: AppTheme.textPrimary,
+                          color: context.textPrimary,
                         ),
                       ),
                     ),
@@ -644,7 +644,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             Container(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
               decoration: BoxDecoration(
-                color: AppTheme.surfaceColor,
+                color: context.surfaceColor,
                 border: Border(
                   top: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
                 ),
@@ -662,14 +662,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     Expanded(
                       child: Container(
                         decoration: BoxDecoration(
-                          color: AppTheme.scaffoldBg,
+                          color: context.scaffoldBg,
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
                         ),
                         child: TextField(
                           controller: _commentController,
                           focusNode: _commentFocusNode,
-                          style: const TextStyle(color: AppTheme.textPrimary),
+                          style: TextStyle(color: context.textPrimary),
                           decoration: InputDecoration(
                             hintText: 'Escreva um comentário...',
                             hintStyle: TextStyle(color: Colors.grey[600]),
@@ -851,7 +851,7 @@ class _CommentTileState extends State<_CommentTile> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceColor,
+          color: context.surfaceColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         ),
@@ -873,10 +873,10 @@ class _CommentTileState extends State<_CommentTile> {
                     children: [
                       Text(
                         comment.author?.nickname ?? 'Usuário',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 14,
-                          color: AppTheme.textPrimary,
+                          color: context.textPrimary,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -889,10 +889,10 @@ class _CommentTileState extends State<_CommentTile> {
                   const SizedBox(height: 6),
                   Text(
                     comment.content,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       height: 1.4,
-                      color: AppTheme.textPrimary,
+                      color: context.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 8),

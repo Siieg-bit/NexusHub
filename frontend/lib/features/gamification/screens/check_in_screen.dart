@@ -200,20 +200,20 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
-        backgroundColor: AppTheme.scaffoldBg,
+        backgroundColor: context.scaffoldBg,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded,
-              color: AppTheme.textPrimary, size: 20),
+          icon: Icon(Icons.arrow_back_ios_rounded,
+              color: context.textPrimary, size: 20),
           onPressed: () => context.pop(),
         ),
         title: const Text('Check-in Diário',
             style: TextStyle(
                 fontWeight: FontWeight.w800,
                 fontSize: 18,
-                color: AppTheme.textPrimary)),
+                color: context.textPrimary)),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -250,10 +250,10 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             // ================================================================
             Text(
               _checkedIn ? 'Check-in Completo!' : 'Check-in Diário',
-              style: const TextStyle(
+              style: TextStyle(
                   fontWeight: FontWeight.w800,
                   fontSize: 24,
-                  color: AppTheme.textPrimary),
+                  color: context.textPrimary),
             ),
             const SizedBox(height: 8),
             Text(
@@ -271,7 +271,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             Container(
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
               decoration: BoxDecoration(
-                color: AppTheme.surfaceColor,
+                color: context.surfaceColor,
                 borderRadius: BorderRadius.circular(16),
                 border:
                     Border.all(color: Colors.white.withValues(alpha: 0.05)),
@@ -300,7 +300,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: AppTheme.surfaceColor,
+                  color: context.surfaceColor,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                       color: AppTheme.primaryColor.withValues(alpha: 0.2)),
@@ -317,7 +317,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                         style: TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 16,
-                            color: AppTheme.textPrimary)),
+                            color: context.textPrimary)),
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -418,7 +418,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.surfaceColor,
+                color: context.surfaceColor,
                 borderRadius: BorderRadius.circular(16),
                 border:
                     Border.all(color: Colors.white.withValues(alpha: 0.05)),
@@ -429,7 +429,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                   const Text('Como funciona',
                       style: TextStyle(
                           fontWeight: FontWeight.w700,
-                          color: AppTheme.textPrimary)),
+                          color: context.textPrimary)),
                   const SizedBox(height: 10),
                   _InfoRow(
                       icon: Icons.calendar_today_rounded,
@@ -513,7 +513,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                   style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 16,
-                      color: AppTheme.textPrimary)),
+                      color: context.textPrimary)),
             ],
           ),
           const SizedBox(height: 10),
@@ -590,7 +590,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                   style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 16,
-                      color: AppTheme.textPrimary)),
+                      color: context.textPrimary)),
             ],
           ),
           const SizedBox(height: 8),
@@ -674,7 +674,7 @@ class _DayCircle extends StatelessWidget {
             ? null
             : isToday
                 ? const Color(0xFFFF9800).withValues(alpha: 0.2)
-                : AppTheme.surfaceColor,
+                : context.surfaceColor,
         border: isToday && !active
             ? Border.all(
                 color: const Color(0xFFFF9800).withValues(alpha: 0.5),

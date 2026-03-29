@@ -51,7 +51,7 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
       child: Container(
         height: 50,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        color: AppTheme.scaffoldBg,
+        color: context.scaffoldBg,
         child: Row(
           children: [
             // ── Avatar circular 30px ──
@@ -86,7 +86,7 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
         height: 30,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: AppTheme.cardColor,
+          color: context.cardBg,
           border: Border.all(
             color: Colors.white.withValues(alpha: 0.08),
             width: 1,
@@ -110,7 +110,7 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   Widget _avatarPlaceholder() {
     return Container(
-      color: AppTheme.cardColor,
+      color: context.cardBg,
       child: Icon(
         Icons.person,
         color: Colors.white.withValues(alpha: 0.30),
@@ -302,7 +302,7 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
                     color: AppTheme.aminoRed,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: AppTheme.scaffoldBg,
+                      color: context.scaffoldBg,
                       width: 1,
                     ),
                   ),

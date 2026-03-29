@@ -145,7 +145,7 @@ class _NineSliceImage extends StatelessWidget {
       ),
       errorWidget: (_, __, ___) => Container(
         decoration: BoxDecoration(
-          color: AppTheme.surfaceColor,
+          color: context.surfaceColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: AppTheme.primaryColor.withValues(alpha: 0.3),

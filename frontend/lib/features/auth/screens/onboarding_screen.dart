@@ -45,13 +45,13 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  AppTheme.scaffoldBg,
+                  context.scaffoldBg,
                   Color.lerp(
                     const Color(0xFF0F0F1A),
                     const Color(0xFF1A2E1A),
                     _bgController.value * 0.3,
                   )!,
-                  AppTheme.scaffoldBg,
+                  context.scaffoldBg,
                 ],
                 stops: [0.0, 0.5 + _bgController.value * 0.2, 1.0],
               ),
@@ -94,7 +94,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       const Text(
                         'NexusHub',
                         style: TextStyle(
-                          color: AppTheme.textPrimary,
+                          color: context.textPrimary,
                           fontSize: 36,
                           fontWeight: FontWeight.w800,
                           letterSpacing: -0.5,
@@ -104,7 +104,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       const Text(
                         'Sua comunidade, seu mundo.',
                         style: TextStyle(
-                          color: AppTheme.textSecondary,
+                          color: context.textSecondary,
                           fontSize: 16,
                           fontWeight: FontWeight.w400,
                         ),
@@ -192,7 +192,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                               child: TextButton(
                                 onPressed: () => context.go('/login'),
                                 style: TextButton.styleFrom(
-                                  foregroundColor: AppTheme.textPrimary,
+                                  foregroundColor: context.textPrimary,
                                   textStyle: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -217,7 +217,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     'Ao continuar, você concorda com os Termos de Uso\ne Política de Privacidade.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: AppTheme.textHint,
+                      color: context.textHint,
                       fontSize: 11,
                       height: 1.4,
                     ),
@@ -262,8 +262,8 @@ class _FeatureRow extends StatelessWidget {
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(
-              color: AppTheme.textPrimary,
+            style: TextStyle(
+              color: context.textPrimary,
               fontSize: 14,
               fontWeight: FontWeight.w500,
             ),

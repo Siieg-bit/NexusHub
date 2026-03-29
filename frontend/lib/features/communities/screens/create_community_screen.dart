@@ -100,15 +100,15 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        iconTheme: IconThemeData(color: context.textPrimary),
         title: const Text(
           'Criar Comunidade',
           style: TextStyle(
-            color: AppTheme.textPrimary,
+            color: context.textPrimary,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -222,7 +222,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
               const Text(
                 'Cor do Tema',
                 style: TextStyle(
-                  color: AppTheme.textPrimary,
+                  color: context.textPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
                 ),
@@ -231,7 +231,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppTheme.surfaceColor,
+                  color: context.surfaceColor,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: Colors.white.withValues(alpha: 0.05),
@@ -281,7 +281,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
               const Text(
                 'Idioma Principal',
                 style: TextStyle(
-                  color: AppTheme.textPrimary,
+                  color: context.textPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
                 ),
@@ -289,7 +289,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
               const SizedBox(height: 12),
               Container(
                 decoration: BoxDecoration(
-                  color: AppTheme.surfaceColor,
+                  color: context.surfaceColor,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: Colors.white.withValues(alpha: 0.05),
@@ -297,8 +297,8 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                 ),
                 child: DropdownButtonFormField<String>(
                   value: _selectedLanguage,
-                  dropdownColor: AppTheme.surfaceColor,
-                  style: const TextStyle(color: AppTheme.textPrimary),
+                  dropdownColor: context.surfaceColor,
+                  style: TextStyle(color: context.textPrimary),
                   decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.language_rounded,
                         color: AppTheme.accentColor),
@@ -346,7 +346,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
       maxLines: maxLines,
       maxLength: maxLength,
       validator: validator,
-      style: const TextStyle(color: AppTheme.textPrimary),
+      style: TextStyle(color: context.textPrimary),
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(color: Colors.grey[500]),
@@ -355,7 +355,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
         prefixIcon: Icon(icon, color: AppTheme.accentColor),
         alignLabelWithHint: maxLines > 1,
         filled: true,
-        fillColor: AppTheme.surfaceColor,
+        fillColor: context.surfaceColor,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),

@@ -33,7 +33,7 @@ class ChatBubble extends StatelessWidget {
   });
 
   /// Cor do bubble baseada no role do usuário — estilo Amino
-  Color get _roleColor {
+  Color _roleColor(BuildContext context) {
     if (bubbleColor != null) return bubbleColor!;
     switch (userRole) {
       case 'agent':
@@ -45,30 +45,30 @@ class ChatBubble extends StatelessWidget {
       default:
         return isMine
             ? AppTheme.primaryColor
-            : AppTheme.surfaceColor; // Surface escuro para outros
+            : context.surfaceColor; // Surface escuro para outros
     }
   }
 
   /// Cor do texto baseada no tipo de bubble
-  Color get _textColor {
+  Color _textColor(BuildContext context) {
     if (isMine || userRole == 'agent' || userRole == 'leader' || userRole == 'curator') {
       return Colors.white;
     }
-    return AppTheme.textPrimary;
+    return context.textPrimary;
   }
 
   @override
   Widget build(BuildContext context) {
     // Se tem frame de imagem, usar o frame
     if (bubbleFrameUrl != null && bubbleFrameUrl!.isNotEmpty) {
-      return _buildFramedBubble();
+      return _buildFramedBubble(context);
     }
 
     // Bubble padrão com CustomPaint
-    return _buildDefaultBubble();
+    return _buildDefaultBubble(context);
   }
 
-  Widget _buildDefaultBubble() {
+  Widget _buildDefaultBubble(BuildContext context) {
     return Align(
       alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
       child: Padding(
@@ -80,7 +80,7 @@ class ChatBubble extends StatelessWidget {
         ),
         child: CustomPaint(
           painter: _BubblePainter(
-            color: _roleColor,
+            color: _roleColor(context),
             isMine: isMine,
             showTail: showTail,
           ),
@@ -93,7 +93,7 @@ class ChatBubble extends StatelessWidget {
               bottom: 8,
             ),
             child: DefaultTextStyle(
-              style: TextStyle(color: _textColor, fontSize: 14),
+              style: TextStyle(color: _textColor(context), fontSize: 14),
               child: child,
             ),
           ),
@@ -107,7 +107,7 @@ class ChatBubble extends StatelessWidget {
   /// Usa [NineSliceBubble] para imagens PNG da loja (9-slice scaling real
   /// via centerSlice do Flutter) ou [ProceduralBubbleFrame] para frames
   /// procedurais com decorações desenhadas via CustomPainter.
-  Widget _buildFramedBubble() {
+  Widget _buildFramedBubble(BuildContext context) {
     // Se a URL começa com 'procedural:' é um frame procedural
     if (bubbleFrameUrl!.startsWith('procedural:')) {
       final parts = bubbleFrameUrl!.split(':');
@@ -115,8 +115,8 @@ class ChatBubble extends StatelessWidget {
       return ProceduralBubbleFrame(
         isMine: isMine,
         style: style,
-        primaryColor: _roleColor,
-        secondaryColor: _roleColor.withValues(alpha: 0.7),
+        primaryColor: _roleColor(context),
+        secondaryColor: _roleColor(context).withValues(alpha: 0.7),
         maxWidth: maxWidth,
         child: child,
       );
@@ -281,7 +281,7 @@ class StreakBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
+        color: context.cardBg,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: currentStreak > 0
@@ -308,7 +308,7 @@ class StreakBar extends StatelessWidget {
                 'Sequência de Check-in',
                 style: TextStyle(
                   color: currentStreak > 0
-                      ? AppTheme.textPrimary
+                      ? context.textPrimary
                       : Colors.grey[600],
                   fontWeight: FontWeight.w600,
                   fontSize: 13,

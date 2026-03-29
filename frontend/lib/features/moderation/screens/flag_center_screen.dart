@@ -76,7 +76,7 @@ class _FlagCenterScreenState extends State<FlagCenterScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -84,10 +84,10 @@ class _FlagCenterScreenState extends State<FlagCenterScreen>
           'Flag Center',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: AppTheme.textPrimary,
+            color: context.textPrimary,
           ),
         ),
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        iconTheme: IconThemeData(color: context.textPrimary),
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppTheme.primaryColor,
@@ -147,7 +147,7 @@ class _FlagCenterScreenState extends State<FlagCenterScreen>
     return RefreshIndicator(
       onRefresh: _loadFlags,
       color: AppTheme.primaryColor,
-      backgroundColor: AppTheme.surfaceColor,
+      backgroundColor: context.surfaceColor,
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: flags.length,
@@ -223,7 +223,7 @@ class _FlagCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isPending
@@ -319,8 +319,8 @@ class _FlagCard extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               reason,
-              style: const TextStyle(
-                color: AppTheme.textPrimary,
+              style: TextStyle(
+                color: context.textPrimary,
                 fontSize: 14,
                 height: 1.4,
               ),

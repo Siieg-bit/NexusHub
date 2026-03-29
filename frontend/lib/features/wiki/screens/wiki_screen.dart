@@ -77,14 +77,14 @@ class _WikiListScreenState extends State<WikiListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
-        backgroundColor: AppTheme.scaffoldBg,
+        backgroundColor: context.scaffoldBg,
         elevation: 0,
         title: const Text('Catálogo',
             style: TextStyle(
                 fontWeight: FontWeight.w800,
-                color: AppTheme.textPrimary,
+                color: context.textPrimary,
                 fontSize: 20)),
         actions: [
           // Botão de revisão para curadores/leaders
@@ -125,11 +125,11 @@ class _WikiListScreenState extends State<WikiListScreen> {
                   ),
                 ],
               ),
-              child: const Icon(Icons.add_rounded, color: AppTheme.textPrimary),
+              child: Icon(Icons.add_rounded, color: context.textPrimary),
             ),
           ),
         ],
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        iconTheme: IconThemeData(color: context.textPrimary),
       ),
       body: _isLoading
           ? const Center(
@@ -144,13 +144,13 @@ class _WikiListScreenState extends State<WikiListScreen> {
                   child: TextField(
                     controller: _searchController,
                     onChanged: (_) => setState(() {}),
-                    style: const TextStyle(color: AppTheme.textPrimary),
+                    style: TextStyle(color: context.textPrimary),
                     decoration: InputDecoration(
                       hintText: 'Buscar no catálogo...',
-                      hintStyle: TextStyle(color: AppTheme.textSecondary),
-                      prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppTheme.textSecondary),
+                      hintStyle: TextStyle(color: context.textSecondary),
+                      prefixIcon: Icon(Icons.search_rounded, size: 20, color: context.textSecondary),
                       filled: true,
-                      fillColor: AppTheme.surfaceColor,
+                      fillColor: context.surfaceColor,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                         borderSide: BorderSide.none,
@@ -186,7 +186,7 @@ class _WikiListScreenState extends State<WikiListScreen> {
                   child: _filteredEntries.isEmpty
                       ? Center(
                           child: Text('Nenhuma entrada encontrada',
-                              style: TextStyle(color: AppTheme.textSecondary)),
+                              style: TextStyle(color: context.textSecondary)),
                         )
                       : GridView.builder(
                           padding: const EdgeInsets.all(16),
@@ -234,7 +234,7 @@ class _CategoryChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected
               ? AppTheme.primaryColor.withValues(alpha: 0.15)
-              : AppTheme.surfaceColor,
+              : context.surfaceColor,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: isSelected
@@ -256,7 +256,7 @@ class _CategoryChip extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? AppTheme.primaryColor : AppTheme.textSecondary,
+            color: isSelected ? AppTheme.primaryColor : context.textSecondary,
             fontSize: 13,
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
           ),
@@ -282,7 +282,7 @@ class _WikiEntryCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: AppTheme.surfaceColor,
+          color: context.surfaceColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           boxShadow: [
@@ -340,10 +340,10 @@ class _WikiEntryCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 14,
-                          color: AppTheme.textPrimary),
+                          color: context.textPrimary),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -453,7 +453,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('Wiki removida do perfil'),
-              backgroundColor: AppTheme.surfaceColor,
+              backgroundColor: context.surfaceColor,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
@@ -514,7 +514,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
-        backgroundColor: AppTheme.scaffoldBg,
+        backgroundColor: context.scaffoldBg,
         body: Center(
             child: CircularProgressIndicator(
           color: AppTheme.primaryColor,
@@ -524,15 +524,15 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
 
     if (_entry == null) {
       return Scaffold(
-        backgroundColor: AppTheme.scaffoldBg,
+        backgroundColor: context.scaffoldBg,
         appBar: AppBar(
-          backgroundColor: AppTheme.scaffoldBg,
+          backgroundColor: context.scaffoldBg,
           elevation: 0,
-          iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+          iconTheme: IconThemeData(color: context.textPrimary),
         ),
         body: Center(
             child: Text('Entrada não encontrada',
-                style: TextStyle(color: AppTheme.textSecondary))),
+                style: TextStyle(color: context.textSecondary))),
       );
     }
 
@@ -544,15 +544,15 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
     final infoboxData = _entry!['infobox'] as Map<String, dynamic>?;
 
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            backgroundColor: AppTheme.scaffoldBg,
+            backgroundColor: context.scaffoldBg,
             expandedHeight: coverUrl != null ? 200 : 0,
             pinned: true,
             elevation: 0,
-            iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+            iconTheme: IconThemeData(color: context.textPrimary),
             flexibleSpace: coverUrl != null
                 ? FlexibleSpaceBar(
                     background: CachedNetworkImage(
@@ -562,8 +562,8 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                   )
                 : null,
             title: Text(title,
-                style: const TextStyle(
-                    fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
+                style: TextStyle(
+                    fontWeight: FontWeight.w800, color: context.textPrimary)),
             actions: [
               // Pin to profile button
               GestureDetector(
@@ -583,7 +583,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                         : Icons.push_pin_outlined,
                     color: _isPinnedToProfile
                         ? AppTheme.primaryColor
-                        : AppTheme.textPrimary,
+                        : context.textPrimary,
                     size: 20,
                   ),
                 ),
@@ -619,7 +619,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppTheme.surfaceColor,
+                        color: context.surfaceColor,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                             color:
@@ -632,7 +632,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                               style: TextStyle(
                                   fontWeight: FontWeight.w800,
                                   fontSize: 16,
-                                  color: AppTheme.textPrimary)),
+                                  color: context.textPrimary)),
                           const SizedBox(height: 8),
                           ...infoboxData.entries.map((e) => Padding(
                                 padding:
@@ -644,17 +644,17 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                                       width: 110,
                                       child: Text(
                                         e.key,
-                                        style: const TextStyle(
-                                            color: AppTheme.textSecondary,
+                                        style: TextStyle(
+                                            color: context.textSecondary,
                                             fontSize: 14),
                                       ),
                                     ),
                                     Expanded(
                                       child: Text(
                                         e.value.toString(),
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                             fontSize: 14,
-                                            color: AppTheme.textPrimary),
+                                            color: context.textPrimary),
                                       ),
                                     ),
                                   ],
@@ -667,10 +667,10 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                   ],
                   Text(
                     content,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 16,
                         height: 1.7,
-                        color: AppTheme.textPrimary),
+                        color: context.textPrimary),
                   ),
                   const SizedBox(height: 24),
                   if (author != null)
@@ -684,8 +684,8 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                         const SizedBox(width: 10),
                         Text(
                           'Por ${author['nickname'] ?? 'Anônimo'}',
-                          style: const TextStyle(
-                              color: AppTheme.textSecondary, fontSize: 14),
+                          style: TextStyle(
+                              color: context.textSecondary, fontSize: 14),
                         ),
                       ],
                     ),
@@ -695,10 +695,10 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                   Divider(color: Colors.white.withValues(alpha: 0.05)),
                   const SizedBox(height: 12),
                   Text('Minha Avaliação',
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 18,
-                          color: AppTheme.textPrimary)),
+                          color: context.textPrimary)),
                   const SizedBox(height: 8),
                   Row(
                     children: List.generate(5, (i) {
@@ -730,8 +730,8 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                   const SizedBox(height: 6),
                   Text(
                     'Média: ${_avgRating.toStringAsFixed(1)} ($_totalRatings avaliações)',
-                    style: const TextStyle(
-                        color: AppTheme.textSecondary, fontSize: 13),
+                    style: TextStyle(
+                        color: context.textSecondary, fontSize: 13),
                   ),
 
                   // ── What I Like ──
@@ -739,22 +739,22 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                   Divider(color: Colors.white.withValues(alpha: 0.05)),
                   const SizedBox(height: 12),
                   Text('O que eu gosto',
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 18,
-                          color: AppTheme.textPrimary)),
+                          color: context.textPrimary)),
                   const SizedBox(height: 8),
                   Row(
                     children: [
                       Expanded(
                         child: TextField(
                           controller: _whatILikeController,
-                          style: const TextStyle(color: AppTheme.textPrimary),
+                          style: TextStyle(color: context.textPrimary),
                           decoration: InputDecoration(
                             hintText: 'Escreva o que você gosta...',
-                            hintStyle: TextStyle(color: AppTheme.textSecondary),
+                            hintStyle: TextStyle(color: context.textSecondary),
                             filled: true,
-                            fillColor: AppTheme.surfaceColor,
+                            fillColor: context.surfaceColor,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                               borderSide: BorderSide.none,
@@ -786,8 +786,8 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                               ),
                             ],
                           ),
-                          child: const Icon(Icons.send_rounded,
-                              color: AppTheme.textPrimary, size: 24),
+                          child: Icon(Icons.send_rounded,
+                              color: context.textPrimary, size: 24),
                         ),
                       ),
                     ],
@@ -799,7 +799,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                       margin: const EdgeInsets.only(bottom: 12),
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: AppTheme.surfaceColor,
+                        color: context.surfaceColor,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
                         boxShadow: [
@@ -826,16 +826,16 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                               children: [
                                 Text(
                                   profile?['nickname'] ?? 'Anônimo',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontWeight: FontWeight.w700,
                                       fontSize: 14,
-                                      color: AppTheme.textPrimary),
+                                      color: context.textPrimary),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   item['content'] as String? ?? '',
-                                  style: const TextStyle(
-                                      fontSize: 14, color: AppTheme.textPrimary),
+                                  style: TextStyle(
+                                      fontSize: 14, color: context.textPrimary),
                                 ),
                               ],
                             ),
@@ -947,15 +947,15 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
-        backgroundColor: AppTheme.scaffoldBg,
+        backgroundColor: context.scaffoldBg,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        iconTheme: IconThemeData(color: context.textPrimary),
         title: const Text('Nova Entrada Wiki',
             style: TextStyle(
                 fontWeight: FontWeight.w800,
-                color: AppTheme.textPrimary,
+                color: context.textPrimary,
                 fontSize: 20)),
         actions: [
           GestureDetector(
@@ -993,11 +993,11 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: AppTheme.textPrimary),
+                          strokeWidth: 2, color: context.textPrimary),
                     )
                   : const Text('Publicar',
                       style: TextStyle(
-                          color: AppTheme.textPrimary,
+                          color: context.textPrimary,
                           fontWeight: FontWeight.w700,
                           fontSize: 16)),
             ),
@@ -1011,14 +1011,14 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
           children: [
             TextField(
               controller: _coverUrlController,
-              style: const TextStyle(color: AppTheme.textPrimary),
+              style: TextStyle(color: context.textPrimary),
               decoration: InputDecoration(
                 hintText: 'URL da imagem de capa',
-                hintStyle: TextStyle(color: AppTheme.textSecondary),
-                prefixIcon: const Icon(Icons.image_rounded,
-                    size: 20, color: AppTheme.textSecondary),
+                hintStyle: TextStyle(color: context.textSecondary),
+                prefixIcon: Icon(Icons.image_rounded,
+                    size: 20, color: context.textSecondary),
                 filled: true,
-                fillColor: AppTheme.surfaceColor,
+                fillColor: context.surfaceColor,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide.none,
@@ -1030,14 +1030,14 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
             const SizedBox(height: 16),
             TextField(
               controller: _categoryController,
-              style: const TextStyle(color: AppTheme.textPrimary),
+              style: TextStyle(color: context.textPrimary),
               decoration: InputDecoration(
                 hintText: 'Categoria (ex: Personagens, Itens...)',
-                hintStyle: TextStyle(color: AppTheme.textSecondary),
-                prefixIcon: const Icon(Icons.category_rounded,
-                    size: 20, color: AppTheme.textSecondary),
+                hintStyle: TextStyle(color: context.textSecondary),
+                prefixIcon: Icon(Icons.category_rounded,
+                    size: 20, color: context.textSecondary),
                 filled: true,
-                fillColor: AppTheme.surfaceColor,
+                fillColor: context.surfaceColor,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide.none,
@@ -1049,24 +1049,24 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
             const SizedBox(height: 16),
             TextField(
               controller: _titleController,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
-                  color: AppTheme.textPrimary),
+                  color: context.textPrimary),
               decoration: const InputDecoration(
                 hintText: 'Título da entrada...',
                 border: InputBorder.none,
-                hintStyle: TextStyle(color: AppTheme.textSecondary),
+                hintStyle: TextStyle(color: context.textSecondary),
               ),
             ),
             TextField(
               controller: _contentController,
-              style: const TextStyle(
-                  fontSize: 16, height: 1.6, color: AppTheme.textPrimary),
+              style: TextStyle(
+                  fontSize: 16, height: 1.6, color: context.textPrimary),
               decoration: const InputDecoration(
                 hintText: 'Conteúdo detalhado...',
                 border: InputBorder.none,
-                hintStyle: TextStyle(color: AppTheme.textSecondary),
+                hintStyle: TextStyle(color: context.textSecondary),
               ),
               maxLines: null,
               minLines: 8,
@@ -1079,10 +1079,10 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
             Row(
               children: [
                 Text('Infobox',
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 18,
-                        color: AppTheme.textPrimary)),
+                        color: context.textPrimary)),
                 const Spacer(),
                 GestureDetector(
                   onTap: () {
@@ -1130,12 +1130,12 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
                       flex: 2,
                       child: TextField(
                         controller: f.keyController,
-                        style: const TextStyle(color: AppTheme.textPrimary),
+                        style: TextStyle(color: context.textPrimary),
                         decoration: InputDecoration(
                           hintText: 'Campo',
-                          hintStyle: TextStyle(color: AppTheme.textSecondary),
+                          hintStyle: TextStyle(color: context.textSecondary),
                           filled: true,
-                          fillColor: AppTheme.surfaceColor,
+                          fillColor: context.surfaceColor,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
@@ -1151,12 +1151,12 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
                       flex: 3,
                       child: TextField(
                         controller: f.valueController,
-                        style: const TextStyle(color: AppTheme.textPrimary),
+                        style: TextStyle(color: context.textPrimary),
                         decoration: InputDecoration(
                           hintText: 'Valor',
-                          hintStyle: TextStyle(color: AppTheme.textSecondary),
+                          hintStyle: TextStyle(color: context.textSecondary),
                           filled: true,
-                          fillColor: AppTheme.surfaceColor,
+                          fillColor: context.surfaceColor,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,

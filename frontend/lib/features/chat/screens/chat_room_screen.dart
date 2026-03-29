@@ -397,8 +397,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       backgroundColor: Colors.transparent,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setModalState) => Container(
-          decoration: const BoxDecoration(
-            color: AppTheme.surfaceColor,
+          decoration: BoxDecoration(
+            color: context.surfaceColor,
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           padding: const EdgeInsets.all(20),
@@ -432,7 +432,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     children: [
                       Text('Enviar Gorjeta',
                           style: TextStyle(
-                              color: AppTheme.textPrimary,
+                              color: context.textPrimary,
                               fontWeight: FontWeight.w800,
                               fontSize: 18)),
                       Text('Envie moedas para este chat',
@@ -457,7 +457,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       decoration: BoxDecoration(
                         color: isSelected
                             ? AppTheme.warningColor.withValues(alpha: 0.15)
-                            : AppTheme.cardColor,
+                            : context.cardBg,
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
                           color: isSelected
@@ -479,7 +479,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                               style: TextStyle(
                                 color: isSelected
                                     ? AppTheme.warningColor
-                                    : AppTheme.textPrimary,
+                                    : context.textPrimary,
                                 fontWeight: FontWeight.w800,
                                 fontSize: 15,
                               )),
@@ -494,7 +494,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               TextField(
                 controller: customController,
                 keyboardType: TextInputType.number,
-                style: const TextStyle(color: AppTheme.textPrimary),
+                style: TextStyle(color: context.textPrimary),
                 onChanged: (val) => setModalState(() {
                   selectedAmount = int.tryParse(val);
                 }),
@@ -504,7 +504,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   prefixIcon: const Icon(Icons.edit_rounded,
                       color: AppTheme.warningColor, size: 18),
                   filled: true,
-                  fillColor: AppTheme.cardColor,
+                  fillColor: context.cardBg,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -623,14 +623,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     final threadIcon = _threadInfo?['icon_url'] as String?;
 
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       // ── AppBar estilo Amino ──
       appBar: AppBar(
-        backgroundColor: AppTheme.scaffoldBg,
+        backgroundColor: context.scaffoldBg,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded,
-              color: AppTheme.textPrimary, size: 20),
+          icon: Icon(Icons.arrow_back_ios_rounded,
+              color: context.textPrimary, size: 20),
           onPressed: () => context.pop(),
         ),
         titleSpacing: 0,
@@ -639,7 +639,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             // Thread avatar
             CircleAvatar(
               radius: 18,
-              backgroundColor: AppTheme.surfaceColor,
+              backgroundColor: context.surfaceColor,
               backgroundImage: threadIcon != null
                   ? CachedNetworkImageProvider(threadIcon)
                   : null,
@@ -659,10 +659,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(threadTitle,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 15,
-                          color: AppTheme.textPrimary)),
+                          color: context.textPrimary)),
                   if (threadType != 'dm')
                     Text('$memberCount members',
                         style: TextStyle(
@@ -686,8 +686,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               width: 34,
               height: 34,
               margin: const EdgeInsets.only(right: 4),
-              decoration: const BoxDecoration(
-                color: AppTheme.surfaceColor,
+              decoration: BoxDecoration(
+                color: context.surfaceColor,
                 shape: BoxShape.circle,
               ),
               child: Icon(Icons.mic_rounded, color: Colors.grey[500], size: 16),
@@ -696,7 +696,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           // Menu
           PopupMenuButton<String>(
             icon: Icon(Icons.more_vert_rounded, color: Colors.grey[500]),
-            color: AppTheme.surfaceColor,
+            color: context.surfaceColor,
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             onSelected: (val) {
@@ -774,8 +774,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                             Container(
                               width: 72,
                               height: 72,
-                              decoration: const BoxDecoration(
-                                color: AppTheme.surfaceColor,
+                              decoration: BoxDecoration(
+                                color: context.surfaceColor,
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(Icons.chat_bubble_outline_rounded,
@@ -826,7 +826,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           if (_replyingTo != null)
             Container(
               padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
-              color: AppTheme.surfaceColor,
+              color: context.surfaceColor,
               child: Row(
                 children: [
                   Container(
@@ -917,7 +917,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           Container(
             padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
             decoration: BoxDecoration(
-              color: AppTheme.surfaceColor,
+              color: context.surfaceColor,
               border: Border(
                 top: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
               ),
@@ -945,7 +945,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: AppTheme.cardColor,
+                        color: context.cardBg,
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
                             color: Colors.white.withValues(alpha: 0.05)),
@@ -955,8 +955,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                           Expanded(
                             child: TextField(
                               controller: _messageController,
-                              style: const TextStyle(
-                                  color: AppTheme.textPrimary, fontSize: 14),
+                              style: TextStyle(
+                                  color: context.textPrimary, fontSize: 14),
                               decoration: InputDecoration(
                                 hintText: 'Message...',
                                 hintStyle: TextStyle(
@@ -1022,7 +1022,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   void _showMediaOptions(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.surfaceColor,
+      backgroundColor: context.surfaceColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -1162,12 +1162,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-          backgroundColor: AppTheme.surfaceColor,
+          backgroundColor: context.surfaceColor,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: const Text('Criar Enquete',
               style: TextStyle(
-                  color: AppTheme.textPrimary, fontWeight: FontWeight.w700)),
+                  color: context.textPrimary, fontWeight: FontWeight.w700)),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -1246,11 +1246,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surfaceColor,
+        backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Compartilhar Link',
             style: TextStyle(
-                color: AppTheme.textPrimary, fontWeight: FontWeight.w700)),
+                color: context.textPrimary, fontWeight: FontWeight.w700)),
         content: _dialogInput(linkCtrl, 'https://...', icon: Icons.link_rounded),
         actions: [
           TextButton(
@@ -1282,13 +1282,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       {IconData? icon}) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
+        color: context.cardBg,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: TextField(
         controller: controller,
-        style: const TextStyle(color: AppTheme.textPrimary, fontSize: 13),
+        style: TextStyle(color: context.textPrimary, fontSize: 13),
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: TextStyle(color: Colors.grey[700], fontSize: 13),
@@ -1308,7 +1308,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   void _showMessageActions(MessageModel message) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.surfaceColor,
+      backgroundColor: context.surfaceColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -1338,8 +1338,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         },
                         child: Container(
                           padding: const EdgeInsets.all(10),
-                          decoration: const BoxDecoration(
-                            color: AppTheme.cardColor,
+                          decoration: BoxDecoration(
+                            color: context.cardBg,
                             shape: BoxShape.circle,
                           ),
                           child:
@@ -1417,7 +1417,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   void _showPinnedMessages() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.surfaceColor,
+      backgroundColor: context.surfaceColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -1440,13 +1440,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 16,
-                    color: AppTheme.textPrimary)),
+                    color: context.textPrimary)),
             const SizedBox(height: 12),
             ..._pinnedMessages.map((m) => Container(
                   margin: const EdgeInsets.only(bottom: 8),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppTheme.cardColor,
+                    color: context.cardBg,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                         color: Colors.white.withValues(alpha: 0.05)),
@@ -1471,8 +1471,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           Container(
             width: 34,
             height: 34,
-            decoration: const BoxDecoration(
-              color: AppTheme.surfaceColor,
+            decoration: BoxDecoration(
+              color: context.surfaceColor,
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: Colors.grey[500], size: 16),
@@ -1486,7 +1486,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 decoration: BoxDecoration(
                   color: AppTheme.warningColor,
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppTheme.scaffoldBg, width: 1.5),
+                  border: Border.all(color: context.scaffoldBg, width: 1.5),
                 ),
                 constraints:
                     const BoxConstraints(minWidth: 14, minHeight: 14),
@@ -1582,7 +1582,7 @@ class _MessageBubble extends StatelessWidget {
               onTap: () => context.push('/user/${message.authorId}'),
               child: CircleAvatar(
                 radius: 16,
-                backgroundColor: AppTheme.surfaceColor,
+                backgroundColor: context.surfaceColor,
                 backgroundImage: message.author?.iconUrl != null
                     ? CachedNetworkImageProvider(message.author!.iconUrl!)
                     : null,
@@ -1604,7 +1604,7 @@ class _MessageBubble extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isMe
                     ? AppTheme.primaryColor
-                    : AppTheme.surfaceColor,
+                    : context.surfaceColor,
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(16),
                   topRight: const Radius.circular(16),
@@ -1655,7 +1655,7 @@ class _MessageBubble extends StatelessWidget {
 
   Widget _buildContent(BuildContext context) {
     final type = message.type;
-    final textColor = isMe ? Colors.white : AppTheme.textPrimary;
+    final textColor = isMe ? Colors.white : context.textPrimary;
 
     // O banco armazena o tipo mapeado (ex: 'text' para imagens, 'system_tip' para tips)
     // Precisamos detectar o tipo real pelo conteúdo/campos

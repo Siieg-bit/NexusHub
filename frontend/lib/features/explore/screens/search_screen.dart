@@ -84,23 +84,23 @@ class _SearchScreenState extends State<SearchScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
-        backgroundColor: AppTheme.scaffoldBg,
+        backgroundColor: context.scaffoldBg,
         elevation: 0,
         titleSpacing: 0,
         title: Container(
           height: 44,
           margin: const EdgeInsets.only(right: 16),
           decoration: BoxDecoration(
-            color: AppTheme.surfaceColor,
+            color: context.surfaceColor,
             borderRadius: BorderRadius.circular(22),
             border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
           child: TextField(
             controller: _searchController,
             autofocus: true,
-            style: const TextStyle(color: AppTheme.textPrimary),
+            style: TextStyle(color: context.textPrimary),
             onChanged: (v) {
               _query = v;
               _performSearch(v);
@@ -184,7 +184,7 @@ class _SearchScreenState extends State<SearchScreen>
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: AppTheme.surfaceColor,
+            color: context.surfaceColor,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
@@ -209,8 +209,8 @@ class _SearchScreenState extends State<SearchScreen>
                   : null,
             ),
             title: Text(c['name'] as String? ?? '',
-                style: const TextStyle(
-                    color: AppTheme.textPrimary,
+                style: TextStyle(
+                    color: context.textPrimary,
                     fontWeight: FontWeight.w700,
                     fontSize: 16)),
             subtitle: Padding(
@@ -241,7 +241,7 @@ class _SearchScreenState extends State<SearchScreen>
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: AppTheme.surfaceColor,
+            color: context.surfaceColor,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
@@ -254,8 +254,8 @@ class _SearchScreenState extends State<SearchScreen>
               size: 48,
             ),
             title: Text(u['nickname'] as String? ?? '',
-                style: const TextStyle(
-                    color: AppTheme.textPrimary,
+                style: TextStyle(
+                    color: context.textPrimary,
                     fontWeight: FontWeight.w700,
                     fontSize: 16)),
             subtitle: Padding(
@@ -287,7 +287,7 @@ class _SearchScreenState extends State<SearchScreen>
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: AppTheme.surfaceColor,
+            color: context.surfaceColor,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
@@ -305,8 +305,8 @@ class _SearchScreenState extends State<SearchScreen>
                   color: AppTheme.primaryColor, size: 24),
             ),
             title: Text(p['title'] as String? ?? 'Post',
-                style: const TextStyle(
-                    color: AppTheme.textPrimary,
+                style: TextStyle(
+                    color: context.textPrimary,
                     fontWeight: FontWeight.w700,
                     fontSize: 16),
                 maxLines: 1,

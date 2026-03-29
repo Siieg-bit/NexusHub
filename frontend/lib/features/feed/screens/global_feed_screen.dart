@@ -36,14 +36,14 @@ class GlobalFeedScreen extends ConsumerWidget {
     final feedAsync = ref.watch(globalFeedProvider);
 
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       body: CustomScrollView(
         slivers: [
           // ================================================================
           // HEADER
           // ================================================================
           SliverAppBar(
-            backgroundColor: AppTheme.scaffoldBg,
+            backgroundColor: context.scaffoldBg,
             elevation: 0,
             floating: true,
             title: Row(
@@ -70,7 +70,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                 const Text(
                   'NexusHub',
                   style: TextStyle(
-                    color: AppTheme.textPrimary,
+                    color: context.textPrimary,
                     fontWeight: FontWeight.w800,
                     fontSize: 20,
                   ),
@@ -80,7 +80,7 @@ class GlobalFeedScreen extends ConsumerWidget {
             actions: [
               // Check-in
               IconButton(
-                icon: const Icon(Icons.calendar_today_rounded, color: AppTheme.textPrimary),
+                icon: Icon(Icons.calendar_today_rounded, color: context.textPrimary),
                 onPressed: () => context.push('/check-in'),
                 tooltip: 'Check-in Diário',
               ),
@@ -88,7 +88,7 @@ class GlobalFeedScreen extends ConsumerWidget {
               IconButton(
                 icon: const Badge(
                   smallSize: 8,
-                  child: Icon(Icons.notifications_outlined, color: AppTheme.textPrimary),
+                  child: Icon(Icons.notifications_outlined, color: context.textPrimary),
                 ),
                 onPressed: () => context.push('/notifications'),
               ),
@@ -153,7 +153,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                   const Text(
                     'Feed',
                     style: TextStyle(
-                      color: AppTheme.textPrimary,
+                      color: context.textPrimary,
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
                     ),
@@ -163,7 +163,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: AppTheme.surfaceColor,
+                        color: context.surfaceColor,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: Colors.white.withValues(alpha: 0.05),
@@ -198,7 +198,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                     const SizedBox(height: 16),
                     Text(
                       'Erro ao carregar feed: $error',
-                      style: const TextStyle(color: AppTheme.textPrimary),
+                      style: TextStyle(color: context.textPrimary),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
@@ -244,7 +244,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                         const SizedBox(height: 16),
                         const Text('Seu feed está vazio',
                             style: TextStyle(
-                                color: AppTheme.textPrimary,
+                                color: context.textPrimary,
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700)),
                         const SizedBox(height: 8),
@@ -302,7 +302,7 @@ class _QuickAction extends StatelessWidget {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: AppTheme.surfaceColor,
+                color: context.surfaceColor,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: Colors.white.withValues(alpha: 0.05),

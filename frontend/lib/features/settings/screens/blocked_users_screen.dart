@@ -40,7 +40,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surfaceColor,
+        backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
@@ -48,7 +48,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
         title: const Text(
           'Desbloquear Usuário',
           style: TextStyle(
-            color: AppTheme.textPrimary,
+            color: context.textPrimary,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -113,8 +113,8 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('$nickname desbloqueado', style: const TextStyle(color: AppTheme.textPrimary)),
-            backgroundColor: AppTheme.surfaceColor,
+            content: Text('$nickname desbloqueado', style: TextStyle(color: context.textPrimary)),
+            backgroundColor: context.surfaceColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -142,15 +142,15 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        iconTheme: IconThemeData(color: context.textPrimary),
         title: const Text(
           'Usuários Bloqueados',
           style: TextStyle(
-            color: AppTheme.textPrimary,
+            color: context.textPrimary,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -175,7 +175,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                       const Text(
                         'Nenhum usuário bloqueado',
                         style: TextStyle(
-                          color: AppTheme.textPrimary,
+                          color: context.textPrimary,
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
                         ),
@@ -211,7 +211,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                       margin: const EdgeInsets.only(bottom: 12),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppTheme.surfaceColor,
+                        color: context.surfaceColor,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: Colors.white.withValues(alpha: 0.05),
@@ -231,8 +231,8 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                               children: [
                                 Text(
                                   nickname,
-                                  style: const TextStyle(
-                                    color: AppTheme.textPrimary,
+                                  style: TextStyle(
+                                    color: context.textPrimary,
                                     fontWeight: FontWeight.w800,
                                     fontSize: 16,
                                   ),

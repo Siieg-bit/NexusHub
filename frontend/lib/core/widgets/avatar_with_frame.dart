@@ -70,7 +70,7 @@ class AvatarWithFrame extends StatelessWidget {
               height: size,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppTheme.surfaceColor,
+                color: context.surfaceColor,
                 border: frameUrl == null || frameUrl!.isEmpty
                     ? Border.all(
                         color: Colors.white.withValues(alpha: 0.10),
@@ -129,7 +129,7 @@ class AvatarWithFrame extends StatelessWidget {
                       colors: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
                     ),
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppTheme.scaffoldBg, width: 2),
+                    border: Border.all(color: context.scaffoldBg, width: 2),
                     boxShadow: [
                       BoxShadow(
                         color: const Color(0xFFFF6B6B).withValues(alpha: 0.3),
@@ -156,7 +156,7 @@ class AvatarWithFrame extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: AppTheme.onlineColor,
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppTheme.scaffoldBg, width: 2),
+                    border: Border.all(color: context.scaffoldBg, width: 2),
                   ),
                 ),
               ),
@@ -168,7 +168,7 @@ class AvatarWithFrame extends StatelessWidget {
 
   Widget _avatarPlaceholder() {
     return Container(
-      color: AppTheme.surfaceColor,
+      color: context.surfaceColor,
       child: Center(
         child: Icon(
           Icons.person_rounded,

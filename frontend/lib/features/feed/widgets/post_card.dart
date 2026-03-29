@@ -121,7 +121,7 @@ class _PostCardState extends State<PostCard>
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(
-          color: AppTheme.cardColor,
+          color: context.cardBg,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: Colors.white.withValues(alpha: 0.03),
@@ -142,8 +142,8 @@ class _PostCardState extends State<PostCard>
                 padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
                 child: Text(
                   _post.title!,
-                  style: const TextStyle(
-                    color: AppTheme.textPrimary,
+                  style: TextStyle(
+                    color: context.textPrimary,
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
                     height: 1.3,
@@ -194,7 +194,7 @@ class _PostCardState extends State<PostCard>
                       fit: BoxFit.cover,
                       placeholder: (_, __) => Container(
                         decoration: BoxDecoration(
-                          color: AppTheme.surfaceColor,
+                          color: context.surfaceColor,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Center(
@@ -206,11 +206,11 @@ class _PostCardState extends State<PostCard>
                       ),
                       errorWidget: (_, __, ___) => Container(
                         decoration: BoxDecoration(
-                          color: AppTheme.surfaceColor,
+                          color: context.surfaceColor,
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(Icons.broken_image_rounded,
-                            color: AppTheme.textHint),
+                        child: Icon(Icons.broken_image_rounded,
+                            color: context.textHint),
                       ),
                     ),
                   ),
@@ -240,9 +240,9 @@ class _PostCardState extends State<PostCard>
               child: Container(
                 width: 16,
                 height: 16,
-                color: AppTheme.surfaceColor,
-                child: const Icon(Icons.groups_rounded,
-                    size: 10, color: AppTheme.textHint),
+                color: context.surfaceColor,
+                child: Icon(Icons.groups_rounded,
+                    size: 10, color: context.textHint),
               ),
             ),
           const SizedBox(width: 6),
@@ -295,8 +295,8 @@ class _PostCardState extends State<PostCard>
                     Flexible(
                       child: Text(
                         _post.author?.nickname ?? 'Usuário',
-                        style: const TextStyle(
-                          color: AppTheme.textPrimary,
+                        style: TextStyle(
+                          color: context.textPrimary,
                           fontWeight: FontWeight.w600,
                           fontSize: 13,
                         ),
@@ -448,7 +448,7 @@ class _PostCardState extends State<PostCard>
                 decoration: BoxDecoration(
                   color: isSelected
                       ? AppTheme.primaryColor.withValues(alpha: 0.15)
-                      : AppTheme.scaffoldBg,
+                      : context.scaffoldBg,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: isSelected
@@ -460,9 +460,9 @@ class _PostCardState extends State<PostCard>
                   children: [
                     Expanded(
                         child: Text(text,
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontSize: 12,
-                                color: AppTheme.textPrimary))),
+                                color: context.textPrimary))),
                     if (_selectedPollOption != null) ...[
                       Text('${(pct * 100).toStringAsFixed(0)}%',
                           style: TextStyle(
@@ -470,7 +470,7 @@ class _PostCardState extends State<PostCard>
                             fontWeight: FontWeight.w700,
                             color: isSelected
                                 ? AppTheme.primaryColor
-                                : AppTheme.textSecondary,
+                                : context.textSecondary,
                           )),
                     ],
                   ],
@@ -505,7 +505,7 @@ class _PostCardState extends State<PostCard>
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppTheme.scaffoldBg,
+          color: context.scaffoldBg,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         ),
@@ -531,16 +531,16 @@ class _PostCardState extends State<PostCard>
             ),
             const SizedBox(height: 8),
             Text(qText,
-                style: const TextStyle(
+                style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
-                    color: AppTheme.textPrimary)),
+                    color: context.textPrimary)),
             const SizedBox(height: 8),
             ...List.generate(opts.length, (i) {
               final optText = opts[i] as String? ?? 'Opção ${i + 1}';
               final isCorrect = i == correctIndex;
               final isSelected = _selectedQuizOption == i;
-              Color bgColor = AppTheme.cardColor;
+              Color bgColor = context.cardBg;
               Color borderColor = Colors.white.withValues(alpha: 0.05);
               if (_quizAnswered) {
                 if (isCorrect) {
@@ -566,9 +566,9 @@ class _PostCardState extends State<PostCard>
                     children: [
                       Expanded(
                           child: Text(optText,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 12,
-                                  color: AppTheme.textPrimary))),
+                                  color: context.textPrimary))),
                       if (_quizAnswered && isCorrect)
                         const Icon(Icons.check_circle_rounded,
                             size: 16, color: AppTheme.successColor),
@@ -659,7 +659,7 @@ class _PostCardState extends State<PostCard>
         },
         child: Container(
           decoration: BoxDecoration(
-            color: AppTheme.scaffoldBg,
+            color: context.scaffoldBg,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
@@ -684,10 +684,10 @@ class _PostCardState extends State<PostCard>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(linkTitle,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 12,
-                            color: AppTheme.textPrimary),
+                            color: context.textPrimary),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis),
                     if (linkDesc != null) ...[
@@ -867,7 +867,7 @@ class _PostCardState extends State<PostCard>
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: AppTheme.surfaceColor,
+                      color: context.surfaceColor,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -942,7 +942,7 @@ class _PostCardState extends State<PostCard>
       case 'repost':
         return const Color(0xFF607D8B);
       default:
-        return AppTheme.textSecondary;
+        return context.textSecondary;
     }
   }
 }

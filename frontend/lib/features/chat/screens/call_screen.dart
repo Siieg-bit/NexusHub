@@ -137,7 +137,7 @@ class _CallScreenState extends State<CallScreen> {
         : isVideo
             ? 'Video Chat'
             : 'Voice Chat';
-    final bgColor = AppTheme.scaffoldBg;
+    final bgColor = context.scaffoldBg;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -212,15 +212,15 @@ class _CallScreenState extends State<CallScreen> {
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.textPrimary),
+            icon: Icon(Icons.arrow_back_rounded, color: context.textPrimary),
             onPressed: () => Navigator.of(context).pop(),
           ),
           const Spacer(),
           Column(
             children: [
               Text(title,
-                  style: const TextStyle(
-                      color: AppTheme.textPrimary,
+                  style: TextStyle(
+                      color: context.textPrimary,
                       fontSize: 18,
                       fontWeight: FontWeight.w800)),
               Row(
@@ -364,7 +364,7 @@ class _CallScreenState extends State<CallScreen> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         border: isSpeaking
             ? Border.all(color: AppTheme.primaryColor, width: 2.5)
@@ -394,8 +394,8 @@ class _CallScreenState extends State<CallScreen> {
                     : null,
                 child: iconUrl == null
                     ? Text(nickname[0].toUpperCase(),
-                        style: const TextStyle(
-                            color: AppTheme.textPrimary,
+                        style: TextStyle(
+                            color: context.textPrimary,
                             fontSize: 28,
                             fontWeight: FontWeight.w800))
                     : null,
@@ -408,7 +408,7 @@ class _CallScreenState extends State<CallScreen> {
                     color: AppTheme.primaryColor,
                     shape: BoxShape.circle,
                     border:
-                        Border.all(color: AppTheme.surfaceColor, width: 2),
+                        Border.all(color: context.surfaceColor, width: 2),
                   ),
                   child: const Icon(Icons.mic_rounded,
                       color: Colors.white, size: 12),
@@ -417,8 +417,8 @@ class _CallScreenState extends State<CallScreen> {
           ),
           const SizedBox(height: 12),
           Text(nickname,
-              style: const TextStyle(
-                  color: AppTheme.textPrimary,
+              style: TextStyle(
+                  color: context.textPrimary,
                   fontSize: 14,
                   fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
@@ -461,13 +461,13 @@ class _CallScreenState extends State<CallScreen> {
             radius: 48,
             backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.3),
             child: Text(name[0].toUpperCase(),
-                style: const TextStyle(
-                    color: AppTheme.textPrimary,
+                style: TextStyle(
+                    color: context.textPrimary,
                     fontSize: 36,
                     fontWeight: FontWeight.w800)),
           ),
           const SizedBox(height: 16),
-          Text(name, style: const TextStyle(color: AppTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.w700)),
+          Text(name, style: TextStyle(color: context.textPrimary, fontSize: 18, fontWeight: FontWeight.w700)),
         ],
       ),
     );
@@ -478,7 +478,7 @@ class _CallScreenState extends State<CallScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       height: 200,
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05), width: 1),
       ),

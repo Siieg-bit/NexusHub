@@ -91,7 +91,7 @@ class _InventoryScreenState extends State<InventoryScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(isEquipped ? 'Item desequipado' : 'Item equipado!'),
-            backgroundColor: AppTheme.surfaceColor,
+            backgroundColor: context.surfaceColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -125,16 +125,16 @@ class _InventoryScreenState extends State<InventoryScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.scaffoldBg,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
+        iconTheme: IconThemeData(color: context.textPrimary),
         title: const Text(
           'Inventário',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: AppTheme.textPrimary,
+            color: context.textPrimary,
           ),
         ),
         bottom: TabBar(
@@ -243,7 +243,7 @@ class _InventoryScreenState extends State<InventoryScreen>
           onTap: () => _toggleEquip(item),
           child: Container(
             decoration: BoxDecoration(
-              color: AppTheme.surfaceColor,
+              color: context.surfaceColor,
               borderRadius: BorderRadius.circular(16),
               border: isEquipped
                   ? Border.all(color: AppTheme.primaryColor, width: 2)
@@ -318,10 +318,10 @@ class _InventoryScreenState extends State<InventoryScreen>
                   padding: const EdgeInsets.all(8),
                   child: Text(
                     name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: AppTheme.textPrimary,
+                      color: context.textPrimary,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
