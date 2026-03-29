@@ -429,8 +429,15 @@ class _StoreScreenState extends State<StoreScreen>
       );
     }
 
-    return GridView.builder(
-      padding: EdgeInsets.all(r.s(16)),
+    return RefreshIndicator(
+      color: AppTheme.primaryColor,
+      onRefresh: () async {
+        setState(() => _isLoading = true);
+        await _loadStore();
+      },
+      child: GridView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.all(r.s(16)),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         mainAxisSpacing: 12,
@@ -445,6 +452,7 @@ class _StoreScreenState extends State<StoreScreen>
           onPurchase: () => _purchaseItem(item),
         );
       },
+      ),
     );
   }
 }

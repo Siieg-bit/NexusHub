@@ -123,9 +123,15 @@ class _FollowersScreenState extends State<FollowersScreen>
       );
     }
 
-    return ListView.separated(
-      padding: EdgeInsets.all(r.s(16)),
-      itemCount: list.length,
+    return RefreshIndicator(
+      color: AppTheme.primaryColor,
+      onRefresh: () async {
+        await _loadData();
+      },
+      child: ListView.separated(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.all(r.s(16)),
+        itemCount: list.length,
       separatorBuilder: (context, index) => SizedBox(height: r.s(12)),
       itemBuilder: (context, index) {
         final item = list[index];
@@ -171,6 +177,7 @@ class _FollowersScreenState extends State<FollowersScreen>
           ),
         );
       },
+      ),
     );
   }
 }

@@ -38,7 +38,13 @@ class GlobalFeedScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: context.scaffoldBg,
-      body: CustomScrollView(
+      body: RefreshIndicator(
+        color: AppTheme.primaryColor,
+        onRefresh: () async {
+          ref.invalidate(globalFeedProvider);
+          await Future.delayed(const Duration(milliseconds: 300));
+        },
+        child: CustomScrollView(
         slivers: [
           // ================================================================
           // HEADER
@@ -271,6 +277,7 @@ class GlobalFeedScreen extends ConsumerWidget {
 
           SliverToBoxAdapter(child: SizedBox(height: r.s(80))),
         ],
+      ),
       ),
     );
   }

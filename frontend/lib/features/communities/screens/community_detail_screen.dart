@@ -305,6 +305,22 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             currentUser: ref.watch(currentUserProfileProvider).valueOrNull,
             userRole: userRole,
             onChatsTap: () => setState(() => _bottomIndex = 3),
+            onGuidelinesTap: () {
+              // Voltar para home e mudar para tab Regras
+              setState(() {
+                _bottomIndex = 0;
+                final idx = _activeTabs.indexOf('Regras');
+                if (idx >= 0) _tabController.animateTo(idx);
+              });
+            },
+            onRecentFeedTap: () {
+              // Voltar para home e mudar para tab Recentes
+              setState(() {
+                _bottomIndex = 0;
+                final idx = _activeTabs.indexOf('Recentes');
+                if (idx >= 0) _tabController.animateTo(idx);
+              });
+            },
           ),
           child: Scaffold(
             backgroundColor: context.scaffoldBg,
@@ -1244,7 +1260,17 @@ class _LiveChatroomsSectionState extends State<_LiveChatroomsSection> {
       padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
       child: SizedBox(
         height: r.s(130),
-        child: ListView.builder(
+        child: RefreshIndicator(
+          color: AppTheme.primaryColor,
+          onRefresh: () async {
+            ref.invalidate(communityDetailProvider);
+            ref.invalidate(communityMembershipProvider);
+            ref.invalidate(communityHomeLayoutProvider);
+            ref.invalidate(currentUserProfileProvider);
+            ref.invalidate(onlineCountProvider);
+            await Future.delayed(const Duration(milliseconds: 300));
+          },
+          child: ListView.builder(
           scrollDirection: Axis.horizontal,
           itemCount: _chats.length,
           itemBuilder: (context, index) {
@@ -1378,6 +1404,7 @@ class _LiveChatroomsSectionState extends State<_LiveChatroomsSection> {
               ),
             );
           },
+        ),
         ),
       ),
     );

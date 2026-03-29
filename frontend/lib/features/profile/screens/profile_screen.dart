@@ -1159,7 +1159,17 @@ class _WallTab extends ConsumerWidget {
                 );
               }
 
-              return ListView.builder(
+              return RefreshIndicator(
+                color: AppTheme.primaryColor,
+                onRefresh: () async {
+                  ref.invalidate(userProfileProvider);
+                  ref.invalidate(equippedItemsProvider);
+                  ref.invalidate(currentUserProvider);
+                  ref.invalidate(userLinkedCommunitiesProvider);
+                  ref.invalidate(userPostsProvider);
+                  await Future.delayed(const Duration(milliseconds: 300));
+                },
+                child: ListView.builder(
                 padding: EdgeInsets.all(r.s(16)),
                 itemCount: messages.length,
                 itemBuilder: (context, index) {
@@ -1259,6 +1269,7 @@ class _WallTab extends ConsumerWidget {
                     ),
                   );
                 },
+              ),
               );
             },
           ),

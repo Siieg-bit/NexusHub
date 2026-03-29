@@ -169,10 +169,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 .where((t) => t.isNotEmpty)
                 .join('\n\n')
             : _contentController.text.trim(),
-        'content_blocks': _useBlogEditor
-            ? _contentBlocks.map((b) => b.toJson()).toList()
-            : null,
-        'media_urls': _mediaUrls.isNotEmpty ? _mediaUrls : [],
+        'media_list': _mediaUrls.isNotEmpty
+            ? _mediaUrls.map((url) => {'url': url, 'type': 'image'}).toList()
+            : [],
         'cover_image_url': _coverImageUrl,
         'external_url': _linkController.text.trim().isNotEmpty
             ? _linkController.text.trim()
@@ -225,10 +224,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     .where((t) => t.isNotEmpty)
                     .join('\n\n')
                 : _contentController.text.trim(),
-            'content_blocks': _useBlogEditor
-                ? _contentBlocks.map((b) => b.toJson()).toList()
-                : null,
-            'media_urls': _mediaUrls.isNotEmpty ? _mediaUrls : [],
+            'media_list': _mediaUrls.isNotEmpty
+                ? _mediaUrls.map((url) => {'url': url, 'type': 'image'}).toList()
+                : [],
             'cover_image_url': _coverImageUrl,
             'original_post_id': postId,
             'original_community_id': widget.communityId,

@@ -139,7 +139,12 @@ class _WikiListScreenState extends State<WikiListScreen> {
                 color: AppTheme.primaryColor,
               ),
             )
-          : Column(
+          : RefreshIndicator(
+              color: AppTheme.primaryColor,
+              onRefresh: () async {
+                await _loadEntries();
+              },
+              child: Column(
               children: [
                 Padding(
                   padding: EdgeInsets.all(r.s(16)),
@@ -186,11 +191,18 @@ class _WikiListScreenState extends State<WikiListScreen> {
                 SizedBox(height: r.s(8)),
                 Expanded(
                   child: _filteredEntries.isEmpty
-                      ? Center(
-                          child: Text('Nenhuma entrada encontrada',
-                              style: TextStyle(color: context.textSecondary)),
+                      ? ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: [
+                            SizedBox(height: r.s(100)),
+                            Center(
+                              child: Text('Nenhuma entrada encontrada',
+                                  style: TextStyle(color: context.textSecondary)),
+                            ),
+                          ],
                         )
                       : GridView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
                           padding: EdgeInsets.all(r.s(16)),
                           gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(
@@ -210,6 +222,7 @@ class _WikiListScreenState extends State<WikiListScreen> {
                         ),
                 ),
               ],
+            ),
             ),
     );
   }

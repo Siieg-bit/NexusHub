@@ -103,12 +103,20 @@ class NotificationsScreen extends ConsumerWidget {
             );
           }
 
-          return ListView.separated(
-            padding: EdgeInsets.all(r.s(16)),
-            itemCount: notifications.length,
-            separatorBuilder: (context, index) => SizedBox(height: r.s(12)),
-            itemBuilder: (context, index) =>
-                _NotificationTile(data: notifications[index]),
+          return RefreshIndicator(
+            color: AppTheme.primaryColor,
+            onRefresh: () async {
+              ref.invalidate(notificationsProvider);
+              await Future.delayed(const Duration(milliseconds: 300));
+            },
+            child: ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.all(r.s(16)),
+              itemCount: notifications.length,
+              separatorBuilder: (context, index) => SizedBox(height: r.s(12)),
+              itemBuilder: (context, index) =>
+                  _NotificationTile(data: notifications[index]),
+            ),
           );
         },
       ),

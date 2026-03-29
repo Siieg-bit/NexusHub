@@ -12,14 +12,13 @@ import '../../../core/utils/responsive.dart'; // para checkInStatusProvider
 
 /// Drawer estilo Amino Apps — réplica pixel-perfect.
 /// Estrutura: sidebar de comunidades (56px) + painel principal (flex).
-/// No Amino original, o drawer empurra a tela principal para a direita
-/// com animação de scale (push/scale). Isso é controlado pelo Scaffold.
-/// Os módulos do menu são dinâmicos e refletem a configuração do ACM.
 class CommunityDrawer extends ConsumerStatefulWidget {
   final CommunityModel community;
   final UserModel? currentUser;
   final String? userRole;
   final VoidCallback? onChatsTap;
+  final VoidCallback? onGuidelinesTap;
+  final VoidCallback? onRecentFeedTap;
 
   const CommunityDrawer({
     super.key,
@@ -27,6 +26,8 @@ class CommunityDrawer extends ConsumerStatefulWidget {
     this.currentUser,
     this.userRole,
     this.onChatsTap,
+    this.onGuidelinesTap,
+    this.onRecentFeedTap,
   });
 
   @override
@@ -116,6 +117,9 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
     final hasCheckedIn = myStatus?['has_checkin_today'] as bool? ?? false;
     final streak = myStatus?['consecutive_checkin_days'] as int? ?? 0;
 
+    // Carregar comunidades do usuário para a sidebar esquerda
+    final userCommunitiesAsync = ref.watch(userCommunitiesProvider);
+
     return Drawer(
       backgroundColor: context.scaffoldBg,
       width: MediaQuery.of(context).size.width * 0.85,
@@ -124,8 +128,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         child: Row(
           children: [
             // ==============================================================
-            // SIDEBAR ESQUERDA — Lista de comunidades (60px)
-            // Estilo web-preview: bg-[#070710], ícones de comunidades
+            // SIDEBAR ESQUERDA — Lista de comunidades do usuário (56px)
             // ==============================================================
             Container(
               width: r.s(56),
@@ -141,12 +144,12 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
               child: Column(
                 children: [
                   SizedBox(height: r.s(10)),
-                  // Exit button
+                  // Exit button — volta para a lista de comunidades
                   GestureDetector(
                     onTap: () {
                       Navigator.pop(context);
                       WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (context.mounted) context.pop();
+                        if (context.mounted) context.go('/communities');
                       });
                     },
                     child: Column(
@@ -170,63 +173,104 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                   ),
                   SizedBox(height: r.s(8)),
 
-                  // Comunidade atual (highlighted)
+                  // Lista de comunidades do usuário
                   Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          // Comunidade atual
-                          Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(r.s(12)),
-                              border: Border.all(
-                                  color: Colors.white, width: 2),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(r.s(10)),
-                              child: widget.community.iconUrl != null
-                                  ? CachedNetworkImage(
-                                      imageUrl: widget.community.iconUrl!,
-                                      width: r.s(40),
-                                      height: r.s(40),
-                                      fit: BoxFit.cover,
-                                    )
-                                  : Container(
-                                      width: r.s(40),
-                                      height: r.s(40),
-                                      color: themeColor,
-                                      child: Icon(Icons.groups_rounded,
-                                          color: Colors.white70, size: r.s(20)),
+                    child: userCommunitiesAsync.when(
+                      loading: () => const SizedBox.shrink(),
+                      error: (_, __) => const SizedBox.shrink(),
+                      data: (communities) {
+                        return SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              // Comunidades do usuário
+                              ...communities.map((community) {
+                                final isCurrentCommunity =
+                                    community.id == widget.community.id;
+                                return GestureDetector(
+                                  onTap: () {
+                                    if (!isCurrentCommunity) {
+                                      Navigator.pop(context);
+                                      WidgetsBinding.instance
+                                          .addPostFrameCallback((_) {
+                                        if (context.mounted) {
+                                          context.go(
+                                              '/community/${community.id}');
+                                        }
+                                      });
+                                    }
+                                  },
+                                  child: Container(
+                                    margin:
+                                        EdgeInsets.only(bottom: r.s(6)),
+                                    decoration: BoxDecoration(
+                                      borderRadius:
+                                          BorderRadius.circular(r.s(12)),
+                                      border: isCurrentCommunity
+                                          ? Border.all(
+                                              color: Colors.white,
+                                              width: 2)
+                                          : null,
                                     ),
-                            ),
-                          ),
-                          SizedBox(height: r.s(8)),
+                                    child: ClipRRect(
+                                      borderRadius:
+                                          BorderRadius.circular(r.s(10)),
+                                      child: community.iconUrl != null
+                                          ? CachedNetworkImage(
+                                              imageUrl:
+                                                  community.iconUrl!,
+                                              width: r.s(40),
+                                              height: r.s(40),
+                                              fit: BoxFit.cover,
+                                            )
+                                          : Container(
+                                              width: r.s(40),
+                                              height: r.s(40),
+                                              color: _parseColor(
+                                                  community.themeColor),
+                                              child: Icon(
+                                                  Icons.groups_rounded,
+                                                  color: Colors.white70,
+                                                  size: r.s(20)),
+                                            ),
+                                    ),
+                                  ),
+                                );
+                              }),
 
-                          // Botão adicionar comunidade
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.pop(context);
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                if (context.mounted) context.push('/explore');
-                              });
-                            },
-                            child: Container(
-                              width: r.s(40),
-                              height: r.s(40),
-                              decoration: BoxDecoration(
-                                color: context.surfaceColor,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.1),
-                                  style: BorderStyle.solid,
+                              SizedBox(height: r.s(6)),
+
+                              // Botão adicionar/explorar comunidade
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  WidgetsBinding.instance
+                                      .addPostFrameCallback((_) {
+                                    if (context.mounted) {
+                                      context.push('/explore');
+                                    }
+                                  });
+                                },
+                                child: Container(
+                                  width: r.s(40),
+                                  height: r.s(40),
+                                  decoration: BoxDecoration(
+                                    color: context.surfaceColor,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white
+                                          .withValues(alpha: 0.1),
+                                      style: BorderStyle.solid,
+                                    ),
+                                  ),
+                                  child: Icon(Icons.add_rounded,
+                                      color: Colors.grey[600],
+                                      size: r.s(16)),
                                 ),
                               ),
-                              child: Icon(Icons.add_rounded,
-                                  color: Colors.grey[600], size: r.s(16)),
-                            ),
+                            ],
                           ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -241,7 +285,6 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                 children: [
                   // ========================================================
                   // COVER + PROFILE HEADER (220px)
-                  // Estilo web-preview: cover image + gradient + avatar + check-in
                   // ========================================================
                   SizedBox(
                     height: r.s(220),
@@ -279,193 +322,163 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                                 context.scaffoldBg.withValues(alpha: 0.4),
                                 context.scaffoldBg,
                               ],
-                              stops: const [0.0, 0.5, 1.0],
+                              stops: const [0.0, 0.6, 1.0],
                             ),
                           ),
                         ),
 
-                        // "Welcome to" + Community name (top)
+                        // Content overlay
                         Positioned(
-                          top: 12,
-                          left: 0,
-                          right: 0,
+                          bottom: r.s(12),
+                          left: r.s(16),
+                          right: r.s(16),
                           child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                'Bem-vindo(a) a',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.6),
-                                  fontSize: r.fs(10),
-                                  letterSpacing: 3,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                widget.community.name.toUpperCase(),
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: r.fs(18),
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 1.5,
-                                ),
-                                textAlign: TextAlign.center,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        // Avatar + Name + Check-in (bottom)
-                        Positioned(
-                          bottom: 12,
-                          left: 0,
-                          right: 0,
-                          child: Column(
-                            children: [
-                              // Avatar simples sem anel (estilo Amino original)
-                              GestureDetector(
-                                onTap: widget.currentUser != null
-                                    ? () {
-                                        Navigator.pop(context);
-                                        context.push(
-                                          '/community/${widget.community.id}/profile/${widget.currentUser!.id}',
-                                        );
-                                      }
-                                    : null,
-                                child: Stack(
-                                alignment: Alignment.center,
+                              // Avatar + Name
+                              Row(
                                 children: [
-                                  Container(
-                                    width: r.s(68),
-                                    height: r.s(68),
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: Colors.white.withValues(alpha: 0.3),
-                                        width: 2,
-                                      ),
-                                    ),
-                                    child: CircleAvatar(
-                                      radius: 32,
-                                      backgroundColor: context.surfaceColor,
-                                      backgroundImage:
-                                          widget.currentUser?.iconUrl != null
-                                              ? CachedNetworkImageProvider(
-                                                  widget.currentUser!.iconUrl!)
-                                              : null,
-                                      child: widget.currentUser?.iconUrl == null
-                                          ? Icon(Icons.person_rounded,
-                                              color: Colors.white70, size: r.s(28))
-                                          : null,
-                                    ),
+                                  // User avatar
+                                  CircleAvatar(
+                                    radius: r.s(24),
+                                    backgroundColor: themeColor,
+                                    backgroundImage: widget.currentUser?.iconUrl != null
+                                        ? CachedNetworkImageProvider(
+                                            widget.currentUser!.iconUrl!)
+                                        : null,
+                                    child: widget.currentUser?.iconUrl == null
+                                        ? Icon(Icons.person_rounded,
+                                            color: Colors.white70,
+                                            size: r.s(24))
+                                        : null,
                                   ),
-                                  // Plus badge (top-right)
-                                  Positioned(
-                                    top: 0,
-                                    right: 0,
-                                    child: Container(
-                                      width: r.s(24),
-                                      height: r.s(24),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF2563EB),
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                            color: context.scaffoldBg,
-                                            width: 2),
-                                      ),
-                                      child: Icon(Icons.add_rounded,
-                                          color: Colors.white, size: r.s(12)),
+                                  SizedBox(width: r.s(12)),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          widget.currentUser?.nickname ??
+                                              'Usuário',
+                                          style: TextStyle(
+                                            color: context.textPrimary,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: r.fs(16),
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        Text(
+                                          widget.userRole?.toUpperCase() ??
+                                              'MEMBRO',
+                                          style: TextStyle(
+                                            color: AppTheme.primaryColor,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: r.fs(10),
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
                               ),
-                              ),
-                              SizedBox(height: r.s(6)),
-                              // User name
-                              Text(
-                                widget.currentUser?.nickname ?? 'Meu Perfil',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: r.fs(13),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              SizedBox(height: r.s(8)),
-                              // Check In button ou Streak badge
-                              if (!hasCheckedIn)
-                                GestureDetector(
-                                  onTap: _isCheckingIn ? null : _doCheckIn,
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: r.s(24), vertical: r.s(7)),
-                                    decoration: BoxDecoration(
-                                      color: _isCheckingIn
-                                          ? AppTheme.primaryColor.withValues(alpha: 0.5)
-                                          : AppTheme.primaryColor,
-                                      borderRadius: BorderRadius.circular(r.s(8)),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: AppTheme.primaryColor
-                                              .withValues(alpha: 0.2),
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 2),
+                              SizedBox(height: r.s(12)),
+                              // Check-in button
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: GestureDetector(
+                                      onTap: hasCheckedIn ? null : _doCheckIn,
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                            vertical: r.s(8)),
+                                        decoration: BoxDecoration(
+                                          color: hasCheckedIn
+                                              ? Colors.grey[800]
+                                              : AppTheme.accentColor,
+                                          borderRadius:
+                                              BorderRadius.circular(r.s(8)),
                                         ),
-                                      ],
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            if (_isCheckingIn)
+                                              SizedBox(
+                                                width: r.s(14),
+                                                height: r.s(14),
+                                                child:
+                                                    const CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  color: Colors.white,
+                                                ),
+                                              )
+                                            else ...[
+                                              Icon(
+                                                hasCheckedIn
+                                                    ? Icons.check_circle_rounded
+                                                    : Icons
+                                                        .local_fire_department_rounded,
+                                                color: Colors.white,
+                                                size: r.s(16),
+                                              ),
+                                              SizedBox(width: r.s(6)),
+                                              Text(
+                                                hasCheckedIn
+                                                    ? 'Check-in feito!'
+                                                    : 'Check-in diário',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w700,
+                                                  fontSize: r.fs(12),
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
                                     ),
-                                    child: _isCheckingIn
-                                        ? SizedBox(
-                                            width: r.s(16),
-                                            height: r.s(16),
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: Colors.white,
-                                            ),
-                                          )
-                                        : const Text(
-                                            'Check In',
+                                  ),
+                                  if (streak > 0) ...[
+                                    SizedBox(width: r.s(8)),
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: r.s(10),
+                                          vertical: r.s(8)),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.warningColor
+                                            .withValues(alpha: 0.15),
+                                        borderRadius:
+                                            BorderRadius.circular(r.s(8)),
+                                        border: Border.all(
+                                            color: AppTheme.warningColor
+                                                .withValues(alpha: 0.3)),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                              Icons
+                                                  .local_fire_department_rounded,
+                                              color: AppTheme.warningColor,
+                                              size: r.s(14)),
+                                          SizedBox(width: r.s(4)),
+                                          Text(
+                                            '$streak',
                                             style: TextStyle(
-                                              color: Colors.white,
+                                              color: AppTheme.warningColor,
                                               fontSize: r.fs(13),
                                               fontWeight: FontWeight.w700,
                                             ),
                                           ),
-                                  ),
-                                )
-                              else
-                                // Streak badge — já fez check-in hoje
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: r.s(16), vertical: r.s(7)),
-                                  decoration: BoxDecoration(
-                                    color: context.surfaceColor,
-                                    borderRadius: BorderRadius.circular(r.s(8)),
-                                    border: Border.all(
-                                      color: AppTheme.warningColor.withValues(alpha: 0.4),
-                                      width: 1,
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.local_fire_department_rounded,
-                                        color: AppTheme.warningColor,
-                                        size: r.s(16),
-                                      ),
-                                      SizedBox(width: r.s(4)),
-                                      Text(
-                                        '$streak dia${streak > 1 ? 's' : ''}',
-                                        style: TextStyle(
-                                          color: AppTheme.warningColor,
-                                          fontSize: r.fs(13),
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                                  ],
+                                ],
+                              ),
                             ],
                           ),
                         ),
@@ -551,7 +564,11 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                           color: const Color(0xFF2196F3),
                           onTap: () {
                             Navigator.pop(context);
-                            // Volta para a tela da comunidade, tab Latest
+                            if (widget.onRecentFeedTap != null) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                widget.onRecentFeedTap!();
+                              });
+                            }
                           },
                         ),
                         _AminoDrawerItem(
@@ -560,7 +577,11 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                           color: const Color(0xFFFF9800),
                           onTap: () {
                             Navigator.pop(context);
-                            // Volta para a tela da comunidade, tab Guidelines
+                            if (widget.onGuidelinesTap != null) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                widget.onGuidelinesTap!();
+                              });
+                            }
                           },
                         ),
                         _AminoDrawerItem(
@@ -648,7 +669,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        const Text(
+                                        Text(
                                           'Editar Comunidade',
                                           style: TextStyle(
                                             color: AppTheme.primaryColor,

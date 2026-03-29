@@ -340,13 +340,22 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   // ==========================================================================
   Widget _buildChatList(List<ChatRoomModel> chatRooms) {
       final r = context.r;
-    return ListView.builder(
-      padding: EdgeInsets.only(
-        top: r.s(8),
-        bottom: MediaQuery.of(context).padding.bottom + 80,
+    return RefreshIndicator(
+      color: AppTheme.primaryColor,
+      onRefresh: () async {
+        ref.invalidate(chatListProvider);
+        ref.invalidate(chatCommunitiesProvider);
+        await Future.delayed(const Duration(milliseconds: 300));
+      },
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.only(
+          top: r.s(8),
+          bottom: MediaQuery.of(context).padding.bottom + 80,
+        ),
+        itemCount: chatRooms.length,
+        itemBuilder: (context, index) => _AminoChatTile(chatRoom: chatRooms[index]),
       ),
-      itemCount: chatRooms.length,
-      itemBuilder: (context, index) => _AminoChatTile(chatRoom: chatRooms[index]),
     );
   }
 

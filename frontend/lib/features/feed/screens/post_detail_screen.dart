@@ -316,7 +316,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         data: (post) => Column(
           children: [
             Expanded(
-              child: SingleChildScrollView(
+              child: RefreshIndicator(
+                color: AppTheme.primaryColor,
+                onRefresh: () async {
+                  ref.invalidate(postDetailProvider);
+                  ref.invalidate(postCommentsProvider);
+                  await Future.delayed(const Duration(milliseconds: 300));
+                },
+                child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -637,6 +644,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     SizedBox(height: r.s(80)),
                   ],
                 ),
+              ),
               ),
             ),
 

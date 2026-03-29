@@ -443,8 +443,15 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
             (f) => !(f['file_type'] as String? ?? '').startsWith('image/'))
         .toList();
 
-    return CustomScrollView(
-      slivers: [
+    return RefreshIndicator(
+      color: AppTheme.primaryColor,
+      onRefresh: () async {
+        setState(() => _isLoading = true);
+        await _loadFolder();
+      },
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
         // Grid de imagens
         if (images.isNotEmpty) ...[
           SliverPadding(
@@ -481,19 +488,28 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
             ),
           ),
       ],
+      ),
     );
   }
 
   Widget _buildListView(List<Map<String, dynamic>> files) {
       final r = context.r;
-    return ListView.builder(
-      padding: EdgeInsets.all(r.s(8)),
-      itemCount: files.length,
-      itemBuilder: (ctx, i) => _FileTile(
-        file: files[i],
-        formatSize: _formatFileSize,
-        timeAgo: _timeAgo,
-        onDelete: () => _deleteFile(files[i]['id'] as String),
+    return RefreshIndicator(
+      color: AppTheme.primaryColor,
+      onRefresh: () async {
+        setState(() => _isLoading = true);
+        await _loadFolder();
+      },
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.all(r.s(8)),
+        itemCount: files.length,
+        itemBuilder: (ctx, i) => _FileTile(
+          file: files[i],
+          formatSize: _formatFileSize,
+          timeAgo: _timeAgo,
+          onDelete: () => _deleteFile(files[i]['id'] as String),
+        ),
       ),
     );
   }

@@ -141,8 +141,15 @@ class CommunityMembersScreen extends ConsumerWidget {
               .toList();
           // regular já vem ordenado por joined_at desc do provider
 
-          return ListView(
-            padding: EdgeInsets.all(r.s(12)),
+          return RefreshIndicator(
+            color: AppTheme.primaryColor,
+            onRefresh: () async {
+              ref.invalidate(allCommunityMembersProvider(communityId));
+              await Future.delayed(const Duration(milliseconds: 300));
+            },
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.all(r.s(12)),
             children: [
               // Total de membros
               Padding(
@@ -219,6 +226,7 @@ class CommunityMembersScreen extends ConsumerWidget {
                   roleColor: _roleColor,
                   communityId: communityId)),
             ],
+            ),
           );
         },
       ),

@@ -1,0 +1,19 @@
+RANKING OVERFLOW ANALYSIS
+=========================
+
+O screenshot mostra "BOTTOM OVERFLOWED BY 24 PIXELS" no podium do 1o lugar.
+
+Causa: SizedBox(height: r.s(220)) contém:
+- Avatar: 64px (1o lugar)
+- SizedBox: 8px
+- Nickname text: ~16px
+- Level badge: ~16px
+- Rep text: ~14px
+- SizedBox: 8px
+- Podium container: height * 0.5 = 180 * 0.5 = 90px
+Total: 64+8+16+16+14+8+90 = 216px (sem margem)
+
+Mas com r.s() scaling, em telas maiores isso pode ultrapassar 220px.
+
+Solução: Aumentar a altura do container para r.s(260) e/ou usar Flexible no podium.
+Melhor: usar IntrinsicHeight ou remover a altura fixa e deixar o Column se auto-dimensionar.

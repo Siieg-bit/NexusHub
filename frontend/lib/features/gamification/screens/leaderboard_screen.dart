@@ -66,15 +66,20 @@ class LeaderboardScreen extends ConsumerWidget {
             );
           }
 
-          return ListView(
+          return RefreshIndicator(
+            color: AppTheme.primaryColor,
+            onRefresh: () async {
+              ref.invalidate(leaderboardProvider);
+              await Future.delayed(const Duration(milliseconds: 300));
+            },
+            child: ListView(
             padding: EdgeInsets.all(r.s(16)),
             children: [
               // ============================================================
               // TOP 3 PODIUM
               // ============================================================
               if (members.length >= 3)
-                SizedBox(
-                  height: r.s(220),
+                IntrinsicHeight(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.end,
@@ -83,7 +88,7 @@ class LeaderboardScreen extends ConsumerWidget {
                       _PodiumItem(
                         rank: 2,
                         data: members[1],
-                        height: r.s(140),
+                        podiumHeight: r.s(70),
                         color: const Color(0xFFC0C0C0),
                       ),
                       SizedBox(width: r.s(8)),
@@ -91,7 +96,7 @@ class LeaderboardScreen extends ConsumerWidget {
                       _PodiumItem(
                         rank: 1,
                         data: members[0],
-                        height: r.s(180),
+                        podiumHeight: r.s(100),
                         color: const Color(0xFFFFD700),
                       ),
                       SizedBox(width: r.s(8)),
@@ -99,7 +104,7 @@ class LeaderboardScreen extends ConsumerWidget {
                       _PodiumItem(
                         rank: 3,
                         data: members[2],
-                        height: r.s(110),
+                        podiumHeight: r.s(55),
                         color: const Color(0xFFCD7F32),
                       ),
                     ],
@@ -114,6 +119,7 @@ class LeaderboardScreen extends ConsumerWidget {
               ...members.asMap().entries.skip(3).map((entry) =>
                   _LeaderboardTile(data: entry.value, rank: entry.key + 1)),
             ],
+          ),
           );
         },
       ),
@@ -124,13 +130,13 @@ class LeaderboardScreen extends ConsumerWidget {
 class _PodiumItem extends StatelessWidget {
   final int rank;
   final Map<String, dynamic> data;
-  final double height;
+  final double podiumHeight;
   final Color color;
 
   const _PodiumItem({
     required this.rank,
     required this.data,
-    required this.height,
+    required this.podiumHeight,
     required this.color,
   });
 
@@ -143,14 +149,15 @@ class _PodiumItem extends StatelessWidget {
     return Expanded(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Avatar
           CosmeticAvatar(
             userId: data['user_id'] as String?,
             avatarUrl: data['icon_url'] as String?,
-            size: rank == 1 ? 64 : 48,
+            size: rank == 1 ? r.s(60) : r.s(46),
           ),
-          SizedBox(height: r.s(8)),
+          SizedBox(height: r.s(6)),
           Text(
             data['nickname'] as String? ?? 'Usuário',
             style: TextStyle(
@@ -163,7 +170,7 @@ class _PodiumItem extends StatelessWidget {
           ),
           // Level badge
           Container(
-            margin: const EdgeInsets.only(top: 2),
+            margin: EdgeInsets.only(top: r.s(2)),
             padding: EdgeInsets.symmetric(horizontal: r.s(6), vertical: 1),
             decoration: BoxDecoration(
               color: AppTheme.getLevelColor(lvl).withValues(alpha: 0.2),
@@ -186,10 +193,10 @@ class _PodiumItem extends StatelessWidget {
               fontWeight: FontWeight.w800,
             ),
           ),
-          SizedBox(height: r.s(8)),
+          SizedBox(height: r.s(6)),
           // Podium
           Container(
-            height: height * 0.5,
+            height: podiumHeight,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
@@ -200,7 +207,7 @@ class _PodiumItem extends StatelessWidget {
                 ],
               ),
               borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(12)),
+                  BorderRadius.vertical(top: Radius.circular(r.s(12))),
               border: Border.all(color: color.withValues(alpha: 0.5)),
             ),
             child: Center(
@@ -209,7 +216,7 @@ class _PodiumItem extends StatelessWidget {
                 style: TextStyle(
                   color: color,
                   fontWeight: FontWeight.w800,
-                  fontSize: rank == 1 ? 24 : 18,
+                  fontSize: rank == 1 ? r.fs(22) : r.fs(16),
                 ),
               ),
             ),
