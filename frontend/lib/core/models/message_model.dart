@@ -2,14 +2,26 @@ import 'user_model.dart';
 
 /// Modelo de mensagem de chat.
 /// Baseado no schema v5 — tabela chat_messages (ChatMessage.smali).
+///
+/// Campos mapeados diretamente da tabela `chat_messages`:
+/// - id, thread_id, author_id, type, content
+/// - media_url, media_type, media_duration, media_thumbnail_url
+/// - sticker_id, sticker_url
+/// - reply_to_id
+/// - shared_user_id, shared_url, shared_link_summary
+/// - tip_amount
+/// - reactions (JSONB)
+/// - is_deleted, deleted_by
+/// - created_at, updated_at
+///
+/// Campos que NÃO existem na tabela (removidos):
+/// - metadata (não existe — polls são serializados no content)
+/// - is_pinned (não existe — pinned é gerenciado pelo chat_threads.pinned_message_id)
 class MessageModel {
   final String id;
   final String threadId;
   final String authorId;
-  final String type; // text, image, audio, video, sticker, gif, file, link,
-  //                    reply, forward, poll, quiz, voice_chat, video_chat,
-  //                    screening_room, tip, shared_post, shared_user,
-  //                    shared_community, system
+  final String type; // Valores do enum chat_message_type no banco
   final String? content;
   final String? mediaUrl;
   final String? mediaType;
@@ -22,9 +34,7 @@ class MessageModel {
   final String? sharedUrl;
   final Map<String, dynamic>? sharedLinkSummary;
   final int? tipAmount;
-  final Map<String, dynamic>? metadata; // poll options, quiz data, etc.
   final Map<String, dynamic> reactions;
-  final bool isPinned;
   final bool isDeleted;
   final String? deletedBy;
   final DateTime createdAt;
@@ -48,9 +58,7 @@ class MessageModel {
     this.sharedUrl,
     this.sharedLinkSummary,
     this.tipAmount,
-    this.metadata,
     this.reactions = const {},
-    this.isPinned = false,
     this.isDeleted = false,
     this.deletedBy,
     required this.createdAt,
@@ -60,7 +68,7 @@ class MessageModel {
 
   factory MessageModel.fromJson(Map<String, dynamic> json) {
     return MessageModel(
-      id: json['id'] as String,
+      id: json['id'] as String? ?? '',
       threadId: json['thread_id'] as String? ?? '',
       authorId: json['author_id'] as String? ?? '',
       type: json['type'] as String? ?? 'text',
@@ -76,15 +84,17 @@ class MessageModel {
       sharedUrl: json['shared_url'] as String?,
       sharedLinkSummary: json['shared_link_summary'] as Map<String, dynamic>?,
       tipAmount: json['tip_amount'] as int?,
-      metadata: json['metadata'] as Map<String, dynamic>?,
       reactions: json['reactions'] as Map<String, dynamic>? ?? {},
-      isPinned: json['is_pinned'] as bool? ?? false,
       isDeleted: json['is_deleted'] as bool? ?? false,
       deletedBy: json['deleted_by'] as String?,
       createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ??
           DateTime.now(),
       updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '') ??
           DateTime.now(),
+      // O autor pode vir de diferentes chaves dependendo do contexto:
+      // - 'profiles' quando vem de um JOIN com FK
+      // - 'author' quando normalizado pelo provider
+      // - 'sender' quando normalizado pelo realtime callback
       author: json['profiles'] != null
           ? UserModel.fromJson(json['profiles'] as Map<String, dynamic>)
           : (json['author'] != null
@@ -95,39 +105,44 @@ class MessageModel {
     );
   }
 
+  /// Serializa apenas campos que existem na tabela chat_messages.
   Map<String, dynamic> toJson() {
-    return {
+    final map = <String, dynamic>{
       'thread_id': threadId,
       'author_id': authorId,
       'type': type,
-      'content': content,
-      'media_url': mediaUrl,
-      'media_type': mediaType,
-      'media_duration': mediaDuration,
-      'media_thumbnail_url': mediaThumbnailUrl,
-      'sticker_id': stickerId,
-      'sticker_url': stickerUrl,
-      'reply_to_id': replyToId,
-      'shared_user_id': sharedUserId,
-      'shared_url': sharedUrl,
-      'shared_link_summary': sharedLinkSummary,
-      'tip_amount': tipAmount,
-      'metadata': metadata,
+      'content': content ?? '',
     };
+    if (mediaUrl != null) map['media_url'] = mediaUrl;
+    if (mediaType != null) map['media_type'] = mediaType;
+    if (mediaDuration != null) map['media_duration'] = mediaDuration;
+    if (mediaThumbnailUrl != null) map['media_thumbnail_url'] = mediaThumbnailUrl;
+    if (stickerId != null) map['sticker_id'] = stickerId;
+    if (stickerUrl != null) map['sticker_url'] = stickerUrl;
+    if (replyToId != null) map['reply_to_id'] = replyToId;
+    if (sharedUserId != null) map['shared_user_id'] = sharedUserId;
+    if (sharedUrl != null) map['shared_url'] = sharedUrl;
+    if (sharedLinkSummary != null) map['shared_link_summary'] = sharedLinkSummary;
+    if (tipAmount != null) map['tip_amount'] = tipAmount;
+    return map;
   }
 
-  bool get isTextMessage => type == 'text';
-  bool get isImageMessage => type == 'image';
-  bool get isSystemMessage => type == 'system' || type.startsWith('system_');
-  bool get isStickerMessage => type == 'sticker';
-  bool get isVoiceNote => type == 'voice_note' || type == 'audio';
-  bool get isGif => type == 'gif';
+  // Getters de conveniência para identificar o tipo visual da mensagem.
+  // Como o banco usa tipos mapeados (ex: 'text' para imagens), estes getters
+  // verificam campos adicionais para determinar o tipo real.
+  bool get isTextMessage => type == 'text' && mediaUrl == null && replyToId == null;
+  bool get isImageMessage => mediaType == 'image' && mediaUrl != null;
+  bool get isGifMessage => mediaType == 'gif' && mediaUrl != null;
+  bool get isSystemMessage => type.startsWith('system_');
+  bool get isStickerMessage => type == 'sticker' || stickerUrl != null;
+  bool get isVoiceNote => type == 'voice_note';
+  bool get isGif => mediaType == 'gif';
   bool get isVideo => type == 'video';
-  bool get isFile => type == 'file';
-  bool get isLink => type == 'link';
-  bool get isPoll => type == 'poll';
-  bool get isQuiz => type == 'quiz';
-  bool get isTip => type == 'tip';
-  bool get isReply => type == 'reply';
-  bool get isForward => type == 'forward';
+  bool get isFile => false; // Não há tipo 'file' no enum do banco
+  bool get isLink => type == 'share_url' || sharedUrl != null;
+  bool get isPoll => content != null && content!.startsWith('{"question"');
+  bool get isQuiz => false; // Quiz não implementado no banco
+  bool get isTip => type == 'system_tip' || tipAmount != null;
+  bool get isReply => replyToId != null;
+  bool get isForward => false; // Forward não implementado no banco
 }

@@ -270,7 +270,7 @@ BEGIN
   INSERT INTO public.chat_messages (
     thread_id, author_id, content, type, media_url, reply_to_id
   ) VALUES (
-    p_thread_id, p_author_id, p_content, p_type::public.message_type,
+    p_thread_id, p_author_id, p_content, p_type::public.chat_message_type,
     p_media_url, p_reply_to
   ) RETURNING id INTO v_message_id;
 
@@ -433,8 +433,8 @@ BEGIN
     RETURN jsonb_build_object('joined', false, 'reason', 'already_member');
   END IF;
 
-  INSERT INTO public.chat_members (thread_id, user_id, role)
-  VALUES (p_thread_id, p_user_id, 'member');
+  INSERT INTO public.chat_members (thread_id, user_id)
+  VALUES (p_thread_id, p_user_id);
 
   -- Atualizar contagem
   UPDATE public.chat_threads SET members_count = members_count + 1 WHERE id = p_thread_id;

@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -85,37 +84,44 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           .eq('id', widget.threadId)
           .single();
       if (mounted) setState(() => _threadInfo = res);
-    } catch (_) {}
+    } catch (_) {
+      // Thread info is best-effort; chat still works without it
+    }
   }
 
   Future<void> _loadMessages() async {
     try {
       final response = await SupabaseService.table('chat_messages')
-          .select('*, profiles!chat_messages_author_id_fkey(*)')
+          .select('*, profiles!chat_messages_author_id_fkey(id, nickname, icon_url)')
           .eq('thread_id', widget.threadId)
           .order('created_at', ascending: false)
           .limit(100);
 
-      setState(() {
-        _messages.clear();
-        _messages.addAll(
-          (response as List).map((e) {
-            final map = Map<String, dynamic>.from(e);
-            if (map['profiles'] != null) map['sender'] = map['profiles'];
-            return MessageModel.fromJson(map);
-          }).toList(),
-        );
-        _isLoading = false;
-      });
-      _scrollToBottom();
+      if (mounted) {
+        setState(() {
+          _messages.clear();
+          _messages.addAll(
+            (response as List).map((e) {
+              final map = Map<String, dynamic>.from(e as Map);
+              if (map['profiles'] != null) {
+                map['sender'] = map['profiles'];
+                map['author'] = map['profiles'];
+              }
+              return MessageModel.fromJson(map);
+            }).toList(),
+          );
+          _isLoading = false;
+        });
+        _scrollToBottom();
+      }
     } catch (e) {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
+      debugPrint('Error loading messages: $e');
     }
   }
 
   Future<void> _loadPinnedMessages() async {
     try {
-      // Busca o pinned_message_id do thread e carrega a mensagem fixada
       final threadData = await SupabaseService.table('chat_threads')
           .select('pinned_message_id')
           .eq('id', widget.threadId)
@@ -126,7 +132,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         return;
       }
       final res = await SupabaseService.table('chat_messages')
-          .select('*, profiles!chat_messages_author_id_fkey(*)')
+          .select('*, profiles!chat_messages_author_id_fkey(id, nickname, icon_url)')
           .eq('id', pinnedId)
           .limit(1);
       if (mounted) {
@@ -134,7 +140,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           _pinnedMessages = List<Map<String, dynamic>>.from(res as List);
         });
       }
-    } catch (_) {}
+    } catch (_) {
+      // Pinned messages are best-effort
+    }
   }
 
   void _subscribeToRealtime() {
@@ -150,18 +158,34 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             value: widget.threadId,
           ),
           callback: (payload) async {
-            final newMessage = payload.newRecord;
             try {
-              final senderData = await SupabaseService.table('profiles')
-                  .select()
-                  .eq('id', newMessage['author_id'])
-                  .single();
-              newMessage['sender'] = senderData;
-            } catch (_) {}
-            final message = MessageModel.fromJson(newMessage);
-            if (mounted) {
-              setState(() => _messages.insert(0, message));
-              _scrollToBottom();
+              final newMessage = Map<String, dynamic>.from(payload.newRecord);
+
+              // Evitar duplicatas
+              if (_messages.any((m) => m.id == newMessage['id'])) return;
+
+              // Buscar perfil do autor
+              try {
+                final authorId = newMessage['author_id'] as String?;
+                if (authorId != null) {
+                  final senderData = await SupabaseService.table('profiles')
+                      .select('id, nickname, icon_url')
+                      .eq('id', authorId)
+                      .single();
+                  newMessage['sender'] = senderData;
+                  newMessage['author'] = senderData;
+                }
+              } catch (_) {
+                // Profile fetch is best-effort
+              }
+
+              final message = MessageModel.fromJson(newMessage);
+              if (mounted) {
+                setState(() => _messages.insert(0, message));
+                _scrollToBottom();
+              }
+            } catch (e) {
+              debugPrint('Realtime message error: $e');
             }
           },
         )
@@ -180,7 +204,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // ========================================================================
   // ENVIAR MENSAGEM (suporta todos os tipos)
   // ========================================================================
-  /// Mapeia tipos de mensagem do app para os valores válidos do enum no banco.
+
+  /// Mapeia tipos de mensagem do app para os valores válidos do enum
+  /// `chat_message_type` no banco de dados.
+  ///
+  /// Valores válidos: text, strike, voice_note, sticker, video, share_url,
+  /// share_user, system_deleted, system_join, system_leave, system_voice_start,
+  /// system_voice_end, system_screen_start, system_screen_end, system_tip,
+  /// system_pin, system_unpin, system_removed, system_admin_delete
   String _mapMessageType(String type) {
     const validTypes = {
       'text', 'strike', 'voice_note', 'sticker', 'video',
@@ -202,17 +233,38 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       case 'poll': return 'text';    // poll enviado como texto com conteúdo JSON
       case 'link': return 'share_url';
       case 'tip': return 'system_tip';
+      case 'forward': return 'text';
+      case 'file': return 'text';
       default: return 'text';
     }
   }
 
+  /// Envia uma mensagem no chat.
+  ///
+  /// Todos os campos enviados correspondem exatamente às colunas da tabela
+  /// `chat_messages`. Campos inexistentes como `metadata` NÃO são enviados.
+  ///
+  /// Para tipos especiais:
+  /// - **poll**: pergunta + opções serializadas no `content` como JSON
+  /// - **tip**: valor em `tip_amount`, conteúdo descritivo em `content`
+  /// - **link**: URL em `shared_url`, conteúdo descritivo em `content`
+  /// - **sticker**: `sticker_id` e `sticker_url` nos campos dedicados
+  /// - **voice_note**: `media_url` e `media_duration` nos campos dedicados
+  /// - **image/gif**: `media_url` e `media_type` nos campos dedicados
   Future<void> _sendMessage({
     String type = 'text',
     String? mediaUrl,
-    Map<String, dynamic>? metadata,
+    String? mediaType,
+    String? stickerId,
+    String? stickerUrl,
+    String? sharedUrl,
+    int? tipAmount,
+    int? mediaDuration,
+    String? pollQuestion,
+    List<String>? pollOptions,
   }) async {
     final text = _messageController.text.trim();
-    if (text.isEmpty && type == 'text') return;
+    if (text.isEmpty && type == 'text' && mediaUrl == null) return;
 
     _messageController.clear();
     setState(() => _isSending = true);
@@ -220,14 +272,23 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     try {
       final mappedType = _mapMessageType(type);
 
-      // Conteúdo: para poll, serializa as opções; para link, usa a URL
-      String? content;
-      if (text.isNotEmpty) {
+      // Determinar conteúdo baseado no tipo
+      String content;
+      if (type == 'poll' && pollQuestion != null) {
+        // Poll: serializar pergunta e opções como JSON no content
+        content = '{"question":"$pollQuestion","options":${pollOptions?.map((o) => '"$o"').toList() ?? []}}';
+      } else if (type == 'link' && sharedUrl != null) {
+        content = text.isNotEmpty ? text : sharedUrl;
+      } else if (type == 'tip' && tipAmount != null) {
+        content = '$tipAmount coins';
+      } else if (type == 'voice_chat' || type == 'video_chat' || type == 'screening_room') {
+        content = type == 'voice_chat'
+            ? 'Iniciou um Voice Chat'
+            : type == 'video_chat'
+                ? 'Iniciou um Video Chat'
+                : 'Iniciou um Screening Room';
+      } else {
         content = text;
-      } else if (type == 'poll' && metadata != null) {
-        content = metadata['question'] as String? ?? '';
-      } else if (type == 'link' && metadata != null) {
-        content = metadata['url'] as String? ?? '';
       }
 
       final payload = <String, dynamic>{
@@ -237,22 +298,18 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         'type': mappedType,
       };
 
+      // Campos opcionais — só adicionar se não null (correspondem a colunas reais)
       if (mediaUrl != null) payload['media_url'] = mediaUrl;
+      if (mediaType != null) payload['media_type'] = mediaType;
+      if (mediaDuration != null) payload['media_duration'] = mediaDuration;
+      if (stickerId != null) payload['sticker_id'] = stickerId;
+      if (stickerUrl != null) payload['sticker_url'] = stickerUrl;
+      if (sharedUrl != null) payload['shared_url'] = sharedUrl;
+      if (tipAmount != null) payload['tip_amount'] = tipAmount;
 
-      // Tipo de mídia para imagens e gifs
-      if (type == 'image') payload['media_type'] = 'image';
-      if (type == 'gif') payload['media_type'] = 'gif';
-
-      // Para sticker, usar os campos corretos da tabela
-      if (type == 'sticker' && metadata != null) {
-        payload['sticker_id'] = metadata['sticker_id'];
-        payload['sticker_url'] = metadata['sticker_url'] ?? mediaUrl;
-      }
-
-      // Para link compartilhado
-      if (type == 'link' && metadata != null) {
-        payload['shared_url'] = metadata['url'];
-      }
+      // Para imagens e gifs, definir media_type
+      if (type == 'image' && mediaType == null) payload['media_type'] = 'image';
+      if (type == 'gif' && mediaType == null) payload['media_type'] = 'gif';
 
       if (_replyingTo != null) {
         payload['reply_to_id'] = _replyingTo!.id;
@@ -261,7 +318,20 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
       await SupabaseService.table('chat_messages').insert(payload);
 
-      // Adicionar reputação por enviar mensagem
+      // Atualizar last_message da thread
+      try {
+        await SupabaseService.table('chat_threads').update({
+          'last_message_at': DateTime.now().toIso8601String(),
+          'last_message_preview': content.length > 100
+              ? '${content.substring(0, 100)}...'
+              : content,
+          'updated_at': DateTime.now().toIso8601String(),
+        }).eq('id', widget.threadId);
+      } catch (_) {
+        // Thread update is best-effort
+      }
+
+      // Adicionar reputação por enviar mensagem (best-effort)
       try {
         final communityId = _threadInfo?['community_id'] as String?;
         if (communityId != null) {
@@ -279,8 +349,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro: $e'),
+            content: Text('Erro ao enviar: $e'),
             backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -302,13 +373,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           .from('chat-media')
           .uploadBinary(path, bytes);
       final url = SupabaseService.storage.from('chat-media').getPublicUrl(path);
-      await _sendMessage(type: 'image', mediaUrl: url);
+      await _sendMessage(type: 'image', mediaUrl: url, mediaType: 'image');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erro no upload: $e'),
             backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -316,11 +388,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   /// Diálogo de gorjeta estilo Amino — valores pré-definidos + custom.
-  ///
-  /// No Amino original, o sistema de "Props" permite enviar moedas
-  /// para outros usuários no chat. O diálogo mostra valores comuns
-  /// (10, 50, 100, 500) e um campo custom. A transferência é feita
-  /// via RPC transfer_coins e registrada como mensagem tipo 'tip'.
   Future<void> _showTipDialog() async {
     final customController = TextEditingController();
     int? selectedAmount;
@@ -495,21 +562,17 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     // Executar transferência via RPC
     try {
       await SupabaseService.rpc('transfer_coins', params: {
-        'p_receiver_id': _threadInfo?['creator_id'] ?? '',
+        'p_receiver_id': _threadInfo?['host_id'] ?? '',
         'p_amount': result,
       });
     } catch (_) {
-      // Transferência pode falhar (saldo insuficiente), mas a mensagem
-      // de tip ainda é enviada como registro visual no chat.
+      // Transferência pode falhar (saldo insuficiente)
     }
 
-    // Enviar mensagem de tip no chat
+    // Enviar mensagem de tip no chat usando campos reais do banco
     await _sendMessage(
       type: 'tip',
-      metadata: {
-        'amount': result,
-        'sender_name': SupabaseService.currentUserId ?? 'Usuário',
-      },
+      tipAmount: result,
     );
   }
 
@@ -517,7 +580,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
-      // Reactions são armazenadas como JSONB no chat_messages: {"emoji": [userId1, userId2]}
       final msg = await SupabaseService.table('chat_messages')
           .select('reactions')
           .eq('id', messageId)
@@ -543,7 +605,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   Future<void> _pinMessage(String messageId) async {
     try {
-      // Atualiza o pinned_message_id no chat_thread (a coluna is_pinned não existe em chat_messages)
       await SupabaseService.table('chat_threads')
           .update({'pinned_message_id': messageId}).eq('id', widget.threadId);
       await _loadPinnedMessages();
@@ -584,7 +645,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   : null,
               child: threadIcon == null
                   ? Icon(
-                      threadType == 'direct'
+                      threadType == 'dm'
                           ? Icons.person_rounded
                           : Icons.group_rounded,
                       color: Colors.grey[500],
@@ -602,7 +663,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                           fontWeight: FontWeight.w700,
                           fontSize: 15,
                           color: AppTheme.textPrimary)),
-                  if (threadType == 'group')
+                  if (threadType != 'dm')
                     Text('$memberCount members',
                         style: TextStyle(
                             fontSize: 11, color: Colors.grey[500])),
@@ -620,15 +681,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             ),
           // Voice chat
           GestureDetector(
-            onTap: () => _sendMessage(
-              type: 'voice_chat',
-              metadata: {'status': 'invite'},
-            ),
+            onTap: () => _sendMessage(type: 'voice_chat'),
             child: Container(
               width: 34,
               height: 34,
               margin: const EdgeInsets.only(right: 4),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppTheme.surfaceColor,
                 shape: BoxShape.circle,
               ),
@@ -716,7 +774,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                             Container(
                               width: 72,
                               height: 72,
-                              decoration: BoxDecoration(
+                              decoration: const BoxDecoration(
                                 color: AppTheme.surfaceColor,
                                 shape: BoxShape.circle,
                               ),
@@ -824,7 +882,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               child: VoiceRecorder(
                 onRecordingComplete: (filePath, duration) async {
                   setState(() => _isRecordingVoice = false);
-                  // Upload do áudio e enviar como voice_note
                   try {
                     final file = File(filePath);
                     final fileName = 'voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
@@ -836,9 +893,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         .from('media')
                         .getPublicUrl(storagePath);
                     _sendMessage(
-                      type: 'voice_note',
+                      type: 'audio',
                       mediaUrl: url,
-                      metadata: {'duration': duration},
+                      mediaType: 'audio',
+                      mediaDuration: duration,
                     );
                   } catch (e) {
                     if (mounted) {
@@ -1004,7 +1062,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     Navigator.pop(ctx);
                     final gifUrl = await GiphyPicker.show(context);
                     if (gifUrl != null) {
-                      _sendMessage(type: 'gif', mediaUrl: gifUrl);
+                      _sendMessage(type: 'gif', mediaUrl: gifUrl, mediaType: 'gif');
                     }
                   },
                 ),
@@ -1018,8 +1076,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     if (sticker != null) {
                       _sendMessage(
                         type: 'sticker',
-                        mediaUrl: sticker['sticker_url'],
-                        metadata: sticker,
+                        mediaUrl: sticker['sticker_url'] as String?,
+                        stickerId: sticker['sticker_id'] as String?,
+                        stickerUrl: sticker['sticker_url'] as String?,
                       );
                     }
                   },
@@ -1057,8 +1116,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   color: const Color(0xFF4CAF50),
                   onTap: () {
                     Navigator.pop(ctx);
-                    _sendMessage(
-                        type: 'voice_chat', metadata: {'status': 'invite'});
+                    _sendMessage(type: 'voice_chat');
                   },
                 ),
                 _MediaOptionItem(
@@ -1067,8 +1125,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   color: const Color(0xFF2196F3),
                   onTap: () {
                     Navigator.pop(ctx);
-                    _sendMessage(
-                        type: 'video_chat', metadata: {'status': 'invite'});
+                    _sendMessage(type: 'video_chat');
                   },
                 ),
                 _MediaOptionItem(
@@ -1077,8 +1134,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   color: const Color(0xFFFF5722),
                   onTap: () {
                     Navigator.pop(ctx);
-                    _sendMessage(
-                        type: 'screening_room', metadata: {'status': 'invite'});
+                    _sendMessage(type: 'screening_room');
                   },
                 ),
                 _MediaOptionItem(
@@ -1132,10 +1188,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.add_rounded,
+                        const Icon(Icons.add_rounded,
                             size: 16, color: AppTheme.primaryColor),
                         const SizedBox(width: 4),
-                        Text('Adicionar Opção',
+                        const Text('Adicionar Opção',
                             style: TextStyle(
                                 color: AppTheme.primaryColor,
                                 fontSize: 13,
@@ -1154,14 +1210,17 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     style: TextStyle(color: Colors.grey[500]))),
             ElevatedButton(
               onPressed: () {
+                final question = questionCtrl.text;
+                final options = optionCtrls
+                    .map((c) => c.text)
+                    .where((t) => t.isNotEmpty)
+                    .toList();
                 Navigator.pop(ctx);
-                _sendMessage(type: 'poll', metadata: {
-                  'question': questionCtrl.text,
-                  'options': optionCtrls
-                      .map((c) => c.text)
-                      .where((t) => t.isNotEmpty)
-                      .toList(),
-                });
+                _sendMessage(
+                  type: 'poll',
+                  pollQuestion: question,
+                  pollOptions: options,
+                );
                 questionCtrl.dispose();
                 for (final c in optionCtrls) {
                   c.dispose();
@@ -1200,8 +1259,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   style: TextStyle(color: Colors.grey[500]))),
           ElevatedButton(
             onPressed: () {
+              final url = linkCtrl.text;
               Navigator.pop(ctx);
-              _sendMessage(type: 'link', metadata: {'url': linkCtrl.text});
+              _sendMessage(type: 'link', sharedUrl: url);
               linkCtrl.dispose();
             },
             style: ElevatedButton.styleFrom(
@@ -1278,7 +1338,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         },
                         child: Container(
                           padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: AppTheme.cardColor,
                             shape: BoxShape.circle,
                           ),
@@ -1305,7 +1365,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             }),
             _actionTile(Icons.forward_rounded, 'Encaminhar', () {
               Navigator.pop(ctx);
-              // Copiar conteúdo e mostrar opção de encaminhar
               Clipboard.setData(ClipboardData(text: message.content ?? ''));
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -1321,10 +1380,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             if (message.authorId == SupabaseService.currentUserId)
               _actionTile(Icons.delete_rounded, 'Excluir', () async {
                 Navigator.pop(ctx);
-                await SupabaseService.table('chat_messages')
-                    .delete()
-                    .eq('id', message.id);
-                setState(() => _messages.remove(message));
+                try {
+                  await SupabaseService.table('chat_messages')
+                      .delete()
+                      .eq('id', message.id);
+                  if (mounted) setState(() => _messages.remove(message));
+                } catch (_) {}
               }, isDestructive: true),
           ],
         ),
@@ -1410,7 +1471,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           Container(
             width: 34,
             height: 34,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppTheme.surfaceColor,
               shape: BoxShape.circle,
             ),
@@ -1561,7 +1622,7 @@ class _MessageBubble extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 4),
                       child: Text(
                         message.author?.nickname ?? 'User',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: AppTheme.primaryColor,
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
@@ -1596,157 +1657,192 @@ class _MessageBubble extends StatelessWidget {
     final type = message.type;
     final textColor = isMe ? Colors.white : AppTheme.textPrimary;
 
-    switch (type) {
-      case 'image':
-        if (message.mediaUrl != null) {
-          return ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: CachedNetworkImage(
-              imageUrl: message.mediaUrl!,
-              width: 200,
-              fit: BoxFit.cover,
-            ),
-          );
-        }
-        return Text(message.content ?? '[Image]',
-            style: TextStyle(color: textColor, fontSize: 14));
+    // O banco armazena o tipo mapeado (ex: 'text' para imagens, 'system_tip' para tips)
+    // Precisamos detectar o tipo real pelo conteúdo/campos
 
-      case 'gif':
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (message.mediaUrl != null)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: CachedNetworkImage(
-                  imageUrl: message.mediaUrl!,
-                  width: 180,
-                  fit: BoxFit.cover,
-                ),
-              )
-            else
+    // Imagem: tipo text mas com media_url e media_type == 'image'
+    if (message.mediaUrl != null && message.mediaType == 'image') {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: CachedNetworkImage(
+          imageUrl: message.mediaUrl!,
+          width: 200,
+          fit: BoxFit.cover,
+          placeholder: (_, __) => Container(
+            width: 200, height: 150,
+            color: Colors.grey[800],
+            child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          ),
+        ),
+      );
+    }
+
+    // GIF: tipo text mas com media_url e media_type == 'gif'
+    if (message.mediaUrl != null && message.mediaType == 'gif') {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: CachedNetworkImage(
+          imageUrl: message.mediaUrl!,
+          width: 180,
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+
+    // Sticker
+    if (type == 'sticker' || message.stickerUrl != null) {
+      final url = message.stickerUrl ?? message.mediaUrl;
+      return url != null
+          ? CachedNetworkImage(imageUrl: url, width: 120, height: 120)
+          : const Text('🎭', style: TextStyle(fontSize: 48));
+    }
+
+    // Voice note
+    if (type == 'voice_note') {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.play_circle_rounded, color: textColor, size: 32),
+          const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Audio', style: TextStyle(color: textColor, fontSize: 13)),
+              if (message.mediaDuration != null)
+                Text('${message.mediaDuration}s',
+                    style: TextStyle(color: textColor.withValues(alpha: 0.6), fontSize: 11)),
               Container(
-                width: 180,
-                height: 120,
+                width: 120,
+                height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.black12,
-                  borderRadius: BorderRadius.circular(8),
+                  color: textColor.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
                 ),
-                child: const Center(
-                    child: Text('GIF',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 20))),
               ),
-          ],
-        );
+            ],
+          ),
+        ],
+      );
+    }
 
-      case 'sticker':
-        return message.mediaUrl != null
-            ? CachedNetworkImage(
-                imageUrl: message.mediaUrl!, width: 120, height: 120)
-            : const Text('🎭', style: TextStyle(fontSize: 48));
+    // Video
+    if (type == 'video') {
+      return Container(
+        width: 200,
+        height: 150,
+        decoration: BoxDecoration(
+          color: Colors.black26,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Center(
+          child: Icon(Icons.play_circle_rounded, color: Colors.white, size: 48),
+        ),
+      );
+    }
 
-      case 'audio':
-        return Row(
+    // System messages (tip, voice start, etc.)
+    if (type == 'system_tip') {
+      final amount = message.tipAmount ?? 0;
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppTheme.warningColor.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.play_circle_rounded, color: textColor, size: 32),
+            const Icon(Icons.monetization_on_rounded,
+                color: AppTheme.warningColor),
             const SizedBox(width: 8),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            Text('$amount coins',
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.warningColor)),
+          ],
+        ),
+      );
+    }
+
+    if (type == 'system_voice_start' || type == 'system_screen_start') {
+      final isVoice = type == 'system_voice_start';
+      final icon = isVoice ? Icons.headset_mic_rounded : Icons.live_tv_rounded;
+      final label = isVoice ? 'Voice Chat' : 'Screening Room';
+      final accentColor = isVoice
+          ? const Color(0xFF4CAF50)
+          : const Color(0xFFFF5722);
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: accentColor.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: accentColor),
+            const SizedBox(width: 8),
+            Text(label,
+                style: TextStyle(
+                    fontWeight: FontWeight.w600, color: accentColor)),
+          ],
+        ),
+      );
+    }
+
+    // Link (share_url)
+    if (type == 'share_url' || message.sharedUrl != null) {
+      final url = message.sharedUrl ?? message.content ?? '';
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: textColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text('Audio',
-                    style: TextStyle(color: textColor, fontSize: 13)),
-                Container(
-                  width: 120,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: textColor.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(2),
+                Icon(Icons.link_rounded, color: textColor, size: 16),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    url,
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 13,
+                      decoration: TextDecoration.underline,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
             ),
-          ],
-        );
+          ),
+          if (message.content != null && message.content != url && message.content!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(message.content!,
+                  style: TextStyle(color: textColor, fontSize: 14)),
+            ),
+        ],
+      );
+    }
 
-      case 'video':
-        return Container(
-          width: 200,
-          height: 150,
-          decoration: BoxDecoration(
-            color: Colors.black26,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Center(
-            child:
-                Icon(Icons.play_circle_rounded, color: Colors.white, size: 48),
-          ),
-        );
+    // Poll (armazenado como text com JSON no content)
+    if (message.content != null && message.content!.startsWith('{"question"')) {
+      try {
+        // Tentar parsear o JSON do poll
+        final content = message.content!;
+        final questionMatch = RegExp(r'"question":"([^"]*)"').firstMatch(content);
+        final question = questionMatch?.group(1) ?? 'Enquete';
+        final optionsMatch = RegExp(r'"options":\[(.*?)\]').firstMatch(content);
+        final optionsStr = optionsMatch?.group(1) ?? '';
+        final options = RegExp(r'"([^"]*)"').allMatches(optionsStr).map((m) => m.group(1) ?? '').toList();
 
-      case 'voice_chat':
-      case 'video_chat':
-      case 'screening_room':
-        final isVoice = type == 'voice_chat';
-        final isVideo = type == 'video_chat';
-        final icon = isVoice
-            ? Icons.headset_mic_rounded
-            : isVideo
-                ? Icons.video_call_rounded
-                : Icons.live_tv_rounded;
-        final label = isVoice
-            ? 'Voice Chat'
-            : isVideo
-                ? 'Video Chat'
-                : 'Screening Room';
-        final accentColor = isVoice
-            ? const Color(0xFF4CAF50)
-            : isVideo
-                ? const Color(0xFF2196F3)
-                : const Color(0xFFFF5722);
-        return Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: accentColor.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, color: accentColor),
-              const SizedBox(width: 8),
-              Text(label,
-                  style: TextStyle(
-                      fontWeight: FontWeight.w600, color: accentColor)),
-            ],
-          ),
-        );
-
-      case 'tip':
-        final amount = message.metadata?['amount'] ?? 0;
-        return Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppTheme.warningColor.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.monetization_on_rounded,
-                  color: AppTheme.warningColor),
-              const SizedBox(width: 8),
-              Text('$amount coins',
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.warningColor)),
-            ],
-          ),
-        );
-
-      case 'poll':
-        final question = message.metadata?['question'] ?? '';
-        final options = (message.metadata?['options'] as List<dynamic>?) ?? [];
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1764,119 +1860,78 @@ class _MessageBubble extends StatelessWidget {
                     color: textColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text(opt.toString(),
+                  child: Text(opt,
                       style: TextStyle(color: textColor, fontSize: 13)),
                 )),
           ],
         );
-
-      case 'link':
-        final url = message.metadata?['url'] ?? message.content ?? '';
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: textColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.link_rounded, color: textColor, size: 16),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      url.toString(),
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: 13,
-                        decoration: TextDecoration.underline,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (message.content != null && message.content!.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Text(message.content!,
-                    style: TextStyle(color: textColor, fontSize: 14)),
-              ),
-          ],
-        );
-
-      case 'reply':
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                border: Border(
-                  left: BorderSide(
-                      color: isMe
-                          ? Colors.white.withValues(alpha: 0.5)
-                          : AppTheme.primaryColor,
-                      width: 3),
-                ),
-              ),
-              child: Text(
-                'Respondendo...',
-                style: TextStyle(
-                  color: isMe
-                      ? Colors.white.withValues(alpha: 0.6)
-                      : Colors.grey[500],
-                  fontSize: 11,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(message.content ?? '',
-                style: TextStyle(color: textColor, fontSize: 14)),
-          ],
-        );
-
-      case 'shared_post':
-      case 'shared_user':
-      case 'shared_community':
-        final sharedType = type == 'shared_post'
-            ? 'Post'
-            : type == 'shared_user'
-                ? 'Perfil'
-                : 'Comunidade';
-        return Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: textColor.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.share_rounded, color: textColor, size: 16),
-              const SizedBox(width: 8),
-              Text('$sharedType compartilhado',
-                  style: TextStyle(
-                      color: textColor,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500)),
-            ],
-          ),
-        );
-
-      case 'text':
-      default:
-        return Text(
-          message.content ?? '',
-          style: TextStyle(color: textColor, fontSize: 14),
-        );
+      } catch (_) {
+        // Se falhar o parse, mostra como texto normal
+      }
     }
+
+    // Reply (tipo text com reply_to_id)
+    if (message.replyToId != null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              border: Border(
+                left: BorderSide(
+                    color: isMe
+                        ? Colors.white.withValues(alpha: 0.5)
+                        : AppTheme.primaryColor,
+                    width: 3),
+              ),
+            ),
+            child: Text(
+              'Respondendo...',
+              style: TextStyle(
+                color: isMe
+                    ? Colors.white.withValues(alpha: 0.6)
+                    : Colors.grey[500],
+                fontSize: 11,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(message.content ?? '',
+              style: TextStyle(color: textColor, fontSize: 14)),
+        ],
+      );
+    }
+
+    // Shared user
+    if (type == 'share_user') {
+      return Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: textColor.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.person_rounded, color: textColor, size: 16),
+            const SizedBox(width: 8),
+            Text('Perfil compartilhado',
+                style: TextStyle(
+                    color: textColor,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500)),
+          ],
+        ),
+      );
+    }
+
+    // Default: texto simples
+    return Text(
+      message.content ?? '',
+      style: TextStyle(color: textColor, fontSize: 14),
+    );
   }
 
   String _formatTime(DateTime dateTime) {
