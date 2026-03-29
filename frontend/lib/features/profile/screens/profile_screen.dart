@@ -15,11 +15,89 @@ import '../../chat/widgets/chat_bubble.dart'; // AvatarWithFrame, AminoPlusBadge
 import '../../feed/widgets/post_card.dart';
 
 /// Provider para perfil de um usuário.
+/// Tenta RPC get_user_profile primeiro; se falhar, busca direto da tabela.
 final userProfileProvider =
     FutureProvider.family<UserModel, String>((ref, userId) async {
-  final response = await SupabaseService.rpc('get_user_profile',
-      params: {'p_user_id': userId});
-  return UserModel.fromJson(response as Map<String, dynamic>);
+  // ── Tentativa 1: RPC (retorna JSONB com followers_count, is_following, etc.) ──
+  try {
+    final response = await SupabaseService.rpc('get_user_profile',
+        params: {'p_user_id': userId});
+    if (response != null) {
+      final Map<String, dynamic> data;
+      if (response is Map<String, dynamic>) {
+        data = response;
+      } else if (response is Map) {
+        data = Map<String, dynamic>.from(response);
+      } else {
+        throw Exception('Unexpected RPC response type: ${response.runtimeType}');
+      }
+      // Se a RPC retornou erro interno
+      if (data.containsKey('error')) {
+        throw Exception(data['error']);
+      }
+      return UserModel.fromJson(data);
+    }
+  } catch (_) {
+    // Fallback abaixo
+  }
+
+  // ── Tentativa 2: Query direta na tabela profiles ──
+  try {
+    final profile = await SupabaseService.table('profiles')
+        .select()
+        .eq('id', userId)
+        .single();
+
+    final map = Map<String, dynamic>.from(profile);
+
+    // Buscar contagens de followers/following
+    try {
+      final followersRes = await SupabaseService.table('follows')
+          .select('id')
+          .eq('following_id', userId);
+      map['followers_count'] = (followersRes as List).length;
+    } catch (_) {
+      map['followers_count'] = 0;
+    }
+
+    try {
+      final followingRes = await SupabaseService.table('follows')
+          .select('id')
+          .eq('follower_id', userId);
+      map['following_count'] = (followingRes as List).length;
+    } catch (_) {
+      map['following_count'] = 0;
+    }
+
+    // Buscar contagem de posts
+    try {
+      final postsRes = await SupabaseService.table('posts')
+          .select('id')
+          .eq('author_id', userId)
+          .eq('status', 'published');
+      map['posts_count'] = (postsRes as List).length;
+    } catch (_) {
+      map['posts_count'] = 0;
+    }
+
+    // Verificar se o viewer segue este usuário
+    final viewerId = SupabaseService.currentUserId;
+    if (viewerId != null && viewerId != userId) {
+      try {
+        final followCheck = await SupabaseService.table('follows')
+            .select('id')
+            .eq('follower_id', viewerId)
+            .eq('following_id', userId);
+        map['is_following'] = (followCheck as List).isNotEmpty;
+      } catch (_) {
+        map['is_following'] = false;
+      }
+    }
+
+    return UserModel.fromJson(map);
+  } catch (e) {
+    throw Exception('Falha ao carregar perfil: $e');
+  }
 });
 
 /// Provider para posts de um usuário (Stories).
