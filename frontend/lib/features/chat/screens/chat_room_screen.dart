@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 
 import '../../../config/app_theme.dart';
 import '../../../core/models/message_model.dart';
@@ -1007,6 +1008,30 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               ),
             ),
           ),
+          // ================================================================
+          // EMOJI PICKER
+          // ================================================================
+          if (_showEmojiPicker)
+            SizedBox(
+              height: 250,
+              child: EmojiPicker(
+                onEmojiSelected: (category, emoji) {
+                  _messageController.text += emoji.emoji;
+                  _messageController.selection = TextSelection.fromPosition(
+                    TextPosition(offset: _messageController.text.length),
+                  );
+                },
+                config: Config(
+                  columns: 8,
+                  emojiSizeMax: 28,
+                  bgColor: context.scaffoldBg,
+                  indicatorColor: AppTheme.primaryColor,
+                  iconColorSelected: AppTheme.primaryColor,
+                  iconColor: Colors.grey[600]!,
+                  checkPlatformCompatibility: true,
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -1738,7 +1763,11 @@ class _MessageBubble extends StatelessWidget {
         left: isMe ? 60 : 0,
         right: isMe ? 0 : 60,
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment:
+            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+      Row(
         mainAxisAlignment:
             isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -1839,6 +1868,82 @@ class _MessageBubble extends StatelessWidget {
             ),
           ),
         ],
+      ),
+      // ── Reações abaixo do bubble ──
+      if (message.reactions.isNotEmpty)
+        _buildReactionsRow(context),
+      ],
+      ),
+    );
+  }
+
+  Widget _buildReactionsRow(BuildContext context) {
+    final r = context.r;
+    // reactions é Map<emoji, List<userId>> ou Map<emoji, dynamic>
+    final reactionMap = <String, List<String>>{};
+    message.reactions.forEach((key, value) {
+      if (value is List) {
+        reactionMap[key] = List<String>.from(value);
+      }
+    });
+    if (reactionMap.isEmpty) return const SizedBox.shrink();
+
+    final currentUserId = SupabaseService.currentUserId;
+
+    return Padding(
+      padding: EdgeInsets.only(
+        top: r.s(2),
+        left: isMe ? 0 : r.s(40),
+        right: isMe ? 0 : 0,
+      ),
+      child: Align(
+        alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+        child: Wrap(
+          spacing: r.s(4),
+          runSpacing: r.s(2),
+          children: reactionMap.entries.map((entry) {
+            final emoji = entry.key;
+            final users = entry.value;
+            final iReacted = users.contains(currentUserId);
+            return GestureDetector(
+              onTap: () => onReactionTap?.call(emoji),
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                    horizontal: r.s(6), vertical: r.s(2)),
+                decoration: BoxDecoration(
+                  color: iReacted
+                      ? AppTheme.primaryColor.withValues(alpha: 0.25)
+                      : context.surfaceColor,
+                  borderRadius: BorderRadius.circular(r.s(10)),
+                  border: Border.all(
+                    color: iReacted
+                        ? AppTheme.primaryColor.withValues(alpha: 0.5)
+                        : Colors.white.withValues(alpha: 0.1),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(emoji, style: TextStyle(fontSize: r.fs(12))),
+                    SizedBox(width: r.s(2)),
+                    Text(
+                      '${users.length}',
+                      style: TextStyle(
+                        fontSize: r.fs(10),
+                        color: iReacted
+                            ? AppTheme.primaryColor
+                            : Colors.grey[500],
+                        fontWeight:
+                            iReacted ? FontWeight.w600 : FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
       ),
     );
   }

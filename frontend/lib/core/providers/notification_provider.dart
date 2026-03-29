@@ -7,9 +7,9 @@ import '../services/supabase_service.dart';
 /// NotificationProvider — State Management para notificações.
 ///
 /// Gerencia:
-/// - Lista de notificações (paginada)
+/// - Lista de notificações (paginada) com dados do ator (perfil)
 /// - Contagem de não lidas
-/// - Marcar como lida
+/// - Marcar como lida (individual e em massa)
 /// - Realtime para novas notificações
 /// ============================================================================
 
@@ -42,6 +42,11 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
   static const _pageSize = 20;
   RealtimeChannel? _channel;
 
+  /// Select com join para trazer dados do ator (quem gerou a notificação).
+  /// A foreign key `notifications_actor_id_fkey` aponta para `profiles`.
+  static const _selectWithActor =
+      '*, profiles!notifications_actor_id_fkey(id, nickname, icon_url)';
+
   @override
   Future<NotificationState> build() async {
     _page = 0;
@@ -58,25 +63,52 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
     final userId = SupabaseService.currentUserId;
     if (userId == null) return const NotificationState();
 
-    final res = await SupabaseService.table('notifications')
-        .select()
-        .eq('user_id', userId)
-        .order('created_at', ascending: false)
-        .range(0, _pageSize - 1);
+    try {
+      final res = await SupabaseService.table('notifications')
+          .select(_selectWithActor)
+          .eq('user_id', userId)
+          .order('created_at', ascending: false)
+          .range(0, _pageSize - 1);
 
-    final unreadRes = await SupabaseService.table('notifications')
-        .select()
-        .eq('user_id', userId)
-        .eq('is_read', false)
-        .count(CountOption.exact);
+      final unreadRes = await SupabaseService.table('notifications')
+          .select()
+          .eq('user_id', userId)
+          .eq('is_read', false)
+          .count(CountOption.exact);
 
-    final list = List<Map<String, dynamic>>.from(res as List);
+      final list = List<Map<String, dynamic>>.from(res as List);
 
-    return NotificationState(
-      notifications: list,
-      unreadCount: unreadRes.count,
-      hasMore: list.length >= _pageSize,
-    );
+      return NotificationState(
+        notifications: list,
+        unreadCount: unreadRes.count,
+        hasMore: list.length >= _pageSize,
+      );
+    } catch (e) {
+      // Se o join falhar (ex: FK não existe), fallback sem join
+      try {
+        final res = await SupabaseService.table('notifications')
+            .select()
+            .eq('user_id', userId)
+            .order('created_at', ascending: false)
+            .range(0, _pageSize - 1);
+
+        final unreadRes = await SupabaseService.table('notifications')
+            .select()
+            .eq('user_id', userId)
+            .eq('is_read', false)
+            .count(CountOption.exact);
+
+        final list = List<Map<String, dynamic>>.from(res as List);
+
+        return NotificationState(
+          notifications: list,
+          unreadCount: unreadRes.count,
+          hasMore: list.length >= _pageSize,
+        );
+      } catch (_) {
+        return const NotificationState();
+      }
+    }
   }
 
   void _subscribeRealtime() {
@@ -117,7 +149,7 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
       if (userId == null) return;
 
       final res = await SupabaseService.table('notifications')
-          .select()
+          .select(_selectWithActor)
           .eq('user_id', userId)
           .order('created_at', ascending: false)
           .range(_page * _pageSize, (_page + 1) * _pageSize - 1);
@@ -189,16 +221,8 @@ final notificationProvider =
     AsyncNotifierProvider<NotificationNotifier, NotificationState>(
         NotificationNotifier.new);
 
-// ── Unread badge count (lightweight) ──
-final unreadNotificationCountProvider = FutureProvider<int>((ref) async {
-  final userId = SupabaseService.currentUserId;
-  if (userId == null) return 0;
-
-  final res = await SupabaseService.table('notifications')
-      .select()
-      .eq('user_id', userId)
-      .eq('is_read', false)
-      .count(CountOption.exact);
-
-  return res.count;
+// ── Unread badge count (lightweight, derived from main provider) ──
+final unreadNotificationCountProvider = Provider<int>((ref) {
+  final notifState = ref.watch(notificationProvider);
+  return notifState.valueOrNull?.unreadCount ?? 0;
 });

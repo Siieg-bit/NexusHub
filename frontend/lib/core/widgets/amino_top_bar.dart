@@ -17,7 +17,7 @@ import '../utils/responsive.dart';
 /// Barra de busca: fundo translúcido, lupa à esquerda, "Search" placeholder,
 /// dropdown "EN ▼" à direita.
 ///
-/// Sino: branco com badge vermelho dot (sem número).
+/// Sino: branco com badge vermelho (dot para 1-9, número para 10+).
 class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
   final String? avatarUrl;
   final String? username;
@@ -81,7 +81,7 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   /// Avatar — círculo 30px, fundo cinza-azulado, sem borda colorida.
   Widget _buildAvatar(BuildContext context) {
-      final r = context.r;
+    final r = context.r;
     return GestureDetector(
       onTap: onAvatarTap ?? () => context.push('/profile'),
       child: Container(
@@ -112,7 +112,7 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   Widget _avatarPlaceholder(BuildContext context) {
-      final r = context.r;
+    final r = context.r;
     return Container(
       color: context.cardBg,
       child: Icon(
@@ -126,7 +126,7 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
   /// Barra de busca — pill arredondada, fundo translúcido branco 8%.
   /// Esquerda: lupa + "Search". Direita: "EN" + seta dropdown.
   Widget _buildSearchBar(BuildContext context) {
-      final r = context.r;
+    final r = context.r;
     return Expanded(
       child: GestureDetector(
         onTap: onSearchTap ?? () => context.push('/search'),
@@ -189,14 +189,8 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   /// Pílula unificada de moedas + botão add — pixel-perfect do Amino.
-  ///
-  /// Uma ÚNICA pílula com ClipRRect (borderRadius 13):
-  ///   - Esquerda: azul celeste (#4FC3F7) com moeda dourada + saldo
-  ///   - Direita: azul cobalto (#1565C0) com "+"
-  ///   - Sem gap entre as metades
-  ///   - Altura: 26px
   Widget _buildCoinsPill(BuildContext context) {
-      final r = context.r;
+    final r = context.r;
     return ClipRRect(
       borderRadius: BorderRadius.circular(r.s(13)),
       child: SizedBox(
@@ -281,14 +275,14 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
-  /// Sino de notificações — branco, badge vermelho dot (sem número).
+  /// Sino de notificações — branco, badge vermelho com número ou dot.
   Widget _buildNotificationBell(BuildContext context) {
-      final r = context.r;
+    final r = context.r;
     return GestureDetector(
       onTap: onNotificationTap ?? () => context.push('/notifications'),
       child: SizedBox(
-        width: r.s(26),
-        height: r.s(26),
+        width: r.s(30),
+        height: r.s(30),
         child: Stack(
           children: [
             Center(
@@ -300,20 +294,51 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
             ),
             if (notificationCount > 0)
               Positioned(
-                right: 3,
-                top: 2,
-                child: Container(
-                  width: r.s(7),
-                  height: r.s(7),
-                  decoration: BoxDecoration(
-                    color: AppTheme.aminoRed,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: context.scaffoldBg,
-                      width: 1,
-                    ),
-                  ),
-                ),
+                right: 0,
+                top: 0,
+                child: notificationCount > 9
+                    // Badge com número para 10+
+                    ? Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: r.s(4), vertical: r.s(1)),
+                        decoration: BoxDecoration(
+                          color: AppTheme.aminoRed,
+                          borderRadius: BorderRadius.circular(r.s(8)),
+                          border: Border.all(
+                            color: context.scaffoldBg,
+                            width: 1.5,
+                          ),
+                        ),
+                        constraints: BoxConstraints(
+                          minWidth: r.s(16),
+                          minHeight: r.s(14),
+                        ),
+                        child: Text(
+                          notificationCount > 99
+                              ? '99+'
+                              : '$notificationCount',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: r.fs(8),
+                            fontWeight: FontWeight.w800,
+                            height: 1.1,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      )
+                    // Dot simples para 1-9
+                    : Container(
+                        width: r.s(8),
+                        height: r.s(8),
+                        decoration: BoxDecoration(
+                          color: AppTheme.aminoRed,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: context.scaffoldBg,
+                            width: 1,
+                          ),
+                        ),
+                      ),
               ),
           ],
         ),

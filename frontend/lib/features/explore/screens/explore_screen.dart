@@ -142,7 +142,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             AminoTopBar(
               avatarUrl: _avatarUrl,
               coins: _coins,
-              notificationCount: ref.watch(unreadNotificationCountProvider).valueOrNull ?? 0,
+              notificationCount: ref.watch(unreadNotificationCountProvider),
               onSearchTap: () => context.push('/search'),
               onAddTap: () => context.push('/community/create'),
             ),

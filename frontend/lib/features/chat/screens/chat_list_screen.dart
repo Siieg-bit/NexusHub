@@ -105,7 +105,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
             AminoTopBar(
               avatarUrl: _avatarUrl,
               coins: _coins,
-              notificationCount: ref.watch(unreadNotificationCountProvider).valueOrNull ?? 0,
+              notificationCount: ref.watch(unreadNotificationCountProvider),
               onSearchTap: () => context.push('/search'),
               onAddTap: () {
                 showModalBottomSheet(
