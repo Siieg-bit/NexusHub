@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../widgets/block_editor.dart';
+import '../widgets/crosspost_picker.dart';
 
 /// Editor rico de criação de posts — estilo Amino Apps.
 /// Suporta os 9 tipos exatos do Amino:
@@ -44,6 +45,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   // Q&A
   // ignore: unused_field
   bool _isQaClosed = false;
+
+  // Crosspost
+  Map<String, dynamic>? _crosspostCommunity;
 
   static const _postTypes = [
     _PostTypeOption('normal', 'Blog', Icons.article_rounded),
@@ -132,6 +136,17 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       return;
     }
 
+    // Validar crosspost
+    if (_selectedType == 'crosspost' && _crosspostCommunity == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Selecione a comunidade destino para o crosspost'),
+          backgroundColor: AppTheme.errorColor,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isSubmitting = true);
 
     try {
@@ -163,6 +178,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         'background_url': _backgroundUrlController.text.trim().isNotEmpty
             ? _backgroundUrlController.text.trim()
             : null,
+        if (_selectedType == 'crosspost' && _crosspostCommunity != null)
+          'crosspost_community_id': _crosspostCommunity!['id'],
       };
 
       // Criar post e ganhar reputação
@@ -558,6 +575,14 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   if (_selectedType == 'link' || _selectedType == 'external')
                     _buildLinkEditor(),
                   if (_selectedType == 'image') _buildImageEditor(),
+                  if (_selectedType == 'crosspost')
+                    CrosspostPicker(
+                      currentCommunityId: widget.communityId,
+                      selectedCommunity: _crosspostCommunity,
+                      onCommunitySelected: (c) {
+                        setState(() => _crosspostCommunity = c);
+                      },
+                    ),
 
                   // Advanced options
                   const SizedBox(height: 16),
