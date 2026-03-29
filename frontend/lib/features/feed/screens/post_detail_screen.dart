@@ -262,6 +262,46 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 case 'edit':
                   _showEditPostDialog(post);
                   break;
+                case 'pin_profile':
+                  try {
+                    final isPinned = post.extra?['is_pinned_profile'] == true;
+                    await SupabaseService.table('posts')
+                        .update({'is_pinned_profile': !isPinned})
+                        .eq('id', widget.postId);
+                    ref.invalidate(postDetailProvider(widget.postId));
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(isPinned ? 'Post desafixado do perfil' : 'Post fixado no perfil'),
+                        behavior: SnackBarBehavior.floating,
+                        duration: const Duration(seconds: 2),
+                      ));
+                    }
+                  } catch (e) {
+                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro: $e')));
+                  }
+                  break;
+                case 'hide':
+                  try {
+                    final userId = SupabaseService.currentUserId;
+                    if (userId != null) {
+                      await SupabaseService.table('hidden_posts').upsert({
+                        'user_id': userId,
+                        'post_id': widget.postId,
+                        'hidden_at': DateTime.now().toIso8601String(),
+                      }, onConflict: 'user_id,post_id');
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          content: Text('Post ocultado do seu feed'),
+                          behavior: SnackBarBehavior.floating,
+                          duration: Duration(seconds: 2),
+                        ));
+                        context.pop();
+                      }
+                    }
+                  } catch (e) {
+                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro: $e')));
+                  }
+                  break;
               }
             },
             itemBuilder: (context) {
@@ -296,6 +336,39 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         Icon(Icons.edit_rounded, size: r.s(18), color: AppTheme.primaryColor),
                         SizedBox(width: r.s(10)),
                         Text('Editar', style: TextStyle(color: context.textPrimary)),
+                      ],
+                    ),
+                  ),
+                if (isAuthor)
+                  PopupMenuItem(
+                    value: 'pin_profile',
+                    child: Row(
+                      children: [
+                        Icon(
+                          (post?.extra?['is_pinned_profile'] == true)
+                              ? Icons.push_pin_rounded
+                              : Icons.push_pin_outlined,
+                          size: r.s(18),
+                          color: AppTheme.primaryColor,
+                        ),
+                        SizedBox(width: r.s(10)),
+                        Text(
+                          (post?.extra?['is_pinned_profile'] == true)
+                              ? 'Desafixar do Perfil'
+                              : 'Fixar no Perfil',
+                          style: TextStyle(color: context.textPrimary),
+                        ),
+                      ],
+                    ),
+                  ),
+                if (!isAuthor)
+                  PopupMenuItem(
+                    value: 'hide',
+                    child: Row(
+                      children: [
+                        Icon(Icons.visibility_off_rounded, size: r.s(18), color: Colors.grey),
+                        SizedBox(width: r.s(10)),
+                        Text('Ocultar Post', style: TextStyle(color: context.textPrimary)),
                       ],
                     ),
                   ),

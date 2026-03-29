@@ -58,8 +58,10 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
   bool _isLoading = true;
   List<Map<String, dynamic>> _favoriteStickers = [];
   Set<String> _favoriteStickerIds = {};
+  List<Map<String, dynamic>> _recentStickers = [];
 
   static const _favTab = '❤️ Favoritos';
+  static const _recentTab = '🕐 Recentes';
 
   // Default emoji stickers (always available)
   static const _defaultStickers = [
@@ -93,7 +95,38 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
 
   Future<void> _loadAll() async {
     await _loadFavoriteStickers();
+    await _loadRecentStickers();
     await _loadStickerPacks();
+  }
+
+  Future<void> _loadRecentStickers() async {
+    try {
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) return;
+      final res = await SupabaseService.table('recently_used_stickers')
+          .select('sticker_id, sticker_url, sticker_name')
+          .eq('user_id', userId)
+          .order('used_at', ascending: false)
+          .limit(20);
+      _recentStickers = List<Map<String, dynamic>>.from(res as List);
+    } catch (_) {}
+  }
+
+  Future<void> _addToRecentStickers(Map<String, dynamic> sticker) async {
+    try {
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) return;
+      final stickerId = sticker['sticker_id'] as String? ?? sticker['id'] as String? ?? '';
+      final stickerUrl = sticker['sticker_url'] as String? ?? sticker['image_url'] as String? ?? '';
+      final stickerName = sticker['sticker_name'] as String? ?? sticker['name'] as String? ?? '';
+      await SupabaseService.table('recently_used_stickers').upsert({
+        'user_id': userId,
+        'sticker_id': stickerId,
+        'sticker_url': stickerUrl,
+        'sticker_name': stickerName,
+        'used_at': DateTime.now().toIso8601String(),
+      }, onConflict: 'user_id,sticker_id');
+    } catch (_) {}
   }
 
   Future<void> _loadFavoriteStickers() async {
@@ -135,6 +168,12 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
 
     // Aba Emojis padrão
     _packs.insert(0, {'name': 'Emojis', 'count': _defaultStickers.length});
+
+    // Aba Recentes (se houver)
+    if (_recentStickers.isNotEmpty) {
+      _packs.insert(0, {'name': _recentTab, 'count': _recentStickers.length});
+      _stickersByPack[_recentTab] = _recentStickers;
+    }
 
     // Aba Favoritos no início (se houver)
     if (_favoriteStickers.isNotEmpty) {
@@ -354,10 +393,13 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
             sticker['sticker_id'] as String? ?? '';
         final isFav = _favoriteStickerIds.contains(stickerId);
         return GestureDetector(
-          onTap: () => Navigator.pop(context, {
-            'sticker_id': stickerId,
-            'sticker_url': imageUrl,
-          }),
+          onTap: () {
+            _addToRecentStickers(sticker);
+            Navigator.pop(context, {
+              'sticker_id': stickerId,
+              'sticker_url': imageUrl,
+            });
+          },
           onLongPress: () => _toggleFavorite(sticker),
           child: Stack(
             children: [

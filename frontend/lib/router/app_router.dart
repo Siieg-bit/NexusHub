@@ -36,6 +36,7 @@ import '../features/settings/screens/privacy_settings_screen.dart';
 import '../features/settings/screens/notification_settings_screen.dart';
 import '../features/settings/screens/blocked_users_screen.dart';
 import '../features/settings/screens/devices_screen.dart';
+import '../features/settings/screens/app_permissions_screen.dart';
 import '../features/settings/screens/privacy_policy_screen.dart';
 import '../features/settings/screens/terms_of_use_screen.dart';
 import '../features/explore/screens/search_screen.dart';
@@ -395,6 +396,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/settings/devices',
         name: 'devices',
         builder: (context, state) => const DevicesScreen(),
+      ),
+      GoRoute(
+        path: '/settings/permissions',
+        name: 'app-permissions',
+        builder: (context, state) => const AppPermissionsScreen(),
       ),
       GoRoute(
         path: '/settings/privacy-policy',

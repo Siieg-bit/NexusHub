@@ -1170,6 +1170,69 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                               minLines: 1,
                               textInputAction: TextInputAction.send,
                               onSubmitted: (_) => _sendMessage(),
+                              onChanged: (value) {
+                                // Link paste inteligente: detecta URL colada
+                                final urlRegex = RegExp(
+                                  r'(?<![\[\(])(https?:\/\/[^\s]+)',
+                                  caseSensitive: false,
+                                );
+                                final match = urlRegex.firstMatch(value);
+                                if (match != null) {
+                                  final url = match.group(0)!;
+                                  // Só abre dialog se a URL foi colada (não digitada letra a letra)
+                                  if (url.length > 10 && !value.contains('](')) {
+                                    final nameCtrl = TextEditingController();
+                                    showDialog(
+                                      context: context,
+                                      builder: (ctx) => AlertDialog(
+                                        backgroundColor: context.surfaceColor,
+                                        title: Text('Nomear link',
+                                            style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w700)),
+                                        content: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text('Dê um nome ao link (opcional):',
+                                                style: TextStyle(color: context.textSecondary, fontSize: 13)),
+                                            const SizedBox(height: 8),
+                                            TextField(
+                                              controller: nameCtrl,
+                                              autofocus: true,
+                                              style: TextStyle(color: context.textPrimary),
+                                              decoration: InputDecoration(
+                                                hintText: 'Ex: Clique aqui',
+                                                hintStyle: TextStyle(color: Colors.grey[600]),
+                                                border: const OutlineInputBorder(),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.pop(ctx),
+                                            child: Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
+                                          ),
+                                          TextButton(
+                                            onPressed: () {
+                                              final name = nameCtrl.text.trim();
+                                              final replacement = name.isNotEmpty
+                                                  ? '[$name]($url)'
+                                                  : url;
+                                              final newText = value.replaceFirst(url, replacement);
+                                              _messageController.text = newText;
+                                              _messageController.selection = TextSelection.fromPosition(
+                                                TextPosition(offset: newText.length),
+                                              );
+                                              Navigator.pop(ctx);
+                                            },
+                                            child: const Text('Confirmar',
+                                                style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.w700)),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
                             ),
                           ),
                           GestureDetector(
@@ -1233,6 +1296,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   iconColorSelected: AppTheme.primaryColor,
                   iconColor: Colors.grey[600]!,
                   checkPlatformCompatibility: true,
+                  recentTabBehavior: RecentTabBehavior.RECENT,
+                  recentsLimit: 20,
+                  noRecents: Text(
+                    'Nenhum emoji recente',
+                    style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                  ),
                 ),
               ),
             ),

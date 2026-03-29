@@ -469,9 +469,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     title: 'Privacidade',
                     onTap: () => context.push('/settings/privacy'),
                   ),
-                  _ThemeToggleItem(
-                    isDark: ref.watch(themeProvider) == ThemeMode.dark,
-                    onToggle: () => ref.read(themeProvider.notifier).toggle(),
+                  _ThemeSelectorItem(
+                    currentMode: ref.watch(themeProvider),
+                    onSelect: (mode) => ref.read(themeProvider.notifier).setTheme(mode),
                   ),
                   _SettingsItem(
                     icon: Icons.language_rounded,
@@ -619,6 +619,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     icon: Icons.block_rounded,
                     title: 'Usuários Bloqueados',
                     onTap: () => context.push('/settings/blocked-users'),
+                  ),
+                  _SettingsItem(
+                    icon: Icons.security_rounded,
+                    title: 'Permissões do App',
+                    subtitle: 'Câmera, microfone, notificações',
+                    onTap: () => context.push('/settings/permissions'),
                   ),
                   _SettingsItem(
                     icon: Icons.devices_rounded,
@@ -914,33 +920,74 @@ class _SettingsItem extends StatelessWidget {
   }
 }
 
-class _ThemeToggleItem extends StatelessWidget {
-  final bool isDark;
-  final VoidCallback onToggle;
+class _ThemeSelectorItem extends StatelessWidget {
+  final ThemeMode currentMode;
+  final ValueChanged<ThemeMode> onSelect;
 
-  const _ThemeToggleItem({required this.isDark, required this.onToggle});
+  const _ThemeSelectorItem({required this.currentMode, required this.onSelect});
 
   @override
   Widget build(BuildContext context) {
     final r = context.r;
+    final labels = {
+      ThemeMode.light: 'Claro',
+      ThemeMode.dark: 'Escuro',
+      ThemeMode.system: 'Sistema',
+    };
+    final icons = {
+      ThemeMode.light: Icons.light_mode_rounded,
+      ThemeMode.dark: Icons.dark_mode_rounded,
+      ThemeMode.system: Icons.brightness_auto_rounded,
+    };
     return ListTile(
       leading: Icon(
-        isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+        icons[currentMode]!,
         color: AppTheme.primaryColor,
         size: r.s(22),
       ),
       title: Text('Aparência',
           style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w700, fontSize: r.fs(14))),
       subtitle: Text(
-        isDark ? 'Tema escuro' : 'Tema claro',
+        labels[currentMode]!,
         style: TextStyle(color: Colors.grey[600], fontSize: r.fs(11)),
       ),
-      trailing: Switch(
-        value: isDark,
-        onChanged: (_) => onToggle(),
-        activeColor: AppTheme.primaryColor,
-      ),
-      onTap: onToggle,
+      trailing: Icon(Icons.chevron_right_rounded, color: Colors.grey[600], size: r.s(20)),
+      onTap: () {
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: context.surfaceColor,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          builder: (ctx) => Padding(
+            padding: EdgeInsets.all(r.s(24)),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Aparência',
+                    style: TextStyle(
+                        color: context.textPrimary,
+                        fontSize: r.fs(18),
+                        fontWeight: FontWeight.w800)),
+                SizedBox(height: r.s(16)),
+                ...ThemeMode.values.map((mode) => ListTile(
+                  leading: Icon(icons[mode]!, color: AppTheme.primaryColor),
+                  title: Text(labels[mode]!,
+                      style: TextStyle(color: context.textPrimary)),
+                  trailing: currentMode == mode
+                      ? const Icon(Icons.check_circle_rounded, color: AppTheme.primaryColor)
+                      : null,
+                  onTap: () {
+                    onSelect(mode);
+                    Navigator.pop(ctx);
+                  },
+                )),
+                SizedBox(height: r.s(8)),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
