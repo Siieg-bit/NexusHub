@@ -13,7 +13,7 @@ Pendências extraídas dos 3 documentos de auditoria, cruzadas com o código atu
 
 ## Prioridade MÉDIA (Nice to Have)
 
-- [ ] 7. **Deep Links Reais** — `deep_link_service.dart` existe e `app_links` está no pubspec, mas falta configuração real no AndroidManifest.xml e Info.plist.
+- [x] 7. **Deep Links Reais** — DeepLinkService completo com custom scheme (nexushub://), web links (https://nexushub.app/), suporte para community/post/user/chat/invite/wiki. AndroidManifest.xml configurado com intent-filters e autoVerify. iOS Info.plist com CFBundleURLTypes e FlutterDeepLinkingEnabled. Runner.entitlements com Associated Domains para Universal Links.
 - [ ] 8. **Cache Offline-First** — `hive_flutter` está no pubspec mas nunca é usado. Implementar cache local para posts e mensagens.
 - [ ] 9. **Internacionalização (i18n)** — Textos hardcoded em português. Nenhum uso de `flutter_localizations` ou `AppLocalizations`.
 
