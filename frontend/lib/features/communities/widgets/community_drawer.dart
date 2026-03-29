@@ -518,6 +518,17 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                           },
                         ),
                         _AminoDrawerItem(
+                          icon: Icons.folder_shared_rounded,
+                          label: 'Shared Folder',
+                          color: const Color(0xFF00BCD4),
+                          onTap: () {
+                            Navigator.pop(context);
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (context.mounted) context.push('/community/${widget.community.id}/shared-folder');
+                            });
+                          },
+                        ),
+                        _AminoDrawerItem(
                           icon: Icons.leaderboard_rounded,
                           label: 'Ranking',
                           color: const Color(0xFFFFD700),

@@ -45,6 +45,7 @@ import '../features/gamification/screens/free_coins_screen.dart';
 import '../features/chat/screens/call_screen.dart';
 import '../core/services/call_service.dart';
 import '../features/wiki/screens/wiki_screen.dart';
+import '../features/communities/screens/shared_folder_screen.dart';
 import 'shell_screen.dart';
 
 /// Router principal do app com GoRouter.
@@ -149,6 +150,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/community/:communityId/acm',
         name: 'acm',
         builder: (context, state) => AcmScreen(
+          communityId: state.pathParameters['communityId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/community/:communityId/shared-folder',
+        builder: (ctx, state) => SharedFolderScreen(
           communityId: state.pathParameters['communityId']!,
         ),
       ),
