@@ -209,32 +209,22 @@ class ThreadMessagesNotifier
 
       final mappedType = _mapMessageType(type);
 
-      final payload = <String, dynamic>{
-        'thread_id': arg,
-        'author_id': userId,
-        'content': content.isNotEmpty ? content : '',
-        'type': mappedType,
-      };
+      // Determinar media_url final
+      String? finalMediaUrl = mediaUrl ?? stickerUrl;
 
-      // Campos opcionais — só adicionar se não null
-      if (mediaUrl != null) payload['media_url'] = mediaUrl;
-      if (mediaType != null) payload['media_type'] = mediaType;
-      if (replyToId != null) payload['reply_to_id'] = replyToId;
-      if (stickerId != null) payload['sticker_id'] = stickerId;
-      if (stickerUrl != null) payload['sticker_url'] = stickerUrl;
-      if (sharedUrl != null) payload['shared_url'] = sharedUrl;
-      if (tipAmount != null) payload['tip_amount'] = tipAmount;
-
-      await SupabaseService.table('chat_messages').insert(payload);
-
-      // Atualizar last_message da thread
-      await SupabaseService.table('chat_threads').update({
-        'updated_at': DateTime.now().toIso8601String(),
-        'last_message_at': DateTime.now().toIso8601String(),
-        'last_message_preview': content.isNotEmpty
-            ? (content.length > 100 ? '${content.substring(0, 100)}...' : content)
-            : (type == 'image' ? '📷 Imagem' : type == 'sticker' ? '🎨 Sticker' : ''),
-      }).eq('id', arg);
+      // Usar RPC SECURITY DEFINER que:
+      // 1. Verifica membership
+      // 2. Insere a mensagem
+      // 3. Atualiza last_message_at do thread (sem precisar de permissão de host)
+      // 4. Adiciona reputação automaticamente
+      await SupabaseService.rpc('send_chat_message_with_reputation', params: {
+        'p_thread_id': arg,
+        'p_author_id': userId,
+        'p_content': content.isNotEmpty ? content : '',
+        'p_type': mappedType,
+        'p_media_url': finalMediaUrl,
+        'p_reply_to': replyToId,
+      });
 
       return true;
     } catch (e) {

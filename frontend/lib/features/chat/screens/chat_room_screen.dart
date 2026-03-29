@@ -64,10 +64,31 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   @override
   void initState() {
     super.initState();
-    _loadThreadInfo();
+    _initChat();
+  }
+
+  /// Garante membership e depois carrega dados do chat.
+  Future<void> _initChat() async {
+    await _loadThreadInfo();
+    await _ensureMembership();
     _loadMessages();
     _loadPinnedMessages();
     _subscribeToRealtime();
+  }
+
+  /// Garante que o usuário é membro do chat usando o RPC SECURITY DEFINER.
+  /// Sem membership, as políticas RLS bloqueiam SELECT e INSERT em chat_messages.
+  Future<void> _ensureMembership() async {
+    try {
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) return;
+      await SupabaseService.rpc('join_public_chat_with_reputation', params: {
+        'p_thread_id': widget.threadId,
+        'p_user_id': userId,
+      });
+    } catch (e) {
+      debugPrint('[ChatRoom] Membership check: $e');
+    }
   }
 
   @override
@@ -292,60 +313,32 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         content = text;
       }
 
-      final payload = <String, dynamic>{
-        'thread_id': widget.threadId,
-        'author_id': SupabaseService.currentUserId,
-        'content': content,
-        'type': mappedType,
-      };
+      // Determinar media_url final
+      String? finalMediaUrl = mediaUrl;
+      if (type == 'image' && mediaUrl != null) finalMediaUrl = mediaUrl;
+      if (type == 'gif' && mediaUrl != null) finalMediaUrl = mediaUrl;
+      if (stickerUrl != null) finalMediaUrl = stickerUrl;
 
-      // Campos opcionais — só adicionar se não null (correspondem a colunas reais)
-      if (mediaUrl != null) payload['media_url'] = mediaUrl;
-      if (mediaType != null) payload['media_type'] = mediaType;
-      if (mediaDuration != null) payload['media_duration'] = mediaDuration;
-      if (stickerId != null) payload['sticker_id'] = stickerId;
-      if (stickerUrl != null) payload['sticker_url'] = stickerUrl;
-      if (sharedUrl != null) payload['shared_url'] = sharedUrl;
-      if (tipAmount != null) payload['tip_amount'] = tipAmount;
-
-      // Para imagens e gifs, definir media_type
-      if (type == 'image' && mediaType == null) payload['media_type'] = 'image';
-      if (type == 'gif' && mediaType == null) payload['media_type'] = 'gif';
-
+      // Determinar reply_to
+      String? replyToId;
       if (_replyingTo != null) {
-        payload['reply_to_id'] = _replyingTo!.id;
+        replyToId = _replyingTo!.id;
         setState(() => _replyingTo = null);
       }
 
-      await SupabaseService.table('chat_messages').insert(payload);
-
-      // Atualizar last_message da thread
-      try {
-        await SupabaseService.table('chat_threads').update({
-          'last_message_at': DateTime.now().toIso8601String(),
-          'last_message_preview': content.length > 100
-              ? '${content.substring(0, 100)}...'
-              : content,
-          'updated_at': DateTime.now().toIso8601String(),
-        }).eq('id', widget.threadId);
-      } catch (_) {
-        // Thread update is best-effort
-      }
-
-      // Adicionar reputação por enviar mensagem (best-effort)
-      try {
-        final communityId = _threadInfo?['community_id'] as String?;
-        if (communityId != null) {
-          await SupabaseService.rpc('add_reputation', params: {
-            'p_community_id': communityId,
-            'p_user_id': SupabaseService.currentUserId,
-            'p_action': 'chat_message',
-            'p_source_id': widget.threadId,
-          });
-        }
-      } catch (_) {
-        // Reputação é best-effort
-      }
+      // Usar RPC SECURITY DEFINER que:
+      // 1. Verifica membership
+      // 2. Insere a mensagem
+      // 3. Atualiza last_message_at do thread (sem precisar de permissão de host)
+      // 4. Adiciona reputação automaticamente
+      await SupabaseService.rpc('send_chat_message_with_reputation', params: {
+        'p_thread_id': widget.threadId,
+        'p_author_id': SupabaseService.currentUserId,
+        'p_content': content,
+        'p_type': mappedType,
+        'p_media_url': finalMediaUrl,
+        'p_reply_to': replyToId,
+      });
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
