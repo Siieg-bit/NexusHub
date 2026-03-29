@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,6 +13,7 @@ import '../../../core/models/message_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../widgets/giphy_picker.dart';
 import '../widgets/sticker_picker.dart';
+import '../widgets/voice_recorder.dart';
 
 /// ============================================================================
 /// 19+ TIPOS DE MENSAGEM (mapeados do Amino original):
@@ -56,6 +58,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   Map<String, dynamic>? _threadInfo;
   MessageModel? _replyingTo;
   bool _showEmojiPicker = false;
+  bool _isRecordingVoice = false;
   List<Map<String, dynamic>> _pinnedMessages = [];
 
   @override
@@ -676,6 +679,45 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           // ================================================================
           // INPUT DE MENSAGEM — Estilo Amino
           // ================================================================
+          // Voice Recorder overlay (substitui input bar durante gravação)
+          if (_isRecordingVoice)
+            SafeArea(
+              top: false,
+              child: VoiceRecorder(
+                onRecordingComplete: (filePath, duration) async {
+                  setState(() => _isRecordingVoice = false);
+                  // Upload do áudio e enviar como voice_note
+                  try {
+                    final file = File(filePath);
+                    final fileName = 'voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
+                    final storagePath = 'chat_media/${widget.threadId}/$fileName';
+                    await SupabaseService.client.storage
+                        .from('media')
+                        .upload(storagePath, file);
+                    final url = SupabaseService.client.storage
+                        .from('media')
+                        .getPublicUrl(storagePath);
+                    _sendMessage(
+                      type: 'voice_note',
+                      mediaUrl: url,
+                      metadata: {'duration': duration},
+                    );
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Erro ao enviar áudio: $e'),
+                          backgroundColor: AppTheme.errorColor,
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  }
+                },
+                onCancel: () => setState(() => _isRecordingVoice = false),
+              ),
+            )
+          else
           Container(
             padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
             decoration: BoxDecoration(
@@ -850,12 +892,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   color: const Color(0xFFE91E63),
                   onTap: () {
                     Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Grava\u00e7\u00e3o de \u00e1udio em breve!'),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
+                    setState(() => _isRecordingVoice = true);
                   },
                 ),
                 _MediaOptionItem(

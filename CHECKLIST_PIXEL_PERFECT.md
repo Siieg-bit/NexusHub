@@ -10,7 +10,7 @@
 - [x] 7. Chat Bubbles customizados (9-patch com decorações, não apenas cor de fundo) ✓
 
 ## Funcionalidades Faltantes
-- [ ] 8. Heatmap de Check-in (grid estilo GitHub contributions na tela de Realizações)
+- [x] 8. Heatmap de Check-in (grid estilo GitHub contributions na tela de Realizações) ✓
 - [ ] 9. Gravação de Voice Notes no chat (substituir placeholder "em breve")
 - [ ] 10. Sistema de Tips/Gorjetas no chat (substituir placeholder "em breve")
 - [ ] 11. Shared Folder — Pasta Compartilhada da comunidade
