@@ -4,11 +4,18 @@ import 'package:go_router/go_router.dart';
 import 'package:badges/badges.dart' as badges;
 import '../config/app_theme.dart';
 
-/// Tela principal com Bottom Navigation Bar — réplica do Amino Apps.
-/// 4 Tabs: Descubra, Comunidades, Chats, Loja.
-/// Ícones outlined quando inativo, filled quando ativo.
-/// Labels em português. Cor ativa branca, inativa cinza.
-/// Fundo escuro translúcido com blur, sem bloco branco.
+/// Bottom Navigation Bar Global — réplica pixel-perfect do Amino Apps.
+///
+/// 4 Tabs exatas do Amino original:
+///   1. Discover  (ícone pena/feather — edit_outlined / edit)
+///   2. Communities (ícone grid 2x2 — grid_view_outlined / grid_view)
+///   3. Chats (ícone balão — chat_bubble_outline / chat_bubble)
+///   4. Store (ícone prédio/loja — store_mall_directory_outlined / store_mall_directory)
+///
+/// Cor ativa: ciano (#00BCD4) — NÃO branco.
+/// Cor inativa: cinza translúcido.
+/// Fundo: azul-marinho escuro com blur, sem borda branca visível.
+/// O ícone ativo tem um leve glow ciano por trás.
 class ShellScreen extends StatelessWidget {
   final Widget child;
   const ShellScreen({super.key, required this.child});
@@ -48,30 +55,32 @@ class ShellScreen extends StatelessWidget {
       extendBody: true,
       bottomNavigationBar: ClipRect(
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
           child: Container(
             decoration: BoxDecoration(
-              color: AppTheme.bottomNavBg.withValues(alpha: 0.92),
+              color: AppTheme.bottomNavBg.withValues(alpha: 0.95),
               border: const Border(
                 top: BorderSide(
-                  color: Color(0x15FFFFFF),
+                  color: Color(0x10FFFFFF),
                   width: 0.5,
                 ),
               ),
             ),
             child: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
+                padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
+                    // ── Discover (ícone pena/feather — Amino usa ícone de pena)
                     _AminoNavItem(
-                      icon: Icons.explore_outlined,
-                      activeIcon: Icons.explore,
+                      icon: Icons.edit_outlined,
+                      activeIcon: Icons.edit,
                       label: 'Descubra',
                       isSelected: selectedIndex == 0,
                       onTap: () => _onItemTapped(context, 0),
                     ),
+                    // ── Communities (ícone grid 2x2)
                     _AminoNavItem(
                       icon: Icons.grid_view_outlined,
                       activeIcon: Icons.grid_view_rounded,
@@ -79,6 +88,7 @@ class ShellScreen extends StatelessWidget {
                       isSelected: selectedIndex == 1,
                       onTap: () => _onItemTapped(context, 1),
                     ),
+                    // ── Chats (ícone balão de chat)
                     _AminoNavItem(
                       icon: Icons.chat_bubble_outline_rounded,
                       activeIcon: Icons.chat_bubble_rounded,
@@ -87,9 +97,10 @@ class ShellScreen extends StatelessWidget {
                       onTap: () => _onItemTapped(context, 2),
                       badgeCount: 0,
                     ),
+                    // ── Store (ícone prédio/loja — Amino usa store_mall_directory)
                     _AminoNavItem(
-                      icon: Icons.shopping_bag_outlined,
-                      activeIcon: Icons.shopping_bag_rounded,
+                      icon: Icons.store_mall_directory_outlined,
+                      activeIcon: Icons.store_mall_directory,
                       label: 'Loja',
                       isSelected: selectedIndex == 3,
                       onTap: () => _onItemTapped(context, 3),
@@ -106,7 +117,7 @@ class ShellScreen extends StatelessWidget {
 }
 
 // ==============================================================================
-// NAV ITEM — Ícone + Label, ativo = branco, inativo = cinza (estilo Amino)
+// NAV ITEM — Estilo Amino: ativo = ciano (#00BCD4) com glow, inativo = cinza
 // ==============================================================================
 class _AminoNavItem extends StatelessWidget {
   final IconData icon;
@@ -127,12 +138,30 @@ class _AminoNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Amino: ativo = ciano brilhante, inativo = cinza claro translúcido
     final color = isSelected
-        ? Colors.white
-        : Colors.white.withValues(alpha: 0.35);
+        ? AppTheme.accentColor // #00BCD4 ciano
+        : Colors.white.withValues(alpha: 0.40);
     final displayIcon = isSelected ? activeIcon : icon;
 
     Widget iconWidget = Icon(displayIcon, color: color, size: 24);
+
+    // Glow sutil por trás do ícone ativo (estilo Amino)
+    if (isSelected) {
+      iconWidget = Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.accentColor.withValues(alpha: 0.30),
+              blurRadius: 12,
+              spreadRadius: 1,
+            ),
+          ],
+        ),
+        child: iconWidget,
+      );
+    }
 
     if (badgeCount > 0) {
       iconWidget = badges.Badge(
@@ -157,7 +186,7 @@ class _AminoNavItem extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             iconWidget,
-            const SizedBox(height: 3),
+            const SizedBox(height: 2),
             Text(
               label,
               style: TextStyle(
