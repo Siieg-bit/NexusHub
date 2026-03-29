@@ -119,14 +119,14 @@
 
 - [x] Lista de chats com sidebar de comunidades
 - [x] Chat room com mensagens
-- [ ] **Criar novo chat** funcional
-- [ ] **Chat em grupo** com convite de membros
-- [ ] **Reações em mensagens** (tap para reagir)
-- [ ] **Responder mensagem** (reply)
-- [ ] **Enviar imagens** no chat
-- [ ] **Enviar stickers/GIFs**
-- [ ] **Indicador de digitando** (typing indicator)
-- [ ] **Mensagens de voz**
+- [x] **Criar novo chat** funcional (modal Novo Chat no ChatListScreen com opções Privado/Grupo)
+- [x] **Chat em grupo** com convite de membros (CreateGroupChatScreen com 3 steps: comunidade, info, membros)
+- [x] **Reações em mensagens** (tap para reagir - já implementado no chat_room_screen)
+- [x] **Responder mensagem** (reply - já implementado com _replyingTo no chat_room_screen)
+- [x] **Enviar imagens** no chat (image_picker integrado no chat_room_screen)
+- [x] **Enviar stickers/GIFs** (StickerPicker e GiphyPicker integrados)
+- [x] **Indicador de digitando** (typing indicator via Realtime presence)
+- [x] **Mensagens de voz** (VoiceRecorder widget integrado no chat_room_screen)
 
 ## 7. SISTEMA DE NOTIFICAÇÕES
 

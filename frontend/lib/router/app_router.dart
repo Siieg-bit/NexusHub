@@ -43,6 +43,7 @@ import '../features/store/screens/store_screen.dart';
 import '../features/store/screens/coin_shop_screen.dart';
 import '../features/gamification/screens/free_coins_screen.dart';
 import '../features/chat/screens/call_screen.dart';
+import '../features/chat/screens/create_group_chat_screen.dart';
 import '../core/services/call_service.dart';
 import '../features/wiki/screens/wiki_screen.dart';
 import '../features/wiki/screens/wiki_curator_review_screen.dart';
@@ -205,6 +206,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => ChatRoomScreen(
           threadId: state.pathParameters['id']!,
         ),
+      ),
+      GoRoute(
+        path: '/create-group-chat',
+        name: 'create-group-chat',
+        builder: (context, state) => const CreateGroupChatScreen(),
       ),
 
       // ====================================================================
