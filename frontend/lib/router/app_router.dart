@@ -57,7 +57,8 @@ import 'shell_screen.dart';
 /// Router principal do app com GoRouter.
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    initialLocation: '/onboarding',
+    initialLocation: SupabaseService.isAuthenticated ? '/explore' : '/onboarding',
+    refreshListenable: authChangeNotifier,
     redirect: (context, state) {
       final auth = ref.read(authProvider);
       final isAuth = auth.isAuthenticated;

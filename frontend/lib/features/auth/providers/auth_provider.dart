@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -33,6 +34,19 @@ class AuthState {
   }
 }
 
+/// Listenable que notifica o GoRouter quando o estado de auth muda.
+/// Isso faz o router re-avaliar o redirect sempre que o auth muda.
+class AuthChangeNotifier extends ChangeNotifier {
+  AuthChangeNotifier() {
+    SupabaseService.auth.onAuthStateChange.listen((_) {
+      notifyListeners();
+    });
+  }
+}
+
+/// Instância global do notifier para o GoRouter.refreshListenable.
+final authChangeNotifier = AuthChangeNotifier();
+
 /// Provider principal de autenticação.
 class AuthNotifier extends StateNotifier<AuthState> {
   AuthNotifier() : super(const AuthState()) {
@@ -40,18 +54,36 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   void _init() {
-    // Verificar sessão existente
+    // ══════════════════════════════════════════════════════════════════
+    // CORREÇÃO CRÍTICA: Verificar sessão SINCRONAMENTE.
+    //
+    // O Supabase persiste a sessão localmente. Quando o app abre,
+    // `currentSession` já está disponível de forma síncrona.
+    // Precisamos setar `isAuthenticated = true` ANTES que o GoRouter
+    // execute seu primeiro redirect, senão ele vê false e manda
+    // para /onboarding mesmo com sessão válida.
+    // ══════════════════════════════════════════════════════════════════
     final session = SupabaseService.currentSession;
     if (session != null) {
+      // Setar autenticado imediatamente (síncrono)
+      state = const AuthState(isAuthenticated: true, isLoading: true);
+      // Carregar perfil completo em background
       _loadUserProfile();
     }
 
     // Escutar mudanças de auth
     SupabaseService.auth.onAuthStateChange.listen((data) {
       if (data.event == AuthChangeEvent.signedIn) {
+        state = state.copyWith(isAuthenticated: true);
         _loadUserProfile();
       } else if (data.event == AuthChangeEvent.signedOut) {
         state = const AuthState();
+      } else if (data.event == AuthChangeEvent.tokenRefreshed) {
+        // Token renovado — sessão continua válida
+        if (!state.isAuthenticated) {
+          state = state.copyWith(isAuthenticated: true);
+          _loadUserProfile();
+        }
       }
     });
   }
@@ -70,12 +102,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = AuthState(isAuthenticated: true, user: user);
 
       // Atualizar status online (1 = Online)
-      await SupabaseService.table('profiles').update({
-        'online_status': 1,
-        'last_seen_at': DateTime.now().toUtc().toIso8601String(),
-      }).eq('id', userId);
+      try {
+        await SupabaseService.table('profiles').update({
+          'online_status': 1,
+          'last_seen_at': DateTime.now().toUtc().toIso8601String(),
+        }).eq('id', userId);
+      } catch (_) {
+        // Status update é best-effort
+      }
     } catch (e) {
-      state = state.copyWith(error: 'Erro ao carregar perfil: $e');
+      // Mesmo se o perfil falhar, a sessão é válida
+      state = state.copyWith(isLoading: false, error: 'Erro ao carregar perfil: $e');
     }
   }
 
@@ -87,6 +124,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         email: email,
         password: password,
       );
+      state = state.copyWith(isAuthenticated: true);
       await _loadUserProfile();
       return true;
     } on AuthException catch (e) {
@@ -107,6 +145,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         password: password,
         data: {'full_name': nickname},
       );
+      state = state.copyWith(isAuthenticated: true);
       await _loadUserProfile();
       return true;
     } on AuthException catch (e) {
@@ -137,10 +176,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final userId = SupabaseService.currentUserId;
       if (userId != null) {
         // Atualizar status offline (2 = Offline)
-        await SupabaseService.table('profiles').update({
-          'online_status': 2,
-          'last_seen_at': DateTime.now().toUtc().toIso8601String(),
-        }).eq('id', userId);
+        try {
+          await SupabaseService.table('profiles').update({
+            'online_status': 2,
+            'last_seen_at': DateTime.now().toUtc().toIso8601String(),
+          }).eq('id', userId);
+        } catch (_) {}
       }
       await SupabaseService.auth.signOut();
       state = const AuthState();
