@@ -74,7 +74,7 @@ final userProfileProvider =
       final postsRes = await SupabaseService.table('posts')
           .select('id')
           .eq('author_id', userId)
-          .eq('status', 'published');
+          .eq('status', 'ok');
       map['posts_count'] = (postsRes as List).length;
     } catch (_) {
       map['posts_count'] = 0;
@@ -106,7 +106,7 @@ final userPostsProvider =
   final response = await SupabaseService.table('posts')
       .select('*, profiles!posts_author_id_fkey(*)')
       .eq('author_id', userId)
-      .eq('status', 'published')
+      .eq('status', 'ok')
       .order('created_at', ascending: false)
       .limit(20);
 

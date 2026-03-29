@@ -111,7 +111,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       try {
         final forYouRes = await SupabaseService.table('posts')
             .select('*, profiles!posts_author_id_fkey(id, nickname, icon_url), communities!posts_community_id_fkey(id, name, icon_url)')
-            .eq('status', 'published')
+            .eq('status', 'ok')
             .order('likes_count', ascending: false)
             .limit(15);
         _forYouPosts = List<Map<String, dynamic>>.from(forYouRes as List);

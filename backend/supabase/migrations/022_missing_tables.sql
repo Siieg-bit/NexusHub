@@ -81,7 +81,7 @@ BEGIN
     CASE v_achievement.requirement_type
       WHEN 'posts' THEN
         SELECT COUNT(*) INTO v_count FROM public.posts
-        WHERE author_id = p_user_id AND status = 'published';
+        WHERE author_id = p_user_id AND status = 'ok';
 
       WHEN 'followers' THEN
         SELECT COUNT(*) INTO v_count FROM public.follows

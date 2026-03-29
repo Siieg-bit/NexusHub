@@ -16,7 +16,7 @@ final globalFeedProvider = FutureProvider<List<PostModel>>((ref) async {
   final response = await SupabaseService.table('posts')
       .select(
           '*, profiles!posts_author_id_fkey(*), communities!posts_community_id_fkey(name, icon_url, theme_color)')
-      .eq('status', 'published')
+      .eq('status', 'ok')
       .order('created_at', ascending: false)
       .limit(30);
 

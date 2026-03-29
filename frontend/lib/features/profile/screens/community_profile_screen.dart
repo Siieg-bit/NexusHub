@@ -72,7 +72,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           .select('*, profiles(*)')
           .eq('author_id', widget.userId)
           .eq('community_id', widget.communityId)
-          .eq('status', 'published')
+          .eq('status', 'ok')
           .order('created_at', ascending: false)
           .limit(20);
       _userPosts = List<Map<String, dynamic>>.from(postsRes as List);

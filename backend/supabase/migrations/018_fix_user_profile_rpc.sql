@@ -7,7 +7,7 @@
 --   is_premium, coins_float, business_coins, premium_expires_at,
 --   blogs_count, comments_count, items_count, joined_communities_count,
 --   broken_streaks, last_checkin_at, has_completed_onboarding, updated_at
--- Também corrige status de posts: 'ok' -> 'published'
+-- Status de posts usa enum content_status com valor 'ok' (não 'published')
 -- ========================
 CREATE OR REPLACE FUNCTION public.get_user_profile(p_user_id UUID)
 RETURNS JSONB AS $$
@@ -28,7 +28,7 @@ BEGIN
 
   SELECT COUNT(*) INTO v_followers FROM public.follows WHERE following_id = p_user_id;
   SELECT COUNT(*) INTO v_following FROM public.follows WHERE follower_id = p_user_id;
-  SELECT COUNT(*) INTO v_posts FROM public.posts WHERE author_id = p_user_id AND status = 'published';
+  SELECT COUNT(*) INTO v_posts FROM public.posts WHERE author_id = p_user_id AND status = 'ok';
 
   IF v_viewer_id IS NOT NULL AND v_viewer_id != p_user_id THEN
     SELECT EXISTS(
