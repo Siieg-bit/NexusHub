@@ -641,7 +641,7 @@ class _AminoCommunityCardState extends State<_AminoCommunityCard> {
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(vertical: 3),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF2A2A5E),
+                            color: AppTheme.cardColorLight,
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Row(
@@ -680,7 +680,7 @@ class _AminoCommunityCardState extends State<_AminoCommunityCard> {
                 height: _AminoCommunityCard._iconSize,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
-                  color: const Color(0xFF1A1A2E),
+                  color: AppTheme.scaffoldBg,
                   border: Border.all(color: color, width: 2.5),
                   boxShadow: [
                     BoxShadow(
@@ -727,7 +727,7 @@ class _JoinCommunityCard extends StatelessWidget {
         margin: const EdgeInsets.only(top: 18),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          color: const Color(0xFF2A2A5E).withValues(alpha: 0.5),
+          color: AppTheme.cardColorLight.withValues(alpha: 0.5),
           border: Border.all(
             color: Colors.white.withValues(alpha: 0.06),
             width: 0.5,

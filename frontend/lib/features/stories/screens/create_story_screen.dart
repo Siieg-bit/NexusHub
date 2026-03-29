@@ -25,7 +25,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
   int _selectedBgIndex = 0;
 
   static const _bgColors = [
-    Color(0xFF1A1A2E),
+    Color(0xFF0D1B2A),
     Color(0xFFE91E63),
     Color(0xFF9C27B0),
     Color(0xFF2196F3),
@@ -38,7 +38,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
   ];
 
   static const _bgHexCodes = [
-    '#1A1A2E',
+    '#0D1B2A',
     '#E91E63',
     '#9C27B0',
     '#2196F3',

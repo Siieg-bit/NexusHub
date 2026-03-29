@@ -7,6 +7,7 @@ import '../../../core/models/comment_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/helpers.dart';
 import '../../chat/widgets/chat_bubble.dart';
+import '../../../core/widgets/amino_custom_title.dart';
 
 /// Perfil da Comunidade — Layout fiel ao Amino Apps.
 /// Banner + Avatar centralizado + Nome + Nível/Título + Tags + Editar
@@ -355,48 +356,9 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                           Padding(
                             padding:
                                 const EdgeInsets.symmetric(horizontal: 24),
-                            child: Wrap(
-                              spacing: 6,
-                              runSpacing: 6,
-                              alignment: WrapAlignment.center,
-                              children: [
-                                ...titles.take(6).map((t) {
-                                  final titleText =
-                                      t is Map ? (t['title'] ?? '') : t.toString();
-                                  final titleColor = t is Map && t['color'] != null
-                                      ? _parseColor(t['color'] as String)
-                                      : AppTheme.primaryColor
-                                          .withValues(alpha: 0.3);
-                                  return Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: titleColor,
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    child: Text(
-                                      titleText,
-                                      style: const TextStyle(
-                                        fontSize: 11,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  );
-                                }),
-                                if (titles.length > 6)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color:
-                                          Colors.white.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    child: const Icon(Icons.more_horiz,
-                                        color: Colors.white, size: 14),
-                                  ),
-                              ],
+                            child: AminoCustomTitleList(
+                              titles: titles,
+                              maxVisible: 6,
                             ),
                           ),
                         const SizedBox(height: 10),

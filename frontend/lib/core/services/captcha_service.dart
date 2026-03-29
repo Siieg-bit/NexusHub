@@ -68,7 +68,7 @@ class CaptchaService {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: const Color(0xFF1A1A2E),
+                color: const Color(0xFF0D1B2A),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
