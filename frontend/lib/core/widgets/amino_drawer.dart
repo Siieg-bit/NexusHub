@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../config/app_theme.dart';
 
 /// AminoDrawer — Drawer customizado com animação push/scale estilo Amino.
 ///

@@ -31,7 +31,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   // Block Editor para modo Blog
   List<ContentBlock> _contentBlocks = [];
   bool _useBlogEditor = false;
-  final _blockEditorKey = GlobalKey<_BlockEditorState>();
+  // ignore: unused_field
+  final _blockEditorKey = GlobalKey();
 
   // Poll
   final List<TextEditingController> _pollOptions = [

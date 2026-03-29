@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/app_theme.dart';
-import '../services/supabase_service.dart';
 
 /// Top Bar do Amino original — réplica pixel-perfect.
 ///

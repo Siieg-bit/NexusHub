@@ -87,7 +87,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
         // Calcular streaks
         final date = DateTime.parse(dateStr);
         if (lastDate != null) {
-          final diff = date.difference(lastDate!).inDays;
+          final diff = date.difference(lastDate).inDays;
           if (diff == 1) {
             streak++;
             // Aumentar nível baseado na streak

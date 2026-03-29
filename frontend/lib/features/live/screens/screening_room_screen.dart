@@ -50,7 +50,9 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
   int _viewerCount = 0;
 
   // Playlist
+  // ignore: unused_field
   final List<Map<String, String>> _playlist = [];
+  // ignore: unused_field
   int _currentIndex = 0;
 
   @override

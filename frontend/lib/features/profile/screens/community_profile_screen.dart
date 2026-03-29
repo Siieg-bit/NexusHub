@@ -123,7 +123,9 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
 
     final reputation = _membership?['local_reputation'] as int? ?? 0;
     final level = _membership?['local_level'] as int? ?? calculateLevel(reputation);
+    // ignore: unused_local_variable
     final progress = levelProgress(reputation);
+    // ignore: unused_local_variable
     final repToNext = reputationToNextLevel(reputation);
     final title = levelTitle(level);
     final role = _membership?['role'] as String? ?? 'member';
@@ -1319,6 +1321,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
     return 'Membro desde ${months[joinedAt.month - 1]} ${joinedAt.year} ($days dias)';
   }
 
+  // ignore: unused_element
   Color _parseColor(String hex) {
     try {
       hex = hex.replaceAll('#', '');

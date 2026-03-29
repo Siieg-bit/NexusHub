@@ -379,8 +379,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
                 child: CircularProgressIndicator(
                     strokeWidth: 2, color: Colors.white),
               )
-            : const Icon(Icons.add
-_rounded, color: Colors.white, size: 28),
+            : const Icon(Icons.add_rounded, color: Colors.white, size: 28),
       ),
       body: _isLoading
           ? const Center(

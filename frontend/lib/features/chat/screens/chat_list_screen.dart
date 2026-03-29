@@ -681,7 +681,7 @@ class _AminoChatTile extends StatelessWidget {
           children: [
             // ── Avatar com frame cosmético ──
             CosmeticAvatar(
-              userId: chatRoom.type == 'direct' ? chatRoom.members?.firstOrNull : null,
+              userId: chatRoom.type == 'direct' ? chatRoom.hostId : null,
               avatarUrl: chatRoom.iconUrl,
               size: 48,
               showOnline: chatRoom.type == 'direct',

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import 'nine_slice_bubble.dart';
+export '../../../core/widgets/avatar_with_frame.dart';
 
 /// Custom Chat Bubble com suporte a frames equipáveis — estilo Amino Apps.
 ///
@@ -223,8 +224,7 @@ class _BubblePainter extends CustomPainter {
 
 /// Widget para exibir o avatar com frame equipado — estilo Amino.
 // AvatarWithFrame foi movido para core/widgets/avatar_with_frame.dart
-// Re-exportar para manter compatibilidade com imports existentes.
-export '../../../core/widgets/avatar_with_frame.dart';
+// Re-exportado no topo do arquivo para manter compatibilidade.
 
 /// Badge de Amino+ para exibir ao lado do nome.
 class AminoPlusBadge extends StatelessWidget {

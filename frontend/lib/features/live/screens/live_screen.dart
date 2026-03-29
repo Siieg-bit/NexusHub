@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import 'screening_room_screen.dart';

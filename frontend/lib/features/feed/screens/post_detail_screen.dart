@@ -187,7 +187,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 case 'report':
                   ReportDialog.show(
                     context,
-                    communityId: post.communityId ?? '',
+                    communityId: post.communityId,
                     targetPostId: widget.postId,
                   );
                   break;
@@ -923,7 +923,7 @@ class _CommentTileState extends State<_CommentTile> {
                       GestureDetector(
                         onTap: () {
                           // Focar no campo de comentário com @mention
-                          final authorName = widget.comment.author?['nickname'] ?? 'Usuário';
+                          final authorName = widget.comment.author?.nickname ?? 'Usuário';
                           if (widget.commentController != null) {
                             widget.commentController!.text = '@$authorName ';
                             widget.commentController!.selection = TextSelection.fromPosition(

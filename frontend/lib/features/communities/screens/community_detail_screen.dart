@@ -92,7 +92,7 @@ final currentUserProfileProvider = FutureProvider<UserModel?>((ref) async {
         .select()
         .eq('id', userId)
         .single();
-    return UserModel.fromJson(response as Map<String, dynamic>);
+    return UserModel.fromJson(response);
   } catch (_) {
     return null;
   }
@@ -329,7 +329,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                   showOnline: showOnline,
                   showCreate: showCreate,
                   onlineCount: ref.watch(onlineMembersCountProvider(widget.communityId)).valueOrNull ?? 0,
-                  avatarUrl: ref.watch(currentUserProfileProvider).valueOrNull?.avatarUrl,
+                  avatarUrl: ref.watch(currentUserProfileProvider).valueOrNull?.iconUrl,
                   onMenuTap: () => AminoDrawerController.of(context)?.toggle(),
                   onCreateTap: () => context.push(
                       '/community/${widget.communityId}/create-post'),
@@ -1030,153 +1030,9 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
   }
 }
 
-// =============================================================================
-// BOTTOM BAR ITEM
-// =============================================================================
-class _BottomBarItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool isSelected;
-  final int badgeCount;
-  final VoidCallback onTap;
 
-  const _BottomBarItem({
-    required this.icon,
-    required this.label,
-    required this.isSelected,
-    required this.badgeCount,
-    required this.onTap,
-  });
 
-  @override
-  Widget build(BuildContext context) {
-    // Amino: ativo = ciano #00BCD4, inativo = cinza
-    final color = isSelected
-        ? AppTheme.accentColor
-        : AppTheme.textHint;
 
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: 56,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Icon(icon, color: color, size: 22),
-                if (badgeCount > 0)
-                  Positioned(
-                    top: -4,
-                    right: -8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 4, vertical: 1),
-                      decoration: BoxDecoration(
-                        color: AppTheme.errorColor,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        '$badgeCount',
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 9,
-                            fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: 9,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// =============================================================================
-// BOTTOM BAR ONLINE ITEM (com avatares e count)
-// =============================================================================
-class _BottomBarOnlineItem extends ConsumerWidget {
-  final String communityId;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _BottomBarOnlineItem({
-    required this.communityId,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final onlineCount =
-        ref.watch(onlineMembersCountProvider(communityId)).valueOrNull ?? 0;
-
-    // Amino: ícone de raio (flash) + contagem online
-    // Cor ativa: ciano, inativa: cinza
-    final color = isSelected ? AppTheme.accentColor : AppTheme.textHint;
-
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: 56,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                Icon(Icons.flash_on_rounded, color: color, size: 22),
-                // Badge com contagem online
-                Positioned(
-                  top: -2,
-                  right: -6,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 3, vertical: 1),
-                    decoration: BoxDecoration(
-                      color: AppTheme.onlineColor,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      '$onlineCount',
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 8,
-                          fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 3),
-            Text(
-              'Online',
-              style: TextStyle(
-                color: color,
-                fontSize: 9,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 // =============================================================================
 // CHECK-IN BAR — Estilo Amino (streak progress + botão verde)
@@ -1647,7 +1503,7 @@ class _FeedTab extends StatelessWidget {
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            post.title,
+                            post.title ?? '',
                             style: const TextStyle(
                               color: AppTheme.textPrimary,
                               fontSize: 13,
