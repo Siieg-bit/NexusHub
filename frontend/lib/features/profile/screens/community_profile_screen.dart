@@ -1111,16 +1111,20 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                             child: CircleAvatar(
                               radius: 18,
                               backgroundColor: context.scaffoldBg,
-                              backgroundImage:
-                                  comment.author?.iconUrl != null
-                                      ? CachedNetworkImageProvider(
-                                          comment.author!.iconUrl!)
-                                      : null,
-                              child: comment.author?.iconUrl == null
-                                  ? Icon(Icons.person_rounded,
-                                      size: r.s(18),
-                                      color: context.textPrimary)
-                                  : null,
+                              backgroundImage: () {
+                                final authorIcon = comment.author?.iconUrl;
+                                return authorIcon != null && authorIcon.isNotEmpty
+                                    ? CachedNetworkImageProvider(authorIcon)
+                                    : null;
+                              }(),
+                              child: () {
+                                final authorIcon = comment.author?.iconUrl;
+                                return authorIcon == null || authorIcon.isEmpty
+                                    ? Icon(Icons.person_rounded,
+                                        size: r.s(18),
+                                        color: context.textPrimary)
+                                    : null;
+                              }(),
                             ),
                           ),
                           SizedBox(width: r.s(10)),

@@ -256,9 +256,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     fit: StackFit.expand,
                     children: [
                       // Imagem de fundo
-                      if (community.bannerUrl != null)
+                      if (community.bannerUrl != null && community.bannerUrl!.isNotEmpty)
                         CachedNetworkImage(
-                          imageUrl: community.bannerUrl!,
+                          imageUrl: community.bannerUrl ?? '',
                           fit: BoxFit.cover,
                           placeholder: (_, __) => Container(
                             color: context.cardBg,
@@ -320,9 +320,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                 color: context.cardBg,
                               ),
                               clipBehavior: Clip.antiAlias,
-                              child: community.iconUrl != null
+                              child: community.iconUrl != null && community.iconUrl!.isNotEmpty
                                   ? CachedNetworkImage(
-                                      imageUrl: community.iconUrl!,
+                                      imageUrl: community.iconUrl ?? '',
                                       fit: BoxFit.cover,
                                     )
                                   : Icon(Icons.groups_rounded,
@@ -488,9 +488,9 @@ class _MyCommunityCard extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             // Imagem de fundo cobrindo todo o card
-            if (community.bannerUrl != null)
+            if (community.bannerUrl != null && community.bannerUrl!.isNotEmpty)
               CachedNetworkImage(
-                imageUrl: community.bannerUrl!,
+                imageUrl: community.bannerUrl ?? '',
                 fit: BoxFit.cover,
                 placeholder: (_, __) => Container(
                   decoration: BoxDecoration(
@@ -564,9 +564,9 @@ class _MyCommunityCard extends StatelessWidget {
                     ),
                   ),
                   clipBehavior: Clip.antiAlias,
-                  child: community.iconUrl != null
+                  child: community.iconUrl != null && community.iconUrl!.isNotEmpty
                       ? CachedNetworkImage(
-                          imageUrl: community.iconUrl!,
+                          imageUrl: community.iconUrl ?? '',
                           fit: BoxFit.cover,
                         )
                       : Icon(Icons.groups_rounded,
@@ -654,9 +654,9 @@ class _NewCommunityCard extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             // Background
-            if (community.bannerUrl != null)
+            if (community.bannerUrl != null && community.bannerUrl!.isNotEmpty)
               CachedNetworkImage(
-                imageUrl: community.bannerUrl!,
+                imageUrl: community.bannerUrl ?? '',
                 fit: BoxFit.cover,
                 errorWidget: (_, __, ___) => Container(
                   decoration: BoxDecoration(
@@ -725,9 +725,9 @@ class _NewCommunityCard extends StatelessWidget {
                       color: context.cardBg,
                     ),
                     clipBehavior: Clip.antiAlias,
-                    child: community.iconUrl != null
+                    child: community.iconUrl != null && community.iconUrl!.isNotEmpty
                         ? CachedNetworkImage(
-                            imageUrl: community.iconUrl!,
+                            imageUrl: community.iconUrl ?? '',
                             fit: BoxFit.cover,
                           )
                         : Icon(Icons.groups_rounded,
@@ -966,9 +966,9 @@ class _RecommendedCommunityTile extends StatelessWidget {
                 color: context.surfaceColor,
               ),
               clipBehavior: Clip.antiAlias,
-              child: community.iconUrl != null
+              child: community.iconUrl != null && community.iconUrl!.isNotEmpty
                   ? CachedNetworkImage(
-                      imageUrl: community.iconUrl!, fit: BoxFit.cover)
+                      imageUrl: community.iconUrl ?? '', fit: BoxFit.cover)
                   : Icon(Icons.groups_rounded,
                       color: context.textHint, size: r.s(24)),
             ),

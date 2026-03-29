@@ -214,10 +214,10 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                                     child: ClipRRect(
                                       borderRadius:
                                           BorderRadius.circular(r.s(10)),
-                                      child: community.iconUrl != null
+                                      child: community.iconUrl != null && community.iconUrl!.isNotEmpty
                                           ? CachedNetworkImage(
                                               imageUrl:
-                                                  community.iconUrl!,
+                                                  community.iconUrl ?? '',
                                               width: r.s(40),
                                               height: r.s(40),
                                               fit: BoxFit.cover,
@@ -292,9 +292,9 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                       fit: StackFit.expand,
                       children: [
                         // Cover image
-                        if (widget.community.bannerUrl != null)
+                        if (widget.community.bannerUrl != null && widget.community.bannerUrl!.isNotEmpty)
                           CachedNetworkImage(
-                            imageUrl: widget.community.bannerUrl!,
+                            imageUrl: widget.community.bannerUrl ?? '',
                             fit: BoxFit.cover,
                           )
                         else
@@ -339,19 +339,21 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                               Row(
                                 children: [
                                   // User avatar
-                                  CircleAvatar(
-                                    radius: r.s(24),
-                                    backgroundColor: themeColor,
-                                    backgroundImage: widget.currentUser?.iconUrl != null
-                                        ? CachedNetworkImageProvider(
-                                            widget.currentUser!.iconUrl!)
-                                        : null,
-                                    child: widget.currentUser?.iconUrl == null
-                                        ? Icon(Icons.person_rounded,
-                                            color: Colors.white70,
-                                            size: r.s(24))
-                                        : null,
-                                  ),
+                                  Builder(builder: (_) {
+                                    final userIcon = widget.currentUser?.iconUrl;
+                                    return CircleAvatar(
+                                      radius: r.s(24),
+                                      backgroundColor: themeColor,
+                                      backgroundImage: userIcon != null && userIcon.isNotEmpty
+                                          ? CachedNetworkImageProvider(userIcon)
+                                          : null,
+                                      child: userIcon == null || userIcon.isEmpty
+                                          ? Icon(Icons.person_rounded,
+                                              color: Colors.white70,
+                                              size: r.s(24))
+                                          : null,
+                                    );
+                                  }),
                                   SizedBox(width: r.s(12)),
                                   Expanded(
                                     child: Column(

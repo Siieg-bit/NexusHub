@@ -1601,16 +1601,22 @@ class _MessageBubble extends StatelessWidget {
               child: CircleAvatar(
                 radius: 16,
                 backgroundColor: context.surfaceColor,
-                backgroundImage: message.author?.iconUrl != null
-                    ? CachedNetworkImageProvider(message.author!.iconUrl!)
-                    : null,
-                child: message.author?.iconUrl == null
-                    ? Text(
-                        (message.author?.nickname ?? '?')[0].toUpperCase(),
-                        style: TextStyle(
-                            fontSize: r.fs(11), color: Colors.grey[400]),
-                      )
-                    : null,
+                backgroundImage: () {
+                  final msgIcon = message.author?.iconUrl;
+                  return msgIcon != null && msgIcon.isNotEmpty
+                      ? CachedNetworkImageProvider(msgIcon)
+                      : null;
+                }(),
+                child: () {
+                  final msgIcon = message.author?.iconUrl;
+                  return msgIcon == null || msgIcon.isEmpty
+                      ? Text(
+                          (message.author?.nickname ?? '?')[0].toUpperCase(),
+                          style: TextStyle(
+                              fontSize: r.fs(11), color: Colors.grey[400]),
+                        )
+                      : null;
+                }(),
               ),
             )
           else if (!isMe)

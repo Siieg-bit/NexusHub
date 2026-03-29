@@ -250,7 +250,7 @@ class _NavItemAvatar extends StatelessWidget {
               ),
               child: ClipOval(
                 child: avatarUrl != null && avatarUrl!.isNotEmpty
-                    ? Image.network(avatarUrl!, fit: BoxFit.cover,
+                    ? Image.network(avatarUrl ?? '', fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) =>
                             Icon(Icons.person, size: r.s(14), color: color))
                     : Icon(Icons.person, size: r.s(14), color: color),

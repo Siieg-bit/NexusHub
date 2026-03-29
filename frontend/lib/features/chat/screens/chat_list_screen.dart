@@ -665,9 +665,9 @@ class _SidebarCommunityIcon extends StatelessWidget {
                     width: 1),
           ),
           clipBehavior: Clip.antiAlias,
-          child: community.iconUrl != null
+          child: community.iconUrl != null && community.iconUrl!.isNotEmpty
               ? CachedNetworkImage(
-                  imageUrl: community.iconUrl!,
+                  imageUrl: community.iconUrl ?? '',
                   fit: BoxFit.cover,
                   placeholder: (_, __) => Container(
                     color: context.cardBg,

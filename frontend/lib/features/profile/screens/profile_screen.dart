@@ -942,9 +942,9 @@ class _LinkedCommunitiesSection extends ConsumerWidget {
                           // Ícone da comunidade
                           ClipRRect(
                             borderRadius: BorderRadius.circular(r.s(8)),
-                            child: community.iconUrl != null
+                            child: community.iconUrl != null && community.iconUrl!.isNotEmpty
                                 ? CachedNetworkImage(
-                                    imageUrl: community.iconUrl!,
+                                    imageUrl: community.iconUrl ?? '',
                                     width: r.s(32),
                                     height: r.s(32),
                                     fit: BoxFit.cover,

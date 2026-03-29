@@ -518,9 +518,9 @@ class _AminoCommunityCardState extends State<_AminoCommunityCard> {
                         fit: StackFit.expand,
                         children: [
                           // Imagem
-                          widget.community.bannerUrl != null
+                          widget.community.bannerUrl != null && widget.community.bannerUrl!.isNotEmpty
                               ? CachedNetworkImage(
-                                  imageUrl: widget.community.bannerUrl!,
+                                  imageUrl: widget.community.bannerUrl ?? '',
                                   fit: BoxFit.cover,
                                   memCacheWidth: 360,
                                   memCacheHeight: 480,
@@ -699,9 +699,9 @@ class _AminoCommunityCardState extends State<_AminoCommunityCard> {
                   ],
                 ),
                 clipBehavior: Clip.antiAlias,
-                child: widget.community.iconUrl != null
+                child: widget.community.iconUrl != null && widget.community.iconUrl!.isNotEmpty
                     ? CachedNetworkImage(
-                        imageUrl: widget.community.iconUrl!,
+                        imageUrl: widget.community.iconUrl ?? '',
                         fit: BoxFit.cover,
                         memCacheWidth: 96,
                         memCacheHeight: 96,
@@ -894,9 +894,9 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
                 child: SizedBox(
                   height: r.s(140),
                   width: double.infinity,
-                  child: widget.community.bannerUrl != null
+                  child: widget.community.bannerUrl != null && widget.community.bannerUrl!.isNotEmpty
                       ? CachedNetworkImage(
-                          imageUrl: widget.community.bannerUrl!,
+                          imageUrl: widget.community.bannerUrl ?? '',
                           fit: BoxFit.cover,
                           placeholder: (_, __) => Container(
                             decoration: BoxDecoration(
@@ -957,9 +957,9 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
                     border: Border.all(color: color, width: 2),
                   ),
                   clipBehavior: Clip.antiAlias,
-                  child: widget.community.iconUrl != null
+                  child: widget.community.iconUrl != null && widget.community.iconUrl!.isNotEmpty
                       ? CachedNetworkImage(
-                          imageUrl: widget.community.iconUrl!,
+                          imageUrl: widget.community.iconUrl ?? '',
                           fit: BoxFit.cover,
                         )
                       : Icon(Icons.groups_rounded,
