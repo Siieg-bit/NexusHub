@@ -232,13 +232,64 @@ class ThreadMessagesNotifier
     }
   }
 
-  Future<bool> deleteMessage(String messageId) async {
+  /// Editar mensagem (apenas o autor, apenas texto)
+  Future<bool> editMessage(String messageId, String newContent) async {
     try {
-      await SupabaseService.table('chat_messages').update({
-        'type': 'system_deleted',
-        'content': 'Mensagem apagada',
-      }).eq('id', messageId);
+      await SupabaseService.rpc('edit_chat_message', params: {
+        'p_message_id': messageId,
+        'p_new_content': newContent,
+      });
 
+      // Atualizar localmente
+      final current = state.valueOrNull ?? [];
+      final index = current.indexWhere((m) => m.id == messageId);
+      if (index >= 0) {
+        final updated = [...current];
+        updated[index] = updated[index].copyWith(
+          content: newContent,
+          editedAt: DateTime.now(),
+        );
+        state = AsyncData(updated);
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Deletar mensagem para todos (autor, host ou co-host)
+  Future<bool> deleteForAll(String messageId) async {
+    try {
+      await SupabaseService.rpc('delete_chat_message_for_all', params: {
+        'p_message_id': messageId,
+      });
+
+      // Atualizar localmente — transformar em system_deleted
+      final current = state.valueOrNull ?? [];
+      final index = current.indexWhere((m) => m.id == messageId);
+      if (index >= 0) {
+        final updated = [...current];
+        updated[index] = updated[index].copyWith(
+          type: 'system_deleted',
+          content: 'Mensagem apagada',
+          isDeleted: true,
+        );
+        state = AsyncData(updated);
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Deletar mensagem apenas para o usuário atual
+  Future<bool> deleteForMe(String messageId) async {
+    try {
+      await SupabaseService.rpc('delete_chat_message_for_me', params: {
+        'p_message_id': messageId,
+      });
+
+      // Remover da lista local
       final current = state.valueOrNull ?? [];
       final index = current.indexWhere((m) => m.id == messageId);
       if (index >= 0) {
@@ -250,6 +301,11 @@ class ThreadMessagesNotifier
     } catch (e) {
       return false;
     }
+  }
+
+  /// Deletar mensagem (legacy — redireciona para deleteForAll)
+  Future<bool> deleteMessage(String messageId) async {
+    return deleteForAll(messageId);
   }
 
   bool get hasMore => _hasMore;

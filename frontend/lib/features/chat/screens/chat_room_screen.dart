@@ -1310,6 +1310,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // ========================================================================
   void _showMessageActions(MessageModel message) {
       final r = context.r;
+    final isMe = message.authorId == SupabaseService.currentUserId;
+    final isTextType = message.type == 'text' || message.type == 'share_url';
     showModalBottomSheet(
       context: context,
       backgroundColor: context.surfaceColor,
@@ -1334,7 +1336,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             // Quick reactions
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: ['❤️', '😂', '😮', '😢', '👍', '👎']
+              children: ['\u2764\uFE0F', '\uD83D\uDE02', '\uD83D\uDE2E', '\uD83D\uDE22', '\uD83D\uDC4D', '\uD83D\uDC4E']
                   .map((emoji) => GestureDetector(
                         onTap: () {
                           Navigator.pop(ctx);
@@ -1353,10 +1355,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   .toList(),
             ),
             SizedBox(height: r.s(16)),
+            // Responder
             _actionTile(Icons.reply_rounded, 'Responder', () {
               Navigator.pop(ctx);
               setState(() => _replyingTo = message);
             }),
+            // Copiar
             _actionTile(Icons.copy_rounded, 'Copiar', () {
               Navigator.pop(ctx);
               Clipboard.setData(ClipboardData(text: message.content ?? ''));
@@ -1367,6 +1371,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 ),
               );
             }),
+            // Editar (só autor + só texto)
+            if (isMe && isTextType)
+              _actionTile(Icons.edit_rounded, 'Editar', () {
+                Navigator.pop(ctx);
+                _showEditMessageDialog(message);
+              }),
+            // Encaminhar
             _actionTile(Icons.forward_rounded, 'Encaminhar', () {
               Navigator.pop(ctx);
               Clipboard.setData(ClipboardData(text: message.content ?? ''));
@@ -1377,22 +1388,166 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 ),
               );
             }),
+            // Fixar
             _actionTile(Icons.push_pin_rounded, 'Fixar Mensagem', () {
               Navigator.pop(ctx);
               _pinMessage(message.id);
             }),
-            if (message.authorId == SupabaseService.currentUserId)
-              _actionTile(Icons.delete_rounded, 'Excluir', () async {
+            // Apagar para mim
+            _actionTile(Icons.visibility_off_rounded, 'Apagar para mim', () async {
+              Navigator.pop(ctx);
+              try {
+                await SupabaseService.rpc('delete_chat_message_for_me', params: {
+                  'p_message_id': message.id,
+                });
+                if (mounted) setState(() => _messages.remove(message));
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Erro ao apagar: $e'),
+                      backgroundColor: AppTheme.errorColor,
+                    ),
+                  );
+                }
+              }
+            }),
+            // Apagar para todos (só autor ou host)
+            if (isMe)
+              _actionTile(Icons.delete_rounded, 'Apagar para todos', () async {
                 Navigator.pop(ctx);
                 try {
-                  await SupabaseService.table('chat_messages')
-                      .delete()
-                      .eq('id', message.id);
-                  if (mounted) setState(() => _messages.remove(message));
-                } catch (_) {}
+                  await SupabaseService.rpc('delete_chat_message_for_all', params: {
+                    'p_message_id': message.id,
+                  });
+                  if (mounted) {
+                    final idx = _messages.indexWhere((m) => m.id == message.id);
+                    if (idx >= 0) {
+                      setState(() {
+                        _messages[idx] = _messages[idx].copyWith(
+                          type: 'system_deleted',
+                          content: 'Mensagem apagada',
+                          isDeleted: true,
+                        );
+                      });
+                    }
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Erro ao apagar: $e'),
+                        backgroundColor: AppTheme.errorColor,
+                      ),
+                    );
+                  }
+                }
+              }, isDestructive: true),
+            // Denunciar (só para mensagens de outros)
+            if (!isMe)
+              _actionTile(Icons.flag_rounded, 'Denunciar', () {
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Den\u00fancia enviada. Obrigado!'),
+                    backgroundColor: AppTheme.primaryColor,
+                  ),
+                );
               }, isDestructive: true),
           ],
         ),
+      ),
+    );
+  }
+
+  // ========================================================================
+  // EDIT MESSAGE DIALOG
+  // ========================================================================
+  void _showEditMessageDialog(MessageModel message) {
+    final r = context.r;
+    final editController = TextEditingController(text: message.content ?? '');
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: context.surfaceColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(16))),
+        title: Text('Editar Mensagem',
+            style: TextStyle(
+                color: context.textPrimary, fontWeight: FontWeight.w700)),
+        content: Container(
+          decoration: BoxDecoration(
+            color: context.cardBg,
+            borderRadius: BorderRadius.circular(r.s(10)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+          ),
+          child: TextField(
+            controller: editController,
+            autofocus: true,
+            style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+            decoration: InputDecoration(
+              hintText: 'Editar mensagem...',
+              hintStyle: TextStyle(color: Colors.grey[700], fontSize: r.fs(14)),
+              border: InputBorder.none,
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(12)),
+            ),
+            maxLines: 6,
+            minLines: 1,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              editController.dispose();
+            },
+            child: Text('Cancelar',
+                style: TextStyle(color: Colors.grey[500])),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final newContent = editController.text.trim();
+              Navigator.pop(ctx);
+              if (newContent.isNotEmpty && newContent != message.content) {
+                try {
+                  await SupabaseService.rpc('edit_chat_message', params: {
+                    'p_message_id': message.id,
+                    'p_new_content': newContent,
+                  });
+                  if (mounted) {
+                    final idx = _messages.indexWhere((m) => m.id == message.id);
+                    if (idx >= 0) {
+                      setState(() {
+                        _messages[idx] = _messages[idx].copyWith(
+                          content: newContent,
+                          editedAt: DateTime.now(),
+                        );
+                      });
+                    }
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Erro ao editar: $e'),
+                        backgroundColor: AppTheme.errorColor,
+                      ),
+                    );
+                  }
+                }
+              }
+              editController.dispose();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryColor,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(r.s(10))),
+            ),
+            child: const Text('Salvar',
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w700)),
+          ),
+        ],
       ),
     );
   }
@@ -1648,17 +1803,35 @@ class _MessageBubble extends StatelessWidget {
                     ),
                   // Conteúdo baseado no tipo
                   _buildContent(context),
-                  // Hora
+                  // Hora + indicador de editado
                   Padding(
                     padding: EdgeInsets.only(top: r.s(4)),
-                    child: Text(
-                      _formatTime(message.createdAt),
-                      style: TextStyle(
-                        color: isMe
-                            ? Colors.white.withValues(alpha: 0.6)
-                            : Colors.grey[600],
-                        fontSize: r.fs(10),
-                      ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _formatTime(message.createdAt),
+                          style: TextStyle(
+                            color: isMe
+                                ? Colors.white.withValues(alpha: 0.6)
+                                : Colors.grey[600],
+                            fontSize: r.fs(10),
+                          ),
+                        ),
+                        if (message.isEdited) ...[
+                          SizedBox(width: r.s(4)),
+                          Text(
+                            'editado',
+                            style: TextStyle(
+                              color: isMe
+                                  ? Colors.white.withValues(alpha: 0.45)
+                                  : Colors.grey[600],
+                              fontSize: r.fs(9),
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 ],

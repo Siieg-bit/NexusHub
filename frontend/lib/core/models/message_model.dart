@@ -39,6 +39,7 @@ class MessageModel {
   final String? deletedBy;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final DateTime? editedAt;
   final UserModel? author;
 
   const MessageModel({
@@ -63,6 +64,7 @@ class MessageModel {
     this.deletedBy,
     required this.createdAt,
     required this.updatedAt,
+    this.editedAt,
     this.author,
   });
 
@@ -91,6 +93,9 @@ class MessageModel {
           DateTime.now(),
       updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '') ??
           DateTime.now(),
+      editedAt: json['edited_at'] != null
+          ? DateTime.tryParse(json['edited_at'] as String)
+          : null,
       // O autor pode vir de diferentes chaves dependendo do contexto:
       // - 'profiles' quando vem de um JOIN com FK
       // - 'author' quando normalizado pelo provider
@@ -145,4 +150,45 @@ class MessageModel {
   bool get isTip => type == 'system_tip' || tipAmount != null;
   bool get isReply => replyToId != null;
   bool get isForward => false; // Forward não implementado no banco
+  bool get isEdited => editedAt != null;
+
+  /// Cria uma cópia do modelo com campos alterados.
+  MessageModel copyWith({
+    String? content,
+    String? type,
+    bool? isDeleted,
+    String? deletedBy,
+    DateTime? editedAt,
+    String? mediaUrl,
+    String? mediaType,
+    String? stickerUrl,
+    String? stickerId,
+    String? sharedUrl,
+  }) {
+    return MessageModel(
+      id: id,
+      threadId: threadId,
+      authorId: authorId,
+      type: type ?? this.type,
+      content: content ?? this.content,
+      mediaUrl: mediaUrl ?? this.mediaUrl,
+      mediaType: mediaType ?? this.mediaType,
+      mediaDuration: mediaDuration,
+      mediaThumbnailUrl: mediaThumbnailUrl,
+      stickerId: stickerId ?? this.stickerId,
+      stickerUrl: stickerUrl ?? this.stickerUrl,
+      replyToId: replyToId,
+      sharedUserId: sharedUserId,
+      sharedUrl: sharedUrl ?? this.sharedUrl,
+      sharedLinkSummary: sharedLinkSummary,
+      tipAmount: tipAmount,
+      reactions: reactions,
+      isDeleted: isDeleted ?? this.isDeleted,
+      deletedBy: deletedBy ?? this.deletedBy,
+      createdAt: createdAt,
+      updatedAt: DateTime.now(),
+      editedAt: editedAt ?? this.editedAt,
+      author: author,
+    );
+  }
 }
