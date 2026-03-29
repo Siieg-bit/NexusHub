@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../widgets/block_editor.dart';
 
 /// Editor rico de criação de posts — estilo Amino Apps.
 /// Suporta os 9 tipos exatos do Amino:
@@ -25,6 +26,11 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   bool _isSubmitting = false;
   final List<String> _mediaUrls = [];
   String? _coverImageUrl;
+
+  // Block Editor para modo Blog
+  List<ContentBlock> _contentBlocks = [];
+  bool _useBlogEditor = false;
+  final _blockEditorKey = GlobalKey<_BlockEditorState>();
 
   // Poll
   final List<TextEditingController> _pollOptions = [
@@ -139,7 +145,16 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         'title': _titleController.text.trim().isNotEmpty
             ? _titleController.text.trim()
             : null,
-        'content': _contentController.text.trim(),
+        'content': _useBlogEditor
+            ? _contentBlocks
+                .where((b) => b.type == BlockType.text || b.type == BlockType.heading)
+                .map((b) => b.controller?.text ?? b.text)
+                .where((t) => t.isNotEmpty)
+                .join('\n\n')
+            : _contentController.text.trim(),
+        'content_blocks': _useBlogEditor
+            ? _contentBlocks.map((b) => b.toJson()).toList()
+            : null,
         'media_urls': _mediaUrls.isNotEmpty ? _mediaUrls : [],
         'cover_image_url': _coverImageUrl,
         'external_url': _linkController.text.trim().isNotEmpty
@@ -470,23 +485,72 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     maxLines: 1,
                   ),
 
-                  // Content (borderless, relaxed)
-                  TextField(
-                    controller: _contentController,
-                    style: TextStyle(
-                      fontSize: 15,
-                      height: 1.6,
-                      color: Colors.grey[300],
+                  // Toggle Blog Editor
+                  if (_selectedType == 'normal')
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: GestureDetector(
+                        onTap: () => setState(() => _useBlogEditor = !_useBlogEditor),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: _useBlogEditor
+                                ? AppTheme.accentColor.withValues(alpha: 0.15)
+                                : AppTheme.cardColor,
+                            borderRadius: BorderRadius.circular(20),
+                            border: _useBlogEditor
+                                ? Border.all(color: AppTheme.accentColor.withValues(alpha: 0.4))
+                                : null,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.dashboard_customize_rounded,
+                                size: 14,
+                                color: _useBlogEditor ? AppTheme.accentColor : Colors.grey[600],
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Editor de Blocos',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: _useBlogEditor ? AppTheme.accentColor : Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
-                    decoration: InputDecoration(
-                      hintText: 'Escreva seu conteúdo aqui...',
-                      border: InputBorder.none,
-                      hintStyle: TextStyle(color: Colors.grey[700]),
-                      contentPadding: EdgeInsets.zero,
+
+                  // Content — Block Editor ou TextField simples
+                  if (_useBlogEditor && _selectedType == 'normal')
+                    BlockEditor(
+                      communityId: widget.communityId,
+                      initialBlocks: _contentBlocks.isEmpty
+                          ? [ContentBlock(type: BlockType.text)]
+                          : _contentBlocks,
+                      onChanged: (blocks) => _contentBlocks = blocks,
+                    )
+                  else
+                    TextField(
+                      controller: _contentController,
+                      style: TextStyle(
+                        fontSize: 15,
+                        height: 1.6,
+                        color: Colors.grey[300],
+                      ),
+                      decoration: InputDecoration(
+                        hintText: 'Escreva seu conteúdo aqui...',
+                        border: InputBorder.none,
+                        hintStyle: TextStyle(color: Colors.grey[700]),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      maxLines: null,
+                      minLines: 6,
                     ),
-                    maxLines: null,
-                    minLines: 6,
-                  ),
 
                   // Type-specific editors
                   if (_selectedType == 'poll') _buildPollEditor(),
