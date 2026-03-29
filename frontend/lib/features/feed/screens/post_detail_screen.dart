@@ -10,6 +10,7 @@ import '../../../core/models/post_model.dart';
 import '../../../core/models/comment_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../widgets/block_content_renderer.dart';
+import '../widgets/poll_quiz_widget.dart';
 
 /// Provider para detalhes de um post.
 final postDetailProvider =
@@ -337,6 +338,22 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       ),
 
                     // ======================================================
+                    // POLL / QUIZ / Q&A
+                    // ======================================================
+                    if (post.type == 'poll')
+                      PollDetailWidget(
+                        post: post,
+                        onVoted: () => ref.invalidate(postDetailProvider(widget.postId)),
+                      ),
+                    if (post.type == 'quiz')
+                      QuizDetailWidget(
+                        post: post,
+                        onCompleted: () => ref.invalidate(postDetailProvider(widget.postId)),
+                      ),
+                    if (post.type == 'qa')
+                      _buildQAHeader(post),
+
+                    // ======================================================
                     // MÍDIA
                     // ======================================================
                     if (post.mediaUrl != null && post.mediaUrl!.isNotEmpty)
@@ -569,6 +586,72 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildQAHeader(PostModel post) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A237E).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: const Color(0xFF3F51B5).withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: const Color(0xFF3F51B5).withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Center(
+              child: Text('Q',
+                  style: TextStyle(
+                      color: Color(0xFF3F51B5),
+                      fontWeight: FontWeight.w800,
+                      fontSize: 20)),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Pergunta & Resposta',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        color: Color(0xFF3F51B5))),
+                const SizedBox(height: 2),
+                Text(
+                  'Responda nos coment\u00e1rios abaixo \u2022 ${post.commentsCount} respostas',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                ),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: () => _commentFocusNode.requestFocus(),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFF3F51B5),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Text('Responder',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700)),
+            ),
+          ),
+        ],
       ),
     );
   }
