@@ -11,6 +11,8 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/models/message_model.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/services/call_service.dart';
+import 'call_screen.dart';
 import '../widgets/giphy_picker.dart';
 import '../widgets/sticker_picker.dart';
 import '../widgets/voice_recorder.dart';
@@ -222,6 +224,36 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
       }
     });
+  }
+
+  // ========================================================================
+  // CHAMADAS (Voice / Video)
+  // ========================================================================
+
+  /// Inicia uma chamada de voz ou vídeo via CallService e abre a CallScreen.
+  Future<void> _startCall(CallType type) async {
+    // Enviar mensagem de sistema no chat
+    final msgType = type == CallType.video ? 'video_chat' : 'voice_chat';
+    _sendMessage(type: msgType);
+
+    // Criar sessão de chamada real via Agora
+    final session = await CallService.createCall(
+      threadId: widget.threadId,
+      type: type,
+    );
+
+    if (session != null && mounted) {
+      await CallScreen.show(context, session);
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Não foi possível iniciar a chamada. Verifique as permissões.'),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    }
   }
 
   // ========================================================================
@@ -678,7 +710,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             ),
           // Voice chat
           GestureDetector(
-            onTap: () => _sendMessage(type: 'voice_chat'),
+            onTap: () => _startCall(CallType.voice),
             child: Container(
               width: r.s(34),
               height: r.s(34),
@@ -688,6 +720,20 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 shape: BoxShape.circle,
               ),
               child: Icon(Icons.mic_rounded, color: Colors.grey[500], size: r.s(16)),
+            ),
+          ),
+          // Video chat
+          GestureDetector(
+            onTap: () => _startCall(CallType.video),
+            child: Container(
+              width: r.s(34),
+              height: r.s(34),
+              margin: EdgeInsets.only(right: r.s(4)),
+              decoration: BoxDecoration(
+                color: context.surfaceColor,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.videocam_rounded, color: Colors.grey[500], size: r.s(16)),
             ),
           ),
           // Menu
@@ -1138,7 +1184,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   color: const Color(0xFF4CAF50),
                   onTap: () {
                     Navigator.pop(ctx);
-                    _sendMessage(type: 'voice_chat');
+                    _startCall(CallType.voice);
                   },
                 ),
                 _MediaOptionItem(
@@ -1147,7 +1193,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   color: const Color(0xFF2196F3),
                   onTap: () {
                     Navigator.pop(ctx);
-                    _sendMessage(type: 'video_chat');
+                    _startCall(CallType.video);
                   },
                 ),
                 _MediaOptionItem(

@@ -84,7 +84,7 @@ class CallSession {
 class CallService {
   // ── Agora Configuration ──
   // SUBSTITUA pelo seu App ID do Agora Console (https://console.agora.io)
-  static const String _agoraAppId = 'YOUR_AGORA_APP_ID';
+  static const String _agoraAppId = 'SEU_AGORA_APP_ID_AQUI';
 
   // Para produção, gere tokens temporários via Supabase Edge Function.
   // Em modo de teste, deixe vazio (o Agora permite sem token em modo dev).
@@ -276,6 +276,33 @@ class CallService {
     }
   }
 
+  /// Gera o channelName a partir do ID da sessão.
+  static String _channelName(CallSession session) {
+    return 'nexushub_${session.id.replaceAll('-', '').substring(0, 16)}';
+  }
+
+  /// Busca token Agora via Supabase Edge Function.
+  /// Retorna null se falhar (fallback para modo sem token).
+  static Future<String?> _fetchAgoraToken(String channelName) async {
+    try {
+      final res = await SupabaseService.edgeFunction(
+        'agora-token',
+        body: {
+          'channelName': channelName,
+          'uid': 0,
+          'role': 'publisher',
+        },
+      );
+      if (res.status == 200 && res.data != null) {
+        final data = res.data as Map<String, dynamic>;
+        return data['token'] as String?;
+      }
+    } catch (e) {
+      debugPrint('CallService._fetchAgoraToken error: $e');
+    }
+    return null;
+  }
+
   /// Entra no canal Agora com áudio/vídeo real
   static Future<void> _joinAgoraChannel(CallSession session) async {
     await _initEngine();
@@ -297,11 +324,11 @@ class CallService {
     // Configurar speaker
     await _engine!.setEnableSpeakerphone(_isSpeakerOn);
 
-    // O channelName é o ID da sessão (único por chamada)
-    // Para produção, gere um token temporário via Edge Function
-    // usando o Agora Token Builder com o channelName e uid.
-    final channelName =
-        'nexushub_${session.id.replaceAll('-', '').substring(0, 16)}';
+    final channelName = _channelName(session);
+
+    // Buscar token via Edge Function (produção)
+    // Se falhar, usa string vazia (modo dev sem token)
+    _agoraToken = await _fetchAgoraToken(channelName);
 
     // uid = 0 → Agora atribui automaticamente
     await _engine!.joinChannel(
