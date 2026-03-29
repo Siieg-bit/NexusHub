@@ -47,6 +47,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   List<CommunityModel> _myCommunities = [];
   List<CommunityModel> _recommendedCommunities = [];
+  List<CommunityModel> _newCommunities = [];
+  List<Map<String, dynamic>> _forYouPosts = [];
   bool _isLoading = true;
 
   // Dados do usuário para a top bar
@@ -93,6 +95,26 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           .limit(20);
       _recommendedCommunities =
           (recRes as List).map((e) => CommunityModel.fromJson(e)).toList();
+
+      // New Communities — mais recentes
+      try {
+        final newRes = await SupabaseService.table('communities')
+            .select()
+            .order('created_at', ascending: false)
+            .limit(10);
+        _newCommunities =
+            (newRes as List).map((e) => CommunityModel.fromJson(e)).toList();
+      } catch (_) {}
+
+      // For You — posts populares recentes de comunidades do usuario
+      try {
+        final forYouRes = await SupabaseService.table('posts')
+            .select('*, profiles!posts_author_id_fkey(id, nickname, icon_url), communities!posts_community_id_fkey(id, name, icon_url)')
+            .eq('status', 'published')
+            .order('likes_count', ascending: false)
+            .limit(15);
+        _forYouPosts = List<Map<String, dynamic>>.from(forYouRes as List);
+      } catch (_) {}
 
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
@@ -153,6 +175,29 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                 itemBuilder: (context, index) =>
                                     _MyCommunityCard(community: _myCommunities[index]),
                               ),
+                            ),
+                          ],
+
+                          // ── New Communities ──
+                          if (_newCommunities.isNotEmpty) ...[
+                            _buildSectionHeader('New Communities'),
+                            SizedBox(
+                              height: 120,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                itemCount: _newCommunities.length,
+                                itemBuilder: (context, index) =>
+                                    _NewCommunityCard(community: _newCommunities[index]),
+                              ),
+                            ),
+                          ],
+
+                          // ── For You ──
+                          if (_forYouPosts.isNotEmpty) ...[
+                            _buildSectionHeader('For You'),
+                            ..._forYouPosts.map(
+                              (post) => _ForYouPostTile(post: post),
                             ),
                           ],
 
@@ -562,6 +607,319 @@ class _MyCommunityCard extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Card de New Community — Estilo Amino (scroll horizontal, card compacto)
+class _NewCommunityCard extends StatelessWidget {
+  final CommunityModel community;
+  const _NewCommunityCard({required this.community});
+
+  Color _parseColor(String hex) {
+    try {
+      return Color(int.parse(hex.replaceFirst('#', '0xFF')));
+    } catch (_) {
+      return AppTheme.aminoPurple;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _parseColor(community.themeColor);
+    return GestureDetector(
+      onTap: () => context.push('/community/${community.id}'),
+      child: Container(
+        width: 200,
+        margin: const EdgeInsets.only(right: 12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: AppTheme.cardColor,
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Background
+            if (community.bannerUrl != null)
+              CachedNetworkImage(
+                imageUrl: community.bannerUrl!,
+                fit: BoxFit.cover,
+                errorWidget: (_, __, ___) => Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [color, color.withValues(alpha: 0.5)],
+                    ),
+                  ),
+                ),
+              )
+            else
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [color, color.withValues(alpha: 0.5)],
+                  ),
+                ),
+              ),
+            // Gradient overlay
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.75),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // NEW badge
+            Positioned(
+              top: 8,
+              left: 8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: AppTheme.successColor,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Text(
+                  'NEW',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ),
+            // Info
+            Positioned(
+              bottom: 10,
+              left: 10,
+              right: 10,
+              child: Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: AppTheme.cardColor,
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: community.iconUrl != null
+                        ? CachedNetworkImage(
+                            imageUrl: community.iconUrl!,
+                            fit: BoxFit.cover,
+                          )
+                        : const Icon(Icons.groups_rounded,
+                            color: AppTheme.textHint, size: 16),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          community.name,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          '${formatCount(community.membersCount)} membros',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.7),
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Tile "For You" — Post popular com preview, estilo Amino
+class _ForYouPostTile extends StatelessWidget {
+  final Map<String, dynamic> post;
+  const _ForYouPostTile({required this.post});
+
+  @override
+  Widget build(BuildContext context) {
+    final title = post['title'] as String? ?? '';
+    final content = post['content'] as String? ?? '';
+    final imageUrl = post['image_url'] as String?;
+    final author = post['profiles'] as Map<String, dynamic>?;
+    final community = post['communities'] as Map<String, dynamic>?;
+    final likesCount = post['likes_count'] as int? ?? 0;
+    final commentsCount = post['comments_count'] as int? ?? 0;
+    final postId = post['id'] as String? ?? '';
+
+    return GestureDetector(
+      onTap: () => context.push('/post/$postId'),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppTheme.cardColor.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Thumbnail
+            if (imageUrl != null)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  width: 64,
+                  height: 64,
+                  fit: BoxFit.cover,
+                  errorWidget: (_, __, ___) => const SizedBox.shrink(),
+                ),
+              ),
+            if (imageUrl != null) const SizedBox(width: 12),
+            // Content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Community name
+                  if (community != null)
+                    Row(
+                      children: [
+                        if (community['icon_url'] != null)
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: CachedNetworkImage(
+                              imageUrl: community['icon_url'] as String,
+                              width: 14,
+                              height: 14,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        if (community['icon_url'] != null)
+                          const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            community['name'] as String? ?? '',
+                            style: TextStyle(
+                              color: AppTheme.textHint,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  if (community != null) const SizedBox(height: 4),
+                  // Title
+                  if (title.isNotEmpty)
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        color: AppTheme.textPrimary,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  if (title.isNotEmpty && content.isNotEmpty)
+                    const SizedBox(height: 2),
+                  // Content preview
+                  if (content.isNotEmpty)
+                    Text(
+                      content,
+                      style: TextStyle(
+                        color: AppTheme.textSecondary,
+                        fontSize: 12,
+                        height: 1.3,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  const SizedBox(height: 6),
+                  // Author + stats
+                  Row(
+                    children: [
+                      if (author != null) ...[
+                        CircleAvatar(
+                          radius: 10,
+                          backgroundColor:
+                              AppTheme.primaryColor.withValues(alpha: 0.2),
+                          backgroundImage: author['icon_url'] != null
+                              ? CachedNetworkImageProvider(
+                                  author['icon_url'] as String)
+                              : null,
+                          child: author['icon_url'] == null
+                              ? Text(
+                                  ((author['nickname'] as String?) ?? '?')[0]
+                                      .toUpperCase(),
+                                  style: const TextStyle(
+                                    color: AppTheme.primaryColor,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 8,
+                                  ),
+                                )
+                              : null,
+                        ),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            author['nickname'] as String? ?? '',
+                            style: TextStyle(
+                              color: AppTheme.textHint,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      Icon(Icons.favorite_rounded,
+                          size: 12, color: AppTheme.textHint),
+                      const SizedBox(width: 2),
+                      Text('$likesCount',
+                          style: TextStyle(
+                              color: AppTheme.textHint, fontSize: 11)),
+                      const SizedBox(width: 8),
+                      Icon(Icons.chat_bubble_rounded,
+                          size: 12, color: AppTheme.textHint),
+                      const SizedBox(width: 2),
+                      Text('$commentsCount',
+                          style: TextStyle(
+                              color: AppTheme.textHint, fontSize: 11)),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],

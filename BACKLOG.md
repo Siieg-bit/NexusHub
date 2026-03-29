@@ -19,8 +19,8 @@
 - [x] **Implementar sistema de categorias** - Categorias como: Anime & Manga, Gaming, Art, Music, K-Pop, Books, Movies & TV, Science, Sports, etc.
 - [x] **Cada comunidade deve pertencer a uma ou mais categorias**
 - [x] **Seção "Trending Communities"** com comunidades em alta
-- [ ] **Seção "New Communities"** com comunidades recém-criadas
-- [ ] **Seção "For You"** baseada em interesses do usuário
+- [x] **Seção "New Communities"** com comunidades recém-criadas (scroll horizontal com badge NEW, banner, ícone, nome, membros)
+- [x] **Seção "For You"** baseada em posts populares (thumbnail, comunidade, autor, likes/comments)
 - [x] **Banner carousel** com comunidades em destaque (curadoria)
 - [x] **Barra de busca funcional** com filtro por categoria, comunidade e usuário (tela de busca fiel ao Amino com tabs Comunidades/Usuários/Chats/Outros, resultado por ID Amino, tags coloridas)
 
