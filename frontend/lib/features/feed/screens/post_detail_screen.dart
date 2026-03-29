@@ -12,6 +12,7 @@ import '../../../core/services/supabase_service.dart';
 import '../widgets/block_content_renderer.dart';
 import '../widgets/poll_quiz_widget.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
+import '../../moderation/widgets/report_dialog.dart';
 
 /// Provider para detalhes de um post.
 final postDetailProvider =
@@ -173,6 +174,129 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               );
             },
           ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert_rounded),
+            color: AppTheme.surfaceColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            onSelected: (value) async {
+              final post = ref.read(postDetailProvider(widget.postId)).valueOrNull;
+              if (post == null) return;
+              switch (value) {
+                case 'report':
+                  ReportDialog.show(
+                    context,
+                    communityId: post.communityId ?? '',
+                    targetPostId: widget.postId,
+                  );
+                  break;
+                case 'delete':
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      backgroundColor: AppTheme.surfaceColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      title: const Text('Deletar Post',
+                          style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w700)),
+                      content: const Text(
+                        'Tem certeza que deseja deletar este post? Esta ação não pode ser desfeita.',
+                        style: TextStyle(color: AppTheme.textSecondary),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: Text('Cancelar',
+                              style: TextStyle(color: Colors.grey[500])),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, true),
+                          child: const Text('Deletar',
+                              style: TextStyle(
+                                  color: AppTheme.errorColor,
+                                  fontWeight: FontWeight.w700)),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirm == true && mounted) {
+                    try {
+                      await SupabaseService.table('posts')
+                          .update({'status': 'deleted'})
+                          .eq('id', widget.postId);
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Post deletado'),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                        context.pop();
+                      }
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Erro: $e')),
+                        );
+                      }
+                    }
+                  }
+                  break;
+                case 'copy_link':
+                  Clipboard.setData(ClipboardData(
+                      text: 'https://nexushub.app/p/${widget.postId}'));
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Link copiado!'),
+                        behavior: SnackBarBehavior.floating,
+                        duration: Duration(seconds: 1),
+                      ),
+                    );
+                  }
+                  break;
+              }
+            },
+            itemBuilder: (context) {
+              final post = ref.read(postDetailProvider(widget.postId)).valueOrNull;
+              final isAuthor = post?.authorId == SupabaseService.currentUserId;
+              return [
+                const PopupMenuItem(
+                  value: 'copy_link',
+                  child: Row(
+                    children: [
+                      Icon(Icons.link_rounded, size: 18, color: AppTheme.textSecondary),
+                      SizedBox(width: 10),
+                      Text('Copiar Link', style: TextStyle(color: AppTheme.textPrimary)),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'report',
+                  child: Row(
+                    children: [
+                      Icon(Icons.flag_rounded, size: 18, color: Colors.orange),
+                      SizedBox(width: 10),
+                      Text('Reportar', style: TextStyle(color: AppTheme.textPrimary)),
+                    ],
+                  ),
+                ),
+                if (isAuthor)
+                  const PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_rounded, size: 18, color: AppTheme.errorColor),
+                        SizedBox(width: 10),
+                        Text('Deletar', style: TextStyle(color: AppTheme.errorColor)),
+                      ],
+                    ),
+                  ),
+              ];
+            },
+          ),
         ],
       ),
       body: postAsync.when(
@@ -282,6 +406,47 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             fontWeight: FontWeight.w800,
                             color: AppTheme.textPrimary,
                           ),
+                        ),
+                      ),
+
+                    // ======================================================
+                    // TAGS
+                    // ======================================================
+                    if (post.tags.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                        child: Wrap(
+                          spacing: 6,
+                          runSpacing: 4,
+                          children: post.tags.map((tag) {
+                            return GestureDetector(
+                              onTap: () {
+                                // Navegar para busca com tag
+                                context.push('/search?q=%23$tag');
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primaryColor
+                                      .withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: AppTheme.primaryColor
+                                        .withValues(alpha: 0.3),
+                                  ),
+                                ),
+                                child: Text(
+                                  '#$tag',
+                                  style: const TextStyle(
+                                    color: AppTheme.primaryColor,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
                         ),
                       ),
 

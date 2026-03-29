@@ -107,13 +107,13 @@
 
 - [x] PostCard com autor, título, conteúdo, mídia
 - [x] Tipos: Blog, Poll, Quiz
-- [ ] **Tela de criação de post funcional** com editor
-- [ ] **Upload de imagens** nos posts
-- [ ] **Sistema de tags** funcional
-- [ ] **Compartilhamento** de posts
-- [ ] **Bookmark/Salvar** posts
-- [ ] **Reportar** posts
-- [ ] **Deletar** posts (autor/moderador)
+- [x] **Tela de criação de post funcional** com editor (create_post_screen com block editor, mídia, poll, quiz, crosspost)
+- [x] **Upload de imagens** nos posts (integrado no create_post_screen com image picker)
+- [x] **Sistema de tags** funcional (tags exibidas no PostDetailScreen com chips clicáveis #tag, busca por tag)
+- [x] **Compartilhamento** de posts (botão share no AppBar copia deep link)
+- [x] **Bookmark/Salvar** posts (toggle_bookmark RPC integrado no PostDetailScreen)
+- [x] **Reportar** posts (ReportDialog integrado via PopupMenuButton no PostDetailScreen)
+- [x] **Deletar** posts (autor pode deletar via menu more options, confirmação dialog)
 
 ## 6. SISTEMA DE CHAT
 
