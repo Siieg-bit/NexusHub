@@ -7,7 +7,7 @@
 - [x] 4. Top Bar Global (pílula de moedas proporcional, espaçamentos exatos) ✓
 - [x] 5. Sidebar/Drawer da comunidade (animação push/scale, módulos dinâmicos do ACM) ✓
 - [x] 6. Avatar Frames que vazam a borda (overflow visible, não ClipOval) ✓
-- [ ] 7. Chat Bubbles customizados (9-patch com decorações, não apenas cor de fundo)
+- [x] 7. Chat Bubbles customizados (9-patch com decorações, não apenas cor de fundo) ✓
 
 ## Funcionalidades Faltantes
 - [ ] 8. Heatmap de Check-in (grid estilo GitHub contributions na tela de Realizações)

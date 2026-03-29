@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/widgets/checkin_heatmap.dart';
 
 /// Conquistas / Achievements — Badges desbloqueáveis com progresso.
 class AchievementsScreen extends StatefulWidget {
@@ -16,6 +17,12 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
   List<Map<String, dynamic>> _allAchievements = [];
   Set<String> _unlockedIds = {};
   Map<String, int> _progressMap = {};
+
+  // Dados do heatmap de check-in
+  Map<String, int> _checkinData = {};
+  int _totalCheckins = 0;
+  int _currentStreak = 0;
+  int _longestStreak = 0;
 
   @override
   void initState() {
@@ -48,9 +55,65 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
           u['achievement_id'] as String: 100,
       };
 
+      // Carregar dados de check-in para o heatmap
+      await _loadCheckinHeatmap(userId);
+
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  /// Carrega o histórico de check-ins para o heatmap.
+  Future<void> _loadCheckinHeatmap(String userId) async {
+    try {
+      // Buscar check-ins dos últimos 12 meses
+      final oneYearAgo = DateTime.now().subtract(const Duration(days: 365));
+      final checkins = await SupabaseService.table('daily_checkins')
+          .select('checkin_date')
+          .eq('user_id', userId)
+          .gte('checkin_date', oneYearAgo.toIso8601String().split('T')[0])
+          .order('checkin_date');
+
+      final data = <String, int>{};
+      int streak = 0;
+      int maxStreak = 0;
+      DateTime? lastDate;
+
+      for (final row in List<Map<String, dynamic>>.from(checkins as List)) {
+        final dateStr = row['checkin_date'] as String;
+        data[dateStr] = 1; // Nível 1 para check-in simples
+
+        // Calcular streaks
+        final date = DateTime.parse(dateStr);
+        if (lastDate != null) {
+          final diff = date.difference(lastDate!).inDays;
+          if (diff == 1) {
+            streak++;
+            // Aumentar nível baseado na streak
+            if (streak >= 30) {
+              data[dateStr] = 4;
+            } else if (streak >= 14) {
+              data[dateStr] = 3;
+            } else if (streak >= 7) {
+              data[dateStr] = 2;
+            }
+          } else {
+            streak = 1;
+          }
+        } else {
+          streak = 1;
+        }
+        if (streak > maxStreak) maxStreak = streak;
+        lastDate = date;
+      }
+
+      _checkinData = data;
+      _totalCheckins = data.length;
+      _currentStreak = streak;
+      _longestStreak = maxStreak;
+    } catch (_) {
+      // Silenciar erro — heatmap é opcional
     }
   }
 
@@ -91,6 +154,15 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Heatmap de Check-in
+                      CheckinHeatmap(
+                        checkinData: _checkinData,
+                        totalCheckins: _totalCheckins,
+                        currentStreak: _currentStreak,
+                        longestStreak: _longestStreak,
+                      ),
+                      const SizedBox(height: 24),
+
                       // Stats
                       Container(
                         width: double.infinity,
