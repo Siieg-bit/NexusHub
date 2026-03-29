@@ -39,6 +39,7 @@ import '../features/settings/screens/devices_screen.dart';
 import '../features/settings/screens/app_permissions_screen.dart';
 import '../features/settings/screens/privacy_policy_screen.dart';
 import '../features/settings/screens/terms_of_use_screen.dart';
+import '../features/settings/screens/linked_accounts_screen.dart';
 import '../features/explore/screens/search_screen.dart';
 import '../features/profile/screens/user_wall_screen.dart';
 import '../features/profile/screens/followers_screen.dart';
@@ -52,6 +53,7 @@ import '../features/wiki/screens/wiki_screen.dart';
 import '../features/wiki/screens/wiki_curator_review_screen.dart';
 import '../features/communities/screens/shared_folder_screen.dart';
 import '../features/moderation/screens/edit_guidelines_screen.dart';
+import '../features/moderation/screens/admin_reports_screen.dart';
 import '../features/live/screens/screening_room_screen.dart';
 import '../features/stories/screens/create_story_screen.dart';
 import '../features/feed/screens/drafts_screen.dart';
@@ -359,6 +361,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'admin-panel',
         builder: (context, state) => const AdminPanelScreen(),
       ),
+      GoRoute(
+        path: '/admin/reports',
+        name: 'admin-reports',
+        builder: (context, state) => const AdminReportsScreen(),
+      ),
 
       // ====================================================================
       // NOTIFICAÇÕES
@@ -411,6 +418,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/settings/terms-of-use',
         name: 'terms-of-use',
         builder: (context, state) => const TermsOfUseScreen(),
+      ),
+      GoRoute(
+        path: '/settings/linked-accounts',
+        name: 'linked-accounts',
+        builder: (context, state) => const LinkedAccountsScreen(),
       ),
 
       // ====================================================================

@@ -5,6 +5,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/utils/media_utils.dart';
 import '../../../core/services/supabase_service.dart';
 import '../widgets/block_editor.dart';
+import '../../chat/widgets/giphy_picker.dart';
 import '../widgets/crosspost_picker.dart';
 import '../../../core/utils/responsive.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -57,6 +58,10 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   // Visibilidade e controle de comentários
   String _postVisibility = 'public'; // public, followers, private
   bool _commentsBlocked = false;
+  // GIF e Música
+  String? _gifUrl;
+  String? _musicUrl;
+  String? _musicTitle;
 
   static const _postTypes = [
     _PostTypeOption('normal', 'Blog', Icons.article_rounded),
@@ -192,6 +197,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             : null,
         'visibility': _postVisibility,
         'comments_blocked': _commentsBlocked,
+        if (_gifUrl != null) 'gif_url': _gifUrl,
+        if (_musicUrl != null) 'music_url': _musicUrl,
+        if (_musicTitle != null) 'music_title': _musicTitle,
         if (_selectedType == 'crosspost' && _crosspostCommunity != null) ...{
           'original_community_id': _crosspostCommunity!['id'],
         },
@@ -1194,17 +1202,18 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             _ToolbarButton(Icons.image_rounded, 'Image', _pickImage),
-            _ToolbarButton(Icons.gif_rounded, 'GIF', () {
-              // GIF picker - abre busca de GIFs
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('GIFs em breve!'), behavior: SnackBarBehavior.floating),
-              );
+            _ToolbarButton(Icons.gif_rounded, 'GIF', () async {
+              final url = await GiphyPicker.show(context);
+              if (url != null && mounted) {
+                setState(() => _gifUrl = url);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('GIF adicionado ao post!'), behavior: SnackBarBehavior.floating),
+                );
+              }
             }),
             _ToolbarButton(
                 Icons.music_note_rounded, 'Music', () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('M\u00fasica em breve!'), behavior: SnackBarBehavior.floating),
-              );
+              _showMusicPicker();
             }),
             _ToolbarButton(
                 Icons.format_bold_rounded, 'Bold', () => _wrapSelection('**', '**')),
@@ -1212,6 +1221,86 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 Icons.format_italic_rounded, 'Italic', () => _wrapSelection('_', '_')),
             _ToolbarButton(Icons.format_strikethrough_rounded, 'Strike',
                 () => _wrapSelection('~~', '~~')),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showMusicPicker() {
+    final r = context.r;
+    final urlCtrl = TextEditingController(text: _musicUrl ?? '');
+    final titleCtrl = TextEditingController(text: _musicTitle ?? '');
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: context.surfaceColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
+      ),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+          left: r.s(20), right: r.s(20), top: r.s(20),
+          bottom: MediaQuery.of(ctx).viewInsets.bottom + r.s(24),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Adicionar Música',
+                style: TextStyle(fontSize: r.fs(18), fontWeight: FontWeight.w800, color: context.textPrimary)),
+            SizedBox(height: r.s(16)),
+            TextField(
+              controller: titleCtrl,
+              style: TextStyle(color: context.textPrimary),
+              decoration: InputDecoration(
+                hintText: 'Nome da música (ex: Artist - Song)',
+                hintStyle: TextStyle(color: Colors.grey[600]),
+                filled: true,
+                fillColor: context.cardBg,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(r.s(10)),
+                  borderSide: BorderSide.none,
+                ),
+                prefixIcon: Icon(Icons.music_note_rounded, color: AppTheme.primaryColor, size: r.s(18)),
+              ),
+            ),
+            SizedBox(height: r.s(12)),
+            TextField(
+              controller: urlCtrl,
+              style: TextStyle(color: context.textPrimary),
+              decoration: InputDecoration(
+                hintText: 'URL do arquivo de áudio (.mp3, .ogg)',
+                hintStyle: TextStyle(color: Colors.grey[600]),
+                filled: true,
+                fillColor: context.cardBg,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(r.s(10)),
+                  borderSide: BorderSide.none,
+                ),
+                prefixIcon: Icon(Icons.link_rounded, color: Colors.grey[600], size: r.s(18)),
+              ),
+            ),
+            SizedBox(height: r.s(16)),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _musicUrl = urlCtrl.text.trim().isNotEmpty ? urlCtrl.text.trim() : null;
+                    _musicTitle = titleCtrl.text.trim().isNotEmpty ? titleCtrl.text.trim() : null;
+                  });
+                  Navigator.pop(ctx);
+                  if (_musicUrl != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Música adicionada ao post!'), behavior: SnackBarBehavior.floating),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryColor),
+                child: const Text('Confirmar'),
+              ),
+            ),
           ],
         ),
       ),

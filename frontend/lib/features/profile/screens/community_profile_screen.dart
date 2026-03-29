@@ -570,16 +570,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                 children: [
                   // Conquistas badge
                   GestureDetector(
-                    onTap: () {
-                      // Navegar para tela de conquistas
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Conquistas em breve!'),
-                          behavior: SnackBarBehavior.floating,
-                          duration: Duration(seconds: 1),
-                        ),
-                      );
-                    },
+                    onTap: () => context.push('/achievements'),
                     child: Container(
                       padding: EdgeInsets.symmetric(
                           horizontal: r.s(12), vertical: r.s(6)),

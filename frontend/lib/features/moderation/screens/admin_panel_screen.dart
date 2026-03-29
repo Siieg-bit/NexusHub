@@ -333,14 +333,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           icon: Icons.analytics_rounded,
           label: 'Relat\u00f3rios',
           description: 'Relat\u00f3rios de uso e modera\u00e7\u00e3o',
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Relat\u00f3rios em breve!'),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
-          },
+          onTap: () => context.push('/admin/reports'),
         ),
         _ToolItem(
           icon: Icons.settings_rounded,

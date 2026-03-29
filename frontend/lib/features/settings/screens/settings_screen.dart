@@ -442,14 +442,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     icon: Icons.link_rounded,
                     title: 'Contas Vinculadas',
                     subtitle: 'Google, Apple',
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Contas vinculadas em breve!'),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    },
+                    onTap: () => context.push('/settings/linked-accounts'),
                   ),
                 ]),
                 SizedBox(height: r.s(20)),

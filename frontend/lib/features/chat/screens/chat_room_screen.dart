@@ -14,6 +14,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/services/call_service.dart';
 import 'call_screen.dart';
 import '../widgets/giphy_picker.dart';
+import '../widgets/forward_message_sheet.dart';
 import '../widgets/sticker_picker.dart';
 import '../widgets/voice_recorder.dart';
 import '../../../core/utils/responsive.dart';
@@ -1725,11 +1726,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             // Encaminhar
             _actionTile(Icons.forward_rounded, 'Encaminhar', () {
               Navigator.pop(ctx);
-              Clipboard.setData(ClipboardData(text: message.content ?? ''));
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Mensagem copiada! Cole em outro chat para encaminhar.'),
-                  behavior: SnackBarBehavior.floating,
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (_) => ForwardMessageSheet(
+                  messageContent: message.content ?? '',
+                  mediaUrl: message.mediaUrl,
+                  mediaType: message.mediaType,
                 ),
               );
             }),

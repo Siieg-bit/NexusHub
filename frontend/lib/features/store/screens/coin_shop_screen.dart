@@ -560,12 +560,23 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
           SizedBox(height: r.s(16)),
           if (!IAPService.isAminoPlus)
             GestureDetector(
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content:
-                          Text('Assinatura será habilitada em breve!')),
-                );
+              onTap: _isPurchasing ? null : () async {
+                setState(() => _isPurchasing = true);
+                try {
+                  final success = await IAPService.subscribeAminoPlus();
+                  if (mounted) {
+                    if (success) {
+                      _showSuccess('Amino+ ativado! Bem-vindo ao clube premium!');
+                      setState(() {});
+                    } else {
+                      _showError('Não foi possível processar a assinatura.');
+                    }
+                  }
+                } catch (e) {
+                  if (mounted) _showError('Erro: $e');
+                } finally {
+                  if (mounted) setState(() => _isPurchasing = false);
+                }
               },
               child: Container(
                 width: double.infinity,
