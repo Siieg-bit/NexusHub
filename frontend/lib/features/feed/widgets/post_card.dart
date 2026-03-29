@@ -411,6 +411,9 @@ class _PostCardState extends State<PostCard>
       case 'link':
       case 'external':
         return _buildLinkPreview();
+      case 'crosspost':
+      case 'repost':
+        return _buildCrosspostBanner();
       default:
         return const SizedBox.shrink();
     }
@@ -715,6 +718,74 @@ class _PostCardState extends State<PostCard>
                   ],
                 ),
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── CROSSPOST / REPOST BANNER ──
+  Widget _buildCrosspostBanner() {
+    final isRepost = _post.type == 'repost';
+    final label = isRepost ? 'Repost' : 'Crosspost';
+    final icon = isRepost ? Icons.repeat_rounded : Icons.share_rounded;
+    final color = isRepost ? const Color(0xFF607D8B) : const Color(0xFF9C27B0);
+    final originId = _post.originalCommunityId;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+      child: GestureDetector(
+        onTap: () {
+          if (_post.originalPostId != null) {
+            context.push('/post/${_post.originalPostId}');
+          }
+        },
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: color.withValues(alpha: 0.25)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: color, size: 18),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                        color: color,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      originId != null
+                          ? 'De outra comunidade'
+                          : 'Post compartilhado',
+                      style: TextStyle(
+                        color: Colors.grey[500],
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.open_in_new_rounded, size: 14, color: Colors.grey[600]),
             ],
           ),
         ),

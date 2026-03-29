@@ -8,7 +8,7 @@ Pendências extraídas dos 3 documentos de auditoria, cruzadas com o código atu
 - [x] 2. **Poll/Quiz UI no PostDetailScreen** — O PostCard já tem `_buildPoll()` e `_buildQuiz()` com votação funcional, mas o PostDetailScreen (tela de detalhe) NÃO renderiza polls nem quizzes. Precisa replicar a UI de votação/resposta no detalhe.
 - [x] 3. **Animação de Level Up** — O check-in detecta `level_up == true` mas só mostra um SnackBar. No Amino, subir de nível gera um dialog fullscreen com confetti, novo título e animação.
 - [x] 4. **Provider Global de Cosméticos** — `AvatarWithFrame` só é usado em 2 locais (profile_screen e community_profile_screen). Falta usar em: lista de membros, comentários, chat list, leaderboard, post_card author. Precisa de um Provider global que cache os cosméticos equipados de cada usuário.
-- [ ] 5. **Crosspost entre Comunidades** — O modelo suporta `type: crosspost` e o create_post_screen tem a opção, mas não há UI para selecionar a comunidade destino.
+- [x] 5. **Crosspost entre Comunidades** — CrosspostPicker integrado no create_post_screen com seleção de comunidade destino, campo corrigido para `original_community_id`, post-espelho criado na comunidade destino, e renderização de crosspost/repost no PostCard com banner clicável.
 - [ ] 6. **Wiki: Revisão por Curadores + Pin no Perfil** — Não existe fluxo de submissão à Wiki Global com revisão por curadores, nem funcionalidade de "Pinar" wikis aprovadas no perfil do usuário.
 
 ## Prioridade MÉDIA (Nice to Have)

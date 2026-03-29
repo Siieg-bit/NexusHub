@@ -178,8 +178,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         'background_url': _backgroundUrlController.text.trim().isNotEmpty
             ? _backgroundUrlController.text.trim()
             : null,
-        if (_selectedType == 'crosspost' && _crosspostCommunity != null)
-          'crosspost_community_id': _crosspostCommunity!['id'],
+        if (_selectedType == 'crosspost' && _crosspostCommunity != null) ...{
+          'original_community_id': _crosspostCommunity!['id'],
+        },
       };
 
       // Criar post e ganhar reputação
@@ -204,6 +205,36 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       }
 
       final postId = result['id'] as String;
+
+      // Crosspost: criar post-espelho na comunidade destino
+      if (_selectedType == 'crosspost' && _crosspostCommunity != null) {
+        try {
+          await SupabaseService.table('posts').insert({
+            'community_id': _crosspostCommunity!['id'],
+            'author_id': userId,
+            'type': 'crosspost',
+            'title': _titleController.text.trim().isNotEmpty
+                ? _titleController.text.trim()
+                : null,
+            'content': _useBlogEditor
+                ? _contentBlocks
+                    .where((b) => b.type == BlockType.text || b.type == BlockType.heading)
+                    .map((b) => b.controller?.text ?? b.text)
+                    .where((t) => t.isNotEmpty)
+                    .join('\n\n')
+                : _contentController.text.trim(),
+            'content_blocks': _useBlogEditor
+                ? _contentBlocks.map((b) => b.toJson()).toList()
+                : null,
+            'media_urls': _mediaUrls.isNotEmpty ? _mediaUrls : [],
+            'cover_image_url': _coverImageUrl,
+            'original_post_id': postId,
+            'original_community_id': widget.communityId,
+          });
+        } catch (_) {
+          // Crosspost espelho é best-effort
+        }
+      }
 
       // Criar opções de enquete
       if (_selectedType == 'poll') {
