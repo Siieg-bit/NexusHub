@@ -130,10 +130,10 @@
 
 ## 7. SISTEMA DE NOTIFICAÇÕES
 
-- [ ] **Tela de notificações** completa
-- [ ] **Tipos**: curtida, comentário, seguidor, menção, convite de chat
-- [ ] **Badge de contagem** no ícone de notificação
-- [ ] **Marcar como lida**
+- [x] **Tela de notificações** completa (NotificationsScreen com tiles, avatares, ícones por tipo, indicador não-lida)
+- [x] **Tipos**: curtida, comentário, seguidor, menção, convite de chat, level_up, achievement
+- [x] **Badge de contagem** no ícone de notificação (unreadNotificationCountProvider integrado em todas as AminoTopBar)
+- [x] **Marcar como lida** (individual ao tocar + botão 'Marcar todas' no AppBar)
 
 ## 8. GAMIFICAÇÃO
 

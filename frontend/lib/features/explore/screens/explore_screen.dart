@@ -9,6 +9,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../core/widgets/amino_top_bar.dart';
 import '../../../core/widgets/amino_particles_bg.dart';
+import '../../../core/providers/notification_provider.dart';
 
 /// Provider para busca de comunidades.
 final searchCommunitiesProvider =
@@ -139,6 +140,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             AminoTopBar(
               avatarUrl: _avatarUrl,
               coins: _coins,
+              notificationCount: ref.watch(unreadNotificationCountProvider).valueOrNull ?? 0,
               onSearchTap: () => context.push('/search'),
               onAddTap: () => context.push('/community/create'),
             ),

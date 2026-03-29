@@ -11,6 +11,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/amino_top_bar.dart';
 import '../../../core/widgets/amino_particles_bg.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
+import '../../../core/providers/notification_provider.dart';
 
 /// Provider para lista de chats do usuário.
 final chatListProvider = FutureProvider<List<ChatRoomModel>>((ref) async {
@@ -100,6 +101,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
             AminoTopBar(
               avatarUrl: _avatarUrl,
               coins: _coins,
+              notificationCount: ref.watch(unreadNotificationCountProvider).valueOrNull ?? 0,
               onSearchTap: () => context.push('/search'),
               onAddTap: () {
                 showModalBottomSheet(
