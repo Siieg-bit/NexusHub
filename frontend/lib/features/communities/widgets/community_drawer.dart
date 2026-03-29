@@ -9,8 +9,11 @@ import '../../../core/models/user_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../screens/community_list_screen.dart'; // para checkInStatusProvider
 
-/// Drawer estilo Amino Apps — web-preview fiel.
-/// Estrutura: sidebar de comunidades (60px) + painel principal (280px).
+/// Drawer estilo Amino Apps — réplica pixel-perfect.
+/// Estrutura: sidebar de comunidades (56px) + painel principal (flex).
+/// No Amino original, o drawer empurra a tela principal para a direita
+/// com animação de scale (push/scale). Isso é controlado pelo Scaffold.
+/// Os módulos do menu são dinâmicos e refletem a configuração do ACM.
 class CommunityDrawer extends ConsumerStatefulWidget {
   final CommunityModel community;
   final UserModel? currentUser;
@@ -111,7 +114,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
 
     return Drawer(
       backgroundColor: AppTheme.scaffoldBg,
-      width: 340,
+      width: MediaQuery.of(context).size.width * 0.85,
       shape: const RoundedRectangleBorder(),
       child: SafeArea(
         child: Row(
@@ -121,9 +124,9 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
             // Estilo web-preview: bg-[#070710], ícones de comunidades
             // ==============================================================
             Container(
-              width: 60,
+              width: 56,
               decoration: BoxDecoration(
-                color: const Color(0xFF070710),
+                color: const Color(0xFF060D18),
                 border: Border(
                   right: BorderSide(
                     color: Colors.white.withValues(alpha: 0.05),
@@ -551,7 +554,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                             Navigator.pop(context);
                             WidgetsBinding.instance.addPostFrameCallback((_) {
                               if (context.mounted) {
-                                context.push('/community/${widget.communityId}/wiki');
+                                context.push('/community/${widget.community.id}/wiki');
                               }
                             });
                           },
@@ -566,7 +569,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                               Navigator.pop(context);
                               WidgetsBinding.instance.addPostFrameCallback((_) {
                                 if (context.mounted) {
-                                  context.push('/community/${widget.communityId}/wiki');
+                                  context.push('/community/${widget.community.id}/wiki');
                                 }
                               });
                             },
