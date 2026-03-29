@@ -17,3 +17,9 @@
 - [x] 12. Screening Rooms — Assistir vídeos juntos com chat de voz ✓
 - [x] 13. Rich Text Editor de Blocos para blogs (imagens inline entre parágrafos) ✓
 - [x] 14. Stories reais (conteúdo efêmero estilo Reels, não apenas lista de posts) ✓
+
+## Recomendações de Refatoração Pixel-Perfect
+- [x] 15. Rec.1: CustomPainter/AnimatedBuilder (AminoDrawerController push/scale, AminoBottomNavBar com notch, AminoCustomTitle) ✓
+- [x] 16. Rec.2: Motor 9-slice real para Chat Bubbles (NineSliceBubble + ProceduralBubbleFrame) ✓
+- [x] 17. Rec.3: BlockContentRenderer integrado no PostDetailScreen e PostCard ✓
+- [x] 18. Rec.4: Ajuste colorimétrico final (cores roxas → azul-marinho, Custom Titles pixel-perfect) ✓
