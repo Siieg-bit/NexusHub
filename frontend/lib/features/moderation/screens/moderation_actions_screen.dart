@@ -80,6 +80,41 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
       'color': 0xFF66BB6A,
       'description': 'Remover o ban do usuário',
     },
+    {
+      'id': 'feature_post',
+      'label': 'Destacar Post',
+      'icon': Icons.star_rounded,
+      'color': 0xFFFFD600,
+      'description': 'Destacar o post no topo do feed da comunidade',
+    },
+    {
+      'id': 'unfeature_post',
+      'label': 'Remover Destaque',
+      'icon': Icons.star_border_rounded,
+      'color': 0xFF9E9E9E,
+      'description': 'Remover o destaque do post',
+    },
+    {
+      'id': 'pin_post',
+      'label': 'Fixar Post',
+      'icon': Icons.push_pin_rounded,
+      'color': 0xFF26A69A,
+      'description': 'Fixar o post no topo do feed (máx 3 fixados)',
+    },
+    {
+      'id': 'unpin_post',
+      'label': 'Desafixar Post',
+      'icon': Icons.push_pin_outlined,
+      'color': 0xFF78909C,
+      'description': 'Remover a fixação do post',
+    },
+    {
+      'id': 'kick',
+      'label': 'Expulsar',
+      'icon': Icons.exit_to_app_rounded,
+      'color': 0xFFFF5722,
+      'description': 'Remover o usuário da comunidade (pode voltar a entrar)',
+    },
   ];
 
   @override
@@ -199,6 +234,55 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                 'Você recebeu um aviso: ${_reasonController.text.trim()}',
             'target_id': widget.communityId,
           });
+          break;
+
+        case 'feature_post':
+          if (widget.targetPostId != null) {
+            await SupabaseService.table('posts')
+                .update({'is_featured': true, 'featured_at': DateTime.now().toUtc().toIso8601String()})
+                .eq('id', widget.targetPostId!);
+          }
+          break;
+
+        case 'unfeature_post':
+          if (widget.targetPostId != null) {
+            await SupabaseService.table('posts')
+                .update({'is_featured': false, 'featured_at': null})
+                .eq('id', widget.targetPostId!);
+          }
+          break;
+
+        case 'pin_post':
+          if (widget.targetPostId != null) {
+            await SupabaseService.table('posts')
+                .update({'is_pinned': true, 'pinned_at': DateTime.now().toUtc().toIso8601String()})
+                .eq('id', widget.targetPostId!);
+          }
+          break;
+
+        case 'unpin_post':
+          if (widget.targetPostId != null) {
+            await SupabaseService.table('posts')
+                .update({'is_pinned': false, 'pinned_at': null})
+                .eq('id', widget.targetPostId!);
+          }
+          break;
+
+        case 'kick':
+          if (widget.targetUserId != null) {
+            await SupabaseService.table('community_members')
+                .delete()
+                .eq('community_id', widget.communityId)
+                .eq('user_id', widget.targetUserId!);
+            // Notificar o usuário
+            await SupabaseService.table('notifications').insert({
+              'user_id': widget.targetUserId,
+              'actor_id': SupabaseService.currentUserId,
+              'notification_type': 'moderation',
+              'content': 'Você foi removido da comunidade: ${_reasonController.text.trim()}',
+              'target_id': widget.communityId,
+            });
+          }
           break;
       }
 

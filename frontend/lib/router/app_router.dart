@@ -48,6 +48,7 @@ import '../core/services/call_service.dart';
 import '../features/wiki/screens/wiki_screen.dart';
 import '../features/wiki/screens/wiki_curator_review_screen.dart';
 import '../features/communities/screens/shared_folder_screen.dart';
+import '../features/moderation/screens/edit_guidelines_screen.dart';
 import '../features/live/screens/screening_room_screen.dart';
 import '../features/stories/screens/create_story_screen.dart';
 import '../features/profile/screens/edit_community_profile_screen.dart';
@@ -334,6 +335,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             communityId: state.pathParameters['communityId']!,
             targetUserId: extra['targetUserId'] as String?,
             targetPostId: extra['targetPostId'] as String?,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/community/:communityId/edit-guidelines',
+        name: 'edit-guidelines',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return EditGuidelinesScreen(
+            communityId: state.pathParameters['communityId']!,
+            currentGuidelines: extra['guidelines'] as String?,
           );
         },
       ),

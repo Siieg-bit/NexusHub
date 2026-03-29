@@ -147,12 +147,12 @@
 
 ## 9. MODERAÇÃO
 
-- [ ] **Roles**: Agent (admin global), Leader, Curator, Member
-- [ ] **Painel de moderação** para Leaders/Curators
-- [ ] **Ban/Kick** membros
-- [ ] **Deletar posts/comentários**
-- [ ] **Feature/Pin** posts
-- [ ] **Editar guidelines** da comunidade
+- [x] **Roles**: Agent (admin global), Leader, Curator, Member (implementado no community_members com role field)
+- [x] **Painel de moderação** para Leaders/Curators (AdminPanelScreen + FlagCenterScreen + ModerationActionsScreen)
+- [x] **Ban/Kick** membros (ban/unban/kick/mute/warn/strike no ModerationActionsScreen)
+- [x] **Deletar posts/comentários** (delete_post/hide_post no ModerationActionsScreen)
+- [x] **Feature/Pin** posts (feature_post/pin_post/unfeature/unpin no ModerationActionsScreen)
+- [x] **Editar guidelines** da comunidade (EditGuidelinesScreen com editor + preview + templates)
 
 ## 10. AUTENTICAÇÃO
 
