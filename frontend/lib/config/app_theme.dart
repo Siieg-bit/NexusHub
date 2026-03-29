@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Tema visual do NexusHub — réplica fiel do Amino Apps.
-/// Cores extraídas do Amino original (APK real) como verdade absoluta.
-/// Fundo roxo-índigo, destaque ciano/teal, verde apenas para CTAs.
+/// Tema visual do NexusHub — réplica pixel-perfect do Amino Apps.
+/// Cores extraídas diretamente de screenshots do Amino original.
+/// Fundo azul-marinho profundo (#0D1B2A), destaque ciano (#00BCD4),
+/// verde apenas para CTAs (Check In, Join), rosa para FAB de criação.
 class AppTheme {
   AppTheme._();
 
   // ============================================================================
-  // CORES PRIMÁRIAS — AMINO (verdade absoluta do app original)
+  // CORES PRIMÁRIAS — AMINO ORIGINAL (pixel-perfect)
   // ============================================================================
 
   /// Verde Amino — usado APENAS para botões CTA (CHECK IN, Join, Entrar)
@@ -17,8 +18,12 @@ class AppTheme {
   static const Color primaryDark = Color(0xFF1E9B4A);
 
   /// Ciano/Teal — cor de destaque principal (nav ativa, links, destaques)
-  static const Color accentColor = Color(0xFF00BFA5); // amino-teal (destaque)
-  static const Color accentLight = Color(0xFF64FFDA);
+  static const Color accentColor = Color(0xFF00BCD4); // amino-cyan (destaque principal)
+  static const Color accentLight = Color(0xFF4DD0E1);
+
+  /// Rosa/Pink — cor do FAB de criação dentro de comunidades
+  static const Color fabPink = Color(0xFFE91E63); // amino-pink (FAB criar post)
+  static const Color fabPinkLight = Color(0xFFFF5C8D);
 
   // ============================================================================
   // CORES AMINO EXTRAS (do app original)
@@ -31,18 +36,19 @@ class AppTheme {
   static const Color aminoBlue = Color(0xFF2979FF); // amino-blue
   static const Color aminoRed = Color(0xFFE53935); // amino-red
   static const Color aminoCyan = Color(0xFF00BCD4); // amino-cyan (check-in)
+  static const Color aminoPink = Color(0xFFE91E63); // amino-pink (FAB)
 
   // ============================================================================
   // CORES DE FUNDO — DARK THEME (padrão do Amino original)
-  // Amino usa roxo-índigo escuro, NÃO preto puro
+  // Amino usa azul-marinho profundo, NÃO roxo-índigo, NÃO preto puro
   // ============================================================================
 
-  static const Color scaffoldBg = Color(0xFF1A1A3E); // roxo-índigo escuro
-  static const Color surfaceColor = Color(0xFF22224A); // card/surface roxo
-  static const Color cardColor = Color(0xFF2A2A5E); // card roxo semi-transparente
-  static const Color cardColorLight = Color(0xFF33336A); // hover/elevated card
-  static const Color bottomNavBg = Color(0xFF12122E); // nav bar roxo escuro
-  static const Color dividerColor = Color(0xFF3A3A6E); // borda roxa sutil
+  static const Color scaffoldBg = Color(0xFF0D1B2A); // azul-marinho profundo
+  static const Color surfaceColor = Color(0xFF1B2838); // card/surface azul escuro
+  static const Color cardColor = Color(0xFF213040); // card azul-marinho médio
+  static const Color cardColorLight = Color(0xFF2A3A4E); // hover/elevated card
+  static const Color bottomNavBg = Color(0xFF0A1628); // nav bar azul-marinho mais escuro
+  static const Color dividerColor = Color(0xFF2A3A50); // borda azul-marinho sutil
 
   // ============================================================================
   // CORES DE FUNDO — LIGHT THEME
@@ -56,12 +62,17 @@ class AppTheme {
   static const Color dividerColorLight = Color(0xFFE0E0E8);
 
   // ============================================================================
-  // CORES DE TEXTO
+  // CORES DE TEXTO — DARK THEME
+  // Amino usa cinza-azulado, NÃO arroxeado
   // ============================================================================
 
-  static const Color textPrimary = Color(0xFFF2F2F2); // --foreground
-  static const Color textSecondary = Color(0xFF9999BB); // --muted-foreground (tom roxo)
-  static const Color textHint = Color(0xFF666688); // hint com tom roxo
+  static const Color textPrimary = Color(0xFFF2F2F2); // branco suave
+  static const Color textSecondary = Color(0xFF8899AA); // cinza-azulado (não arroxeado)
+  static const Color textHint = Color(0xFF5A6A7A); // hint cinza-azulado
+
+  // ============================================================================
+  // CORES DE TEXTO — LIGHT THEME
+  // ============================================================================
 
   static const Color textPrimaryLight = Color(0xFF1A1A2E);
   static const Color textSecondaryLight = Color(0xFF666680);
@@ -136,7 +147,14 @@ class AppTheme {
   // ============================================================================
 
   static const LinearGradient primaryGradient = LinearGradient(
-    colors: [Color(0xFF2DBE60), Color(0xFF00BFA5)],
+    colors: [Color(0xFF2DBE60), Color(0xFF00BCD4)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  /// Gradiente do FAB rosa de criação (dentro de comunidades)
+  static const LinearGradient fabGradient = LinearGradient(
+    colors: [Color(0xFFE91E63), Color(0xFFFF5C8D)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -304,7 +322,7 @@ class AppTheme {
         indicatorSize: TabBarIndicatorSize.label,
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: primaryColor,
+        backgroundColor: fabPink,
         foregroundColor: Colors.white,
         elevation: 4,
         shape: CircleBorder(),
