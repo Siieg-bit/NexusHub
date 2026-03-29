@@ -1,0 +1,521 @@
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../../config/app_theme.dart';
+import '../../../core/services/supabase_service.dart';
+
+/// Editar Perfil da Comunidade — estilo Amino Apps.
+///
+/// Permite ao usuário customizar seu perfil LOCAL dentro de uma comunidade:
+///   - Nickname local (diferente do global)
+///   - Bio local
+///   - Avatar local
+///   - Banner local
+///
+/// No Amino, cada comunidade pode ter um perfil diferente.
+class EditCommunityProfileScreen extends StatefulWidget {
+  final String communityId;
+  const EditCommunityProfileScreen({super.key, required this.communityId});
+
+  @override
+  State<EditCommunityProfileScreen> createState() =>
+      _EditCommunityProfileScreenState();
+}
+
+class _EditCommunityProfileScreenState
+    extends State<EditCommunityProfileScreen> {
+  final _nicknameController = TextEditingController();
+  final _bioController = TextEditingController();
+  String? _localIconUrl;
+  String? _localBannerUrl;
+  bool _isLoading = true;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentProfile();
+  }
+
+  Future<void> _loadCurrentProfile() async {
+    try {
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) return;
+
+      final membership = await SupabaseService.table('community_members')
+          .select(
+              'local_nickname, local_bio, local_icon_url, local_banner_url')
+          .eq('community_id', widget.communityId)
+          .eq('user_id', userId)
+          .single();
+
+      if (mounted) {
+        setState(() {
+          _nicknameController.text =
+              (membership['local_nickname'] as String?) ?? '';
+          _bioController.text = (membership['local_bio'] as String?) ?? '';
+          _localIconUrl = membership['local_icon_url'] as String?;
+          _localBannerUrl = membership['local_banner_url'] as String?;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<String?> _uploadImage(String folder) async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1200,
+      imageQuality: 85,
+    );
+    if (image == null) return null;
+
+    try {
+      final userId = SupabaseService.currentUserId ?? 'unknown';
+      final bytes = await image.readAsBytes();
+      final ext = image.name.split('.').last;
+      final path =
+          'community_profiles/${widget.communityId}/$userId/$folder/${DateTime.now().millisecondsSinceEpoch}.$ext';
+
+      await SupabaseService.client.storage
+          .from('media')
+          .uploadBinary(path, bytes);
+
+      return SupabaseService.client.storage.from('media').getPublicUrl(path);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro no upload: $e'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+      return null;
+    }
+  }
+
+  Future<void> _pickAvatar() async {
+    final url = await _uploadImage('avatar');
+    if (url != null && mounted) {
+      setState(() => _localIconUrl = url);
+    }
+  }
+
+  Future<void> _pickBanner() async {
+    final url = await _uploadImage('banner');
+    if (url != null && mounted) {
+      setState(() => _localBannerUrl = url);
+    }
+  }
+
+  Future<void> _save() async {
+    setState(() => _isSaving = true);
+
+    try {
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) throw Exception('Não autenticado');
+
+      final updates = <String, dynamic>{};
+
+      final nickname = _nicknameController.text.trim();
+      updates['local_nickname'] = nickname.isEmpty ? null : nickname;
+
+      final bio = _bioController.text.trim();
+      updates['local_bio'] = bio.isEmpty ? null : bio;
+
+      updates['local_icon_url'] = _localIconUrl;
+      updates['local_banner_url'] = _localBannerUrl;
+
+      await SupabaseService.table('community_members')
+          .update(updates)
+          .eq('community_id', widget.communityId)
+          .eq('user_id', userId);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Perfil da comunidade atualizado!'),
+            backgroundColor: AppTheme.successColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        Navigator.of(context).pop(true);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro: $e'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _nicknameController.dispose();
+    _bioController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppTheme.scaffoldBg,
+      appBar: AppBar(
+        backgroundColor: AppTheme.scaffoldBg,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.close_rounded, color: AppTheme.textPrimary),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: const Text(
+          'Editar Perfil',
+          style: TextStyle(
+            color: AppTheme.textPrimary,
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        centerTitle: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: GestureDetector(
+              onTap: _isSaving ? null : _save,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: _isSaving
+                      ? AppTheme.accentColor.withValues(alpha: 0.5)
+                      : AppTheme.accentColor,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: _isSaving
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text(
+                        'Salvar',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                        ),
+                      ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: AppTheme.accentColor,
+                strokeWidth: 2.5,
+              ),
+            )
+          : SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 16),
+
+                  // ══════════════════════════════════════════════════════
+                  // BANNER
+                  // ══════════════════════════════════════════════════════
+                  const _SectionLabel(text: 'Banner'),
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: _pickBanner,
+                    child: Container(
+                      height: 140,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: AppTheme.cardColor,
+                        image: _localBannerUrl != null
+                            ? DecorationImage(
+                                image: NetworkImage(_localBannerUrl!),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
+                      ),
+                      child: _localBannerUrl == null
+                          ? Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.add_photo_alternate_rounded,
+                                    color: AppTheme.textHint, size: 36),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Toque para adicionar banner',
+                                  style: TextStyle(
+                                    color: AppTheme.textHint,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Stack(
+                              children: [
+                                Positioned(
+                                  bottom: 8,
+                                  right: 8,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          Colors.black.withValues(alpha: 0.6),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.edit_rounded,
+                                        color: Colors.white, size: 16),
+                                  ),
+                                ),
+                              ],
+                            ),
+                    ),
+                  ),
+                  if (_localBannerUrl != null)
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () =>
+                            setState(() => _localBannerUrl = null),
+                        child: const Text(
+                          'Remover banner',
+                          style: TextStyle(
+                            color: AppTheme.errorColor,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                  const SizedBox(height: 20),
+
+                  // ══════════════════════════════════════════════════════
+                  // AVATAR
+                  // ══════════════════════════════════════════════════════
+                  const _SectionLabel(text: 'Avatar'),
+                  const SizedBox(height: 8),
+                  Center(
+                    child: GestureDetector(
+                      onTap: _pickAvatar,
+                      child: Stack(
+                        children: [
+                          CircleAvatar(
+                            radius: 48,
+                            backgroundColor: AppTheme.cardColor,
+                            backgroundImage: _localIconUrl != null
+                                ? NetworkImage(_localIconUrl!)
+                                : null,
+                            child: _localIconUrl == null
+                                ? const Icon(Icons.person_rounded,
+                                    color: AppTheme.textHint, size: 40)
+                                : null,
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: AppTheme.accentColor,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: AppTheme.scaffoldBg,
+                                  width: 2,
+                                ),
+                              ),
+                              child: const Icon(Icons.camera_alt_rounded,
+                                  color: Colors.white, size: 14),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (_localIconUrl != null)
+                    Center(
+                      child: TextButton(
+                        onPressed: () =>
+                            setState(() => _localIconUrl = null),
+                        child: const Text(
+                          'Remover avatar local',
+                          style: TextStyle(
+                            color: AppTheme.errorColor,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                  const SizedBox(height: 24),
+
+                  // ══════════════════════════════════════════════════════
+                  // NICKNAME LOCAL
+                  // ══════════════════════════════════════════════════════
+                  const _SectionLabel(text: 'Nickname nesta comunidade'),
+                  const SizedBox(height: 8),
+                  _AminoTextField(
+                    controller: _nicknameController,
+                    hintText: 'Deixe vazio para usar o global',
+                    maxLength: 24,
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // ══════════════════════════════════════════════════════
+                  // BIO LOCAL
+                  // ══════════════════════════════════════════════════════
+                  const _SectionLabel(text: 'Bio nesta comunidade'),
+                  const SizedBox(height: 8),
+                  _AminoTextField(
+                    controller: _bioController,
+                    hintText: 'Deixe vazio para usar a bio global',
+                    maxLines: 5,
+                    maxLength: 500,
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // ══════════════════════════════════════════════════════
+                  // NOTA INFORMATIVA
+                  // ══════════════════════════════════════════════════════
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppTheme.accentColor.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: AppTheme.accentColor.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_outline_rounded,
+                            color: AppTheme.accentColor, size: 18),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Estas configurações se aplicam apenas a esta comunidade. '
+                            'Campos vazios usarão seu perfil global.',
+                            style: TextStyle(
+                              color: AppTheme.textSecondary,
+                              fontSize: 12,
+                              height: 1.4,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 40),
+                ],
+              ),
+            ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// WIDGETS AUXILIARES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+class _SectionLabel extends StatelessWidget {
+  final String text;
+  const _SectionLabel({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text.toUpperCase(),
+      style: const TextStyle(
+        color: AppTheme.textSecondary,
+        fontSize: 11,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 1.2,
+      ),
+    );
+  }
+}
+
+class _AminoTextField extends StatelessWidget {
+  final TextEditingController controller;
+  final String hintText;
+  final int maxLines;
+  final int? maxLength;
+
+  const _AminoTextField({
+    required this.controller,
+    required this.hintText,
+    this.maxLines = 1,
+    this.maxLength,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      maxLines: maxLines,
+      maxLength: maxLength,
+      style: const TextStyle(
+        color: AppTheme.textPrimary,
+        fontSize: 15,
+      ),
+      decoration: InputDecoration(
+        hintText: hintText,
+        hintStyle: TextStyle(
+          color: AppTheme.textHint,
+          fontSize: 14,
+        ),
+        filled: true,
+        fillColor: AppTheme.cardColor,
+        counterStyle: TextStyle(
+          color: AppTheme.textHint,
+          fontSize: 11,
+        ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(
+            color: AppTheme.dividerColor,
+            width: 0.5,
+          ),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(
+            color: AppTheme.dividerColor,
+            width: 0.5,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(
+            color: AppTheme.accentColor,
+            width: 1.5,
+          ),
+        ),
+      ),
+    );
+  }
+}

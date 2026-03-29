@@ -48,6 +48,7 @@ import '../features/wiki/screens/wiki_screen.dart';
 import '../features/communities/screens/shared_folder_screen.dart';
 import '../features/live/screens/screening_room_screen.dart';
 import '../features/stories/screens/create_story_screen.dart';
+import '../features/profile/screens/edit_community_profile_screen.dart';
 import 'shell_screen.dart';
 
 /// Router principal do app com GoRouter.
@@ -226,6 +227,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/profile/edit',
         name: 'edit-profile',
         builder: (context, state) => const EditProfileScreen(),
+      ),
+      GoRoute(
+        path: '/community/:communityId/profile/edit',
+        name: 'edit-community-profile',
+        builder: (context, state) {
+          final communityId = state.pathParameters['communityId']!;
+          return EditCommunityProfileScreen(communityId: communityId);
+        },
       ),
       GoRoute(
         path: '/community/:communityId/profile/:userId',
