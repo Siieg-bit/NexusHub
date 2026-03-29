@@ -9,6 +9,7 @@ import '../../../core/models/post_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/amino_animations.dart';
 import 'block_content_renderer.dart';
+import '../../../core/widgets/cosmetic_avatar.dart';
 
 /// Card de post no feed — estilo Amino Apps (web-preview).
 /// Suporta todos os 9 tipos de post com renderização interativa.
@@ -277,24 +278,11 @@ class _PostCardState extends State<PostCard>
       child: Row(
         children: [
           // Avatar (36px, rounded-full)
-          GestureDetector(
+          CosmeticAvatar(
+            userId: _post.authorId,
+            avatarUrl: _post.author?.iconUrl,
+            size: 36,
             onTap: () => context.push('/user/${_post.authorId}'),
-            child: CircleAvatar(
-              radius: 18,
-              backgroundColor: AppTheme.surfaceColor,
-              backgroundImage: _post.author?.iconUrl != null
-                  ? CachedNetworkImageProvider(_post.author!.iconUrl!)
-                  : null,
-              child: _post.author?.iconUrl == null
-                  ? Text(
-                      (_post.author?.nickname ?? '?')[0].toUpperCase(),
-                      style: const TextStyle(
-                          color: AppTheme.primaryColor,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14),
-                    )
-                  : null,
-            ),
           ),
           const SizedBox(width: 10),
           Expanded(

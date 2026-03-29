@@ -10,6 +10,7 @@ import '../../../core/models/community_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/amino_top_bar.dart';
 import '../../../core/widgets/amino_particles_bg.dart';
+import '../../../core/widgets/cosmetic_avatar.dart';
 
 /// Provider para lista de chats do usuário.
 final chatListProvider = FutureProvider<List<ChatRoomModel>>((ref) async {
@@ -676,40 +677,12 @@ class _AminoChatTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         child: Row(
           children: [
-            // ── Avatar ──
-            Stack(
-              children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: AppTheme.surfaceColor,
-                  backgroundImage: chatRoom.iconUrl != null
-                      ? CachedNetworkImageProvider(chatRoom.iconUrl!)
-                      : null,
-                  child: chatRoom.iconUrl == null
-                      ? Icon(
-                          chatRoom.type == 'direct'
-                              ? Icons.person_rounded
-                              : Icons.group_rounded,
-                          color: AppTheme.textHint,
-                          size: 20,
-                        )
-                      : null,
-                ),
-                if (chatRoom.type == 'direct')
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      width: 12,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        color: AppTheme.onlineColor,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppTheme.scaffoldBg, width: 2),
-                      ),
-                    ),
-                  ),
-              ],
+            // ── Avatar com frame cosmético ──
+            CosmeticAvatar(
+              userId: chatRoom.type == 'direct' ? chatRoom.members?.firstOrNull : null,
+              avatarUrl: chatRoom.iconUrl,
+              size: 48,
+              showOnline: chatRoom.type == 'direct',
             ),
             const SizedBox(width: 12),
 

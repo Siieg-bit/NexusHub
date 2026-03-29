@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/widgets/cosmetic_avatar.dart';
 
 /// Tela de Usuários Bloqueados — lista e gerencia bloqueios.
 class BlockedUsersScreen extends StatefulWidget {
@@ -219,24 +220,10 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                       ),
                       child: Row(
                         children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.1),
-                                width: 2,
-                              ),
-                            ),
-                            child: CircleAvatar(
-                              radius: 24,
-                              backgroundColor: AppTheme.scaffoldBg,
-                              backgroundImage: iconUrl != null
-                                  ? CachedNetworkImageProvider(iconUrl)
-                                  : null,
-                              child: iconUrl == null
-                                  ? Icon(Icons.person_rounded, color: Colors.grey[500])
-                                  : null,
-                            ),
+                          CosmeticAvatar(
+                            userId: blocked['id'] as String?,
+                            avatarUrl: iconUrl,
+                            size: 48,
                           ),
                           const SizedBox(width: 16),
                           Expanded(

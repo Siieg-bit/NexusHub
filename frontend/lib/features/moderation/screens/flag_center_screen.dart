@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/widgets/cosmetic_avatar.dart';
 
 /// Flag Center — Centro de denúncias para Leaders/Curators.
 /// Permite revisar denúncias (Art Theft, Bullying, etc.) e tomar ações.
@@ -297,17 +298,10 @@ class _FlagCard extends StatelessWidget {
           // Reporter
           Row(
             children: [
-              CircleAvatar(
-                radius: 16,
-                backgroundColor: Colors.white.withValues(alpha: 0.1),
-                backgroundImage: reporter?['avatar_url'] != null
-                    ? CachedNetworkImageProvider(
-                        reporter!['avatar_url'] as String)
-                    : null,
-                child: reporter?['avatar_url'] == null
-                    ? Icon(Icons.person_rounded,
-                        size: 16, color: Colors.grey[500])
-                    : null,
+              CosmeticAvatar(
+                userId: reporter?['id'] as String?,
+                avatarUrl: reporter?['avatar_url'] as String?,
+                size: 32,
               ),
               const SizedBox(width: 12),
               Expanded(

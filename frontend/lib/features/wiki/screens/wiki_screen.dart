@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/widgets/cosmetic_avatar.dart';
 
 // ============================================================================
 // WIKI LIST SCREEN
@@ -581,17 +582,10 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                   if (author != null)
                     Row(
                       children: [
-                        CircleAvatar(
-                          radius: 18,
-                          backgroundImage: author['icon_url'] != null
-                              ? CachedNetworkImageProvider(
-                                  author['icon_url'] as String)
-                              : null,
-                          backgroundColor: AppTheme.surfaceColor,
-                          child: author['icon_url'] == null
-                              ? const Icon(Icons.person_rounded,
-                                  size: 18, color: AppTheme.textSecondary)
-                              : null,
+                        CosmeticAvatar(
+                          userId: author['id'] as String?,
+                          avatarUrl: author['icon_url'] as String?,
+                          size: 36,
                         ),
                         const SizedBox(width: 10),
                         Text(
@@ -726,17 +720,10 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          CircleAvatar(
-                            radius: 16,
-                            backgroundColor: AppTheme.scaffoldBg,
-                            backgroundImage: profile?['icon_url'] != null
-                                ? CachedNetworkImageProvider(
-                                    profile!['icon_url'] as String)
-                                : null,
-                            child: profile?['icon_url'] == null
-                                ? const Icon(Icons.person,
-                                    size: 16, color: AppTheme.textSecondary)
-                                : null,
+                          CosmeticAvatar(
+                            userId: profile?['id'] as String?,
+                            avatarUrl: profile?['icon_url'] as String?,
+                            size: 32,
                           ),
                           const SizedBox(width: 12),
                           Expanded(

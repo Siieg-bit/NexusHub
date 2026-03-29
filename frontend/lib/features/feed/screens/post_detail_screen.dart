@@ -11,6 +11,7 @@ import '../../../core/models/comment_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../widgets/block_content_renderer.dart';
 import '../widgets/poll_quiz_widget.dart';
+import '../../../core/widgets/cosmetic_avatar.dart';
 
 /// Provider para detalhes de um post.
 final postDetailProvider =
@@ -200,40 +201,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       padding: const EdgeInsets.all(16),
                       child: Row(
                         children: [
-                          GestureDetector(
+                          CosmeticAvatar(
+                            userId: post.authorId,
+                            avatarUrl: post.author?.iconUrl,
+                            size: 48,
                             onTap: () => context.push('/user/${post.authorId}'),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: AppTheme.primaryColor.withValues(alpha: 0.5),
-                                  width: 2,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppTheme.primaryColor.withValues(alpha: 0.2),
-                                    blurRadius: 8,
-                                    spreadRadius: 1,
-                                  ),
-                                ],
-                              ),
-                              child: CircleAvatar(
-                                radius: 24,
-                                backgroundColor: AppTheme.surfaceColor,
-                                backgroundImage: post.author?.iconUrl != null
-                                    ? CachedNetworkImageProvider(post.author!.iconUrl!)
-                                    : null,
-                                child: post.author?.iconUrl == null
-                                    ? Text(
-                                        (post.author?.nickname ?? '?')[0].toUpperCase(),
-                                        style: const TextStyle(
-                                          color: AppTheme.primaryColor,
-                                          fontWeight: FontWeight.w800,
-                                        ),
-                                      )
-                                    : null,
-                              ),
-                            ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -721,25 +693,11 @@ class _CommentTileState extends State<_CommentTile> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            GestureDetector(
+            CosmeticAvatar(
+              userId: comment.authorId,
+              avatarUrl: comment.author?.iconUrl,
+              size: 36,
               onTap: () => context.push('/user/${comment.authorId}'),
-              child: CircleAvatar(
-                radius: 18,
-                backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.2),
-                backgroundImage: comment.author?.iconUrl != null
-                    ? CachedNetworkImageProvider(comment.author!.iconUrl!)
-                    : null,
-                child: comment.author?.iconUrl == null
-                    ? Text(
-                        (comment.author?.nickname ?? '?')[0].toUpperCase(),
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: AppTheme.primaryColor,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      )
-                    : null,
-              ),
             ),
             const SizedBox(width: 12),
             Expanded(

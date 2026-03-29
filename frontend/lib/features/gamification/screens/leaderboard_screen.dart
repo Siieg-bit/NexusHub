@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/helpers.dart';
+import '../../../core/widgets/cosmetic_avatar.dart';
 
 /// Provider para leaderboard de uma comunidade.
 final leaderboardProvider =
@@ -143,36 +144,10 @@ class _PodiumItem extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           // Avatar
-          Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: rank == 1
-                  ? [
-                      BoxShadow(
-                        color: color.withValues(alpha: 0.3),
-                        blurRadius: 12,
-                        spreadRadius: 2,
-                      )
-                    ]
-                  : null,
-            ),
-            child: CircleAvatar(
-              radius: rank == 1 ? 32 : 24,
-              backgroundColor: color.withValues(alpha: 0.2),
-              backgroundImage: data['icon_url'] != null
-                  ? CachedNetworkImageProvider(data['icon_url'] as String)
-                  : null,
-              child: data['icon_url'] == null
-                  ? Text(
-                      ((data['nickname'] as String?) ?? '?')[0].toUpperCase(),
-                      style: TextStyle(
-                        color: color,
-                        fontWeight: FontWeight.w800,
-                        fontSize: rank == 1 ? 24 : 18,
-                      ),
-                    )
-                  : null,
-            ),
+          CosmeticAvatar(
+            userId: data['user_id'] as String?,
+            avatarUrl: data['icon_url'] as String?,
+            size: rank == 1 ? 64 : 48,
           ),
           const SizedBox(height: 8),
           Text(
@@ -278,25 +253,11 @@ class _LeaderboardTile extends StatelessWidget {
             ),
           ),
           // Avatar
-          GestureDetector(
+          CosmeticAvatar(
+            userId: data['user_id'] as String?,
+            avatarUrl: data['icon_url'] as String?,
+            size: 48,
             onTap: () => context.push('/user/${data['user_id']}'),
-            child: CircleAvatar(
-              radius: 24,
-              backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.2),
-              backgroundImage: data['icon_url'] != null
-                  ? CachedNetworkImageProvider(data['icon_url'] as String)
-                  : null,
-              child: data['icon_url'] == null
-                  ? Text(
-                      ((data['nickname'] as String?) ?? '?')[0].toUpperCase(),
-                      style: const TextStyle(
-                        color: AppTheme.primaryColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    )
-                  : null,
-            ),
           ),
           const SizedBox(width: 16),
           // Info

@@ -7,6 +7,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/amino_animations.dart';
 import '../../../core/utils/helpers.dart';
+import '../../../core/widgets/cosmetic_avatar.dart';
 
 // =============================================================================
 // PROVIDER: Carrega todos os membros da comunidade
@@ -318,40 +319,12 @@ class _MemberTile extends StatelessWidget {
           ),
           child: Row(
             children: [
-              // Avatar com indicador online
-              Stack(
-                children: [
-                  CircleAvatar(
-                    radius: 22,
-                    backgroundColor:
-                        AppTheme.primaryColor.withValues(alpha: 0.2),
-                    backgroundImage: avatarUrl != null
-                        ? CachedNetworkImageProvider(avatarUrl)
-                        : null,
-                    child: avatarUrl == null
-                        ? Text(nickname[0].toUpperCase(),
-                            style: const TextStyle(
-                                color: AppTheme.primaryColor,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 16))
-                        : null,
-                  ),
-                  if (isOnline)
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        width: 12,
-                        height: 12,
-                        decoration: BoxDecoration(
-                          color: AppTheme.onlineColor,
-                          shape: BoxShape.circle,
-                          border:
-                              Border.all(color: AppTheme.scaffoldBg, width: 2),
-                        ),
-                      ),
-                    ),
-                ],
+              // Avatar com frame e indicador online
+              CosmeticAvatar(
+                userId: userId,
+                avatarUrl: avatarUrl,
+                size: 44,
+                showOnline: isOnline,
               ),
               const SizedBox(width: 12),
               // Info

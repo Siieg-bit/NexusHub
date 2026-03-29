@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/widgets/cosmetic_avatar.dart';
 
 /// Busca Global — Pesquisa por comunidades, usuários, posts e wiki.
 class SearchScreen extends StatefulWidget {
@@ -247,15 +248,10 @@ class _SearchScreenState extends State<SearchScreen>
           child: ListTile(
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             onTap: () => context.push('/user/${u['id']}'),
-            leading: CircleAvatar(
-              radius: 24,
-              backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
-              backgroundImage: u['icon_url'] != null
-                  ? CachedNetworkImageProvider(u['icon_url'] as String)
-                  : null,
-              child: u['icon_url'] == null
-                  ? const Icon(Icons.person_rounded, color: AppTheme.primaryColor)
-                  : null,
+            leading: CosmeticAvatar(
+              userId: u['id'] as String?,
+              avatarUrl: u['icon_url'] as String?,
+              size: 48,
             ),
             title: Text(u['nickname'] as String? ?? '',
                 style: const TextStyle(

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/widgets/cosmetic_avatar.dart';
 
 /// Tela de Seguidores / Seguindo — Lista de conexões sociais.
 class FollowersScreen extends StatefulWidget {
@@ -145,33 +146,10 @@ class _FollowersScreenState extends State<FollowersScreen>
             onTap: () {
               if (userId != null) context.push('/user/$userId');
             },
-            leading: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.2),
-                    blurRadius: 8,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-              child: CircleAvatar(
-                radius: 24,
-                backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.2),
-                backgroundImage: avatarUrl != null
-                    ? CachedNetworkImageProvider(avatarUrl)
-                    : null,
-                child: avatarUrl == null
-                    ? Text(
-                        nickname[0].toUpperCase(),
-                        style: const TextStyle(
-                          color: AppTheme.primaryColor,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      )
-                    : null,
-              ),
+            leading: CosmeticAvatar(
+              userId: userId,
+              avatarUrl: avatarUrl,
+              size: 48,
             ),
             title: Text(
               nickname,
