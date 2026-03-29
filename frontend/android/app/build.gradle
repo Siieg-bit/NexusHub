@@ -44,7 +44,7 @@ android {
 
     defaultConfig {
         applicationId "com.nexushub.app"
-        minSdk 23
+        minSdk 24 // Agora RTC SDK requer mínimo 24
         targetSdk flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName

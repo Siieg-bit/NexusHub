@@ -20,6 +20,10 @@
 # Supabase
 -keep class io.supabase.** { *; }
 
+# Agora RTC SDK
+-keep class io.agora.** { *; }
+-dontwarn io.agora.**
+
 # Gson (usado por várias libs)
 -keepattributes Signature
 -keepattributes *Annotation*

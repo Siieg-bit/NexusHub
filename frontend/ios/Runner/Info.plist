@@ -64,11 +64,11 @@
 	<key>FlutterDeepLinkingEnabled</key>
 	<true/>
 
-	<!-- Permissões -->
+	<!-- Permissões: Câmera e Microfone (Agora RTC + mídia) -->
 	<key>NSCameraUsageDescription</key>
-	<string>NexusHub precisa acessar a câmera para tirar fotos e gravar vídeos.</string>
+	<string>NexusHub precisa acessar a câmera para chamadas de vídeo, tirar fotos e gravar vídeos.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>NexusHub precisa acessar o microfone para mensagens de voz e chamadas.</string>
+	<string>NexusHub precisa acessar o microfone para chamadas de voz, chamadas de vídeo e mensagens de voz.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>NexusHub precisa acessar suas fotos para compartilhar imagens.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
@@ -77,11 +77,13 @@
 	<string>NexusHub usa sua localização para mostrar comunidades próximas.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>NexusHub usa Face ID para autenticação segura.</string>
+	<!-- Background Modes: fetch, push, audio (Agora RTC), voip (Agora calls) -->
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
 		<string>remote-notification</string>
 		<string>audio</string>
+		<string>voip</string>
 	</array>
 </dict>
 </plist>
