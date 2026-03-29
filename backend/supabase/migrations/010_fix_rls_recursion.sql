@@ -42,8 +42,11 @@ CREATE POLICY "chat_members_delete" ON public.chat_members
 
 -- 3. Recriar políticas de chat_threads (simplificadas)
 DROP POLICY IF EXISTS "chat_threads_select" ON public.chat_threads;
+DROP POLICY IF EXISTS "chat_threads_select_member" ON public.chat_threads;
 DROP POLICY IF EXISTS "chat_threads_insert" ON public.chat_threads;
+DROP POLICY IF EXISTS "chat_threads_insert_auth" ON public.chat_threads;
 DROP POLICY IF EXISTS "chat_threads_update" ON public.chat_threads;
+DROP POLICY IF EXISTS "chat_threads_update_host" ON public.chat_threads;
 
 CREATE POLICY "chat_threads_select" ON public.chat_threads
     FOR SELECT USING (true);
@@ -56,8 +59,11 @@ CREATE POLICY "chat_threads_update" ON public.chat_threads
 
 -- 4. Recriar políticas de chat_messages (usando função SECURITY DEFINER)
 DROP POLICY IF EXISTS "chat_messages_select" ON public.chat_messages;
+DROP POLICY IF EXISTS "chat_messages_select_member" ON public.chat_messages;
 DROP POLICY IF EXISTS "chat_messages_insert" ON public.chat_messages;
+DROP POLICY IF EXISTS "chat_messages_insert_member" ON public.chat_messages;
 DROP POLICY IF EXISTS "chat_messages_update" ON public.chat_messages;
+DROP POLICY IF EXISTS "chat_messages_update_own" ON public.chat_messages;
 
 CREATE POLICY "chat_messages_select" ON public.chat_messages
     FOR SELECT USING (public.is_chat_member(thread_id, auth.uid()));

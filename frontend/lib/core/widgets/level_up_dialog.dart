@@ -101,7 +101,6 @@ class _LevelUpContentState extends State<_LevelUpContent>
 
   @override
   void initState() {
-      final r = context.r;
     super.initState();
 
     // Glow pulsante no número do nível
@@ -129,13 +128,13 @@ class _LevelUpContentState extends State<_LevelUpContent>
       curve: Curves.easeOutBack,
     );
 
-    // Gerar partículas de confetti
+    // Gerar partículas de confetti (use fixed base size, responsive applied in build)
     for (int i = 0; i < 60; i++) {
       _particles.add(_ConfettiParticle(
         x: _random.nextDouble(),
         y: _random.nextDouble() * -1.0,
         speed: 0.2 + _random.nextDouble() * 0.5,
-        size: r.s(4) + _random.nextDouble() * 8,
+        size: 4 + _random.nextDouble() * 8,
         color: [
           AppTheme.accentColor,
           AppTheme.fabPink,
