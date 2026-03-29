@@ -13,6 +13,7 @@ import 'core/services/deep_link_service.dart';
 import 'core/services/push_notification_service.dart';
 import 'core/services/iap_service.dart';
 import 'core/services/ad_service.dart';
+import 'core/services/cache_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -66,6 +67,13 @@ void main() async {
     await AdService.initialize();
   } catch (e) {
     debugPrint('[Main] AdService init error: $e');
+  }
+
+  // Inicializar Cache Offline-First (Hive)
+  try {
+    await CacheService.init();
+  } catch (e) {
+    debugPrint('[Main] CacheService init error: $e');
   }
 
   // Registrar device fingerprint se usuário já estiver logado
