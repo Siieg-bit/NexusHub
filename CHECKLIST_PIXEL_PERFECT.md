@@ -11,7 +11,7 @@
 
 ## Funcionalidades Faltantes
 - [x] 8. Heatmap de Check-in (grid estilo GitHub contributions na tela de Realizações) ✓
-- [ ] 9. Gravação de Voice Notes no chat (substituir placeholder "em breve")
+- [x] 9. Gravação de Voice Notes no chat (substituir placeholder "em breve") ✓
 - [ ] 10. Sistema de Tips/Gorjetas no chat (substituir placeholder "em breve")
 - [ ] 11. Shared Folder — Pasta Compartilhada da comunidade
 - [ ] 12. Screening Rooms — Assistir vídeos juntos com chat de voz

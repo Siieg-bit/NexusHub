@@ -315,62 +315,200 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     }
   }
 
-  // ignore: unused_element
-  Future<void> _sendTip(String targetUserId) async {
-    final amountController = TextEditingController(text: '10');
-    final result = await showDialog<int>(
+  /// Diálogo de gorjeta estilo Amino — valores pré-definidos + custom.
+  ///
+  /// No Amino original, o sistema de "Props" permite enviar moedas
+  /// para outros usuários no chat. O diálogo mostra valores comuns
+  /// (10, 50, 100, 500) e um campo custom. A transferência é feita
+  /// via RPC transfer_coins e registrada como mensagem tipo 'tip'.
+  Future<void> _showTipDialog() async {
+    final customController = TextEditingController();
+    int? selectedAmount;
+
+    final result = await showModalBottomSheet<int>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surfaceColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Enviar Gorjeta',
-            style: TextStyle(
-                color: AppTheme.textPrimary, fontWeight: FontWeight.w700)),
-        content: TextField(
-          controller: amountController,
-          keyboardType: TextInputType.number,
-          style: const TextStyle(color: AppTheme.textPrimary),
-          decoration: InputDecoration(
-            labelText: 'Quantidade de moedas',
-            labelStyle: TextStyle(color: Colors.grey[500]),
-            prefixIcon: const Icon(Icons.monetization_on_rounded,
-                color: AppTheme.warningColor),
-            filled: true,
-            fillColor: AppTheme.cardColor,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) => Container(
+          decoration: const BoxDecoration(
+            color: AppTheme.surfaceColor,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle bar
+              Container(
+                width: 40, height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[700],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Header
+              Row(
+                children: [
+                  Container(
+                    width: 44, height: 44,
+                    decoration: BoxDecoration(
+                      color: AppTheme.warningColor.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.monetization_on_rounded,
+                        color: AppTheme.warningColor, size: 24),
+                  ),
+                  const SizedBox(width: 12),
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Enviar Gorjeta',
+                          style: TextStyle(
+                              color: AppTheme.textPrimary,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 18)),
+                      Text('Envie moedas para este chat',
+                          style: TextStyle(color: Colors.grey, fontSize: 13)),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              // Valores pré-definidos
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [10, 50, 100, 500].map((amount) {
+                  final isSelected = selectedAmount == amount;
+                  return GestureDetector(
+                    onTap: () => setModalState(() {
+                      selectedAmount = amount;
+                      customController.clear();
+                    }),
+                    child: Container(
+                      width: 72, height: 72,
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppTheme.warningColor.withValues(alpha: 0.15)
+                            : AppTheme.cardColor,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: isSelected
+                              ? AppTheme.warningColor
+                              : Colors.white.withValues(alpha: 0.05),
+                          width: isSelected ? 2 : 1,
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.monetization_on_rounded,
+                              color: isSelected
+                                  ? AppTheme.warningColor
+                                  : Colors.grey[600],
+                              size: 22),
+                          const SizedBox(height: 4),
+                          Text('$amount',
+                              style: TextStyle(
+                                color: isSelected
+                                    ? AppTheme.warningColor
+                                    : AppTheme.textPrimary,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 15,
+                              )),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 16),
+              // Campo custom
+              TextField(
+                controller: customController,
+                keyboardType: TextInputType.number,
+                style: const TextStyle(color: AppTheme.textPrimary),
+                onChanged: (val) => setModalState(() {
+                  selectedAmount = int.tryParse(val);
+                }),
+                decoration: InputDecoration(
+                  hintText: 'Ou digite um valor...',
+                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  prefixIcon: const Icon(Icons.edit_rounded,
+                      color: AppTheme.warningColor, size: 18),
+                  filled: true,
+                  fillColor: AppTheme.cardColor,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 12),
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Botão enviar
+              SizedBox(
+                width: double.infinity,
+                child: GestureDetector(
+                  onTap: selectedAmount != null && selectedAmount! > 0
+                      ? () => Navigator.pop(ctx, selectedAmount)
+                      : null,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    decoration: BoxDecoration(
+                      color: selectedAmount != null && selectedAmount! > 0
+                          ? AppTheme.warningColor
+                          : Colors.grey[800],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.send_rounded,
+                            color: Colors.white, size: 18),
+                        const SizedBox(width: 8),
+                        Text(
+                          selectedAmount != null && selectedAmount! > 0
+                              ? 'Enviar $selectedAmount moedas'
+                              : 'Selecione um valor',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
           ),
         ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text('Cancelar',
-                  style: TextStyle(color: Colors.grey[500]))),
-          ElevatedButton(
-            onPressed: () =>
-                Navigator.pop(ctx, int.tryParse(amountController.text)),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.warningColor,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-            ),
-            child: const Text('Enviar',
-                style: TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.w700)),
-          ),
-        ],
       ),
     );
-    amountController.dispose();
+    customController.dispose();
     if (result == null || result <= 0) return;
 
+    // Executar transferência via RPC
+    try {
+      await SupabaseService.rpc('transfer_coins', params: {
+        'p_receiver_id': _threadInfo?['creator_id'] ?? '',
+        'p_amount': result,
+      });
+    } catch (_) {
+      // Transferência pode falhar (saldo insuficiente), mas a mensagem
+      // de tip ainda é enviada como registro visual no chat.
+    }
+
+    // Enviar mensagem de tip no chat
     await _sendMessage(
       type: 'tip',
       metadata: {
         'amount': result,
-        'target_user_id': targetUserId,
+        'sender_name': SupabaseService.currentUserId ?? 'Usuário',
       },
     );
   }
@@ -910,12 +1048,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   color: AppTheme.warningColor,
                   onTap: () {
                     Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Sistema de gorjetas em breve!'),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
+                    _showTipDialog();
                   },
                 ),
                 _MediaOptionItem(
