@@ -100,7 +100,74 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
               avatarUrl: _avatarUrl,
               coins: _coins,
               onSearchTap: () => context.push('/search'),
-              onAddTap: () {/* TODO: Novo chat */},
+              onAddTap: () {
+                showModalBottomSheet(
+                  context: context,
+                  backgroundColor: AppTheme.surfaceColor,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  builder: (ctx) => Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('Novo Chat',
+                            style: TextStyle(
+                                color: AppTheme.textPrimary,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800)),
+                        const SizedBox(height: 20),
+                        ListTile(
+                          leading: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(Icons.person_add_rounded,
+                                color: AppTheme.primaryColor),
+                          ),
+                          title: const Text('Chat Privado',
+                              style: TextStyle(
+                                  color: AppTheme.textPrimary,
+                                  fontWeight: FontWeight.w600)),
+                          subtitle: Text('Iniciar conversa com um usu\u00e1rio',
+                              style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            context.push('/search');
+                          },
+                        ),
+                        ListTile(
+                          leading: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: AppTheme.accentColor.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(Icons.group_add_rounded,
+                                color: AppTheme.accentColor),
+                          ),
+                          title: const Text('Chat em Grupo',
+                              style: TextStyle(
+                                  color: AppTheme.textPrimary,
+                                  fontWeight: FontWeight.w600)),
+                          subtitle: Text('Criar um grupo com v\u00e1rios membros',
+                              style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            // Navegar para criar grupo
+                            context.push('/create-group-chat');
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
 
             // ── Conteúdo: Sidebar + Área principal ──

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 
@@ -348,7 +349,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                         trailing: Icon(Icons.chevron_right_rounded,
                             color: Colors.grey[600]),
                         onTap: () {
-                          // TODO: Navegar para lista de bloqueados
+                          context.push('/settings/blocked-users');
                         },
                       ),
                       Divider(
@@ -397,7 +398,78 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                                 GestureDetector(
                                   onTap: () {
                                     Navigator.pop(ctx);
-                                    // TODO: Delete account flow
+                                    // Deletar conta
+                                    showDialog(
+                                      context: context,
+                                      builder: (ctx2) {
+                                        final confirmCtrl = TextEditingController();
+                                        return AlertDialog(
+                                          backgroundColor: AppTheme.surfaceColor,
+                                          title: const Text('Confirmar Exclus\u00e3o',
+                                              style: TextStyle(color: AppTheme.errorColor)),
+                                          content: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text('Digite "EXCLUIR" para confirmar:',
+                                                  style: TextStyle(color: Colors.grey[400])),
+                                              const SizedBox(height: 12),
+                                              TextField(
+                                                controller: confirmCtrl,
+                                                style: const TextStyle(color: AppTheme.textPrimary),
+                                                decoration: InputDecoration(
+                                                  hintText: 'EXCLUIR',
+                                                  hintStyle: TextStyle(color: Colors.grey[600]),
+                                                  filled: true,
+                                                  fillColor: AppTheme.scaffoldBg,
+                                                  border: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(12),
+                                                    borderSide: BorderSide.none,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(ctx2),
+                                              child: const Text('Cancelar'),
+                                            ),
+                                            ElevatedButton(
+                                              onPressed: () async {
+                                                if (confirmCtrl.text.trim() != 'EXCLUIR') {
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    const SnackBar(
+                                                      content: Text('Digite EXCLUIR para confirmar'),
+                                                      behavior: SnackBarBehavior.floating,
+                                                    ),
+                                                  );
+                                                  return;
+                                                }
+                                                try {
+                                                  await SupabaseService.client.rpc('delete_user_account');
+                                                  await SupabaseService.client.auth.signOut();
+                                                  if (context.mounted) context.go('/login');
+                                                } catch (e) {
+                                                  if (ctx2.mounted) Navigator.pop(ctx2);
+                                                  if (context.mounted) {
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text('Erro: $e'),
+                                                        behavior: SnackBarBehavior.floating,
+                                                      ),
+                                                    );
+                                                  }
+                                                }
+                                              },
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: AppTheme.errorColor,
+                                              ),
+                                              child: const Text('Excluir Permanentemente'),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
                                   },
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(

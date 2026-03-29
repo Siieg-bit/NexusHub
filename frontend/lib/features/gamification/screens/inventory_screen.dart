@@ -38,7 +38,7 @@ class _InventoryScreenState extends State<InventoryScreen>
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
 
-      final res = await SupabaseService.table('user_inventory')
+      final res = await SupabaseService.table('user_purchases')
           .select('*, store_items(*)')
           .eq('user_id', userId)
           .order('purchased_at', ascending: false);
@@ -76,7 +76,7 @@ class _InventoryScreenState extends State<InventoryScreen>
     final isEquipped = _equippedIds.contains(itemId);
 
     try {
-      await SupabaseService.table('user_inventory')
+      await SupabaseService.table('user_purchases')
           .update({'is_equipped': !isEquipped}).eq('id', itemId);
 
       setState(() {

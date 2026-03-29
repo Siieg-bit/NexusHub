@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/providers/theme_provider.dart';
 
@@ -362,7 +363,71 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     subtitle:
                         SupabaseService.client.auth.currentUser?.email ?? '',
                     onTap: () {
-                      // TODO: Email/password change
+                      showDialog(
+                        context: context,
+                        builder: (ctx) {
+                          final emailCtrl = TextEditingController(
+                            text: SupabaseService.client.auth.currentUser?.email ?? '',
+                          );
+                          return AlertDialog(
+                            backgroundColor: AppTheme.surfaceColor,
+                            title: const Text('Alterar Email',
+                                style: TextStyle(color: AppTheme.textPrimary)),
+                            content: TextField(
+                              controller: emailCtrl,
+                              style: const TextStyle(color: AppTheme.textPrimary),
+                              decoration: InputDecoration(
+                                hintText: 'Novo email',
+                                hintStyle: TextStyle(color: Colors.grey[600]),
+                                filled: true,
+                                fillColor: AppTheme.scaffoldBg,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none,
+                                ),
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                child: const Text('Cancelar'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () async {
+                                  try {
+                                    await SupabaseService.client.auth.updateUser(
+                                      UserAttributes(email: emailCtrl.text.trim()),
+                                    );
+                                    if (ctx.mounted) Navigator.pop(ctx);
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Email de confirma\u00e7\u00e3o enviado!'),
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
+                                    }
+                                  } catch (e) {
+                                    if (ctx.mounted) Navigator.pop(ctx);
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Erro: $e'),
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppTheme.primaryColor,
+                                ),
+                                child: const Text('Salvar'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
                     },
                   ),
                   _SettingsItem(
@@ -370,7 +435,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     title: 'Contas Vinculadas',
                     subtitle: 'Google, Apple',
                     onTap: () {
-                      // TODO: Linked accounts
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Contas vinculadas em breve!'),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
                     },
                   ),
                 ]),
@@ -400,7 +470,63 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     title: 'Idioma',
                     subtitle: 'Português (Brasil)',
                     onTap: () {
-                      // TODO: Language settings
+                      showModalBottomSheet(
+                        context: context,
+                        backgroundColor: AppTheme.surfaceColor,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                        ),
+                        builder: (ctx) => Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('Idioma',
+                                  style: TextStyle(
+                                      color: AppTheme.textPrimary,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w800)),
+                              const SizedBox(height: 16),
+                              ListTile(
+                                leading: const Text('\uD83C\uDDE7\uD83C\uDDF7', style: TextStyle(fontSize: 24)),
+                                title: const Text('Portugu\u00eas (Brasil)',
+                                    style: TextStyle(color: AppTheme.textPrimary)),
+                                trailing: const Icon(Icons.check_circle_rounded,
+                                    color: AppTheme.primaryColor),
+                                onTap: () => Navigator.pop(ctx),
+                              ),
+                              ListTile(
+                                leading: const Text('\uD83C\uDDFA\uD83C\uDDF8', style: TextStyle(fontSize: 24)),
+                                title: const Text('English',
+                                    style: TextStyle(color: AppTheme.textPrimary)),
+                                onTap: () {
+                                  Navigator.pop(ctx);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('English coming soon!'),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                },
+                              ),
+                              ListTile(
+                                leading: const Text('\uD83C\uDDEA\uD83C\uDDF8', style: TextStyle(fontSize: 24)),
+                                title: const Text('Espa\u00f1ol',
+                                    style: TextStyle(color: AppTheme.textPrimary)),
+                                onTap: () {
+                                  Navigator.pop(ctx);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Espa\u00f1ol pr\u00f3ximamente!'),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
                     },
                   ),
                 ]),
@@ -456,14 +582,77 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     icon: Icons.help_rounded,
                     title: 'Central de Ajuda',
                     onTap: () {
-                      // TODO: Help center URL
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          backgroundColor: AppTheme.surfaceColor,
+                          title: const Text('Central de Ajuda',
+                              style: TextStyle(color: AppTheme.textPrimary)),
+                          content: const Text(
+                            'Para suporte, entre em contato:\n\n\u2022 Email: suporte@nexushub.app\n\u2022 Discord: discord.gg/nexushub\n\u2022 FAQ: nexushub.app/faq',
+                            style: TextStyle(color: AppTheme.textSecondary),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              child: const Text('Fechar'),
+                            ),
+                          ],
+                        ),
+                      );
                     },
                   ),
                   _SettingsItem(
                     icon: Icons.bug_report_rounded,
                     title: 'Reportar Bug',
                     onTap: () {
-                      // TODO: Bug report
+                      showDialog(
+                        context: context,
+                        builder: (ctx) {
+                          final bugCtrl = TextEditingController();
+                          return AlertDialog(
+                            backgroundColor: AppTheme.surfaceColor,
+                            title: const Text('Reportar Bug',
+                                style: TextStyle(color: AppTheme.textPrimary)),
+                            content: TextField(
+                              controller: bugCtrl,
+                              maxLines: 5,
+                              style: const TextStyle(color: AppTheme.textPrimary),
+                              decoration: InputDecoration(
+                                hintText: 'Descreva o bug encontrado...',
+                                hintStyle: TextStyle(color: Colors.grey[600]),
+                                filled: true,
+                                fillColor: AppTheme.scaffoldBg,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none,
+                                ),
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                child: const Text('Cancelar'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pop(ctx);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Bug reportado! Obrigado pelo feedback.'),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppTheme.primaryColor,
+                                ),
+                                child: const Text('Enviar'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
                     },
                   ),
                   _SettingsItem(

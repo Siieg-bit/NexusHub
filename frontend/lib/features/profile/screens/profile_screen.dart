@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -54,18 +55,26 @@ final userLinkedCommunitiesProvider =
       .toList();
 });
 
-/// Provider para wall messages de um usuário.
+/// Provider para wall messages de um usuário (usa tabela comments com profile_wall_id).
 final userWallProvider =
     FutureProvider.family<List<Map<String, dynamic>>, String>(
         (ref, userId) async {
   try {
-    final res = await SupabaseService.table('wall_messages')
+    final res = await SupabaseService.table('comments')
         .select(
-            '*, profiles!wall_messages_author_id_fkey(nickname, icon_url)')
-        .eq('target_user_id', userId)
+            '*, profiles!comments_author_id_fkey(id, nickname, icon_url)')
+        .eq('profile_wall_id', userId)
+        .eq('status', 'ok')
         .order('created_at', ascending: false)
         .limit(50);
-    return (res as List).map((e) => e as Map<String, dynamic>).toList();
+    return (res as List).map((e) {
+      final map = Map<String, dynamic>.from(e);
+      // Normalizar: mover profiles para campo 'author' para compatibilidade
+      if (map['profiles'] != null) {
+        map['author'] = map['profiles'];
+      }
+      return map;
+    }).toList();
   } catch (_) {
     return [];
   }
@@ -75,7 +84,7 @@ final userWallProvider =
 final equippedItemsProvider =
     FutureProvider.family<Map<String, String?>, String>((ref, userId) async {
   try {
-    final response = await SupabaseService.table('user_inventory')
+    final response = await SupabaseService.table('user_purchases')
         .select('*, store_items(*)')
         .eq('user_id', userId)
         .eq('is_equipped', true);
@@ -269,7 +278,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   IconButton(
                     icon: const Icon(Icons.share_outlined,
                         color: Colors.white, size: 22),
-                    onPressed: () {/* TODO: Share profile */},
+                    onPressed: () {
+                      final link = 'https://nexushub.app/u/${widget.userId}';
+                      Clipboard.setData(ClipboardData(text: link));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Link do perfil copiado!'),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    },
                   ),
                   IconButton(
                     icon: Icon(
@@ -1060,7 +1078,7 @@ class _WallTab extends ConsumerWidget {
                 itemBuilder: (context, index) {
                   final msg = messages[index];
                   final profile =
-                      msg['profiles'] as Map<String, dynamic>? ?? {};
+                      (msg['author'] ?? msg['profiles']) as Map<String, dynamic>? ?? {};
                   final authorId = msg['author_id'] as String? ?? '';
                   final createdAt =
                       DateTime.tryParse(msg['created_at'] as String? ?? '') ??
@@ -1166,8 +1184,8 @@ class _WallTab extends ConsumerWidget {
     final text = wallController.text.trim();
     if (text.isEmpty) return;
     try {
-      await SupabaseService.table('wall_messages').insert({
-        'target_user_id': userId,
+      await SupabaseService.table('comments').insert({
+        'profile_wall_id': userId,
         'author_id': SupabaseService.currentUserId,
         'content': text,
       });
@@ -1184,7 +1202,7 @@ class _WallTab extends ConsumerWidget {
 
   Future<void> _deleteMessage(WidgetRef ref, String messageId) async {
     try {
-      await SupabaseService.table('wall_messages')
+      await SupabaseService.table('comments')
           .delete()
           .eq('id', messageId);
       ref.invalidate(userWallProvider(userId));

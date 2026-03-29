@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 
@@ -229,6 +230,80 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     );
   }
 
+  void _showBroadcastDialog(BuildContext context) {
+    final msgCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surfaceColor,
+        title: const Text('Enviar Broadcast',
+            style: TextStyle(color: AppTheme.textPrimary)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Esta mensagem ser\u00e1 enviada para todos os usu\u00e1rios.',
+                style: TextStyle(color: Colors.grey[400], fontSize: 13)),
+            const SizedBox(height: 16),
+            TextField(
+              controller: msgCtrl,
+              maxLines: 4,
+              style: const TextStyle(color: AppTheme.textPrimary),
+              decoration: InputDecoration(
+                hintText: 'Digite a mensagem...',
+                hintStyle: TextStyle(color: Colors.grey[600]),
+                filled: true,
+                fillColor: AppTheme.scaffoldBg,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (msgCtrl.text.trim().isEmpty) return;
+              try {
+                await SupabaseService.client.rpc('send_broadcast', params: {
+                  'p_message': msgCtrl.text.trim(),
+                });
+                if (ctx.mounted) Navigator.pop(ctx);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Broadcast enviado!'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (ctx.mounted) Navigator.pop(ctx);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Erro: $e'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryColor,
+            ),
+            child: const Text('Enviar'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildToolsTab() {
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -237,25 +312,34 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           icon: Icons.broadcast_on_personal_rounded,
           label: 'Enviar Broadcast',
           description: 'Enviar mensagem para todos os usuários',
-          onTap: () {/* TODO */},
+          onTap: () {
+            _showBroadcastDialog(context);
+          },
         ),
         _ToolItem(
           icon: Icons.person_search_rounded,
-          label: 'Buscar Usuário',
-          description: 'Encontrar e gerenciar usuários',
-          onTap: () {/* TODO */},
+          label: 'Buscar Usu\u00e1rio',
+          description: 'Encontrar e gerenciar usu\u00e1rios',
+          onTap: () => context.push('/search'),
         ),
         _ToolItem(
           icon: Icons.analytics_rounded,
-          label: 'Relatórios',
-          description: 'Relatórios de uso e moderação',
-          onTap: () {/* TODO */},
+          label: 'Relat\u00f3rios',
+          description: 'Relat\u00f3rios de uso e modera\u00e7\u00e3o',
+          onTap: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Relat\u00f3rios em breve!'),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          },
         ),
         _ToolItem(
           icon: Icons.settings_rounded,
-          label: 'Configurações Globais',
-          description: 'Configurações da plataforma',
-          onTap: () {/* TODO */},
+          label: 'Configura\u00e7\u00f5es Globais',
+          description: 'Configura\u00e7\u00f5es da plataforma',
+          onTap: () => context.push('/settings'),
         ),
       ],
     );

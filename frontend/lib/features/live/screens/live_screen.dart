@@ -22,7 +22,14 @@ class LiveScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.videocam_rounded, color: AppTheme.textPrimary),
-            onPressed: () {/* TODO: Iniciar live */},
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Lives estar\u00e3o dispon\u00edveis em breve!'),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -69,7 +76,14 @@ class LiveScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             GestureDetector(
-              onTap: () {/* TODO: Criar Voice Chat */},
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Voice Chats estar\u00e3o dispon\u00edveis em breve!'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 decoration: BoxDecoration(

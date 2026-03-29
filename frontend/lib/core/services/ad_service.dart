@@ -112,21 +112,19 @@ class AdService {
 
     try {
       await SupabaseService.client.rpc('transfer_coins', params: {
-        'sender_id': userId,
-        'receiver_id': userId,
-        'amount': coins,
-        'description': 'Recompensa de anúncio',
+        'p_receiver_id': userId,
+        'p_amount': coins,
       });
     } catch (e) {
       // Fallback: atualizar diretamente
       try {
-        final current = await SupabaseService.table('wallets')
-            .select('balance')
-            .eq('user_id', userId)
+        final current = await SupabaseService.table('profiles')
+            .select('coins')
+            .eq('id', userId)
             .maybeSingle();
-        final balance = (current?['balance'] ?? 0) as num;
-        await SupabaseService.table('wallets')
-            .update({'balance': balance + coins}).eq('user_id', userId);
+        final balance = (current?['coins'] ?? 0) as num;
+        await SupabaseService.table('profiles')
+            .update({'coins': balance + coins}).eq('id', userId);
       } catch (e2) {
         debugPrint('[AdService] Erro ao creditar moedas: $e2');
       }
@@ -139,7 +137,7 @@ class AdService {
     if (userId == null) return;
 
     try {
-      await SupabaseService.table('ad_rewards').insert({
+      await SupabaseService.table('ad_reward_logs').insert({
         'user_id': userId,
         'reward_type': 'rewarded_video',
         'coins_earned': coins,

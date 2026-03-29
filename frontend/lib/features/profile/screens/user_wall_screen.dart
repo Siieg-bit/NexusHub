@@ -28,10 +28,11 @@ class _UserWallScreenState extends State<UserWallScreen> {
 
   Future<void> _loadMessages() async {
     try {
-      final res = await SupabaseService.table('wall_messages')
+      final res = await SupabaseService.table('comments')
           .select(
-              '*, profiles!wall_messages_author_id_fkey(nickname, icon_url)')
-          .eq('target_user_id', widget.userId)
+              '*, profiles!comments_author_id_fkey(id, nickname, icon_url)')
+          .eq('profile_wall_id', widget.userId)
+          .eq('status', 'ok')
           .order('created_at', ascending: false)
           .limit(50);
       _messages = List<Map<String, dynamic>>.from(res as List);
@@ -47,8 +48,8 @@ class _UserWallScreenState extends State<UserWallScreen> {
 
     setState(() => _isSending = true);
     try {
-      await SupabaseService.table('wall_messages').insert({
-        'target_user_id': widget.userId,
+      await SupabaseService.table('comments').insert({
+        'profile_wall_id': widget.userId,
         'author_id': SupabaseService.currentUserId,
         'content': text,
       });
@@ -67,7 +68,7 @@ class _UserWallScreenState extends State<UserWallScreen> {
 
   Future<void> _deleteMessage(String messageId) async {
     try {
-      await SupabaseService.table('wall_messages').delete().eq('id', messageId);
+      await SupabaseService.table('comments').delete().eq('id', messageId);
       await _loadMessages();
     } catch (e) {
       if (mounted) {
@@ -133,7 +134,7 @@ class _UserWallScreenState extends State<UserWallScreen> {
                           itemBuilder: (context, index) {
                             final msg = _messages[index];
                             final author =
-                                msg['profiles'] as Map<String, dynamic>?;
+                                (msg['profiles'] ?? msg['author']) as Map<String, dynamic>?;
                             final authorId = msg['author_id'] as String?;
                             final createdAt = DateTime.tryParse(
                                     msg['created_at'] as String? ?? '') ??

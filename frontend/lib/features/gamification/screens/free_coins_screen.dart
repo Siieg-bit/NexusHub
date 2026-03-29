@@ -28,13 +28,13 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
 
-      final wallet = await SupabaseService.table('wallets')
-          .select('balance')
-          .eq('user_id', userId)
+      final wallet = await SupabaseService.table('profiles')
+          .select('coins')
+          .eq('id', userId)
           .maybeSingle();
 
       final today = DateTime.now().toIso8601String().substring(0, 10);
-      final adCount = await SupabaseService.table('transactions')
+      final adCount = await SupabaseService.table('coin_transactions')
           .select()
           .eq('user_id', userId)
           .eq('type', 'ad_reward')
@@ -42,7 +42,7 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
 
       if (mounted) {
         setState(() {
-          _balance = wallet?['balance'] as int? ?? 0;
+          _balance = wallet?['coins'] as int? ?? 0;
           _adsWatchedToday = (adCount as List).length;
         });
       }

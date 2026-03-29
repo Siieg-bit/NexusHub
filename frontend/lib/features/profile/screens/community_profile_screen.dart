@@ -441,7 +441,54 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               GestureDetector(
-                                onTap: () {/* TODO: Add friend */},
+                                onTap: () async {
+                                  // Toggle follow
+                                  try {
+                                    final currentUserId = SupabaseService.currentUserId;
+                                    if (currentUserId == null) return;
+                                    final existing = await SupabaseService.table('follows')
+                                        .select('id')
+                                        .eq('follower_id', currentUserId)
+                                        .eq('following_id', widget.userId)
+                                        .maybeSingle();
+                                    if (existing != null) {
+                                      await SupabaseService.table('follows')
+                                          .delete()
+                                          .eq('follower_id', currentUserId)
+                                          .eq('following_id', widget.userId);
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('Deixou de seguir')),
+                                        );
+                                      }
+                                    } else {
+                                      await SupabaseService.table('follows').insert({
+                                        'follower_id': currentUserId,
+                                        'following_id': widget.userId,
+                                      });
+                                      try {
+                                        await SupabaseService.rpc('add_reputation', params: {
+                                          'p_community_id': widget.communityId,
+                                          'p_user_id': currentUserId,
+                                          'p_action': 'follow',
+                                          'p_source_id': widget.userId,
+                                        });
+                                      } catch (_) {}
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('Seguindo!')),
+                                        );
+                                      }
+                                    }
+                                    _loadProfile();
+                                  } catch (e) {
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('Erro: $e')),
+                                      );
+                                    }
+                                  }
+                                },
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16, vertical: 8),
@@ -469,7 +516,46 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                               ),
                               const SizedBox(width: 10),
                               GestureDetector(
-                                onTap: () {/* TODO: Open chat */},
+                                onTap: () async {
+                                  // Criar ou abrir DM com o usuário
+                                  try {
+                                    final currentUserId = SupabaseService.currentUserId;
+                                    if (currentUserId == null) return;
+                                    // Verificar se já existe DM
+                                    final existing = await SupabaseService.table('chat_threads')
+                                        .select('id')
+                                        .eq('type', 'dm')
+                                        .eq('community_id', widget.communityId)
+                                        .or('created_by.eq.$currentUserId,created_by.eq.${widget.userId}')
+                                        .maybeSingle();
+                                    if (existing != null) {
+                                      if (mounted) context.push('/community/${widget.communityId}/chat/${existing['id']}');
+                                    } else {
+                                      // Criar novo DM
+                                      final newThread = await SupabaseService.table('chat_threads')
+                                          .insert({
+                                            'community_id': widget.communityId,
+                                            'type': 'dm',
+                                            'created_by': currentUserId,
+                                            'title': 'DM',
+                                          })
+                                          .select()
+                                          .single();
+                                      // Adicionar ambos como membros
+                                      await SupabaseService.table('chat_members').insert([
+                                        {'thread_id': newThread['id'], 'user_id': currentUserId},
+                                        {'thread_id': newThread['id'], 'user_id': widget.userId},
+                                      ]);
+                                      if (mounted) context.push('/community/${widget.communityId}/chat/${newThread['id']}');
+                                    }
+                                  } catch (e) {
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('Erro ao abrir chat: $e')),
+                                      );
+                                    }
+                                  }
+                                },
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16, vertical: 8),
@@ -518,7 +604,16 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                 children: [
                   // Conquistas badge
                   GestureDetector(
-                    onTap: () {/* TODO: Achievements */},
+                    onTap: () {
+                      // Navegar para tela de conquistas
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Conquistas em breve!'),
+                          behavior: SnackBarBehavior.floating,
+                          duration: Duration(seconds: 1),
+                        ),
+                      );
+                    },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 6),
@@ -1097,19 +1192,140 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
   // ============================================================================
   // SAVED POSTS TAB
   // ============================================================================
+  List<Map<String, dynamic>> _savedPosts = [];
+  bool _savedPostsLoaded = false;
+
+  Future<void> _loadSavedPosts() async {
+    if (_savedPostsLoaded) return;
+    try {
+      final res = await SupabaseService.table('bookmarks')
+          .select('*, posts!bookmarks_post_id_fkey(*, profiles!posts_author_id_fkey(nickname, icon_url))')
+          .eq('user_id', widget.userId)
+          .order('created_at', ascending: false)
+          .limit(50);
+      if (mounted) {
+        setState(() {
+          _savedPosts = List<Map<String, dynamic>>.from(res as List);
+          _savedPostsLoaded = true;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _savedPostsLoaded = true);
+    }
+  }
+
   Widget _buildSavedPostsTab() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.bookmark_outline_rounded,
-              size: 48, color: Colors.grey[700]),
-          const SizedBox(height: 12),
-          Text('Posts salvos aparecerão aqui',
-              style: TextStyle(
-                  color: Colors.grey[500], fontWeight: FontWeight.w600)),
-        ],
-      ),
+    if (!_savedPostsLoaded) {
+      _loadSavedPosts();
+      return const Center(
+        child: CircularProgressIndicator(color: AppTheme.primaryColor),
+      );
+    }
+
+    if (!_isOwnProfile) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.lock_outline_rounded, size: 48, color: Colors.grey[700]),
+            const SizedBox(height: 12),
+            Text('Posts salvos são privados',
+                style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w600)),
+          ],
+        ),
+      );
+    }
+
+    if (_savedPosts.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.bookmark_outline_rounded, size: 48, color: Colors.grey[700]),
+            const SizedBox(height: 12),
+            Text('Nenhum post salvo',
+                style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w600)),
+            const SizedBox(height: 6),
+            Text('Toque no ícone de bookmark nos posts para salvá-los',
+                style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+          ],
+        ),
+      );
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.all(16),
+      itemCount: _savedPosts.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 10),
+      itemBuilder: (context, index) {
+        final bookmark = _savedPosts[index];
+        final post = bookmark['posts'] as Map<String, dynamic>? ?? {};
+        final author = post['profiles'] as Map<String, dynamic>?;
+        final postId = post['id'] as String?;
+
+        return GestureDetector(
+          onTap: () {
+            if (postId != null) context.push('/post/$postId');
+          },
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceColor,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+            ),
+            child: Row(
+              children: [
+                if (post['cover_image_url'] != null)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: CachedNetworkImage(
+                      imageUrl: post['cover_image_url'] as String,
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                if (post['cover_image_url'] != null) const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        post['title'] as String? ?? 'Sem título',
+                        style: const TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'por ${author?['nickname'] ?? 'Usuário'}',
+                        style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.bookmark_rounded,
+                      color: AppTheme.primaryColor, size: 20),
+                  onPressed: () async {
+                    try {
+                      await SupabaseService.table('bookmarks')
+                          .delete()
+                          .eq('id', bookmark['id']);
+                      setState(() => _savedPosts.removeAt(index));
+                    } catch (_) {}
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

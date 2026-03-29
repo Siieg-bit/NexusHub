@@ -36,17 +36,16 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
 
       // Carregar conquistas desbloqueadas pelo usuário
       final unlockedRes = await SupabaseService.table('user_achievements')
-          .select('achievement_id, progress')
+          .select('achievement_id, unlocked_at')
           .eq('user_id', userId);
       final unlocked = List<Map<String, dynamic>>.from(unlockedRes as List);
 
       _unlockedIds = unlocked
-          .where((u) => (u['progress'] as int? ?? 0) >= 100)
           .map((u) => u['achievement_id'] as String)
           .toSet();
       _progressMap = {
         for (final u in unlocked)
-          u['achievement_id'] as String: u['progress'] as int? ?? 0,
+          u['achievement_id'] as String: 100,
       };
 
       if (mounted) setState(() => _isLoading = false);

@@ -549,7 +549,11 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                           color: const Color(0xFFFF9800),
                           onTap: () {
                             Navigator.pop(context);
-                            // TODO: Resource Links
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (context.mounted) {
+                                context.push('/community/${widget.communityId}/wiki');
+                              }
+                            });
                           },
                         ),
 
@@ -560,7 +564,11 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                           child: GestureDetector(
                             onTap: () {
                               Navigator.pop(context);
-                              // TODO: See more
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (context.mounted) {
+                                  context.push('/community/${widget.communityId}/wiki');
+                                }
+                              });
                             },
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,

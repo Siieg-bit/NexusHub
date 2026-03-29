@@ -48,7 +48,7 @@ class PrivacyService {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return _defaultSettings;
 
-      final res = await SupabaseService.table('privacy_settings')
+      final res = await SupabaseService.table('user_settings')
           .select()
           .eq('user_id', userId)
           .maybeSingle();
@@ -74,7 +74,7 @@ class PrivacyService {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
 
-      await SupabaseService.table('privacy_settings').upsert({
+      await SupabaseService.table('user_settings').upsert({
         'user_id': userId,
         field: level,
         'updated_at': DateTime.now().toIso8601String(),

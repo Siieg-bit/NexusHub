@@ -3,6 +3,7 @@ import '../services/supabase_service.dart';
 
 /// ============================================================================
 /// WalletProvider — State Management para economia (coins, transações).
+/// Usa profiles.coins como saldo e coin_transactions como histórico.
 /// ============================================================================
 
 class WalletState {
@@ -39,19 +40,21 @@ class WalletNotifier extends AsyncNotifier<WalletState> {
     final userId = SupabaseService.currentUserId;
     if (userId == null) return const WalletState();
 
-    final walletRes = await SupabaseService.table('wallets')
+    // Buscar saldo de coins do perfil
+    final profileRes = await SupabaseService.table('profiles')
         .select('coins')
-        .eq('user_id', userId)
+        .eq('id', userId)
         .maybeSingle();
 
-    final txRes = await SupabaseService.table('wallet_transactions')
+    // Buscar histórico de transações
+    final txRes = await SupabaseService.table('coin_transactions')
         .select()
         .or('user_id.eq.$userId,target_user_id.eq.$userId')
         .order('created_at', ascending: false)
         .limit(50);
 
     return WalletState(
-      coins: (walletRes?['coins'] as int?) ?? 0,
+      coins: (profileRes?['coins'] as int?) ?? 0,
       transactions: List<Map<String, dynamic>>.from(txRes as List),
     );
   }
@@ -98,9 +101,9 @@ final coinBalanceProvider = FutureProvider<int>((ref) async {
   final userId = SupabaseService.currentUserId;
   if (userId == null) return 0;
 
-  final res = await SupabaseService.table('wallets')
+  final res = await SupabaseService.table('profiles')
       .select('coins')
-      .eq('user_id', userId)
+      .eq('id', userId)
       .maybeSingle();
 
   return (res?['coins'] as int?) ?? 0;

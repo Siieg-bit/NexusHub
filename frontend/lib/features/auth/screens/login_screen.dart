@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../config/app_theme.dart';
 import '../../../core/utils/amino_animations.dart';
+import '../../../core/services/supabase_service.dart';
 import '../providers/auth_provider.dart';
 
 /// Tela de login — visual Amino Apps (fundo escuro, inputs arredondados, verde).
@@ -157,7 +158,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () {/* TODO: Recuperação de senha */},
+                    onPressed: () {
+                      final email = _emailController.text.trim();
+                      if (email.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Digite seu email primeiro'),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                        return;
+                      }
+                      SupabaseService.auth.resetPasswordForEmail(email);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Email de recupera\u00e7\u00e3o enviado para $email'),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    },
                     style: TextButton.styleFrom(
                       foregroundColor: AppTheme.primaryColor,
                       textStyle: const TextStyle(

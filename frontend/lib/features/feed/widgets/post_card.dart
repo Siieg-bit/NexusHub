@@ -74,7 +74,9 @@ class _PostCardState extends State<PostCard>
       _likeController.forward(from: 0);
     }
     try {
-      await SupabaseService.client.rpc('toggle_post_like', params: {
+      await SupabaseService.client.rpc('toggle_like_with_reputation', params: {
+        'p_community_id': _post.communityId,
+        'p_user_id': SupabaseService.currentUserId,
         'p_post_id': _post.id,
       });
     } catch (_) {

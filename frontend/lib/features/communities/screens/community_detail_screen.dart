@@ -474,7 +474,42 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
           actions: [
             // Claim gifts
             GestureDetector(
-              onTap: () {/* TODO: claim gifts */},
+              onTap: () {
+                // Presentes diários da comunidade
+                showModalBottomSheet(
+                  context: context,
+                  backgroundColor: AppTheme.surfaceColor,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  builder: (ctx) => Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('\uD83C\uDF81 Presentes Di\u00e1rios',
+                            style: TextStyle(
+                                color: AppTheme.textPrimary,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800)),
+                        const SizedBox(height: 16),
+                        Text('Fa\u00e7a check-in para ganhar reputa\u00e7\u00e3o e moedas!',
+                            style: TextStyle(color: Colors.grey[400], fontSize: 14)),
+                        const SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primaryColor,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20)),
+                          ),
+                          child: const Text('Entendi'),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
               child: Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -498,7 +533,10 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             const SizedBox(width: 6),
             // Gallery
             GestureDetector(
-              onTap: () {/* TODO: gallery */},
+              onTap: () {
+                // Galeria da comunidade - mostra posts com mídia
+                context.push('/community/${widget.communityId}/wiki');
+              },
               child: Container(
                 width: 34,
                 height: 34,

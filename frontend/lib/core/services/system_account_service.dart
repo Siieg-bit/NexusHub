@@ -40,7 +40,7 @@ class SystemAccountService {
   }) async {
     try {
       // Buscar o chat "announcements" da comunidade
-      final chat = await SupabaseService.table('chat_rooms')
+      final chat = await SupabaseService.table('chat_threads')
           .select('id')
           .eq('community_id', communityId)
           .eq('type', 'announcements')
@@ -51,7 +51,7 @@ class SystemAccountService {
         chatId = chat['id'] as String;
       } else {
         // Criar chat de anúncios se não existir
-        final newChat = await SupabaseService.table('chat_rooms')
+        final newChat = await SupabaseService.table('chat_threads')
             .insert({
               'community_id': communityId,
               'name': 'Anúncios',
@@ -64,9 +64,9 @@ class SystemAccountService {
       }
 
       // Enviar mensagem de broadcast
-      await SupabaseService.table('messages').insert({
-        'chat_room_id': chatId,
-        'sender_id': globalSystemId,
+      await SupabaseService.table('chat_messages').insert({
+        'thread_id': chatId,
+        'author_id': globalSystemId,
         'content': '📢 **$title**\n\n$content',
         'type': 'system_announcement',
         'metadata': {

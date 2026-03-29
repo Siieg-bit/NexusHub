@@ -64,8 +64,8 @@ class PaginationService {
     required int page,
     int pageSize = 50,
   }) async {
-    final res = await SupabaseService.table('messages')
-        .select('*, profiles!messages_sender_id_fkey(nickname, icon_url)')
+    final res = await SupabaseService.table('chat_messages')
+        .select('*, profiles!chat_messages_author_id_fkey(nickname, icon_url)')
         .eq('thread_id', threadId)
         .order('created_at', ascending: false)
         .range(page * pageSize, (page + 1) * pageSize - 1);
@@ -190,7 +190,7 @@ class PaginationService {
     final userId = SupabaseService.currentUserId;
     if (userId == null) return [];
 
-    final res = await SupabaseService.table('wallet_transactions')
+    final res = await SupabaseService.table('coin_transactions')
         .select()
         .or('user_id.eq.$userId,target_user_id.eq.$userId')
         .order('created_at', ascending: false)
@@ -266,7 +266,7 @@ class PaginationService {
     final res = await SupabaseService.table('community_members')
         .select('*, profiles!community_members_user_id_fkey(*)')
         .eq('community_id', communityId)
-        .order('reputation', ascending: false)
+        .order('local_reputation', ascending: false)
         .range(page * pageSize, (page + 1) * pageSize - 1);
 
     return List<Map<String, dynamic>>.from(res as List);

@@ -26,8 +26,8 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
 
-      final res = await SupabaseService.table('user_blocks')
-          .select('*, blocked:profiles!blocked_user_id(*)')
+      final res = await SupabaseService.table('blocks')
+          .select('*, blocked:profiles!blocked_id(*)')
           .eq('blocker_id', userId)
           .order('created_at', ascending: false);
 
@@ -106,7 +106,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
     if (confirm != true) return;
 
     try {
-      await SupabaseService.table('user_blocks').delete().eq('id', blockId);
+      await SupabaseService.table('blocks').delete().eq('id', blockId);
       setState(() {
         _blockedUsers.removeWhere((b) => b['id'] == blockId);
       });

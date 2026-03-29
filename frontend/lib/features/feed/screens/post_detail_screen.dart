@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -48,11 +49,13 @@ class PostDetailScreen extends ConsumerStatefulWidget {
 
 class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   final _commentController = TextEditingController();
+  final _commentFocusNode = FocusNode();
   bool _isSending = false;
 
   @override
   void dispose() {
     _commentController.dispose();
+    _commentFocusNode.dispose();
     super.dispose();
   }
 
@@ -61,10 +64,15 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
     setState(() => _isSending = true);
     try {
-      await SupabaseService.table('comments').insert({
-        'post_id': widget.postId,
-        'author_id': SupabaseService.currentUserId,
-        'content': _commentController.text.trim(),
+      // Buscar community_id do post para reputação
+      final postData = ref.read(postDetailProvider(widget.postId)).valueOrNull;
+      final communityId = postData?.communityId;
+
+      await SupabaseService.rpc('create_comment_with_reputation', params: {
+        'p_community_id': communityId,
+        'p_author_id': SupabaseService.currentUserId,
+        'p_content': _commentController.text.trim(),
+        'p_post_id': widget.postId,
       });
       _commentController.clear();
       ref.invalidate(postCommentsProvider(widget.postId));
@@ -81,11 +89,43 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
   Future<void> _toggleLike() async {
     try {
-      await SupabaseService.rpc('toggle_post_like',
-          params: {'p_post_id': widget.postId});
+      final postData = ref.read(postDetailProvider(widget.postId)).valueOrNull;
+      await SupabaseService.rpc('toggle_like_with_reputation', params: {
+        'p_community_id': postData?.communityId,
+        'p_user_id': SupabaseService.currentUserId,
+        'p_post_id': widget.postId,
+      });
       ref.invalidate(postDetailProvider(widget.postId));
     } catch (e) {
       // Silenciar erro
+    }
+  }
+
+  bool _isBookmarked = false;
+
+  Future<void> _toggleBookmark() async {
+    try {
+      final result = await SupabaseService.rpc('toggle_bookmark', params: {
+        'p_user_id': SupabaseService.currentUserId,
+        'p_post_id': widget.postId,
+      });
+      if (mounted) {
+        final bookmarked = (result as Map<String, dynamic>?)?['bookmarked'] == true;
+        setState(() => _isBookmarked = bookmarked);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(bookmarked ? 'Post salvo!' : 'Post removido dos salvos'),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 1),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro: $e')),
+        );
+      }
     }
   }
 
@@ -109,12 +149,26 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         iconTheme: const IconThemeData(color: AppTheme.textPrimary),
         actions: [
           IconButton(
-            icon: const Icon(Icons.bookmark_border_rounded),
-            onPressed: () {/* TODO: Bookmark */},
+            icon: Icon(
+              _isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+              color: _isBookmarked ? AppTheme.primaryColor : null,
+            ),
+            onPressed: _toggleBookmark,
           ),
           IconButton(
             icon: const Icon(Icons.share_outlined),
-            onPressed: () {/* TODO: Share */},
+            onPressed: () {
+              // Share via deep link
+              final link = 'https://nexushub.app/p/${widget.postId}';
+              Clipboard.setData(ClipboardData(text: link));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Link copiado!'),
+                  behavior: SnackBarBehavior.floating,
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -324,7 +378,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             ),
                           ),
                           TextButton.icon(
-                            onPressed: () {},
+                            onPressed: () {
+                              // Scroll para a seção de comentários
+                              _commentFocusNode.requestFocus();
+                            },
                             style: TextButton.styleFrom(
                               foregroundColor: Colors.grey[500],
                             ),
@@ -401,7 +458,12 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: comments.length,
-                          itemBuilder: (context, index) => _CommentTile(comment: comments[index]),
+                          itemBuilder: (context, index) => _CommentTile(
+                            comment: comments[index],
+                            communityId: post.communityId,
+                            commentController: _commentController,
+                            commentFocusNode: _commentFocusNode,
+                          ),
                         );
                       },
                     ),
@@ -442,6 +504,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         ),
                         child: TextField(
                           controller: _commentController,
+                          focusNode: _commentFocusNode,
                           style: const TextStyle(color: AppTheme.textPrimary),
                           decoration: InputDecoration(
                             hintText: 'Escreva um comentário...',
@@ -501,13 +564,58 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 }
 
-class _CommentTile extends StatelessWidget {
+class _CommentTile extends StatefulWidget {
   final CommentModel comment;
+  final String? communityId;
+  final TextEditingController? commentController;
+  final FocusNode? commentFocusNode;
 
-  const _CommentTile({required this.comment});
+  const _CommentTile({
+    required this.comment,
+    this.communityId,
+    this.commentController,
+    this.commentFocusNode,
+  });
+
+  @override
+  State<_CommentTile> createState() => _CommentTileState();
+}
+
+class _CommentTileState extends State<_CommentTile> {
+  late bool _isLiked;
+  late int _likesCount;
+
+  @override
+  void initState() {
+    super.initState();
+    _isLiked = false;
+    _likesCount = widget.comment.likesCount;
+  }
+
+  Future<void> _toggleCommentLike() async {
+    setState(() {
+      _isLiked = !_isLiked;
+      _likesCount += _isLiked ? 1 : -1;
+    });
+    try {
+      await SupabaseService.rpc('toggle_like_with_reputation', params: {
+        'p_community_id': widget.communityId,
+        'p_user_id': SupabaseService.currentUserId,
+        'p_comment_id': widget.comment.id,
+      });
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isLiked = !_isLiked;
+          _likesCount += _isLiked ? 1 : -1;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final comment = widget.comment;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Container(
@@ -575,21 +683,39 @@ class _CommentTile extends StatelessWidget {
                   Row(
                     children: [
                       GestureDetector(
-                        onTap: () {},
+                        onTap: _toggleCommentLike,
                         child: Row(
                           children: [
-                            Icon(Icons.favorite_border_rounded, size: 16, color: Colors.grey[500]),
+                            Icon(
+                              _isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                              size: 16,
+                              color: _isLiked ? const Color(0xFFEF4444) : Colors.grey[500],
+                            ),
                             const SizedBox(width: 4),
                             Text(
-                              '${comment.likesCount}',
-                              style: TextStyle(color: Colors.grey[500], fontSize: 12, fontWeight: FontWeight.w600),
+                              '$_likesCount',
+                              style: TextStyle(
+                                color: _isLiked ? const Color(0xFFEF4444) : Colors.grey[500],
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ],
                         ),
                       ),
                       const SizedBox(width: 20),
                       GestureDetector(
-                        onTap: () {},
+                        onTap: () {
+                          // Focar no campo de comentário com @mention
+                          final authorName = widget.comment.author?['nickname'] ?? 'Usuário';
+                          if (widget.commentController != null) {
+                            widget.commentController!.text = '@$authorName ';
+                            widget.commentController!.selection = TextSelection.fromPosition(
+                              TextPosition(offset: widget.commentController!.text.length),
+                            );
+                          }
+                          widget.commentFocusNode?.requestFocus();
+                        },
                         child: Text(
                           'Responder',
                           style: TextStyle(

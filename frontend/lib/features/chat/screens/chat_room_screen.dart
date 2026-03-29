@@ -257,6 +257,21 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       }
 
       await SupabaseService.table('chat_messages').insert(payload);
+
+      // Adicionar reputação por enviar mensagem
+      try {
+        final communityId = _threadInfo?['community_id'] as String?;
+        if (communityId != null) {
+          await SupabaseService.rpc('add_reputation', params: {
+            'p_community_id': communityId,
+            'p_user_id': SupabaseService.currentUserId,
+            'p_action': 'chat_message',
+            'p_source_id': widget.threadId,
+          });
+        }
+      } catch (_) {
+        // Reputação é best-effort
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -359,11 +374,28 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   Future<void> _addReaction(String messageId, String emoji) async {
     try {
-      await SupabaseService.table('message_reactions').upsert({
-        'message_id': messageId,
-        'user_id': SupabaseService.currentUserId,
-        'emoji': emoji,
-      });
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) return;
+      // Reactions são armazenadas como JSONB no chat_messages: {"emoji": [userId1, userId2]}
+      final msg = await SupabaseService.table('chat_messages')
+          .select('reactions')
+          .eq('id', messageId)
+          .single();
+      final reactions = Map<String, dynamic>.from(
+          (msg['reactions'] as Map<String, dynamic>?) ?? {});
+      final users = List<String>.from(reactions[emoji] ?? []);
+      if (users.contains(userId)) {
+        users.remove(userId);
+      } else {
+        users.add(userId);
+      }
+      if (users.isEmpty) {
+        reactions.remove(emoji);
+      } else {
+        reactions[emoji] = users;
+      }
+      await SupabaseService.table('chat_messages')
+          .update({'reactions': reactions}).eq('id', messageId);
       await _loadMessages();
     } catch (_) {}
   }
@@ -385,7 +417,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     final currentUserId = SupabaseService.currentUserId;
     final threadTitle = _threadInfo?['title'] as String? ?? 'Chat';
     final threadType = _threadInfo?['type'] as String? ?? 'group';
-    final memberCount = _threadInfo?['member_count'] as int? ?? 0;
+    final memberCount = (_threadInfo?['member_count'] ?? _threadInfo?['members_count']) as int? ?? 0;
     final threadIcon = _threadInfo?['icon_url'] as String?;
 
     return Scaffold(
@@ -818,7 +850,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   color: const Color(0xFFE91E63),
                   onTap: () {
                     Navigator.pop(ctx);
-                    // TODO: Record audio
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Grava\u00e7\u00e3o de \u00e1udio em breve!'),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
                   },
                 ),
                 _MediaOptionItem(
@@ -836,7 +873,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   color: AppTheme.warningColor,
                   onTap: () {
                     Navigator.pop(ctx);
-                    // TODO: Select user to tip
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Sistema de gorjetas em breve!'),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
                   },
                 ),
                 _MediaOptionItem(
@@ -1093,7 +1135,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             }),
             _actionTile(Icons.forward_rounded, 'Encaminhar', () {
               Navigator.pop(ctx);
-              // TODO: Forward message
+              // Copiar conteúdo e mostrar opção de encaminhar
+              Clipboard.setData(ClipboardData(text: message.content ?? ''));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Mensagem copiada! Cole em outro chat para encaminhar.'),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
             }),
             _actionTile(Icons.push_pin_rounded, 'Fixar Mensagem', () {
               Navigator.pop(ctx);

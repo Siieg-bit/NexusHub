@@ -140,9 +140,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             ? _titleController.text.trim()
             : null,
         'content': _contentController.text.trim(),
-        'media_list': _mediaUrls.isNotEmpty
-            ? _mediaUrls.map((url) => {'url': url, 'type': 'image'}).toList()
-            : [],
+        'media_urls': _mediaUrls.isNotEmpty ? _mediaUrls : [],
         'cover_image_url': _coverImageUrl,
         'external_url': _linkController.text.trim().isNotEmpty
             ? _linkController.text.trim()
@@ -152,10 +150,26 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             : null,
       };
 
+      // Criar post e ganhar reputação
       final result = await SupabaseService.table('posts')
           .insert(postData)
           .select()
           .single();
+
+      // Adicionar reputação por criar post
+      try {
+        final repType = (_selectedType == 'poll' || _selectedType == 'quiz')
+            ? 'poll_create'
+            : 'post_create';
+        await SupabaseService.rpc('add_reputation', params: {
+          'p_community_id': widget.communityId,
+          'p_user_id': userId,
+          'p_action': repType,
+          'p_source_id': result['id'],
+        });
+      } catch (_) {
+        // Reputação é best-effort, não bloqueia criação do post
+      }
 
       final postId = result['id'] as String;
 
@@ -230,6 +244,32 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  void _wrapSelection(String prefix, String suffix) {
+    final text = _contentController.text;
+    final sel = _contentController.selection;
+    if (sel.isValid && sel.start != sel.end) {
+      final selected = text.substring(sel.start, sel.end);
+      final newText = text.replaceRange(sel.start, sel.end, '$prefix$selected$suffix');
+      _contentController.value = TextEditingValue(
+        text: newText,
+        selection: TextSelection.collapsed(
+          offset: sel.start + prefix.length + selected.length + suffix.length,
+        ),
+      );
+    } else {
+      // Sem seleção: insere placeholder
+      final pos = sel.isValid ? sel.start : text.length;
+      final newText = '${text.substring(0, pos)}${prefix}texto${suffix}${text.substring(pos)}';
+      _contentController.value = TextEditingValue(
+        text: newText,
+        selection: TextSelection(
+          baseOffset: pos + prefix.length,
+          extentOffset: pos + prefix.length + 5,
+        ),
+      );
     }
   }
 
@@ -867,15 +907,24 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             _ToolbarButton(Icons.image_rounded, 'Image', _pickImage),
-            _ToolbarButton(Icons.gif_rounded, 'GIF', () {/* TODO: Giphy */}),
+            _ToolbarButton(Icons.gif_rounded, 'GIF', () {
+              // GIF picker - abre busca de GIFs
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('GIFs em breve!'), behavior: SnackBarBehavior.floating),
+              );
+            }),
             _ToolbarButton(
-                Icons.music_note_rounded, 'Music', () {/* TODO: SoundCloud */}),
+                Icons.music_note_rounded, 'Music', () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('M\u00fasica em breve!'), behavior: SnackBarBehavior.floating),
+              );
+            }),
             _ToolbarButton(
-                Icons.format_bold_rounded, 'Bold', () {/* TODO: Bold */}),
+                Icons.format_bold_rounded, 'Bold', () => _wrapSelection('**', '**')),
             _ToolbarButton(
-                Icons.format_italic_rounded, 'Italic', () {/* TODO: Italic */}),
+                Icons.format_italic_rounded, 'Italic', () => _wrapSelection('_', '_')),
             _ToolbarButton(Icons.format_strikethrough_rounded, 'Strike',
-                () {/* TODO: Strikethrough */}),
+                () => _wrapSelection('~~', '~~')),
           ],
         ),
       ),
