@@ -711,6 +711,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     },
                   ),
                   _SettingsItem(
+                    icon: Icons.privacy_tip_rounded,
+                    title: 'Política de Privacidade',
+                    onTap: () => context.push('/settings/privacy-policy'),
+                  ),
+                  _SettingsItem(
+                    icon: Icons.gavel_rounded,
+                    title: 'Termos de Uso',
+                    onTap: () => context.push('/settings/terms-of-use'),
+                  ),
+                  _SettingsItem(
                     icon: Icons.info_rounded,
                     title: 'Sobre o NexusHub',
                     subtitle: 'v1.0.0',

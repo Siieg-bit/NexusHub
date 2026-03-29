@@ -259,6 +259,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     );
                   }
                   break;
+                case 'edit':
+                  _showEditPostDialog(post);
+                  break;
               }
             },
             itemBuilder: (context) {
@@ -285,6 +288,17 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     ],
                   ),
                 ),
+                if (isAuthor)
+                  PopupMenuItem(
+                    value: 'edit',
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit_rounded, size: r.s(18), color: AppTheme.primaryColor),
+                        SizedBox(width: r.s(10)),
+                        Text('Editar', style: TextStyle(color: context.textPrimary)),
+                      ],
+                    ),
+                  ),
                 if (isAuthor)
                   PopupMenuItem(
                     value: 'delete',
@@ -800,6 +814,119 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // =========================================================================
+  // EDITAR POST
+  // =========================================================================
+  void _showEditPostDialog(PostModel post) {
+    final r = context.r;
+    final titleCtrl = TextEditingController(text: post.title ?? '');
+    final contentCtrl = TextEditingController(text: post.content ?? '');
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: context.surfaceColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
+      ),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+          left: r.s(16),
+          right: r.s(16),
+          top: r.s(20),
+          bottom: MediaQuery.of(ctx).viewInsets.bottom + r.s(24),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text('Editar Post',
+                    style: TextStyle(
+                        fontSize: r.fs(18),
+                        fontWeight: FontWeight.w800,
+                        color: context.textPrimary)),
+                const Spacer(),
+                IconButton(
+                  icon: Icon(Icons.close_rounded, color: context.textSecondary),
+                  onPressed: () => Navigator.pop(ctx),
+                ),
+              ],
+            ),
+            SizedBox(height: r.s(12)),
+            TextField(
+              controller: titleCtrl,
+              style: TextStyle(color: context.textPrimary, fontSize: r.fs(15), fontWeight: FontWeight.w700),
+              decoration: InputDecoration(
+                hintText: 'Título',
+                hintStyle: TextStyle(color: Colors.grey[600]),
+                filled: true,
+                fillColor: context.cardBg,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(r.s(10)),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            SizedBox(height: r.s(10)),
+            TextField(
+              controller: contentCtrl,
+              style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+              maxLines: 6,
+              decoration: InputDecoration(
+                hintText: 'Conteúdo',
+                hintStyle: TextStyle(color: Colors.grey[600]),
+                filled: true,
+                fillColor: context.cardBg,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(r.s(10)),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            SizedBox(height: r.s(16)),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(r.s(12)),
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: r.s(14)),
+                ),
+                onPressed: () async {
+                  try {
+                    await SupabaseService.table('posts').update({
+                      'title': titleCtrl.text.trim().isNotEmpty ? titleCtrl.text.trim() : null,
+                      'content': contentCtrl.text.trim(),
+                      'edited_at': DateTime.now().toIso8601String(),
+                    }).eq('id', widget.postId);
+                    if (ctx.mounted) Navigator.pop(ctx);
+                    ref.invalidate(postDetailProvider(widget.postId));
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Post atualizado!'), behavior: SnackBarBehavior.floating),
+                      );
+                    }
+                  } catch (e) {
+                    if (ctx.mounted) {
+                      ScaffoldMessenger.of(ctx).showSnackBar(
+                        SnackBar(content: Text('Erro: $e')),
+                      );
+                    }
+                  }
+                },
+                child: Text('Salvar Alterações',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: r.fs(15))),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

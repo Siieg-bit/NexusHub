@@ -36,6 +36,8 @@ import '../features/settings/screens/privacy_settings_screen.dart';
 import '../features/settings/screens/notification_settings_screen.dart';
 import '../features/settings/screens/blocked_users_screen.dart';
 import '../features/settings/screens/devices_screen.dart';
+import '../features/settings/screens/privacy_policy_screen.dart';
+import '../features/settings/screens/terms_of_use_screen.dart';
 import '../features/explore/screens/search_screen.dart';
 import '../features/profile/screens/user_wall_screen.dart';
 import '../features/profile/screens/followers_screen.dart';
@@ -393,6 +395,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/settings/devices',
         name: 'devices',
         builder: (context, state) => const DevicesScreen(),
+      ),
+      GoRoute(
+        path: '/settings/privacy-policy',
+        name: 'privacy-policy',
+        builder: (context, state) => const PrivacyPolicyScreen(),
+      ),
+      GoRoute(
+        path: '/settings/terms-of-use',
+        name: 'terms-of-use',
+        builder: (context, state) => const TermsOfUseScreen(),
       ),
 
       // ====================================================================

@@ -6,6 +6,7 @@ import '../../../core/utils/responsive.dart';
 
 /// Sticker Picker — carrega sticker packs da store e permite seleção.
 /// Retorna um Map com {sticker_id, sticker_url} via Navigator.pop().
+/// Long-press em qualquer sticker adiciona/remove dos favoritos.
 class StickerPicker extends StatefulWidget {
   final String? communityId;
   const StickerPicker({super.key, this.communityId});
@@ -36,7 +37,6 @@ class StickerPicker extends StatefulWidget {
 class _StickerPickerState extends State<StickerPicker> {
   @override
   Widget build(BuildContext context) {
-    final r = context.r;
     return _StickerPickerBody(communityId: widget.communityId);
   }
 }
@@ -56,6 +56,10 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
   List<Map<String, dynamic>> _packs = [];
   Map<String, List<Map<String, dynamic>>> _stickersByPack = {};
   bool _isLoading = true;
+  List<Map<String, dynamic>> _favoriteStickers = [];
+  Set<String> _favoriteStickerIds = {};
+
+  static const _favTab = '❤️ Favoritos';
 
   // Default emoji stickers (always available)
   static const _defaultStickers = [
@@ -84,12 +88,31 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
   @override
   void initState() {
     super.initState();
-    _loadStickerPacks();
+    _loadAll();
+  }
+
+  Future<void> _loadAll() async {
+    await _loadFavoriteStickers();
+    await _loadStickerPacks();
+  }
+
+  Future<void> _loadFavoriteStickers() async {
+    try {
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) return;
+      final res = await SupabaseService.table('favorite_stickers')
+          .select('sticker_id, sticker_url, sticker_name')
+          .eq('user_id', userId)
+          .order('created_at', ascending: false);
+      _favoriteStickers = List<Map<String, dynamic>>.from(res as List);
+      _favoriteStickerIds = _favoriteStickers
+          .map((s) => s['sticker_id'] as String)
+          .toSet();
+    } catch (_) {}
   }
 
   Future<void> _loadStickerPacks() async {
     try {
-      // Load sticker items from store
       final res = await SupabaseService.table('store_items')
           .select()
           .eq('type', 'sticker')
@@ -97,7 +120,6 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
           .order('name');
       final items = List<Map<String, dynamic>>.from(res as List);
 
-      // Group by category/pack
       final packs = <String, List<Map<String, dynamic>>>{};
       for (final item in items) {
         final pack = item['category'] as String? ?? 'Geral';
@@ -111,12 +133,69 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
       _stickersByPack = packs;
     } catch (_) {}
 
-    // Always have at least the default emoji pack
+    // Aba Emojis padrão
     _packs.insert(0, {'name': 'Emojis', 'count': _defaultStickers.length});
 
-    _tabController = TabController(length: _packs.length, vsync: this);
+    // Aba Favoritos no início (se houver)
+    if (_favoriteStickers.isNotEmpty) {
+      _packs.insert(0, {'name': _favTab, 'count': _favoriteStickers.length});
+      _stickersByPack[_favTab] = _favoriteStickers;
+    }
 
+    _tabController = TabController(length: _packs.length, vsync: this);
     if (mounted) setState(() => _isLoading = false);
+  }
+
+  Future<void> _toggleFavorite(Map<String, dynamic> sticker) async {
+    try {
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) return;
+      final stickerId = sticker['sticker_id'] as String? ??
+          sticker['id'] as String? ?? '';
+      final isFav = _favoriteStickerIds.contains(stickerId);
+
+      if (isFav) {
+        await SupabaseService.table('favorite_stickers')
+            .delete()
+            .eq('user_id', userId)
+            .eq('sticker_id', stickerId);
+        if (mounted) {
+          setState(() {
+            _favoriteStickers.removeWhere((s) => s['sticker_id'] == stickerId);
+            _favoriteStickerIds.remove(stickerId);
+            _stickersByPack[_favTab] = _favoriteStickers;
+          });
+        }
+      } else {
+        final entry = {
+          'user_id': userId,
+          'sticker_id': stickerId,
+          'sticker_url': sticker['sticker_url'] as String? ??
+              sticker['image_url'] as String? ?? '',
+          'sticker_name': sticker['name'] as String? ?? '',
+        };
+        await SupabaseService.table('favorite_stickers').insert(entry);
+        if (mounted) {
+          setState(() {
+            _favoriteStickers.insert(0, {
+              'sticker_id': stickerId,
+              'sticker_url': entry['sticker_url'],
+              'sticker_name': entry['sticker_name'],
+            });
+            _favoriteStickerIds.add(stickerId);
+            _stickersByPack[_favTab] = _favoriteStickers;
+          });
+        }
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(isFav ? 'Removido dos favoritos' : 'Adicionado aos favoritos'),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 1),
+        ));
+      }
+    } catch (_) {}
   }
 
   @override
@@ -152,9 +231,19 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
                 // Header
                 Padding(
                   padding: EdgeInsets.all(r.s(12)),
-                  child: Text('Figurinhas',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: r.fs(18))),
+                  child: Row(
+                    children: [
+                      Text('Figurinhas',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: r.fs(18))),
+                      const Spacer(),
+                      Text('Segure para favoritar',
+                          style: TextStyle(
+                              fontSize: r.fs(11),
+                              color: context.textSecondary)),
+                    ],
+                  ),
                 ),
                 // Tab bar for packs
                 TabBar(
@@ -176,7 +265,9 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
                       if (packName == 'Emojis') {
                         return _buildEmojiGrid();
                       }
-                      return _buildStickerGrid(_stickersByPack[packName] ?? []);
+                      return _buildStickerGrid(
+                          _stickersByPack[packName] ?? [],
+                          isFavTab: packName == _favTab);
                     }).toList(),
                   ),
                 ),
@@ -186,7 +277,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
   }
 
   Widget _buildEmojiGrid() {
-      final r = context.r;
+    final r = context.r;
     return GridView.builder(
       controller: widget.scrollController,
       padding: EdgeInsets.all(r.s(12)),
@@ -201,8 +292,13 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
         return GestureDetector(
           onTap: () => Navigator.pop(context, {
             'sticker_id': sticker['id']!,
-            'sticker_url': '', // Emoji-based, no URL
+            'sticker_url': '',
             'emoji': sticker['emoji']!,
+          }),
+          onLongPress: () => _toggleFavorite({
+            'id': sticker['id'],
+            'sticker_url': '',
+            'name': sticker['label'],
           }),
           child: Container(
             decoration: BoxDecoration(
@@ -210,8 +306,8 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
               borderRadius: BorderRadius.circular(r.s(12)),
             ),
             child: Center(
-              child:
-                  Text(sticker['emoji']!, style: TextStyle(fontSize: r.fs(32))),
+              child: Text(sticker['emoji']!,
+                  style: TextStyle(fontSize: r.fs(32))),
             ),
           ),
         );
@@ -219,12 +315,26 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
     );
   }
 
-  Widget _buildStickerGrid(List<Map<String, dynamic>> stickers) {
-      final r = context.r;
+  Widget _buildStickerGrid(List<Map<String, dynamic>> stickers,
+      {bool isFavTab = false}) {
+    final r = context.r;
     if (stickers.isEmpty) {
       return Center(
-        child: Text('Nenhum sticker neste pack',
-            style: TextStyle(color: context.textSecondary)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.favorite_border_rounded,
+                size: r.s(40), color: Colors.grey[600]),
+            SizedBox(height: r.s(8)),
+            Text(
+              isFavTab
+                  ? 'Nenhum favorito ainda.\nSegure um sticker para favoritar!'
+                  : 'Nenhum sticker neste pack',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: context.textSecondary),
+            ),
+          ],
+        ),
       );
     }
     return GridView.builder(
@@ -238,31 +348,52 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
       itemCount: stickers.length,
       itemBuilder: (context, index) {
         final sticker = stickers[index];
-        final imageUrl = sticker['image_url'] as String? ?? '';
+        final imageUrl = sticker['image_url'] as String? ??
+            sticker['sticker_url'] as String? ?? '';
+        final stickerId = sticker['id'] as String? ??
+            sticker['sticker_id'] as String? ?? '';
+        final isFav = _favoriteStickerIds.contains(stickerId);
         return GestureDetector(
           onTap: () => Navigator.pop(context, {
-            'sticker_id': sticker['id'] as String? ?? '',
+            'sticker_id': stickerId,
             'sticker_url': imageUrl,
           }),
-          child: Container(
-            decoration: BoxDecoration(
-              color: context.cardBg,
-              borderRadius: BorderRadius.circular(r.s(12)),
-            ),
-            child: imageUrl.isNotEmpty
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(r.s(12)),
-                    child: CachedNetworkImage(
-                      imageUrl: imageUrl,
-                      fit: BoxFit.contain,
-                      errorWidget: (_, __, ___) =>
-                          const Center(child: Icon(Icons.broken_image_rounded)),
-                    ),
-                  )
-                : Center(
-                    child: Text(sticker['name'] as String? ?? '?',
-                        style: TextStyle(fontSize: r.fs(12))),
-                  ),
+          onLongPress: () => _toggleFavorite(sticker),
+          child: Stack(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: context.cardBg,
+                  borderRadius: BorderRadius.circular(r.s(12)),
+                  border: isFav
+                      ? Border.all(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.6),
+                          width: 1.5)
+                      : null,
+                ),
+                child: imageUrl.isNotEmpty
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(r.s(12)),
+                        child: CachedNetworkImage(
+                          imageUrl: imageUrl,
+                          fit: BoxFit.contain,
+                          errorWidget: (_, __, ___) => const Center(
+                              child: Icon(Icons.broken_image_rounded)),
+                        ),
+                      )
+                    : Center(
+                        child: Text(sticker['name'] as String? ?? '?',
+                            style: TextStyle(fontSize: r.fs(12))),
+                      ),
+              ),
+              if (isFav)
+                Positioned(
+                  top: 2,
+                  right: 2,
+                  child: Icon(Icons.favorite_rounded,
+                      size: r.s(12), color: AppTheme.primaryColor),
+                ),
+            ],
           ),
         );
       },

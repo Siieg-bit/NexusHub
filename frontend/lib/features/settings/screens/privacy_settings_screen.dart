@@ -21,6 +21,10 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
   bool _showOnlineStatus = true;
   bool _allowDMs = true;
   bool _allowChatInvites = true;
+  // Funcionalidades MÉDIA — Ghost Mode
+  bool _isGhostMode = false;
+  bool _disableIncomingChats = false;
+  bool _disableProfileComments = false;
   bool _showCommunitiesList = true;
   bool _showFollowersList = true;
   bool _allowMentions = true;
@@ -39,6 +43,19 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
+
+      // Carregar ghost mode / disable chats / disable comments do profiles
+      final profileRes = await SupabaseService.table('profiles')
+          .select('is_ghost_mode, disable_incoming_chats, disable_profile_comments')
+          .eq('id', userId)
+          .maybeSingle();
+      if (profileRes != null) {
+        setState(() {
+          _isGhostMode = profileRes['is_ghost_mode'] as bool? ?? false;
+          _disableIncomingChats = profileRes['disable_incoming_chats'] as bool? ?? false;
+          _disableProfileComments = profileRes['disable_profile_comments'] as bool? ?? false;
+        });
+      }
 
       final res = await SupabaseService.table('user_settings')
           .select()
@@ -71,6 +88,13 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
+
+      // Salvar ghost mode / disable chats / disable comments no profiles
+      await SupabaseService.table('profiles').update({
+        'is_ghost_mode': _isGhostMode,
+        'disable_incoming_chats': _disableIncomingChats,
+        'disable_profile_comments': _disableProfileComments,
+      }).eq('id', userId);
 
       await SupabaseService.table('user_settings').upsert({
         'user_id': userId,
@@ -186,6 +210,34 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                   subtitle: 'Permitir mensagens no seu mural',
                   value: _showWall,
                   onChanged: (v) => setState(() => _showWall = v),
+                ),
+
+                SizedBox(height: r.s(24)),
+
+                // ============================================================
+                // MODO FANTASMA
+                // ============================================================
+                const _SectionHeader(title: 'Modo Fantasma'),
+                _SettingToggle(
+                  icon: Icons.visibility_off_rounded,
+                  title: 'Modo Fantasma',
+                  subtitle: 'Apareça como offline para todos os usuários',
+                  value: _isGhostMode,
+                  onChanged: (v) => setState(() => _isGhostMode = v),
+                ),
+                _SettingToggle(
+                  icon: Icons.chat_bubble_outline_rounded,
+                  title: 'Desabilitar novos chats',
+                  subtitle: 'Impede que novos usuários iniciem conversas',
+                  value: _disableIncomingChats,
+                  onChanged: (v) => setState(() => _disableIncomingChats = v),
+                ),
+                _SettingToggle(
+                  icon: Icons.comments_disabled_rounded,
+                  title: 'Desabilitar comentários no perfil',
+                  subtitle: 'Ninguém pode comentar no seu mural',
+                  value: _disableProfileComments,
+                  onChanged: (v) => setState(() => _disableProfileComments = v),
                 ),
 
                 SizedBox(height: r.s(24)),

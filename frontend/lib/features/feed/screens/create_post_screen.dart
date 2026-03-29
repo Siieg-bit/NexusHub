@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../config/app_theme.dart';
+import '../../../core/utils/media_utils.dart';
 import '../../../core/services/supabase_service.dart';
 import '../widgets/block_editor.dart';
 import '../widgets/crosspost_picker.dart';
@@ -53,6 +54,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
   // Crosspost
   Map<String, dynamic>? _crosspostCommunity;
+  // Visibilidade e controle de comentários
+  String _postVisibility = 'public'; // public, followers, private
+  bool _commentsBlocked = false;
 
   static const _postTypes = [
     _PostTypeOption('normal', 'Blog', Icons.article_rounded),
@@ -75,7 +79,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       final userId = SupabaseService.currentUserId ?? 'unknown';
       final path =
           'posts/$userId/${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final bytes = await image.readAsBytes();
+      final rawBytes = await image.readAsBytes();
+      // Comprimir imagem antes do upload
+      final bytes = await MediaUtils.compressImage(rawBytes);
 
       await SupabaseService.storage
           .from('post-media')
@@ -106,7 +112,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       final userId = SupabaseService.currentUserId ?? 'unknown';
       final path =
           'covers/$userId/${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final bytes = await image.readAsBytes();
+      final rawBytes = await image.readAsBytes();
+      // Comprimir imagem antes do upload
+      final bytes = await MediaUtils.compressImage(rawBytes);
 
       await SupabaseService.storage
           .from('post-media')
@@ -182,6 +190,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         'background_url': _backgroundUrlController.text.trim().isNotEmpty
             ? _backgroundUrlController.text.trim()
             : null,
+        'visibility': _postVisibility,
+        'comments_blocked': _commentsBlocked,
         if (_selectedType == 'crosspost' && _crosspostCommunity != null) ...{
           'original_community_id': _crosspostCommunity!['id'],
         },
@@ -682,6 +692,81 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                           hint: 'Custom background URL',
                           icon: Icons.wallpaper_rounded,
                         ),
+                        SizedBox(height: r.s(12)),
+                        // Visibilidade do post
+                        Container(
+                          padding: EdgeInsets.all(r.s(12)),
+                          decoration: BoxDecoration(
+                            color: context.cardBg,
+                            borderRadius: BorderRadius.circular(r.s(10)),
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.lock_outline_rounded, size: r.s(16), color: Colors.grey[600]),
+                                  SizedBox(width: r.s(8)),
+                                  Text('Visibilidade', style: TextStyle(fontSize: r.fs(13), color: Colors.grey[400], fontWeight: FontWeight.w600)),
+                                ],
+                              ),
+                              SizedBox(height: r.s(8)),
+                              Wrap(
+                                spacing: r.s(8),
+                                children: [
+                                  _visibilityChip('public', 'Público', Icons.public_rounded),
+                                  _visibilityChip('followers', 'Seguidores', Icons.people_rounded),
+                                  _visibilityChip('private', 'Privado', Icons.lock_rounded),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: r.s(8)),
+                        // Bloquear comentários
+                        GestureDetector(
+                          onTap: () => setState(() => _commentsBlocked = !_commentsBlocked),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(10)),
+                            decoration: BoxDecoration(
+                              color: _commentsBlocked
+                                  ? AppTheme.errorColor.withValues(alpha: 0.1)
+                                  : context.cardBg,
+                              borderRadius: BorderRadius.circular(r.s(10)),
+                              border: Border.all(
+                                color: _commentsBlocked
+                                    ? AppTheme.errorColor.withValues(alpha: 0.3)
+                                    : Colors.white.withValues(alpha: 0.05),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  _commentsBlocked ? Icons.comments_disabled_rounded : Icons.comment_rounded,
+                                  size: r.s(16),
+                                  color: _commentsBlocked ? AppTheme.errorColor : Colors.grey[600],
+                                ),
+                                SizedBox(width: r.s(8)),
+                                Text(
+                                  _commentsBlocked ? 'Comentários bloqueados' : 'Permitir comentários',
+                                  style: TextStyle(
+                                    fontSize: r.fs(13),
+                                    color: _commentsBlocked ? AppTheme.errorColor : Colors.grey[400],
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const Spacer(),
+                                Switch(
+                                  value: !_commentsBlocked,
+                                  onChanged: (v) => setState(() => _commentsBlocked = !v),
+                                  activeColor: AppTheme.primaryColor,
+                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                         SizedBox(height: r.s(16)),
                       ],
                     ),
@@ -694,6 +779,35 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           // ── Bottom toolbar ──
           _buildToolbar(),
         ],
+      ),
+    );
+  }
+
+  // ========================================================================
+  // VISIBILITY CHIP HELPER
+  // ========================================================================
+  Widget _visibilityChip(String value, String label, IconData icon) {
+    final r = context.r;
+    final isSelected = _postVisibility == value;
+    return GestureDetector(
+      onTap: () => setState(() => _postVisibility = value),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(6)),
+        decoration: BoxDecoration(
+          color: isSelected ? AppTheme.primaryColor.withValues(alpha: 0.15) : Colors.transparent,
+          borderRadius: BorderRadius.circular(r.s(20)),
+          border: Border.all(
+            color: isSelected ? AppTheme.primaryColor.withValues(alpha: 0.5) : Colors.grey.withValues(alpha: 0.2),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: r.s(13), color: isSelected ? AppTheme.primaryColor : Colors.grey[500]),
+            SizedBox(width: r.s(4)),
+            Text(label, style: TextStyle(fontSize: r.fs(12), color: isSelected ? AppTheme.primaryColor : Colors.grey[500], fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500)),
+          ],
+        ),
       ),
     );
   }

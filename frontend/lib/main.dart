@@ -14,6 +14,7 @@ import 'core/services/push_notification_service.dart';
 import 'core/services/iap_service.dart';
 import 'core/services/ad_service.dart';
 import 'core/services/cache_service.dart';
+import 'core/widgets/error_boundary.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -93,8 +94,10 @@ void main() async {
   });
 
   runApp(
-    const ProviderScope(
-      child: NexusHubApp(),
+    ErrorBoundary(
+      child: const ProviderScope(
+        child: NexusHubApp(),
+      ),
     ),
   );
 }

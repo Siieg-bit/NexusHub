@@ -17,8 +17,8 @@ import '../widgets/giphy_picker.dart';
 import '../widgets/sticker_picker.dart';
 import '../widgets/voice_recorder.dart';
 import '../../../core/utils/responsive.dart';
-
-/// ============================================================================
+import '../../../core/utils/media_utils.dart';
+/// =============================================================================
 /// 19+ TIPOS DE MENSAGEM (mapeados do Amino original):
 ///
 ///  0  text           - Texto simples
@@ -63,6 +63,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   bool _showEmojiPicker = false;
   bool _isRecordingVoice = false;
   List<Map<String, dynamic>> _pinnedMessages = [];
+  String? _chatBackground; // Background customizável per-user
 
   @override
   void initState() {
@@ -77,6 +78,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     _loadMessages();
     _loadPinnedMessages();
     _subscribeToRealtime();
+    _loadChatBackground();
   }
 
   /// Garante que o usuário é membro do chat usando o RPC SECURITY DEFINER.
@@ -167,6 +169,144 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       }
     } catch (_) {
       // Pinned messages are best-effort
+    }
+  }
+
+  // ========================================================================
+  // BACKGROUND CUSTOMIZÁVEL PER-USER
+  // ========================================================================
+  Future<void> _loadChatBackground() async {
+    try {
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) return;
+      final res = await SupabaseService.table('chat_backgrounds')
+          .select('background_url')
+          .eq('thread_id', widget.threadId)
+          .eq('user_id', userId)
+          .maybeSingle();
+      if (res != null && mounted) {
+        setState(() => _chatBackground = res['background_url'] as String?);
+      }
+    } catch (_) {
+      // Background é best-effort
+    }
+  }
+
+  void _showBackgroundPicker() {
+    final r = context.r;
+    final urlCtrl = TextEditingController(text: _chatBackground ?? '');
+    final presets = [
+      null, // Sem fundo
+      'https://images.unsplash.com/photo-1518655048521-f130df041f66?w=800',
+      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
+      'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=800',
+      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800',
+    ];
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: context.surfaceColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) => Padding(
+          padding: EdgeInsets.only(
+            left: r.s(16), right: r.s(16), top: r.s(20),
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + r.s(24),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Fundo do Chat', style: TextStyle(fontSize: r.fs(18), fontWeight: FontWeight.w800, color: context.textPrimary)),
+              SizedBox(height: r.s(16)),
+              SizedBox(
+                height: r.s(80),
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: presets.length,
+                  itemBuilder: (_, i) {
+                    final url = presets[i];
+                    final isSelected = _chatBackground == url;
+                    return GestureDetector(
+                      onTap: () async {
+                        await _saveChatBackground(url);
+                        if (ctx.mounted) Navigator.pop(ctx);
+                      },
+                      child: Container(
+                        width: r.s(80),
+                        height: r.s(80),
+                        margin: EdgeInsets.only(right: r.s(8)),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(r.s(10)),
+                          border: Border.all(
+                            color: isSelected ? AppTheme.primaryColor : Colors.transparent,
+                            width: 2,
+                          ),
+                          color: url == null ? context.cardBg : null,
+                          image: url != null ? DecorationImage(image: NetworkImage(url), fit: BoxFit.cover) : null,
+                        ),
+                        child: url == null
+                            ? Icon(Icons.block_rounded, color: Colors.grey[500], size: r.s(28))
+                            : null,
+                      ),
+                    );
+                  },
+                ),
+              ),
+              SizedBox(height: r.s(12)),
+              TextField(
+                controller: urlCtrl,
+                style: TextStyle(color: context.textPrimary, fontSize: r.fs(13)),
+                decoration: InputDecoration(
+                  hintText: 'URL personalizada do fundo...',
+                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  filled: true,
+                  fillColor: context.cardBg,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(r.s(10)),
+                    borderSide: BorderSide.none,
+                  ),
+                  prefixIcon: Icon(Icons.link_rounded, size: r.s(18), color: Colors.grey[600]),
+                ),
+              ),
+              SizedBox(height: r.s(12)),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryColor,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(12))),
+                    padding: EdgeInsets.symmetric(vertical: r.s(12)),
+                  ),
+                  onPressed: () async {
+                    final url = urlCtrl.text.trim().isNotEmpty ? urlCtrl.text.trim() : null;
+                    await _saveChatBackground(url);
+                    if (ctx.mounted) Navigator.pop(ctx);
+                  },
+                  child: Text('Aplicar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: r.fs(14))),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _saveChatBackground(String? url) async {
+    try {
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) return;
+      await SupabaseService.table('chat_backgrounds').upsert({
+        'thread_id': widget.threadId,
+        'user_id': userId,
+        'background_url': url,
+      });
+      if (mounted) setState(() => _chatBackground = url);
+    } catch (e) {
+      debugPrint('[ChatRoom] Background save error: $e');
     }
   }
 
@@ -391,11 +531,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
     if (image == null) return;
-
     try {
       final userId = SupabaseService.currentUserId ?? 'unknown';
       final path = 'chat/$userId/${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final bytes = await image.readAsBytes();
+      final rawBytes = await image.readAsBytes();
+      // Comprimir imagem antes do upload
+      final bytes = await MediaUtils.compressImage(rawBytes);
       await SupabaseService.storage
           .from('chat-media')
           .uploadBinary(path, bytes);
@@ -748,6 +889,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   break;
                 case 'settings':
                   break;
+                case 'background':
+                  _showBackgroundPicker();
+                  break;
                 case 'leave':
                   break;
               }
@@ -755,6 +899,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             itemBuilder: (ctx) => [
               _buildPopupItem(r, 'members', Icons.people_rounded, 'Membros'),
               _buildPopupItem(r, 'settings', Icons.settings_rounded, 'Configurações'),
+              _buildPopupItem(r, 'background', Icons.wallpaper_rounded, 'Fundo do Chat'),
               _buildPopupItem(
                   r, 'leave', Icons.exit_to_app_rounded, 'Sair do Chat',
                   isDestructive: true),
@@ -762,7 +907,20 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           ),
         ],
       ),
-      body: Column(
+      body: Container(
+        decoration: _chatBackground != null
+            ? BoxDecoration(
+                image: DecorationImage(
+                  image: NetworkImage(_chatBackground!),
+                  fit: BoxFit.cover,
+                  colorFilter: ColorFilter.mode(
+                    Colors.black.withValues(alpha: 0.45),
+                    BlendMode.darken,
+                  ),
+                ),
+              )
+            : null,
+        child: Column(
         children: [
           // ── Pinned message banner ──
           if (_pinnedMessages.isNotEmpty)
@@ -1214,6 +1372,15 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     _showLinkInput();
                   },
                 ),
+                _MediaOptionItem(
+                  icon: Icons.video_file_rounded,
+                  label: 'Vídeo',
+                  color: const Color(0xFFFF5722),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _sendVideoFile();
+                  },
+                ),
               ],
             ),
           ],
@@ -1222,9 +1389,47 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     );
   }
 
-  void _showInlinePollCreator() {
+  Future<void> _sendVideoFile() async {
+    final picker = ImagePicker();
+    final video = await picker.pickVideo(source: ImageSource.gallery);
+    if (video == null) return;
+    // Validar duração do vídeo
+    final error = await MediaUtils.validateVideoDuration(video.path);
+    if (error != null && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    try {
+      final userId = SupabaseService.currentUserId ?? 'unknown';
+      final ext = video.path.split('.').last.toLowerCase();
+      final path = 'chat/$userId/${DateTime.now().millisecondsSinceEpoch}.$ext';
+      final bytes = await video.readAsBytes();
+      await SupabaseService.storage
+          .from('chat-media')
+          .uploadBinary(path, bytes, options: const StorageFileUploadOptions(contentType: 'video/mp4'));
+      final url = SupabaseService.storage.from('chat-media').getPublicUrl(path);
+      await _sendMessage(type: 'video', mediaUrl: url, mediaType: 'video');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro no upload do vídeo: $e'),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
 
-      final r = context.r;
+  void _showInlinePollCreator() {
+    final r = context.r;
     final questionCtrl = TextEditingController();
     final optionCtrls = [TextEditingController(), TextEditingController()];
 

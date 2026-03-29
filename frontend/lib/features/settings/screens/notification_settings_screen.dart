@@ -32,6 +32,15 @@ class _NotificationSettingsScreenState
   bool _inAppSounds = true;
   bool _inAppVibration = true;
 
+  // Filtros granulares — apenas amigos
+  bool _onlyFriendsLikes = false;
+  bool _onlyFriendsComments = false;
+  bool _onlyFriendsMessages = false;
+
+  // Pausar todas as notificações temporariamente
+  bool _pauseAllUntil = false;
+  DateTime? _pauseUntilDate;
+
   @override
   void initState() {
     super.initState();
@@ -63,6 +72,13 @@ class _NotificationSettingsScreenState
           _pushModeration = res['push_moderation'] as bool? ?? true;
           _inAppSounds = res['in_app_sounds'] as bool? ?? true;
           _inAppVibration = res['in_app_vibration'] as bool? ?? true;
+          _onlyFriendsLikes = res['only_friends_likes'] as bool? ?? false;
+          _onlyFriendsComments = res['only_friends_comments'] as bool? ?? false;
+          _onlyFriendsMessages = res['only_friends_messages'] as bool? ?? false;
+          _pauseAllUntil = res['pause_all_until'] != null;
+          if (res['pause_all_until'] != null) {
+            _pauseUntilDate = DateTime.tryParse(res['pause_all_until'] as String);
+          }
         });
       }
 
@@ -91,6 +107,12 @@ class _NotificationSettingsScreenState
         'push_moderation': _pushModeration,
         'in_app_sounds': _inAppSounds,
         'in_app_vibration': _inAppVibration,
+        'only_friends_likes': _onlyFriendsLikes,
+        'only_friends_comments': _onlyFriendsComments,
+        'only_friends_messages': _onlyFriendsMessages,
+        'pause_all_until': _pauseAllUntil && _pauseUntilDate != null
+            ? _pauseUntilDate!.toIso8601String()
+            : null,
       });
 
       if (mounted) {
@@ -241,18 +263,36 @@ class _NotificationSettingsScreenState
                   _NotifToggle(
                     icon: Icons.favorite_rounded,
                     title: 'Curtidas',
-                    subtitle: 'Quando alguém curte seu post',
+                    subtitle: _onlyFriendsLikes
+                        ? 'Apenas de amigos'
+                        : 'Quando alguém curte seu post',
                     value: _pushLikes,
                     color: const Color(0xFFE91E63),
                     onChanged: (v) => setState(() => _pushLikes = v),
+                    filterWidget: _pushLikes
+                        ? _FriendsOnlyChip(
+                            value: _onlyFriendsLikes,
+                            onChanged: (v) =>
+                                setState(() => _onlyFriendsLikes = v),
+                          )
+                        : null,
                   ),
                   _NotifToggle(
                     icon: Icons.comment_rounded,
                     title: 'Comentários',
-                    subtitle: 'Quando alguém comenta no seu post',
+                    subtitle: _onlyFriendsComments
+                        ? 'Apenas de amigos'
+                        : 'Quando alguém comenta no seu post',
                     value: _pushComments,
                     color: AppTheme.primaryColor,
                     onChanged: (v) => setState(() => _pushComments = v),
+                    filterWidget: _pushComments
+                        ? _FriendsOnlyChip(
+                            value: _onlyFriendsComments,
+                            onChanged: (v) =>
+                                setState(() => _onlyFriendsComments = v),
+                          )
+                        : null,
                   ),
                   _NotifToggle(
                     icon: Icons.person_add_rounded,
@@ -275,10 +315,19 @@ class _NotificationSettingsScreenState
                   _NotifToggle(
                     icon: Icons.chat_rounded,
                     title: 'Mensagens',
-                    subtitle: 'Novas mensagens no chat',
+                    subtitle: _onlyFriendsMessages
+                        ? 'Apenas de amigos'
+                        : 'Novas mensagens no chat',
                     value: _pushChatMessages,
                     color: AppTheme.primaryColor,
                     onChanged: (v) => setState(() => _pushChatMessages = v),
+                    filterWidget: _pushChatMessages
+                        ? _FriendsOnlyChip(
+                            value: _onlyFriendsMessages,
+                            onChanged: (v) =>
+                                setState(() => _onlyFriendsMessages = v),
+                          )
+                        : null,
                   ),
                   _NotifToggle(
                     icon: Icons.group_add_rounded,
@@ -321,8 +370,94 @@ class _NotificationSettingsScreenState
                 SizedBox(height: r.s(24)),
 
                 // ============================================================
-                // IN-APP
+                // PAUSAR NOTIFICAÇÕES
                 // ============================================================
+                const _SectionTitle(title: 'Pausar Notificações'),
+                Container(
+                  margin: EdgeInsets.only(bottom: r.s(12)),
+                  padding: EdgeInsets.all(r.s(16)),
+                  decoration: BoxDecoration(
+                    color: context.surfaceColor,
+                    borderRadius: BorderRadius.circular(r.s(16)),
+                    border: Border.all(
+                      color: _pauseAllUntil
+                          ? AppTheme.warningColor.withValues(alpha: 0.4)
+                          : Colors.white.withValues(alpha: 0.05),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: r.s(40),
+                            height: r.s(40),
+                            decoration: BoxDecoration(
+                              color: AppTheme.warningColor.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(r.s(12)),
+                            ),
+                            child: Icon(Icons.do_not_disturb_on_rounded,
+                                color: AppTheme.warningColor, size: r.s(20)),
+                          ),
+                          SizedBox(width: r.s(16)),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Não Perturbe',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: r.fs(15),
+                                        color: context.textPrimary)),
+                                SizedBox(height: r.s(4)),
+                                Text(
+                                  _pauseAllUntil && _pauseUntilDate != null
+                                      ? 'Pausado até ${_pauseUntilDate!.day}/${_pauseUntilDate!.month} às ${_pauseUntilDate!.hour.toString().padLeft(2, '0')}:${_pauseUntilDate!.minute.toString().padLeft(2, '0')}'
+                                      : 'Pausar todas as notificações temporariamente',
+                                  style: TextStyle(
+                                      color: Colors.grey[500],
+                                      fontSize: r.fs(13)),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Switch(
+                            value: _pauseAllUntil,
+                            onChanged: (v) async {
+                              if (v) {
+                                final now = DateTime.now();
+                                final picked = await showDateTimePicker(
+                                  context: context,
+                                  initialDate: now.add(const Duration(hours: 8)),
+                                  firstDate: now,
+                                  lastDate: now.add(const Duration(days: 30)),
+                                );
+                                if (picked != null) {
+                                  setState(() {
+                                    _pauseAllUntil = true;
+                                    _pauseUntilDate = picked;
+                                  });
+                                }
+                              } else {
+                                setState(() {
+                                  _pauseAllUntil = false;
+                                  _pauseUntilDate = null;
+                                });
+                              }
+                            },
+                            activeColor: AppTheme.warningColor,
+                            activeTrackColor:
+                                AppTheme.warningColor.withValues(alpha: 0.3),
+                            inactiveThumbColor: Colors.grey[400],
+                            inactiveTrackColor: Colors.grey[800],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: r.s(8)),
                 const _SectionTitle(title: 'In-App'),
                 _NotifToggle(
                   icon: Icons.volume_up_rounded,
@@ -376,7 +511,7 @@ class _NotifToggle extends StatelessWidget {
   final bool value;
   final Color color;
   final ValueChanged<bool> onChanged;
-
+  final Widget? filterWidget;
   const _NotifToggle({
     required this.icon,
     required this.title,
@@ -384,6 +519,7 @@ class _NotifToggle extends StatelessWidget {
     required this.value,
     required this.color,
     required this.onChanged,
+    this.filterWidget,
   });
 
   @override
@@ -431,6 +567,7 @@ class _NotifToggle extends StatelessWidget {
                     fontSize: r.fs(13),
                   ),
                 ),
+                if (filterWidget != null) ...[SizedBox(height: r.s(6)), filterWidget!],
               ],
             ),
           ),
@@ -446,4 +583,74 @@ class _NotifToggle extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Chip compacto para filtrar notificações apenas de amigos.
+class _FriendsOnlyChip extends StatelessWidget {
+  final bool value;
+  final ValueChanged<bool> onChanged;
+  const _FriendsOnlyChip({required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => onChanged(!value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: value
+              ? AppTheme.accentColor.withValues(alpha: 0.2)
+              : Colors.grey.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: value
+                ? AppTheme.accentColor.withValues(alpha: 0.6)
+                : Colors.grey.withValues(alpha: 0.3),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.people_rounded,
+              size: 12,
+              color: value ? AppTheme.accentColor : Colors.grey[500],
+            ),
+            const SizedBox(width: 4),
+            Text(
+              'Apenas amigos',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: value ? AppTheme.accentColor : Colors.grey[500],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Abre um date picker seguido de time picker e retorna o DateTime combinado.
+Future<DateTime?> showDateTimePicker({
+  required BuildContext context,
+  required DateTime initialDate,
+  required DateTime firstDate,
+  required DateTime lastDate,
+}) async {
+  final date = await showDatePicker(
+    context: context,
+    initialDate: initialDate,
+    firstDate: firstDate,
+    lastDate: lastDate,
+  );
+  if (date == null || !context.mounted) return null;
+  final time = await showTimePicker(
+    context: context,
+    initialTime: TimeOfDay.fromDateTime(initialDate),
+  );
+  if (time == null) return null;
+  return DateTime(date.year, date.month, date.day, time.hour, time.minute);
 }
