@@ -1,15 +1,16 @@
 // ============================================================================
 // Edge Function: push-notification
 //
-// Envia push notifications via Firebase Cloud Messaging (FCM).
+// Envia push notifications via Firebase Cloud Messaging (FCM) API v1.
 // Chamada por database webhooks quando uma notificação é inserida.
 //
 // Env vars necessárias:
-// - FCM_SERVER_KEY: Firebase Cloud Messaging server key
+// - FCM_SERVICE_ACCOUNT_JSON: JSON completo da Service Account do Firebase
 // ============================================================================
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { encode as base64url } from "https://deno.land/std@0.177.0/encoding/base64url.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -22,6 +23,65 @@ interface NotificationPayload {
   title?: string;
   content: string;
   data?: Record<string, unknown>;
+}
+
+// Gera um JWT assinado com RS256 para autenticar na API v1 do FCM
+async function getAccessToken(serviceAccount: Record<string, string>): Promise<string> {
+  const now = Math.floor(Date.now() / 1000);
+  const header = { alg: "RS256", typ: "JWT" };
+  const payload = {
+    iss: serviceAccount.client_email,
+    scope: "https://www.googleapis.com/auth/firebase.messaging",
+    aud: "https://oauth2.googleapis.com/token",
+    iat: now,
+    exp: now + 3600,
+  };
+
+  const encoder = new TextEncoder();
+  const headerB64 = base64url(encoder.encode(JSON.stringify(header)));
+  const payloadB64 = base64url(encoder.encode(JSON.stringify(payload)));
+  const signingInput = `${headerB64}.${payloadB64}`;
+
+  // Importar chave privada RSA
+  const pemKey = serviceAccount.private_key.replace(/\\n/g, "\n");
+  const pemBody = pemKey
+    .replace("-----BEGIN PRIVATE KEY-----", "")
+    .replace("-----END PRIVATE KEY-----", "")
+    .replace(/\s/g, "");
+  const keyBytes = Uint8Array.from(atob(pemBody), (c) => c.charCodeAt(0));
+
+  const cryptoKey = await crypto.subtle.importKey(
+    "pkcs8",
+    keyBytes,
+    { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+
+  const signature = await crypto.subtle.sign(
+    "RSASSA-PKCS1-v1_5",
+    cryptoKey,
+    encoder.encode(signingInput)
+  );
+
+  const signatureB64 = base64url(new Uint8Array(signature));
+  const jwt = `${signingInput}.${signatureB64}`;
+
+  // Trocar JWT por access token OAuth2
+  const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "urn:ietf:params:oauth2:grant-type:jwt-bearer",
+      assertion: jwt,
+    }),
+  });
+
+  const tokenData = await tokenResponse.json();
+  if (!tokenData.access_token) {
+    throw new Error(`Falha ao obter access token: ${JSON.stringify(tokenData)}`);
+  }
+  return tokenData.access_token;
 }
 
 serve(async (req) => {
@@ -68,7 +128,6 @@ serve(async (req) => {
       .eq("user_id", user_id)
       .single();
 
-    // Se tem settings e o tipo está desabilitado, não enviar
     if (settings) {
       const typeKey = `push_${notification_type}`;
       if (settings[typeKey] === false) {
@@ -79,14 +138,18 @@ serve(async (req) => {
       }
     }
 
-    // Enviar via FCM
-    const fcmKey = Deno.env.get("FCM_SERVER_KEY");
-    if (!fcmKey) {
+    // Carregar Service Account
+    const serviceAccountJson = Deno.env.get("FCM_SERVICE_ACCOUNT_JSON");
+    if (!serviceAccountJson) {
       return new Response(
-        JSON.stringify({ error: "FCM_SERVER_KEY not configured" }),
+        JSON.stringify({ error: "FCM_SERVICE_ACCOUNT_JSON not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    const serviceAccount = JSON.parse(serviceAccountJson);
+    const projectId = serviceAccount.project_id;
+    const accessToken = await getAccessToken(serviceAccount);
 
     // Mapear tipo para canal Android
     const channelMap: Record<string, string> = {
@@ -102,43 +165,61 @@ serve(async (req) => {
 
     const androidChannel = channelMap[notification_type] || "social_interactions";
 
+    // Montar payload FCM API v1
     const fcmPayload = {
-      to: profile.fcm_token,
-      notification: {
-        title: title || "NexusHub",
-        body: content,
-        sound: "default",
-        android_channel_id: androidChannel,
-      },
-      data: {
-        type: notification_type,
-        click_action: "FLUTTER_NOTIFICATION_CLICK",
-        ...data,
-      },
-      android: {
-        priority: "high",
+      message: {
+        token: profile.fcm_token,
         notification: {
-          channel_id: androidChannel,
-          sound: "default",
-          default_vibrate_timings: true,
-          default_light_settings: true,
+          title: title || "NexusHub",
+          body: content,
+        },
+        android: {
+          priority: "high",
+          notification: {
+            channel_id: androidChannel,
+            sound: "default",
+            default_vibrate_timings: true,
+            default_light_settings: true,
+          },
+        },
+        apns: {
+          payload: {
+            aps: {
+              sound: "default",
+              badge: 1,
+            },
+          },
+        },
+        data: {
+          type: notification_type,
+          click_action: "FLUTTER_NOTIFICATION_CLICK",
+          ...Object.fromEntries(
+            Object.entries(data ?? {}).map(([k, v]) => [k, String(v)])
+          ),
         },
       },
     };
 
-    const fcmResponse = await fetch("https://fcm.googleapis.com/fcm/send", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `key=${fcmKey}`,
-      },
-      body: JSON.stringify(fcmPayload),
-    });
+    const fcmResponse = await fetch(
+      `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(fcmPayload),
+      }
+    );
 
     const fcmResult = await fcmResponse.json();
 
     // Se o token é inválido, limpar do perfil
-    if (fcmResult.failure === 1 && fcmResult.results?.[0]?.error === "NotRegistered") {
+    if (
+      fcmResult.error?.details?.some(
+        (d: { errorCode?: string }) => d.errorCode === "UNREGISTERED"
+      )
+    ) {
       await supabase
         .from("profiles")
         .update({ fcm_token: null })
@@ -147,7 +228,7 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        success: fcmResult.success === 1,
+        success: !!fcmResult.name,
         fcm_result: fcmResult,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
