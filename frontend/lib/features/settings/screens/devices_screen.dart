@@ -38,6 +38,8 @@ class _DevicesScreenState extends State<DevicesScreen> {
   }
 
   Future<void> _revokeDevice(String deviceId) async {
+
+      final r = context.r;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -109,6 +111,8 @@ class _DevicesScreenState extends State<DevicesScreen> {
   }
 
   Future<void> _revokeAllOthers() async {
+
+      final r = context.r;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -200,7 +204,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: IconThemeData(color: context.textPrimary),
-        title: const Text('Dispositivos Conectados',
+        title: Text('Dispositivos Conectados',
             style: TextStyle(fontWeight: FontWeight.w800, color: context.textPrimary)),
         actions: [
           if (_devices.length > 1)
@@ -214,7 +218,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                   borderRadius: BorderRadius.circular(r.s(20)),
                   border: Border.all(color: AppTheme.errorColor.withValues(alpha: 0.3)),
                 ),
-                child: const Text('Revogar Outros',
+                child: Text('Revogar Outros',
                     style: TextStyle(color: AppTheme.errorColor, fontSize: r.fs(12), fontWeight: FontWeight.w700)),
               ),
             ),
@@ -369,7 +373,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                                           borderRadius:
                                               BorderRadius.circular(r.s(20)),
                                         ),
-                                        child: const Text('Atual',
+                                        child: Text('Atual',
                                             style: TextStyle(
                                                 color: Colors.white,
                                                 fontSize: r.fs(10),

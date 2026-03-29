@@ -82,7 +82,7 @@ class _FlagCenterScreenState extends State<FlagCenterScreen>
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Flag Center',
           style: TextStyle(
             fontWeight: FontWeight.w800,
@@ -120,6 +120,8 @@ class _FlagCenterScreenState extends State<FlagCenterScreen>
 
   Widget _buildFlagList(List<Map<String, dynamic>> flags,
       {required bool isPending}) {
+
+      final r = context.r;
     if (flags.isEmpty) {
       return Center(
         child: Column(
@@ -383,7 +385,7 @@ class _FlagCard extends StatelessWidget {
                         ],
                       ),
                       alignment: Alignment.center,
-                      child: const Text(
+                      child: Text(
                         'Tomar Ação',
                         style: TextStyle(
                           color: Colors.white,

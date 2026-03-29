@@ -79,7 +79,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: IconThemeData(color: context.textPrimary),
-        title: const Text(
+        title: Text(
           'Editar Perfil',
           style: TextStyle(
             color: context.textPrimary,

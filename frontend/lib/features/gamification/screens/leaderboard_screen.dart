@@ -30,6 +30,7 @@ class LeaderboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+      final r = context.r;
     final leaderboardAsync = ref.watch(leaderboardProvider(communityId));
 
     return Scaffold(
@@ -37,7 +38,7 @@ class LeaderboardScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Ranking',
           style: TextStyle(
             color: context.textPrimary,

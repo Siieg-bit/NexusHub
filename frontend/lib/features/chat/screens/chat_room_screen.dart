@@ -390,6 +390,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   /// Diálogo de gorjeta estilo Amino — valores pré-definidos + custom.
   Future<void> _showTipDialog() async {
+      final r = context.r;
     final customController = TextEditingController();
     int? selectedAmount;
 
@@ -428,7 +429,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         color: AppTheme.warningColor, size: r.s(24)),
                   ),
                   SizedBox(width: r.s(12)),
-                  const Column(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Enviar Gorjeta',
@@ -1022,6 +1023,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // MEDIA OPTIONS BOTTOM SHEET (19+ tipos) — Estilo Amino
   // ========================================================================
   void _showMediaOptions(BuildContext context) {
+      final r = context.r;
     showModalBottomSheet(
       context: context,
       backgroundColor: context.surfaceColor,
@@ -1157,6 +1159,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   void _showInlinePollCreator() {
+
+      final r = context.r;
     final questionCtrl = TextEditingController();
     final optionCtrls = [TextEditingController(), TextEditingController()];
 
@@ -1167,7 +1171,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           backgroundColor: context.surfaceColor,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(16))),
-          title: const Text('Criar Enquete',
+          title: Text('Criar Enquete',
               style: TextStyle(
                   color: context.textPrimary, fontWeight: FontWeight.w700)),
           content: SingleChildScrollView(
@@ -1193,7 +1197,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         Icon(Icons.add_rounded,
                             size: r.s(16), color: AppTheme.primaryColor),
                         SizedBox(width: r.s(4)),
-                        const Text('Adicionar Opção',
+                        Text('Adicionar Opção',
                             style: TextStyle(
                                 color: AppTheme.primaryColor,
                                 fontSize: r.fs(13),
@@ -1244,13 +1248,15 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   void _showLinkInput() {
+
+      final r = context.r;
     final linkCtrl = TextEditingController();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(16))),
-        title: const Text('Compartilhar Link',
+        title: Text('Compartilhar Link',
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w700)),
         content: _dialogInput(linkCtrl, 'https://...', icon: Icons.link_rounded),
@@ -1282,6 +1288,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   Widget _dialogInput(TextEditingController controller, String hint,
       {IconData? icon}) {
+
+      final r = context.r;
     return Container(
       decoration: BoxDecoration(
         color: context.cardBg,
@@ -1308,6 +1316,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // MESSAGE ACTIONS (Long Press) — Estilo Amino
   // ========================================================================
   void _showMessageActions(MessageModel message) {
+      final r = context.r;
     showModalBottomSheet(
       context: context,
       backgroundColor: context.surfaceColor,
@@ -1397,6 +1406,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   Widget _actionTile(IconData icon, String label, VoidCallback onTap,
       {bool isDestructive = false}) {
+
+      final r = context.r;
     final color = isDestructive ? AppTheme.errorColor : Colors.grey[400];
     return GestureDetector(
       onTap: onTap,
@@ -1417,6 +1428,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   void _showPinnedMessages() {
+
+      final r = context.r;
     showModalBottomSheet(
       context: context,
       backgroundColor: context.surfaceColor,
@@ -1438,7 +1451,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const Text('Mensagens Fixadas',
+            Text('Mensagens Fixadas',
                 style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: r.fs(16),
@@ -1464,6 +1477,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   Widget _badgeIcon(IconData icon, int count) {
+
+      final r = context.r;
     return Container(
       width: r.s(34),
       height: r.s(34),
@@ -1738,7 +1753,7 @@ class _MessageBubble extends StatelessWidget {
           color: Colors.black26,
           borderRadius: BorderRadius.circular(r.s(8)),
         ),
-        child: const Center(
+        child: Center(
           child: Icon(Icons.play_circle_rounded, color: Colors.white, size: r.s(48)),
         ),
       );

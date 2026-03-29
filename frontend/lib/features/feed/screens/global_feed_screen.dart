@@ -34,6 +34,7 @@ class GlobalFeedScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+      final r = context.r;
     final feedAsync = ref.watch(globalFeedProvider);
 
     return Scaffold(
@@ -74,7 +75,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                       color: Colors.white, size: r.s(20)),
                 ),
                 SizedBox(width: r.s(10)),
-                const Text(
+                Text(
                   'NexusHub',
                   style: TextStyle(
                     color: context.textPrimary,
@@ -93,7 +94,7 @@ class GlobalFeedScreen extends ConsumerWidget {
               ),
               // Notificações
               IconButton(
-                icon: const Badge(
+                icon: Badge(
                   smallSize: 8,
                   child: Icon(Icons.notifications_outlined, color: context.textPrimary),
                 ),
@@ -157,7 +158,7 @@ class GlobalFeedScreen extends ConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Feed',
                     style: TextStyle(
                       color: context.textPrimary,
@@ -176,7 +177,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                           color: Colors.white.withValues(alpha: 0.05),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Atualizar',
                         style: TextStyle(
                           color: AppTheme.primaryColor,
@@ -249,7 +250,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                         Icon(Icons.explore_rounded,
                             size: r.s(64), color: Colors.grey[600]),
                         SizedBox(height: r.s(16)),
-                        const Text('Seu feed está vazio',
+                        Text('Seu feed está vazio',
                             style: TextStyle(
                                 color: context.textPrimary,
                                 fontSize: r.fs(18),

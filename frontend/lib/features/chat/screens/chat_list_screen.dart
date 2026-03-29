@@ -117,7 +117,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text('Novo Chat',
+                        Text('Novo Chat',
                             style: TextStyle(
                                 color: context.textPrimary,
                                 fontSize: r.fs(18),
@@ -134,7 +134,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                             child: const Icon(Icons.person_add_rounded,
                                 color: AppTheme.primaryColor),
                           ),
-                          title: const Text('Chat Privado',
+                          title: Text('Chat Privado',
                               style: TextStyle(
                                   color: context.textPrimary,
                                   fontWeight: FontWeight.w600)),
@@ -156,7 +156,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                             child: const Icon(Icons.group_add_rounded,
                                 color: AppTheme.accentColor),
                           ),
-                          title: const Text('Chat em Grupo',
+                          title: Text('Chat em Grupo',
                               style: TextStyle(
                                   color: context.textPrimary,
                                   fontWeight: FontWeight.w600)),
@@ -510,7 +510,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                   size: r.s(36), color: context.textHint),
             ),
             SizedBox(height: r.s(16)),
-            const Text('Nenhum chat ainda',
+            Text('Nenhum chat ainda',
                 style: TextStyle(
                     color: context.textPrimary,
                     fontSize: r.fs(16),
@@ -528,7 +528,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                   color: AppTheme.accentColor,
                   borderRadius: BorderRadius.circular(r.s(20)),
                 ),
-                child: const Text(
+                child: Text(
                   'Explorar Mais Chats',
                   style: TextStyle(
                     color: Colors.white,

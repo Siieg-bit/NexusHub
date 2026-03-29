@@ -72,6 +72,8 @@ class _StoreScreenState extends State<StoreScreen>
   }
 
   Future<void> _purchaseItem(Map<String, dynamic> item) async {
+
+      final r = context.r;
     final price = item['price'] as int? ?? 0;
     if (_userCoins < price) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -156,7 +158,7 @@ class _StoreScreenState extends State<StoreScreen>
                           horizontal: r.s(12), vertical: r.s(8)),
                       child: Row(
                         children: [
-                          const Text(
+                          Text(
                             'Loja',
                             style: TextStyle(
                               color: Colors.white,
@@ -179,7 +181,7 @@ class _StoreScreenState extends State<StoreScreen>
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.monetization_on_rounded,
+                                Icon(Icons.monetization_on_rounded,
                                     color: Color(0xFFFFD700), size: r.s(18)),
                                 SizedBox(width: r.s(4)),
                                 Text(
@@ -243,7 +245,7 @@ class _StoreScreenState extends State<StoreScreen>
                                 ),
                               ],
                             ),
-                            child: const Center(
+                            child: Center(
                               child: Text(
                                 'AC',
                                 style: TextStyle(
@@ -312,7 +314,7 @@ class _StoreScreenState extends State<StoreScreen>
                                 color: Colors.white, size: r.s(20)),
                           ),
                           SizedBox(width: r.s(12)),
-                          const Expanded(
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -341,7 +343,7 @@ class _StoreScreenState extends State<StoreScreen>
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(r.s(20)),
                             ),
-                            child: const Text(
+                            child: Text(
                               'Assinar',
                               style: TextStyle(
                                 color: Color(0xFFFF8C00),
@@ -633,7 +635,7 @@ class _StoreItemCardState extends State<_StoreItemCard>
                           ),
                         ],
                       ),
-                      child: const Text(
+                      child: Text(
                         'LIMITADO',
                         style: TextStyle(
                             color: Colors.white,

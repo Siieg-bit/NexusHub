@@ -117,6 +117,8 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
   }
 
   Future<void> _uploadFile() async {
+
+      final r = context.r;
     final choice = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: Colors.transparent,
@@ -138,7 +140,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
               ),
             ),
             SizedBox(height: r.s(16)),
-            const Text(
+            Text(
               'Upload para Shared Folder',
               style: TextStyle(
                 color: context.textPrimary,
@@ -276,12 +278,14 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
   }
 
   Future<void> _deleteFile(String fileId) async {
+
+      final r = context.r;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(16))),
-        title: const Text('Excluir arquivo',
+        title: Text('Excluir arquivo',
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w700)),
         content: const Text('Tem certeza que deseja excluir este arquivo?',
@@ -346,7 +350,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Shared Folder',
               style: TextStyle(
                 fontWeight: FontWeight.w800,

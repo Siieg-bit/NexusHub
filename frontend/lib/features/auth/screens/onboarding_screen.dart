@@ -93,7 +93,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         ),
                       ),
                       SizedBox(height: r.s(24)),
-                      const Text(
+                      Text(
                         'NexusHub',
                         style: TextStyle(
                           color: context.textPrimary,
@@ -103,7 +103,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         ),
                       ),
                       SizedBox(height: r.s(8)),
-                      const Text(
+                      Text(
                         'Sua comunidade, seu mundo.',
                         style: TextStyle(
                           color: context.textSecondary,
@@ -215,7 +215,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 // Termos
                 AminoAnimations.fadeIn(
                   delay: const Duration(milliseconds: 600),
-                  child: const Text(
+                  child: Text(
                     'Ao continuar, você concorda com os Termos de Uso\ne Política de Privacidade.',
                     textAlign: TextAlign.center,
                     style: TextStyle(

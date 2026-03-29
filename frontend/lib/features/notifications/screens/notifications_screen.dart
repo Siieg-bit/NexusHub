@@ -29,6 +29,7 @@ class NotificationsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+      final r = context.r;
     final notificationsAsync = ref.watch(notificationsProvider);
 
     return Scaffold(
@@ -36,7 +37,7 @@ class NotificationsScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: context.scaffoldBg,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Notificações',
           style: TextStyle(
             color: context.textPrimary,
@@ -56,7 +57,7 @@ class NotificationsScreen extends ConsumerWidget {
                   color: Colors.white.withValues(alpha: 0.05),
                 ),
               ),
-              child: const Text(
+              child: Text(
                 'Marcar todas',
                 style: TextStyle(
                   color: AppTheme.primaryColor,

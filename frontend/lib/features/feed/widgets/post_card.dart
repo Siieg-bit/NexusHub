@@ -382,7 +382,7 @@ class _PostCardState extends State<PostCard>
                 color: AppTheme.warningColor.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(r.s(6)),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.star_rounded,
@@ -523,7 +523,7 @@ class _PostCardState extends State<PostCard>
                 Icon(Icons.quiz_rounded,
                     size: r.s(14), color: AppTheme.accentColor),
                 SizedBox(width: r.s(6)),
-                const Text('Quiz',
+                Text('Quiz',
                     style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: r.fs(11),
@@ -614,7 +614,7 @@ class _PostCardState extends State<PostCard>
                 color: const Color(0xFF3F51B5).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(r.s(8)),
               ),
-              child: const Center(
+              child: Center(
                 child: Text('Q',
                     style: TextStyle(
                         color: Color(0xFF3F51B5),
@@ -627,7 +627,7 @@ class _PostCardState extends State<PostCard>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Pergunta & Resposta',
+                  Text('Pergunta & Resposta',
                       style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: r.fs(11),

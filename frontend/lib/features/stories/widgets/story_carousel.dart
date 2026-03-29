@@ -96,7 +96,7 @@ class _StoryCarouselState extends State<StoryCarousel> {
     return SizedBox(
       height: r.s(100),
       child: _isLoading
-          ? const Center(
+          ? Center(
               child: SizedBox(
                 width: r.s(20),
                 height: r.s(20),
@@ -149,7 +149,7 @@ class _StoryCarouselState extends State<StoryCarousel> {
               ],
             ),
             SizedBox(height: r.s(4)),
-            const Text(
+            Text(
               'Seu Story',
               style: TextStyle(
                 color: context.textPrimary,
@@ -167,6 +167,8 @@ class _StoryCarouselState extends State<StoryCarousel> {
 
   Widget _buildStoryAvatar(
       BuildContext context, Map<String, dynamic> group) {
+
+      final r = context.r;
     final profile = group['profile'] as Map<String, dynamic>?;
     final username = profile?['username'] as String? ?? '?';
     final avatarUrl = profile?['avatar_url'] as String?;

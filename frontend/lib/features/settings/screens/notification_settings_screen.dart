@@ -116,7 +116,7 @@ class _NotificationSettingsScreenState
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: IconThemeData(color: context.textPrimary),
-        title: const Text(
+        title: Text(
           'Notificações',
           style: TextStyle(
             fontWeight: FontWeight.w800,
@@ -143,7 +143,7 @@ class _NotificationSettingsScreenState
                 ],
               ),
               alignment: Alignment.center,
-              child: const Text(
+              child: Text(
                 'Salvar',
                 style: TextStyle(
                   color: Colors.white,
@@ -201,7 +201,7 @@ class _NotificationSettingsScreenState
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Notificações Push',
                               style: TextStyle(
                                 fontWeight: FontWeight.w800,

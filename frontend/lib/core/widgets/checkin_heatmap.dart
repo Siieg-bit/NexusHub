@@ -125,7 +125,7 @@ class CheckinHeatmap extends StatelessWidget {
               Icon(Icons.calendar_month_rounded,
                   color: AppTheme.accentColor, size: r.s(20)),
               SizedBox(width: r.s(8)),
-              const Text(
+              Text(
                 'Histórico de Check-in',
                 style: TextStyle(
                   color: context.textPrimary,

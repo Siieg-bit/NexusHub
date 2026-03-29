@@ -101,6 +101,7 @@ class _LevelUpContentState extends State<_LevelUpContent>
 
   @override
   void initState() {
+      final r = context.r;
     super.initState();
 
     // Glow pulsante no número do nível
@@ -208,7 +209,7 @@ class _LevelUpContentState extends State<_LevelUpContent>
                     SizedBox(height: r.s(8)),
 
                     // "LEVEL UP!"
-                    const Text(
+                    Text(
                       'LEVEL UP!',
                       style: TextStyle(
                         fontSize: r.fs(16),
@@ -323,7 +324,7 @@ class _LevelUpContentState extends State<_LevelUpContent>
                           elevation: 8,
                           shadowColor: levelColor.withValues(alpha: 0.5),
                         ),
-                        child: const Text(
+                        child: Text(
                           'Incrível!',
                           style: TextStyle(
                             fontSize: r.fs(16),

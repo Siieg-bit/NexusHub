@@ -107,7 +107,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: IconThemeData(color: context.textPrimary),
-        title: const Text(
+        title: Text(
           'Criar Comunidade',
           style: TextStyle(
             color: context.textPrimary,
@@ -176,7 +176,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                     color: Colors.white.withValues(alpha: 0.05),
                   ),
                 ),
-                child: const Center(
+                child: Center(
                   child: Icon(Icons.camera_alt_rounded,
                       size: r.s(40), color: Colors.white54),
                 ),
@@ -221,7 +221,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
               SizedBox(height: r.s(24)),
 
               // Cor do tema
-              const Text(
+              Text(
                 'Cor do Tema',
                 style: TextStyle(
                   color: context.textPrimary,
@@ -280,7 +280,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
               SizedBox(height: r.s(24)),
 
               // Idioma
-              const Text(
+              Text(
                 'Idioma Principal',
                 style: TextStyle(
                   color: context.textPrimary,

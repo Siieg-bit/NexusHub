@@ -130,7 +130,7 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
                               color: Colors.white, size: r.s(20)),
                           onPressed: () => Navigator.pop(context),
                         ),
-                        const Expanded(
+                        Expanded(
                           child: Text(
                             'Ganhar Moedas',
                             textAlign: TextAlign.center,
@@ -168,7 +168,7 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
                               ),
                             ],
                           ),
-                          child: const Center(
+                          child: Center(
                             child: Text(
                               'A',
                               style: TextStyle(
@@ -188,7 +188,7 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        const Text(
+                        Text(
                           'Amino Coins',
                           style:
                               TextStyle(color: Colors.white70, fontSize: r.fs(13)),
@@ -423,12 +423,12 @@ class _EarningCard extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.monetization_on_rounded,
+                      Icon(Icons.monetization_on_rounded,
                           color: Color(0xFFFF9800), size: r.s(14)),
                       SizedBox(width: r.s(4)),
                       Text(
                         reward,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Color(0xFFFF9800),
                           fontSize: r.fs(12),
                           fontWeight: FontWeight.w700,

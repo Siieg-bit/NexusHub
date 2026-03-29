@@ -117,6 +117,8 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
   }
 
   Future<void> _pickCoverImage() async {
+
+      final r = context.r;
     try {
       final picker = ImagePicker();
       final picked = await picker.pickImage(
@@ -228,7 +230,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
       appBar: AppBar(
         backgroundColor: context.scaffoldBg,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Criar Grupo',
           style: TextStyle(
             fontWeight: FontWeight.w800,
@@ -248,7 +250,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: AppTheme.primaryColor),
                     )
-                  : const Text(
+                  : Text(
                       'Criar',
                       style: TextStyle(
                         color: AppTheme.primaryColor,
@@ -639,7 +641,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
               const Spacer(),
               GestureDetector(
                 onTap: () => setState(() => _currentStep = 0),
-                child: const Text('Alterar',
+                child: Text('Alterar',
                     style: TextStyle(
                         color: AppTheme.accentColor,
                         fontSize: r.fs(12),
@@ -677,7 +679,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                 ),
               ],
             ),
-            child: const Center(
+            child: Center(
               child: Text(
                 'Selecionar Membros',
                 style: TextStyle(

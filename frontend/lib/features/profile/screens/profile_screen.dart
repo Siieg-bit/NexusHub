@@ -320,7 +320,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                               colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
                             ),
                           ),
-                          child: const Center(
+                          child: Center(
                             child: Text('A',
                                 style: TextStyle(
                                     color: Colors.white,
@@ -618,7 +618,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       : isOwnProfile
                           ? GestureDetector(
                               onTap: () => context.push('/profile/edit'),
-                              child: const Text(
+                              child: Text(
                                 'Clique aqui para adicionar sua biografia!',
                                 style: TextStyle(
                                   color: AppTheme.accentColor,
@@ -658,7 +658,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                               color: const Color(0xFFFFD700),
                               borderRadius: BorderRadius.circular(r.s(6)),
                             ),
-                            child: const Text(
+                            child: Text(
                               'Amino+',
                               style: TextStyle(
                                 color: Colors.white,
@@ -822,6 +822,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   }
 
   void _showUserOptions(BuildContext context, UserModel user) {
+
+      final r = context.r;
     showModalBottomSheet(
       context: context,
       backgroundColor: context.surfaceColor,
@@ -864,6 +866,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
   Widget _optionTile(IconData icon, String label, VoidCallback onTap,
       {bool isDestructive = false}) {
+
+      final r = context.r;
     final color = isDestructive ? AppTheme.errorColor : Colors.grey[400];
     return GestureDetector(
       onTap: onTap,
@@ -893,6 +897,7 @@ class _LinkedCommunitiesSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+      final r = context.r;
     final communitiesAsync = ref.watch(userLinkedCommunitiesProvider(userId));
 
     return communitiesAsync.when(
@@ -990,6 +995,8 @@ class _LinkedCommunitiesSection extends ConsumerWidget {
   }
 
   Widget _communityPlaceholder(CommunityModel community) {
+
+      final r = context.r;
     return Container(
       width: r.s(32),
       height: r.s(32),
@@ -1020,6 +1027,7 @@ class _StoriesTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+      final r = context.r;
     final postsAsync = ref.watch(userPostsProvider(userId));
 
     return postsAsync.when(
@@ -1081,6 +1089,7 @@ class _WallTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+      final r = context.r;
     final wallAsync = ref.watch(userWallProvider(userId));
     final isOwnWall = userId == SupabaseService.currentUserId;
 
@@ -1427,7 +1436,7 @@ class _PinnedWikisSectionState extends State<_PinnedWikisSection> {
                                     height: r.s(50),
                                     color: AppTheme.primaryColor
                                         .withValues(alpha: 0.15),
-                                    child: const Center(
+                                    child: Center(
                                       child: Icon(Icons.auto_stories_rounded,
                                           color: AppTheme.primaryColor,
                                           size: r.s(20)),
@@ -1439,7 +1448,7 @@ class _PinnedWikisSectionState extends State<_PinnedWikisSection> {
                                   width: r.s(140),
                                   color: AppTheme.primaryColor
                                       .withValues(alpha: 0.15),
-                                  child: const Center(
+                                  child: Center(
                                     child: Icon(Icons.auto_stories_rounded,
                                         color: AppTheme.primaryColor,
                                         size: r.s(20)),

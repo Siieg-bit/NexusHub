@@ -109,7 +109,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Privacidade',
           style: TextStyle(
             fontWeight: FontWeight.w800,
@@ -137,7 +137,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                 ],
               ),
               alignment: Alignment.center,
-              child: const Text(
+              child: Text(
                 'Salvar',
                 style: TextStyle(
                   color: Colors.white,
@@ -262,7 +262,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Quem pode te seguir',
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
@@ -312,7 +312,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                       ListTile(
                         leading: const Icon(Icons.download_rounded,
                             color: AppTheme.primaryColor),
-                        title: const Text(
+                        title: Text(
                           'Exportar Meus Dados',
                           style: TextStyle(
                             color: context.textPrimary,
@@ -341,7 +341,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                       ListTile(
                         leading: Icon(Icons.block_rounded,
                             color: Colors.grey[500]),
-                        title: const Text(
+                        title: Text(
                           'Usuários Bloqueados',
                           style: TextStyle(
                             color: context.textPrimary,
@@ -378,7 +378,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                                   color: Colors.white.withValues(alpha: 0.05),
                                 ),
                               ),
-                              title: const Text(
+                              title: Text(
                                 'Excluir Conta',
                                 style: TextStyle(
                                   color: context.textPrimary,

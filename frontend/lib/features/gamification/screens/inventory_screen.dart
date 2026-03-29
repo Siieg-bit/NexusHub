@@ -73,6 +73,8 @@ class _InventoryScreenState extends State<InventoryScreen>
   }
 
   Future<void> _toggleEquip(Map<String, dynamic> item) async {
+
+      final r = context.r;
     final itemId = item['id'] as String;
     final isEquipped = _equippedIds.contains(itemId);
 
@@ -132,7 +134,7 @@ class _InventoryScreenState extends State<InventoryScreen>
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: IconThemeData(color: context.textPrimary),
-        title: const Text(
+        title: Text(
           'Inventário',
           style: TextStyle(
             fontWeight: FontWeight.w800,
@@ -211,7 +213,7 @@ class _InventoryScreenState extends State<InventoryScreen>
                     ),
                   ],
                 ),
-                child: const Text(
+                child: Text(
                   'Ir para a Loja',
                   style: TextStyle(
                     color: Colors.white,

@@ -43,6 +43,8 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
   }
 
   Future<void> _reviewEntry(String entryId, String action) async {
+
+      final r = context.r;
     final userId = SupabaseService.currentUserId;
     if (userId == null) return;
 
@@ -128,13 +130,15 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
   }
 
   Future<String?> _showRejectDialog() async {
+
+      final r = context.r;
     final controller = TextEditingController();
     return showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: context.cardBg,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(20))),
-        title: const Text('Motivo da rejeição',
+        title: Text('Motivo da rejeição',
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w800)),
         content: TextField(
@@ -187,7 +191,7 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
         iconTheme: IconThemeData(color: context.textPrimary),
         title: Row(
           children: [
-            const Text('Revisão de Wiki',
+            Text('Revisão de Wiki',
                 style: TextStyle(
                     fontWeight: FontWeight.w800,
                     color: context.textPrimary,
@@ -226,7 +230,7 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
                           size: r.s(64),
                           color: AppTheme.successColor.withValues(alpha: 0.5)),
                       SizedBox(height: r.s(16)),
-                      const Text('Nenhuma wiki pendente',
+                      Text('Nenhuma wiki pendente',
                           style: TextStyle(
                               color: context.textSecondary,
                               fontSize: r.fs(16),
@@ -425,7 +429,7 @@ class _PendingWikiCard extends StatelessWidget {
                                   color:
                                       AppTheme.errorColor.withValues(alpha: 0.3)),
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(Icons.close_rounded,
@@ -464,7 +468,7 @@ class _PendingWikiCard extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(Icons.check_rounded,

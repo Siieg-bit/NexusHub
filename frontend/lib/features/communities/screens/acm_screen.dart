@@ -157,6 +157,8 @@ class _AcmScreenState extends State<AcmScreen>
       };
 
   Future<void> _saveConfig() async {
+
+      final r = context.r;
     try {
       final updates = <String, dynamic>{
         'configuration': _config,
@@ -537,7 +539,7 @@ class _AcmScreenState extends State<AcmScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
+              Row(
                 children: [
                   Icon(Icons.image_rounded, color: AppTheme.primaryColor),
                   SizedBox(width: r.s(12)),
@@ -596,7 +598,7 @@ class _AcmScreenState extends State<AcmScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
+              Row(
                 children: [
                   Icon(Icons.panorama_rounded, color: AppTheme.primaryColor),
                   SizedBox(width: r.s(12)),
@@ -892,6 +894,8 @@ class _AcmScreenState extends State<AcmScreen>
   }
 
   List<Widget> _buildSectionToggles(Map<String, dynamic> visible) {
+
+      final r = context.r;
     final sections = [
       _SectionToggle(
         key: 'check_in',

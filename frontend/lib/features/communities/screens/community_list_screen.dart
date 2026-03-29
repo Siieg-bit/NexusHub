@@ -251,7 +251,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                       width: 1.5,
                     ),
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Text(
                       'CRIE SUA COMUNIDADE',
                       style: TextStyle(
@@ -294,7 +294,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
             Icon(Icons.groups_rounded,
                 color: context.textHint, size: r.s(48)),
             SizedBox(height: r.s(12)),
-            const Text(
+            Text(
               'Nenhuma comunidade',
               style: TextStyle(
                 color: context.textPrimary,
@@ -303,7 +303,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
               ),
             ),
             SizedBox(height: r.s(6)),
-            const Text(
+            Text(
               'Explore e entre em comunidades para começar!',
               style: TextStyle(
                 color: context.textSecondary,
@@ -321,7 +321,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                   color: AppTheme.primaryColor,
                   borderRadius: BorderRadius.circular(r.s(20)),
                 ),
-                child: const Text(
+                child: Text(
                   'Explorar Comunidades',
                   style: TextStyle(
                     color: Colors.white,
@@ -346,7 +346,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
           Icon(Icons.error_outline_rounded,
               color: AppTheme.errorColor, size: r.s(40)),
           SizedBox(height: r.s(10)),
-          const Text(
+          Text(
             'Erro ao carregar comunidades',
             style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
           ),
@@ -360,7 +360,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                 color: AppTheme.primaryColor,
                 borderRadius: BorderRadius.circular(r.s(16)),
               ),
-              child: const Text(
+              child: Text(
                 'Tentar novamente',
                 style: TextStyle(
                   color: Colors.white,
@@ -628,7 +628,7 @@ class _AminoCommunityCardState extends State<_AminoCommunityCard> {
                                       ),
                                     ),
                                   )
-                                : const Text(
+                                : Text(
                                     'CHECK IN',
                                     style: TextStyle(
                                       color: Colors.white,
@@ -1070,7 +1070,7 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
                         color: AppTheme.primaryColor,
                         borderRadius: BorderRadius.circular(r.s(8)),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Abrir',
                         style: TextStyle(
                           color: Colors.white,
@@ -1103,7 +1103,7 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
                                 color: Colors.white,
                               ),
                             )
-                          : const Text(
+                          : Text(
                               'Check In',
                               style: TextStyle(
                                 color: Colors.white,

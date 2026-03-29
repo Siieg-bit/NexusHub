@@ -29,6 +29,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _exportData() async {
+
+      final r = context.r;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -37,7 +39,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           borderRadius: BorderRadius.circular(r.s(16)),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
-        title: const Row(
+        title: Row(
           children: [
             Icon(Icons.download_rounded, color: AppTheme.primaryColor),
             SizedBox(width: r.s(8)),
@@ -100,6 +102,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _deleteAccount() async {
+
+      final r = context.r;
     final confirm1 = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -108,7 +112,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           borderRadius: BorderRadius.circular(r.s(16)),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
-        title: const Row(
+        title: Row(
           children: [
             Icon(Icons.warning_rounded, color: AppTheme.errorColor),
             SizedBox(width: r.s(8)),
@@ -264,7 +268,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('Configurações',
+        title: Text('Configurações',
             style: TextStyle(fontWeight: FontWeight.w800, color: context.textPrimary)),
         iconTheme: IconThemeData(color: context.textPrimary),
       ),
@@ -375,7 +379,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           );
                           return AlertDialog(
                             backgroundColor: context.surfaceColor,
-                            title: const Text('Alterar Email',
+                            title: Text('Alterar Email',
                                 style: TextStyle(color: context.textPrimary)),
                             content: TextField(
                               controller: emailCtrl,
@@ -486,7 +490,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Text('Idioma',
+                              Text('Idioma',
                                   style: TextStyle(
                                       color: context.textPrimary,
                                       fontSize: r.fs(18),
@@ -530,7 +534,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             borderRadius: BorderRadius.circular(r.s(16)),
                             side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
                           ),
-                          title: const Row(
+                          title: Row(
                             children: [
                               Icon(Icons.cleaning_services_rounded, color: AppTheme.accentColor),
                               SizedBox(width: r.s(8)),
@@ -637,9 +641,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         context: context,
                         builder: (ctx) => AlertDialog(
                           backgroundColor: context.surfaceColor,
-                          title: const Text('Central de Ajuda',
+                          title: Text('Central de Ajuda',
                               style: TextStyle(color: context.textPrimary)),
-                          content: const Text(
+                          content: Text(
                             'Para suporte, entre em contato:\n\n\u2022 Email: suporte@nexushub.app\n\u2022 Discord: discord.gg/nexushub\n\u2022 FAQ: nexushub.app/faq',
                             style: TextStyle(color: context.textSecondary),
                           ),
@@ -663,7 +667,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           final bugCtrl = TextEditingController();
                           return AlertDialog(
                             backgroundColor: context.surfaceColor,
-                            title: const Text('Reportar Bug',
+                            title: Text('Reportar Bug',
                                 style: TextStyle(color: context.textPrimary)),
                             content: TextField(
                               controller: bugCtrl,
@@ -801,7 +805,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       borderRadius: BorderRadius.circular(r.s(12)),
                       border: Border.all(color: AppTheme.errorColor),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.logout_rounded, color: AppTheme.errorColor),
@@ -915,7 +919,7 @@ class _ThemeToggleItem extends StatelessWidget {
         color: AppTheme.primaryColor,
         size: r.s(22),
       ),
-      title: const Text('Aparência',
+      title: Text('Aparência',
           style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w700, fontSize: r.fs(14))),
       subtitle: Text(
         isDark ? 'Tema escuro' : 'Tema claro',

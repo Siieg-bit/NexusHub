@@ -547,7 +547,7 @@ class AminoPostShimmer extends StatelessWidget {
               SizedBox(width: r.s(12)),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   AminoShimmer(width: r.s(120), height: r.s(14)),
                   SizedBox(height: r.s(6)),
                   AminoShimmer(width: r.s(80), height: r.s(10)),
@@ -569,7 +569,7 @@ class AminoPostShimmer extends StatelessWidget {
           SizedBox(height: r.s(12)),
           // Actions
           Row(
-            children: const [
+            children: [
               AminoShimmer(width: r.s(60), height: r.s(24), borderRadius: 12),
               SizedBox(width: r.s(16)),
               AminoShimmer(width: r.s(60), height: r.s(24), borderRadius: 12),

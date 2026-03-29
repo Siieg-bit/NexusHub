@@ -185,7 +185,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
               ),
               GestureDetector(
                 onTap: () => context.go('/'),
-                child: const Text(
+                child: Text(
                   'Pular',
                   style: TextStyle(color: AppTheme.primaryColor, fontSize: r.fs(14), fontWeight: FontWeight.w700),
                 ),
@@ -613,7 +613,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
           SizedBox(height: r.s(16)),
           GestureDetector(
             onTap: () => context.go('/'),
-            child: const Text(
+            child: Text(
               'Pular por enquanto',
               style: TextStyle(
                 color: AppTheme.primaryColor,
@@ -633,6 +633,8 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
     required VoidCallback? onTap,
     bool isLoading = false,
   }) {
+
+      final r = context.r;
     final isEnabled = onTap != null;
     return GestureDetector(
       onTap: isEnabled ? onTap : null,

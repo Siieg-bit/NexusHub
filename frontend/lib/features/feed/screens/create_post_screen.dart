@@ -364,7 +364,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           icon: Icon(Icons.close_rounded, color: context.textPrimary),
           onPressed: () => context.pop(),
         ),
-        title: const Text(
+        title: Text(
           'Criar Post',
           style: TextStyle(
             color: context.textPrimary,
@@ -394,7 +394,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                         child: CircularProgressIndicator(
                             strokeWidth: 2, color: Colors.white),
                       )
-                    : const Text(
+                    : Text(
                         'Postar',
                         style: TextStyle(
                           color: Colors.white,
@@ -662,6 +662,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     IconData? icon,
     TextInputType? keyboardType,
   }) {
+      final r = context.r;
     return Container(
       decoration: BoxDecoration(
         color: context.cardBg,

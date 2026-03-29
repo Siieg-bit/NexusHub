@@ -77,7 +77,7 @@ class _FollowersScreenState extends State<FollowersScreen>
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: IconThemeData(color: context.textPrimary),
-        title: const Text(
+        title: Text(
           'Conexões',
           style: TextStyle(
             fontWeight: FontWeight.w800,

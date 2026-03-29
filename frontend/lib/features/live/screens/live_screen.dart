@@ -43,6 +43,8 @@ class _LiveScreenState extends State<LiveScreen> {
   }
 
   Future<void> _createScreeningRoom() async {
+
+      final r = context.r;
     // Precisa de um thread_id — criar um chat thread temporário ou usar existente
     final threadIdController = TextEditingController();
     final titleController = TextEditingController(text: 'Screening Room');
@@ -52,7 +54,7 @@ class _LiveScreenState extends State<LiveScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(16))),
-        title: const Text('Criar Screening Room',
+        title: Text('Criar Screening Room',
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w800)),
         content: Column(
@@ -193,7 +195,7 @@ class _LiveScreenState extends State<LiveScreen> {
         backgroundColor: context.surfaceColor,
         elevation: 0,
         iconTheme: IconThemeData(color: context.textPrimary),
-        title: const Text(
+        title: Text(
           'Live',
           style: TextStyle(
             fontWeight: FontWeight.w800,
@@ -247,7 +249,7 @@ class _LiveScreenState extends State<LiveScreen> {
                     size: r.s(48), color: AppTheme.primaryColor),
               ),
               SizedBox(height: r.s(24)),
-              const Text(
+              Text(
                 'Nenhuma Sala Ativa',
                 style: TextStyle(
                   color: context.textPrimary,

@@ -97,6 +97,8 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
   }
 
   Future<void> _repairStreak() async {
+
+      final r = context.r;
     try {
       final result =
           await SupabaseService.rpc('repair_streak', params: {'p_cost': 50});
@@ -149,6 +151,8 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
   }
 
   Future<void> _doCheckIn() async {
+
+      final r = context.r;
     setState(() => _isLoading = true);
 
     try {
@@ -211,7 +215,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
               color: context.textPrimary, size: r.s(20)),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Check-in Diário',
+        title: Text('Check-in Diário',
             style: TextStyle(
                 fontWeight: FontWeight.w800,
                 fontSize: r.fs(18),
@@ -315,7 +319,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                 ),
                 child: Column(
                   children: [
-                    const Text('Recompensas',
+                    Text('Recompensas',
                         style: TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: r.fs(16),
@@ -380,7 +384,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                             child: CircularProgressIndicator(
                                 color: Colors.white, strokeWidth: 2),
                           )
-                        : const Row(
+                        : Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(Icons.local_fire_department_rounded,
@@ -428,7 +432,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Como funciona',
+                  Text('Como funciona',
                       style: TextStyle(
                           fontWeight: FontWeight.w700,
                           color: context.textPrimary)),
@@ -513,7 +517,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
               Icon(Icons.casino_rounded,
                   color: AppTheme.warningColor, size: r.s(20)),
               SizedBox(width: r.s(8)),
-              const Text('Sorteio',
+              Text('Sorteio',
                   style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: r.fs(16),
@@ -552,7 +556,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                     ),
                   ],
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.casino_rounded,
@@ -591,7 +595,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
               Icon(Icons.build_circle_rounded,
                   color: AppTheme.errorColor, size: r.s(20)),
               SizedBox(width: r.s(8)),
-              const Text('Sequência Perdida',
+              Text('Sequência Perdida',
                   style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: r.fs(16),
@@ -621,7 +625,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                   ),
                 ],
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.monetization_on_rounded,

@@ -92,7 +92,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
                 // Título
                 AminoAnimations.slideUp(
-                  child: const Column(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
@@ -229,7 +229,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                               : null,
                         ),
                         SizedBox(width: r.s(10)),
-                        const Expanded(
+                        Expanded(
                           child: Text(
                             'Aceito os Termos de Uso e Política de Privacidade',
                             style: TextStyle(
@@ -381,12 +381,12 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('Já tem conta? ',
+                      Text('Já tem conta? ',
                           style: TextStyle(
                               color: context.textSecondary, fontSize: r.fs(14))),
                       GestureDetector(
                         onTap: () => context.go('/login'),
-                        child: const Text('Fazer login',
+                        child: Text('Fazer login',
                             style: TextStyle(
                               color: AppTheme.primaryColor,
                               fontWeight: FontWeight.w700,

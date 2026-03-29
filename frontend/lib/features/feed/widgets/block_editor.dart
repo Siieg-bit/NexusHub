@@ -424,7 +424,7 @@ class _BlockWidget extends StatelessWidget {
               color: context.cardBg,
               borderRadius: BorderRadius.circular(r.s(12)),
             ),
-            child: const Center(
+            child: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -481,7 +481,7 @@ class _BlockWidget extends StatelessWidget {
                 errorBuilder: (_, __, ___) => Container(
                   height: r.s(120),
                   color: context.cardBg,
-                  child: const Center(
+                  child: Center(
                     child: Icon(Icons.broken_image_rounded,
                         color: Colors.grey, size: r.s(32)),
                   ),
@@ -704,7 +704,7 @@ class BlockContentRenderer extends StatelessWidget {
                         errorBuilder: (_, __, ___) => Container(
                           height: r.s(120),
                           color: context.cardBg,
-                          child: const Center(
+                          child: Center(
                             child: Icon(Icons.broken_image_rounded,
                                 color: Colors.grey, size: r.s(32)),
                           ),

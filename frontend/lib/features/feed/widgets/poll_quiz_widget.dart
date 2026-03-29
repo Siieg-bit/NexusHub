@@ -146,7 +146,7 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
             children: [
               Icon(Icons.poll_rounded, size: r.s(18), color: AppTheme.accentColor),
               SizedBox(width: r.s(8)),
-              const Text(
+              Text(
                 'Enquete',
                 style: TextStyle(
                   fontWeight: FontWeight.w700,

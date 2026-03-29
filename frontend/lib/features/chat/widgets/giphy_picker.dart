@@ -149,7 +149,7 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
             padding: EdgeInsets.all(r.s(12)),
             child: Row(
               children: [
-                const Text('GIFs',
+                Text('GIFs',
                     style:
                         TextStyle(fontWeight: FontWeight.bold, fontSize: r.fs(18))),
                 const Spacer(),
@@ -161,7 +161,7 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
                     color: context.cardBg,
                     borderRadius: BorderRadius.circular(r.s(8)),
                   ),
-                  child: const Text('Powered by GIPHY',
+                  child: Text('Powered by GIPHY',
                       style: TextStyle(fontSize: r.fs(10), color: context.textHint)),
                 ),
               ],
@@ -207,7 +207,7 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _gifs.isEmpty
-                    ? const Center(
+                    ? Center(
                         child: Text('Nenhum GIF encontrado',
                             style: TextStyle(color: context.textSecondary)),
                       )

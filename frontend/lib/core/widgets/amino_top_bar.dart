@@ -233,7 +233,7 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
                           ),
                         ],
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Text(
                           '\$',
                           style: TextStyle(
@@ -266,7 +266,7 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
                 height: r.s(26),
                 width: r.s(26),
                 color: const Color(0xFF1565C0),
-                child: const Center(
+                child: Center(
                   child: Icon(
                     Icons.add_rounded,
                     color: Colors.white,

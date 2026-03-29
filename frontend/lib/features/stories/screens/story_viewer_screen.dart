@@ -382,12 +382,12 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
-                    children: _reactions.map((r) {
+                    children: _reactions.map((emoji) {
                       return GestureDetector(
-                        onTap: () => _sendReaction(r),
+                        onTap: () => _sendReaction(emoji),
                         child: Padding(
                           padding: EdgeInsets.symmetric(horizontal: r.s(8)),
-                          child: Text(r, style: TextStyle(fontSize: r.fs(24))),
+                          child: Text(emoji, style: TextStyle(fontSize: r.fs(24))),
                         ),
                       );
                     }).toList(),

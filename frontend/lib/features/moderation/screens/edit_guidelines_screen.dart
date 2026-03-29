@@ -81,6 +81,8 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
   }
 
   Future<void> _saveGuidelines() async {
+
+      final r = context.r;
     if (_isSaving) return;
     setState(() => _isSaving = true);
 
@@ -92,7 +94,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Row(
+            content: Row(
               children: [
                 Icon(Icons.check_circle_rounded, color: Colors.white, size: r.s(18)),
                 SizedBox(width: r.s(8)),
@@ -141,7 +143,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Editar Guidelines',
           style: TextStyle(
             fontWeight: FontWeight.w800,
@@ -179,7 +181,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
                           strokeWidth: 2,
                         ),
                       )
-                    : const Text(
+                    : Text(
                         'Salvar',
                         style: TextStyle(
                           color: Colors.white,

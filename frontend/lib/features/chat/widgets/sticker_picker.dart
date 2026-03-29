@@ -222,7 +222,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
   Widget _buildStickerGrid(List<Map<String, dynamic>> stickers) {
       final r = context.r;
     if (stickers.isEmpty) {
-      return const Center(
+      return Center(
         child: Text('Nenhum sticker neste pack',
             style: TextStyle(color: context.textSecondary)),
       );

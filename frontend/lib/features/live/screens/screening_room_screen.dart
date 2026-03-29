@@ -242,6 +242,8 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
   }
 
   Future<void> _showAddVideoDialog() async {
+
+      final r = context.r;
     final urlController = TextEditingController();
     final titleController = TextEditingController();
 
@@ -250,7 +252,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(16))),
-        title: const Text('Adicionar Vídeo',
+        title: Text('Adicionar Vídeo',
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w800)),
         content: Column(
@@ -420,7 +422,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
             ),
           ),
           SizedBox(width: r.s(6)),
-          const Text(
+          Text(
             'SCREENING ROOM',
             style: TextStyle(
               color: context.textPrimary,

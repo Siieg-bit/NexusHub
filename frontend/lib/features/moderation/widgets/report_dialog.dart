@@ -182,12 +182,12 @@ class _ReportDialogState extends State<ReportDialog> {
             ),
           ),
           SizedBox(height: r.s(16)),
-          const Text(
+          Text(
             'Reportar Conteúdo',
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: r.fs(18)),
           ),
           SizedBox(height: r.s(4)),
-          const Text(
+          Text(
             'Selecione o motivo da denúncia',
             style: TextStyle(color: context.textSecondary, fontSize: r.fs(13)),
           ),
@@ -270,7 +270,7 @@ class _ReportDialogState extends State<ReportDialog> {
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white),
                     )
-                  : const Text('Enviar Denúncia',
+                  : Text('Enviar Denúncia',
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: r.fs(15))),
             ),

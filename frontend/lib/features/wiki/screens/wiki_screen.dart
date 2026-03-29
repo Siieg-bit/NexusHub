@@ -83,7 +83,7 @@ class _WikiListScreenState extends State<WikiListScreen> {
       appBar: AppBar(
         backgroundColor: context.scaffoldBg,
         elevation: 0,
-        title: const Text('Catálogo',
+        title: Text('Catálogo',
             style: TextStyle(
                 fontWeight: FontWeight.w800,
                 color: context.textPrimary,
@@ -332,7 +332,7 @@ class _WikiEntryCard extends StatelessWidget {
                           width: double.infinity,
                         ),
                       )
-                    : const Center(
+                    : Center(
                         child: Icon(Icons.auto_stories_rounded,
                             color: Colors.grey, size: r.s(36))),
               ),
@@ -457,6 +457,8 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
   }
 
   Future<void> _togglePinToProfile() async {
+
+      final r = context.r;
     final userId = SupabaseService.currentUserId;
     if (userId == null) return;
     try {
@@ -531,7 +533,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
   Widget build(BuildContext context) {
     final r = context.r;
     if (_isLoading) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: context.scaffoldBg,
         body: Center(
             child: CircularProgressIndicator(
@@ -646,7 +648,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Informações',
+                          Text('Informações',
                               style: TextStyle(
                                   fontWeight: FontWeight.w800,
                                   fontSize: r.fs(16),
@@ -893,6 +895,8 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
   bool _isSubmitting = false;
 
   Future<void> _submit() async {
+
+      final r = context.r;
     if (_titleController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Título é obrigatório')),
@@ -971,7 +975,7 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
         backgroundColor: context.scaffoldBg,
         elevation: 0,
         iconTheme: IconThemeData(color: context.textPrimary),
-        title: const Text('Nova Entrada Wiki',
+        title: Text('Nova Entrada Wiki',
             style: TextStyle(
                 fontWeight: FontWeight.w800,
                 color: context.textPrimary,
@@ -1014,7 +1018,7 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: context.textPrimary),
                     )
-                  : const Text('Publicar',
+                  : Text('Publicar',
                       style: TextStyle(
                           color: context.textPrimary,
                           fontWeight: FontWeight.w700,
@@ -1072,7 +1076,7 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
                   fontSize: r.fs(22),
                   fontWeight: FontWeight.w800,
                   color: context.textPrimary),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Título da entrada...',
                 border: InputBorder.none,
                 hintStyle: TextStyle(color: context.textSecondary),
@@ -1082,7 +1086,7 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
               controller: _contentController,
               style: TextStyle(
                   fontSize: r.fs(16), height: 1.6, color: context.textPrimary),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Conteúdo detalhado...',
                 border: InputBorder.none,
                 hintStyle: TextStyle(color: context.textSecondary),
@@ -1124,7 +1128,7 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
                       ],
                     ),
                     child: Row(
-                      children: const [
+                      children: [
                         Icon(Icons.add_rounded,
                             size: r.s(18), color: AppTheme.primaryColor),
                         SizedBox(width: r.s(6)),

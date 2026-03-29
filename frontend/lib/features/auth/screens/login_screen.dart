@@ -84,7 +84,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Bem-vindo\nde volta!',
                         style: TextStyle(
                           color: context.textPrimary,
@@ -94,7 +94,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ),
                       SizedBox(height: r.s(8)),
-                      const Text(
+                      Text(
                         'Faça login para continuar',
                         style: TextStyle(
                           color: context.textSecondary,
@@ -330,12 +330,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('Não tem conta? ',
+                      Text('Não tem conta? ',
                           style: TextStyle(
                               color: context.textSecondary, fontSize: r.fs(14))),
                       GestureDetector(
                         onTap: () => context.go('/signup'),
-                        child: const Text('Criar conta',
+                        child: Text('Criar conta',
                             style: TextStyle(
                               color: AppTheme.primaryColor,
                               fontWeight: FontWeight.w700,

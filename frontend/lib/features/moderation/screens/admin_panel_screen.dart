@@ -77,7 +77,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Admin Panel',
           style: TextStyle(
             fontWeight: FontWeight.w800,
@@ -235,12 +235,14 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
   }
 
   void _showBroadcastDialog(BuildContext context) {
+
+      final r = context.r;
     final msgCtrl = TextEditingController();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: context.surfaceColor,
-        title: const Text('Enviar Broadcast',
+        title: Text('Enviar Broadcast',
             style: TextStyle(color: context.textPrimary)),
         content: Column(
           mainAxisSize: MainAxisSize.min,

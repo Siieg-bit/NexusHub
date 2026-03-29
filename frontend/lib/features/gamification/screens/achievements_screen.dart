@@ -132,7 +132,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: IconThemeData(color: context.textPrimary),
-        title: const Text(
+        title: Text(
           'Conquistas',
           style: TextStyle(
             fontWeight: FontWeight.w800,
@@ -202,7 +202,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                                     fontWeight: FontWeight.w800,
                                   ),
                                 ),
-                                const Text(
+                                Text(
                                   'Conquistas desbloqueadas',
                                   style: TextStyle(
                                     color: Colors.white70,
@@ -218,7 +218,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
 
                       // Desbloqueadas
                       if (unlocked.isNotEmpty) ...[
-                        const Text(
+                        Text(
                           'Desbloqueadas',
                           style: TextStyle(
                             fontWeight: FontWeight.w800,
@@ -237,7 +237,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
 
                       // Bloqueadas
                       if (locked.isNotEmpty) ...[
-                        const Text(
+                        Text(
                           'Em progresso',
                           style: TextStyle(
                             fontWeight: FontWeight.w800,

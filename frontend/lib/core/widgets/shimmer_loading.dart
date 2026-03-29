@@ -142,7 +142,7 @@ class PostCardSkeleton extends StatelessWidget {
                 SizedBox(width: r.s(12)),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     ShimmerBox(width: r.s(120), height: r.s(14)),
                     SizedBox(height: r.s(6)),
                     ShimmerBox(width: r.s(80), height: r.s(10)),
@@ -160,13 +160,13 @@ class PostCardSkeleton extends StatelessWidget {
             ShimmerBox(width: r.s(200), height: r.s(12)),
             SizedBox(height: r.s(16)),
             // Image placeholder
-            const ShimmerBox(
+            ShimmerBox(
                 width: double.infinity, height: r.s(180), borderRadius: 12),
             SizedBox(height: r.s(16)),
             // Actions
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
+              children: [
                 ShimmerBox(width: r.s(60), height: r.s(24)),
                 ShimmerBox(width: r.s(60), height: r.s(24)),
                 ShimmerBox(width: r.s(60), height: r.s(24)),
@@ -196,7 +196,7 @@ class ChatItemSkeleton extends StatelessWidget {
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   ShimmerBox(width: r.s(160), height: r.s(14)),
                   SizedBox(height: r.s(6)),
                   ShimmerBox(width: r.s(220), height: r.s(10)),
@@ -227,7 +227,7 @@ class CommunityCardSkeleton extends StatelessWidget {
           borderRadius: BorderRadius.circular(r.s(16)),
         ),
         child: Column(
-          children: const [
+          children: [
             ShimmerBox(width: r.s(140), height: r.s(80), borderRadius: 16),
             SizedBox(height: r.s(8)),
             Padding(

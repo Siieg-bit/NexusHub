@@ -65,6 +65,8 @@ class _EditCommunityProfileScreenState
   }
 
   Future<String?> _uploadImage(String folder) async {
+
+      final r = context.r;
     final picker = ImagePicker();
     final image = await picker.pickImage(
       source: ImageSource.gallery,
@@ -178,7 +180,7 @@ class _EditCommunityProfileScreenState
           icon: Icon(Icons.close_rounded, color: context.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
+        title: Text(
           'Editar Perfil',
           style: TextStyle(
             color: context.textPrimary,
@@ -210,7 +212,7 @@ class _EditCommunityProfileScreenState
                           color: Colors.white,
                         ),
                       )
-                    : const Text(
+                    : Text(
                         'Salvar',
                         style: TextStyle(
                           color: Colors.white,
@@ -299,7 +301,7 @@ class _EditCommunityProfileScreenState
                       child: TextButton(
                         onPressed: () =>
                             setState(() => _localBannerUrl = null),
-                        child: const Text(
+                        child: Text(
                           'Remover banner',
                           style: TextStyle(
                             color: AppTheme.errorColor,
@@ -358,7 +360,7 @@ class _EditCommunityProfileScreenState
                       child: TextButton(
                         onPressed: () =>
                             setState(() => _localIconUrl = null),
-                        child: const Text(
+                        child: Text(
                           'Remover avatar local',
                           style: TextStyle(
                             color: AppTheme.errorColor,

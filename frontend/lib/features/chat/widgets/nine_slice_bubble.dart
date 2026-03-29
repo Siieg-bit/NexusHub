@@ -39,7 +39,7 @@ class NineSliceBubble extends StatelessWidget {
   /// Padding interno para o conteúdo (texto da mensagem).
   final EdgeInsets contentPadding;
 
-  const NineSliceBubble({
+  NineSliceBubble({
     super.key,
     required this.child,
     required this.imageUrl,

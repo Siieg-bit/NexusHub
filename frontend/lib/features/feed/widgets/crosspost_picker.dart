@@ -88,7 +88,7 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
             children: [
               Icon(Icons.share_rounded, color: AppTheme.accentColor, size: r.s(20)),
               SizedBox(width: r.s(8)),
-              const Text(
+              Text(
                 'Crosspost para:',
                 style: TextStyle(
                   color: context.textPrimary,
@@ -219,6 +219,8 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
   }
 
   void _showCommunityPicker() {
+
+      final r = context.r;
     showModalBottomSheet(
       context: context,
       backgroundColor: context.scaffoldBg,

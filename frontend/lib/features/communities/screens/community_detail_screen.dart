@@ -223,6 +223,8 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
   }
 
   Future<void> _joinCommunity() async {
+
+      final r = context.r;
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
@@ -365,7 +367,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                         borderRadius: BorderRadius.circular(r.s(16))),
                     icon: Icon(Icons.group_add_rounded,
                         color: Colors.white, size: r.s(20)),
-                    label: const Text('Entrar',
+                    label: Text('Entrar',
                         style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w700,
@@ -391,6 +393,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     Map<String, dynamic> visible,
     Map<String, dynamic> welcomeBanner,
   ) {
+      final r = context.r;
     return NestedScrollView(
       headerSliverBuilder: (context, innerBoxIsScrolled) => [
         // HEADER
@@ -431,7 +434,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text('\uD83C\uDF81 Presentes Di\u00e1rios',
+                        Text('\uD83C\uDF81 Presentes Di\u00e1rios',
                             style: TextStyle(
                                 color: context.textPrimary,
                                 fontSize: r.fs(18),
@@ -461,7 +464,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                   color: AppTheme.primaryColor,
                   borderRadius: BorderRadius.circular(r.s(20)),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text('🎁 ', style: TextStyle(fontSize: r.fs(11))),
@@ -626,7 +629,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                                         borderRadius:
                                             BorderRadius.circular(r.s(12)),
                                       ),
-                                      child: const Text(
+                                      child: Text(
                                         'Ranking',
                                         style: TextStyle(
                                           color: Colors.white,
@@ -768,7 +771,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                 }
               }).toList(),
             )
-          : const Center(
+          : Center(
               child: Text('Nenhuma seção habilitada',
                   style: TextStyle(color: context.textSecondary)),
             ),
@@ -956,7 +959,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                       color: context.textPrimary),
                 ),
                 SizedBox(width: r.s(12)),
-                const Text('Chats',
+                Text('Chats',
                     style: TextStyle(
                         color: context.textPrimary,
                         fontSize: r.fs(16),
@@ -991,7 +994,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
       final r = context.r;
     final userId = SupabaseService.currentUserId;
     if (userId == null) {
-      return const Center(
+      return Center(
           child: Text('Faça login para ver seu perfil',
               style: TextStyle(color: context.textSecondary)));
     }
@@ -1009,7 +1012,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                       color: context.textPrimary),
                 ),
                 SizedBox(width: r.s(12)),
-                const Text('Meu Perfil',
+                Text('Meu Perfil',
                     style: TextStyle(
                         color: context.textPrimary,
                         fontSize: r.fs(16),
@@ -1348,7 +1351,7 @@ class _LiveChatroomsSectionState extends State<_LiveChatroomsSection> {
                                     ),
                                   ),
                                   SizedBox(width: r.s(3)),
-                                  const Text('Ao Vivo',
+                                  Text('Ao Vivo',
                                       style: TextStyle(
                                           color: Colors.white,
                                           fontSize: r.fs(8),
@@ -1437,7 +1440,7 @@ class _GuidelinesTab extends StatelessWidget {
                 Icon(Icons.public_rounded,
                     color: Color(0xFFFF9800), size: r.s(18)),
                 SizedBox(width: r.s(8)),
-                const Text(
+                Text(
                   'Community Guidelines',
                   style: TextStyle(
                     color: context.textPrimary,

@@ -316,7 +316,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('Ação de Moderação',
+        title: Text('Ação de Moderação',
             style: TextStyle(fontWeight: FontWeight.w800, color: context.textPrimary)),
         iconTheme: IconThemeData(color: context.textPrimary),
       ),
@@ -374,7 +374,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                   SizedBox(height: r.s(20)),
 
                   // Seleção de ação
-                  const Text('Tipo de Ação',
+                  Text('Tipo de Ação',
                       style:
                           TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800, fontSize: r.fs(16))),
                   SizedBox(height: r.s(12)),
@@ -437,7 +437,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                   if (_selectedAction == 'ban' ||
                       _selectedAction == 'mute') ...[
                     SizedBox(height: r.s(16)),
-                    const Text('Duração',
+                    Text('Duração',
                         style: TextStyle(
                             color: context.textPrimary,
                             fontWeight: FontWeight.w800, fontSize: r.fs(16))),
@@ -489,7 +489,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
 
                   // Motivo
                   SizedBox(height: r.s(16)),
-                  const Text('Motivo',
+                  Text('Motivo',
                       style:
                           TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800, fontSize: r.fs(16))),
                   SizedBox(height: r.s(8)),
@@ -540,7 +540,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                         ],
                       ),
                       alignment: Alignment.center,
-                      child: const Text(
+                      child: Text(
                         'Executar Ação',
                         style: TextStyle(
                           color: Colors.white,

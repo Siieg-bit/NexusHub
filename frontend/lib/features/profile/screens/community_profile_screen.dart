@@ -115,7 +115,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
   Widget build(BuildContext context) {
     final r = context.r;
     if (_isLoading) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: context.scaffoldBg,
         body: Center(
             child: CircularProgressIndicator(
@@ -297,7 +297,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Text(
+                                    Text(
                                       'Lv',
                                       style: TextStyle(
                                         color: Colors.white,
@@ -462,7 +462,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                     color: const Color(0xFFFF9800),
                                     borderRadius: BorderRadius.circular(r.s(20)),
                                   ),
-                                  child: const Row(
+                                  child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Text('😊',
@@ -592,10 +592,10 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text('🏆',
+                          Text('🏆',
                               style: TextStyle(fontSize: r.fs(12))),
                           SizedBox(width: r.s(4)),
-                          const Text(
+                          Text(
                             'Conquistas',
                             style: TextStyle(
                               color: Colors.white,
@@ -605,7 +605,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                           ),
                           if (streak > 0) ...[
                             SizedBox(width: r.s(4)),
-                            const Text('❗',
+                            Text('❗',
                                 style: TextStyle(fontSize: r.fs(10))),
                           ],
                         ],
@@ -640,7 +640,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                 ],
                               ),
                             ),
-                            child: const Center(
+                            child: Center(
                               child: Text('A',
                                   style: TextStyle(
                                       color: Colors.white,
@@ -787,7 +787,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                     crossAxisAlignment: CrossAxisAlignment.baseline,
                     textBaseline: TextBaseline.alphabetic,
                     children: [
-                      const Text(
+                      Text(
                         'Biografia',
                         style: TextStyle(
                           color: context.textPrimary,
@@ -826,7 +826,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                     GestureDetector(
                       onTap: () => context.push(
                           '/community/${widget.communityId}/profile/edit'),
-                      child: const Text(
+                      child: Text(
                         'Clique aqui para adicionar sua biografia!',
                         style: TextStyle(
                           color: AppTheme.accentColor,
@@ -1367,6 +1367,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
   }
 
   void _showOptions(BuildContext context) {
+
+      final r = context.r;
     showModalBottomSheet(
       context: context,
       backgroundColor: context.surfaceColor,
@@ -1406,6 +1408,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
 
   Widget _optionTile(IconData icon, String label, VoidCallback onTap,
       {bool isDestructive = false}) {
+
+      final r = context.r;
     final color = isDestructive ? AppTheme.errorColor : Colors.grey[400];
     return GestureDetector(
       onTap: onTap,

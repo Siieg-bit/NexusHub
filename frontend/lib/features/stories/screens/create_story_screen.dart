@@ -177,7 +177,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                         color: Colors.white, size: r.s(28)),
                   ),
                   const Spacer(),
-                  const Text(
+                  Text(
                     'Criar Story',
                     style: TextStyle(
                       color: Colors.white,
@@ -204,7 +204,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                               child: CircularProgressIndicator(
                                   strokeWidth: 2, color: Colors.white),
                             )
-                          : const Text(
+                          : Text(
                               'Publicar',
                               style: TextStyle(
                                 color: Colors.white,
@@ -281,7 +281,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                               fontWeight: FontWeight.w800,
                               height: 1.4,
                             ),
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
                               hintText: 'Escreva algo...',
                               hintStyle: TextStyle(
                                   color: Colors.white38, fontSize: r.fs(22)),

@@ -150,7 +150,7 @@ class BlockContentRenderer extends StatelessWidget {
             errorWidget: (_, __, ___) => Container(
               height: r.s(120),
               color: context.cardBg,
-              child: const Center(
+              child: Center(
                 child: Icon(Icons.broken_image_rounded,
                     color: context.textHint, size: r.s(32)),
               ),

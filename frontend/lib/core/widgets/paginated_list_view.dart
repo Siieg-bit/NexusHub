@@ -450,7 +450,7 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
         itemCount: _items.length + (_hasMore ? 1 : 0),
         itemBuilder: (context, index) {
           if (index >= _items.length) {
-            return const Center(
+            return Center(
               child: Padding(
                 padding: EdgeInsets.all(r.s(8)),
                 child: CircularProgressIndicator(strokeWidth: 2),

@@ -145,7 +145,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Post',
           style: TextStyle(
             fontWeight: FontWeight.w800,
@@ -201,9 +201,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(r.s(16)),
                       ),
-                      title: const Text('Deletar Post',
+                      title: Text('Deletar Post',
                           style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w700)),
-                      content: const Text(
+                      content: Text(
                         'Tem certeza que deseja deletar este post? Esta ação não pode ser desfeita.',
                         style: TextStyle(color: context.textSecondary),
                       ),
@@ -265,7 +265,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               final post = ref.read(postDetailProvider(widget.postId)).valueOrNull;
               final isAuthor = post?.authorId == SupabaseService.currentUserId;
               return [
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'copy_link',
                   child: Row(
                     children: [
@@ -275,7 +275,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     ],
                   ),
                 ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'report',
                   child: Row(
                     children: [
@@ -286,7 +286,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   ),
                 ),
                 if (isAuthor)
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'delete',
                     child: Row(
                       children: [
@@ -587,7 +587,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     // ======================================================
                     Padding(
                       padding: EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(8)),
-                      child: const Text(
+                      child: Text(
                         'Comentários',
                         style: TextStyle(
                           fontSize: r.fs(18),
@@ -758,7 +758,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               color: const Color(0xFF3F51B5).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(r.s(10)),
             ),
-            child: const Center(
+            child: Center(
               child: Text('Q',
                   style: TextStyle(
                       color: Color(0xFF3F51B5),
@@ -771,7 +771,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Pergunta & Resposta',
+                Text('Pergunta & Resposta',
                     style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: r.fs(14),
@@ -792,7 +792,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 color: const Color(0xFF3F51B5),
                 borderRadius: BorderRadius.circular(r.s(20)),
               ),
-              child: const Text('Responder',
+              child: Text('Responder',
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: r.fs(12),

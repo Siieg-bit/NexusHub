@@ -362,7 +362,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                 color: AppTheme.primaryColor,
                                 borderRadius: BorderRadius.circular(r.s(20)),
                               ),
-                              child: const Text(
+                              child: Text(
                                 'Entrar',
                                 style: TextStyle(
                                   color: Colors.white,
@@ -604,7 +604,7 @@ class _MyCommunityCard extends StatelessWidget {
                   color: AppTheme.primaryColor,
                   borderRadius: BorderRadius.circular(r.s(4)),
                 ),
-                child: const Text(
+                child: Text(
                   'CHECK IN',
                   style: TextStyle(
                     color: Colors.white,
@@ -699,7 +699,7 @@ class _NewCommunityCard extends StatelessWidget {
                   color: AppTheme.successColor,
                   borderRadius: BorderRadius.circular(r.s(6)),
                 ),
-                child: const Text(
+                child: Text(
                   'NEW',
                   style: TextStyle(
                     color: Colors.white,
@@ -999,7 +999,7 @@ class _RecommendedCommunityTile extends StatelessWidget {
                 color: AppTheme.primaryColor,
                 borderRadius: BorderRadius.circular(r.s(20)),
               ),
-              child: const Text(
+              child: Text(
                 'Entrar',
                 style: TextStyle(
                     color: Colors.white,

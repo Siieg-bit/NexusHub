@@ -38,6 +38,8 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
   }
 
   Future<void> _unblockUser(String blockId, String nickname) async {
+
+      final r = context.r;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -46,7 +48,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
           borderRadius: BorderRadius.circular(r.s(16)),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
-        title: const Text(
+        title: Text(
           'Desbloquear Usuário',
           style: TextStyle(
             color: context.textPrimary,
@@ -149,7 +151,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: IconThemeData(color: context.textPrimary),
-        title: const Text(
+        title: Text(
           'Usuários Bloqueados',
           style: TextStyle(
             color: context.textPrimary,
@@ -174,7 +176,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                         color: Colors.grey[600]?.withValues(alpha: 0.5),
                       ),
                       SizedBox(height: r.s(16)),
-                      const Text(
+                      Text(
                         'Nenhum usuário bloqueado',
                         style: TextStyle(
                           color: context.textPrimary,
@@ -266,7 +268,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                                   color: AppTheme.errorColor.withValues(alpha: 0.3),
                                 ),
                               ),
-                              child: const Text(
+                              child: Text(
                                 'Desbloquear',
                                 style: TextStyle(
                                   color: AppTheme.errorColor,

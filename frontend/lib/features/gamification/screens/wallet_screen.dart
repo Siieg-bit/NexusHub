@@ -100,7 +100,7 @@ class _WalletScreenState extends State<WalletScreen> {
                                     color: Colors.white, size: r.s(20)),
                                 onPressed: () => context.pop(),
                               ),
-                              const Expanded(
+                              Expanded(
                                 child: Text(
                                   'Minha Carteira',
                                   textAlign: TextAlign.center,
@@ -113,7 +113,7 @@ class _WalletScreenState extends State<WalletScreen> {
                               ),
                               TextButton(
                                 onPressed: () => context.push('/store/coins'),
-                                child: const Text(
+                                child: Text(
                                   'Comprar',
                                   style: TextStyle(
                                     color: Colors.white,
@@ -154,7 +154,7 @@ class _WalletScreenState extends State<WalletScreen> {
                                     ),
                                   ],
                                 ),
-                                child: const Center(
+                                child: Center(
                                   child: Text(
                                     'A',
                                     style: TextStyle(
@@ -176,7 +176,7 @@ class _WalletScreenState extends State<WalletScreen> {
                                 ),
                               ),
                               const SizedBox(height: 2),
-                              const Text(
+                              Text(
                                 'Amino Coins',
                                 style: TextStyle(
                                   color: Colors.white70,
@@ -264,7 +264,7 @@ class _WalletScreenState extends State<WalletScreen> {
                                 color: const Color(0xFF333333),
                                 borderRadius: BorderRadius.circular(r.s(24)),
                               ),
-                              child: const Row(
+                              child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(Icons.star_rounded,
@@ -301,6 +301,7 @@ class _WalletScreenState extends State<WalletScreen> {
   // HISTÓRICO — Modal bottom sheet com transações
   // ===========================================================================
   void _showHistory() {
+      final r = context.r;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -325,7 +326,7 @@ class _WalletScreenState extends State<WalletScreen> {
               ),
             ),
             SizedBox(height: r.s(16)),
-            const Text(
+            Text(
               'Histórico de Transações',
               style: TextStyle(
                 fontWeight: FontWeight.w700,
@@ -412,6 +413,7 @@ class _WalletScreenState extends State<WalletScreen> {
   // TRANSFERIR — Dialog
   // ===========================================================================
   void _showTransferDialog() {
+      final r = context.r;
     final userIdCtrl = TextEditingController();
     final amountCtrl = TextEditingController();
 
@@ -530,6 +532,7 @@ class _WalletScreenState extends State<WalletScreen> {
   // PROPS — Dialog
   // ===========================================================================
   void _showPropsDialog() {
+      final r = context.r;
     final userIdCtrl = TextEditingController();
     int selectedAmount = 10;
 
@@ -541,7 +544,7 @@ class _WalletScreenState extends State<WalletScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(r.s(16)),
           ),
-          title: const Row(
+          title: Row(
             children: [
               Icon(Icons.volunteer_activism_rounded,
                   color: Color(0xFFE91E63)),
@@ -720,7 +723,7 @@ class _WalletMenuTile extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Color(0xFF333333),
                       fontWeight: FontWeight.w600,
                       fontSize: r.fs(14),

@@ -79,6 +79,7 @@ class CommunityMembersScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+      final r = context.r;
     final membersAsync = ref.watch(allCommunityMembersProvider(communityId));
 
     return Scaffold(
@@ -90,7 +91,7 @@ class CommunityMembersScreen extends ConsumerWidget {
           icon: Icon(Icons.arrow_back_rounded, color: context.textPrimary),
           onPressed: () => context.pop(),
         ),
-        title: const Text(
+        title: Text(
           'Membros',
           style: TextStyle(
             color: context.textPrimary,
@@ -110,7 +111,7 @@ class CommunityMembersScreen extends ConsumerWidget {
                 style: TextStyle(color: context.textSecondary))),
         data: (members) {
           if (members.isEmpty) {
-            return const Center(
+            return Center(
               child: Text('Nenhum membro',
                   style: TextStyle(color: context.textSecondary)),
             );
