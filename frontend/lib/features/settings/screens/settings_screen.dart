@@ -6,6 +6,8 @@ import '../../../config/app_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/providers/theme_provider.dart';
+import '../../../core/l10n/locale_provider.dart';
+import '../../../core/services/cache_service.dart';
 
 /// Tela de Configurações Gerais — Hub central para todas as configurações.
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -468,8 +470,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   _SettingsItem(
                     icon: Icons.language_rounded,
                     title: 'Idioma',
-                    subtitle: 'Português (Brasil)',
+                    subtitle: ref.watch(localeProvider).label,
                     onTap: () {
+                      final currentLocale = ref.read(localeProvider);
                       showModalBottomSheet(
                         context: context,
                         backgroundColor: AppTheme.surfaceColor,
@@ -487,46 +490,92 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                       fontSize: 18,
                                       fontWeight: FontWeight.w800)),
                               const SizedBox(height: 16),
-                              ListTile(
-                                leading: const Text('\uD83C\uDDE7\uD83C\uDDF7', style: TextStyle(fontSize: 24)),
-                                title: const Text('Portugu\u00eas (Brasil)',
-                                    style: TextStyle(color: AppTheme.textPrimary)),
-                                trailing: const Icon(Icons.check_circle_rounded,
-                                    color: AppTheme.primaryColor),
-                                onTap: () => Navigator.pop(ctx),
-                              ),
-                              ListTile(
-                                leading: const Text('\uD83C\uDDFA\uD83C\uDDF8', style: TextStyle(fontSize: 24)),
-                                title: const Text('English',
-                                    style: TextStyle(color: AppTheme.textPrimary)),
+                              ...AppLocale.values.map((locale) => ListTile(
+                                leading: Text(locale.flag, style: const TextStyle(fontSize: 24)),
+                                title: Text(locale.label,
+                                    style: const TextStyle(color: AppTheme.textPrimary)),
+                                trailing: currentLocale == locale
+                                    ? const Icon(Icons.check_circle_rounded, color: AppTheme.primaryColor)
+                                    : null,
                                 onTap: () {
+                                  ref.read(localeProvider.notifier).setLocale(locale);
                                   Navigator.pop(ctx);
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('English coming soon!'),
+                                    SnackBar(
+                                      content: Text('Idioma alterado para ${locale.label}'),
                                       behavior: SnackBarBehavior.floating,
                                     ),
                                   );
                                 },
-                              ),
-                              ListTile(
-                                leading: const Text('\uD83C\uDDEA\uD83C\uDDF8', style: TextStyle(fontSize: 24)),
-                                title: const Text('Espa\u00f1ol',
-                                    style: TextStyle(color: AppTheme.textPrimary)),
-                                onTap: () {
-                                  Navigator.pop(ctx);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Espa\u00f1ol pr\u00f3ximamente!'),
-                                      behavior: SnackBarBehavior.floating,
-                                    ),
-                                  );
-                                },
-                              ),
+                              )),
                             ],
                           ),
                         ),
                       );
+                    },
+                  ),
+                  _SettingsItem(
+                    icon: Icons.cleaning_services_rounded,
+                    title: 'Limpar Cache',
+                    subtitle: 'Liberar espaço de armazenamento',
+                    onTap: () async {
+                      final size = CacheService.getFormattedCacheSize();
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          backgroundColor: AppTheme.surfaceColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+                          ),
+                          title: const Row(
+                            children: [
+                              Icon(Icons.cleaning_services_rounded, color: AppTheme.accentColor),
+                              SizedBox(width: 8),
+                              Text('Limpar Cache', style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.w800)),
+                            ],
+                          ),
+                          content: Text(
+                            'Tamanho atual do cache: $size\n\n'
+                            'Isso vai limpar dados temporários salvos localmente. '
+                            'Seus dados na nuvem não serão afetados.',
+                            style: TextStyle(color: Colors.grey[500]),
+                          ),
+                          actions: [
+                            GestureDetector(
+                              onTap: () => Navigator.pop(ctx, false),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                child: Text('Cancelar', style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w700)),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () => Navigator.pop(ctx, true),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Text('Limpar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirm == true && mounted) {
+                        await CacheService.clearAll();
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Cache limpo com sucesso!'),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      }
                     },
                   ),
                 ]),

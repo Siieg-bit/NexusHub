@@ -172,13 +172,16 @@
 
 ## 12. CONFIGURAÇÕES
 
-- [ ] **Configurações da conta** (email, senha, avatar)
-- [ ] **Configurações de notificação** (push, email)
-- [ ] **Privacidade** (quem pode me enviar mensagem, etc.)
-- [ ] **Idioma**
-- [ ] **Tema** (dark/light)
-- [ ] **Sobre o app**
-- [ ] **Logout**
+- [x] **Configurações da conta** (perfil card com avatar/nome, exportar dados, excluir conta com dupla confirmação)
+- [x] **Configurações de notificação** (push notifications toggle no SettingsScreen)
+- [x] **Privacidade** (usuários bloqueados, dispositivos conectados no SettingsScreen)
+- [x] **Idioma** (LocaleProvider integrado com seleção dinâmica pt-BR/en-US, persistência via Hive)
+- [x] **Tema** (ThemeNotifier com toggle dark/light, persistência via SharedPreferences)
+- [x] **Sobre o app** (showAboutDialog com versão e legalese)
+- [x] **Logout** (confirmação dialog + signOut do Supabase)
+- [x] **Limpar Cache** (CacheService integrado com tamanho do cache e confirmação)
+- [x] **Gamificação** (Carteira, Conquistas, Inventário)
+- [x] **Suporte** (Central de Ajuda, Reportar Bug)
 
 ---
 
