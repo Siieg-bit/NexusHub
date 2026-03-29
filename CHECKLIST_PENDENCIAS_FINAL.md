@@ -9,7 +9,7 @@ Pendências extraídas dos 3 documentos de auditoria, cruzadas com o código atu
 - [x] 3. **Animação de Level Up** — O check-in detecta `level_up == true` mas só mostra um SnackBar. No Amino, subir de nível gera um dialog fullscreen com confetti, novo título e animação.
 - [x] 4. **Provider Global de Cosméticos** — `AvatarWithFrame` só é usado em 2 locais (profile_screen e community_profile_screen). Falta usar em: lista de membros, comentários, chat list, leaderboard, post_card author. Precisa de um Provider global que cache os cosméticos equipados de cada usuário.
 - [x] 5. **Crosspost entre Comunidades** — CrosspostPicker integrado no create_post_screen com seleção de comunidade destino, campo corrigido para `original_community_id`, post-espelho criado na comunidade destino, e renderização de crosspost/repost no PostCard com banner clicável.
-- [ ] 6. **Wiki: Revisão por Curadores + Pin no Perfil** — Não existe fluxo de submissão à Wiki Global com revisão por curadores, nem funcionalidade de "Pinar" wikis aprovadas no perfil do usuário.
+- [x] 6. **Wiki: Revisão por Curadores + Pin no Perfil** — Tela WikiCuratorReviewScreen criada com aprovação/rejeição + notificação ao autor + log de moderação. CreateWikiScreen submete como 'pending'. WikiDetailScreen com botão de pin (via bookmarks.wiki_id). Seção Pinned Wikis no perfil com scroll horizontal. Rota /community/:id/wiki/review adicionada. Botão de revisão na WikiListScreen.
 
 ## Prioridade MÉDIA (Nice to Have)
 

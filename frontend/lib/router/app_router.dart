@@ -45,6 +45,7 @@ import '../features/gamification/screens/free_coins_screen.dart';
 import '../features/chat/screens/call_screen.dart';
 import '../core/services/call_service.dart';
 import '../features/wiki/screens/wiki_screen.dart';
+import '../features/wiki/screens/wiki_curator_review_screen.dart';
 import '../features/communities/screens/shared_folder_screen.dart';
 import '../features/live/screens/screening_room_screen.dart';
 import '../features/stories/screens/create_story_screen.dart';
@@ -266,6 +267,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/community/:communityId/wiki/create',
         name: 'create-wiki',
         builder: (context, state) => CreateWikiScreen(
+          communityId: state.pathParameters['communityId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/community/:communityId/wiki/review',
+        name: 'wiki-curator-review',
+        builder: (context, state) => WikiCuratorReviewScreen(
           communityId: state.pathParameters['communityId']!,
         ),
       ),

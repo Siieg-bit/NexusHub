@@ -87,6 +87,22 @@ class _WikiListScreenState extends State<WikiListScreen> {
                 color: AppTheme.textPrimary,
                 fontSize: 20)),
         actions: [
+          // Botão de revisão para curadores/leaders
+          GestureDetector(
+            onTap: () =>
+                context.push('/community/${widget.communityId}/wiki/review'),
+            child: Container(
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppTheme.warningColor.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Icon(Icons.pending_actions_rounded,
+                  color: AppTheme.warningColor, size: 20),
+            ),
+          ),
+          const SizedBox(width: 4),
           GestureDetector(
             onTap: () =>
                 context.push('/community/${widget.communityId}/wiki/create'),
@@ -360,6 +376,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
   int _userRating = 0;
   double _avgRating = 0;
   int _totalRatings = 0;
+  bool _isPinnedToProfile = false;
   final _whatILikeController = TextEditingController();
   List<Map<String, dynamic>> _whatILikeList = [];
 
@@ -394,6 +411,18 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
         } catch (_) {}
       }
 
+      // Check if pinned/bookmarked to profile
+      if (userId != null) {
+        try {
+          final pinRes = await SupabaseService.table('bookmarks')
+              .select('id')
+              .eq('user_id', userId)
+              .eq('wiki_id', widget.wikiId)
+              .maybeSingle();
+          _isPinnedToProfile = pinRes != null;
+        } catch (_) {}
+      }
+
       // Load "What I Like" comments
       try {
         final likesRes = await SupabaseService.table('wiki_what_i_like')
@@ -408,6 +437,46 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _togglePinToProfile() async {
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) return;
+    try {
+      if (_isPinnedToProfile) {
+        await SupabaseService.table('bookmarks')
+            .delete()
+            .eq('user_id', userId)
+            .eq('wiki_id', widget.wikiId);
+        if (mounted) {
+          setState(() => _isPinnedToProfile = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Wiki removida do perfil'),
+              backgroundColor: AppTheme.surfaceColor,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          );
+        }
+      } else {
+        await SupabaseService.table('bookmarks').insert({
+          'user_id': userId,
+          'wiki_id': widget.wikiId,
+        });
+        if (mounted) {
+          setState(() => _isPinnedToProfile = true);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Wiki fixada no seu perfil!'),
+              backgroundColor: AppTheme.primaryColor,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          );
+        }
+      }
+    } catch (_) {}
   }
 
   Future<void> _submitRating(int rating) async {
@@ -495,6 +564,31 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
             title: Text(title,
                 style: const TextStyle(
                     fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
+            actions: [
+              // Pin to profile button
+              GestureDetector(
+                onTap: _togglePinToProfile,
+                child: Container(
+                  margin: const EdgeInsets.only(right: 12),
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: _isPinnedToProfile
+                        ? AppTheme.primaryColor.withValues(alpha: 0.2)
+                        : Colors.black.withValues(alpha: 0.3),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    _isPinnedToProfile
+                        ? Icons.push_pin_rounded
+                        : Icons.push_pin_outlined,
+                    color: _isPinnedToProfile
+                        ? AppTheme.primaryColor
+                        : AppTheme.textPrimary,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ],
           ),
           SliverToBoxAdapter(
             child: Padding(
@@ -813,12 +907,18 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
             ? _coverUrlController.text.trim()
             : null,
         'infobox': infobox.isNotEmpty ? infobox : null,
+        'status': 'pending',
       });
 
       if (mounted) {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Entrada criada com sucesso!')),
+          SnackBar(
+            content: const Text('Entrada enviada para revisão dos curadores!'),
+            backgroundColor: AppTheme.primaryColor,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
         );
       }
     } catch (e) {

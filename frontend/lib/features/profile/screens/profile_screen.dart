@@ -643,6 +643,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               ),
 
               // ================================================================
+              // PINNED WIKIS — Wikis fixadas no perfil
+              // ================================================================
+              SliverToBoxAdapter(
+                child: _PinnedWikisSection(userId: widget.userId),
+              ),
+
+              // ================================================================
               // TABS — Stories | Wall
               // ================================================================
               SliverPersistentHeader(
@@ -1217,6 +1224,179 @@ class _WallTab extends ConsumerWidget {
     if (diff.inHours > 0) return '${diff.inHours}h';
     if (diff.inMinutes > 0) return '${diff.inMinutes}min';
     return 'agora';
+  }
+}
+
+// =============================================================================
+// PINNED WIKIS SECTION — Wikis fixadas no perfil (via bookmarks.wiki_id)
+// =============================================================================
+class _PinnedWikisSection extends StatefulWidget {
+  final String userId;
+  const _PinnedWikisSection({required this.userId});
+
+  @override
+  State<_PinnedWikisSection> createState() => _PinnedWikisSectionState();
+}
+
+class _PinnedWikisSectionState extends State<_PinnedWikisSection> {
+  List<Map<String, dynamic>> _pinnedWikis = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPinnedWikis();
+  }
+
+  Future<void> _loadPinnedWikis() async {
+    try {
+      final res = await SupabaseService.table('bookmarks')
+          .select('wiki_id, wiki_entries!bookmarks_wiki_id_fkey(id, title, cover_image_url, category)')
+          .eq('user_id', widget.userId)
+          .not('wiki_id', 'is', null)
+          .order('created_at', ascending: false)
+          .limit(10);
+      final list = (res as List).where((e) => e['wiki_entries'] != null).toList();
+      if (mounted) {
+        setState(() {
+          _pinnedWikis = List<Map<String, dynamic>>.from(list);
+          _isLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) return const SizedBox.shrink();
+    if (_pinnedWikis.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.push_pin_rounded, size: 14, color: AppTheme.primaryColor),
+              const SizedBox(width: 6),
+              Text(
+                'Pinned Wikis',
+                style: TextStyle(
+                  color: Colors.grey[500],
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 100,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: _pinnedWikis.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (context, index) {
+                final bookmark = _pinnedWikis[index];
+                final wiki = bookmark['wiki_entries'] as Map<String, dynamic>;
+                final title = wiki['title'] as String? ?? 'Wiki';
+                final coverUrl = wiki['cover_image_url'] as String?;
+                final category = wiki['category'] as String?;
+                final wikiId = wiki['id'] as String;
+
+                return GestureDetector(
+                  onTap: () => context.push('/wiki/$wikiId'),
+                  child: Container(
+                    width: 140,
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceColor,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.08),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Cover
+                        ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(12)),
+                          child: coverUrl != null
+                              ? CachedNetworkImage(
+                                  imageUrl: coverUrl,
+                                  height: 50,
+                                  width: 140,
+                                  fit: BoxFit.cover,
+                                  errorWidget: (_, __, ___) => Container(
+                                    height: 50,
+                                    color: AppTheme.primaryColor
+                                        .withValues(alpha: 0.15),
+                                    child: const Center(
+                                      child: Icon(Icons.auto_stories_rounded,
+                                          color: AppTheme.primaryColor,
+                                          size: 20),
+                                    ),
+                                  ),
+                                )
+                              : Container(
+                                  height: 50,
+                                  width: 140,
+                                  color: AppTheme.primaryColor
+                                      .withValues(alpha: 0.15),
+                                  child: const Center(
+                                    child: Icon(Icons.auto_stories_rounded,
+                                        color: AppTheme.primaryColor,
+                                        size: 20),
+                                  ),
+                                ),
+                        ),
+                        // Title + category
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 6),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  title,
+                                  style: const TextStyle(
+                                    color: AppTheme.textPrimary,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 11,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                if (category != null && category.isNotEmpty)
+                                  Text(
+                                    category,
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 9,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
