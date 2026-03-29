@@ -12,6 +12,7 @@ import '../../../core/utils/helpers.dart';
 import '../../../core/utils/amino_animations.dart';
 import '../../feed/widgets/post_card.dart';
 import '../widgets/community_drawer.dart';
+import '../../stories/widgets/story_carousel.dart';
 import 'community_list_screen.dart'; // para checkInStatusProvider
 
 // =============================================================================
@@ -1748,17 +1749,26 @@ class _FeedTab extends StatelessWidget {
           );
         }
 
-        // Latest mode: full post cards
+        // Latest mode: full post cards with Story Carousel on top
         return ListView.builder(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          itemCount: posts.length,
-          itemBuilder: (context, index) => AminoAnimations.staggerItem(
-            index: index,
-            child: PostCard(
-              post: posts[index],
-              showCommunity: false,
-            ),
-          ),
+          itemCount: posts.length + 1, // +1 para o carrossel de stories
+          itemBuilder: (context, index) {
+            if (index == 0) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: StoryCarousel(communityId: communityId),
+              );
+            }
+            final postIndex = index - 1;
+            return AminoAnimations.staggerItem(
+              index: postIndex,
+              child: PostCard(
+                post: posts[postIndex],
+                showCommunity: false,
+              ),
+            );
+          },
         );
       },
     );

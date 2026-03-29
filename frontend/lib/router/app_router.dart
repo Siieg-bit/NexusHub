@@ -47,6 +47,7 @@ import '../core/services/call_service.dart';
 import '../features/wiki/screens/wiki_screen.dart';
 import '../features/communities/screens/shared_folder_screen.dart';
 import '../features/live/screens/screening_room_screen.dart';
+import '../features/stories/screens/create_story_screen.dart';
 import 'shell_screen.dart';
 
 /// Router principal do app com GoRouter.
@@ -433,6 +434,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/edit-profile',
         name: 'edit-profile-alt',
         builder: (context, state) => const EditProfileScreen(),
+      ),
+      // ====================================================================
+      // STORIES
+      // ====================================================================
+      GoRoute(
+        path: '/community/:id/create-story',
+        name: 'create-story',
+        builder: (context, state) {
+          final communityId = state.pathParameters['id']!;
+          return CreateStoryScreen(communityId: communityId);
+        },
       ),
     ],
   );

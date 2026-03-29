@@ -1,0 +1,437 @@
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../../config/app_theme.dart';
+import '../../../core/services/supabase_service.dart';
+
+/// Create Story Screen — Criação de stories estilo Amino/Instagram.
+///
+/// Suporta 3 tipos:
+///   - image: foto da galeria com texto overlay opcional
+///   - text: texto puro com background colorido
+///   - video: vídeo curto (placeholder para futura implementação)
+class CreateStoryScreen extends StatefulWidget {
+  final String communityId;
+  const CreateStoryScreen({super.key, required this.communityId});
+
+  @override
+  State<CreateStoryScreen> createState() => _CreateStoryScreenState();
+}
+
+class _CreateStoryScreenState extends State<CreateStoryScreen> {
+  String _type = 'text'; // text, image
+  final _textController = TextEditingController();
+  String? _mediaUrl;
+  bool _isSubmitting = false;
+  int _selectedBgIndex = 0;
+
+  static const _bgColors = [
+    Color(0xFF1A1A2E),
+    Color(0xFFE91E63),
+    Color(0xFF9C27B0),
+    Color(0xFF2196F3),
+    Color(0xFF00BCD4),
+    Color(0xFF4CAF50),
+    Color(0xFFFF5722),
+    Color(0xFFFF9800),
+    Color(0xFF795548),
+    Color(0xFF607D8B),
+  ];
+
+  static const _bgHexCodes = [
+    '#1A1A2E',
+    '#E91E63',
+    '#9C27B0',
+    '#2196F3',
+    '#00BCD4',
+    '#4CAF50',
+    '#FF5722',
+    '#FF9800',
+    '#795548',
+    '#607D8B',
+  ];
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(source: ImageSource.gallery);
+    if (image == null) return;
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      final userId = SupabaseService.currentUserId ?? 'unknown';
+      final bytes = await image.readAsBytes();
+      final path =
+          'stories/${widget.communityId}/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
+      await SupabaseService.client.storage
+          .from('media')
+          .uploadBinary(path, bytes);
+      final url =
+          SupabaseService.client.storage.from('media').getPublicUrl(path);
+
+      setState(() {
+        _mediaUrl = url;
+        _type = 'image';
+        _isSubmitting = false;
+      });
+    } catch (e) {
+      setState(() => _isSubmitting = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro no upload: $e'),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _submitStory() async {
+    if (_type == 'text' && _textController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Escreva algo para o story'),
+          backgroundColor: AppTheme.errorColor,
+        ),
+      );
+      return;
+    }
+    if (_type == 'image' && _mediaUrl == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Selecione uma imagem'),
+          backgroundColor: AppTheme.errorColor,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) throw Exception('Não autenticado');
+
+      await SupabaseService.table('stories').insert({
+        'community_id': widget.communityId,
+        'author_id': userId,
+        'type': _type,
+        'media_url': _mediaUrl,
+        'text_content': _textController.text.trim().isNotEmpty
+            ? _textController.text.trim()
+            : null,
+        'background_color': _type == 'text'
+            ? _bgHexCodes[_selectedBgIndex]
+            : '#000000',
+        'duration': _type == 'text' ? 5 : 7,
+      });
+
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Story publicado!'),
+            backgroundColor: AppTheme.successColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro: $e'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // ── Top bar ──
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: const Icon(Icons.close_rounded,
+                        color: Colors.white, size: 28),
+                  ),
+                  const Spacer(),
+                  const Text(
+                    'Criar Story',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: _isSubmitting ? null : _submitStory,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: _isSubmitting
+                            ? AppTheme.accentColor.withValues(alpha: 0.5)
+                            : AppTheme.accentColor,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: _isSubmitting
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Text(
+                              'Publicar',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13,
+                              ),
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // ── Type selector ──
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: [
+                  _TypeChip(
+                    label: 'Texto',
+                    icon: Icons.text_fields_rounded,
+                    isSelected: _type == 'text',
+                    onTap: () => setState(() {
+                      _type = 'text';
+                      _mediaUrl = null;
+                    }),
+                  ),
+                  const SizedBox(width: 8),
+                  _TypeChip(
+                    label: 'Imagem',
+                    icon: Icons.image_rounded,
+                    isSelected: _type == 'image',
+                    onTap: () {
+                      if (_mediaUrl == null) {
+                        _pickImage();
+                      } else {
+                        setState(() => _type = 'image');
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+
+            // ── Preview ──
+            Expanded(
+              child: Container(
+                margin: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  color: _type == 'text'
+                      ? _bgColors[_selectedBgIndex]
+                      : AppTheme.cardColor,
+                  image: _type == 'image' && _mediaUrl != null
+                      ? DecorationImage(
+                          image: NetworkImage(_mediaUrl!),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
+                ),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // Texto central
+                    if (_type == 'text')
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: TextField(
+                            controller: _textController,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              height: 1.4,
+                            ),
+                            decoration: const InputDecoration(
+                              hintText: 'Escreva algo...',
+                              hintStyle: TextStyle(
+                                  color: Colors.white38, fontSize: 22),
+                              border: InputBorder.none,
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: null,
+                          ),
+                        ),
+                      ),
+
+                    // Texto overlay para imagem
+                    if (_type == 'image')
+                      Positioned(
+                        bottom: 16,
+                        left: 16,
+                        right: 16,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.4),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: TextField(
+                            controller: _textController,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                            decoration: const InputDecoration(
+                              hintText: 'Adicionar legenda...',
+                              hintStyle: TextStyle(color: Colors.white54),
+                              border: InputBorder.none,
+                              isDense: true,
+                            ),
+                            maxLines: 2,
+                          ),
+                        ),
+                      ),
+
+                    // Botão de trocar imagem
+                    if (_type == 'image')
+                      Positioned(
+                        top: 12,
+                        right: 12,
+                        child: GestureDetector(
+                          onTap: _pickImage,
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.5),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.camera_alt_rounded,
+                                color: Colors.white, size: 20),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+
+            // ── Color picker (apenas para tipo texto) ──
+            if (_type == 'text')
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: SizedBox(
+                  height: 40,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _bgColors.length,
+                    itemBuilder: (_, i) {
+                      final isSelected = _selectedBgIndex == i;
+                      return GestureDetector(
+                        onTap: () =>
+                            setState(() => _selectedBgIndex = i),
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          margin: const EdgeInsets.only(right: 8),
+                          decoration: BoxDecoration(
+                            color: _bgColors[i],
+                            shape: BoxShape.circle,
+                            border: isSelected
+                                ? Border.all(color: Colors.white, width: 3)
+                                : Border.all(
+                                    color: Colors.white24, width: 1),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TypeChip extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _TypeChip({
+    required this.label,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppTheme.accentColor.withValues(alpha: 0.2)
+              : Colors.white.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(20),
+          border: isSelected
+              ? Border.all(
+                  color: AppTheme.accentColor.withValues(alpha: 0.5))
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon,
+                size: 16,
+                color: isSelected ? AppTheme.accentColor : Colors.grey[500]),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? AppTheme.accentColor : Colors.grey[500],
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
