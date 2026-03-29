@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
+import 'nine_slice_bubble.dart';
 
 /// Custom Chat Bubble com suporte a frames equipáveis — estilo Amino Apps.
 ///
@@ -100,68 +101,32 @@ class ChatBubble extends StatelessWidget {
     );
   }
 
-  /// Bubble com frame decorativo (9-patch style) — réplica Amino.
+  /// Bubble com frame decorativo — réplica Amino com motor 9-slice real.
   ///
-  /// No Amino, os bubble frames são imagens PNG decorativas que envolvem
-  /// o texto da mensagem. A imagem é esticada usando [centerSlice] para
-  /// manter as bordas decorativas intactas enquanto o centro se expande.
-  ///
-  /// A imagem do frame é renderizada como fundo do bubble, e o texto
-  /// é posicionado sobre ela com padding adequado para não sobrepor
-  /// as decorações das bordas.
+  /// Usa [NineSliceBubble] para imagens PNG da loja (9-slice scaling real
+  /// via centerSlice do Flutter) ou [ProceduralBubbleFrame] para frames
+  /// procedurais com decorações desenhadas via CustomPainter.
   Widget _buildFramedBubble() {
-    return Align(
-      alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
-      child: Padding(
-        padding: EdgeInsets.only(
-          left: isMine ? 48 : 8,
-          right: isMine ? 8 : 48,
-          top: 2,
-          bottom: 2,
-        ),
-        child: Container(
-          constraints: BoxConstraints(maxWidth: maxWidth, minHeight: 44),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              // Frame de imagem decorativo (9-patch style)
-              // Posicionado para cobrir todo o bubble + overflow para decorações
-              Positioned.fill(
-                top: -8,
-                bottom: -8,
-                left: -8,
-                right: -8,
-                child: CachedNetworkImage(
-                  imageUrl: bubbleFrameUrl!,
-                  fit: BoxFit.fill,
-                  memCacheWidth: 600,
-                  errorWidget: (_, __, ___) => Container(
-                    decoration: BoxDecoration(
-                      color: _roleColor,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  placeholder: (_, __) => Container(
-                    decoration: BoxDecoration(
-                      color: _roleColor.withValues(alpha: 0.5),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                ),
-              ),
-              // Conteúdo da mensagem sobre o frame
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 18, vertical: 12),
-                child: DefaultTextStyle(
-                  style: TextStyle(color: _textColor, fontSize: 14),
-                  child: child,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    // Se a URL começa com 'procedural:' é um frame procedural
+    if (bubbleFrameUrl!.startsWith('procedural:')) {
+      final parts = bubbleFrameUrl!.split(':');
+      final style = parts.length > 1 ? parts[1] : 'gradient';
+      return ProceduralBubbleFrame(
+        isMine: isMine,
+        style: style,
+        primaryColor: _roleColor,
+        secondaryColor: _roleColor.withValues(alpha: 0.7),
+        maxWidth: maxWidth,
+        child: child,
+      );
+    }
+
+    // Frame de imagem real — 9-slice scaling
+    return NineSliceBubble(
+      imageUrl: bubbleFrameUrl!,
+      isMine: isMine,
+      maxWidth: maxWidth,
+      child: child,
     );
   }
 }
