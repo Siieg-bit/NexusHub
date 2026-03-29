@@ -46,6 +46,7 @@ import '../features/chat/screens/call_screen.dart';
 import '../core/services/call_service.dart';
 import '../features/wiki/screens/wiki_screen.dart';
 import '../features/communities/screens/shared_folder_screen.dart';
+import '../features/live/screens/screening_room_screen.dart';
 import 'shell_screen.dart';
 
 /// Router principal do app com GoRouter.
@@ -151,6 +152,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'acm',
         builder: (context, state) => AcmScreen(
           communityId: state.pathParameters['communityId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/screening-room/:threadId',
+        builder: (ctx, state) => ScreeningRoomScreen(
+          threadId: state.pathParameters['threadId']!,
+          callSessionId: state.uri.queryParameters['sessionId'],
         ),
       ),
       GoRoute(
