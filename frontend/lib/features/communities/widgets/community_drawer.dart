@@ -214,7 +214,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                                     child: ClipRRect(
                                       borderRadius:
                                           BorderRadius.circular(r.s(10)),
-                                      child: community.iconUrl != null && community.iconUrl!.isNotEmpty
+                                      child: (community.iconUrl ?? '').isNotEmpty
                                           ? CachedNetworkImage(
                                               imageUrl:
                                                   community.iconUrl ?? '',
@@ -292,7 +292,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                       fit: StackFit.expand,
                       children: [
                         // Cover image
-                        if (widget.community.bannerUrl != null && widget.community.bannerUrl!.isNotEmpty)
+                        if ((widget.community.bannerUrl ?? '').isNotEmpty)
                           CachedNetworkImage(
                             imageUrl: widget.community.bannerUrl ?? '',
                             fit: BoxFit.cover,
@@ -804,7 +804,7 @@ class _AminoDrawerItem extends StatelessWidget {
               ),
             ),
             // Badge (opcional)
-            if (badge != null && badge! > 0)
+            if (badge != null && (badge ?? 0) > 0)
               Container(
                 constraints: const BoxConstraints(minWidth: 20),
                 height: r.s(20),

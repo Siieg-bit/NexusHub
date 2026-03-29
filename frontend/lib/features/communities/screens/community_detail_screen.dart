@@ -511,7 +511,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
               fit: StackFit.expand,
               children: [
                 // Cover image
-                if (community.bannerUrl != null && community.bannerUrl!.isNotEmpty)
+                if ((community.bannerUrl ?? '').isNotEmpty)
                   CachedNetworkImage(
                     imageUrl: community.bannerUrl ?? '',
                     fit: BoxFit.cover,
@@ -570,7 +570,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(r.s(14)),
-                          child: community.iconUrl != null && community.iconUrl!.isNotEmpty
+                          child: (community.iconUrl ?? '').isNotEmpty
                               ? CachedNetworkImage(
                                   imageUrl: community.iconUrl ?? '',
                                   fit: BoxFit.cover,

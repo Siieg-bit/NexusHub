@@ -73,7 +73,7 @@ class AvatarWithFrame extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: context.surfaceColor,
-                border: frameUrl == null || frameUrl!.isEmpty
+                border: frameUrl == null || (frameUrl ?? '').isEmpty
                     ? Border.all(
                         color: Colors.white.withValues(alpha: 0.10),
                         width: 1.5,
@@ -81,9 +81,9 @@ class AvatarWithFrame extends StatelessWidget {
                     : null,
               ),
               child: ClipOval(
-                child: avatarUrl != null && avatarUrl!.isNotEmpty
+                child: (avatarUrl ?? '').isNotEmpty
                     ? CachedNetworkImage(
-                        imageUrl: avatarUrl!,
+                        imageUrl: avatarUrl ?? '',
                         fit: BoxFit.cover,
                         width: size,
                         height: size,
@@ -97,7 +97,7 @@ class AvatarWithFrame extends StatelessWidget {
             ),
 
             // ── Frame decorativo (camada overlay, VAZA a borda) ──
-            if (frameUrl != null && frameUrl!.isNotEmpty)
+            if ((frameUrl ?? '').isNotEmpty)
               Positioned(
                 // Centralizar o frame sobre o avatar
                 top: -(frameSize - size) / 2,
@@ -107,7 +107,7 @@ class AvatarWithFrame extends StatelessWidget {
                     width: frameSize,
                     height: frameSize,
                     child: CachedNetworkImage(
-                      imageUrl: frameUrl!,
+                      imageUrl: frameUrl ?? '',
                       fit: BoxFit.contain,
                       memCacheWidth: (frameSize * 2).toInt(),
                       memCacheHeight: (frameSize * 2).toInt(),

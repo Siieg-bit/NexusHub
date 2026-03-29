@@ -78,7 +78,8 @@ class PresenceService {
 
   /// Entra em um canal de presença (comunidade ou global).
   Future<void> joinChannel(String channelId) async {
-    if (_currentUserId == null) return;
+    final userId = _currentUserId;
+    if (userId == null) return;
     if (_channels.containsKey(channelId)) return; // Já está no canal
 
     final channelName = channelId == 'global'
@@ -87,7 +88,7 @@ class PresenceService {
 
     final channel = _supabase.channel(
       channelName,
-      opts: RealtimeChannelConfig(key: _currentUserId!),
+      opts: RealtimeChannelConfig(key: userId),
     );
 
     // Criar controller de stream se não existir
@@ -111,7 +112,7 @@ class PresenceService {
       if (status == RealtimeSubscribeStatus.subscribed) {
         try {
           await channel.track({
-            'user_id': _currentUserId!,
+            'user_id': userId,
             'online_at': DateTime.now().toUtc().toIso8601String(),
           });
         } catch (e) {
@@ -239,23 +240,25 @@ class PresenceService {
   // ── Helpers Privados ──
 
   Future<void> _updateHeartbeat() async {
-    if (_currentUserId == null) return;
+    final uid = _currentUserId;
+    if (uid == null) return;
     try {
       await SupabaseService.table('profiles').update({
         'last_seen_at': DateTime.now().toUtc().toIso8601String(),
-      }).eq('id', _currentUserId!);
+      }).eq('id', uid);
     } catch (e) {
       debugPrint('[PresenceService] Erro no heartbeat: $e');
     }
   }
 
   Future<void> _setOnlineStatus(int status) async {
-    if (_currentUserId == null) return;
+    final uid = _currentUserId;
+    if (uid == null) return;
     try {
       await SupabaseService.table('profiles').update({
         'online_status': status,
         'last_seen_at': DateTime.now().toUtc().toIso8601String(),
-      }).eq('id', _currentUserId!);
+      }).eq('id', uid);
     } catch (e) {
       debugPrint('[PresenceService] Erro ao setar online_status: $e');
     }

@@ -96,7 +96,7 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ),
         child: ClipOval(
-          child: avatarUrl != null && avatarUrl!.isNotEmpty
+          child: (avatarUrl ?? '').isNotEmpty
               ? CachedNetworkImage(
                   imageUrl: avatarUrl ?? '',
                   fit: BoxFit.cover,

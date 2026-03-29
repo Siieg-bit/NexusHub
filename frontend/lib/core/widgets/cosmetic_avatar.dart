@@ -42,7 +42,7 @@ class CosmeticAvatar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Se não tem userId, renderizar avatar simples sem frame
-    if (userId == null || userId!.isEmpty) {
+    if (userId == null || (userId ?? '').isEmpty) {
       return AvatarWithFrame(
         avatarUrl: avatarUrl,
         frameUrl: frameUrlOverride,
@@ -64,7 +64,7 @@ class CosmeticAvatar extends ConsumerWidget {
     }
 
     // Buscar cosméticos do Provider
-    final cosmeticsAsync = ref.watch(userCosmeticsProvider(userId!));
+    final cosmeticsAsync = ref.watch(userCosmeticsProvider(userId ?? ''));
 
     return cosmeticsAsync.when(
       data: (cosmetics) => AvatarWithFrame(

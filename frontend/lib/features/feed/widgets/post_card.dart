@@ -139,11 +139,11 @@ class _PostCardState extends State<PostCard>
             _buildAuthorHeader(context),
 
             // ── Title ──
-            if (_post.title != null && _post.title!.isNotEmpty)
+            if ((_post.title ?? '').isNotEmpty)
               Padding(
                 padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(4)),
                 child: Text(
-                  _post.title!,
+                  _post.title ?? '',
                   style: TextStyle(
                     color: context.textPrimary,
                     fontWeight: FontWeight.w700,
@@ -160,7 +160,7 @@ class _PostCardState extends State<PostCard>
               Padding(
                 padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(8)),
                 child: BlockContentPreview(
-                  blocks: _post.contentBlocks!,
+                  blocks: _post.contentBlocks ?? [],
                   maxLines: 3,
                 ),
               )
@@ -183,7 +183,7 @@ class _PostCardState extends State<PostCard>
             _buildTypeSpecificContent(),
 
             // ── Media (formato square 1:1) ──
-            if (_post.mediaUrl != null && _post.mediaUrl!.isNotEmpty)
+            if ((_post.mediaUrl ?? '').isNotEmpty)
               Padding(
                 padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(8)),
                 child: AspectRatio(
@@ -191,7 +191,7 @@ class _PostCardState extends State<PostCard>
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(r.s(10)),
                     child: CachedNetworkImage(
-                      imageUrl: _post.mediaUrl!,
+                      imageUrl: _post.mediaUrl ?? '',
                       width: double.infinity,
                       fit: BoxFit.cover,
                       placeholder: (_, __) => Container(
@@ -310,7 +310,7 @@ class _PostCardState extends State<PostCard>
                     ),
                     // Role badges (Leader, Curator)
                     if (_post.author != null &&
-                        _post.author!.level > 10) ...[
+                        (_post.author?.level ?? 0) > 10) ...[
                       SizedBox(width: r.s(6)),
                       // Simulated role badge based on level
                     ],
@@ -328,15 +328,15 @@ class _PostCardState extends State<PostCard>
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              AppTheme.getLevelColor(_post.author!.level),
-                              AppTheme.getLevelColor(_post.author!.level)
+                              AppTheme.getLevelColor(_post.author?.level ?? 0),
+                              AppTheme.getLevelColor(_post.author?.level ?? 0)
                                   .withValues(alpha: 0.7),
                             ],
                           ),
                           borderRadius: BorderRadius.circular(r.s(10)),
                         ),
                         child: Text(
-                          'Lv.${_post.author!.level}',
+                          'Lv.${_post.author?.level ?? 0}',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: r.fs(8),
