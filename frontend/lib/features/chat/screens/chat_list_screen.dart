@@ -13,6 +13,8 @@ import '../../../core/widgets/amino_particles_bg.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/providers/notification_provider.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/providers/dm_invite_provider.dart';
+import '../widgets/dm_invite_card.dart';
 
 /// Provider para lista de chats do usuário.
 final chatListProvider = FutureProvider<List<ChatRoomModel>>((ref) async {
@@ -340,21 +342,59 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   // ==========================================================================
   Widget _buildChatList(List<ChatRoomModel> chatRooms) {
       final r = context.r;
+      final pendingInvites = ref.watch(pendingDmInvitesProvider);
     return RefreshIndicator(
       color: AppTheme.primaryColor,
       onRefresh: () async {
         ref.invalidate(chatListProvider);
         ref.invalidate(chatCommunitiesProvider);
+        ref.invalidate(pendingDmInvitesProvider);
         await Future.delayed(const Duration(milliseconds: 300));
       },
-      child: ListView.builder(
+      child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.only(
           top: r.s(8),
           bottom: MediaQuery.of(context).padding.bottom + 80,
         ),
-        itemCount: chatRooms.length,
-        itemBuilder: (context, index) => _AminoChatTile(chatRoom: chatRooms[index]),
+        children: [
+          // ── Convites de DM pendentes ──
+          ...pendingInvites.when(
+            loading: () => <Widget>[],
+            error: (_, __) => <Widget>[],
+            data: (invites) {
+              if (invites.isEmpty) return <Widget>[];
+              return <Widget>[
+                Padding(
+                  padding: EdgeInsets.fromLTRB(r.s(16), r.s(4), r.s(16), r.s(8)),
+                  child: Row(
+                    children: [
+                      Icon(Icons.mail_rounded, color: AppTheme.accentColor, size: r.s(16)),
+                      SizedBox(width: r.s(6)),
+                      Text(
+                        'Convites pendentes',
+                        style: TextStyle(
+                          color: AppTheme.accentColor,
+                          fontSize: r.fs(13),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                ...invites.map((invite) => DmInviteCard(invite: invite)),
+                Divider(
+                  color: context.dividerClr.withValues(alpha: 0.3),
+                  height: r.s(16),
+                  indent: r.s(16),
+                  endIndent: r.s(16),
+                ),
+              ];
+            },
+          ),
+          // ── Lista de chats ──
+          ...chatRooms.map((chatRoom) => _AminoChatTile(chatRoom: chatRoom)),
+        ],
       ),
     );
   }

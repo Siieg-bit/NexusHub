@@ -51,6 +51,7 @@ import '../features/communities/screens/shared_folder_screen.dart';
 import '../features/moderation/screens/edit_guidelines_screen.dart';
 import '../features/live/screens/screening_room_screen.dart';
 import '../features/stories/screens/create_story_screen.dart';
+import '../features/feed/screens/drafts_screen.dart';
 import '../features/profile/screens/edit_community_profile_screen.dart';
 import 'shell_screen.dart';
 
@@ -471,6 +472,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'edit-profile-alt',
         builder: (context, state) => const EditProfileScreen(),
       ),
+      // ====================================================================
+      // RASCUNHOS
+      // ====================================================================
+      GoRoute(
+        path: '/drafts',
+        name: 'drafts',
+        builder: (context, state) => const DraftsScreen(),
+      ),
+
       // ====================================================================
       // STORIES
       // ====================================================================

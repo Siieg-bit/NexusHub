@@ -6,20 +6,23 @@ import '../../../core/services/supabase_service.dart';
 import '../widgets/block_editor.dart';
 import '../widgets/crosspost_picker.dart';
 import '../../../core/utils/responsive.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/draft_provider.dart';
+import '../../../core/models/post_draft_model.dart';
 
 /// Editor rico de criação de posts — estilo Amino Apps.
 /// Suporta os 9 tipos exatos do Amino:
 /// Normal (0), Crosspost (1), Repost (2), Q&A (3), Poll (4),
 /// Link Externo (5), Quiz Interativo (6), Imagem (7), Post Externo (8).
-class CreatePostScreen extends StatefulWidget {
+class CreatePostScreen extends ConsumerStatefulWidget {
   final String communityId;
   const CreatePostScreen({super.key, required this.communityId});
 
   @override
-  State<CreatePostScreen> createState() => _CreatePostScreenState();
+  ConsumerState<CreatePostScreen> createState() => _CreatePostScreenState();
 }
 
-class _CreatePostScreenState extends State<CreatePostScreen> {
+class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   String _selectedType = 'normal';
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
@@ -374,6 +377,49 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         ),
         centerTitle: true,
         actions: [
+          // Botão de rascunhos
+          IconButton(
+            icon: Icon(Icons.drafts_rounded, color: context.textSecondary, size: r.s(22)),
+            tooltip: 'Rascunhos',
+            onPressed: () => context.push('/drafts'),
+          ),
+          // Botão de salvar como rascunho
+          IconButton(
+            icon: Icon(Icons.save_outlined, color: context.textSecondary, size: r.s(22)),
+            tooltip: 'Salvar rascunho',
+            onPressed: () async {
+              final title = _titleController.text.trim();
+              final content = _contentController.text.trim();
+              if (title.isEmpty && content.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Nada para salvar')),
+                );
+                return;
+              }
+              try {
+                await ref.read(postDraftsProvider.notifier).createDraft(
+                  communityId: widget.communityId,
+                  title: title.isNotEmpty ? title : null,
+                  content: content.isNotEmpty ? content : null,
+                  postType: _selectedType,
+                );
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Rascunho salvo!'),
+                      backgroundColor: AppTheme.primaryColor,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Erro ao salvar: $e')),
+                  );
+                }
+              }
+            },
+          ),
           Padding(
             padding: EdgeInsets.only(right: r.s(12)),
             child: GestureDetector(
