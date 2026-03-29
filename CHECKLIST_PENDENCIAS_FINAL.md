@@ -15,7 +15,7 @@ Pendências extraídas dos 3 documentos de auditoria, cruzadas com o código atu
 
 - [x] 7. **Deep Links Reais** — DeepLinkService completo com custom scheme (nexushub://), web links (https://nexushub.app/), suporte para community/post/user/chat/invite/wiki. AndroidManifest.xml configurado com intent-filters e autoVerify. iOS Info.plist com CFBundleURLTypes e FlutterDeepLinkingEnabled. Runner.entitlements com Associated Domains para Universal Links.
 - [x] 8. **Cache Offline-First** — CacheService completo com Hive. Boxes: posts, communities, messages, profiles, feed, notifications, wiki, metadata. Estratégia cache-first com timestamps de sincronização, expiração configurável, append de mensagens, cálculo de tamanho do cache, limpar cache. Integrado no main.dart.
-- [ ] 9. **Internacionalização (i18n)** — Textos hardcoded em português. Nenhum uso de `flutter_localizations` ou `AppLocalizations`.
+- [x] 9. **Internacionalização (i18n)** — Sistema i18n completo com AppStrings (interface abstrata), AppStringsPt (pt-BR) e AppStringsEn (en-US). LocaleProvider com Riverpod para gerenciar idioma, persistência via Hive, detecção automática do idioma do sistema. 200+ strings traduzidas cobrindo todas as seções do app.
 
 ## Prioridade BAIXA (Polish)
 
