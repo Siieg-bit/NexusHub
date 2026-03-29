@@ -316,26 +316,29 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                               community, themeColor, isMember, userRole,
                               layout, visible, welcomeBanner),
           // ================================================================
-          // BOTTOM NAVIGATION BAR — Estilo Amino
+          // BOTTOM NAVIGATION BAR — Réplica pixel-perfect do Amino
+          // 5 itens: Menu | Online(raio) | FAB Rosa(+) | Chats | Me(avatar)
+          // Cor ativa: ciano #00BCD4, inativa: cinza
+          // FAB central: rosa #E91E63 com sombra rosa
           // ================================================================
           bottomNavigationBar: isMember
               ? Container(
                   decoration: BoxDecoration(
-                    color: AppTheme.cardColor,
+                    color: AppTheme.surfaceColor,
                     border: Border(
                       top: BorderSide(
-                        color: AppTheme.dividerColor.withValues(alpha: 0.2),
+                        color: AppTheme.dividerColor.withValues(alpha: 0.3),
                         width: 0.5,
                       ),
                     ),
                   ),
                   child: SafeArea(
                     child: SizedBox(
-                      height: 60,
+                      height: 56,
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          // Menu (Home)
+                          // ── Menu (hamburger) ──
                           _BottomBarItem(
                             icon: Icons.menu_rounded,
                             label: 'Menu',
@@ -349,7 +352,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                               }
                             },
                           ),
-                          // Online
+                          // ── Online (ícone raio/flash — estilo Amino) ──
                           if (showOnline)
                             _BottomBarOnlineItem(
                               communityId: widget.communityId,
@@ -357,47 +360,42 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                               onTap: () =>
                                   setState(() => _bottomIndex = 1),
                             ),
-                          // + Create
+                          // ── FAB Central Rosa (+) — estilo Amino ──
                           if (showCreate)
                             GestureDetector(
                               onTap: () => context.push(
                                   '/community/${widget.communityId}/create-post'),
                               child: Container(
-                                width: 48,
-                                height: 48,
+                                width: 44,
+                                height: 44,
                                 decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      AppTheme.primaryColor,
-                                      AppTheme.accentColor
-                                    ],
-                                  ),
+                                  color: AppTheme.fabPink,
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: AppTheme.primaryColor
-                                          .withValues(alpha: 0.4),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
+                                      color: AppTheme.fabPink
+                                          .withValues(alpha: 0.45),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 3),
                                     ),
                                   ],
                                 ),
                                 child: const Icon(Icons.add_rounded,
-                                    color: Colors.white, size: 28),
+                                    color: Colors.white, size: 26),
                               ),
                             ),
-                          // Chats
+                          // ── Chats (balão) ──
                           _BottomBarItem(
-                            icon: Icons.chat_bubble_rounded,
+                            icon: Icons.chat_bubble_outline_rounded,
                             label: 'Chats',
                             isSelected: _bottomIndex == 3,
                             badgeCount: 0,
                             onTap: () =>
                                 setState(() => _bottomIndex = 3),
                           ),
-                          // Me
+                          // ── Me (avatar do usuário) ──
                           _BottomBarItem(
-                            icon: Icons.person_rounded,
+                            icon: Icons.person_outline_rounded,
                             label: 'Eu',
                             isSelected: _bottomIndex == 4,
                             badgeCount: 0,
@@ -1123,6 +1121,11 @@ class _BottomBarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Amino: ativo = ciano #00BCD4, inativo = cinza
+    final color = isSelected
+        ? AppTheme.accentColor
+        : AppTheme.textHint;
+
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -1134,11 +1137,7 @@ class _BottomBarItem extends StatelessWidget {
             Stack(
               clipBehavior: Clip.none,
               children: [
-                Icon(icon,
-                    color: isSelected
-                        ? AppTheme.primaryColor
-                        : AppTheme.textHint,
-                    size: 22),
+                Icon(icon, color: color, size: 22),
                 if (badgeCount > 0)
                   Positioned(
                     top: -4,
@@ -1165,9 +1164,7 @@ class _BottomBarItem extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                color: isSelected
-                    ? AppTheme.primaryColor
-                    : AppTheme.textHint,
+                color: color,
                 fontSize: 9,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
@@ -1198,34 +1195,40 @@ class _BottomBarOnlineItem extends ConsumerWidget {
     final onlineCount =
         ref.watch(onlineMembersCountProvider(communityId)).valueOrNull ?? 0;
 
+    // Amino: ícone de raio (flash) + contagem online
+    // Cor ativa: ciano, inativa: cinza
+    final color = isSelected ? AppTheme.accentColor : AppTheme.textHint;
+
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
-        width: 70,
+        width: 56,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            Stack(
+              alignment: Alignment.center,
               children: [
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: AppTheme.onlineColor,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  '$onlineCount',
-                  style: TextStyle(
-                    color: isSelected
-                        ? AppTheme.primaryColor
-                        : AppTheme.textPrimary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
+                Icon(Icons.flash_on_rounded, color: color, size: 22),
+                // Badge com contagem online
+                Positioned(
+                  top: -2,
+                  right: -6,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 3, vertical: 1),
+                    decoration: BoxDecoration(
+                      color: AppTheme.onlineColor,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      '$onlineCount',
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 8,
+                          fontWeight: FontWeight.w700),
+                    ),
                   ),
                 ),
               ],
@@ -1234,9 +1237,7 @@ class _BottomBarOnlineItem extends ConsumerWidget {
             Text(
               'Online',
               style: TextStyle(
-                color: isSelected
-                    ? AppTheme.primaryColor
-                    : AppTheme.textHint,
+                color: color,
                 fontSize: 9,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
