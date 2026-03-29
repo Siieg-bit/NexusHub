@@ -16,4 +16,4 @@
 - [x] 11. Shared Folder — Pasta Compartilhada da comunidade ✓
 - [x] 12. Screening Rooms — Assistir vídeos juntos com chat de voz ✓
 - [x] 13. Rich Text Editor de Blocos para blogs (imagens inline entre parágrafos) ✓
-- [ ] 14. Stories reais (conteúdo efêmero estilo Reels, não apenas lista de posts)
+- [x] 14. Stories reais (conteúdo efêmero estilo Reels, não apenas lista de posts) ✓
