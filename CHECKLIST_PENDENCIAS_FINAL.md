@@ -20,4 +20,4 @@ Pendências extraídas dos 3 documentos de auditoria, cruzadas com o código atu
 ## Prioridade BAIXA (Polish)
 
 - [x] 10. **Temas Customizáveis** — Light theme completo já implementado no app_theme.dart com cores light dedicadas (scaffoldBgLight, surfaceColorLight, textPrimaryLight, etc.). ThemeNotifier com toggle dark/light, persistência via SharedPreferences, suporte a ThemeMode.system. MaterialApp.router já usa theme/darkTheme/themeMode.
-- [ ] 11. **Animações de Transição** — `flutter_animate` está no pubspec mas pouco usado. Melhorar transições entre telas.
+- [x] 11. **Animações de Transição** — AminoAnimations completo com: fadeSlideUp/Down/Right/Left, scaleIn/Out, fadeIn, shimmer. Page transitions para GoRouter (slide, fade, scale, slideUp). Extensões de widget (aminoStagger, aminoFadeSlideUp, aminoFadeIn, aminoScaleIn, aminoSlideRight, aminoPulse). AminoAnimatedListView com stagger automático. AminoShimmer e AminoPostShimmer para loading states. AminoHero para hero transitions.
