@@ -100,6 +100,15 @@ class ChatBubble extends StatelessWidget {
     );
   }
 
+  /// Bubble com frame decorativo (9-patch style) — réplica Amino.
+  ///
+  /// No Amino, os bubble frames são imagens PNG decorativas que envolvem
+  /// o texto da mensagem. A imagem é esticada usando [centerSlice] para
+  /// manter as bordas decorativas intactas enquanto o centro se expande.
+  ///
+  /// A imagem do frame é renderizada como fundo do bubble, e o texto
+  /// é posicionado sobre ela com padding adequado para não sobrepor
+  /// as decorações das bordas.
   Widget _buildFramedBubble() {
     return Align(
       alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
@@ -110,21 +119,47 @@ class ChatBubble extends StatelessWidget {
           top: 2,
           bottom: 2,
         ),
-        child: Stack(
-          children: [
-            // Frame de imagem (9-patch style)
-            CachedNetworkImage(
-              imageUrl: bubbleFrameUrl!,
-              fit: BoxFit.fill,
-              errorWidget: (_, __, ___) => const SizedBox.shrink(),
-            ),
-            // Conteúdo sobre o frame
-            Container(
-              constraints: BoxConstraints(maxWidth: maxWidth),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: child,
-            ),
-          ],
+        child: Container(
+          constraints: BoxConstraints(maxWidth: maxWidth, minHeight: 44),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              // Frame de imagem decorativo (9-patch style)
+              // Posicionado para cobrir todo o bubble + overflow para decorações
+              Positioned.fill(
+                top: -8,
+                bottom: -8,
+                left: -8,
+                right: -8,
+                child: CachedNetworkImage(
+                  imageUrl: bubbleFrameUrl!,
+                  fit: BoxFit.fill,
+                  memCacheWidth: 600,
+                  errorWidget: (_, __, ___) => Container(
+                    decoration: BoxDecoration(
+                      color: _roleColor,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  placeholder: (_, __) => Container(
+                    decoration: BoxDecoration(
+                      color: _roleColor.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+              ),
+              // Conteúdo da mensagem sobre o frame
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 18, vertical: 12),
+                child: DefaultTextStyle(
+                  style: TextStyle(color: _textColor, fontSize: 14),
+                  child: child,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
