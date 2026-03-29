@@ -18,6 +18,8 @@ import '../../../core/widgets/level_up_dialog.dart';
 import '../../stories/widgets/story_carousel.dart';
 import 'community_list_screen.dart';
 import '../../../core/utils/responsive.dart'; // para checkInStatusProvider
+import '../../../core/providers/presence_provider.dart';
+import '../../../core/services/presence_service.dart';
 
 // =============================================================================
 // PROVIDERS
@@ -113,21 +115,7 @@ final communityHomeLayoutProvider =
   }
 });
 
-final onlineMembersCountProvider =
-    FutureProvider.family<int, String>((ref, communityId) async {
-  try {
-    final response = await SupabaseService.table('community_members')
-        .select('user_id, profiles!community_members_user_id_fkey(online_status)')
-        .eq('community_id', communityId);
-    final list = response as List;
-    return list.where((m) {
-      final p = m['profiles'] as Map<String, dynamic>?;
-      return (p?['online_status'] as int? ?? 2) == 1;
-    }).length;
-  } catch (_) {
-    return 0;
-  }
-});
+// onlineMembersCountProvider removido — agora usa onlineCountProvider do presence_provider.dart
 
 const Map<String, dynamic> _defaultLayout = {
   'sections_order': ['header', 'check_in', 'live_chats', 'tabs'],
@@ -180,6 +168,16 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     _activeTabs = ['Regras', 'Destaque', 'Recentes', 'Chats'];
     _tabController = TabController(length: _activeTabs.length, vsync: this);
     _tabController.index = 1; // Featured como padrão
+
+    // Entrar no canal de presença da comunidade
+    PresenceService.instance.joinChannel(widget.communityId);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    // Não sair do canal aqui — o provider gerencia o ciclo de vida
+    super.dispose();
   }
 
   void _rebuildTabs(Map<String, dynamic> layout) {
@@ -331,7 +329,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                   currentIndex: _bottomIndex,
                   showOnline: showOnline,
                   showCreate: showCreate,
-                  onlineCount: ref.watch(onlineMembersCountProvider(widget.communityId)).valueOrNull ?? 0,
+                  onlineCount: ref.watch(onlineCountProvider(widget.communityId)),
                   avatarUrl: ref.watch(currentUserProfileProvider).valueOrNull?.iconUrl,
                   onMenuTap: () => AminoDrawerController.of(context)?.toggle(),
                   onCreateTap: () => context.push(
@@ -767,6 +765,8 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
   Widget _buildOnlinePage(CommunityModel community) {
       final r = context.r;
     final membersAsync = ref.watch(communityMembersProvider(widget.communityId));
+    final presenceAsync = ref.watch(communityPresenceProvider(widget.communityId));
+    final onlineUserIds = presenceAsync.valueOrNull ?? {};
 
     return Column(
       children: [
@@ -782,7 +782,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                       color: context.textPrimary),
                 ),
                 SizedBox(width: r.s(12)),
-                const Text('Membros Online',
+                Text('Membros Online (${onlineUserIds.length})',
                     style: TextStyle(
                         color: context.textPrimary,
                         fontSize: r.fs(16),
@@ -802,8 +802,8 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                     style: TextStyle(color: context.textSecondary))),
             data: (members) {
               final onlineMembers = members.where((m) {
-                final p = m['profiles'] as Map<String, dynamic>? ?? {};
-                return (p['online_status'] as int? ?? 2) == 1;
+                final userId = m['user_id'] as String?;
+                return userId != null && onlineUserIds.contains(userId);
               }).toList();
 
               if (onlineMembers.isEmpty) {

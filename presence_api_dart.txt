@@ -1,0 +1,39 @@
+SUPABASE PRESENCE API - DART
+============================
+
+// Initialize:
+final supabase = Supabase.instance.client;
+
+// Create channel:
+final roomOne = supabase.channel('room_01');
+
+// With custom key:
+final channelC = supabase.channel(
+  'test',
+  opts: const RealtimeChannelConfig(key: 'userId-123'),
+);
+
+// Listen to sync/join/leave:
+roomOne.onPresenceSync((_) {
+  final newState = roomOne.presenceState();
+  print('sync: $newState');
+}).onPresenceJoin((payload) {
+  print('join: $payload');
+}).onPresenceLeave((payload) {
+  print('leave: $payload');
+}).subscribe();
+
+// Track (send state):
+roomOne.subscribe((status, error) async {
+  if (status != RealtimeSubscribeStatus.subscribed) return;
+  final presenceTrackStatus = await roomOne.track({
+    'user': 'user-1',
+    'online_at': DateTime.now().toIso8601String(),
+  });
+});
+
+// Untrack:
+await roomOne.untrack();
+
+// presenceState() returns Map<String, List<Presence>>
+// Each Presence has a payload map

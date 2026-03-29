@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/models/user_model.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/services/presence_service.dart';
 
 /// Estado de autenticação do app.
 class AuthState {
@@ -101,14 +102,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final user = UserModel.fromJson(response);
       state = AuthState(isAuthenticated: true, user: user);
 
-      // Atualizar status online (1 = Online)
+      // Inicializar presença em tempo real
       try {
-        await SupabaseService.table('profiles').update({
-          'online_status': 1,
-          'last_seen_at': DateTime.now().toUtc().toIso8601String(),
-        }).eq('id', userId);
+        await PresenceService.instance.initialize();
       } catch (_) {
-        // Status update é best-effort
+        // Presença é best-effort
       }
     } catch (e) {
       // Mesmo se o perfil falhar, a sessão é válida
@@ -173,16 +171,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
   /// Logout.
   Future<void> signOut() async {
     try {
-      final userId = SupabaseService.currentUserId;
-      if (userId != null) {
-        // Atualizar status offline (2 = Offline)
-        try {
-          await SupabaseService.table('profiles').update({
-            'online_status': 2,
-            'last_seen_at': DateTime.now().toUtc().toIso8601String(),
-          }).eq('id', userId);
-        } catch (_) {}
-      }
+      // Encerrar presença em tempo real
+      try {
+        await PresenceService.instance.dispose();
+      } catch (_) {}
       await SupabaseService.auth.signOut();
       state = const AuthState();
     } catch (e) {
