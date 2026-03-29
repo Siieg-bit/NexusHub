@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../utils/responsive.dart';
 
 /// ============================================================================
 /// AminoAnimations — Animações de transição fiéis ao Amino Apps original.
@@ -423,6 +424,7 @@ class AminoHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Hero(
       tag: tag,
       flightShuttleBuilder: (
@@ -475,6 +477,7 @@ class AminoAnimatedListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return ListView.builder(
       controller: controller,
       padding: padding,
@@ -507,6 +510,7 @@ class AminoShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: width,
@@ -530,46 +534,47 @@ class AminoPostShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header (avatar + nome)
           Row(
             children: [
-              const AminoShimmer(width: 40, height: 40, borderRadius: 20),
-              const SizedBox(width: 12),
+              AminoShimmer(width: r.s(40), height: r.s(40), borderRadius: 20),
+              SizedBox(width: r.s(12)),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
-                  AminoShimmer(width: 120, height: 14),
-                  SizedBox(height: 6),
-                  AminoShimmer(width: 80, height: 10),
+                  AminoShimmer(width: r.s(120), height: r.s(14)),
+                  SizedBox(height: r.s(6)),
+                  AminoShimmer(width: r.s(80), height: r.s(10)),
                 ],
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: r.s(16)),
           // Título
-          const AminoShimmer(width: 200, height: 18),
-          const SizedBox(height: 10),
+          AminoShimmer(width: r.s(200), height: r.s(18)),
+          SizedBox(height: r.s(10)),
           // Conteúdo
-          const AminoShimmer(height: 14),
-          const SizedBox(height: 6),
-          const AminoShimmer(width: 250, height: 14),
-          const SizedBox(height: 16),
+          AminoShimmer(height: r.s(14)),
+          SizedBox(height: r.s(6)),
+          AminoShimmer(width: r.s(250), height: r.s(14)),
+          SizedBox(height: r.s(16)),
           // Imagem placeholder
-          const AminoShimmer(height: 180),
-          const SizedBox(height: 12),
+          AminoShimmer(height: r.s(180)),
+          SizedBox(height: r.s(12)),
           // Actions
           Row(
             children: const [
-              AminoShimmer(width: 60, height: 24, borderRadius: 12),
-              SizedBox(width: 16),
-              AminoShimmer(width: 60, height: 24, borderRadius: 12),
-              SizedBox(width: 16),
-              AminoShimmer(width: 60, height: 24, borderRadius: 12),
+              AminoShimmer(width: r.s(60), height: r.s(24), borderRadius: 12),
+              SizedBox(width: r.s(16)),
+              AminoShimmer(width: r.s(60), height: r.s(24), borderRadius: 12),
+              SizedBox(width: r.s(16)),
+              AminoShimmer(width: r.s(60), height: r.s(24), borderRadius: 12),
             ],
           ),
         ],

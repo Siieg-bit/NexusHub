@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Tela de edição de perfil do usuário.
 class EditProfileScreen extends ConsumerStatefulWidget {
@@ -69,6 +70,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final user = ref.watch(currentUserProvider);
 
     return Scaffold(
@@ -88,9 +90,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           TextButton(
             onPressed: _isLoading ? null : _saveProfile,
             child: _isLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
+                ? SizedBox(
+                    width: r.s(20),
+                    height: r.s(20),
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
@@ -107,7 +109,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(r.s(20)),
         child: Form(
           key: _formKey,
           child: Column(
@@ -132,8 +134,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                         backgroundColor: context.surfaceColor,
                         child: Text(
                           (user?.nickname ?? '?')[0].toUpperCase(),
-                          style: const TextStyle(
-                            fontSize: 36,
+                          style: TextStyle(
+                            fontSize: r.fs(36),
                             fontWeight: FontWeight.w800,
                             color: AppTheme.primaryColor,
                           ),
@@ -144,7 +146,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       bottom: 0,
                       right: 0,
                       child: Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: EdgeInsets.all(r.s(8)),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [AppTheme.primaryColor, AppTheme.accentColor],
@@ -154,20 +156,20 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: context.scaffoldBg,
-                            width: 3,
+                            width: r.s(3),
                           ),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.camera_alt_rounded,
                           color: Colors.white,
-                          size: 18,
+                          size: r.s(18),
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: r.s(32)),
 
               // Nickname
               _buildTextField(
@@ -182,7 +184,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: r.s(16)),
 
               // Amino ID
               _buildTextField(
@@ -191,7 +193,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 icon: Icons.alternate_email_rounded,
                 hintText: 'Seu identificador único',
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: r.s(16)),
 
               // Bio
               _buildTextField(
@@ -209,6 +211,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Widget _buildTextField({
+      final r = context.r;
     required TextEditingController controller,
     required String label,
     required IconData icon,
@@ -220,7 +223,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     return Container(
       decoration: BoxDecoration(
         color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(r.s(16)),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.05),
         ),
@@ -239,7 +242,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           prefixIcon: Icon(icon, color: AppTheme.primaryColor),
           alignLabelWithHint: maxLines > 1,
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          contentPadding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(16)),
           counterStyle: TextStyle(color: Colors.grey[600]),
         ),
       ),

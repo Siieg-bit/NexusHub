@@ -7,6 +7,7 @@ import 'dart:io';
 
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/responsive.dart';
 
 // =============================================================================
 // CREATE GROUP CHAT SCREEN — Estilo Amino Apps
@@ -120,7 +121,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
       final picker = ImagePicker();
       final picked = await picker.pickImage(
         source: ImageSource.gallery,
-        maxWidth: 800,
+        maxWidth: r.w(800),
         maxHeight: 400,
       );
       if (picked != null && mounted) {
@@ -221,6 +222,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
@@ -231,7 +233,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
           style: TextStyle(
             fontWeight: FontWeight.w800,
             color: context.textPrimary,
-            fontSize: 18,
+            fontSize: r.fs(18),
           ),
         ),
         iconTheme: IconThemeData(color: context.textPrimary),
@@ -240,9 +242,9 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
             TextButton(
               onPressed: _isCreating ? null : _createGroupChat,
               child: _isCreating
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
+                  ? SizedBox(
+                      width: r.s(16),
+                      height: r.s(16),
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: AppTheme.primaryColor),
                     )
@@ -251,7 +253,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                       style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontWeight: FontWeight.w700,
-                        fontSize: 15,
+                        fontSize: r.fs(15),
                       ),
                     ),
             ),
@@ -279,8 +281,9 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
   // STEP INDICATOR
   // ==========================================================================
   Widget _buildStepIndicator() {
+      final r = context.r;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: EdgeInsets.symmetric(horizontal: r.s(24), vertical: r.s(16)),
       child: Row(
         children: [
           _buildStepDot(0, 'Comunidade'),
@@ -294,6 +297,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
   }
 
   Widget _buildStepDot(int step, String label) {
+      final r = context.r;
     final isActive = _currentStep >= step;
     final isCurrent = _currentStep == step;
     return Column(
@@ -331,12 +335,12 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
             ),
           ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: r.s(4)),
         Text(
           label,
           style: TextStyle(
             color: isActive ? context.textPrimary : Colors.grey[600],
-            fontSize: 10,
+            fontSize: r.fs(10),
             fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
           ),
         ),
@@ -345,11 +349,12 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
   }
 
   Widget _buildStepLine(int afterStep) {
+      final r = context.r;
     final isActive = _currentStep > afterStep;
     return Expanded(
       child: Container(
         height: 2,
-        margin: const EdgeInsets.only(bottom: 16),
+        margin: EdgeInsets.only(bottom: r.s(16)),
         color: isActive ? AppTheme.primaryColor : Colors.grey[800],
       ),
     );
@@ -359,6 +364,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
   // STEP 0: SELECIONAR COMUNIDADE
   // ==========================================================================
   Widget _buildCommunityStep() {
+      final r = context.r;
     if (_isLoadingCommunities) {
       return const Center(
         child: CircularProgressIndicator(
@@ -371,30 +377,30 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.groups_rounded, size: 48, color: Colors.grey[600]),
-            const SizedBox(height: 12),
+            Icon(Icons.groups_rounded, size: r.s(48), color: Colors.grey[600]),
+            SizedBox(height: r.s(12)),
             Text('Nenhuma comunidade encontrada',
                 style: TextStyle(color: Colors.grey[500])),
-            const SizedBox(height: 8),
+            SizedBox(height: r.s(8)),
             Text('Entre em uma comunidade primeiro',
-                style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                style: TextStyle(color: Colors.grey[600], fontSize: r.fs(12))),
           ],
         ),
       );
     }
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(r.s(16)),
       children: [
         Text(
           'Selecione a comunidade para o grupo:',
           style: TextStyle(
             color: Colors.grey[400],
-            fontSize: 14,
+            fontSize: r.fs(14),
             fontWeight: FontWeight.w500,
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: r.s(16)),
         ..._communities.map((community) {
           final id = community['id'] as String;
           final name = community['name'] as String? ?? 'Comunidade';
@@ -416,13 +422,13 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
             },
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.all(14),
+              margin: EdgeInsets.only(bottom: r.s(8)),
+              padding: EdgeInsets.all(r.s(14)),
               decoration: BoxDecoration(
                 color: isSelected
                     ? AppTheme.primaryColor.withValues(alpha: 0.15)
                     : context.surfaceColor,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(r.s(12)),
                 border: Border.all(
                   color: isSelected
                       ? AppTheme.primaryColor
@@ -433,10 +439,10 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
               child: Row(
                 children: [
                   Container(
-                    width: 44,
-                    height: 44,
+                    width: r.s(44),
+                    height: r.s(44),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(r.s(12)),
                       color: context.cardBg,
                     ),
                     clipBehavior: Clip.antiAlias,
@@ -444,9 +450,9 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                         ? CachedNetworkImage(
                             imageUrl: iconUrl, fit: BoxFit.cover)
                         : Icon(Icons.groups_rounded,
-                            color: context.textHint, size: 22),
+                            color: context.textHint, size: r.s(22)),
                   ),
-                  const SizedBox(width: 14),
+                  SizedBox(width: r.s(14)),
                   Expanded(
                     child: Text(
                       name,
@@ -454,13 +460,13 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                         color: context.textPrimary,
                         fontWeight:
                             isSelected ? FontWeight.w700 : FontWeight.w500,
-                        fontSize: 15,
+                        fontSize: r.fs(15),
                       ),
                     ),
                   ),
                   if (isSelected)
-                    const Icon(Icons.check_circle_rounded,
-                        color: AppTheme.primaryColor, size: 22),
+                    Icon(Icons.check_circle_rounded,
+                        color: AppTheme.primaryColor, size: r.s(22)),
                 ],
               ),
             ),
@@ -474,17 +480,18 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
   // STEP 1: INFO DO GRUPO (nome, descricao, imagem, publico/privado)
   // ==========================================================================
   Widget _buildInfoStep() {
+      final r = context.r;
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(r.s(16)),
       children: [
         // Cover image
         GestureDetector(
           onTap: _pickCoverImage,
           child: Container(
-            height: 140,
+            height: r.s(140),
             decoration: BoxDecoration(
               color: context.surfaceColor,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(r.s(16)),
               border: Border.all(
                 color: Colors.white.withValues(alpha: 0.08),
               ),
@@ -500,53 +507,53 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.add_photo_alternate_rounded,
-                          size: 36, color: Colors.grey[600]),
-                      const SizedBox(height: 8),
+                          size: r.s(36), color: Colors.grey[600]),
+                      SizedBox(height: r.s(8)),
                       Text('Adicionar capa (opcional)',
                           style:
-                              TextStyle(color: Colors.grey[600], fontSize: 13)),
+                              TextStyle(color: Colors.grey[600], fontSize: r.fs(13))),
                     ],
                   )
                 : null,
           ),
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: r.s(20)),
 
         // Nome do grupo
         Text('Nome do Grupo *',
             style: TextStyle(
                 color: Colors.grey[400],
-                fontSize: 13,
+                fontSize: r.fs(13),
                 fontWeight: FontWeight.w600)),
-        const SizedBox(height: 8),
+        SizedBox(height: r.s(8)),
         TextField(
           controller: _nameController,
-          style: TextStyle(color: context.textPrimary, fontSize: 16),
+          style: TextStyle(color: context.textPrimary, fontSize: r.fs(16)),
           decoration: InputDecoration(
             hintText: 'Ex: Fan Club do Anime',
             hintStyle: TextStyle(color: Colors.grey[600]),
             filled: true,
             fillColor: context.surfaceColor,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(r.s(12)),
               borderSide: BorderSide.none,
             ),
             contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(14)),
           ),
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: r.s(20)),
 
         // Descricao
         Text('Descricao (opcional)',
             style: TextStyle(
                 color: Colors.grey[400],
-                fontSize: 13,
+                fontSize: r.fs(13),
                 fontWeight: FontWeight.w600)),
-        const SizedBox(height: 8),
+        SizedBox(height: r.s(8)),
         TextField(
           controller: _descriptionController,
-          style: TextStyle(color: context.textPrimary, fontSize: 14),
+          style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
           maxLines: 3,
           decoration: InputDecoration(
             hintText: 'Descreva o grupo...',
@@ -554,30 +561,30 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
             filled: true,
             fillColor: context.surfaceColor,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(r.s(12)),
               borderSide: BorderSide.none,
             ),
             contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(14)),
           ),
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: r.s(20)),
 
         // Publico/Privado toggle
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(r.s(16)),
           decoration: BoxDecoration(
             color: context.surfaceColor,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(r.s(12)),
           ),
           child: Row(
             children: [
               Icon(
                 _isPublic ? Icons.public_rounded : Icons.lock_rounded,
                 color: _isPublic ? AppTheme.primaryColor : Colors.orange,
-                size: 22,
+                size: r.s(22),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: r.s(12)),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -587,14 +594,14 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                       style: TextStyle(
                         color: context.textPrimary,
                         fontWeight: FontWeight.w600,
-                        fontSize: 14,
+                        fontSize: r.fs(14),
                       ),
                     ),
                     Text(
                       _isPublic
                           ? 'Qualquer membro da comunidade pode entrar'
                           : 'Apenas membros convidados podem entrar',
-                      style: TextStyle(color: Colors.grey[500], fontSize: 11),
+                      style: TextStyle(color: Colors.grey[500], fontSize: r.fs(11)),
                     ),
                   ],
                 ),
@@ -607,25 +614,25 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: r.s(24)),
 
         // Comunidade selecionada
         Container(
-          padding: const EdgeInsets.all(12),
+          padding: EdgeInsets.all(r.s(12)),
           decoration: BoxDecoration(
             color: AppTheme.primaryColor.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(r.s(10)),
           ),
           child: Row(
             children: [
-              const Icon(Icons.groups_rounded,
-                  color: AppTheme.primaryColor, size: 18),
-              const SizedBox(width: 8),
+              Icon(Icons.groups_rounded,
+                  color: AppTheme.primaryColor, size: r.s(18)),
+              SizedBox(width: r.s(8)),
               Text(
                 'Comunidade: $_selectedCommunityName',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppTheme.primaryColor,
-                  fontSize: 12,
+                  fontSize: r.fs(12),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -635,13 +642,13 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                 child: const Text('Alterar',
                     style: TextStyle(
                         color: AppTheme.accentColor,
-                        fontSize: 12,
+                        fontSize: r.fs(12),
                         fontWeight: FontWeight.w600)),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: r.s(24)),
 
         // Botao avancar
         GestureDetector(
@@ -656,12 +663,12 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
             _loadMembers();
           },
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 14),
+            padding: EdgeInsets.symmetric(vertical: r.s(14)),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [AppTheme.primaryColor, AppTheme.accentColor],
               ),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(r.s(12)),
               boxShadow: [
                 BoxShadow(
                   color: AppTheme.primaryColor.withValues(alpha: 0.3),
@@ -676,7 +683,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
-                  fontSize: 15,
+                  fontSize: r.fs(15),
                 ),
               ),
             ),
@@ -690,27 +697,28 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
   // STEP 2: SELECIONAR MEMBROS
   // ==========================================================================
   Widget _buildMembersStep() {
+      final r = context.r;
     return Column(
       children: [
         // Search bar
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+          padding: EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16), r.s(8)),
           child: TextField(
             controller: _searchController,
-            style: TextStyle(color: context.textPrimary, fontSize: 14),
+            style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
             decoration: InputDecoration(
               hintText: 'Buscar membros...',
               hintStyle: TextStyle(color: Colors.grey[600]),
               prefixIcon:
-                  Icon(Icons.search_rounded, color: Colors.grey[600], size: 20),
+                  Icon(Icons.search_rounded, color: Colors.grey[600], size: r.s(20)),
               filled: true,
               fillColor: context.surfaceColor,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(r.s(12)),
                 borderSide: BorderSide.none,
               ),
               contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(10)),
             ),
           ),
         ),
@@ -718,21 +726,21 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
         // Selected count
         if (_selectedMemberIds.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(4)),
             child: Row(
               children: [
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(4)),
                   decoration: BoxDecoration(
                     color: AppTheme.primaryColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(r.s(12)),
                   ),
                   child: Text(
                     '${_selectedMemberIds.length} selecionado(s)',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppTheme.primaryColor,
-                      fontSize: 12,
+                      fontSize: r.fs(12),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -743,7 +751,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                   child: Text('Limpar',
                       style: TextStyle(
                           color: Colors.grey[500],
-                          fontSize: 12,
+                          fontSize: r.fs(12),
                           fontWeight: FontWeight.w500)),
                 ),
               ],
@@ -763,7 +771,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                           style: TextStyle(color: Colors.grey[500])),
                     )
                   : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.symmetric(horizontal: r.s(16)),
                       itemCount: _filteredMembers.length,
                       itemBuilder: (context, index) {
                         final member = _filteredMembers[index];
@@ -789,7 +797,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                             });
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            padding: EdgeInsets.symmetric(vertical: r.s(10)),
                             decoration: BoxDecoration(
                               border: Border(
                                 bottom: BorderSide(
@@ -803,8 +811,8 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                                 // Checkbox
                                 AnimatedContainer(
                                   duration: const Duration(milliseconds: 200),
-                                  width: 22,
-                                  height: 22,
+                                  width: r.s(22),
+                                  height: r.s(22),
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     color: isSelected
@@ -818,11 +826,11 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                                     ),
                                   ),
                                   child: isSelected
-                                      ? const Icon(Icons.check_rounded,
-                                          color: Colors.white, size: 14)
+                                      ? Icon(Icons.check_rounded,
+                                          color: Colors.white, size: r.s(14))
                                       : null,
                                 ),
-                                const SizedBox(width: 12),
+                                SizedBox(width: r.s(12)),
                                 // Avatar
                                 CircleAvatar(
                                   radius: 20,
@@ -841,7 +849,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                                         )
                                       : null,
                                 ),
-                                const SizedBox(width: 12),
+                                SizedBox(width: r.s(12)),
                                 // Info
                                 Expanded(
                                   child: Column(
@@ -853,14 +861,14 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                                         style: TextStyle(
                                           color: context.textPrimary,
                                           fontWeight: FontWeight.w600,
-                                          fontSize: 14,
+                                          fontSize: r.fs(14),
                                         ),
                                       ),
                                       if (role != 'member')
                                         Container(
                                           margin: const EdgeInsets.only(top: 2),
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 6, vertical: 1),
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: r.s(6), vertical: 1),
                                           decoration: BoxDecoration(
                                             color: role == 'leader'
                                                 ? Colors.amber
@@ -868,7 +876,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                                                 : AppTheme.primaryColor
                                                     .withValues(alpha: 0.2),
                                             borderRadius:
-                                                BorderRadius.circular(4),
+                                                BorderRadius.circular(r.s(4)),
                                           ),
                                           child: Text(
                                             role == 'leader'
@@ -880,7 +888,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                                               color: role == 'leader'
                                                   ? Colors.amber
                                                   : AppTheme.primaryColor,
-                                              fontSize: 10,
+                                              fontSize: r.fs(10),
                                               fontWeight: FontWeight.w700,
                                             ),
                                           ),

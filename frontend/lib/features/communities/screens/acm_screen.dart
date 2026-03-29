@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/models/community_model.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/responsive.dart';
 
 /// ACM — Amino Community Manager.
 /// Gerenciamento de módulos (JSONB), Join Types, customização visual,
@@ -178,7 +179,7 @@ class _AcmScreenState extends State<AcmScreen>
             backgroundColor: AppTheme.primaryColor,
             behavior: SnackBarBehavior.floating,
             shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(10))),
           ),
         );
       }
@@ -207,6 +208,7 @@ class _AcmScreenState extends State<AcmScreen>
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
@@ -218,13 +220,13 @@ class _AcmScreenState extends State<AcmScreen>
           GestureDetector(
             onTap: _saveConfig,
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              margin: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(10)),
+              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(6)),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [AppTheme.primaryColor, AppTheme.accentColor],
                 ),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(r.s(20)),
                 boxShadow: [
                   BoxShadow(
                     color: AppTheme.primaryColor.withValues(alpha: 0.3),
@@ -268,6 +270,7 @@ class _AcmScreenState extends State<AcmScreen>
   // TAB: Módulos
   // ========================================================================
   Widget _buildModulesTab() {
+      final r = context.r;
     final modules = [
       _ModuleItem(
           'post', 'Posts', Icons.article_rounded, 'Permitir criação de posts'),
@@ -290,16 +293,16 @@ class _AcmScreenState extends State<AcmScreen>
     ];
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(r.s(16)),
       itemCount: modules.length,
       itemBuilder: (context, index) {
         final mod = modules[index];
         final isEnabled = _config[mod.key] as bool? ?? false;
         return Container(
-          margin: const EdgeInsets.only(bottom: 8),
+          margin: EdgeInsets.only(bottom: r.s(8)),
           decoration: BoxDecoration(
             color: context.surfaceColor,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(r.s(12)),
             border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
           child: SwitchListTile(
@@ -308,7 +311,7 @@ class _AcmScreenState extends State<AcmScreen>
             title: Text(mod.label,
                 style: const TextStyle(fontWeight: FontWeight.w500)),
             subtitle: Text(mod.description,
-                style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
             value: isEnabled,
             activeColor: AppTheme.primaryColor,
             onChanged: (val) {
@@ -324,11 +327,12 @@ class _AcmScreenState extends State<AcmScreen>
   // TAB: Acesso
   // ========================================================================
   Widget _buildAccessTab() {
+      final r = context.r;
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(r.s(16)),
       children: [
         Text('Tipo de Entrada', style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 12),
+        SizedBox(height: r.s(12)),
         _AccessOption(
           icon: Icons.public_rounded,
           label: 'Aberta',
@@ -350,9 +354,9 @@ class _AcmScreenState extends State<AcmScreen>
           isSelected: _joinType == 'invite',
           onTap: () => setState(() => _joinType = 'invite'),
         ),
-        const SizedBox(height: 32),
+        SizedBox(height: r.s(32)),
         Text('Visibilidade', style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 12),
+        SizedBox(height: r.s(12)),
         _AccessOption(
           icon: Icons.visibility_rounded,
           label: 'Listada',
@@ -374,10 +378,10 @@ class _AcmScreenState extends State<AcmScreen>
           isSelected: _listedStatus == 'none',
           onTap: () => setState(() => _listedStatus = 'none'),
         ),
-        const SizedBox(height: 32),
+        SizedBox(height: r.s(32)),
         Text('Mensagem de Boas-Vindas',
             style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 12),
+        SizedBox(height: r.s(12)),
         TextField(
           controller: TextEditingController(text: _welcomeMessage),
           onChanged: (v) => _welcomeMessage = v,
@@ -387,7 +391,7 @@ class _AcmScreenState extends State<AcmScreen>
             filled: true,
             fillColor: context.surfaceColor,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(r.s(12)),
               borderSide: BorderSide.none,
             ),
           ),
@@ -400,21 +404,22 @@ class _AcmScreenState extends State<AcmScreen>
   // TAB: Visual
   // ========================================================================
   Widget _buildVisualTab() {
+      final r = context.r;
     final currentColor = _parseColor(_themeColor);
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(r.s(16)),
       children: [
         Text('Customização Visual',
             style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 16),
+        SizedBox(height: r.s(16)),
 
         // Color Picker
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(r.s(16)),
           decoration: BoxDecoration(
             color: context.surfaceColor,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(r.s(12)),
             border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
           child: Column(
@@ -424,13 +429,13 @@ class _AcmScreenState extends State<AcmScreen>
                 children: [
                   const Icon(Icons.color_lens_rounded,
                       color: AppTheme.primaryColor),
-                  const SizedBox(width: 12),
+                  SizedBox(width: r.s(12)),
                   const Text('Cor Tema',
                       style: TextStyle(fontWeight: FontWeight.w600)),
                   const Spacer(),
                   Container(
-                    width: 32,
-                    height: 32,
+                    width: r.s(32),
+                    height: r.s(32),
                     decoration: BoxDecoration(
                       color: currentColor,
                       shape: BoxShape.circle,
@@ -439,7 +444,7 @@ class _AcmScreenState extends State<AcmScreen>
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: r.s(16)),
               Wrap(
                 spacing: 10,
                 runSpacing: 10,
@@ -469,14 +474,14 @@ class _AcmScreenState extends State<AcmScreen>
                   return GestureDetector(
                     onTap: () => setState(() => _themeColor = hex),
                     child: Container(
-                      width: 36,
-                      height: 36,
+                      width: r.s(36),
+                      height: r.s(36),
                       decoration: BoxDecoration(
                         color: c,
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: isSelected ? Colors.white : Colors.transparent,
-                          width: 3,
+                          width: r.s(3),
                         ),
                         boxShadow: isSelected
                             ? [
@@ -487,14 +492,14 @@ class _AcmScreenState extends State<AcmScreen>
                             : null,
                       ),
                       child: isSelected
-                          ? const Icon(Icons.check_rounded,
-                              color: Colors.white, size: 18)
+                          ? Icon(Icons.check_rounded,
+                              color: Colors.white, size: r.s(18))
                           : null,
                     ),
                   );
                 }).toList(),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: r.s(12)),
               TextField(
                 controller: TextEditingController(text: _themeColor),
                 onChanged: (v) {
@@ -504,29 +509,29 @@ class _AcmScreenState extends State<AcmScreen>
                 },
                 decoration: InputDecoration(
                   hintText: '#RRGGBB',
-                  prefixIcon: const Icon(Icons.tag_rounded, size: 18),
+                  prefixIcon: Icon(Icons.tag_rounded, size: r.s(18)),
                   filled: true,
                   fillColor: context.scaffoldBg,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(r.s(8)),
                     borderSide: BorderSide.none,
                   ),
                   isDense: true,
                 ),
-                style: const TextStyle(fontSize: 14),
+                style: TextStyle(fontSize: r.fs(14)),
               ),
             ],
           ),
         ),
 
-        const SizedBox(height: 16),
+        SizedBox(height: r.s(16)),
 
         // Icon URL
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(r.s(16)),
           decoration: BoxDecoration(
             color: context.surfaceColor,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(r.s(12)),
             border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
           child: Column(
@@ -535,57 +540,57 @@ class _AcmScreenState extends State<AcmScreen>
               const Row(
                 children: [
                   Icon(Icons.image_rounded, color: AppTheme.primaryColor),
-                  SizedBox(width: 12),
+                  SizedBox(width: r.s(12)),
                   Text('Ícone da Comunidade',
                       style: TextStyle(fontWeight: FontWeight.w600)),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: r.s(12)),
               if (_iconUrl.isNotEmpty)
                 Center(
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(r.s(16)),
                     child: Image.network(_iconUrl,
-                        width: 80,
-                        height: 80,
+                        width: r.s(80),
+                        height: r.s(80),
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Container(
-                              width: 80,
-                              height: 80,
+                              width: r.s(80),
+                              height: r.s(80),
                               color: context.surfaceColorLight,
                               child: const Icon(Icons.broken_image_rounded),
                             )),
                   ),
                 ),
-              const SizedBox(height: 8),
+              SizedBox(height: r.s(8)),
               TextField(
                 controller: TextEditingController(text: _iconUrl),
                 onChanged: (v) => setState(() => _iconUrl = v),
                 decoration: InputDecoration(
                   hintText: 'URL da imagem do ícone',
-                  prefixIcon: const Icon(Icons.link_rounded, size: 18),
+                  prefixIcon: Icon(Icons.link_rounded, size: r.s(18)),
                   filled: true,
                   fillColor: context.scaffoldBg,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(r.s(8)),
                     borderSide: BorderSide.none,
                   ),
                   isDense: true,
                 ),
-                style: const TextStyle(fontSize: 13),
+                style: TextStyle(fontSize: r.fs(13)),
               ),
             ],
           ),
         ),
 
-        const SizedBox(height: 16),
+        SizedBox(height: r.s(16)),
 
         // Banner URL
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(r.s(16)),
           decoration: BoxDecoration(
             color: context.surfaceColor,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(r.s(12)),
             border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
           child: Column(
@@ -594,42 +599,42 @@ class _AcmScreenState extends State<AcmScreen>
               const Row(
                 children: [
                   Icon(Icons.panorama_rounded, color: AppTheme.primaryColor),
-                  SizedBox(width: 12),
+                  SizedBox(width: r.s(12)),
                   Text('Banner / Capa',
                       style: TextStyle(fontWeight: FontWeight.w600)),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: r.s(12)),
               if (_bannerUrl.isNotEmpty)
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(r.s(12)),
                   child: Image.network(_bannerUrl,
-                      height: 100,
+                      height: r.s(100),
                       width: double.infinity,
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => Container(
-                            height: 100,
+                            height: r.s(100),
                             color: context.surfaceColorLight,
                             child: const Center(
                                 child: Icon(Icons.broken_image_rounded)),
                           )),
                 ),
-              const SizedBox(height: 8),
+              SizedBox(height: r.s(8)),
               TextField(
                 controller: TextEditingController(text: _bannerUrl),
                 onChanged: (v) => setState(() => _bannerUrl = v),
                 decoration: InputDecoration(
                   hintText: 'URL da imagem do banner',
-                  prefixIcon: const Icon(Icons.link_rounded, size: 18),
+                  prefixIcon: Icon(Icons.link_rounded, size: r.s(18)),
                   filled: true,
                   fillColor: context.scaffoldBg,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(r.s(8)),
                     borderSide: BorderSide.none,
                   ),
                   isDense: true,
                 ),
-                style: const TextStyle(fontSize: 13),
+                style: TextStyle(fontSize: r.fs(13)),
               ),
             ],
           ),
@@ -642,6 +647,7 @@ class _AcmScreenState extends State<AcmScreen>
   // TAB: Home Layout — Customização da página inicial
   // ========================================================================
   Widget _buildHomeLayoutTab() {
+      final r = context.r;
     final visible = Map<String, dynamic>.from(
         _homeLayout['sections_visible'] as Map<String, dynamic>? ?? {});
     final bottomBar = Map<String, dynamic>.from(
@@ -652,24 +658,24 @@ class _AcmScreenState extends State<AcmScreen>
         _homeLayout['featured_type'] as String? ?? 'list';
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(r.s(16)),
       children: [
         // ---- SEÇÕES VISÍVEIS ----
         Text('Seções da Página Inicial',
             style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 6),
+        SizedBox(height: r.s(6)),
         Text('Escolha quais seções serão exibidas na home da comunidade.',
-            style: TextStyle(color: Colors.grey[500], fontSize: 12)),
-        const SizedBox(height: 16),
+            style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
+        SizedBox(height: r.s(16)),
 
         ..._buildSectionToggles(visible),
 
-        const SizedBox(height: 24),
+        SizedBox(height: r.s(24)),
 
         // ---- TIPO DE DESTAQUE ----
         Text('Estilo dos Destaques',
             style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 12),
+        SizedBox(height: r.s(12)),
         Row(
           children: [
             _FeaturedStyleOption(
@@ -680,7 +686,7 @@ class _AcmScreenState extends State<AcmScreen>
                 setState(() => _homeLayout['featured_type'] = 'list');
               },
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: r.s(8)),
             _FeaturedStyleOption(
               icon: Icons.grid_view_rounded,
               label: 'Grid',
@@ -689,7 +695,7 @@ class _AcmScreenState extends State<AcmScreen>
                 setState(() => _homeLayout['featured_type'] = 'grid');
               },
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: r.s(8)),
             _FeaturedStyleOption(
               icon: Icons.view_carousel_rounded,
               label: 'Carrossel',
@@ -701,21 +707,21 @@ class _AcmScreenState extends State<AcmScreen>
           ],
         ),
 
-        const SizedBox(height: 24),
+        SizedBox(height: r.s(24)),
 
         // ---- WELCOME BANNER ----
         Text('Banner de Boas-Vindas',
             style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 6),
+        SizedBox(height: r.s(6)),
         Text('Um banner customizado exibido no topo da home.',
-            style: TextStyle(color: Colors.grey[500], fontSize: 12)),
-        const SizedBox(height: 12),
+            style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
+        SizedBox(height: r.s(12)),
 
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(r.s(16)),
           decoration: BoxDecoration(
             color: context.surfaceColor,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(r.s(12)),
             border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
           child: Column(
@@ -734,7 +740,7 @@ class _AcmScreenState extends State<AcmScreen>
                 },
               ),
               if (welcomeBanner['enabled'] == true) ...[
-                const SizedBox(height: 8),
+                SizedBox(height: r.s(8)),
                 TextField(
                   controller: TextEditingController(
                       text: welcomeBanner['text'] as String? ?? ''),
@@ -745,18 +751,18 @@ class _AcmScreenState extends State<AcmScreen>
                   decoration: InputDecoration(
                     hintText: 'Texto do banner (ex: Bem-vindo!)',
                     prefixIcon:
-                        const Icon(Icons.text_fields_rounded, size: 18),
+                        Icon(Icons.text_fields_rounded, size: r.s(18)),
                     filled: true,
                     fillColor: context.scaffoldBg,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(r.s(8)),
                       borderSide: BorderSide.none,
                     ),
                     isDense: true,
                   ),
-                  style: const TextStyle(fontSize: 13),
+                  style: TextStyle(fontSize: r.fs(13)),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: r.s(8)),
                 TextField(
                   controller: TextEditingController(
                       text: welcomeBanner['image_url'] as String? ?? ''),
@@ -766,18 +772,18 @@ class _AcmScreenState extends State<AcmScreen>
                   },
                   decoration: InputDecoration(
                     hintText: 'URL da imagem do banner (opcional)',
-                    prefixIcon: const Icon(Icons.image_rounded, size: 18),
+                    prefixIcon: Icon(Icons.image_rounded, size: r.s(18)),
                     filled: true,
                     fillColor: context.scaffoldBg,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(r.s(8)),
                       borderSide: BorderSide.none,
                     ),
                     isDense: true,
                   ),
-                  style: const TextStyle(fontSize: 13),
+                  style: TextStyle(fontSize: r.fs(13)),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: r.s(8)),
                 TextField(
                   controller: TextEditingController(
                       text: welcomeBanner['link'] as String? ?? ''),
@@ -787,37 +793,37 @@ class _AcmScreenState extends State<AcmScreen>
                   },
                   decoration: InputDecoration(
                     hintText: 'Link ao clicar (opcional)',
-                    prefixIcon: const Icon(Icons.link_rounded, size: 18),
+                    prefixIcon: Icon(Icons.link_rounded, size: r.s(18)),
                     filled: true,
                     fillColor: context.scaffoldBg,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(r.s(8)),
                       borderSide: BorderSide.none,
                     ),
                     isDense: true,
                   ),
-                  style: const TextStyle(fontSize: 13),
+                  style: TextStyle(fontSize: r.fs(13)),
                 ),
               ],
             ],
           ),
         ),
 
-        const SizedBox(height: 24),
+        SizedBox(height: r.s(24)),
 
         // ---- BOTTOM BAR ----
         Text('Barra Inferior',
             style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 6),
+        SizedBox(height: r.s(6)),
         Text('Configure a barra de navegação inferior da comunidade.',
-            style: TextStyle(color: Colors.grey[500], fontSize: 12)),
-        const SizedBox(height: 12),
+            style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
+        SizedBox(height: r.s(12)),
 
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(r.s(16)),
           decoration: BoxDecoration(
             color: context.surfaceColor,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(r.s(12)),
             border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
           child: Column(
@@ -827,7 +833,7 @@ class _AcmScreenState extends State<AcmScreen>
                 title: const Text('Mostrar Membros Online',
                     style: TextStyle(fontWeight: FontWeight.w500)),
                 subtitle: Text('Exibe contagem de online na bottom bar',
-                    style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                    style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
                 value: bottomBar['show_online_count'] as bool? ?? true,
                 activeColor: AppTheme.primaryColor,
                 onChanged: (val) {
@@ -842,7 +848,7 @@ class _AcmScreenState extends State<AcmScreen>
                 title: const Text('Mostrar Botão Criar (+)',
                     style: TextStyle(fontWeight: FontWeight.w500)),
                 subtitle: Text('Botão central para criar posts',
-                    style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                    style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
                 value: bottomBar['show_create_button'] as bool? ?? true,
                 activeColor: AppTheme.primaryColor,
                 onChanged: (val) {
@@ -856,7 +862,7 @@ class _AcmScreenState extends State<AcmScreen>
           ),
         ),
 
-        const SizedBox(height: 24),
+        SizedBox(height: r.s(24)),
 
         // ---- RESET ----
         Center(
@@ -871,7 +877,7 @@ class _AcmScreenState extends State<AcmScreen>
                   backgroundColor: AppTheme.warningColor,
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                      borderRadius: BorderRadius.circular(r.s(10))),
                 ),
               );
             },
@@ -880,7 +886,7 @@ class _AcmScreenState extends State<AcmScreen>
                 style: TextStyle(color: Colors.grey[500])),
           ),
         ),
-        const SizedBox(height: 32),
+        SizedBox(height: r.s(32)),
       ],
     );
   }
@@ -928,10 +934,10 @@ class _AcmScreenState extends State<AcmScreen>
     return sections.map((s) {
       final isEnabled = visible[s.key] as bool? ?? true;
       return Container(
-        margin: const EdgeInsets.only(bottom: 8),
+        margin: EdgeInsets.only(bottom: r.s(8)),
         decoration: BoxDecoration(
           color: context.surfaceColor,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(r.s(12)),
           border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         ),
         child: SwitchListTile(
@@ -940,7 +946,7 @@ class _AcmScreenState extends State<AcmScreen>
           title: Text(s.label,
               style: const TextStyle(fontWeight: FontWeight.w500)),
           subtitle: Text(s.description,
-              style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+              style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
           value: isEnabled,
           activeColor: AppTheme.primaryColor,
           onChanged: (val) {
@@ -958,17 +964,18 @@ class _AcmScreenState extends State<AcmScreen>
   // TAB: Stats
   // ========================================================================
   Widget _buildStatsTab() {
+      final r = context.r;
     return RefreshIndicator(
       onRefresh: () async {
         await _loadStats();
         setState(() {});
       },
       child: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(r.s(16)),
         children: [
           Text('Estatísticas da Comunidade',
               style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 16),
+          SizedBox(height: r.s(16)),
           _StatCard(
             icon: Icons.people_rounded,
             label: 'Membros Total',
@@ -993,9 +1000,9 @@ class _AcmScreenState extends State<AcmScreen>
             value: _totalChats.toString(),
             color: const Color(0xFF00BCD4),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: r.s(24)),
           Text('Moderação', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 12),
+          SizedBox(height: r.s(12)),
           _StatCard(
             icon: Icons.flag_rounded,
             label: 'Denúncias Pendentes',
@@ -1008,15 +1015,15 @@ class _AcmScreenState extends State<AcmScreen>
             value: _modActions30d.toString(),
             color: AppTheme.warningColor,
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: r.s(24)),
           Text('Configuração Atual',
               style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 12),
+          SizedBox(height: r.s(12)),
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(r.s(16)),
             decoration: BoxDecoration(
               color: context.surfaceColor,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(r.s(12)),
               border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
             ),
             child: Column(
@@ -1079,16 +1086,17 @@ class _FeaturedStyleOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: EdgeInsets.symmetric(vertical: r.s(16)),
           decoration: BoxDecoration(
             color: isSelected
                 ? AppTheme.primaryColor.withValues(alpha: 0.15)
                 : context.surfaceColor,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(r.s(12)),
             border: Border.all(
               color: isSelected
                   ? AppTheme.primaryColor
@@ -1102,14 +1110,14 @@ class _FeaturedStyleOption extends StatelessWidget {
                   color: isSelected
                       ? AppTheme.primaryColor
                       : Colors.grey[600],
-                  size: 24),
-              const SizedBox(height: 6),
+                  size: r.s(24)),
+              SizedBox(height: r.s(6)),
               Text(label,
                   style: TextStyle(
                     color: isSelected
                         ? AppTheme.primaryColor
                         : context.textSecondary,
-                    fontSize: 11,
+                    fontSize: r.fs(11),
                     fontWeight:
                         isSelected ? FontWeight.w700 : FontWeight.w500,
                   )),
@@ -1138,16 +1146,17 @@ class _AccessOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.all(16),
+        margin: EdgeInsets.only(bottom: r.s(8)),
+        padding: EdgeInsets.all(r.s(16)),
         decoration: BoxDecoration(
           color: isSelected
               ? AppTheme.primaryColor.withValues(alpha: 0.1)
               : context.surfaceColor,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(r.s(12)),
           border: Border.all(
             color: isSelected
                 ? AppTheme.primaryColor
@@ -1167,7 +1176,7 @@ class _AccessOption extends StatelessWidget {
           children: [
             Icon(icon,
                 color: isSelected ? AppTheme.primaryColor : Colors.grey[600]),
-            const SizedBox(width: 16),
+            SizedBox(width: r.s(16)),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1177,7 +1186,7 @@ class _AccessOption extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(description,
                       style:
-                          TextStyle(color: Colors.grey[500], fontSize: 12)),
+                          TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
                 ],
               ),
             ),
@@ -1205,26 +1214,27 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.only(bottom: r.s(8)),
+      padding: EdgeInsets.all(r.s(16)),
       decoration: BoxDecoration(
         color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(r.s(12)),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Row(
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: r.s(44),
+            height: r.s(44),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(r.s(12)),
             ),
             child: Icon(icon, color: color),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: r.s(16)),
           Expanded(
             child: Text(label,
                 style: const TextStyle(fontWeight: FontWeight.w500)),
@@ -1233,7 +1243,7 @@ class _StatCard extends StatelessWidget {
             value,
             style: TextStyle(
               color: color,
-              fontSize: 18,
+              fontSize: r.fs(18),
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -1250,16 +1260,17 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: EdgeInsets.symmetric(vertical: r.s(6)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label,
-              style: TextStyle(color: Colors.grey[500], fontSize: 13)),
+              style: TextStyle(color: Colors.grey[500], fontSize: r.fs(13))),
           Text(value,
               style:
-                  const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                  TextStyle(fontWeight: FontWeight.w600, fontSize: r.fs(13))),
         ],
       ),
     );

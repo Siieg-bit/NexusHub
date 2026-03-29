@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/checkin_heatmap.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Conquistas / Achievements — Badges desbloqueáveis com progresso.
 class AchievementsScreen extends StatefulWidget {
@@ -119,6 +120,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final unlocked =
         _allAchievements.where((a) => _unlockedIds.contains(a['id'])).toList();
     final locked =
@@ -150,7 +152,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                   ),
                 )
               : SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(r.s(16)),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -161,12 +163,12 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                         currentStreak: _currentStreak,
                         longestStreak: _longestStreak,
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: r.s(24)),
 
                       // Stats
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(20),
+                        padding: EdgeInsets.all(r.s(20)),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
@@ -174,7 +176,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                               AppTheme.warningColor.withValues(alpha: 0.7),
                             ],
                           ),
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(r.s(16)),
                           boxShadow: [
                             BoxShadow(
                               color: AppTheme.warningColor.withValues(alpha: 0.3),
@@ -186,17 +188,17 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.emoji_events_rounded,
-                                color: Colors.white, size: 36),
-                            const SizedBox(width: 12),
+                            Icon(Icons.emoji_events_rounded,
+                                color: Colors.white, size: r.s(36)),
+                            SizedBox(width: r.s(12)),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   '${unlocked.length} / ${_allAchievements.length}',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 28,
+                                    fontSize: r.fs(28),
                                     fontWeight: FontWeight.w800,
                                   ),
                                 ),
@@ -204,7 +206,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                                   'Conquistas desbloqueadas',
                                   style: TextStyle(
                                     color: Colors.white70,
-                                    fontSize: 13,
+                                    fontSize: r.fs(13),
                                   ),
                                 ),
                               ],
@@ -212,7 +214,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: r.s(24)),
 
                       // Desbloqueadas
                       if (unlocked.isNotEmpty) ...[
@@ -220,17 +222,17 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                           'Desbloqueadas',
                           style: TextStyle(
                             fontWeight: FontWeight.w800,
-                            fontSize: 16,
+                            fontSize: r.fs(16),
                             color: context.textPrimary,
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: r.s(12)),
                         ...unlocked.map((a) => _AchievementTile(
                               achievement: a,
                               isUnlocked: true,
                               progress: 100,
                             )),
-                        const SizedBox(height: 24),
+                        SizedBox(height: r.s(24)),
                       ],
 
                       // Bloqueadas
@@ -239,11 +241,11 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                           'Em progresso',
                           style: TextStyle(
                             fontWeight: FontWeight.w800,
-                            fontSize: 16,
+                            fontSize: r.fs(16),
                             color: context.textPrimary,
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: r.s(12)),
                         ...locked.map((a) => _AchievementTile(
                               achievement: a,
                               isUnlocked: false,
@@ -270,6 +272,7 @@ class _AchievementTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final name = achievement['name'] as String? ?? 'Conquista';
     final description = achievement['description'] as String? ?? '';
     final reward = achievement['coin_reward'] as int? ?? 0;
@@ -291,11 +294,11 @@ class _AchievementTile extends StatelessWidget {
     }
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
+      margin: EdgeInsets.only(bottom: r.s(10)),
+      padding: EdgeInsets.all(r.s(14)),
       decoration: BoxDecoration(
         color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(r.s(16)),
         border: Border.all(
           color: isUnlocked
               ? AppTheme.warningColor.withValues(alpha: 0.3)
@@ -315,21 +318,21 @@ class _AchievementTile extends StatelessWidget {
         children: [
           // Ícone
           Container(
-            width: 48,
-            height: 48,
+            width: r.s(48),
+            height: r.s(48),
             decoration: BoxDecoration(
               color: isUnlocked
                   ? AppTheme.warningColor.withValues(alpha: 0.15)
                   : Colors.white.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(r.s(12)),
             ),
             child: Icon(
               Icons.emoji_events_rounded,
               color: isUnlocked ? AppTheme.warningColor : Colors.grey[600],
-              size: 24,
+              size: r.s(24),
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: r.s(12)),
           // Info
           Expanded(
             child: Column(
@@ -342,7 +345,7 @@ class _AchievementTile extends StatelessWidget {
                         name,
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
-                          fontSize: 14,
+                          fontSize: r.fs(14),
                           color: isUnlocked
                               ? context.textPrimary
                               : Colors.grey[500],
@@ -350,36 +353,36 @@ class _AchievementTile extends StatelessWidget {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: r.s(8), vertical: r.s(4)),
                       decoration: BoxDecoration(
                         color: rarityColor.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(r.s(20)),
                       ),
                       child: Text(
                         rarity.toUpperCase(),
                         style: TextStyle(
                           color: rarityColor,
-                          fontSize: 9,
+                          fontSize: r.fs(9),
                           fontWeight: FontWeight.w800,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: r.s(4)),
                 Text(
                   description,
-                  style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                  style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
                   maxLines: 2,
                 ),
                 if (!isUnlocked && progress > 0) ...[
-                  const SizedBox(height: 8),
+                  SizedBox(height: r.s(8)),
                   Row(
                     children: [
                       Expanded(
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(r.s(20)),
                           child: LinearProgressIndicator(
                             value: progress / 100,
                             backgroundColor:
@@ -390,12 +393,12 @@ class _AchievementTile extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: r.s(8)),
                       Text(
                         '$progress%',
                         style: TextStyle(
                           color: Colors.grey[500],
-                          fontSize: 10,
+                          fontSize: r.fs(10),
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -406,16 +409,16 @@ class _AchievementTile extends StatelessWidget {
             ),
           ),
           if (reward > 0) ...[
-            const SizedBox(width: 8),
+            SizedBox(width: r.s(8)),
             Column(
               children: [
-                const Icon(Icons.monetization_on_rounded,
-                    color: AppTheme.warningColor, size: 16),
+                Icon(Icons.monetization_on_rounded,
+                    color: AppTheme.warningColor, size: r.s(16)),
                 Text(
                   '+$reward',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppTheme.warningColor,
-                    fontSize: 10,
+                    fontSize: r.fs(10),
                     fontWeight: FontWeight.w800,
                   ),
                 ),

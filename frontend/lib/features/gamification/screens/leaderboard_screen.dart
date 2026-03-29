@@ -6,6 +6,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Provider para leaderboard de uma comunidade.
 final leaderboardProvider =
@@ -66,14 +67,14 @@ class LeaderboardScreen extends ConsumerWidget {
           }
 
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(r.s(16)),
             children: [
               // ============================================================
               // TOP 3 PODIUM
               // ============================================================
               if (members.length >= 3)
                 SizedBox(
-                  height: 220,
+                  height: r.s(220),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.end,
@@ -82,30 +83,30 @@ class LeaderboardScreen extends ConsumerWidget {
                       _PodiumItem(
                         rank: 2,
                         data: members[1],
-                        height: 140,
+                        height: r.s(140),
                         color: const Color(0xFFC0C0C0),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: r.s(8)),
                       // 1o lugar
                       _PodiumItem(
                         rank: 1,
                         data: members[0],
-                        height: 180,
+                        height: r.s(180),
                         color: const Color(0xFFFFD700),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: r.s(8)),
                       // 3o lugar
                       _PodiumItem(
                         rank: 3,
                         data: members[2],
-                        height: 110,
+                        height: r.s(110),
                         color: const Color(0xFFCD7F32),
                       ),
                     ],
                   ),
                 ),
 
-              const SizedBox(height: 24),
+              SizedBox(height: r.s(24)),
 
               // ============================================================
               // LISTA RESTANTE (rank = index + 1)
@@ -135,6 +136,7 @@ class _PodiumItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final rep = data['reputation'] as int? ?? 0;
     final lvl = data['level'] as int? ?? calculateLevel(rep);
 
@@ -148,13 +150,13 @@ class _PodiumItem extends StatelessWidget {
             avatarUrl: data['icon_url'] as String?,
             size: rank == 1 ? 64 : 48,
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: r.s(8)),
           Text(
             data['nickname'] as String? ?? 'Usuário',
             style: TextStyle(
               color: context.textPrimary,
               fontWeight: FontWeight.w700,
-              fontSize: 12,
+              fontSize: r.fs(12),
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -162,16 +164,16 @@ class _PodiumItem extends StatelessWidget {
           // Level badge
           Container(
             margin: const EdgeInsets.only(top: 2),
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+            padding: EdgeInsets.symmetric(horizontal: r.s(6), vertical: 1),
             decoration: BoxDecoration(
               color: AppTheme.getLevelColor(lvl).withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(r.s(8)),
             ),
             child: Text(
               'Lv.$lvl ${levelTitle(lvl)}',
               style: TextStyle(
                 color: AppTheme.getLevelColor(lvl),
-                fontSize: 9,
+                fontSize: r.fs(9),
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -180,11 +182,11 @@ class _PodiumItem extends StatelessWidget {
             '${formatCount(rep)} rep',
             style: TextStyle(
               color: color,
-              fontSize: 11,
+              fontSize: r.fs(11),
               fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: r.s(8)),
           // Podium
           Container(
             height: height * 0.5,
@@ -226,28 +228,29 @@ class _LeaderboardTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final rep = data['reputation'] as int? ?? 0;
     final lvl = data['level'] as int? ?? calculateLevel(rep);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.only(bottom: r.s(12)),
+      padding: EdgeInsets.all(r.s(16)),
       decoration: BoxDecoration(
         color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(r.s(16)),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Row(
         children: [
           // Rank
           SizedBox(
-            width: 32,
+            width: r.s(32),
             child: Text(
               '#$rank',
               style: TextStyle(
                 fontWeight: FontWeight.w800,
                 color: Colors.grey[500],
-                fontSize: 16,
+                fontSize: r.fs(16),
               ),
             ),
           ),
@@ -255,10 +258,10 @@ class _LeaderboardTile extends StatelessWidget {
           CosmeticAvatar(
             userId: data['user_id'] as String?,
             avatarUrl: data['icon_url'] as String?,
-            size: 48,
+            size: r.s(48),
             onTap: () => context.push('/user/${data['user_id']}'),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: r.s(16)),
           // Info
           Expanded(
             child: Column(
@@ -272,22 +275,22 @@ class _LeaderboardTile extends StatelessWidget {
                         style: TextStyle(
                           color: context.textPrimary,
                           fontWeight: FontWeight.w700,
-                          fontSize: 16,
+                          fontSize: r.fs(16),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: r.s(8)),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: r.s(8),
+                        vertical: r.s(4),
                       ),
                       decoration: BoxDecoration(
                         color: AppTheme.getLevelColor(lvl)
                             .withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(r.s(20)),
                         border: Border.all(
                           color: AppTheme.getLevelColor(lvl)
                               .withValues(alpha: 0.3),
@@ -297,7 +300,7 @@ class _LeaderboardTile extends StatelessWidget {
                         'Lv.$lvl ${levelTitle(lvl)}',
                         style: TextStyle(
                           color: AppTheme.getLevelColor(lvl),
-                          fontSize: 10,
+                          fontSize: r.fs(10),
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -305,12 +308,12 @@ class _LeaderboardTile extends StatelessWidget {
                   ],
                 ),
                 if (data['role'] != null && data['role'] != 'member') ...[
-                  const SizedBox(height: 4),
+                  SizedBox(height: r.s(4)),
                   Text(
                     (data['role'] as String).toUpperCase(),
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppTheme.accentColor,
-                      fontSize: 11,
+                      fontSize: r.fs(11),
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.5,
                     ),
@@ -319,7 +322,7 @@ class _LeaderboardTile extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: r.s(12)),
           // Reputation
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -329,17 +332,17 @@ class _LeaderboardTile extends StatelessWidget {
                 children: [
                   Text(
                     formatCount(rep),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w800,
                       color: AppTheme.warningColor,
-                      fontSize: 16,
+                      fontSize: r.fs(16),
                     ),
                   ),
-                  const SizedBox(width: 4),
-                  const Icon(
+                  SizedBox(width: r.s(4)),
+                  Icon(
                     Icons.star_rounded,
                     color: AppTheme.warningColor,
-                    size: 18,
+                    size: r.s(18),
                   ),
                 ],
               ),
@@ -347,7 +350,7 @@ class _LeaderboardTile extends StatelessWidget {
                 'REP',
                 style: TextStyle(
                   color: Colors.grey[500],
-                  fontSize: 10,
+                  fontSize: r.fs(10),
                   fontWeight: FontWeight.w700,
                 ),
               ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Inventário — Itens comprados pelo usuário (Avatar Frames, Chat Bubbles, etc).
 class InventoryScreen extends StatefulWidget {
@@ -94,7 +95,7 @@ class _InventoryScreenState extends State<InventoryScreen>
             backgroundColor: context.surfaceColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(r.s(12)),
               side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
             ),
           ),
@@ -108,7 +109,7 @@ class _InventoryScreenState extends State<InventoryScreen>
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(r.s(12)),
             ),
           ),
         );
@@ -124,6 +125,7 @@ class _InventoryScreenState extends State<InventoryScreen>
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
@@ -167,6 +169,7 @@ class _InventoryScreenState extends State<InventoryScreen>
   }
 
   Widget _buildGrid(List<Map<String, dynamic>> items) {
+      final r = context.r;
     if (items.isEmpty) {
       return Center(
         child: Column(
@@ -174,32 +177,32 @@ class _InventoryScreenState extends State<InventoryScreen>
           children: [
             Icon(
               Icons.inventory_2_rounded,
-              size: 64,
+              size: r.s(64),
               color: Colors.grey[600],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: r.s(16)),
             Text(
               'Nenhum item',
               style: TextStyle(
                 color: Colors.grey[500],
-                fontSize: 16,
+                fontSize: r.fs(16),
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: r.s(24)),
             GestureDetector(
               onTap: () {
                 // Navegar para a loja
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: EdgeInsets.symmetric(horizontal: r.s(24), vertical: r.s(12)),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [AppTheme.primaryColor, AppTheme.accentColor],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(r.s(24)),
                   boxShadow: [
                     BoxShadow(
                       color: AppTheme.primaryColor.withValues(alpha: 0.3),
@@ -213,7 +216,7 @@ class _InventoryScreenState extends State<InventoryScreen>
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
-                    fontSize: 14,
+                    fontSize: r.fs(14),
                   ),
                 ),
               ),
@@ -224,7 +227,7 @@ class _InventoryScreenState extends State<InventoryScreen>
     }
 
     return GridView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(r.s(16)),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
         mainAxisSpacing: 12,
@@ -244,7 +247,7 @@ class _InventoryScreenState extends State<InventoryScreen>
           child: Container(
             decoration: BoxDecoration(
               color: context.surfaceColor,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(r.s(16)),
               border: isEquipped
                   ? Border.all(color: AppTheme.primaryColor, width: 2)
                   : Border.all(
@@ -287,7 +290,7 @@ class _InventoryScreenState extends State<InventoryScreen>
                             : Icon(
                                 Icons.auto_awesome_rounded,
                                 color: Colors.grey[600],
-                                size: 32,
+                                size: r.s(32),
                               ),
                       ),
                       if (isEquipped)
@@ -295,7 +298,7 @@ class _InventoryScreenState extends State<InventoryScreen>
                           top: 6,
                           right: 6,
                           child: Container(
-                            padding: const EdgeInsets.all(4),
+                            padding: EdgeInsets.all(r.s(4)),
                             decoration: const BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [AppTheme.primaryColor, AppTheme.accentColor],
@@ -304,10 +307,10 @@ class _InventoryScreenState extends State<InventoryScreen>
                               ),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.check_rounded,
                               color: Colors.white,
-                              size: 12,
+                              size: r.s(12),
                             ),
                           ),
                         ),
@@ -315,11 +318,11 @@ class _InventoryScreenState extends State<InventoryScreen>
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(r.s(8)),
                   child: Text(
                     name,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: r.fs(12),
                       fontWeight: FontWeight.w600,
                       color: context.textPrimary,
                     ),

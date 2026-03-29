@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+import '../utils/responsive.dart';
 
 /// ============================================================================
 /// ImageCarousel — Carrossel de imagens para posts com múltiplas fotos.
@@ -50,6 +51,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     if (widget.imageUrls.isEmpty) return const SizedBox.shrink();
 
     // Uma única imagem — sem carrossel
@@ -57,7 +59,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
       return GestureDetector(
         onTap: () => _openGallery(context, 0),
         child: ClipRRect(
-          borderRadius: widget.borderRadius ?? BorderRadius.circular(12),
+          borderRadius: widget.borderRadius ?? BorderRadius.circular(r.s(12)),
           child: SizedBox(
             height: widget.height,
             width: double.infinity,
@@ -72,8 +74,8 @@ class _ImageCarouselState extends State<ImageCarousel> {
               ),
               errorWidget: (_, __, ___) => Container(
                 color: Colors.grey[900],
-                child: const Icon(Icons.broken_image_rounded,
-                    color: Colors.grey, size: 48),
+                child: Icon(Icons.broken_image_rounded,
+                    color: Colors.grey, size: r.s(48)),
               ),
             ),
           ),
@@ -83,7 +85,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
 
     // Múltiplas imagens — carrossel
     return ClipRRect(
-      borderRadius: widget.borderRadius ?? BorderRadius.circular(12),
+      borderRadius: widget.borderRadius ?? BorderRadius.circular(r.s(12)),
       child: SizedBox(
         height: widget.height,
         child: Stack(
@@ -108,8 +110,8 @@ class _ImageCarouselState extends State<ImageCarousel> {
                     ),
                     errorWidget: (_, __, ___) => Container(
                       color: Colors.grey[900],
-                      child: const Icon(Icons.broken_image_rounded,
-                          color: Colors.grey, size: 48),
+                      child: Icon(Icons.broken_image_rounded,
+                          color: Colors.grey, size: r.s(48)),
                     ),
                   ),
                 );
@@ -122,16 +124,16 @@ class _ImageCarouselState extends State<ImageCarousel> {
               right: 8,
               child: Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(4)),
                 decoration: BoxDecoration(
                   color: Colors.black54,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(r.s(12)),
                 ),
                 child: Text(
                   '${_currentPage + 1}/${widget.imageUrls.length}',
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: Colors.white,
-                      fontSize: 12,
+                      fontSize: r.fs(12),
                       fontWeight: FontWeight.w600),
                 ),
               ),
@@ -148,14 +150,14 @@ class _ImageCarouselState extends State<ImageCarousel> {
                   widget.imageUrls.length,
                   (i) => AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    margin: EdgeInsets.symmetric(horizontal: r.s(3)),
                     width: _currentPage == i ? 20 : 6,
-                    height: 6,
+                    height: r.s(6),
                     decoration: BoxDecoration(
                       color: _currentPage == i
                           ? Colors.white
                           : Colors.white.withValues(alpha: 0.4),
-                      borderRadius: BorderRadius.circular(3),
+                      borderRadius: BorderRadius.circular(r.s(3)),
                     ),
                   ),
                 ),
@@ -212,6 +214,7 @@ class _FullScreenGalleryState extends State<_FullScreenGallery> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -223,7 +226,7 @@ class _FullScreenGalleryState extends State<_FullScreenGallery> {
         ),
         title: Text(
           '${_currentIndex + 1} / ${widget.imageUrls.length}',
-          style: const TextStyle(color: Colors.white, fontSize: 16),
+          style: TextStyle(color: Colors.white, fontSize: r.fs(16)),
         ),
         centerTitle: true,
       ),
@@ -275,6 +278,7 @@ class ImagePickerGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final allImages = [...imageUrls, ...localPaths];
     final canAdd = allImages.length < maxImages;
 
@@ -287,10 +291,10 @@ class ImagePickerGrid extends StatelessWidget {
           return Stack(
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(r.s(8)),
                 child: SizedBox(
-                  width: 80,
-                  height: 80,
+                  width: r.s(80),
+                  height: r.s(80),
                   child: isLocal
                       ? Image.file(
                           File(allImages[i]),
@@ -308,14 +312,14 @@ class ImagePickerGrid extends StatelessWidget {
                 child: GestureDetector(
                   onTap: () => onRemoveImage(i),
                   child: Container(
-                    width: 20,
-                    height: 20,
+                    width: r.s(20),
+                    height: r.s(20),
                     decoration: const BoxDecoration(
                       color: Colors.red,
                       shape: BoxShape.circle,
                     ),
                     child:
-                        const Icon(Icons.close, color: Colors.white, size: 14),
+                        Icon(Icons.close, color: Colors.white, size: r.s(14)),
                   ),
                 ),
               ),
@@ -326,11 +330,11 @@ class ImagePickerGrid extends StatelessWidget {
           GestureDetector(
             onTap: onAddImages,
             child: Container(
-              width: 80,
-              height: 80,
+              width: r.s(80),
+              height: r.s(80),
               decoration: BoxDecoration(
                 color: Colors.grey[800],
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(r.s(8)),
                 border: Border.all(
                     color: Colors.grey[600]!, style: BorderStyle.solid),
               ),
@@ -338,9 +342,9 @@ class ImagePickerGrid extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.add_photo_alternate_rounded,
-                      color: Colors.grey[400], size: 28),
+                      color: Colors.grey[400], size: r.s(28)),
                   Text('${allImages.length}/$maxImages',
-                      style: TextStyle(color: Colors.grey[500], fontSize: 10)),
+                      style: TextStyle(color: Colors.grey[500], fontSize: r.fs(10))),
                 ],
               ),
             ),

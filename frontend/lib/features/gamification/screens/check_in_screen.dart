@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Tela de check-in diário com gamificação — Estilo Amino Apps.
 class CheckInScreen extends ConsumerStatefulWidget {
@@ -113,7 +114,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                 backgroundColor: AppTheme.primaryColor,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(r.s(10))),
               ),
             );
           }
@@ -126,7 +127,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                 backgroundColor: AppTheme.errorColor,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(r.s(10))),
               ),
             );
           }
@@ -140,7 +141,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10)),
+                borderRadius: BorderRadius.circular(r.s(10))),
           ),
         );
       }
@@ -174,7 +175,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                 backgroundColor: AppTheme.warningColor,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(r.s(10))),
               ),
             );
           }
@@ -188,7 +189,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10)),
+                borderRadius: BorderRadius.circular(r.s(10))),
           ),
         );
       }
@@ -199,6 +200,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
@@ -206,21 +208,21 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_rounded,
-              color: context.textPrimary, size: 20),
+              color: context.textPrimary, size: r.s(20)),
           onPressed: () => context.pop(),
         ),
         title: const Text('Check-in Diário',
             style: TextStyle(
                 fontWeight: FontWeight.w800,
-                fontSize: 18,
+                fontSize: r.fs(18),
                 color: context.textPrimary)),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(r.s(24)),
         child: Column(
           children: [
-            const SizedBox(height: 12),
+            SizedBox(height: r.s(12)),
 
             // ================================================================
             // ÍCONE PRINCIPAL — Amino style com glow
@@ -243,7 +245,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                     },
                   ),
 
-            const SizedBox(height: 28),
+            SizedBox(height: r.s(28)),
 
             // ================================================================
             // STREAK COUNTER
@@ -252,27 +254,27 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
               _checkedIn ? 'Check-in Completo!' : 'Check-in Diário',
               style: TextStyle(
                   fontWeight: FontWeight.w800,
-                  fontSize: 24,
+                  fontSize: r.fs(24),
                   color: context.textPrimary),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: r.s(8)),
             Text(
               _checkedIn
                   ? 'Dia $_consecutiveDays de sequência!'
                   : 'Faça check-in para ganhar recompensas',
-              style: TextStyle(color: Colors.grey[500], fontSize: 14),
+              style: TextStyle(color: Colors.grey[500], fontSize: r.fs(14)),
             ),
 
-            const SizedBox(height: 28),
+            SizedBox(height: r.s(28)),
 
             // ================================================================
             // DIAS DA SEMANA — Estilo Amino
             // ================================================================
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+              padding: EdgeInsets.symmetric(vertical: r.s(16), horizontal: r.s(12)),
               decoration: BoxDecoration(
                 color: context.surfaceColor,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(r.s(16)),
                 border:
                     Border.all(color: Colors.white.withValues(alpha: 0.05)),
               ),
@@ -291,17 +293,17 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
               ),
             ),
 
-            const SizedBox(height: 24),
+            SizedBox(height: r.s(24)),
 
             // ================================================================
             // RECOMPENSAS (após check-in)
             // ================================================================
             if (_checkedIn && _xpEarned > 0) ...[
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(r.s(20)),
                 decoration: BoxDecoration(
                   color: context.surfaceColor,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(r.s(16)),
                   border: Border.all(
                       color: AppTheme.primaryColor.withValues(alpha: 0.2)),
                   boxShadow: [
@@ -316,9 +318,9 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                     const Text('Recompensas',
                         style: TextStyle(
                             fontWeight: FontWeight.w700,
-                            fontSize: 16,
+                            fontSize: r.fs(16),
                             color: context.textPrimary)),
-                    const SizedBox(height: 16),
+                    SizedBox(height: r.s(16)),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -329,7 +331,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                         ),
                         Container(
                           width: 1,
-                          height: 36,
+                          height: r.s(36),
                           color: Colors.white.withValues(alpha: 0.06),
                         ),
                         _RewardItem(
@@ -342,7 +344,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: r.s(20)),
             ],
 
             // ================================================================
@@ -353,7 +355,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                 onTap: _isLoading ? null : _doCheckIn,
                 child: Container(
                   width: double.infinity,
-                  height: 56,
+                  height: r.s(56),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [
@@ -361,7 +363,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                         Color(0xFFFF5722),
                       ],
                     ),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(r.s(16)),
                     boxShadow: [
                       BoxShadow(
                         color: const Color(0xFFFF9800).withValues(alpha: 0.3),
@@ -372,9 +374,9 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                   ),
                   child: Center(
                     child: _isLoading
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
+                        ? SizedBox(
+                            width: r.s(24),
+                            height: r.s(24),
                             child: CircularProgressIndicator(
                                 color: Colors.white, strokeWidth: 2),
                           )
@@ -382,11 +384,11 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(Icons.local_fire_department_rounded,
-                                  color: Colors.white, size: 22),
-                              SizedBox(width: 8),
+                                  color: Colors.white, size: r.s(22)),
+                              SizedBox(width: r.s(8)),
                               Text('Fazer Check-in',
                                   style: TextStyle(
-                                      fontSize: 17,
+                                      fontSize: r.fs(17),
                                       fontWeight: FontWeight.w800,
                                       color: Colors.white)),
                             ],
@@ -395,14 +397,14 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                 ),
               ),
 
-            const SizedBox(height: 16),
+            SizedBox(height: r.s(16)),
 
             // ================================================================
             // LUCKY DRAW — Estilo Amino
             // ================================================================
             if (_checkedIn) _buildLuckyDrawSection(),
 
-            const SizedBox(height: 16),
+            SizedBox(height: r.s(16)),
 
             // ================================================================
             // STREAK REPAIR
@@ -410,16 +412,16 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             if (!_checkedIn && _consecutiveDays == 0)
               _buildStreakRepairSection(),
 
-            const SizedBox(height: 20),
+            SizedBox(height: r.s(20)),
 
             // ================================================================
             // INFO — Estilo Amino
             // ================================================================
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(r.s(16)),
               decoration: BoxDecoration(
                 color: context.surfaceColor,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(r.s(16)),
                 border:
                     Border.all(color: Colors.white.withValues(alpha: 0.05)),
               ),
@@ -430,7 +432,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                       style: TextStyle(
                           fontWeight: FontWeight.w700,
                           color: context.textPrimary)),
-                  const SizedBox(height: 10),
+                  SizedBox(height: r.s(10)),
                   _InfoRow(
                       icon: Icons.calendar_today_rounded,
                       text: 'Faça check-in todos os dias para manter sua sequência'),
@@ -454,9 +456,10 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
   }
 
   Widget _buildMainIcon(bool completed) {
+      final r = context.r;
     return Container(
-      width: 140,
-      height: 140,
+      width: r.s(140),
+      height: r.s(140),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: LinearGradient(
@@ -481,15 +484,16 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
         completed
             ? Icons.check_circle_rounded
             : Icons.local_fire_department_rounded,
-        size: 64,
+        size: r.s(64),
         color: Colors.white,
       ),
     );
   }
 
   Widget _buildLuckyDrawSection() {
+      final r = context.r;
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(r.s(16)),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -497,7 +501,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             AppTheme.accentColor.withValues(alpha: 0.08),
           ],
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(r.s(16)),
         border:
             Border.all(color: AppTheme.warningColor.withValues(alpha: 0.2)),
       ),
@@ -507,16 +511,16 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.casino_rounded,
-                  color: AppTheme.warningColor, size: 20),
-              const SizedBox(width: 8),
+                  color: AppTheme.warningColor, size: r.s(20)),
+              SizedBox(width: r.s(8)),
               const Text('Sorteio',
                   style: TextStyle(
                       fontWeight: FontWeight.w700,
-                      fontSize: 16,
+                      fontSize: r.fs(16),
                       color: context.textPrimary)),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: r.s(10)),
           if (_luckyDrawUsed && _luckyDrawPrize > 0)
             Text('Você ganhou $_luckyDrawPrize moedas extras!',
                 style: const TextStyle(
@@ -527,18 +531,18 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                 style: TextStyle(color: Colors.grey[500]))
           else ...[
             Text('Tente a sorte por moedas extras!',
-                style: TextStyle(color: Colors.grey[500], fontSize: 13)),
-            const SizedBox(height: 12),
+                style: TextStyle(color: Colors.grey[500], fontSize: r.fs(13))),
+            SizedBox(height: r.s(12)),
             GestureDetector(
               onTap: _doLuckyDraw,
               child: Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                    EdgeInsets.symmetric(horizontal: r.s(24), vertical: r.s(10)),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
                   ),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(r.s(12)),
                   boxShadow: [
                     BoxShadow(
                       color:
@@ -552,13 +556,13 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.casino_rounded,
-                        color: Colors.white, size: 18),
-                    SizedBox(width: 6),
+                        color: Colors.white, size: r.s(18)),
+                    SizedBox(width: r.s(6)),
                     Text('Girar',
                         style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w800,
-                            fontSize: 14)),
+                            fontSize: r.fs(14))),
                   ],
                 ),
               ),
@@ -570,11 +574,12 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
   }
 
   Widget _buildStreakRepairSection() {
+      final r = context.r;
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(r.s(16)),
       decoration: BoxDecoration(
         color: AppTheme.errorColor.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(r.s(16)),
         border:
             Border.all(color: AppTheme.errorColor.withValues(alpha: 0.15)),
       ),
@@ -584,30 +589,30 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.build_circle_rounded,
-                  color: AppTheme.errorColor, size: 20),
-              const SizedBox(width: 8),
+                  color: AppTheme.errorColor, size: r.s(20)),
+              SizedBox(width: r.s(8)),
               const Text('Sequência Perdida',
                   style: TextStyle(
                       fontWeight: FontWeight.w700,
-                      fontSize: 16,
+                      fontSize: r.fs(16),
                       color: context.textPrimary)),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: r.s(8)),
           Text(
             'Você perdeu sua sequência! Gaste moedas para recuperá-la.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey[500], fontSize: 13),
+            style: TextStyle(color: Colors.grey[500], fontSize: r.fs(13)),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: r.s(12)),
           GestureDetector(
             onTap: _repairStreak,
             child: Container(
               padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  EdgeInsets.symmetric(horizontal: r.s(20), vertical: r.s(10)),
               decoration: BoxDecoration(
                 color: AppTheme.errorColor,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(r.s(12)),
                 boxShadow: [
                   BoxShadow(
                     color: AppTheme.errorColor.withValues(alpha: 0.3),
@@ -620,13 +625,13 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.monetization_on_rounded,
-                      color: Colors.white, size: 16),
-                  SizedBox(width: 6),
+                      color: Colors.white, size: r.s(16)),
+                  SizedBox(width: r.s(6)),
                   Text('Reparar (50 moedas)',
                       style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
-                          fontSize: 13)),
+                          fontSize: r.fs(13))),
                 ],
               ),
             ),
@@ -656,11 +661,12 @@ class _DayCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final bool active = isCompleted || isTodayCompleted;
 
     return Container(
-      width: 40,
-      height: 40,
+      width: r.s(40),
+      height: r.s(40),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: active
@@ -691,14 +697,14 @@ class _DayCircle extends StatelessWidget {
       ),
       child: Center(
         child: active
-            ? const Icon(Icons.check_rounded, color: Colors.white, size: 18)
+            ? Icon(Icons.check_rounded, color: Colors.white, size: r.s(18))
             : Text(day,
                 style: TextStyle(
                     color: isToday
                         ? const Color(0xFFFF9800)
                         : Colors.grey[600],
                     fontWeight: FontWeight.w700,
-                    fontSize: 12)),
+                    fontSize: r.fs(12))),
       ),
     );
   }
@@ -718,21 +724,22 @@ class _RewardItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Column(
       children: [
         Container(
-          width: 48,
-          height: 48,
+          width: r.s(48),
+          height: r.s(48),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.12),
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, color: color, size: 24),
+          child: Icon(icon, color: color, size: r.s(24)),
         ),
-        const SizedBox(height: 6),
+        SizedBox(height: r.s(6)),
         Text(label,
             style: TextStyle(
-                color: color, fontWeight: FontWeight.w800, fontSize: 13)),
+                color: color, fontWeight: FontWeight.w800, fontSize: r.fs(13))),
       ],
     );
   }
@@ -750,16 +757,17 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
+      padding: EdgeInsets.symmetric(vertical: r.s(5)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 14, color: Colors.grey[600]),
-          const SizedBox(width: 8),
+          Icon(icon, size: r.s(14), color: Colors.grey[600]),
+          SizedBox(width: r.s(8)),
           Expanded(
             child: Text(text,
-                style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
           ),
         ],
       ),

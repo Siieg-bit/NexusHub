@@ -16,7 +16,8 @@ import '../../../core/widgets/amino_drawer.dart';
 import '../../../core/widgets/amino_bottom_nav.dart';
 import '../../../core/widgets/level_up_dialog.dart';
 import '../../stories/widgets/story_carousel.dart';
-import 'community_list_screen.dart'; // para checkInStatusProvider
+import 'community_list_screen.dart';
+import '../../../core/utils/responsive.dart'; // para checkInStatusProvider
 
 // =============================================================================
 // PROVIDERS
@@ -241,7 +242,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             backgroundColor: AppTheme.primaryColor,
             behavior: SnackBarBehavior.floating,
             shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(10))),
           ),
         );
       }
@@ -256,6 +257,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final communityAsync =
         ref.watch(communityDetailProvider(widget.communityId));
     final membershipAsync =
@@ -346,14 +348,14 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                     backgroundColor: AppTheme.primaryColor,
                     elevation: 4,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
-                    icon: const Icon(Icons.group_add_rounded,
-                        color: Colors.white, size: 20),
+                        borderRadius: BorderRadius.circular(r.s(16))),
+                    icon: Icon(Icons.group_add_rounded,
+                        color: Colors.white, size: r.s(20)),
                     label: const Text('Entrar',
                         style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w700,
-                            fontSize: 14)),
+                            fontSize: r.fs(14))),
                   ),
                 )
               : null,
@@ -385,7 +387,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
           elevation: 0,
           leading: Builder(
             builder: (ctx) => Padding(
-              padding: const EdgeInsets.all(8),
+              padding: EdgeInsets.all(r.s(8)),
               child: GestureDetector(
                 onTap: () => AminoDrawerController.of(ctx)?.toggle(),
                 child: Container(
@@ -393,8 +395,8 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                     color: Colors.black.withValues(alpha: 0.3),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.menu_rounded,
-                      color: Colors.white, size: 20),
+                  child: Icon(Icons.menu_rounded,
+                      color: Colors.white, size: r.s(20)),
                 ),
               ),
             ),
@@ -411,25 +413,25 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                     borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                   ),
                   builder: (ctx) => Padding(
-                    padding: const EdgeInsets.all(24),
+                    padding: EdgeInsets.all(r.s(24)),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const Text('\uD83C\uDF81 Presentes Di\u00e1rios',
                             style: TextStyle(
                                 color: context.textPrimary,
-                                fontSize: 18,
+                                fontSize: r.fs(18),
                                 fontWeight: FontWeight.w800)),
-                        const SizedBox(height: 16),
+                        SizedBox(height: r.s(16)),
                         Text('Fa\u00e7a check-in para ganhar reputa\u00e7\u00e3o e moedas!',
-                            style: TextStyle(color: Colors.grey[400], fontSize: 14)),
-                        const SizedBox(height: 20),
+                            style: TextStyle(color: Colors.grey[400], fontSize: r.fs(14))),
+                        SizedBox(height: r.s(20)),
                         ElevatedButton(
                           onPressed: () => Navigator.pop(ctx),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppTheme.primaryColor,
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20)),
+                                borderRadius: BorderRadius.circular(r.s(20))),
                           ),
                           child: const Text('Entendi'),
                         ),
@@ -440,25 +442,25 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
               },
               child: Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(5)),
                 decoration: BoxDecoration(
                   color: AppTheme.primaryColor,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(r.s(20)),
                 ),
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('🎁 ', style: TextStyle(fontSize: 11)),
+                    Text('🎁 ', style: TextStyle(fontSize: r.fs(11))),
                     Text('Presentes',
                         style: TextStyle(
                             color: Colors.white,
-                            fontSize: 10,
+                            fontSize: r.fs(10),
                             fontWeight: FontWeight.w700)),
                   ],
                 ),
               ),
             ),
-            const SizedBox(width: 6),
+            SizedBox(width: r.s(6)),
             // Gallery
             GestureDetector(
               onTap: () {
@@ -466,32 +468,32 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                 context.push('/community/${widget.communityId}/wiki');
               },
               child: Container(
-                width: 34,
-                height: 34,
+                width: r.s(34),
+                height: r.s(34),
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.3),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.photo_library_outlined,
-                    color: Colors.white, size: 18),
+                child: Icon(Icons.photo_library_outlined,
+                    color: Colors.white, size: r.s(18)),
               ),
             ),
-            const SizedBox(width: 6),
+            SizedBox(width: r.s(6)),
             // Notifications
             GestureDetector(
               onTap: () => context.push('/notifications'),
               child: Container(
-                width: 34,
-                height: 34,
+                width: r.s(34),
+                height: r.s(34),
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.3),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.notifications_outlined,
-                    color: Colors.white, size: 18),
+                child: Icon(Icons.notifications_outlined,
+                    color: Colors.white, size: r.s(18)),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: r.s(12)),
           ],
           flexibleSpace: FlexibleSpaceBar(
             background: Stack(
@@ -540,10 +542,10 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                     children: [
                       // Community icon
                       Container(
-                        width: 64,
-                        height: 64,
+                        width: r.s(64),
+                        height: r.s(64),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(r.s(16)),
                           border: Border.all(
                             color: Colors.white.withValues(alpha: 0.1),
                             width: 2,
@@ -556,7 +558,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                           ],
                         ),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(r.s(14)),
                           child: community.iconUrl != null
                               ? CachedNetworkImage(
                                   imageUrl: community.iconUrl!,
@@ -564,12 +566,12 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                                 )
                               : Container(
                                   color: themeColor,
-                                  child: const Icon(Icons.groups_rounded,
-                                      color: Colors.white70, size: 32),
+                                  child: Icon(Icons.groups_rounded,
+                                      color: Colors.white70, size: r.s(32)),
                                 ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: r.s(12)),
                       // Name + members + leaderboard
                       Expanded(
                         child: Padding(
@@ -579,42 +581,42 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                             children: [
                               Text(
                                 community.name,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 18,
+                                  fontSize: r.fs(18),
                                   fontWeight: FontWeight.w900,
                                   height: 1.1,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(height: 4),
+                              SizedBox(height: r.s(4)),
                               Row(
                                 children: [
                                   Text(
                                     '${formatCount(community.membersCount)} Membros',
                                     style: TextStyle(
                                       color: Colors.grey[300],
-                                      fontSize: 11,
+                                      fontSize: r.fs(11),
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
+                                  SizedBox(width: r.s(8)),
                                   GestureDetector(
                                     onTap: () => context.push(
                                         '/community/${widget.communityId}/leaderboard'),
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 3),
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: r.s(8), vertical: r.s(3)),
                                       decoration: BoxDecoration(
                                         color: AppTheme.primaryColor,
                                         borderRadius:
-                                            BorderRadius.circular(12),
+                                            BorderRadius.circular(r.s(12)),
                                       ),
                                       child: const Text(
                                         'Ranking',
                                         style: TextStyle(
                                           color: Colors.white,
-                                          fontSize: 9,
+                                          fontSize: r.fs(9),
                                           fontWeight: FontWeight.w700,
                                         ),
                                       ),
@@ -645,11 +647,11 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                 }
               },
               child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                padding: const EdgeInsets.all(12),
+                margin: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(6)),
+                padding: EdgeInsets.all(r.s(12)),
                 decoration: BoxDecoration(
                   color: themeColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(r.s(12)),
                   border: Border.all(
                       color: themeColor.withValues(alpha: 0.3)),
                 ),
@@ -657,15 +659,15 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                   children: [
                     if (welcomeBanner['image_url'] != null) ...[
                       ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(r.s(8)),
                         child: CachedNetworkImage(
                           imageUrl: welcomeBanner['image_url'] as String,
-                          width: 40,
-                          height: 40,
+                          width: r.s(40),
+                          height: r.s(40),
                           fit: BoxFit.cover,
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      SizedBox(width: r.s(10)),
                     ],
                     Expanded(
                       child: Text(
@@ -673,13 +675,13 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                             'Bem-vindo à comunidade!',
                         style: TextStyle(
                           color: context.textPrimary,
-                          fontSize: 13,
+                          fontSize: r.fs(13),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                     Icon(Icons.chevron_right_rounded,
-                        color: context.textHint, size: 20),
+                        color: context.textHint, size: r.s(20)),
                   ],
                 ),
               ),
@@ -718,10 +720,10 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                 indicatorColor: Colors.white,
                 indicatorWeight: 2,
                 indicatorSize: TabBarIndicatorSize.label,
-                labelStyle: const TextStyle(
-                    fontWeight: FontWeight.w600, fontSize: 12),
-                unselectedLabelStyle: const TextStyle(
-                    fontWeight: FontWeight.w500, fontSize: 12),
+                labelStyle: TextStyle(
+                    fontWeight: FontWeight.w600, fontSize: r.fs(12)),
+                unselectedLabelStyle: TextStyle(
+                    fontWeight: FontWeight.w500, fontSize: r.fs(12)),
                 dividerColor: Colors.transparent,
                 tabs: _activeTabs.map((t) => Tab(text: t)).toList(),
               ),
@@ -763,6 +765,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
   // ONLINE PAGE — Membros online
   // ================================================================
   Widget _buildOnlinePage(CommunityModel community) {
+      final r = context.r;
     final membersAsync = ref.watch(communityMembersProvider(widget.communityId));
 
     return Column(
@@ -770,7 +773,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
         // App bar
         SafeArea(
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
             child: Row(
               children: [
                 GestureDetector(
@@ -778,11 +781,11 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                   child: Icon(Icons.arrow_back_rounded,
                       color: context.textPrimary),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: r.s(12)),
                 const Text('Membros Online',
                     style: TextStyle(
                         color: context.textPrimary,
-                        fontSize: 16,
+                        fontSize: r.fs(16),
                         fontWeight: FontWeight.w700)),
               ],
             ),
@@ -809,18 +812,18 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.wifi_off_rounded,
-                          size: 48, color: Colors.grey[600]),
-                      const SizedBox(height: 12),
+                          size: r.s(48), color: Colors.grey[600]),
+                      SizedBox(height: r.s(12)),
                       Text('Nenhum membro online',
                           style: TextStyle(
-                              color: Colors.grey[600], fontSize: 13)),
+                              color: Colors.grey[600], fontSize: r.fs(13))),
                     ],
                   ),
                 );
               }
 
               return ListView.builder(
-                padding: const EdgeInsets.all(12),
+                padding: EdgeInsets.all(r.s(12)),
                 itemCount: onlineMembers.length,
                 itemBuilder: (context, index) {
                   final m = onlineMembers[index];
@@ -841,7 +844,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                         }
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        padding: EdgeInsets.symmetric(vertical: r.s(8)),
                         decoration: BoxDecoration(
                           border: Border(
                             bottom: BorderSide(
@@ -873,8 +876,8 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                                   bottom: 0,
                                   right: 0,
                                   child: Container(
-                                    width: 12,
-                                    height: 12,
+                                    width: r.s(12),
+                                    height: r.s(12),
                                     decoration: BoxDecoration(
                                       color: AppTheme.onlineColor,
                                       shape: BoxShape.circle,
@@ -885,7 +888,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                                 ),
                               ],
                             ),
-                            const SizedBox(width: 12),
+                            SizedBox(width: r.s(12)),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -893,7 +896,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                                   Text(nickname,
                                       style: TextStyle(
                                           fontWeight: FontWeight.w600,
-                                          fontSize: 14,
+                                          fontSize: r.fs(14),
                                           color: context.textPrimary)),
                                   const SizedBox(height: 2),
                                   Text(
@@ -901,7 +904,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                                       style: TextStyle(
                                           color:
                                               AppTheme.getLevelColor(level),
-                                          fontSize: 11)),
+                                          fontSize: r.fs(11))),
                                 ],
                               ),
                             ),
@@ -923,11 +926,12 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
   // CHATS PAGE — Lista de chats da comunidade
   // ================================================================
   Widget _buildChatsPage(CommunityModel community) {
+      final r = context.r;
     return Column(
       children: [
         SafeArea(
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
             child: Row(
               children: [
                 GestureDetector(
@@ -935,11 +939,11 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                   child: Icon(Icons.arrow_back_rounded,
                       color: context.textPrimary),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: r.s(12)),
                 const Text('Chats',
                     style: TextStyle(
                         color: context.textPrimary,
-                        fontSize: 16,
+                        fontSize: r.fs(16),
                         fontWeight: FontWeight.w700)),
                 const Spacer(),
                 GestureDetector(
@@ -950,7 +954,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                   child: Text('Ver Todos',
                       style: TextStyle(
                           color: AppTheme.primaryColor,
-                          fontSize: 12,
+                          fontSize: r.fs(12),
                           fontWeight: FontWeight.w600)),
                 ),
               ],
@@ -968,6 +972,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
   // ME PAGE — Perfil do usuário na comunidade
   // ================================================================
   Widget _buildMePage(CommunityModel community) {
+      final r = context.r;
     final userId = SupabaseService.currentUserId;
     if (userId == null) {
       return const Center(
@@ -979,7 +984,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
       children: [
         SafeArea(
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
             child: Row(
               children: [
                 GestureDetector(
@@ -987,11 +992,11 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                   child: Icon(Icons.arrow_back_rounded,
                       color: context.textPrimary),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: r.s(12)),
                 const Text('Meu Perfil',
                     style: TextStyle(
                         color: context.textPrimary,
-                        fontSize: 16,
+                        fontSize: r.fs(16),
                         fontWeight: FontWeight.w700)),
                 const Spacer(),
                 GestureDetector(
@@ -999,7 +1004,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                   child: Text('Perfil Global',
                       style: TextStyle(
                           color: AppTheme.primaryColor,
-                          fontSize: 12,
+                          fontSize: r.fs(12),
                           fontWeight: FontWeight.w600)),
                 ),
               ],
@@ -1012,8 +1017,8 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.person_rounded,
-                    size: 48, color: context.textHint),
-                const SizedBox(height: 12),
+                    size: r.s(48), color: context.textHint),
+                SizedBox(height: r.s(12)),
                 ElevatedButton(
                   onPressed: () => context.push(
                       '/community/${widget.communityId}/profile/$userId'),
@@ -1021,7 +1026,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                     backgroundColor: AppTheme.primaryColor,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(r.s(12))),
                   ),
                   child: const Text('Ver Meu Perfil na Comunidade'),
                 ),
@@ -1104,6 +1109,7 @@ class _CheckInBarState extends ConsumerState<_CheckInBar> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final checkInStatus = ref.watch(checkInStatusProvider);
     final statusMap = checkInStatus.valueOrNull ?? {};
     final myStatus = statusMap[widget.communityId];
@@ -1114,38 +1120,38 @@ class _CheckInBarState extends ConsumerState<_CheckInBar> {
 
     return Container(
       color: context.cardBg,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
       child: Column(
         children: [
           Text(
             'Faça Check In para ganhar +${ReputationRewards.checkIn} rep',
             style: TextStyle(
               color: context.textPrimary,
-              fontSize: 13,
+              fontSize: r.fs(13),
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: r.s(8)),
           // 7-day streak bar
           Row(
             children: List.generate(7, (i) {
               final filled = i < (streak % 7);
               return Expanded(
                 child: Container(
-                  height: 6,
+                  height: r.s(6),
                   margin: EdgeInsets.only(right: i < 6 ? 3 : 0),
                   decoration: BoxDecoration(
                     color: filled
                         ? AppTheme.primaryColor
                         : context.dividerClr,
-                    borderRadius: BorderRadius.circular(3),
+                    borderRadius: BorderRadius.circular(r.s(3)),
                   ),
                   child: filled
                       ? null
                       : Center(
                           child: Container(
-                            width: 8,
-                            height: 8,
+                            width: r.s(8),
+                            height: r.s(8),
                             decoration: BoxDecoration(
                               color: context.dividerClr,
                               shape: BoxShape.circle,
@@ -1158,10 +1164,10 @@ class _CheckInBarState extends ConsumerState<_CheckInBar> {
               );
             }),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: r.s(10)),
           SizedBox(
             width: double.infinity,
-            height: 40,
+            height: r.s(40),
             child: ElevatedButton(
               onPressed: _loading ? null : _doCheckIn,
               style: ElevatedButton.styleFrom(
@@ -1169,14 +1175,14 @@ class _CheckInBarState extends ConsumerState<_CheckInBar> {
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
-                textStyle: const TextStyle(
-                    fontWeight: FontWeight.w700, fontSize: 14),
+                    borderRadius: BorderRadius.circular(r.s(10))),
+                textStyle: TextStyle(
+                    fontWeight: FontWeight.w700, fontSize: r.fs(14)),
               ),
               child: _loading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
+                  ? SizedBox(
+                      width: r.s(20),
+                      height: r.s(20),
                       child: CircularProgressIndicator(
                         color: Colors.white,
                         strokeWidth: 2,
@@ -1231,12 +1237,13 @@ class _LiveChatroomsSectionState extends State<_LiveChatroomsSection> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     if (_chats.isEmpty) return const SizedBox.shrink();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
       child: SizedBox(
-        height: 130,
+        height: r.s(130),
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
           itemCount: _chats.length,
@@ -1247,11 +1254,11 @@ class _LiveChatroomsSectionState extends State<_LiveChatroomsSection> {
             return AminoAnimations.cardPress(
               onTap: () => context.push('/chat/${chat['id']}'),
               child: Container(
-                width: 150,
-                margin: const EdgeInsets.only(right: 8),
+                width: r.s(150),
+                margin: EdgeInsets.only(right: r.s(8)),
                 decoration: BoxDecoration(
                   color: context.cardBg,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(r.s(12)),
                   border: Border.all(
                     color: context.dividerClr.withValues(alpha: 0.2),
                   ),
@@ -1275,7 +1282,7 @@ class _LiveChatroomsSectionState extends State<_LiveChatroomsSection> {
                                 : Container(
                                     color: context.surfaceColor,
                                     child: Icon(Icons.chat_rounded,
-                                        color: context.textHint, size: 24),
+                                        color: context.textHint, size: r.s(24)),
                                   ),
                           ),
                           Container(
@@ -1297,28 +1304,28 @@ class _LiveChatroomsSectionState extends State<_LiveChatroomsSection> {
                             top: 6,
                             left: 6,
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: r.s(6), vertical: 2),
                               decoration: BoxDecoration(
                                 color: Colors.black.withValues(alpha: 0.5),
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(r.s(10)),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Container(
-                                    width: 5,
-                                    height: 5,
+                                    width: r.s(5),
+                                    height: r.s(5),
                                     decoration: const BoxDecoration(
                                       color: AppTheme.primaryColor,
                                       shape: BoxShape.circle,
                                     ),
                                   ),
-                                  const SizedBox(width: 3),
+                                  SizedBox(width: r.s(3)),
                                   const Text('Ao Vivo',
                                       style: TextStyle(
                                           color: Colors.white,
-                                          fontSize: 8,
+                                          fontSize: r.fs(8),
                                           fontWeight: FontWeight.w700)),
                                 ],
                               ),
@@ -1329,22 +1336,22 @@ class _LiveChatroomsSectionState extends State<_LiveChatroomsSection> {
                             bottom: 6,
                             right: 6,
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: r.s(6), vertical: 2),
                               decoration: BoxDecoration(
                                 color: Colors.black.withValues(alpha: 0.5),
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(r.s(10)),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.people_rounded,
-                                      color: Colors.white, size: 10),
-                                  const SizedBox(width: 3),
+                                  Icon(Icons.people_rounded,
+                                      color: Colors.white, size: r.s(10)),
+                                  SizedBox(width: r.s(3)),
                                   Text('$membersCount',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                           color: Colors.white,
-                                          fontSize: 9,
+                                          fontSize: r.fs(9),
                                           fontWeight: FontWeight.w600)),
                                 ],
                               ),
@@ -1355,12 +1362,12 @@ class _LiveChatroomsSectionState extends State<_LiveChatroomsSection> {
                     ),
                     // Info
                     Padding(
-                      padding: const EdgeInsets.all(8),
+                      padding: EdgeInsets.all(r.s(8)),
                       child: Text(
                         chat['title'] as String? ?? 'Chat',
                         style: TextStyle(
                             color: context.textPrimary,
-                            fontSize: 11,
+                            fontSize: r.fs(11),
                             fontWeight: FontWeight.w600),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -1386,40 +1393,41 @@ class _GuidelinesTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(r.s(12)),
       child: Container(
         decoration: BoxDecoration(
           color: context.cardBg,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(r.s(12)),
         ),
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(r.s(16)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Icon(Icons.public_rounded,
-                    color: const Color(0xFFFF9800), size: 18),
-                const SizedBox(width: 8),
+                    color: Color(0xFFFF9800), size: r.s(18)),
+                SizedBox(width: r.s(8)),
                 const Text(
                   'Community Guidelines',
                   style: TextStyle(
                     color: context.textPrimary,
-                    fontSize: 16,
+                    fontSize: r.fs(16),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: r.s(16)),
             Text(
               community.description.isNotEmpty
                   ? community.description
                   : 'Nenhuma diretriz foi definida para esta comunidade ainda.',
               style: TextStyle(
                 color: Colors.grey[300],
-                fontSize: 13,
+                fontSize: r.fs(13),
                 height: 1.6,
               ),
             ),
@@ -1443,6 +1451,7 @@ class _FeedTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final feedAsync = ref.watch(communityFeedProvider(communityId));
 
     return feedAsync.when(
@@ -1460,11 +1469,11 @@ class _FeedTab extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.article_outlined,
-                    size: 48, color: context.textHint),
-                const SizedBox(height: 12),
+                    size: r.s(48), color: context.textHint),
+                SizedBox(height: r.s(12)),
                 Text(
                   'Nenhum post ainda. Seja o primeiro a postar!',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                  style: TextStyle(color: Colors.grey[600], fontSize: r.fs(13)),
                 ),
               ],
             ),
@@ -1474,7 +1483,7 @@ class _FeedTab extends StatelessWidget {
         // Featured mode: compact list style (like Amino)
         if (isFeatured) {
           return ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
             itemCount: posts.length,
             itemBuilder: (context, index) {
               final post = posts[index];
@@ -1483,8 +1492,8 @@ class _FeedTab extends StatelessWidget {
                 child: AminoAnimations.cardPress(
                   onTap: () => context.push('/post/${post.id}'),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10, horizontal: 4),
+                    padding: EdgeInsets.symmetric(
+                        vertical: r.s(10), horizontal: r.s(4)),
                     decoration: BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
@@ -1497,20 +1506,20 @@ class _FeedTab extends StatelessWidget {
                     child: Row(
                       children: [
                         Container(
-                          width: 6,
-                          height: 6,
+                          width: r.s(6),
+                          height: r.s(6),
                           decoration: BoxDecoration(
                             color: AppTheme.primaryColor,
                             shape: BoxShape.circle,
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        SizedBox(width: r.s(10)),
                         Expanded(
                           child: Text(
                             post.title ?? '',
                             style: TextStyle(
                               color: context.textPrimary,
-                              fontSize: 13,
+                              fontSize: r.fs(13),
                               fontWeight: FontWeight.w500,
                             ),
                             maxLines: 2,
@@ -1519,13 +1528,13 @@ class _FeedTab extends StatelessWidget {
                         ),
                         if (post.mediaUrls.isNotEmpty)
                           Padding(
-                            padding: const EdgeInsets.only(left: 8),
+                            padding: EdgeInsets.only(left: r.s(8)),
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(6),
+                              borderRadius: BorderRadius.circular(r.s(6)),
                               child: CachedNetworkImage(
                                 imageUrl: post.mediaUrls.first,
-                                width: 40,
-                                height: 40,
+                                width: r.s(40),
+                                height: r.s(40),
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -1541,12 +1550,12 @@ class _FeedTab extends StatelessWidget {
 
         // Latest mode: full post cards with Story Carousel on top
         return ListView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
           itemCount: posts.length + 1, // +1 para o carrossel de stories
           itemBuilder: (context, index) {
             if (index == 0) {
               return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+                padding: EdgeInsets.only(bottom: r.s(8)),
                 child: StoryCarousel(communityId: communityId),
               );
             }
@@ -1637,6 +1646,7 @@ class _ChatTabState extends State<_ChatTab> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     if (_isLoading) {
       return Center(
         child: CircularProgressIndicator(
@@ -1650,17 +1660,17 @@ class _ChatTabState extends State<_ChatTab> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.chat_bubble_outline_rounded,
-                size: 48, color: context.textHint),
-            const SizedBox(height: 12),
+                size: r.s(48), color: context.textHint),
+            SizedBox(height: r.s(12)),
             Text('Nenhum chat nesta comunidade ainda',
-                style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                style: TextStyle(color: Colors.grey[600], fontSize: r.fs(13))),
           ],
         ),
       );
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(r.s(12)),
       itemCount: _chats.length,
       itemBuilder: (context, index) {
         final chat = _chats[index];
@@ -1669,7 +1679,7 @@ class _ChatTabState extends State<_ChatTab> {
           child: AminoAnimations.cardPress(
             onTap: () => context.push('/chat/${chat['id']}'),
             child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 10),
+              padding: EdgeInsets.symmetric(vertical: r.s(10)),
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
@@ -1681,8 +1691,8 @@ class _ChatTabState extends State<_ChatTab> {
               child: Row(
                 children: [
                   Container(
-                    width: 44,
-                    height: 44,
+                    width: r.s(44),
+                    height: r.s(44),
                     decoration: BoxDecoration(
                       color: context.surfaceColor,
                       shape: BoxShape.circle,
@@ -1695,9 +1705,9 @@ class _ChatTabState extends State<_ChatTab> {
                             ),
                           )
                         : Icon(Icons.tag_rounded,
-                            color: context.textHint, size: 18),
+                            color: context.textHint, size: r.s(18)),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: r.s(12)),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1707,7 +1717,7 @@ class _ChatTabState extends State<_ChatTab> {
                           style: TextStyle(
                               color: context.textPrimary,
                               fontWeight: FontWeight.w600,
-                              fontSize: 13),
+                              fontSize: r.fs(13)),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -1715,13 +1725,13 @@ class _ChatTabState extends State<_ChatTab> {
                         Text(
                           '${chat['members_count'] ?? 0} membros',
                           style: TextStyle(
-                              color: Colors.grey[600], fontSize: 10),
+                              color: Colors.grey[600], fontSize: r.fs(10)),
                         ),
                       ],
                     ),
                   ),
                   Icon(Icons.chevron_right_rounded,
-                      color: Colors.grey[600], size: 16),
+                      color: Colors.grey[600], size: r.s(16)),
                 ],
               ),
             ),

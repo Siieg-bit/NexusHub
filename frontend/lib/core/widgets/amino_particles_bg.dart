@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import '../utils/responsive.dart';
 
 /// Fundo decorativo do Amino original com dois efeitos sobrepostos:
 /// 1. Padrão de rede/radar: grade pontilhada + linhas concêntricas
@@ -88,6 +89,7 @@ class _AminoParticlesBgState extends State<AminoParticlesBg>
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Stack(
       children: [
         widget.child,

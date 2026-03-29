@@ -7,6 +7,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/amino_animations.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
+import '../../../core/utils/responsive.dart';
 
 // =============================================================================
 // PROVIDER: Carrega todos os membros da comunidade
@@ -93,7 +94,7 @@ class CommunityMembersScreen extends ConsumerWidget {
           'Membros',
           style: TextStyle(
             color: context.textPrimary,
-            fontSize: 18,
+            fontSize: r.fs(18),
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -141,16 +142,16 @@ class CommunityMembersScreen extends ConsumerWidget {
           // regular já vem ordenado por joined_at desc do provider
 
           return ListView(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(r.s(12)),
             children: [
               // Total de membros
               Padding(
-                padding: const EdgeInsets.only(bottom: 16),
+                padding: EdgeInsets.only(bottom: r.s(16)),
                 child: Text(
                   '${members.length} membro${members.length > 1 ? 's' : ''}',
                   style: TextStyle(
                     color: Colors.grey[500],
-                    fontSize: 13,
+                    fontSize: r.fs(13),
                     fontWeight: FontWeight.w500,
                   ),
                   textAlign: TextAlign.center,
@@ -170,7 +171,7 @@ class CommunityMembersScreen extends ConsumerWidget {
                     roleLabel: _roleLabel,
                     roleColor: _roleColor,
                     communityId: communityId)),
-                const SizedBox(height: 16),
+                SizedBox(height: r.s(16)),
               ],
 
               // Curadores
@@ -186,7 +187,7 @@ class CommunityMembersScreen extends ConsumerWidget {
                     roleLabel: _roleLabel,
                     roleColor: _roleColor,
                     communityId: communityId)),
-                const SizedBox(height: 16),
+                SizedBox(height: r.s(16)),
               ],
 
               // Moderadores
@@ -202,7 +203,7 @@ class CommunityMembersScreen extends ConsumerWidget {
                     roleLabel: _roleLabel,
                     roleColor: _roleColor,
                     communityId: communityId)),
-                const SizedBox(height: 16),
+                SizedBox(height: r.s(16)),
               ],
 
               // Membros comuns (mais recente ao mais antigo)
@@ -241,24 +242,25 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8, top: 4),
+      padding: EdgeInsets.only(left: r.s(4), bottom: r.s(8), top: r.s(4)),
       child: Row(
         children: [
           Container(
-            width: 3,
-            height: 14,
+            width: r.s(3),
+            height: r.s(14),
             decoration: BoxDecoration(
               color: color,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: r.s(8)),
           Text(
             '$title ($count)',
             style: TextStyle(
               color: color,
-              fontSize: 11,
+              fontSize: r.fs(11),
               fontWeight: FontWeight.w700,
               letterSpacing: 1,
             ),
@@ -289,6 +291,7 @@ class _MemberTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final profile = member['profiles'] as Map<String, dynamic>? ?? {};
     final userId = profile['id'] as String? ?? member['user_id'] as String?;
     final nickname = profile['nickname'] as String? ?? 'Usuário';
@@ -307,7 +310,7 @@ class _MemberTile extends StatelessWidget {
           }
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: EdgeInsets.symmetric(vertical: r.s(8)),
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
@@ -322,10 +325,10 @@ class _MemberTile extends StatelessWidget {
               CosmeticAvatar(
                 userId: userId,
                 avatarUrl: avatarUrl,
-                size: 44,
+                size: r.s(44),
                 showOnline: isOnline,
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: r.s(12)),
               // Info
               Expanded(
                 child: Column(
@@ -337,25 +340,25 @@ class _MemberTile extends StatelessWidget {
                           child: Text(nickname,
                               style: TextStyle(
                                   fontWeight: FontWeight.w600,
-                                  fontSize: 14,
+                                  fontSize: r.fs(14),
                                   color: context.textPrimary),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis),
                         ),
                         if (role != 'member') ...[
-                          const SizedBox(width: 6),
+                          SizedBox(width: r.s(6)),
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: r.s(6), vertical: 2),
                             decoration: BoxDecoration(
                               color: roleColor(role).withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(6),
+                              borderRadius: BorderRadius.circular(r.s(6)),
                             ),
                             child: Text(
                               roleLabel(role),
                               style: TextStyle(
                                 color: roleColor(role),
-                                fontSize: 9,
+                                fontSize: r.fs(9),
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -366,12 +369,12 @@ class _MemberTile extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text('Lv.$level ${levelTitle(level)}',
                         style: TextStyle(
-                            color: AppTheme.getLevelColor(level), fontSize: 11)),
+                            color: AppTheme.getLevelColor(level), fontSize: r.fs(11))),
                   ],
                 ),
               ),
               Icon(Icons.chevron_right_rounded,
-                  color: Colors.grey[600], size: 18),
+                  color: Colors.grey[600], size: r.s(18)),
             ],
           ),
         ),

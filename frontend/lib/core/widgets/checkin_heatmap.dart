@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
+import '../utils/responsive.dart';
 
 /// Heatmap de Check-in estilo GitHub contributions / Amino Apps.
 ///
@@ -59,6 +60,7 @@ class CheckinHeatmap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
@@ -108,10 +110,10 @@ class CheckinHeatmap extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(r.s(16)),
       decoration: BoxDecoration(
         color: context.cardBg,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(r.s(16)),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
@@ -120,15 +122,15 @@ class CheckinHeatmap extends StatelessWidget {
           // ── Header ──
           Row(
             children: [
-              const Icon(Icons.calendar_month_rounded,
-                  color: AppTheme.accentColor, size: 20),
-              const SizedBox(width: 8),
+              Icon(Icons.calendar_month_rounded,
+                  color: AppTheme.accentColor, size: r.s(20)),
+              SizedBox(width: r.s(8)),
               const Text(
                 'Histórico de Check-in',
                 style: TextStyle(
                   color: context.textPrimary,
                   fontWeight: FontWeight.w700,
-                  fontSize: 15,
+                  fontSize: r.fs(15),
                 ),
               ),
               const Spacer(),
@@ -136,12 +138,12 @@ class CheckinHeatmap extends StatelessWidget {
                 '$totalCheckins dias',
                 style: TextStyle(
                   color: Colors.grey[500],
-                  fontSize: 12,
+                  fontSize: r.fs(12),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: r.s(16)),
 
           // ── Heatmap Grid ──
           SizedBox(
@@ -157,16 +159,16 @@ class CheckinHeatmap extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: ['D', 'S', 'T', 'Q', 'Q', 'S', 'S']
                         .map((d) => SizedBox(
-                              height: 14,
+                              height: r.s(14),
                               child: Text(d,
                                   style: TextStyle(
                                       color: Colors.grey[600],
-                                      fontSize: 9,
+                                      fontSize: r.fs(9),
                                       fontWeight: FontWeight.w500)),
                             ))
                         .toList(),
                   ),
-                  const SizedBox(width: 4),
+                  SizedBox(width: r.s(4)),
                   // Grid de quadrados
                   ...weeks.map((week) => Padding(
                         padding: const EdgeInsets.only(right: 2),
@@ -187,15 +189,15 @@ class CheckinHeatmap extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 12),
+          SizedBox(height: r.s(12)),
 
           // ── Legenda ──
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text('Menos',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 10)),
-              const SizedBox(width: 4),
+                  style: TextStyle(color: Colors.grey[600], fontSize: r.fs(10))),
+              SizedBox(width: r.s(4)),
               _HeatmapCell(color: _emptyColor, isToday: false),
               const SizedBox(width: 2),
               _HeatmapCell(color: _level1, isToday: false),
@@ -205,13 +207,13 @@ class CheckinHeatmap extends StatelessWidget {
               _HeatmapCell(color: _level3, isToday: false),
               const SizedBox(width: 2),
               _HeatmapCell(color: _level4, isToday: false),
-              const SizedBox(width: 4),
+              SizedBox(width: r.s(4)),
               Text('Mais',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 10)),
+                  style: TextStyle(color: Colors.grey[600], fontSize: r.fs(10))),
             ],
           ),
 
-          const SizedBox(height: 16),
+          SizedBox(height: r.s(16)),
 
           // ── Stats Row ──
           Row(
@@ -224,7 +226,7 @@ class CheckinHeatmap extends StatelessWidget {
                   color: AppTheme.warningColor,
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: r.s(8)),
               Expanded(
                 child: _StatCard(
                   icon: Icons.emoji_events_rounded,
@@ -233,7 +235,7 @@ class CheckinHeatmap extends StatelessWidget {
                   color: const Color(0xFFFFD700),
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: r.s(8)),
               Expanded(
                 child: _StatCard(
                   icon: Icons.calendar_today_rounded,
@@ -274,9 +276,10 @@ class _HeatmapCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Container(
-      width: 12,
-      height: 12,
+      width: r.s(12),
+      height: r.s(12),
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(2),
@@ -304,23 +307,24 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+      padding: EdgeInsets.symmetric(vertical: r.s(10), horizontal: r.s(8)),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(r.s(10)),
         border: Border.all(color: color.withValues(alpha: 0.15)),
       ),
       child: Column(
         children: [
-          Icon(icon, color: color, size: 18),
-          const SizedBox(height: 4),
+          Icon(icon, color: color, size: r.s(18)),
+          SizedBox(height: r.s(4)),
           Text(
             value,
             style: TextStyle(
               color: color,
               fontWeight: FontWeight.w800,
-              fontSize: 13,
+              fontSize: r.fs(13),
             ),
           ),
           const SizedBox(height: 2),
@@ -328,7 +332,7 @@ class _StatCard extends StatelessWidget {
             label,
             style: TextStyle(
               color: Colors.grey[600],
-              fontSize: 9,
+              fontSize: r.fs(9),
               fontWeight: FontWeight.w500,
             ),
             textAlign: TextAlign.center,

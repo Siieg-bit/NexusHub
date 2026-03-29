@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Tela para criação de nova comunidade.
 class CreateCommunityScreen extends ConsumerStatefulWidget {
@@ -99,6 +100,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
@@ -116,13 +118,13 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
           GestureDetector(
             onTap: _isLoading ? null : _createCommunity,
             child: Container(
-              margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              margin: EdgeInsets.only(right: r.s(16), top: r.s(8), bottom: r.s(8)),
+              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [AppTheme.primaryColor, AppTheme.accentColor],
                 ),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(r.s(20)),
                 boxShadow: [
                   BoxShadow(
                     color: AppTheme.primaryColor.withValues(alpha: 0.3),
@@ -132,9 +134,9 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                 ],
               ),
               child: _isLoading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
+                  ? SizedBox(
+                      width: r.s(20),
+                      height: r.s(20),
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -152,7 +154,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(r.s(20)),
         child: Form(
           key: _formKey,
           child: Column(
@@ -160,7 +162,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
             children: [
               // Preview do banner com cor selecionada
               Container(
-                height: 120,
+                height: r.s(120),
                 width: double.infinity,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -169,17 +171,17 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                       _parseColor(_selectedColor).withValues(alpha: 0.5),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(r.s(16)),
                   border: Border.all(
                     color: Colors.white.withValues(alpha: 0.05),
                   ),
                 ),
                 child: const Center(
                   child: Icon(Icons.camera_alt_rounded,
-                      size: 40, color: Colors.white54),
+                      size: r.s(40), color: Colors.white54),
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: r.s(24)),
 
               // Nome
               _buildTextField(
@@ -195,7 +197,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: r.s(16)),
 
               // Tagline
               _buildTextField(
@@ -205,7 +207,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                 icon: Icons.short_text_rounded,
                 maxLength: 100,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: r.s(16)),
 
               // Descrição
               _buildTextField(
@@ -216,23 +218,23 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                 maxLines: 4,
                 maxLength: 1000,
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: r.s(24)),
 
               // Cor do tema
               const Text(
                 'Cor do Tema',
                 style: TextStyle(
                   color: context.textPrimary,
-                  fontSize: 16,
+                  fontSize: r.fs(16),
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: r.s(12)),
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(r.s(16)),
                 decoration: BoxDecoration(
                   color: context.surfaceColor,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(r.s(16)),
                   border: Border.all(
                     color: Colors.white.withValues(alpha: 0.05),
                   ),
@@ -245,13 +247,13 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                     return GestureDetector(
                       onTap: () => setState(() => _selectedColor = color),
                       child: Container(
-                        width: 44,
-                        height: 44,
+                        width: r.s(44),
+                        height: r.s(44),
                         decoration: BoxDecoration(
                           color: _parseColor(color),
                           shape: BoxShape.circle,
                           border: isSelected
-                              ? Border.all(color: Colors.white, width: 3)
+                              ? Border.all(color: Colors.white, width: r.s(3))
                               : Border.all(
                                   color: Colors.white.withValues(alpha: 0.1),
                                   width: 1,
@@ -267,30 +269,30 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                               : null,
                         ),
                         child: isSelected
-                            ? const Icon(Icons.check_rounded,
-                                color: Colors.white, size: 20)
+                            ? Icon(Icons.check_rounded,
+                                color: Colors.white, size: r.s(20))
                             : null,
                       ),
                     );
                   }).toList(),
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: r.s(24)),
 
               // Idioma
               const Text(
                 'Idioma Principal',
                 style: TextStyle(
                   color: context.textPrimary,
-                  fontSize: 16,
+                  fontSize: r.fs(16),
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: r.s(12)),
               Container(
                 decoration: BoxDecoration(
                   color: context.surfaceColor,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(r.s(16)),
                   border: Border.all(
                     color: Colors.white.withValues(alpha: 0.05),
                   ),
@@ -303,11 +305,11 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                     prefixIcon: const Icon(Icons.language_rounded,
                         color: AppTheme.accentColor),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(r.s(16)),
                       borderSide: BorderSide.none,
                     ),
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 16),
+                    contentPadding: EdgeInsets.symmetric(
+                        horizontal: r.s(16), vertical: r.s(16)),
                   ),
                   items: const [
                     DropdownMenuItem(
@@ -324,7 +326,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                   },
                 ),
               ),
-              const SizedBox(height: 40),
+              SizedBox(height: r.s(40)),
             ],
           ),
         ),
@@ -333,6 +335,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
   }
 
   Widget _buildTextField({
+      final r = context.r;
     required TextEditingController controller,
     required String label,
     required String hint,
@@ -357,23 +360,23 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
         filled: true,
         fillColor: context.surfaceColor,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(r.s(16)),
           borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(r.s(16)),
           borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(r.s(16)),
           borderSide: const BorderSide(color: AppTheme.primaryColor),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(r.s(16)),
           borderSide: const BorderSide(color: AppTheme.errorColor),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(r.s(16)),
           borderSide: const BorderSide(color: AppTheme.errorColor),
         ),
       ),

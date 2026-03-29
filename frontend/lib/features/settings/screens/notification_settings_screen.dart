@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Configurações de Notificações — Controles granulares de push e in-app.
 class NotificationSettingsScreen extends StatefulWidget {
@@ -108,6 +109,7 @@ class _NotificationSettingsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
@@ -125,13 +127,13 @@ class _NotificationSettingsScreenState
           GestureDetector(
             onTap: _saveSettings,
             child: Container(
-              margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              margin: EdgeInsets.only(right: r.s(16), top: r.s(8), bottom: r.s(8)),
+              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [AppTheme.primaryColor, AppTheme.accentColor],
                 ),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(r.s(20)),
                 boxShadow: [
                   BoxShadow(
                     color: AppTheme.primaryColor.withValues(alpha: 0.3),
@@ -146,7 +148,7 @@ class _NotificationSettingsScreenState
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
-                  fontSize: 14,
+                  fontSize: r.fs(14),
                 ),
               ),
             ),
@@ -160,14 +162,14 @@ class _NotificationSettingsScreenState
               ),
             )
           : ListView(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(r.s(16)),
               children: [
                 // Master toggle
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(r.s(16)),
                   decoration: BoxDecoration(
                     color: context.surfaceColor,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(r.s(16)),
                     border: Border.all(
                       color: Colors.white.withValues(alpha: 0.05),
                     ),
@@ -183,18 +185,18 @@ class _NotificationSettingsScreenState
                   child: Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(10),
+                        padding: EdgeInsets.all(r.s(10)),
                         decoration: BoxDecoration(
                           color: AppTheme.primaryColor.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(r.s(12)),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.notifications_rounded,
                           color: AppTheme.primaryColor,
-                          size: 24,
+                          size: r.s(24),
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      SizedBox(width: r.s(16)),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -203,16 +205,16 @@ class _NotificationSettingsScreenState
                               'Notificações Push',
                               style: TextStyle(
                                 fontWeight: FontWeight.w800,
-                                fontSize: 16,
+                                fontSize: r.fs(16),
                                 color: context.textPrimary,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            SizedBox(height: r.s(4)),
                             Text(
                               'Ativar/desativar todas',
                               style: TextStyle(
                                 color: Colors.grey[500],
-                                fontSize: 13,
+                                fontSize: r.fs(13),
                               ),
                             ),
                           ],
@@ -229,7 +231,7 @@ class _NotificationSettingsScreenState
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: r.s(24)),
 
                 // ============================================================
                 // CATEGORIAS
@@ -268,7 +270,7 @@ class _NotificationSettingsScreenState
                     color: const Color(0xFF00BCD4),
                     onChanged: (v) => setState(() => _pushMentions = v),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: r.s(24)),
                   const _SectionTitle(title: 'Chat'),
                   _NotifToggle(
                     icon: Icons.chat_rounded,
@@ -286,7 +288,7 @@ class _NotificationSettingsScreenState
                     color: AppTheme.successColor,
                     onChanged: (v) => setState(() => _pushCommunityInvites = v),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: r.s(24)),
                   const _SectionTitle(title: 'Gamificação'),
                   _NotifToggle(
                     icon: Icons.emoji_events_rounded,
@@ -304,7 +306,7 @@ class _NotificationSettingsScreenState
                     color: const Color(0xFF9C27B0),
                     onChanged: (v) => setState(() => _pushLevelUp = v),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: r.s(24)),
                   const _SectionTitle(title: 'Moderação'),
                   _NotifToggle(
                     icon: Icons.gavel_rounded,
@@ -316,7 +318,7 @@ class _NotificationSettingsScreenState
                   ),
                 ],
 
-                const SizedBox(height: 24),
+                SizedBox(height: r.s(24)),
 
                 // ============================================================
                 // IN-APP
@@ -338,7 +340,7 @@ class _NotificationSettingsScreenState
                   color: Colors.grey[500]!,
                   onChanged: (v) => setState(() => _inAppVibration = v),
                 ),
-                const SizedBox(height: 32),
+                SizedBox(height: r.s(32)),
               ],
             ),
     );
@@ -351,13 +353,14 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12, left: 4),
+      padding: EdgeInsets.only(bottom: r.s(12), left: r.s(4)),
       child: Text(
         title,
         style: TextStyle(
           fontWeight: FontWeight.w800,
-          fontSize: 16,
+          fontSize: r.fs(16),
           color: context.textPrimary,
           letterSpacing: 0.5,
         ),
@@ -385,12 +388,13 @@ class _NotifToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      margin: EdgeInsets.only(bottom: r.s(12)),
+      padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
       decoration: BoxDecoration(
         color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(r.s(16)),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.05),
         ),
@@ -398,15 +402,15 @@ class _NotifToggle extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: r.s(40),
+            height: r.s(40),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(r.s(12)),
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon, color: color, size: r.s(20)),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: r.s(16)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -415,16 +419,16 @@ class _NotifToggle extends StatelessWidget {
                   title,
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
-                    fontSize: 15,
+                    fontSize: r.fs(15),
                     color: context.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: r.s(4)),
                 Text(
                   subtitle,
                   style: TextStyle(
                     color: Colors.grey[500],
-                    fontSize: 13,
+                    fontSize: r.fs(13),
                   ),
                 ),
               ],

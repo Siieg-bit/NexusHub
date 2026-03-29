@@ -5,6 +5,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../widgets/block_editor.dart';
 import '../widgets/crosspost_picker.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Editor rico de criação de posts — estilo Amino Apps.
 /// Suporta os 9 tipos exatos do Amino:
@@ -354,6 +355,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       // ── AppBar estilo Amino (escuro, minimalista) ──
@@ -369,28 +371,28 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           style: TextStyle(
             color: context.textPrimary,
             fontWeight: FontWeight.w700,
-            fontSize: 16,
+            fontSize: r.fs(16),
           ),
         ),
         centerTitle: true,
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 12),
+            padding: EdgeInsets.only(right: r.s(12)),
             child: GestureDetector(
               onTap: _isSubmitting ? null : _submitPost,
               child: Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    EdgeInsets.symmetric(horizontal: r.s(20), vertical: r.s(8)),
                 decoration: BoxDecoration(
                   color: _isSubmitting
                       ? AppTheme.primaryColor.withValues(alpha: 0.5)
                       : AppTheme.primaryColor,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(r.s(8)),
                 ),
                 child: _isSubmitting
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
+                    ? SizedBox(
+                        width: r.s(16),
+                        height: r.s(16),
                         child: CircularProgressIndicator(
                             strokeWidth: 2, color: Colors.white),
                       )
@@ -399,7 +401,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
-                          fontSize: 14,
+                          fontSize: r.fs(14),
                         ),
                       ),
               ),
@@ -411,7 +413,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         children: [
           // ── Type selector (horizontal scroll) ──
           Container(
-            height: 48,
+            height: r.s(48),
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
@@ -420,7 +422,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             ),
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: EdgeInsets.symmetric(horizontal: r.s(12)),
               itemCount: _postTypes.length,
               itemBuilder: (context, index) {
                 final type = _postTypes[index];
@@ -428,15 +430,15 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 return GestureDetector(
                   onTap: () => setState(() => _selectedType = type.value),
                   child: Container(
-                    margin: const EdgeInsets.only(right: 6),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 8),
+                    margin: EdgeInsets.only(right: r.s(6)),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: r.s(12), vertical: r.s(8)),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: isSelected
                           ? AppTheme.primaryColor.withValues(alpha: 0.15)
                           : Colors.transparent,
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(r.s(20)),
                       border: isSelected
                           ? Border.all(
                               color:
@@ -447,18 +449,18 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(type.icon,
-                            size: 14,
+                            size: r.s(14),
                             color: isSelected
                                 ? AppTheme.primaryColor
                                 : Colors.grey[600]),
-                        const SizedBox(width: 6),
+                        SizedBox(width: r.s(6)),
                         Text(
                           type.label,
                           style: TextStyle(
                             color: isSelected
                                 ? AppTheme.primaryColor
                                 : Colors.grey[600],
-                            fontSize: 12,
+                            fontSize: r.fs(12),
                             fontWeight: isSelected
                                 ? FontWeight.w700
                                 : FontWeight.w500,
@@ -475,7 +477,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           // ── Body ──
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(r.s(16)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -484,10 +486,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     onTap: _pickCoverImage,
                     child: Container(
                       width: double.infinity,
-                      height: 120,
+                      height: r.s(120),
                       decoration: BoxDecoration(
                         color: context.cardBg,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(r.s(12)),
                         border: Border.all(
                             color: Colors.white.withValues(alpha: 0.05)),
                         image: _coverImageUrl != null
@@ -502,24 +504,24 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(Icons.add_photo_alternate_rounded,
-                                    color: Colors.grey[600], size: 28),
-                                const SizedBox(height: 4),
+                                    color: Colors.grey[600], size: r.s(28)),
+                                SizedBox(height: r.s(4)),
                                 Text('Adicionar Capa',
                                     style: TextStyle(
                                         color: Colors.grey[600],
-                                        fontSize: 11)),
+                                        fontSize: r.fs(11))),
                               ],
                             )
                           : null,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: r.s(16)),
 
                   // Title (borderless, large)
                   TextField(
                     controller: _titleController,
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: r.fs(20),
                       fontWeight: FontWeight.w700,
                       color: context.textPrimary,
                     ),
@@ -537,16 +539,16 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   // Toggle Blog Editor
                   if (_selectedType == 'normal')
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
+                      padding: EdgeInsets.only(bottom: r.s(8)),
                       child: GestureDetector(
                         onTap: () => setState(() => _useBlogEditor = !_useBlogEditor),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(6)),
                           decoration: BoxDecoration(
                             color: _useBlogEditor
                                 ? AppTheme.accentColor.withValues(alpha: 0.15)
                                 : context.cardBg,
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(r.s(20)),
                             border: _useBlogEditor
                                 ? Border.all(color: AppTheme.accentColor.withValues(alpha: 0.4))
                                 : null,
@@ -556,14 +558,14 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                             children: [
                               Icon(
                                 Icons.dashboard_customize_rounded,
-                                size: 14,
+                                size: r.s(14),
                                 color: _useBlogEditor ? AppTheme.accentColor : Colors.grey[600],
                               ),
-                              const SizedBox(width: 6),
+                              SizedBox(width: r.s(6)),
                               Text(
                                 'Editor de Blocos',
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: r.fs(12),
                                   fontWeight: FontWeight.w600,
                                   color: _useBlogEditor ? AppTheme.accentColor : Colors.grey[600],
                                 ),
@@ -587,7 +589,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     TextField(
                       controller: _contentController,
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: r.fs(15),
                         height: 1.6,
                         color: Colors.grey[300],
                       ),
@@ -617,7 +619,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     ),
 
                   // Advanced options
-                  const SizedBox(height: 16),
+                  SizedBox(height: r.s(16)),
                   Theme(
                     data: Theme.of(context)
                         .copyWith(dividerColor: Colors.transparent),
@@ -625,7 +627,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                       tilePadding: EdgeInsets.zero,
                       title: Text('Opções Avançadas',
                           style: TextStyle(
-                              fontSize: 13,
+                              fontSize: r.fs(13),
                               color: Colors.grey[500],
                               fontWeight: FontWeight.w500)),
                       iconColor: Colors.grey[600],
@@ -636,7 +638,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                           hint: 'Custom background URL',
                           icon: Icons.wallpaper_rounded,
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: r.s(16)),
                       ],
                     ),
                   ),
@@ -656,6 +658,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   // AMINO INPUT FIELD (estilo escuro, sem borda visível)
   // ========================================================================
   Widget _buildAminoInput({
+      final r = context.r;
     required TextEditingController controller,
     required String hint,
     IconData? icon,
@@ -664,21 +667,21 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     return Container(
       decoration: BoxDecoration(
         color: context.cardBg,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(r.s(10)),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,
-        style: TextStyle(fontSize: 13, color: context.textPrimary),
+        style: TextStyle(fontSize: r.fs(13), color: context.textPrimary),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: TextStyle(color: Colors.grey[700], fontSize: 13),
+          hintStyle: TextStyle(color: Colors.grey[700], fontSize: r.fs(13)),
           prefixIcon:
-              icon != null ? Icon(icon, size: 18, color: Colors.grey[600]) : null,
+              icon != null ? Icon(icon, size: r.s(18), color: Colors.grey[600]) : null,
           border: InputBorder.none,
           contentPadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(12)),
         ),
       ),
     );
@@ -688,25 +691,26 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   // POLL EDITOR
   // ========================================================================
   Widget _buildPollEditor() {
+      final r = context.r;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 16),
+        SizedBox(height: r.s(16)),
         Container(
           width: double.infinity,
           height: 1,
           color: Colors.white.withValues(alpha: 0.05),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: r.s(12)),
         Text('Poll Options',
             style: TextStyle(
                 color: Colors.grey[400],
-                fontSize: 13,
+                fontSize: r.fs(13),
                 fontWeight: FontWeight.w600)),
-        const SizedBox(height: 8),
+        SizedBox(height: r.s(8)),
         ...List.generate(_pollOptions.length, (i) {
           return Padding(
-            padding: const EdgeInsets.only(bottom: 8),
+            padding: EdgeInsets.only(bottom: r.s(8)),
             child: Row(
               children: [
                 Expanded(
@@ -718,8 +722,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 ),
                 if (_pollOptions.length > 2)
                   IconButton(
-                    icon: const Icon(Icons.remove_circle_rounded,
-                        color: AppTheme.errorColor, size: 18),
+                    icon: Icon(Icons.remove_circle_rounded,
+                        color: AppTheme.errorColor, size: r.s(18)),
                     onPressed: () {
                       setState(() {
                         _pollOptions[i].dispose();
@@ -735,17 +739,17 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           onTap: () =>
               setState(() => _pollOptions.add(TextEditingController())),
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 10),
+            padding: EdgeInsets.symmetric(vertical: r.s(10)),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.add_rounded,
-                    size: 16, color: AppTheme.primaryColor),
-                const SizedBox(width: 6),
+                    size: r.s(16), color: AppTheme.primaryColor),
+                SizedBox(width: r.s(6)),
                 Text('Adicionar Opção',
                     style: TextStyle(
                         color: AppTheme.primaryColor,
-                        fontSize: 13,
+                        fontSize: r.fs(13),
                         fontWeight: FontWeight.w600)),
               ],
             ),
@@ -759,30 +763,31 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   // QUIZ EDITOR
   // ========================================================================
   Widget _buildQuizEditor() {
+      final r = context.r;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 16),
+        SizedBox(height: r.s(16)),
         Container(
           width: double.infinity,
           height: 1,
           color: Colors.white.withValues(alpha: 0.05),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: r.s(12)),
         Text('Quiz Questions',
             style: TextStyle(
                 color: Colors.grey[400],
-                fontSize: 13,
+                fontSize: r.fs(13),
                 fontWeight: FontWeight.w600)),
-        const SizedBox(height: 8),
+        SizedBox(height: r.s(8)),
         ...List.generate(_quizQuestions.length, (qi) {
           final q = _quizQuestions[qi];
           return Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(12),
+            margin: EdgeInsets.only(bottom: r.s(12)),
+            padding: EdgeInsets.all(r.s(12)),
             decoration: BoxDecoration(
               color: context.cardBg,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(r.s(12)),
               border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
             ),
             child: Column(
@@ -793,7 +798,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     Text('Question ${qi + 1}',
                         style: TextStyle(
                             fontWeight: FontWeight.w600,
-                            fontSize: 13,
+                            fontSize: r.fs(13),
                             color: context.textPrimary)),
                     const Spacer(),
                     if (_quizQuestions.length > 1)
@@ -804,27 +809,27 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                             _quizQuestions.removeAt(qi);
                           });
                         },
-                        child: const Icon(Icons.delete_rounded,
-                            color: AppTheme.errorColor, size: 18),
+                        child: Icon(Icons.delete_rounded,
+                            color: AppTheme.errorColor, size: r.s(18)),
                       ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: r.s(8)),
                 TextField(
                   controller: q.questionController,
                   style: TextStyle(
-                      fontSize: 13, color: context.textPrimary),
+                      fontSize: r.fs(13), color: context.textPrimary),
                   decoration: InputDecoration(
                     hintText: 'Type the question...',
-                    hintStyle: TextStyle(color: Colors.grey[700], fontSize: 13),
+                    hintStyle: TextStyle(color: Colors.grey[700], fontSize: r.fs(13)),
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: r.s(8)),
                 ...List.generate(q.options.length, (oi) {
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
+                    padding: EdgeInsets.only(bottom: r.s(4)),
                     child: Row(
                       children: [
                         Radio<int>(
@@ -842,11 +847,11 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                           child: TextField(
                             controller: q.options[oi],
                             style: TextStyle(
-                                fontSize: 12, color: context.textPrimary),
+                                fontSize: r.fs(12), color: context.textPrimary),
                             decoration: InputDecoration(
                               hintText: 'Option ${oi + 1}',
                               hintStyle: TextStyle(
-                                  color: Colors.grey[700], fontSize: 12),
+                                  color: Colors.grey[700], fontSize: r.fs(12)),
                               border: InputBorder.none,
                               isDense: true,
                               contentPadding: EdgeInsets.zero,
@@ -861,17 +866,17 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   onTap: () => setState(
                       () => q.options.add(TextEditingController())),
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 4),
+                    padding: EdgeInsets.only(top: r.s(4)),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.add_rounded,
-                            size: 14, color: AppTheme.primaryColor),
-                        const SizedBox(width: 4),
+                            size: r.s(14), color: AppTheme.primaryColor),
+                        SizedBox(width: r.s(4)),
                         Text('Option',
                             style: TextStyle(
                                 color: AppTheme.primaryColor,
-                                fontSize: 11,
+                                fontSize: r.fs(11),
                                 fontWeight: FontWeight.w600)),
                       ],
                     ),
@@ -884,17 +889,17 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         GestureDetector(
           onTap: () => setState(() => _quizQuestions.add(_QuizQuestion())),
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 10),
+            padding: EdgeInsets.symmetric(vertical: r.s(10)),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.add_rounded,
-                    size: 16, color: AppTheme.primaryColor),
-                const SizedBox(width: 6),
+                    size: r.s(16), color: AppTheme.primaryColor),
+                SizedBox(width: r.s(6)),
                 Text('Adicionar Pergunta',
                     style: TextStyle(
                         color: AppTheme.primaryColor,
-                        fontSize: 13,
+                        fontSize: r.fs(13),
                         fontWeight: FontWeight.w600)),
               ],
             ),
@@ -908,22 +913,23 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   // LINK EDITOR
   // ========================================================================
   Widget _buildLinkEditor() {
+      final r = context.r;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 16),
+        SizedBox(height: r.s(16)),
         Container(
           width: double.infinity,
           height: 1,
           color: Colors.white.withValues(alpha: 0.05),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: r.s(12)),
         Text('External Link',
             style: TextStyle(
                 color: Colors.grey[400],
-                fontSize: 13,
+                fontSize: r.fs(13),
                 fontWeight: FontWeight.w600)),
-        const SizedBox(height: 8),
+        SizedBox(height: r.s(8)),
         _buildAminoInput(
           controller: _linkController,
           hint: 'https://...',
@@ -938,22 +944,23 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   // IMAGE EDITOR
   // ========================================================================
   Widget _buildImageEditor() {
+      final r = context.r;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 16),
+        SizedBox(height: r.s(16)),
         Container(
           width: double.infinity,
           height: 1,
           color: Colors.white.withValues(alpha: 0.05),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: r.s(12)),
         Text('Images',
             style: TextStyle(
                 color: Colors.grey[400],
-                fontSize: 13,
+                fontSize: r.fs(13),
                 fontWeight: FontWeight.w600)),
-        const SizedBox(height: 8),
+        SizedBox(height: r.s(8)),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -961,10 +968,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             ..._mediaUrls.map((url) => Stack(
                   children: [
                     Container(
-                      width: 80,
-                      height: 80,
+                      width: r.s(80),
+                      height: r.s(80),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(r.s(10)),
                         image: DecorationImage(
                           image: NetworkImage(url),
                           fit: BoxFit.cover,
@@ -977,13 +984,13 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                       child: GestureDetector(
                         onTap: () => setState(() => _mediaUrls.remove(url)),
                         child: Container(
-                          padding: const EdgeInsets.all(3),
+                          padding: EdgeInsets.all(r.s(3)),
                           decoration: BoxDecoration(
                             color: Colors.black.withValues(alpha: 0.6),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.close_rounded,
-                              color: Colors.white, size: 12),
+                          child: Icon(Icons.close_rounded,
+                              color: Colors.white, size: r.s(12)),
                         ),
                       ),
                     ),
@@ -992,16 +999,16 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             GestureDetector(
               onTap: _pickImage,
               child: Container(
-                width: 80,
-                height: 80,
+                width: r.s(80),
+                height: r.s(80),
                 decoration: BoxDecoration(
                   color: context.cardBg,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(r.s(10)),
                   border:
                       Border.all(color: Colors.white.withValues(alpha: 0.05)),
                 ),
                 child: Icon(Icons.add_photo_alternate_rounded,
-                    color: Colors.grey[600], size: 24),
+                    color: Colors.grey[600], size: r.s(24)),
               ),
             ),
           ],
@@ -1014,8 +1021,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   // BOTTOM TOOLBAR — Estilo Amino (flutuante, escuro)
   // ========================================================================
   Widget _buildToolbar() {
+      final r = context.r;
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      padding: EdgeInsets.symmetric(vertical: r.s(8), horizontal: r.s(16)),
       decoration: BoxDecoration(
         color: context.cardBg,
         border: Border(
@@ -1089,13 +1097,14 @@ class _ToolbarButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Tooltip(
       message: tooltip,
       child: GestureDetector(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Icon(icon, color: Colors.grey[500], size: 20),
+          padding: EdgeInsets.all(r.s(10)),
+          child: Icon(icon, color: Colors.grey[500], size: r.s(20)),
         ),
       ),
     );

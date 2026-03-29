@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../config/app_theme.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Widget para exibir embeds de SoundCloud e Bandcamp nos posts.
 ///
@@ -84,15 +85,16 @@ class MusicEmbedWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return GestureDetector(
       onTap: _openUrl,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
+        margin: EdgeInsets.symmetric(vertical: r.s(8)),
         decoration: BoxDecoration(
           color: isDark ? context.cardBg : Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(r.s(14)),
           border: Border.all(
             color: _platformColor.withValues(alpha: 0.3),
             width: 1,
@@ -119,7 +121,7 @@ class MusicEmbedWidget extends StatelessWidget {
                     Image.network(
                       artworkUrl!,
                       width: double.infinity,
-                      height: 160,
+                      height: r.s(160),
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) =>
                           _ArtworkPlaceholder(color: _platformColor),
@@ -147,8 +149,8 @@ class MusicEmbedWidget extends StatelessWidget {
                   Positioned.fill(
                     child: Center(
                       child: Container(
-                        width: 56,
-                        height: 56,
+                        width: r.s(56),
+                        height: r.s(56),
                         decoration: BoxDecoration(
                           color: _platformColor,
                           shape: BoxShape.circle,
@@ -160,8 +162,8 @@ class MusicEmbedWidget extends StatelessWidget {
                             ),
                           ],
                         ),
-                        child: const Icon(Icons.play_arrow_rounded,
-                            color: Colors.white, size: 32),
+                        child: Icon(Icons.play_arrow_rounded,
+                            color: Colors.white, size: r.s(32)),
                       ),
                     ),
                   ),
@@ -171,22 +173,22 @@ class MusicEmbedWidget extends StatelessWidget {
                     top: 8,
                     right: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: r.s(10), vertical: r.s(4)),
                       decoration: BoxDecoration(
                         color: _platformColor,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(r.s(12)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(_platformIcon, color: Colors.white, size: 14),
-                          const SizedBox(width: 4),
+                          Icon(_platformIcon, color: Colors.white, size: r.s(14)),
+                          SizedBox(width: r.s(4)),
                           Text(
                             _platformName,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
-                              fontSize: 11,
+                              fontSize: r.fs(11),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -200,12 +202,12 @@ class MusicEmbedWidget extends StatelessWidget {
 
             // Info
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(r.s(12)),
               child: Row(
                 children: [
                   // Waveform visual (decorativo)
                   _MiniWaveform(color: _platformColor),
-                  const SizedBox(width: 12),
+                  SizedBox(width: r.s(12)),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -214,7 +216,7 @@ class MusicEmbedWidget extends StatelessWidget {
                           title ?? 'Abrir no $_platformName',
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
-                            fontSize: 14,
+                            fontSize: r.fs(14),
                             color: isDark
                                 ? context.textPrimary
                                 : context.textPrimaryLight,
@@ -227,7 +229,7 @@ class MusicEmbedWidget extends StatelessWidget {
                           Text(
                             artist!,
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: r.fs(12),
                               color: isDark
                                   ? context.textSecondary
                                   : context.textSecondaryLight,
@@ -240,7 +242,7 @@ class MusicEmbedWidget extends StatelessWidget {
                     ),
                   ),
                   Icon(Icons.open_in_new_rounded,
-                      color: _platformColor, size: 18),
+                      color: _platformColor, size: r.s(18)),
                 ],
               ),
             ),
@@ -258,9 +260,10 @@ class _ArtworkPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Container(
       width: double.infinity,
-      height: 160,
+      height: r.s(160),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -273,7 +276,7 @@ class _ArtworkPlaceholder extends StatelessWidget {
       ),
       child: Center(
         child: Icon(Icons.music_note_rounded,
-            color: color.withValues(alpha: 0.5), size: 64),
+            color: color.withValues(alpha: 0.5), size: r.s(64)),
       ),
     );
   }
@@ -286,18 +289,19 @@ class _MiniWaveform extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return SizedBox(
-      width: 32,
-      height: 24,
+      width: r.s(32),
+      height: r.s(24),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          _WaveBar(height: 8, color: color),
-          _WaveBar(height: 18, color: color),
-          _WaveBar(height: 12, color: color),
-          _WaveBar(height: 22, color: color),
-          _WaveBar(height: 6, color: color),
+          _WaveBar(height: r.s(8), color: color),
+          _WaveBar(height: r.s(18), color: color),
+          _WaveBar(height: r.s(12), color: color),
+          _WaveBar(height: r.s(22), color: color),
+          _WaveBar(height: r.s(6), color: color),
         ],
       ),
     );
@@ -311,8 +315,9 @@ class _WaveBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Container(
-      width: 3,
+      width: r.s(3),
       height: height,
       decoration: BoxDecoration(
         color: color,

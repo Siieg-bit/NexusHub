@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/app_theme.dart';
+import '../utils/responsive.dart';
 
 /// Top Bar do Amino original — réplica pixel-perfect.
 ///
@@ -46,28 +47,29 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return SafeArea(
       bottom: false,
       child: Container(
-        height: 50,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        height: r.s(50),
+        padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
         color: context.scaffoldBg,
         child: Row(
           children: [
             // ── Avatar circular 30px ──
             _buildAvatar(context),
 
-            const SizedBox(width: 8),
+            SizedBox(width: r.s(8)),
 
             // ── Barra de Busca (flex) ──
             _buildSearchBar(context),
 
-            const SizedBox(width: 8),
+            SizedBox(width: r.s(8)),
 
             // ── Pílula unificada: Moedas + Add ──
             _buildCoinsPill(context),
 
-            const SizedBox(width: 6),
+            SizedBox(width: r.s(6)),
 
             // ── Sino de Notificações ──
             _buildNotificationBell(context),
@@ -79,11 +81,12 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   /// Avatar — círculo 30px, fundo cinza-azulado, sem borda colorida.
   Widget _buildAvatar(BuildContext context) {
+      final r = context.r;
     return GestureDetector(
       onTap: onAvatarTap ?? () => context.push('/profile'),
       child: Container(
-        width: 30,
-        height: 30,
+        width: r.s(30),
+        height: r.s(30),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: context.cardBg,
@@ -109,12 +112,13 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   Widget _avatarPlaceholder() {
+      final r = context.r;
     return Container(
       color: context.cardBg,
       child: Icon(
         Icons.person,
         color: Colors.white.withValues(alpha: 0.30),
-        size: 16,
+        size: r.s(16),
       ),
     );
   }
@@ -122,40 +126,41 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
   /// Barra de busca — pill arredondada, fundo translúcido branco 8%.
   /// Esquerda: lupa + "Search". Direita: "EN" + seta dropdown.
   Widget _buildSearchBar(BuildContext context) {
+      final r = context.r;
     return Expanded(
       child: GestureDetector(
         onTap: onSearchTap ?? () => context.push('/search'),
         child: Container(
-          height: 32,
+          height: r.s(32),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(r.s(16)),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 10),
+          padding: EdgeInsets.symmetric(horizontal: r.s(10)),
           child: Row(
             children: [
               Icon(
                 Icons.search_rounded,
                 color: Colors.white.withValues(alpha: 0.40),
-                size: 17,
+                size: r.s(17),
               ),
-              const SizedBox(width: 6),
+              SizedBox(width: r.s(6)),
               Expanded(
                 child: Text(
                   'Search',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.35),
-                    fontSize: 13,
+                    fontSize: r.fs(13),
                     fontWeight: FontWeight.w400,
                   ),
                 ),
               ),
               // Dropdown de idioma
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                padding: EdgeInsets.symmetric(horizontal: r.s(4), vertical: 2),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.06),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(r.s(8)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -164,14 +169,14 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
                       'EN',
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.65),
-                        fontSize: 10,
+                        fontSize: r.fs(10),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     Icon(
                       Icons.arrow_drop_down_rounded,
                       color: Colors.white.withValues(alpha: 0.45),
-                      size: 14,
+                      size: r.s(14),
                     ),
                   ],
                 ),
@@ -191,10 +196,11 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
   ///   - Sem gap entre as metades
   ///   - Altura: 26px
   Widget _buildCoinsPill(BuildContext context) {
+      final r = context.r;
     return ClipRRect(
-      borderRadius: BorderRadius.circular(13),
+      borderRadius: BorderRadius.circular(r.s(13)),
       child: SizedBox(
-        height: 26,
+        height: r.s(26),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -202,16 +208,16 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
             GestureDetector(
               onTap: onCoinsTap ?? () => context.push('/wallet'),
               child: Container(
-                height: 26,
-                padding: const EdgeInsets.only(left: 5, right: 5),
+                height: r.s(26),
+                padding: EdgeInsets.only(left: r.s(5), right: r.s(5)),
                 color: const Color(0xFF4FC3F7),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // Moeda dourada
                     Container(
-                      width: 15,
-                      height: 15,
+                      width: r.s(15),
+                      height: r.s(15),
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
                         gradient: LinearGradient(
@@ -232,19 +238,19 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
                           '\$',
                           style: TextStyle(
                             color: Color(0xFF795548),
-                            fontSize: 8,
+                            fontSize: r.fs(8),
                             fontWeight: FontWeight.w900,
                             height: 1.0,
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 3),
+                    SizedBox(width: r.s(3)),
                     Text(
                       coins.toString(),
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 11,
+                        fontSize: r.fs(11),
                         fontWeight: FontWeight.w700,
                         height: 1.0,
                       ),
@@ -257,14 +263,14 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
             GestureDetector(
               onTap: onAddTap ?? () => context.push('/store'),
               child: Container(
-                height: 26,
-                width: 26,
+                height: r.s(26),
+                width: r.s(26),
                 color: const Color(0xFF1565C0),
                 child: const Center(
                   child: Icon(
                     Icons.add_rounded,
                     color: Colors.white,
-                    size: 16,
+                    size: r.s(16),
                   ),
                 ),
               ),
@@ -277,18 +283,19 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   /// Sino de notificações — branco, badge vermelho dot (sem número).
   Widget _buildNotificationBell(BuildContext context) {
+      final r = context.r;
     return GestureDetector(
       onTap: onNotificationTap ?? () => context.push('/notifications'),
       child: SizedBox(
-        width: 26,
-        height: 26,
+        width: r.s(26),
+        height: r.s(26),
         child: Stack(
           children: [
             Center(
               child: Icon(
                 Icons.notifications_none_rounded,
                 color: Colors.white.withValues(alpha: 0.85),
-                size: 22,
+                size: r.s(22),
               ),
             ),
             if (notificationCount > 0)
@@ -296,8 +303,8 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
                 right: 3,
                 top: 2,
                 child: Container(
-                  width: 7,
-                  height: 7,
+                  width: r.s(7),
+                  height: r.s(7),
                   decoration: BoxDecoration(
                     color: AppTheme.aminoRed,
                     shape: BoxShape.circle,

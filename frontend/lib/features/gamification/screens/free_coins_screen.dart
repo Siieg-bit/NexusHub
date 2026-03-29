@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/services/ad_service.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Tela "Ganhar Moedas Grátis" — Estilo Amino original.
 /// Header azul celeste com saldo, corpo claro com cards de atividades.
@@ -98,6 +99,7 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       body: Column(
@@ -119,13 +121,13 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
               child: Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 4, vertical: 4),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: r.s(4), vertical: r.s(4)),
                     child: Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back_ios_rounded,
-                              color: Colors.white, size: 20),
+                          icon: Icon(Icons.arrow_back_ios_rounded,
+                              color: Colors.white, size: r.s(20)),
                           onPressed: () => Navigator.pop(context),
                         ),
                         const Expanded(
@@ -135,21 +137,21 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w700,
-                              fontSize: 17,
+                              fontSize: r.fs(17),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 48),
+                        SizedBox(width: r.s(48)),
                       ],
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: EdgeInsets.symmetric(vertical: r.s(16)),
                     child: Column(
                       children: [
                         Container(
-                          width: 48,
-                          height: 48,
+                          width: r.s(48),
+                          height: r.s(48),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             gradient: const LinearGradient(
@@ -171,25 +173,25 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
                               'A',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 20,
+                                fontSize: r.fs(20),
                                 fontWeight: FontWeight.w900,
                               ),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: r.s(8)),
                         Text(
                           _formatCoins(_balance),
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white,
-                            fontSize: 28,
+                            fontSize: r.fs(28),
                             fontWeight: FontWeight.w800,
                           ),
                         ),
                         const Text(
                           'Amino Coins',
                           style:
-                              TextStyle(color: Colors.white70, fontSize: 13),
+                              TextStyle(color: Colors.white70, fontSize: r.fs(13)),
                         ),
                       ],
                     ),
@@ -204,11 +206,11 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
           // =============================================================
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(r.s(16)),
               children: [
                 // Assistir Anúncios
                 _SectionTitle(title: 'Assistir Anúncios'),
-                const SizedBox(height: 8),
+                SizedBox(height: r.s(8)),
                 _EarningCard(
                   icon: Icons.play_circle_filled_rounded,
                   iconColor: const Color(0xFFE53935),
@@ -220,11 +222,11 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
                       _adsWatchedToday < _maxAdsPerDay ? _watchAd : null,
                   isLoading: _isLoadingAd,
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: r.s(20)),
 
                 // Atividades Diárias
                 _SectionTitle(title: 'Atividades Diárias'),
-                const SizedBox(height: 8),
+                SizedBox(height: r.s(8)),
                 const _EarningCard(
                   icon: Icons.calendar_today_rounded,
                   iconColor: Color(0xFF2196F3),
@@ -253,11 +255,11 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
                   subtitle: 'Acerte quizzes da comunidade',
                   reward: '+2',
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: r.s(20)),
 
                 // Conquistas
                 _SectionTitle(title: 'Conquistas'),
-                const SizedBox(height: 8),
+                SizedBox(height: r.s(8)),
                 const _EarningCard(
                   icon: Icons.emoji_events_rounded,
                   iconColor: Color(0xFFFF9800),
@@ -279,7 +281,7 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
                   subtitle: 'Ganhe moedas ao subir de nível',
                   reward: '+20',
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: r.s(24)),
               ],
             ),
           ),
@@ -295,11 +297,12 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Text(
       title,
-      style: const TextStyle(
+      style: TextStyle(
         fontWeight: FontWeight.w700,
-        fontSize: 16,
+        fontSize: r.fs(16),
         color: Color(0xFF333333),
       ),
     );
@@ -327,12 +330,13 @@ class _EarningCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(14),
+      margin: EdgeInsets.only(bottom: r.s(8)),
+      padding: EdgeInsets.all(r.s(14)),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(r.s(12)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -344,31 +348,31 @@ class _EarningCard extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: r.s(44),
+            height: r.s(44),
             decoration: BoxDecoration(
               color: iconColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(r.s(10)),
             ),
-            child: Icon(icon, color: iconColor, size: 22),
+            child: Icon(icon, color: iconColor, size: r.s(22)),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: r.s(14)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    fontSize: 14,
+                    fontSize: r.fs(14),
                     color: Color(0xFF333333),
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                  style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
                 ),
               ],
             ),
@@ -378,30 +382,30 @@ class _EarningCard extends StatelessWidget {
               ? GestureDetector(
                   onTap: isLoading ? null : onTap,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 6),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: r.s(12), vertical: r.s(6)),
                     decoration: BoxDecoration(
                       color: const Color(0xFF4CAF50),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(r.s(16)),
                     ),
                     child: isLoading
-                        ? const SizedBox(
-                            width: 14,
-                            height: 14,
+                        ? SizedBox(
+                            width: r.s(14),
+                            height: r.s(14),
                             child: CircularProgressIndicator(
                                 strokeWidth: 2, color: Colors.white),
                           )
                         : Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.monetization_on_rounded,
-                                  color: Colors.white, size: 14),
-                              const SizedBox(width: 4),
+                              Icon(Icons.monetization_on_rounded,
+                                  color: Colors.white, size: r.s(14)),
+                              SizedBox(width: r.s(4)),
                               Text(
                                 reward,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 12,
+                                  fontSize: r.fs(12),
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -410,23 +414,23 @@ class _EarningCard extends StatelessWidget {
                   ),
                 )
               : Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 4),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: r.s(10), vertical: r.s(4)),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFF9800).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(r.s(12)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Icon(Icons.monetization_on_rounded,
-                          color: Color(0xFFFF9800), size: 14),
-                      const SizedBox(width: 4),
+                          color: Color(0xFFFF9800), size: r.s(14)),
+                      SizedBox(width: r.s(4)),
                       Text(
                         reward,
                         style: const TextStyle(
                           color: Color(0xFFFF9800),
-                          fontSize: 12,
+                          fontSize: r.fs(12),
                           fontWeight: FontWeight.w700,
                         ),
                       ),

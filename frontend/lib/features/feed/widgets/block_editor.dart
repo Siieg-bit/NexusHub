@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Rich Text Block Editor — Editor de Blocos estilo Amino.
 ///
@@ -240,6 +241,7 @@ class _BlockEditorState extends State<BlockEditor> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -280,7 +282,7 @@ class _BlockEditorState extends State<BlockEditor> {
         ),
 
         // ── Barra de adicionar bloco ──
-        const SizedBox(height: 8),
+        SizedBox(height: r.s(8)),
         _AddBlockBar(
           onAddText: () => _addBlock(BlockType.text),
           onAddImage: () => _insertImageBlock(),
@@ -320,16 +322,17 @@ class _BlockWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return GestureDetector(
       onTap: onFocus,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 4),
+        margin: EdgeInsets.only(bottom: r.s(4)),
         decoration: BoxDecoration(
           border: isFocused
               ? Border(
                   left: BorderSide(
                     color: AppTheme.accentColor.withValues(alpha: 0.5),
-                    width: 3,
+                    width: r.s(3),
                   ),
                 )
               : null,
@@ -343,7 +346,7 @@ class _BlockWidget extends StatelessWidget {
             // Ações do bloco (visíveis quando focado)
             if (isFocused)
               Padding(
-                padding: const EdgeInsets.only(top: 4),
+                padding: EdgeInsets.only(top: r.s(4)),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -367,14 +370,15 @@ class _BlockWidget extends StatelessWidget {
   }
 
   Widget _buildContent(BuildContext context) {
+      final r = context.r;
     switch (block.type) {
       case BlockType.text:
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
+          padding: EdgeInsets.symmetric(horizontal: r.s(4)),
           child: TextField(
             controller: block.controller,
             style: TextStyle(
-              fontSize: 15,
+              fontSize: r.fs(15),
               height: 1.7,
               color: Colors.grey[300],
             ),
@@ -382,7 +386,7 @@ class _BlockWidget extends StatelessWidget {
               hintText: 'Escreva aqui...',
               hintStyle: TextStyle(color: Colors.grey[700]),
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(vertical: 8),
+              contentPadding: EdgeInsets.symmetric(vertical: r.s(8)),
             ),
             maxLines: null,
             onChanged: onTextChanged,
@@ -391,11 +395,11 @@ class _BlockWidget extends StatelessWidget {
 
       case BlockType.heading:
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
+          padding: EdgeInsets.symmetric(horizontal: r.s(4)),
           child: TextField(
             controller: block.controller,
             style: TextStyle(
-              fontSize: 20,
+              fontSize: r.fs(20),
               fontWeight: FontWeight.w800,
               color: context.textPrimary,
               height: 1.4,
@@ -405,7 +409,7 @@ class _BlockWidget extends StatelessWidget {
               hintStyle: TextStyle(
                   color: Colors.grey[700], fontWeight: FontWeight.w700),
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(vertical: 8),
+              contentPadding: EdgeInsets.symmetric(vertical: r.s(8)),
             ),
             maxLines: null,
             onChanged: onTextChanged,
@@ -415,10 +419,10 @@ class _BlockWidget extends StatelessWidget {
       case BlockType.image:
         if (isUploading) {
           return Container(
-            height: 180,
+            height: r.s(180),
             decoration: BoxDecoration(
               color: context.cardBg,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(r.s(12)),
             ),
             child: const Center(
               child: Column(
@@ -426,9 +430,9 @@ class _BlockWidget extends StatelessWidget {
                 children: [
                   CircularProgressIndicator(
                       color: AppTheme.accentColor, strokeWidth: 2),
-                  SizedBox(height: 8),
+                  SizedBox(height: r.s(8)),
                   Text('Enviando imagem...',
-                      style: TextStyle(color: Colors.grey, fontSize: 12)),
+                      style: TextStyle(color: Colors.grey, fontSize: r.fs(12))),
                 ],
               ),
             ),
@@ -439,10 +443,10 @@ class _BlockWidget extends StatelessWidget {
           return GestureDetector(
             onTap: onPickImage,
             child: Container(
-              height: 120,
+              height: r.s(120),
               decoration: BoxDecoration(
                 color: context.cardBg,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(r.s(12)),
                 border: Border.all(
                   color: AppTheme.accentColor.withValues(alpha: 0.2),
                   style: BorderStyle.solid,
@@ -454,11 +458,11 @@ class _BlockWidget extends StatelessWidget {
                   children: [
                     Icon(Icons.add_photo_alternate_rounded,
                         color: AppTheme.accentColor.withValues(alpha: 0.6),
-                        size: 32),
-                    const SizedBox(height: 4),
+                        size: r.s(32)),
+                    SizedBox(height: r.s(4)),
                     Text('Toque para adicionar imagem',
                         style: TextStyle(
-                            color: Colors.grey[600], fontSize: 12)),
+                            color: Colors.grey[600], fontSize: r.fs(12))),
                   ],
                 ),
               ),
@@ -469,29 +473,29 @@ class _BlockWidget extends StatelessWidget {
         return Column(
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(r.s(12)),
               child: Image.network(
                 block.imageUrl!,
                 width: double.infinity,
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Container(
-                  height: 120,
+                  height: r.s(120),
                   color: context.cardBg,
                   child: const Center(
                     child: Icon(Icons.broken_image_rounded,
-                        color: Colors.grey, size: 32),
+                        color: Colors.grey, size: r.s(32)),
                   ),
                 ),
               ),
             ),
             if (block.caption != null && block.caption!.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.only(top: 4),
+                padding: EdgeInsets.only(top: r.s(4)),
                 child: Text(
                   block.caption!,
                   style: TextStyle(
                       color: Colors.grey[500],
-                      fontSize: 11,
+                      fontSize: r.fs(11),
                       fontStyle: FontStyle.italic),
                   textAlign: TextAlign.center,
                 ),
@@ -501,7 +505,7 @@ class _BlockWidget extends StatelessWidget {
 
       case BlockType.divider:
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: EdgeInsets.symmetric(vertical: r.s(12)),
           child: Container(
             height: 1,
             decoration: BoxDecoration(
@@ -538,11 +542,12 @@ class _AddBlockBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+      padding: EdgeInsets.symmetric(vertical: r.s(8), horizontal: r.s(4)),
       decoration: BoxDecoration(
         color: context.cardBg.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(r.s(12)),
         border: Border.all(color: Colors.white.withValues(alpha: 0.03)),
       ),
       child: Row(
@@ -593,26 +598,27 @@ class _AddBlockButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return GestureDetector(
       onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: r.s(40),
+            height: r.s(40),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(r.s(10)),
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon, color: color, size: r.s(20)),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: r.s(4)),
           Text(
             label,
             style: TextStyle(
                 color: Colors.grey[500],
-                fontSize: 10,
+                fontSize: r.fs(10),
                 fontWeight: FontWeight.w600),
           ),
         ],
@@ -634,11 +640,12 @@ class _MiniAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return GestureDetector(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.all(4),
-        child: Icon(icon, color: color, size: 16),
+        padding: EdgeInsets.all(r.s(4)),
+        child: Icon(icon, color: color, size: r.s(16)),
       ),
     );
   }
@@ -655,6 +662,7 @@ class BlockContentRenderer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     if (blocks.isEmpty) return const SizedBox.shrink();
 
     return Column(
@@ -669,11 +677,11 @@ class BlockContentRenderer extends StatelessWidget {
         switch (type) {
           case 'heading':
             return Padding(
-              padding: const EdgeInsets.only(bottom: 8, top: 12),
+              padding: EdgeInsets.only(bottom: r.s(8), top: r.s(12)),
               child: Text(
                 text,
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: r.fs(20),
                   fontWeight: FontWeight.w800,
                   color: context.textPrimary,
                   height: 1.4,
@@ -683,34 +691,34 @@ class BlockContentRenderer extends StatelessWidget {
 
           case 'image':
             return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: EdgeInsets.symmetric(vertical: r.s(8)),
               child: Column(
                 children: [
                   if (imageUrl != null && imageUrl.isNotEmpty)
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(r.s(12)),
                       child: Image.network(
                         imageUrl,
                         width: double.infinity,
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Container(
-                          height: 120,
+                          height: r.s(120),
                           color: context.cardBg,
                           child: const Center(
                             child: Icon(Icons.broken_image_rounded,
-                                color: Colors.grey, size: 32),
+                                color: Colors.grey, size: r.s(32)),
                           ),
                         ),
                       ),
                     ),
                   if (caption != null && caption.isNotEmpty)
                     Padding(
-                      padding: const EdgeInsets.only(top: 4),
+                      padding: EdgeInsets.only(top: r.s(4)),
                       child: Text(
                         caption,
                         style: TextStyle(
                           color: Colors.grey[500],
-                          fontSize: 11,
+                          fontSize: r.fs(11),
                           fontStyle: FontStyle.italic,
                         ),
                         textAlign: TextAlign.center,
@@ -722,7 +730,7 @@ class BlockContentRenderer extends StatelessWidget {
 
           case 'divider':
             return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
+              padding: EdgeInsets.symmetric(vertical: r.s(12)),
               child: Container(
                 height: 1,
                 decoration: BoxDecoration(
@@ -739,11 +747,11 @@ class BlockContentRenderer extends StatelessWidget {
 
           default: // text
             return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding: EdgeInsets.only(bottom: r.s(8)),
               child: Text(
                 text,
                 style: TextStyle(
-                  fontSize: 15,
+                  fontSize: r.fs(15),
                   height: 1.7,
                   color: Colors.grey[300],
                 ),

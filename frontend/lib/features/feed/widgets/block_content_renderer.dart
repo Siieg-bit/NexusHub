@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
+import '../../../core/utils/responsive.dart';
 
 /// BlockContentRenderer — Renderizador de blocos de conteúdo rico.
 ///
@@ -38,6 +39,7 @@ class BlockContentRenderer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     if (blocks.isEmpty) return const SizedBox.shrink();
 
     return Column(
@@ -45,7 +47,7 @@ class BlockContentRenderer extends StatelessWidget {
       children: [
         for (int i = 0; i < blocks.length; i++) ...[
           _buildBlock(blocks[i], context),
-          if (i < blocks.length - 1) const SizedBox(height: 12),
+          if (i < blocks.length - 1) SizedBox(height: r.s(12)),
         ],
       ],
     );
@@ -74,6 +76,7 @@ class BlockContentRenderer extends StatelessWidget {
 
   /// Bloco de texto — parágrafo com formatação básica
   Widget _buildTextBlock(Map<String, dynamic> block) {
+      final r = context.r;
     final content = block['content'] as String? ?? '';
     final isBold = block['bold'] == true;
     final isItalic = block['italic'] == true;
@@ -86,7 +89,7 @@ class BlockContentRenderer extends StatelessWidget {
         textAlign: alignment,
         style: TextStyle(
           color: context.textPrimary,
-          fontSize: 15,
+          fontSize: r.fs(15),
           height: 1.65,
           fontWeight: isBold ? FontWeight.w700 : FontWeight.w400,
           fontStyle: isItalic ? FontStyle.italic : FontStyle.normal,
@@ -118,6 +121,7 @@ class BlockContentRenderer extends StatelessWidget {
 
   /// Bloco de imagem — imagem inline com legenda opcional
   Widget _buildImageBlock(Map<String, dynamic> block) {
+      final r = context.r;
     final url = block['url'] as String? ?? '';
     final caption = block['caption'] as String?;
 
@@ -128,13 +132,13 @@ class BlockContentRenderer extends StatelessWidget {
       children: [
         // Imagem com cantos arredondados
         ClipRRect(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(r.s(12)),
           child: CachedNetworkImage(
             imageUrl: url,
             width: double.infinity,
             fit: BoxFit.cover,
             placeholder: (_, __) => Container(
-              height: 200,
+              height: r.s(200),
               color: context.cardBg,
               child: const Center(
                 child: CircularProgressIndicator(
@@ -144,11 +148,11 @@ class BlockContentRenderer extends StatelessWidget {
               ),
             ),
             errorWidget: (_, __, ___) => Container(
-              height: 120,
+              height: r.s(120),
               color: context.cardBg,
               child: const Center(
                 child: Icon(Icons.broken_image_rounded,
-                    color: context.textHint, size: 32),
+                    color: context.textHint, size: r.s(32)),
               ),
             ),
           ),
@@ -159,13 +163,13 @@ class BlockContentRenderer extends StatelessWidget {
             padding: EdgeInsets.only(
               left: horizontalPadding,
               right: horizontalPadding,
-              top: 6,
+              top: r.s(6),
             ),
             child: Text(
               caption,
               style: TextStyle(
                 color: context.textSecondary,
-                fontSize: 12,
+                fontSize: r.fs(12),
                 fontStyle: FontStyle.italic,
                 height: 1.4,
               ),
@@ -177,35 +181,36 @@ class BlockContentRenderer extends StatelessWidget {
 
   /// Bloco de divisor — separador visual
   Widget _buildDividerBlock() {
+      final r = context.r;
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: horizontalPadding * 2,
-        vertical: 4,
+        vertical: r.s(4),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 4,
-            height: 4,
+            width: r.s(4),
+            height: r.s(4),
             decoration: BoxDecoration(
               color: context.textHint.withValues(alpha: 0.4),
               shape: BoxShape.circle,
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: r.s(8)),
           Container(
-            width: 4,
-            height: 4,
+            width: r.s(4),
+            height: r.s(4),
             decoration: BoxDecoration(
               color: context.textHint.withValues(alpha: 0.4),
               shape: BoxShape.circle,
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: r.s(8)),
           Container(
-            width: 4,
-            height: 4,
+            width: r.s(4),
+            height: r.s(4),
             decoration: BoxDecoration(
               color: context.textHint.withValues(alpha: 0.4),
               shape: BoxShape.circle,
@@ -218,17 +223,18 @@ class BlockContentRenderer extends StatelessWidget {
 
   /// Bloco de citação — quote com barra lateral
   Widget _buildQuoteBlock(Map<String, dynamic> block) {
+      final r = context.r;
     final content = block['content'] as String? ?? '';
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
       child: Container(
-        padding: const EdgeInsets.only(left: 14, top: 10, bottom: 10, right: 10),
+        padding: EdgeInsets.only(left: r.s(14), top: r.s(10), bottom: r.s(10), right: r.s(10)),
         decoration: BoxDecoration(
           border: Border(
             left: BorderSide(
               color: AppTheme.accentColor.withValues(alpha: 0.6),
-              width: 3,
+              width: r.s(3),
             ),
           ),
           color: AppTheme.accentColor.withValues(alpha: 0.05),
@@ -241,7 +247,7 @@ class BlockContentRenderer extends StatelessWidget {
           content,
           style: TextStyle(
             color: context.textPrimary.withValues(alpha: 0.85),
-            fontSize: 14,
+            fontSize: r.fs(14),
             fontStyle: FontStyle.italic,
             height: 1.5,
           ),
@@ -252,6 +258,7 @@ class BlockContentRenderer extends StatelessWidget {
 
   /// Bloco de link — preview de link embutido
   Widget _buildLinkBlock(Map<String, dynamic> block) {
+      final r = context.r;
     final url = block['url'] as String? ?? '';
     final title = block['title'] as String? ?? url;
     final preview = block['preview'] as String?;
@@ -259,10 +266,10 @@ class BlockContentRenderer extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.all(r.s(12)),
         decoration: BoxDecoration(
           color: context.cardBg,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(r.s(10)),
           border: Border.all(
             color: context.dividerClr.withValues(alpha: 0.2),
           ),
@@ -270,25 +277,25 @@ class BlockContentRenderer extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 36,
-              height: 36,
+              width: r.s(36),
+              height: r.s(36),
               decoration: BoxDecoration(
                 color: AppTheme.accentColor.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(r.s(8)),
               ),
-              child: const Icon(Icons.link_rounded,
-                  color: AppTheme.accentColor, size: 18),
+              child: Icon(Icons.link_rounded,
+                  color: AppTheme.accentColor, size: r.s(18)),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: r.s(10)),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppTheme.accentColor,
-                      fontSize: 13,
+                      fontSize: r.fs(13),
                       fontWeight: FontWeight.w600,
                     ),
                     maxLines: 1,
@@ -300,7 +307,7 @@ class BlockContentRenderer extends StatelessWidget {
                       preview,
                       style: TextStyle(
                         color: context.textSecondary,
-                        fontSize: 11,
+                        fontSize: r.fs(11),
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -341,6 +348,7 @@ class BlockContentPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     if (blocks.isEmpty) return const SizedBox.shrink();
 
     // Encontrar o primeiro bloco de texto
@@ -365,23 +373,23 @@ class BlockContentPreview extends StatelessWidget {
             textContent,
             style: TextStyle(
               color: context.textSecondary,
-              fontSize: 13,
+              fontSize: r.fs(13),
               height: 1.4,
             ),
             maxLines: maxLines,
             overflow: TextOverflow.ellipsis,
           ),
         if (imageUrl != null && imageUrl.isNotEmpty) ...[
-          const SizedBox(height: 8),
+          SizedBox(height: r.s(8)),
           ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(r.s(8)),
             child: CachedNetworkImage(
               imageUrl: imageUrl,
-              height: 120,
+              height: r.s(120),
               width: double.infinity,
               fit: BoxFit.cover,
               placeholder: (_, __) => Container(
-                height: 120,
+                height: r.s(120),
                 color: context.cardBg,
               ),
               errorWidget: (_, __, ___) => const SizedBox.shrink(),

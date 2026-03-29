@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Tela para Leaders/Curators editarem as guidelines da comunidade.
 /// Réplica fiel do Amino Apps — editor de texto rico com preview.
@@ -93,15 +94,15 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
           SnackBar(
             content: const Row(
               children: [
-                Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
-                SizedBox(width: 8),
+                Icon(Icons.check_circle_rounded, color: Colors.white, size: r.s(18)),
+                SizedBox(width: r.s(8)),
                 Text('Guidelines salvas com sucesso!'),
               ],
             ),
             backgroundColor: AppTheme.successColor,
             behavior: SnackBarBehavior.floating,
             shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(12))),
           ),
         );
         Navigator.pop(context, true);
@@ -134,6 +135,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
@@ -152,14 +154,14 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
             GestureDetector(
               onTap: _isSaving ? null : _saveGuidelines,
               child: Container(
-                margin: const EdgeInsets.only(right: 16),
+                margin: EdgeInsets.only(right: r.s(16)),
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [AppTheme.primaryColor, AppTheme.accentColor],
                   ),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(r.s(20)),
                   boxShadow: [
                     BoxShadow(
                       color: AppTheme.primaryColor.withValues(alpha: 0.3),
@@ -169,9 +171,9 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
                   ],
                 ),
                 child: _isSaving
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
+                    ? SizedBox(
+                        width: r.s(16),
+                        height: r.s(16),
                         child: CircularProgressIndicator(
                           color: Colors.white,
                           strokeWidth: 2,
@@ -182,7 +184,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
-                          fontSize: 13,
+                          fontSize: r.fs(13),
                         ),
                       ),
               ),
@@ -211,27 +213,28 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
   }
 
   Widget _buildEditorTab() {
+      final r = context.r;
     return Column(
       children: [
         // Templates rápidos
         Container(
-          height: 50,
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          height: r.s(50),
+          padding: EdgeInsets.symmetric(vertical: r.s(8)),
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: r.s(16)),
             itemCount: _templateSections.length,
             itemBuilder: (context, index) {
               final section = _templateSections[index];
               return GestureDetector(
                 onTap: () => _insertTemplate(section),
                 child: Container(
-                  margin: const EdgeInsets.only(right: 8),
+                  margin: EdgeInsets.only(right: r.s(8)),
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(6)),
                   decoration: BoxDecoration(
                     color: context.surfaceColor,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(r.s(20)),
                     border: Border.all(
                       color: Colors.white.withValues(alpha: 0.08),
                     ),
@@ -242,14 +245,14 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
                       Icon(
                         section['icon'] as IconData,
                         color: AppTheme.primaryColor,
-                        size: 14,
+                        size: r.s(14),
                       ),
-                      const SizedBox(width: 6),
+                      SizedBox(width: r.s(6)),
                       Text(
                         section['title'] as String,
                         style: TextStyle(
                           color: context.textPrimary,
-                          fontSize: 12,
+                          fontSize: r.fs(12),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -264,10 +267,10 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
         // Editor de texto
         Expanded(
           child: Container(
-            margin: const EdgeInsets.all(16),
+            margin: EdgeInsets.all(r.s(16)),
             decoration: BoxDecoration(
               color: context.surfaceColor,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(r.s(16)),
               border: Border.all(
                 color: Colors.white.withValues(alpha: 0.05),
               ),
@@ -279,7 +282,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
               textAlignVertical: TextAlignVertical.top,
               style: TextStyle(
                 color: context.textPrimary,
-                fontSize: 14,
+                fontSize: r.fs(14),
                 height: 1.6,
               ),
               decoration: InputDecoration(
@@ -287,10 +290,10 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
                     'Escreva as guidelines da sua comunidade aqui...\n\nUse ## para títulos de seção\nUse • ou - para listas\nUse ** para negrito',
                 hintStyle: TextStyle(
                   color: Colors.grey[600],
-                  fontSize: 14,
+                  fontSize: r.fs(14),
                   height: 1.6,
                 ),
-                contentPadding: const EdgeInsets.all(16),
+                contentPadding: EdgeInsets.all(r.s(16)),
                 border: InputBorder.none,
               ),
             ),
@@ -299,7 +302,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
 
         // Contagem de caracteres
         Padding(
-          padding: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
+          padding: EdgeInsets.only(bottom: r.s(16), left: r.s(16), right: r.s(16)),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -307,14 +310,14 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
                 '${_guidelinesController.text.length} caracteres',
                 style: TextStyle(
                   color: Colors.grey[500],
-                  fontSize: 12,
+                  fontSize: r.fs(12),
                 ),
               ),
               Text(
                 'Suporta formatação Markdown',
                 style: TextStyle(
                   color: Colors.grey[600],
-                  fontSize: 11,
+                  fontSize: r.fs(11),
                   fontStyle: FontStyle.italic,
                 ),
               ),
@@ -326,28 +329,29 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
   }
 
   Widget _buildPreviewTab() {
+      final r = context.r;
     final text = _guidelinesController.text;
     if (text.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.description_rounded, size: 64, color: Colors.grey[600]),
-            const SizedBox(height: 16),
+            Icon(Icons.description_rounded, size: r.s(64), color: Colors.grey[600]),
+            SizedBox(height: r.s(16)),
             Text(
               'Nenhum conteúdo para visualizar',
               style: TextStyle(
                 color: Colors.grey[500],
-                fontSize: 16,
+                fontSize: r.fs(16),
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: r.s(8)),
             Text(
               'Escreva as guidelines na aba Editor',
               style: TextStyle(
                 color: Colors.grey[600],
-                fontSize: 13,
+                fontSize: r.fs(13),
               ),
             ),
           ],
@@ -358,7 +362,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
     // Renderizar preview simples com formatação básica
     final lines = text.split('\n');
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(r.s(16)),
       itemCount: lines.length,
       itemBuilder: (context, index) {
         final line = lines[index];
@@ -366,12 +370,12 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
         // Título ##
         if (line.startsWith('## ')) {
           return Padding(
-            padding: const EdgeInsets.only(top: 16, bottom: 8),
+            padding: EdgeInsets.only(top: r.s(16), bottom: r.s(8)),
             child: Text(
               line.substring(3),
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppTheme.primaryColor,
-                fontSize: 18,
+                fontSize: r.fs(18),
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -381,12 +385,12 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
         // Título #
         if (line.startsWith('# ')) {
           return Padding(
-            padding: const EdgeInsets.only(top: 20, bottom: 10),
+            padding: EdgeInsets.only(top: r.s(20), bottom: r.s(10)),
             child: Text(
               line.substring(2),
               style: TextStyle(
                 color: context.textPrimary,
-                fontSize: 22,
+                fontSize: r.fs(22),
                 fontWeight: FontWeight.w900,
               ),
             ),
@@ -398,14 +402,14 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
             line.startsWith('- ') ||
             line.startsWith('* ')) {
           return Padding(
-            padding: const EdgeInsets.only(left: 8, top: 4, bottom: 4),
+            padding: EdgeInsets.only(left: r.s(8), top: r.s(4), bottom: r.s(4)),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 6,
-                  height: 6,
-                  margin: const EdgeInsets.only(top: 7, right: 10),
+                  width: r.s(6),
+                  height: r.s(6),
+                  margin: EdgeInsets.only(top: r.s(7), right: r.s(10)),
                   decoration: const BoxDecoration(
                     color: AppTheme.primaryColor,
                     shape: BoxShape.circle,
@@ -416,7 +420,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
                     line.substring(2),
                     style: TextStyle(
                       color: context.textPrimary,
-                      fontSize: 14,
+                      fontSize: r.fs(14),
                       height: 1.5,
                     ),
                   ),
@@ -431,14 +435,14 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
           final match = RegExp(r'^(\d+)\.\s(.*)').firstMatch(line);
           if (match != null) {
             return Padding(
-              padding: const EdgeInsets.only(left: 8, top: 4, bottom: 4),
+              padding: EdgeInsets.only(left: r.s(8), top: r.s(4), bottom: r.s(4)),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 22,
-                    height: 22,
-                    margin: const EdgeInsets.only(right: 8),
+                    width: r.s(22),
+                    height: r.s(22),
+                    margin: EdgeInsets.only(right: r.s(8)),
                     decoration: BoxDecoration(
                       color: AppTheme.primaryColor.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
@@ -446,9 +450,9 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
                     alignment: Alignment.center,
                     child: Text(
                       match.group(1)!,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppTheme.primaryColor,
-                        fontSize: 11,
+                        fontSize: r.fs(11),
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -458,7 +462,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
                       match.group(2)!,
                       style: TextStyle(
                         color: context.textPrimary,
-                        fontSize: 14,
+                        fontSize: r.fs(14),
                         height: 1.5,
                       ),
                     ),
@@ -471,7 +475,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
 
         // Linha vazia
         if (line.trim().isEmpty) {
-          return const SizedBox(height: 8);
+          return SizedBox(height: r.s(8));
         }
 
         // Texto normal
@@ -481,7 +485,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
             line,
             style: TextStyle(
               color: context.textPrimary,
-              fontSize: 14,
+              fontSize: r.fs(14),
               height: 1.5,
             ),
           ),

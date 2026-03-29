@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Picker de comunidade destino para Crosspost — estilo Amino.
 ///
@@ -70,12 +71,13 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.symmetric(vertical: r.s(8)),
+      padding: EdgeInsets.all(r.s(16)),
       decoration: BoxDecoration(
         color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(r.s(16)),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
@@ -84,14 +86,14 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
           // Header
           Row(
             children: [
-              const Icon(Icons.share_rounded, color: AppTheme.accentColor, size: 20),
-              const SizedBox(width: 8),
+              Icon(Icons.share_rounded, color: AppTheme.accentColor, size: r.s(20)),
+              SizedBox(width: r.s(8)),
               const Text(
                 'Crosspost para:',
                 style: TextStyle(
                   color: context.textPrimary,
                   fontWeight: FontWeight.w700,
-                  fontSize: 15,
+                  fontSize: r.fs(15),
                 ),
               ),
               const Spacer(),
@@ -103,13 +105,13 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
                     style: TextStyle(
                       color: AppTheme.accentColor,
                       fontWeight: FontWeight.w600,
-                      fontSize: 13,
+                      fontSize: r.fs(13),
                     ),
                   ),
                 ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: r.s(12)),
 
           // Selected community or picker button
           if (widget.selectedCommunity != null)
@@ -122,21 +124,22 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
   }
 
   Widget _buildSelectedCommunity(Map<String, dynamic> community) {
+      final r = context.r;
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(r.s(12)),
       decoration: BoxDecoration(
         color: AppTheme.accentColor.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(r.s(12)),
         border: Border.all(color: AppTheme.accentColor.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
           // Community icon
           Container(
-            width: 40,
-            height: 40,
+            width: r.s(40),
+            height: r.s(40),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(r.s(10)),
               color: AppTheme.primaryColor.withValues(alpha: 0.2),
               image: community['icon_url'] != null
                   ? DecorationImage(
@@ -147,11 +150,11 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
                   : null,
             ),
             child: community['icon_url'] == null
-                ? const Icon(Icons.groups_rounded,
-                    color: AppTheme.accentColor, size: 20)
+                ? Icon(Icons.groups_rounded,
+                    color: AppTheme.accentColor, size: r.s(20))
                 : null,
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: r.s(12)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,34 +164,35 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
                   style: TextStyle(
                     color: context.textPrimary,
                     fontWeight: FontWeight.w700,
-                    fontSize: 14,
+                    fontSize: r.fs(14),
                   ),
                 ),
                 Text(
                   '${community['members_count'] ?? 0} membros',
                   style: TextStyle(
                     color: Colors.grey[500],
-                    fontSize: 12,
+                    fontSize: r.fs(12),
                   ),
                 ),
               ],
             ),
           ),
-          const Icon(Icons.check_circle_rounded,
-              color: AppTheme.accentColor, size: 22),
+          Icon(Icons.check_circle_rounded,
+              color: AppTheme.accentColor, size: r.s(22)),
         ],
       ),
     );
   }
 
   Widget _buildPickerButton() {
+      final r = context.r;
     return GestureDetector(
       onTap: _showCommunityPicker,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(r.s(16)),
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.03),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(r.s(12)),
           border: Border.all(
             color: AppTheme.accentColor.withValues(alpha: 0.3),
             style: BorderStyle.solid,
@@ -198,14 +202,14 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.add_circle_outline_rounded,
-                color: AppTheme.accentColor, size: 22),
-            const SizedBox(width: 8),
+                color: AppTheme.accentColor, size: r.s(22)),
+            SizedBox(width: r.s(8)),
             Text(
               'Selecionar comunidade destino',
               style: TextStyle(
                 color: AppTheme.accentColor,
                 fontWeight: FontWeight.w600,
-                fontSize: 14,
+                fontSize: r.fs(14),
               ),
             ),
           ],
@@ -231,23 +235,23 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
           children: [
             // Handle bar
             Container(
-              margin: const EdgeInsets.only(top: 12, bottom: 8),
-              width: 40,
-              height: 4,
+              margin: EdgeInsets.only(top: r.s(12), bottom: r.s(8)),
+              width: r.s(40),
+              height: r.s(4),
               decoration: BoxDecoration(
                 color: Colors.grey[600],
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
             // Title
-            const Padding(
-              padding: EdgeInsets.all(16),
+            Padding(
+              padding: EdgeInsets.all(r.s(16)),
               child: Text(
                 'Selecionar Comunidade',
                 style: TextStyle(
                   color: context.textPrimary,
                   fontWeight: FontWeight.w800,
-                  fontSize: 18,
+                  fontSize: r.fs(18),
                 ),
               ),
             ),
@@ -264,32 +268,32 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(Icons.groups_rounded,
-                                  size: 48, color: Colors.grey[600]),
-                              const SizedBox(height: 12),
+                                  size: r.s(48), color: Colors.grey[600]),
+                              SizedBox(height: r.s(12)),
                               Text(
                                 'Nenhuma outra comunidade encontrada',
                                 style: TextStyle(color: Colors.grey[500]),
                               ),
-                              const SizedBox(height: 4),
+                              SizedBox(height: r.s(4)),
                               Text(
                                 'Entre em mais comunidades para fazer crosspost',
                                 style: TextStyle(
-                                    color: Colors.grey[600], fontSize: 12),
+                                    color: Colors.grey[600], fontSize: r.fs(12)),
                               ),
                             ],
                           ),
                         )
                       : ListView.builder(
                           controller: scrollController,
-                          padding: const EdgeInsets.all(16),
+                          padding: EdgeInsets.all(r.s(16)),
                           itemCount: _communities.length,
                           itemBuilder: (_, index) {
                             final c = _communities[index];
                             return Container(
-                              margin: const EdgeInsets.only(bottom: 8),
+                              margin: EdgeInsets.only(bottom: r.s(8)),
                               decoration: BoxDecoration(
                                 color: context.surfaceColor,
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(r.s(12)),
                                 border: Border.all(
                                     color:
                                         Colors.white.withValues(alpha: 0.05)),
@@ -300,10 +304,10 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
                                   Navigator.pop(ctx);
                                 },
                                 leading: Container(
-                                  width: 44,
-                                  height: 44,
+                                  width: r.s(44),
+                                  height: r.s(44),
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderRadius: BorderRadius.circular(r.s(10)),
                                     color: AppTheme.primaryColor
                                         .withValues(alpha: 0.2),
                                     image: c['icon_url'] != null
@@ -316,9 +320,9 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
                                         : null,
                                   ),
                                   child: c['icon_url'] == null
-                                      ? const Icon(Icons.groups_rounded,
+                                      ? Icon(Icons.groups_rounded,
                                           color: AppTheme.accentColor,
-                                          size: 22)
+                                          size: r.s(22))
                                       : null,
                                 ),
                                 title: Text(
@@ -331,11 +335,11 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
                                 subtitle: Text(
                                   '${c['members_count'] ?? 0} membros',
                                   style: TextStyle(
-                                      color: Colors.grey[500], fontSize: 12),
+                                      color: Colors.grey[500], fontSize: r.fs(12)),
                                 ),
                                 trailing: Icon(
                                     Icons.arrow_forward_ios_rounded,
-                                    size: 16,
+                                    size: r.s(16),
                                     color: context.textHint),
                               ),
                             );

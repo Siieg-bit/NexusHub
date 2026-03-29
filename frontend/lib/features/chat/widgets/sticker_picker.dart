@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Sticker Picker — carrega sticker packs da store e permite seleção.
 /// Retorna um Map com {sticker_id, sticker_url} via Navigator.pop().
@@ -35,6 +36,7 @@ class StickerPicker extends StatefulWidget {
 class _StickerPickerState extends State<StickerPicker> {
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return _StickerPickerBody(communityId: widget.communityId);
   }
 }
@@ -125,6 +127,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Container(
       decoration: BoxDecoration(
         color: context.scaffoldBg,
@@ -137,9 +140,9 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
                 // Handle
                 Center(
                   child: Container(
-                    margin: const EdgeInsets.only(top: 8),
-                    width: 40,
-                    height: 4,
+                    margin: EdgeInsets.only(top: r.s(8)),
+                    width: r.s(40),
+                    height: r.s(4),
                     decoration: BoxDecoration(
                       color: context.textHint,
                       borderRadius: BorderRadius.circular(2),
@@ -147,11 +150,11 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
                   ),
                 ),
                 // Header
-                const Padding(
-                  padding: EdgeInsets.all(12),
+                Padding(
+                  padding: EdgeInsets.all(r.s(12)),
                   child: Text('Figurinhas',
                       style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: r.fs(18))),
                 ),
                 // Tab bar for packs
                 TabBar(
@@ -183,9 +186,10 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
   }
 
   Widget _buildEmojiGrid() {
+      final r = context.r;
     return GridView.builder(
       controller: widget.scrollController,
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(r.s(12)),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 5,
         crossAxisSpacing: 8,
@@ -203,11 +207,11 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
           child: Container(
             decoration: BoxDecoration(
               color: context.cardBg,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(r.s(12)),
             ),
             child: Center(
               child:
-                  Text(sticker['emoji']!, style: const TextStyle(fontSize: 32)),
+                  Text(sticker['emoji']!, style: TextStyle(fontSize: r.fs(32))),
             ),
           ),
         );
@@ -216,6 +220,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
   }
 
   Widget _buildStickerGrid(List<Map<String, dynamic>> stickers) {
+      final r = context.r;
     if (stickers.isEmpty) {
       return const Center(
         child: Text('Nenhum sticker neste pack',
@@ -224,7 +229,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
     }
     return GridView.builder(
       controller: widget.scrollController,
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(r.s(12)),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 4,
         crossAxisSpacing: 8,
@@ -242,11 +247,11 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
           child: Container(
             decoration: BoxDecoration(
               color: context.cardBg,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(r.s(12)),
             ),
             child: imageUrl.isNotEmpty
                 ? ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(r.s(12)),
                     child: CachedNetworkImage(
                       imageUrl: imageUrl,
                       fit: BoxFit.contain,
@@ -256,7 +261,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
                   )
                 : Center(
                     child: Text(sticker['name'] as String? ?? '?',
-                        style: const TextStyle(fontSize: 12)),
+                        style: TextStyle(fontSize: r.fs(12))),
                   ),
           ),
         );

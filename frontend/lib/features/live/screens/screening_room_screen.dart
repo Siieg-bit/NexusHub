@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Screening Room — Assistir vídeos juntos estilo Amino.
 ///
@@ -248,7 +249,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: context.surfaceColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(16))),
         title: const Text('Adicionar Vídeo',
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w800)),
@@ -266,12 +267,12 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
                 filled: true,
                 fillColor: context.cardBg,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(r.s(12)),
                   borderSide: BorderSide.none,
                 ),
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: r.s(12)),
             TextField(
               controller: titleController,
               style: TextStyle(color: context.textPrimary),
@@ -283,7 +284,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
                 filled: true,
                 fillColor: context.cardBg,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(r.s(12)),
                   borderSide: BorderSide.none,
                 ),
               ),
@@ -309,7 +310,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primaryColor,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
+                  borderRadius: BorderRadius.circular(r.s(10))),
             ),
             child: const Text('Reproduzir',
                 style: TextStyle(
@@ -363,6 +364,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
@@ -392,8 +394,9 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
   }
 
   Widget _buildTopBar() {
+      final r = context.r;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
       decoration: BoxDecoration(
         color: context.surfaceColor,
         border: Border(
@@ -405,64 +408,64 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
           GestureDetector(
             onTap: _leaveRoom,
             child: Icon(Icons.arrow_back_rounded,
-                color: context.textPrimary, size: 24),
+                color: context.textPrimary, size: r.s(24)),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: r.s(12)),
           Container(
-            width: 8,
-            height: 8,
+            width: r.s(8),
+            height: r.s(8),
             decoration: const BoxDecoration(
               color: AppTheme.errorColor,
               shape: BoxShape.circle,
             ),
           ),
-          const SizedBox(width: 6),
+          SizedBox(width: r.s(6)),
           const Text(
             'SCREENING ROOM',
             style: TextStyle(
               color: context.textPrimary,
               fontWeight: FontWeight.w800,
-              fontSize: 14,
+              fontSize: r.fs(14),
               letterSpacing: 1.2,
             ),
           ),
           const Spacer(),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(4)),
             decoration: BoxDecoration(
               color: AppTheme.accentColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(r.s(12)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.visibility_rounded,
-                    color: AppTheme.accentColor, size: 14),
-                const SizedBox(width: 4),
+                Icon(Icons.visibility_rounded,
+                    color: AppTheme.accentColor, size: r.s(14)),
+                SizedBox(width: r.s(4)),
                 Text(
                   '$_viewerCount',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppTheme.accentColor,
                     fontWeight: FontWeight.w700,
-                    fontSize: 13,
+                    fontSize: r.fs(13),
                   ),
                 ),
               ],
             ),
           ),
           if (_isHost) ...[
-            const SizedBox(width: 8),
+            SizedBox(width: r.s(8)),
             GestureDetector(
               onTap: _showAddVideoDialog,
               child: Container(
-                width: 34,
-                height: 34,
+                width: r.s(34),
+                height: r.s(34),
                 decoration: BoxDecoration(
                   color: AppTheme.primaryColor.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.add_link_rounded,
-                    color: AppTheme.primaryColor, size: 18),
+                child: Icon(Icons.add_link_rounded,
+                    color: AppTheme.primaryColor, size: r.s(18)),
               ),
             ),
           ],
@@ -472,21 +475,22 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
   }
 
   Widget _buildVideoArea() {
+      final r = context.r;
     if (_currentVideoUrl == null || _currentVideoUrl!.isEmpty) {
       return Container(
-        height: 200,
+        height: r.s(200),
         color: const Color(0xFF0A0A0A),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.live_tv_rounded, color: Colors.grey[700], size: 48),
-              const SizedBox(height: 12),
+              Icon(Icons.live_tv_rounded, color: Colors.grey[700], size: r.s(48)),
+              SizedBox(height: r.s(12)),
               Text(
                 _isHost
                     ? 'Toque em + para adicionar um vídeo'
                     : 'Aguardando o host adicionar um vídeo...',
-                style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                style: TextStyle(color: Colors.grey[600], fontSize: r.fs(14)),
               ),
             ],
           ),
@@ -497,7 +501,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
     final youtubeId = _extractYouTubeId(_currentVideoUrl!);
 
     return Container(
-      height: 200,
+      height: r.s(200),
       color: Colors.black,
       child: Stack(
         children: [
@@ -510,8 +514,8 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
                 width: double.infinity,
                 errorBuilder: (_, __, ___) => Container(
                   color: const Color(0xFF0A0A0A),
-                  child: const Icon(Icons.play_circle_outline_rounded,
-                      color: Colors.white54, size: 64),
+                  child: Icon(Icons.play_circle_outline_rounded,
+                      color: Colors.white54, size: r.s(64)),
                 ),
               ),
             )
@@ -520,7 +524,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
               color: const Color(0xFF0A0A0A),
               child: Center(
                 child: Icon(Icons.play_circle_outline_rounded,
-                    color: Colors.grey[600], size: 64),
+                    color: Colors.grey[600], size: r.s(64)),
               ),
             ),
 
@@ -548,10 +552,10 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
             right: 60,
             child: Text(
               _currentVideoTitle ?? 'Vídeo',
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
-                fontSize: 14,
+                fontSize: r.fs(14),
                 shadows: [Shadow(blurRadius: 4, color: Colors.black)],
               ),
               maxLines: 1,
@@ -565,8 +569,8 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
               child: GestureDetector(
                 onTap: _togglePlayPause,
                 child: Container(
-                  width: 56,
-                  height: 56,
+                  width: r.s(56),
+                  height: r.s(56),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.6),
                     shape: BoxShape.circle,
@@ -576,7 +580,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
                         ? Icons.pause_rounded
                         : Icons.play_arrow_rounded,
                     color: Colors.white,
-                    size: 32,
+                    size: r.s(32),
                   ),
                 ),
               ),
@@ -587,12 +591,12 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
             top: 8,
             right: 8,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: EdgeInsets.symmetric(horizontal: r.s(8), vertical: r.s(4)),
               decoration: BoxDecoration(
                 color: _isPlaying
                     ? AppTheme.successColor.withValues(alpha: 0.8)
                     : Colors.grey[800]!.withValues(alpha: 0.8),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(r.s(8)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -600,14 +604,14 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
                   Icon(
                     _isPlaying ? Icons.play_arrow_rounded : Icons.pause_rounded,
                     color: Colors.white,
-                    size: 12,
+                    size: r.s(12),
                   ),
-                  const SizedBox(width: 4),
+                  SizedBox(width: r.s(4)),
                   Text(
                     _isPlaying ? 'REPRODUZINDO' : 'PAUSADO',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 9,
+                      fontSize: r.fs(9),
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.5,
                     ),
@@ -622,9 +626,10 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
   }
 
   Widget _buildParticipantsStrip() {
+      final r = context.r;
     return Container(
-      height: 56,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      height: r.s(56),
+      padding: EdgeInsets.symmetric(horizontal: r.s(12)),
       decoration: BoxDecoration(
         color: context.surfaceColor,
         border: Border(
@@ -633,8 +638,8 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
       ),
       child: Row(
         children: [
-          Icon(Icons.people_rounded, color: Colors.grey[600], size: 18),
-          const SizedBox(width: 8),
+          Icon(Icons.people_rounded, color: Colors.grey[600], size: r.s(18)),
+          SizedBox(width: r.s(8)),
           Expanded(
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
@@ -647,7 +652,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
                 final isCreator = i == 0; // Simplificação
 
                 return Padding(
-                  padding: const EdgeInsets.only(right: 8),
+                  padding: EdgeInsets.only(right: r.s(8)),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -663,7 +668,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
                                 ? Text(username[0].toUpperCase(),
                                     style: TextStyle(
                                         color: context.textPrimary,
-                                        fontSize: 12))
+                                        fontSize: r.fs(12)))
                                 : null,
                           ),
                           if (isCreator)
@@ -671,16 +676,16 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
                               bottom: -2,
                               right: -2,
                               child: Container(
-                                width: 14,
-                                height: 14,
+                                width: r.s(14),
+                                height: r.s(14),
                                 decoration: BoxDecoration(
                                   color: AppTheme.warningColor,
                                   shape: BoxShape.circle,
                                   border: Border.all(
                                       color: context.surfaceColor, width: 2),
                                 ),
-                                child: const Icon(Icons.star_rounded,
-                                    color: Colors.white, size: 8),
+                                child: Icon(Icons.star_rounded,
+                                    color: Colors.white, size: r.s(8)),
                               ),
                             ),
                         ],
@@ -692,7 +697,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
                             : username,
                         style: TextStyle(
                             color: Colors.grey[500],
-                            fontSize: 8,
+                            fontSize: r.fs(8),
                             fontWeight: FontWeight.w500),
                       ),
                     ],
@@ -707,21 +712,22 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
   }
 
   Widget _buildChatArea() {
+      final r = context.r;
     if (_chatMessages.isEmpty) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.chat_bubble_outline_rounded,
-                color: Colors.grey[800], size: 40),
-            const SizedBox(height: 8),
+                color: Colors.grey[800], size: r.s(40)),
+            SizedBox(height: r.s(8)),
             Text(
               'Chat da Screening Room',
-              style: TextStyle(color: Colors.grey[700], fontSize: 14),
+              style: TextStyle(color: Colors.grey[700], fontSize: r.fs(14)),
             ),
             Text(
               'Converse enquanto assiste!',
-              style: TextStyle(color: Colors.grey[800], fontSize: 12),
+              style: TextStyle(color: Colors.grey[800], fontSize: r.fs(12)),
             ),
           ],
         ),
@@ -730,14 +736,14 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
 
     return ListView.builder(
       controller: _scrollController,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
       itemCount: _chatMessages.length,
       itemBuilder: (ctx, i) {
         final msg = _chatMessages[i];
         final isMe = msg['user_id'] == SupabaseService.currentUserId;
 
         return Padding(
-          padding: const EdgeInsets.only(bottom: 6),
+          padding: EdgeInsets.only(bottom: r.s(6)),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -748,25 +754,25 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
                   child: Text(
                     (msg['user_id'] as String? ?? '?')[0].toUpperCase(),
                     style: TextStyle(
-                        color: context.textPrimary, fontSize: 10),
+                        color: context.textPrimary, fontSize: r.fs(10)),
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: r.s(8)),
               ],
               Flexible(
                 child: Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
                   decoration: BoxDecoration(
                     color: isMe
                         ? AppTheme.primaryColor.withValues(alpha: 0.2)
                         : context.cardBg,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(r.s(16)),
                   ),
                   child: Text(
                     msg['text'] as String? ?? '',
                     style: TextStyle(
-                        color: context.textPrimary, fontSize: 13),
+                        color: context.textPrimary, fontSize: r.fs(13)),
                   ),
                 ),
               ),
@@ -778,8 +784,9 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
   }
 
   Widget _buildChatInput() {
+      final r = context.r;
     return Container(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+      padding: EdgeInsets.fromLTRB(r.s(12), r.s(8), r.s(12), r.s(8)),
       decoration: BoxDecoration(
         color: context.surfaceColor,
         border: Border(
@@ -794,36 +801,36 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
               child: Container(
                 decoration: BoxDecoration(
                   color: context.cardBg,
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(r.s(24)),
                 ),
                 child: TextField(
                   controller: _chatController,
                   style: TextStyle(
-                      color: context.textPrimary, fontSize: 14),
+                      color: context.textPrimary, fontSize: r.fs(14)),
                   decoration: InputDecoration(
                     hintText: 'Diga algo...',
-                    hintStyle: TextStyle(color: Colors.grey[600], fontSize: 14),
+                    hintStyle: TextStyle(color: Colors.grey[600], fontSize: r.fs(14)),
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 10),
+                    contentPadding: EdgeInsets.symmetric(
+                        horizontal: r.s(16), vertical: r.s(10)),
                   ),
                   textInputAction: TextInputAction.send,
                   onSubmitted: (_) => _sendChatMessage(),
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: r.s(8)),
             GestureDetector(
               onTap: _sendChatMessage,
               child: Container(
-                width: 40,
-                height: 40,
+                width: r.s(40),
+                height: r.s(40),
                 decoration: const BoxDecoration(
                   color: AppTheme.primaryColor,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.send_rounded,
-                    color: Colors.white, size: 18),
+                child: Icon(Icons.send_rounded,
+                    color: Colors.white, size: r.s(18)),
               ),
             ),
           ],

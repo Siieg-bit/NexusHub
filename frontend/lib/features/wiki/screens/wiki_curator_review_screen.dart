@@ -5,6 +5,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Tela de revisão de Wikis pendentes — estilo Amino Apps.
 /// Apenas curadores e leaders podem acessar.
@@ -110,7 +111,7 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
                 action == 'approve' ? AppTheme.successColor : AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
             shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(12))),
           ),
         );
       }
@@ -132,7 +133,7 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: context.cardBg,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(20))),
         title: const Text('Motivo da rejeição',
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w800)),
@@ -146,7 +147,7 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
             filled: true,
             fillColor: context.surfaceColor,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(r.s(12)),
               borderSide: BorderSide.none,
             ),
           ),
@@ -165,7 +166,7 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.errorColor,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(r.s(12))),
             ),
             child:
                 const Text('Rejeitar', style: TextStyle(color: Colors.white)),
@@ -177,6 +178,7 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
@@ -189,22 +191,22 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
                 style: TextStyle(
                     fontWeight: FontWeight.w800,
                     color: context.textPrimary,
-                    fontSize: 20)),
-            const SizedBox(width: 8),
+                    fontSize: r.fs(20))),
+            SizedBox(width: r.s(8)),
             if (_pendingEntries.isNotEmpty)
               Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    EdgeInsets.symmetric(horizontal: r.s(8), vertical: 2),
                 decoration: BoxDecoration(
                   color: AppTheme.warningColor.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(r.s(12)),
                 ),
                 child: Text(
                   '${_pendingEntries.length}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppTheme.warningColor,
                     fontWeight: FontWeight.w800,
-                    fontSize: 14,
+                    fontSize: r.fs(14),
                   ),
                 ),
               ),
@@ -221,18 +223,18 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.check_circle_outline_rounded,
-                          size: 64,
+                          size: r.s(64),
                           color: AppTheme.successColor.withValues(alpha: 0.5)),
-                      const SizedBox(height: 16),
+                      SizedBox(height: r.s(16)),
                       const Text('Nenhuma wiki pendente',
                           style: TextStyle(
                               color: context.textSecondary,
-                              fontSize: 16,
+                              fontSize: r.fs(16),
                               fontWeight: FontWeight.w600)),
-                      const SizedBox(height: 8),
+                      SizedBox(height: r.s(8)),
                       Text('Todas as submissões foram revisadas.',
                           style: TextStyle(
-                              color: context.textHint, fontSize: 14)),
+                              color: context.textHint, fontSize: r.fs(14))),
                     ],
                   ),
                 )
@@ -240,7 +242,7 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
                   onRefresh: _loadPending,
                   color: AppTheme.primaryColor,
                   child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(r.s(16)),
                     itemCount: _pendingEntries.length,
                     itemBuilder: (context, index) {
                       final entry = _pendingEntries[index];
@@ -272,6 +274,7 @@ class _PendingWikiCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final title = entry['title'] as String? ?? 'Sem titulo';
     final content = entry['content'] as String? ?? '';
     final coverUrl = entry['cover_image_url'] as String?;
@@ -283,10 +286,10 @@ class _PendingWikiCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
+        margin: EdgeInsets.only(bottom: r.s(16)),
         decoration: BoxDecoration(
           color: context.cardBg,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(r.s(16)),
           border: Border.all(
             color: AppTheme.warningColor.withValues(alpha: 0.3),
             width: 1.5,
@@ -310,7 +313,7 @@ class _PendingWikiCard extends StatelessWidget {
                     const BorderRadius.vertical(top: Radius.circular(16)),
                 child: CachedNetworkImage(
                   imageUrl: coverUrl,
-                  height: 140,
+                  height: r.s(140),
                   width: double.infinity,
                   fit: BoxFit.cover,
                   errorWidget: (_, __, ___) => const SizedBox.shrink(),
@@ -320,7 +323,7 @@ class _PendingWikiCard extends StatelessWidget {
             // Pending badge
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
                 color: AppTheme.warningColor.withValues(alpha: 0.1),
                 borderRadius: coverUrl == null
@@ -330,41 +333,41 @@ class _PendingWikiCard extends StatelessWidget {
               child: Row(
                 children: [
                   Icon(Icons.pending_actions_rounded,
-                      size: 16, color: AppTheme.warningColor),
-                  const SizedBox(width: 6),
+                      size: r.s(16), color: AppTheme.warningColor),
+                  SizedBox(width: r.s(6)),
                   Text('Pendente de revisao',
                       style: TextStyle(
                           color: AppTheme.warningColor,
-                          fontSize: 12,
+                          fontSize: r.fs(12),
                           fontWeight: FontWeight.w700)),
                   const Spacer(),
                   Text(timeago.format(createdAt, locale: 'pt_BR'),
                       style:
-                          TextStyle(color: context.textHint, fontSize: 11)),
+                          TextStyle(color: context.textHint, fontSize: r.fs(11))),
                 ],
               ),
             ),
 
             // Content
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(r.s(16)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Category
                   if (category != null && category.isNotEmpty)
                     Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
+                      margin: EdgeInsets.only(bottom: r.s(8)),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: r.s(10), vertical: r.s(4)),
                       decoration: BoxDecoration(
                         color: AppTheme.primaryColor.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(r.s(8)),
                       ),
                       child: Text(category,
                           style: TextStyle(
                               color: AppTheme.primaryColor,
-                              fontSize: 11,
+                              fontSize: r.fs(11),
                               fontWeight: FontWeight.w700)),
                     ),
 
@@ -372,19 +375,19 @@ class _PendingWikiCard extends StatelessWidget {
                   Text(title,
                       style: TextStyle(
                           fontWeight: FontWeight.w800,
-                          fontSize: 18,
+                          fontSize: r.fs(18),
                           color: context.textPrimary)),
-                  const SizedBox(height: 8),
+                  SizedBox(height: r.s(8)),
 
                   // Content preview
                   Text(content,
                       style: TextStyle(
                           color: context.textSecondary,
-                          fontSize: 14,
+                          fontSize: r.fs(14),
                           height: 1.5),
                       maxLines: 4,
                       overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 12),
+                  SizedBox(height: r.s(12)),
 
                   // Author
                   if (author != null)
@@ -393,19 +396,19 @@ class _PendingWikiCard extends StatelessWidget {
                         CosmeticAvatar(
                           userId: author['id'] as String?,
                           avatarUrl: author['icon_url'] as String?,
-                          size: 28,
+                          size: r.s(28),
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: r.s(8)),
                         Text(
                           author['nickname'] as String? ?? 'Anonimo',
                           style: TextStyle(
                               color: context.textSecondary,
-                              fontSize: 13,
+                              fontSize: r.fs(13),
                               fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: r.s(16)),
 
                   // Action buttons
                   Row(
@@ -414,10 +417,10 @@ class _PendingWikiCard extends StatelessWidget {
                         child: GestureDetector(
                           onTap: onReject,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            padding: EdgeInsets.symmetric(vertical: r.s(12)),
                             decoration: BoxDecoration(
                               color: AppTheme.errorColor.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(r.s(12)),
                               border: Border.all(
                                   color:
                                       AppTheme.errorColor.withValues(alpha: 0.3)),
@@ -426,24 +429,24 @@ class _PendingWikiCard extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(Icons.close_rounded,
-                                    size: 18, color: AppTheme.errorColor),
-                                SizedBox(width: 6),
+                                    size: r.s(18), color: AppTheme.errorColor),
+                                SizedBox(width: r.s(6)),
                                 Text('Rejeitar',
                                     style: TextStyle(
                                         color: AppTheme.errorColor,
                                         fontWeight: FontWeight.w700,
-                                        fontSize: 14)),
+                                        fontSize: r.fs(14))),
                               ],
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: r.s(12)),
                       Expanded(
                         child: GestureDetector(
                           onTap: onApprove,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            padding: EdgeInsets.symmetric(vertical: r.s(12)),
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
                                 colors: [
@@ -451,7 +454,7 @@ class _PendingWikiCard extends StatelessWidget {
                                   Color(0xFF00C853)
                                 ],
                               ),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(r.s(12)),
                               boxShadow: [
                                 BoxShadow(
                                   color: AppTheme.successColor
@@ -465,13 +468,13 @@ class _PendingWikiCard extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(Icons.check_rounded,
-                                    size: 18, color: Colors.white),
-                                SizedBox(width: 6),
+                                    size: r.s(18), color: Colors.white),
+                                SizedBox(width: r.s(6)),
                                 Text('Aprovar',
                                     style: TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.w700,
-                                        fontSize: 14)),
+                                        fontSize: r.fs(14))),
                               ],
                             ),
                           ),

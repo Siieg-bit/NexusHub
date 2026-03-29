@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../config/app_theme.dart';
 import '../../../core/utils/amino_animations.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Tela de Onboarding — réplica fiel do Amino Apps.
 /// Fundo escuro com gradiente animado, logo centralizado, botões translúcidos.
@@ -35,6 +36,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       body: AnimatedBuilder(
         animation: _bgController,
@@ -61,7 +63,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         },
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
+            padding: EdgeInsets.symmetric(horizontal: r.s(32)),
             child: Column(
               children: [
                 const Spacer(flex: 2),
@@ -71,11 +73,11 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   child: Column(
                     children: [
                       Container(
-                        width: 100,
-                        height: 100,
+                        width: r.s(100),
+                        height: r.s(100),
                         decoration: BoxDecoration(
                           gradient: AppTheme.primaryGradient,
-                          borderRadius: BorderRadius.circular(28),
+                          borderRadius: BorderRadius.circular(r.s(28)),
                           boxShadow: [
                             BoxShadow(
                               color: AppTheme.primaryColor.withValues(alpha: 0.4),
@@ -84,28 +86,28 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                             ),
                           ],
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.hub_rounded,
                           color: Colors.white,
-                          size: 52,
+                          size: r.s(52),
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: r.s(24)),
                       const Text(
                         'NexusHub',
                         style: TextStyle(
                           color: context.textPrimary,
-                          fontSize: 36,
+                          fontSize: r.fs(36),
                           fontWeight: FontWeight.w800,
                           letterSpacing: -0.5,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: r.s(8)),
                       const Text(
                         'Sua comunidade, seu mundo.',
                         style: TextStyle(
                           color: context.textSecondary,
-                          fontSize: 16,
+                          fontSize: r.fs(16),
                           fontWeight: FontWeight.w400,
                         ),
                       ),
@@ -125,13 +127,13 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         color: AppTheme.primaryColor,
                         text: 'Milhares de comunidades para explorar',
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: r.s(16)),
                       _FeatureRow(
                         icon: Icons.chat_bubble_rounded,
                         color: AppTheme.accentColor,
                         text: 'Chat em tempo real com seus amigos',
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: r.s(16)),
                       _FeatureRow(
                         icon: Icons.auto_awesome_rounded,
                         color: AppTheme.aminoMagenta,
@@ -151,7 +153,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       // Botão principal — Criar Conta
                       SizedBox(
                         width: double.infinity,
-                        height: 52,
+                        height: r.s(52),
                         child: ElevatedButton(
                           onPressed: () => context.go('/signup'),
                           style: ElevatedButton.styleFrom(
@@ -159,10 +161,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(r.s(14)),
                             ),
-                            textStyle: const TextStyle(
-                              fontSize: 16,
+                            textStyle: TextStyle(
+                              fontSize: r.fs(16),
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -170,20 +172,20 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         ),
                       ),
 
-                      const SizedBox(height: 12),
+                      SizedBox(height: r.s(12)),
 
                       // Botão secundário — Login (translúcido com blur)
                       SizedBox(
                         width: double.infinity,
-                        height: 52,
+                        height: r.s(52),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(r.s(14)),
                           child: BackdropFilter(
                             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                             child: Container(
                               decoration: BoxDecoration(
                                 color: Colors.white.withValues(alpha: 0.08),
-                                borderRadius: BorderRadius.circular(14),
+                                borderRadius: BorderRadius.circular(r.s(14)),
                                 border: Border.all(
                                   color: Colors.white.withValues(alpha: 0.15),
                                   width: 1,
@@ -193,8 +195,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                 onPressed: () => context.go('/login'),
                                 style: TextButton.styleFrom(
                                   foregroundColor: context.textPrimary,
-                                  textStyle: const TextStyle(
-                                    fontSize: 16,
+                                  textStyle: TextStyle(
+                                    fontSize: r.fs(16),
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -208,7 +210,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                SizedBox(height: r.s(16)),
 
                 // Termos
                 AminoAnimations.fadeIn(
@@ -218,13 +220,13 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: context.textHint,
-                      fontSize: 11,
+                      fontSize: r.fs(11),
                       height: 1.4,
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                SizedBox(height: r.s(24)),
               ],
             ),
           ),
@@ -247,24 +249,25 @@ class _FeatureRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Row(
       children: [
         Container(
-          width: 40,
-          height: 40,
+          width: r.s(40),
+          height: r.s(40),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(r.s(12)),
           ),
-          child: Icon(icon, color: color, size: 20),
+          child: Icon(icon, color: color, size: r.s(20)),
         ),
-        const SizedBox(width: 14),
+        SizedBox(width: r.s(14)),
         Expanded(
           child: Text(
             text,
             style: TextStyle(
               color: context.textPrimary,
-              fontSize: 14,
+              fontSize: r.fs(14),
               fontWeight: FontWeight.w500,
             ),
           ),

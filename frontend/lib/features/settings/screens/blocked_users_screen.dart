@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Tela de Usuários Bloqueados — lista e gerencia bloqueios.
 class BlockedUsersScreen extends StatefulWidget {
@@ -42,7 +43,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(r.s(16)),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
         title: const Text(
@@ -60,9 +61,9 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
           GestureDetector(
             onTap: () => Navigator.pop(ctx, false),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(r.s(20)),
               ),
               child: Text(
                 'Cancelar',
@@ -76,12 +77,12 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
           GestureDetector(
             onTap: () => Navigator.pop(ctx, true),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [AppTheme.primaryColor, AppTheme.accentColor],
                 ),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(r.s(20)),
                 boxShadow: [
                   BoxShadow(
                     color: AppTheme.primaryColor.withValues(alpha: 0.3),
@@ -117,7 +118,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
             backgroundColor: context.surfaceColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(r.s(12)),
               side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
             ),
           ),
@@ -131,7 +132,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(r.s(12)),
             ),
           ),
         );
@@ -141,6 +142,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
@@ -168,33 +170,33 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                     children: [
                       Icon(
                         Icons.block_rounded,
-                        size: 64,
+                        size: r.s(64),
                         color: Colors.grey[600]?.withValues(alpha: 0.5),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: r.s(16)),
                       const Text(
                         'Nenhum usuário bloqueado',
                         style: TextStyle(
                           color: context.textPrimary,
-                          fontSize: 18,
+                          fontSize: r.fs(18),
                           fontWeight: FontWeight.w800,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: r.s(8)),
                       Text(
                         'Usuários bloqueados não podem ver seu perfil\n'
                         'nem enviar mensagens para você.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.grey[500],
-                          fontSize: 14,
+                          fontSize: r.fs(14),
                         ),
                       ),
                     ],
                   ),
                 )
               : ListView.builder(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(r.s(16)),
                   itemCount: _blockedUsers.length,
                   itemBuilder: (context, index) {
                     final block = _blockedUsers[index];
@@ -208,11 +210,11 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                         : null;
 
                     return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(16),
+                      margin: EdgeInsets.only(bottom: r.s(12)),
+                      padding: EdgeInsets.all(r.s(16)),
                       decoration: BoxDecoration(
                         color: context.surfaceColor,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(r.s(16)),
                         border: Border.all(
                           color: Colors.white.withValues(alpha: 0.05),
                         ),
@@ -222,9 +224,9 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                           CosmeticAvatar(
                             userId: blocked['id'] as String?,
                             avatarUrl: iconUrl,
-                            size: 48,
+                            size: r.s(48),
                           ),
-                          const SizedBox(width: 16),
+                          SizedBox(width: r.s(16)),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,16 +236,16 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                                   style: TextStyle(
                                     color: context.textPrimary,
                                     fontWeight: FontWeight.w800,
-                                    fontSize: 16,
+                                    fontSize: r.fs(16),
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                SizedBox(height: r.s(4)),
                                 if (blockedAt != null)
                                   Text(
                                     'Bloqueado em ${blockedAt.day}/${blockedAt.month}/${blockedAt.year}',
                                     style: TextStyle(
                                       color: Colors.grey[500],
-                                      fontSize: 12,
+                                      fontSize: r.fs(12),
                                     ),
                                   ),
                               ],
@@ -253,13 +255,13 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                             onTap: () =>
                                 _unblockUser(block['id'] as String, nickname),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: r.s(12),
+                                vertical: r.s(8),
                               ),
                               decoration: BoxDecoration(
                                 color: AppTheme.errorColor.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius: BorderRadius.circular(r.s(20)),
                                 border: Border.all(
                                   color: AppTheme.errorColor.withValues(alpha: 0.3),
                                 ),
@@ -268,7 +270,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                                 'Desbloquear',
                                 style: TextStyle(
                                   color: AppTheme.errorColor,
-                                  fontSize: 12,
+                                  fontSize: r.fs(12),
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),

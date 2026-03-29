@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/models/post_model.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Widget de Enquete (Poll) para uso no PostDetailScreen.
 ///
@@ -118,6 +119,7 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     if (_options.isEmpty) {
       // Fallback para pollData inline
       final pollData = widget.post.pollData;
@@ -127,11 +129,11 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+      padding: EdgeInsets.all(r.s(16)),
       decoration: BoxDecoration(
         color: context.cardBg,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(r.s(14)),
         border: Border.all(
           color: AppTheme.accentColor.withValues(alpha: 0.15),
         ),
@@ -142,13 +144,13 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
           // Header
           Row(
             children: [
-              Icon(Icons.poll_rounded, size: 18, color: AppTheme.accentColor),
-              const SizedBox(width: 8),
+              Icon(Icons.poll_rounded, size: r.s(18), color: AppTheme.accentColor),
+              SizedBox(width: r.s(8)),
               const Text(
                 'Enquete',
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
-                  fontSize: 14,
+                  fontSize: r.fs(14),
                   color: AppTheme.accentColor,
                 ),
               ),
@@ -156,13 +158,13 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
               Text(
                 '$_totalVotes votos',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: r.fs(12),
                   color: context.textHint,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: r.s(14)),
 
           // Opções
           ...List.generate(_options.length, (i) {
@@ -180,9 +182,9 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
               onTap: () => _vote(i),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
-                margin: const EdgeInsets.only(bottom: 8),
+                margin: EdgeInsets.only(bottom: r.s(8)),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(r.s(10)),
                   border: Border.all(
                     color: isSelected
                         ? AppTheme.accentColor
@@ -191,7 +193,7 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
                   ),
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(r.s(10)),
                   child: Stack(
                     children: [
                       // Barra de progresso
@@ -211,15 +213,15 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
                         ),
                       // Conteúdo
                       Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 12),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: r.s(14), vertical: r.s(12)),
                         child: Row(
                           children: [
                             if (!_hasVoted)
                               Container(
-                                width: 20,
-                                height: 20,
-                                margin: const EdgeInsets.only(right: 10),
+                                width: r.s(20),
+                                height: r.s(20),
+                                margin: EdgeInsets.only(right: r.s(10)),
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
@@ -230,23 +232,23 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
                               )
                             else if (isSelected)
                               Container(
-                                width: 20,
-                                height: 20,
-                                margin: const EdgeInsets.only(right: 10),
+                                width: r.s(20),
+                                height: r.s(20),
+                                margin: EdgeInsets.only(right: r.s(10)),
                                 decoration: const BoxDecoration(
                                   shape: BoxShape.circle,
                                   color: AppTheme.accentColor,
                                 ),
-                                child: const Icon(Icons.check_rounded,
-                                    size: 14, color: Colors.white),
+                                child: Icon(Icons.check_rounded,
+                                    size: r.s(14), color: Colors.white),
                               )
                             else
-                              const SizedBox(width: 30),
+                              SizedBox(width: r.s(30)),
                             Expanded(
                               child: Text(
                                 text,
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: r.fs(14),
                                   color: context.textPrimary,
                                   fontWeight: isSelected
                                       ? FontWeight.w700
@@ -258,7 +260,7 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
                               Text(
                                 '${(pct * 100).toStringAsFixed(0)}%',
                                 style: TextStyle(
-                                  fontSize: 13,
+                                  fontSize: r.fs(13),
                                   fontWeight: FontWeight.w700,
                                   color: isSelected
                                       ? AppTheme.accentColor
@@ -388,14 +390,15 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     if (_questions.isEmpty) return const SizedBox.shrink();
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+      padding: EdgeInsets.all(r.s(16)),
       decoration: BoxDecoration(
         color: context.cardBg,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(r.s(14)),
         border: Border.all(
           color: AppTheme.accentColor.withValues(alpha: 0.15),
         ),
@@ -405,6 +408,7 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
   }
 
   Widget _buildResult() {
+      final r = context.r;
     final pct = _questions.isNotEmpty ? _score / _questions.length : 0.0;
     final emoji = pct >= 0.8
         ? '🎉'
@@ -414,25 +418,25 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
 
     return Column(
       children: [
-        Text(emoji, style: const TextStyle(fontSize: 48)),
-        const SizedBox(height: 12),
+        Text(emoji, style: TextStyle(fontSize: r.fs(48))),
+        SizedBox(height: r.s(12)),
         Text(
           'Resultado: $_score/${_questions.length}',
           style: TextStyle(
-            fontSize: 22,
+            fontSize: r.fs(22),
             fontWeight: FontWeight.w800,
             color: context.textPrimary,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: r.s(8)),
         Text(
           '${(pct * 100).toStringAsFixed(0)}% de acerto',
           style: TextStyle(
-            fontSize: 14,
+            fontSize: r.fs(14),
             color: context.textSecondary,
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: r.s(16)),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
@@ -449,9 +453,9 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
               backgroundColor: AppTheme.accentColor,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(r.s(10)),
               ),
-              padding: const EdgeInsets.symmetric(vertical: 12),
+              padding: EdgeInsets.symmetric(vertical: r.s(12)),
             ),
             child: const Text('Tentar Novamente',
                 style: TextStyle(fontWeight: FontWeight.w700)),
@@ -462,6 +466,7 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
   }
 
   Widget _buildQuestion() {
+      final r = context.r;
     final q = _questions[_currentQuestion];
     final questionText = (q['question_text'] as String?) ??
         (q['text'] as String?) ??
@@ -484,13 +489,13 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
         // Header
         Row(
           children: [
-            Icon(Icons.quiz_rounded, size: 18, color: AppTheme.accentColor),
-            const SizedBox(width: 8),
+            Icon(Icons.quiz_rounded, size: r.s(18), color: AppTheme.accentColor),
+            SizedBox(width: r.s(8)),
             Text(
               'Quiz — Pergunta ${_currentQuestion + 1}/${_questions.length}',
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.w700,
-                fontSize: 13,
+                fontSize: r.fs(13),
                 color: AppTheme.accentColor,
               ),
             ),
@@ -498,9 +503,9 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
         ),
 
         // Progress bar
-        const SizedBox(height: 10),
+        SizedBox(height: r.s(10)),
         ClipRRect(
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(r.s(4)),
           child: LinearProgressIndicator(
             value: (_currentQuestion + 1) / _questions.length,
             backgroundColor: context.dividerClr,
@@ -510,20 +515,20 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
           ),
         ),
 
-        const SizedBox(height: 16),
+        SizedBox(height: r.s(16)),
 
         // Pergunta
         Text(
           questionText,
           style: TextStyle(
-            fontSize: 16,
+            fontSize: r.fs(16),
             fontWeight: FontWeight.w700,
             color: context.textPrimary,
             height: 1.4,
           ),
         ),
 
-        const SizedBox(height: 14),
+        SizedBox(height: r.s(14)),
 
         // Opções
         ...List.generate(options.length, (i) {
@@ -559,20 +564,20 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
             onTap: () => _answer(i),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 300),
-              margin: const EdgeInsets.only(bottom: 8),
+              margin: EdgeInsets.only(bottom: r.s(8)),
               padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(12)),
               decoration: BoxDecoration(
                 color: bgColor,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(r.s(10)),
                 border: Border.all(color: borderColor, width: isSelected ? 1.5 : 0.5),
               ),
               child: Row(
                 children: [
                   Container(
-                    width: 24,
-                    height: 24,
-                    margin: const EdgeInsets.only(right: 12),
+                    width: r.s(24),
+                    height: r.s(24),
+                    margin: EdgeInsets.only(right: r.s(12)),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: isSelected
@@ -591,13 +596,13 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
                       child: isSelected && _answered
                           ? Icon(
                               trailingIcon ?? Icons.circle,
-                              size: 14,
+                              size: r.s(14),
                               color: Colors.white,
                             )
                           : Text(
                               String.fromCharCode(65 + i), // A, B, C, D
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: r.fs(12),
                                 fontWeight: FontWeight.w700,
                                 color: isSelected
                                     ? Colors.white
@@ -610,7 +615,7 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
                     child: Text(
                       optText,
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: r.fs(14),
                         color: context.textPrimary,
                         fontWeight:
                             isSelected ? FontWeight.w700 : FontWeight.w400,
@@ -618,7 +623,7 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
                     ),
                   ),
                   if (_answered && trailingIcon != null)
-                    Icon(trailingIcon, size: 20, color: trailingColor),
+                    Icon(trailingIcon, size: r.s(20), color: trailingColor),
                 ],
               ),
             ),
@@ -628,24 +633,24 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
         // Explicação
         if (_answered && q['explanation'] != null)
           Padding(
-            padding: const EdgeInsets.only(top: 8),
+            padding: EdgeInsets.only(top: r.s(8)),
             child: Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(r.s(12)),
               decoration: BoxDecoration(
                 color: AppTheme.accentColor.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(r.s(8)),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(Icons.lightbulb_outline_rounded,
-                      size: 16, color: AppTheme.accentColor),
-                  const SizedBox(width: 8),
+                      size: r.s(16), color: AppTheme.accentColor),
+                  SizedBox(width: r.s(8)),
                   Expanded(
                     child: Text(
                       q['explanation'] as String,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: r.fs(12),
                         color: context.textSecondary,
                         height: 1.4,
                       ),

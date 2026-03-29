@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Carteira / Minha Carteira — Estilo Amino original.
 /// Header azul celeste brilhante com moeda dourada, corpo claro/branco.
@@ -63,6 +64,7 @@ class _WalletScreenState extends State<WalletScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       // Corpo com fundo cinza claro (estilo Amino original)
       backgroundColor: const Color(0xFFF5F5F5),
@@ -89,13 +91,13 @@ class _WalletScreenState extends State<WalletScreen> {
                       children: [
                         // Top bar: voltar + título + comprar
                         Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 4, vertical: 4),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: r.s(4), vertical: r.s(4)),
                           child: Row(
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.arrow_back_ios_rounded,
-                                    color: Colors.white, size: 20),
+                                icon: Icon(Icons.arrow_back_ios_rounded,
+                                    color: Colors.white, size: r.s(20)),
                                 onPressed: () => context.pop(),
                               ),
                               const Expanded(
@@ -105,7 +107,7 @@ class _WalletScreenState extends State<WalletScreen> {
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w700,
-                                    fontSize: 17,
+                                    fontSize: r.fs(17),
                                   ),
                                 ),
                               ),
@@ -116,7 +118,7 @@ class _WalletScreenState extends State<WalletScreen> {
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w600,
-                                    fontSize: 14,
+                                    fontSize: r.fs(14),
                                   ),
                                 ),
                               ),
@@ -126,13 +128,13 @@ class _WalletScreenState extends State<WalletScreen> {
 
                         // Moeda dourada grande + saldo
                         Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          padding: EdgeInsets.symmetric(vertical: r.s(20)),
                           child: Column(
                             children: [
                               // Moeda dourada grande
                               Container(
-                                width: 72,
-                                height: 72,
+                                width: r.s(72),
+                                height: r.s(72),
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   gradient: const LinearGradient(
@@ -157,19 +159,19 @@ class _WalletScreenState extends State<WalletScreen> {
                                     'A',
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 32,
+                                      fontSize: r.fs(32),
                                       fontWeight: FontWeight.w900,
                                     ),
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 12),
+                              SizedBox(height: r.s(12)),
                               // Saldo
                               Text(
                                 _formatCoins(_coins),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 36,
+                                  fontSize: r.fs(36),
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
@@ -178,7 +180,7 @@ class _WalletScreenState extends State<WalletScreen> {
                                 'Amino Coins',
                                 style: TextStyle(
                                   color: Colors.white70,
-                                  fontSize: 14,
+                                  fontSize: r.fs(14),
                                 ),
                               ),
                             ],
@@ -196,7 +198,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   child: SingleChildScrollView(
                     child: Column(
                       children: [
-                        const SizedBox(height: 16),
+                        SizedBox(height: r.s(16)),
 
                         // Seção: Assinaturas
                         _WalletMenuTile(
@@ -234,58 +236,58 @@ class _WalletScreenState extends State<WalletScreen> {
                           onTap: () => _showPropsDialog(),
                         ),
 
-                        const SizedBox(height: 16),
+                        SizedBox(height: r.s(16)),
 
                         // Texto "Comprar Moedas"
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          padding: EdgeInsets.symmetric(horizontal: r.s(16)),
                           child: Text(
                             'Comprar Moedas',
                             style: TextStyle(
                               color: Colors.grey[500],
-                              fontSize: 13,
+                              fontSize: r.fs(13),
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: r.s(8)),
 
                         // Botão "Visite a loja"
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          padding: EdgeInsets.symmetric(horizontal: r.s(16)),
                           child: GestureDetector(
                             onTap: () => context.push('/store/coins'),
                             child: Container(
                               width: double.infinity,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              padding: EdgeInsets.symmetric(vertical: r.s(14)),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF333333),
-                                borderRadius: BorderRadius.circular(24),
+                                borderRadius: BorderRadius.circular(r.s(24)),
                               ),
                               child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(Icons.star_rounded,
-                                      color: Color(0xFFFFD700), size: 18),
-                                  SizedBox(width: 8),
+                                      color: Color(0xFFFFD700), size: r.s(18)),
+                                  SizedBox(width: r.s(8)),
                                   Text(
                                     'Visite a loja',
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w700,
-                                      fontSize: 14,
+                                      fontSize: r.fs(14),
                                     ),
                                   ),
-                                  SizedBox(width: 8),
+                                  SizedBox(width: r.s(8)),
                                   Icon(Icons.star_rounded,
-                                      color: Color(0xFFFFD700), size: 18),
+                                      color: Color(0xFFFFD700), size: r.s(18)),
                                 ],
                               ),
                             ),
                           ),
                         ),
 
-                        const SizedBox(height: 32),
+                        SizedBox(height: r.s(32)),
                       ],
                     ),
                   ),
@@ -313,25 +315,25 @@ class _WalletScreenState extends State<WalletScreen> {
         expand: false,
         builder: (ctx, scrollCtrl) => Column(
           children: [
-            const SizedBox(height: 12),
+            SizedBox(height: r.s(12)),
             Container(
-              width: 36,
-              height: 4,
+              width: r.s(36),
+              height: r.s(4),
               decoration: BoxDecoration(
                 color: Colors.grey[300],
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: r.s(16)),
             const Text(
               'Histórico de Transações',
               style: TextStyle(
                 fontWeight: FontWeight.w700,
-                fontSize: 16,
+                fontSize: r.fs(16),
                 color: Color(0xFF333333),
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: r.s(8)),
             Expanded(
               child: _transactions.isEmpty
                   ? Center(
@@ -340,7 +342,7 @@ class _WalletScreenState extends State<WalletScreen> {
                     )
                   : ListView.separated(
                       controller: scrollCtrl,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.symmetric(horizontal: r.s(16)),
                       itemCount: _transactions.length,
                       separatorBuilder: (_, __) =>
                           Divider(color: Colors.grey[200], height: 1),
@@ -358,14 +360,14 @@ class _WalletScreenState extends State<WalletScreen> {
                         return ListTile(
                           contentPadding: EdgeInsets.zero,
                           leading: Container(
-                            width: 36,
-                            height: 36,
+                            width: r.s(36),
+                            height: r.s(36),
                             decoration: BoxDecoration(
                               color: (isPositive
                                       ? const Color(0xFF4CAF50)
                                       : const Color(0xFFE53935))
                                   .withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(r.s(10)),
                             ),
                             child: Icon(
                               isPositive
@@ -374,17 +376,17 @@ class _WalletScreenState extends State<WalletScreen> {
                               color: isPositive
                                   ? const Color(0xFF4CAF50)
                                   : const Color(0xFFE53935),
-                              size: 18,
+                              size: r.s(18),
                             ),
                           ),
                           title: Text(desc,
-                              style: const TextStyle(
-                                  fontSize: 13,
+                              style: TextStyle(
+                                  fontSize: r.fs(13),
                                   color: Color(0xFF333333))),
                           subtitle: Text(
                             '${createdAt.day}/${createdAt.month}/${createdAt.year}',
                             style: TextStyle(
-                                fontSize: 11, color: Colors.grey[500]),
+                                fontSize: r.fs(11), color: Colors.grey[500]),
                           ),
                           trailing: Text(
                             '${isPositive ? '+' : ''}$amount',
@@ -393,7 +395,7 @@ class _WalletScreenState extends State<WalletScreen> {
                                   ? const Color(0xFF4CAF50)
                                   : const Color(0xFFE53935),
                               fontWeight: FontWeight.w800,
-                              fontSize: 14,
+                              fontSize: r.fs(14),
                             ),
                           ),
                         );
@@ -418,7 +420,7 @@ class _WalletScreenState extends State<WalletScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(r.s(16)),
         ),
         title: const Text('Transferir Moedas',
             style: TextStyle(
@@ -442,7 +444,7 @@ class _WalletScreenState extends State<WalletScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: r.s(12)),
             TextField(
               controller: amountCtrl,
               keyboardType: TextInputType.number,
@@ -460,9 +462,9 @@ class _WalletScreenState extends State<WalletScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: r.s(8)),
             Text('Saldo atual: ${_formatCoins(_coins)} coins',
-                style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
           ],
         ),
         actions: [
@@ -509,10 +511,10 @@ class _WalletScreenState extends State<WalletScreen> {
             },
             child: Container(
               padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
                 color: const Color(0xFF00AAFF),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(r.s(20)),
               ),
               child: const Text('Transferir',
                   style: TextStyle(
@@ -537,13 +539,13 @@ class _WalletScreenState extends State<WalletScreen> {
         builder: (ctx, setDialogState) => AlertDialog(
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(r.s(16)),
           ),
           title: const Row(
             children: [
               Icon(Icons.volunteer_activism_rounded,
                   color: Color(0xFFE91E63)),
-              SizedBox(width: 8),
+              SizedBox(width: r.s(8)),
               Text('Enviar Props',
                   style: TextStyle(
                       color: Color(0xFF333333),
@@ -569,12 +571,12 @@ class _WalletScreenState extends State<WalletScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: r.s(16)),
               const Text('Quantidade de Props',
                   style: TextStyle(
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF333333))),
-              const SizedBox(height: 8),
+              SizedBox(height: r.s(8)),
               Wrap(
                 spacing: 8,
                 children: [5, 10, 25, 50, 100].map((amount) {
@@ -598,9 +600,9 @@ class _WalletScreenState extends State<WalletScreen> {
                   );
                 }).toList(),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: r.s(8)),
               Text('Custo: $selectedAmount coins',
-                  style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                  style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
             ],
           ),
           actions: [
@@ -643,12 +645,12 @@ class _WalletScreenState extends State<WalletScreen> {
               },
               child: Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFFE91E63), Color(0xFFC2185B)],
                   ),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(r.s(20)),
                 ),
                 child: const Text('Enviar',
                     style: TextStyle(
@@ -682,15 +684,16 @@ class _WalletMenuTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        padding: const EdgeInsets.all(14),
+        margin: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(4)),
+        padding: EdgeInsets.all(r.s(14)),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(r.s(12)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.04),
@@ -702,15 +705,15 @@ class _WalletMenuTile extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: r.s(40),
+              height: r.s(40),
               decoration: BoxDecoration(
                 color: iconColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(r.s(10)),
               ),
-              child: Icon(icon, color: iconColor, size: 22),
+              child: Icon(icon, color: iconColor, size: r.s(22)),
             ),
-            const SizedBox(width: 14),
+            SizedBox(width: r.s(14)),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -720,19 +723,19 @@ class _WalletMenuTile extends StatelessWidget {
                     style: const TextStyle(
                       color: Color(0xFF333333),
                       fontWeight: FontWeight.w600,
-                      fontSize: 14,
+                      fontSize: r.fs(14),
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                    style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
                   ),
                 ],
               ),
             ),
             Icon(Icons.chevron_right_rounded,
-                color: Colors.grey[400], size: 22),
+                color: Colors.grey[400], size: r.s(22)),
           ],
         ),
       ),

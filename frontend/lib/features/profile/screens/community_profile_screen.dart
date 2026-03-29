@@ -8,6 +8,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/helpers.dart';
 import '../../chat/widgets/chat_bubble.dart';
 import '../../../core/widgets/amino_custom_title.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Perfil da Comunidade — Layout fiel ao Amino Apps.
 /// Banner + Avatar centralizado + Nome + Nível/Título + Tags + Editar
@@ -112,6 +113,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     if (_isLoading) {
       return const Scaffold(
         backgroundColor: context.scaffoldBg,
@@ -166,31 +168,31 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
             backgroundColor: context.scaffoldBg,
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_rounded,
-                  color: Colors.white, size: 20),
+              icon: Icon(Icons.arrow_back_ios_rounded,
+                  color: Colors.white, size: r.s(20)),
               onPressed: () => context.pop(),
             ),
             actions: [
               // Online indicator
               Padding(
-                padding: const EdgeInsets.only(right: 4),
+                padding: EdgeInsets.only(right: r.s(4)),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      width: 8,
-                      height: 8,
+                      width: r.s(8),
+                      height: r.s(8),
                       decoration: BoxDecoration(
                         color: isOnline ? Colors.green : Colors.grey[600],
                         shape: BoxShape.circle,
                       ),
                     ),
-                    const SizedBox(width: 4),
+                    SizedBox(width: r.s(4)),
                     Text(
                       isOnline ? 'Online' : 'Offline',
                       style: TextStyle(
                         color: isOnline ? Colors.white : Colors.grey[500],
-                        fontSize: 12,
+                        fontSize: r.fs(12),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -198,8 +200,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.more_horiz_rounded,
-                    color: Colors.white, size: 22),
+                icon: Icon(Icons.more_horiz_rounded,
+                    color: Colors.white, size: r.s(22)),
                 onPressed: () => _showOptions(context),
               ),
             ],
@@ -224,7 +226,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                     bottom: 0,
                     left: 0,
                     right: 0,
-                    height: 180,
+                    height: r.s(180),
                     child: Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
@@ -250,38 +252,38 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                         // Avatar centralizado
                         AvatarWithFrame(
                           avatarUrl: displayAvatar,
-                          size: 96,
+                          size: r.s(96),
                           showAminoPlus: _user?.isPremium ?? false,
                         ),
-                        const SizedBox(height: 10),
+                        SizedBox(height: r.s(10)),
 
                         // Nome
                         Text(
                           displayName,
                           style: TextStyle(
                             color: context.textPrimary,
-                            fontSize: 22,
+                            fontSize: r.fs(22),
                             fontWeight: FontWeight.w800,
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 6),
+                        SizedBox(height: r.s(6)),
 
                         // Level badge + Level title (estilo Amino: Lv13 Best Wizzard)
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 4, vertical: 3),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: r.s(4), vertical: r.s(3)),
                           decoration: BoxDecoration(
                             color: Colors.black.withValues(alpha: 0.4),
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(r.s(16)),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               // Level number badge
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: r.s(6), vertical: 2),
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
                                     colors: [
@@ -290,7 +292,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                           .withValues(alpha: 0.7),
                                     ],
                                   ),
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(r.s(12)),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -299,30 +301,30 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                       'Lv',
                                       style: TextStyle(
                                         color: Colors.white,
-                                        fontSize: 8,
+                                        fontSize: r.fs(8),
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                     Text(
                                       '$level',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         color: Colors.white,
-                                        fontSize: 12,
+                                        fontSize: r.fs(12),
                                         fontWeight: FontWeight.w900,
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                              const SizedBox(width: 6),
+                              SizedBox(width: r.s(6)),
                               // Level title (ex: Explorador, Mestre)
                               Padding(
-                                padding: const EdgeInsets.only(right: 8),
+                                padding: EdgeInsets.only(right: r.s(8)),
                                 child: Text(
                                   title,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 11,
+                                    fontSize: r.fs(11),
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
@@ -332,38 +334,38 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                         ),
                         // Role badge (Líder/Curador) separado
                         if (roleTitle != null) ...[                          
-                          const SizedBox(height: 4),
+                          SizedBox(height: r.s(4)),
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: r.s(10), vertical: r.s(4)),
                             decoration: BoxDecoration(
                               color:
                                   Colors.white.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(r.s(12)),
                             ),
                             child: Text(
                               roleTitle,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 11,
+                                fontSize: r.fs(11),
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
                         ],
-                        const SizedBox(height: 8),
+                        SizedBox(height: r.s(8)),
 
                         // Custom titles (tags/chips)
                         if (titles.isNotEmpty)
                           Padding(
                             padding:
-                                const EdgeInsets.symmetric(horizontal: 24),
+                                EdgeInsets.symmetric(horizontal: r.s(24)),
                             child: AminoCustomTitleList(
                               titles: titles,
                               maxVisible: 6,
                             ),
                           ),
-                        const SizedBox(height: 10),
+                        SizedBox(height: r.s(10)),
 
                         // Botão Editar / Friends+Chat
                         if (_isOwnProfile)
@@ -371,12 +373,12 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                             onTap: () => context.push(
                                 '/community/${widget.communityId}/profile/edit'),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 8),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: r.s(20), vertical: r.s(8)),
                               decoration: BoxDecoration(
                                 color:
                                     Colors.white.withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(r.s(8)),
                                 border: Border.all(
                                   color:
                                       Colors.white.withValues(alpha: 0.2),
@@ -386,14 +388,14 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(Icons.edit_rounded,
-                                      size: 14, color: Colors.grey[300]),
-                                  const SizedBox(width: 6),
+                                      size: r.s(14), color: Colors.grey[300]),
+                                  SizedBox(width: r.s(6)),
                                   Text(
                                     'Editar',
                                     style: TextStyle(
                                       color: Colors.grey[200],
                                       fontWeight: FontWeight.w700,
-                                      fontSize: 13,
+                                      fontSize: r.fs(13),
                                     ),
                                   ),
                                 ],
@@ -454,31 +456,31 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                   }
                                 },
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 8),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: r.s(16), vertical: r.s(8)),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFFF9800),
-                                    borderRadius: BorderRadius.circular(20),
+                                    borderRadius: BorderRadius.circular(r.s(20)),
                                   ),
                                   child: const Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Text('😊',
-                                          style: TextStyle(fontSize: 14)),
-                                      SizedBox(width: 6),
+                                          style: TextStyle(fontSize: r.fs(14))),
+                                      SizedBox(width: r.s(6)),
                                       Text(
                                         'Friends',
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontWeight: FontWeight.w700,
-                                          fontSize: 13,
+                                          fontSize: r.fs(13),
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 10),
+                              SizedBox(width: r.s(10)),
                               GestureDetector(
                                 onTap: () async {
                                   // Criar ou abrir DM com o usuário
@@ -521,26 +523,26 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                   }
                                 },
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 8),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: r.s(16), vertical: r.s(8)),
                                   decoration: BoxDecoration(
                                     color:
                                         Colors.white.withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(20),
+                                    borderRadius: BorderRadius.circular(r.s(20)),
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Icon(Icons.chat_bubble_rounded,
-                                          size: 14,
+                                          size: r.s(14),
                                           color: Colors.grey[300]),
-                                      const SizedBox(width: 6),
+                                      SizedBox(width: r.s(6)),
                                       Text(
                                         'Chat',
                                         style: TextStyle(
                                           color: Colors.grey[200],
                                           fontWeight: FontWeight.w700,
-                                          fontSize: 13,
+                                          fontSize: r.fs(13),
                                         ),
                                       ),
                                     ],
@@ -549,7 +551,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                               ),
                             ],
                           ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: r.s(12)),
                       ],
                     ),
                   ),
@@ -563,7 +565,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           // ==================================================================
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: r.s(16)),
               child: Row(
                 children: [
                   // Conquistas badge
@@ -579,32 +581,32 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                       );
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: r.s(12), vertical: r.s(6)),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Color(0xFFFF9800), Color(0xFFFFB74D)],
                         ),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(r.s(16)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const Text('🏆',
-                              style: TextStyle(fontSize: 12)),
-                          const SizedBox(width: 4),
+                              style: TextStyle(fontSize: r.fs(12))),
+                          SizedBox(width: r.s(4)),
                           const Text(
                             'Conquistas',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 11,
+                              fontSize: r.fs(11),
                               fontWeight: FontWeight.w700,
                             ),
                           ),
                           if (streak > 0) ...[
-                            const SizedBox(width: 4),
+                            SizedBox(width: r.s(4)),
                             const Text('❗',
-                                style: TextStyle(fontSize: 10)),
+                                style: TextStyle(fontSize: r.fs(10))),
                           ],
                         ],
                       ),
@@ -615,20 +617,20 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                   GestureDetector(
                     onTap: () => context.push('/wallet'),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: r.s(10), vertical: r.s(6)),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Color(0xFF2196F3), Color(0xFF42A5F5)],
                         ),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(r.s(16)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
-                            width: 16,
-                            height: 16,
+                            width: r.s(16),
+                            height: r.s(16),
                             decoration: const BoxDecoration(
                               shape: BoxShape.circle,
                               gradient: LinearGradient(
@@ -642,30 +644,30 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                               child: Text('A',
                                   style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 9,
+                                      fontSize: r.fs(9),
                                       fontWeight: FontWeight.w900,
                                       height: 1.0)),
                             ),
                           ),
-                          const SizedBox(width: 4),
+                          SizedBox(width: r.s(4)),
                           Text(
                             formatCount(coins),
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
-                              fontSize: 12,
+                              fontSize: r.fs(12),
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          const SizedBox(width: 4),
+                          SizedBox(width: r.s(4)),
                           Container(
-                            width: 16,
-                            height: 16,
+                            width: r.s(16),
+                            height: r.s(16),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.3),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.add,
-                                color: Colors.white, size: 11),
+                            child: Icon(Icons.add,
+                                color: Colors.white, size: r.s(11)),
                           ),
                         ],
                       ),
@@ -681,7 +683,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           // ==================================================================
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              padding: EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(8)),
               child: Row(
                 children: [
                   Expanded(
@@ -691,7 +693,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                           formatCount(reputation),
                           style: TextStyle(
                             color: context.textPrimary,
-                            fontSize: 28,
+                            fontSize: r.fs(28),
                             fontWeight: FontWeight.w900,
                           ),
                         ),
@@ -700,7 +702,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                           'Reputação',
                           style: TextStyle(
                               color: Colors.grey[500],
-                              fontSize: 12,
+                              fontSize: r.fs(12),
                               fontWeight: FontWeight.w500),
                         ),
                       ],
@@ -716,7 +718,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                             formatCount(_followingCount),
                             style: TextStyle(
                               color: context.textPrimary,
-                              fontSize: 28,
+                              fontSize: r.fs(28),
                               fontWeight: FontWeight.w900,
                             ),
                           ),
@@ -725,7 +727,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                             'Seguindo',
                             style: TextStyle(
                                 color: Colors.grey[500],
-                                fontSize: 12,
+                                fontSize: r.fs(12),
                                 fontWeight: FontWeight.w500),
                           ),
                         ],
@@ -742,7 +744,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                             formatCount(_followersCount),
                             style: TextStyle(
                               color: context.textPrimary,
-                              fontSize: 28,
+                              fontSize: r.fs(28),
                               fontWeight: FontWeight.w900,
                             ),
                           ),
@@ -751,7 +753,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                             'Seguidores',
                             style: TextStyle(
                                 color: Colors.grey[500],
-                                fontSize: 12,
+                                fontSize: r.fs(12),
                                 fontWeight: FontWeight.w500),
                           ),
                         ],
@@ -768,8 +770,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           // ==================================================================
           SliverToBoxAdapter(
             child: Container(
-              margin: const EdgeInsets.fromLTRB(0, 8, 0, 0),
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+              margin: EdgeInsets.fromLTRB(0, r.s(8), 0, 0),
+              padding: EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(12)),
               decoration: BoxDecoration(
                 color: context.surfaceColor,
                 border: Border(
@@ -789,32 +791,32 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                         'Biografia',
                         style: TextStyle(
                           color: context.textPrimary,
-                          fontSize: 18,
+                          fontSize: r.fs(18),
                           fontWeight: FontWeight.w800,
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      SizedBox(width: r.s(10)),
                       if (joinedAt != null)
                         Expanded(
                           child: Text(
                             _memberSinceText(joinedAt),
                             style: TextStyle(
                               color: Colors.grey[500],
-                              fontSize: 11,
+                              fontSize: r.fs(11),
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: r.s(10)),
                   // Bio text
                   if (displayBio.isNotEmpty)
                     Text(
                       displayBio,
                       style: TextStyle(
                         color: Colors.grey[300],
-                        fontSize: 14,
+                        fontSize: r.fs(14),
                         height: 1.5,
                       ),
                       maxLines: 5,
@@ -828,7 +830,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                         'Clique aqui para adicionar sua biografia!',
                         style: TextStyle(
                           color: AppTheme.accentColor,
-                          fontSize: 13,
+                          fontSize: r.fs(13),
                         ),
                       ),
                     )
@@ -836,7 +838,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                     Text(
                       'Sem biografia',
                       style: TextStyle(
-                          color: Colors.grey[600], fontSize: 13),
+                          color: Colors.grey[600], fontSize: r.fs(13)),
                     ),
                 ],
               ),
@@ -856,10 +858,10 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                 indicatorColor: AppTheme.primaryColor,
                 indicatorWeight: 3,
                 indicatorSize: TabBarIndicatorSize.tab,
-                labelStyle: const TextStyle(
-                    fontWeight: FontWeight.w700, fontSize: 14),
-                unselectedLabelStyle: const TextStyle(
-                    fontWeight: FontWeight.w500, fontSize: 14),
+                labelStyle: TextStyle(
+                    fontWeight: FontWeight.w700, fontSize: r.fs(14)),
+                unselectedLabelStyle: TextStyle(
+                    fontWeight: FontWeight.w500, fontSize: r.fs(14)),
                 tabs: [
                   Tab(
                     child: Text(
@@ -891,6 +893,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
   // POSTS TAB
   // ============================================================================
   Widget _buildPostsTab() {
+      final r = context.r;
     return Column(
       children: [
         // "Criar nova publicação" button
@@ -898,7 +901,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           GestureDetector(
             onTap: () => context.push('/community/${widget.communityId}/post/create'),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(14)),
               decoration: BoxDecoration(
                 color: context.surfaceColor,
                 border: Border(
@@ -909,21 +912,21 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
               child: Row(
                 children: [
                   Container(
-                    width: 28,
-                    height: 28,
+                    width: r.s(28),
+                    height: r.s(28),
                     decoration: const BoxDecoration(
                       color: Color(0xFF4CAF50),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.add,
-                        color: Colors.white, size: 18),
+                    child: Icon(Icons.add,
+                        color: Colors.white, size: r.s(18)),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: r.s(12)),
                   Text(
                     'Criar nova publicação',
                     style: TextStyle(
                       color: Colors.grey[400],
-                      fontSize: 14,
+                      fontSize: r.fs(14),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -939,8 +942,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.article_outlined,
-                          size: 48, color: Colors.grey[700]),
-                      const SizedBox(height: 12),
+                          size: r.s(48), color: Colors.grey[700]),
+                      SizedBox(height: r.s(12)),
                       Text('Nenhum post nesta comunidade',
                           style: TextStyle(
                               color: Colors.grey[500],
@@ -949,18 +952,18 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                   ),
                 )
               : ListView.builder(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(r.s(16)),
                   itemCount: _userPosts.length,
                   itemBuilder: (context, index) {
                     final post = _userPosts[index];
                     return GestureDetector(
                       onTap: () => context.push('/post/${post['id']}'),
                       child: Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(16),
+                        margin: EdgeInsets.only(bottom: r.s(12)),
+                        padding: EdgeInsets.all(r.s(16)),
                         decoration: BoxDecoration(
                           color: context.surfaceColor,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(r.s(12)),
                           border: Border.all(
                               color:
                                   Colors.white.withValues(alpha: 0.05)),
@@ -974,40 +977,40 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                 style: TextStyle(
                                     color: context.textPrimary,
                                     fontWeight: FontWeight.w700,
-                                    fontSize: 15),
+                                    fontSize: r.fs(15)),
                               ),
                             if (post['content'] != null) ...[
-                              const SizedBox(height: 4),
+                              SizedBox(height: r.s(4)),
                               Text(
                                 post['content'] as String,
                                 maxLines: 3,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                     color: Colors.grey[500],
-                                    fontSize: 13),
+                                    fontSize: r.fs(13)),
                               ),
                             ],
-                            const SizedBox(height: 10),
+                            SizedBox(height: r.s(10)),
                             Row(
                               children: [
                                 Icon(Icons.favorite_rounded,
-                                    size: 14, color: Colors.grey[600]),
-                                const SizedBox(width: 4),
+                                    size: r.s(14), color: Colors.grey[600]),
+                                SizedBox(width: r.s(4)),
                                 Text(
                                     '${post['likes_count'] ?? 0}',
                                     style: TextStyle(
                                         color: Colors.grey[600],
-                                        fontSize: 12,
+                                        fontSize: r.fs(12),
                                         fontWeight: FontWeight.w600)),
-                                const SizedBox(width: 14),
+                                SizedBox(width: r.s(14)),
                                 Icon(Icons.comment_rounded,
-                                    size: 14, color: Colors.grey[600]),
-                                const SizedBox(width: 4),
+                                    size: r.s(14), color: Colors.grey[600]),
+                                SizedBox(width: r.s(4)),
                                 Text(
                                     '${post['comments_count'] ?? 0}',
                                     style: TextStyle(
                                         color: Colors.grey[600],
-                                        fontSize: 12,
+                                        fontSize: r.fs(12),
                                         fontWeight: FontWeight.w600)),
                               ],
                             ),
@@ -1026,11 +1029,12 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
   // WALL TAB
   // ============================================================================
   Widget _buildWallTab() {
+      final r = context.r;
     return Column(
       children: [
         // Input
         Container(
-          padding: const EdgeInsets.all(12),
+          padding: EdgeInsets.all(r.s(12)),
           decoration: BoxDecoration(
             color: context.surfaceColor,
             border: Border(
@@ -1044,33 +1048,33 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                 child: TextField(
                   controller: _wallController,
                   style: TextStyle(
-                      color: context.textPrimary, fontSize: 14),
+                      color: context.textPrimary, fontSize: r.fs(14)),
                   decoration: InputDecoration(
                     hintText: 'Escreva no mural...',
                     hintStyle:
-                        TextStyle(color: Colors.grey[600], fontSize: 14),
+                        TextStyle(color: Colors.grey[600], fontSize: r.fs(14)),
                     filled: true,
                     fillColor: context.scaffoldBg,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(r.s(20)),
                       borderSide: BorderSide.none,
                     ),
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 8),
+                    contentPadding: EdgeInsets.symmetric(
+                        horizontal: r.s(14), vertical: r.s(8)),
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: r.s(8)),
               GestureDetector(
                 onTap: _postWallComment,
                 child: Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: EdgeInsets.all(r.s(10)),
                   decoration: const BoxDecoration(
                     color: AppTheme.primaryColor,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.send_rounded,
-                      color: Colors.white, size: 18),
+                  child: Icon(Icons.send_rounded,
+                      color: Colors.white, size: r.s(18)),
                 ),
               ),
             ],
@@ -1084,16 +1088,16 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                       style: TextStyle(color: Colors.grey[500])),
                 )
               : ListView.builder(
-                  padding: const EdgeInsets.all(12),
+                  padding: EdgeInsets.all(r.s(12)),
                   itemCount: _wallComments.length,
                   itemBuilder: (context, index) {
                     final comment = _wallComments[index];
                     return Container(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.all(14),
+                      margin: EdgeInsets.only(bottom: r.s(10)),
+                      padding: EdgeInsets.all(r.s(14)),
                       decoration: BoxDecoration(
                         color: context.surfaceColor,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(r.s(12)),
                         border: Border.all(
                             color:
                                 Colors.white.withValues(alpha: 0.05)),
@@ -1114,12 +1118,12 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                       : null,
                               child: comment.author?.iconUrl == null
                                   ? Icon(Icons.person_rounded,
-                                      size: 18,
+                                      size: r.s(18),
                                       color: context.textPrimary)
                                   : null,
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          SizedBox(width: r.s(10)),
                           Expanded(
                             child: Column(
                               crossAxisAlignment:
@@ -1130,14 +1134,14 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                   style: TextStyle(
                                       color: context.textPrimary,
                                       fontWeight: FontWeight.w700,
-                                      fontSize: 13),
+                                      fontSize: r.fs(13)),
                                 ),
-                                const SizedBox(height: 3),
+                                SizedBox(height: r.s(3)),
                                 Text(
                                   comment.content,
                                   style: TextStyle(
                                       color: Colors.grey[300],
-                                      fontSize: 13,
+                                      fontSize: r.fs(13),
                                       height: 1.4),
                                 ),
                               ],
@@ -1179,6 +1183,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
   }
 
   Widget _buildSavedPostsTab() {
+      final r = context.r;
     if (!_savedPostsLoaded) {
       _loadSavedPosts();
       return const Center(
@@ -1191,8 +1196,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.lock_outline_rounded, size: 48, color: Colors.grey[700]),
-            const SizedBox(height: 12),
+            Icon(Icons.lock_outline_rounded, size: r.s(48), color: Colors.grey[700]),
+            SizedBox(height: r.s(12)),
             Text('Posts salvos são privados',
                 style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w600)),
           ],
@@ -1205,22 +1210,22 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.bookmark_outline_rounded, size: 48, color: Colors.grey[700]),
-            const SizedBox(height: 12),
+            Icon(Icons.bookmark_outline_rounded, size: r.s(48), color: Colors.grey[700]),
+            SizedBox(height: r.s(12)),
             Text('Nenhum post salvo',
                 style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w600)),
-            const SizedBox(height: 6),
+            SizedBox(height: r.s(6)),
             Text('Toque no ícone de bookmark nos posts para salvá-los',
-                style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                style: TextStyle(color: Colors.grey[600], fontSize: r.fs(12))),
           ],
         ),
       );
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(r.s(16)),
       itemCount: _savedPosts.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 10),
+      separatorBuilder: (_, __) => SizedBox(height: r.s(10)),
       itemBuilder: (context, index) {
         final bookmark = _savedPosts[index];
         final post = bookmark['posts'] as Map<String, dynamic>? ?? {};
@@ -1232,25 +1237,25 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
             if (postId != null) context.push('/post/$postId');
           },
           child: Container(
-            padding: const EdgeInsets.all(14),
+            padding: EdgeInsets.all(r.s(14)),
             decoration: BoxDecoration(
               color: context.surfaceColor,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(r.s(14)),
               border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
             ),
             child: Row(
               children: [
                 if (post['cover_image_url'] != null)
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(r.s(8)),
                     child: CachedNetworkImage(
                       imageUrl: post['cover_image_url'] as String,
-                      width: 60,
-                      height: 60,
+                      width: r.s(60),
+                      height: r.s(60),
                       fit: BoxFit.cover,
                     ),
                   ),
-                if (post['cover_image_url'] != null) const SizedBox(width: 12),
+                if (post['cover_image_url'] != null) SizedBox(width: r.s(12)),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1260,22 +1265,22 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                         style: TextStyle(
                           color: context.textPrimary,
                           fontWeight: FontWeight.w700,
-                          fontSize: 14,
+                          fontSize: r.fs(14),
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: r.s(4)),
                       Text(
                         'por ${author?['nickname'] ?? 'Usuário'}',
-                        style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                        style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
                       ),
                     ],
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.bookmark_rounded,
-                      color: AppTheme.primaryColor, size: 20),
+                  icon: Icon(Icons.bookmark_rounded,
+                      color: AppTheme.primaryColor, size: r.s(20)),
                   onPressed: () async {
                     try {
                       await SupabaseService.table('bookmarks')
@@ -1369,14 +1374,14 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(r.s(16)),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 36,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 16),
+              width: r.s(36),
+              height: r.s(4),
+              margin: EdgeInsets.only(bottom: r.s(16)),
               decoration: BoxDecoration(
                 color: Colors.grey[700],
                 borderRadius: BorderRadius.circular(2),
@@ -1406,15 +1411,15 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: EdgeInsets.symmetric(vertical: r.s(12)),
         child: Row(
           children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(width: 12),
+            Icon(icon, color: color, size: r.s(20)),
+            SizedBox(width: r.s(12)),
             Text(label,
                 style: TextStyle(
                     color: color,
-                    fontSize: 14,
+                    fontSize: r.fs(14),
                     fontWeight: FontWeight.w500)),
           ],
         ),

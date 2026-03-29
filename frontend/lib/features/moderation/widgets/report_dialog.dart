@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Diálogo de denúncia — permite reportar posts, comentários, mensagens ou usuários.
 /// Categorias: Bullying, Art Theft, Conteúdo Impróprio, Spam, Off-Topic, Outro.
@@ -158,6 +159,7 @@ class _ReportDialogState extends State<ReportDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -171,25 +173,25 @@ class _ReportDialogState extends State<ReportDialog> {
         children: [
           Center(
             child: Container(
-              width: 40,
-              height: 4,
+              width: r.s(40),
+              height: r.s(4),
               decoration: BoxDecoration(
                 color: context.dividerClr,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: r.s(16)),
           const Text(
             'Reportar Conteúdo',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: r.fs(18)),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: r.s(4)),
           const Text(
             'Selecione o motivo da denúncia',
-            style: TextStyle(color: context.textSecondary, fontSize: 13),
+            style: TextStyle(color: context.textSecondary, fontSize: r.fs(13)),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: r.s(16)),
 
           // Tipos de flag
           ...(_flagTypes.map((type) {
@@ -198,14 +200,14 @@ class _ReportDialogState extends State<ReportDialog> {
             return GestureDetector(
               onTap: () => setState(() => _selectedType = id),
               child: Container(
-                margin: const EdgeInsets.only(bottom: 6),
+                margin: EdgeInsets.only(bottom: r.s(6)),
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(12)),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? Color(type['color'] as int).withValues(alpha: 0.1)
                       : context.cardBg,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(r.s(12)),
                   border: isSelected
                       ? Border.all(
                           color: Color(type['color'] as int)
@@ -215,23 +217,23 @@ class _ReportDialogState extends State<ReportDialog> {
                 child: Row(
                   children: [
                     Icon(type['icon'] as IconData,
-                        color: Color(type['color'] as int), size: 20),
-                    const SizedBox(width: 12),
+                        color: Color(type['color'] as int), size: r.s(20)),
+                    SizedBox(width: r.s(12)),
                     Text(
                       type['label'] as String,
-                      style: const TextStyle(fontSize: 14),
+                      style: TextStyle(fontSize: r.fs(14)),
                     ),
                     const Spacer(),
                     if (isSelected)
                       Icon(Icons.check_circle_rounded,
-                          color: Color(type['color'] as int), size: 20),
+                          color: Color(type['color'] as int), size: r.s(20)),
                   ],
                 ),
               ),
             );
           })),
 
-          const SizedBox(height: 12),
+          SizedBox(height: r.s(12)),
 
           // Motivo adicional
           TextField(
@@ -242,38 +244,38 @@ class _ReportDialogState extends State<ReportDialog> {
               filled: true,
               fillColor: context.cardBg,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(r.s(12)),
                 borderSide: BorderSide.none,
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: r.s(16)),
 
           // Botão enviar
           SizedBox(
             width: double.infinity,
-            height: 48,
+            height: r.s(48),
             child: ElevatedButton(
               onPressed: _isSubmitting ? null : _submit,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.errorColor,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(r.s(12)),
                 ),
               ),
               child: _isSubmitting
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
+                  ? SizedBox(
+                      width: r.s(20),
+                      height: r.s(20),
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white),
                     )
                   : const Text('Enviar Denúncia',
                       style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: r.fs(15))),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: r.s(16)),
         ],
       ),
     );

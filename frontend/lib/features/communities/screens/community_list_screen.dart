@@ -10,6 +10,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/amino_top_bar.dart';
 import '../../../core/widgets/amino_particles_bg.dart';
 import '../../../core/providers/notification_provider.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Provider para comunidades do usuário.
 final userCommunitiesProvider =
@@ -119,6 +120,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final communitiesAsync = ref.watch(userCommunitiesProvider);
     // Observar status de check-in para rebuild automático
     ref.watch(checkInStatusProvider);
@@ -159,6 +161,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
   }
 
   Widget _buildCommunityList(List<CommunityModel> communities) {
+      final r = context.r;
     return RefreshIndicator(
       color: AppTheme.primaryColor,
       onRefresh: () async {
@@ -174,12 +177,12 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ── Título "Minhas Comunidades" ──
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
+            Padding(
+              padding: EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16), r.s(8)),
               child: Text(
                 'Minhas Comunidades',
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: r.fs(20),
                   fontWeight: FontWeight.w800,
                   color: context.textPrimary,
                 ),
@@ -188,15 +191,15 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
 
             // ── Grade horizontal de cards ──
             SizedBox(
-              height: 195,
+              height: r.s(195),
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.only(left: 14, right: 8, top: 18),
+                padding: EdgeInsets.only(left: r.s(14), right: r.s(8), top: r.s(18)),
                 itemCount: communities.length + 1,
                 itemBuilder: (context, index) {
                   if (index < communities.length) {
                     return Padding(
-                      padding: const EdgeInsets.only(right: 8),
+                      padding: EdgeInsets.only(right: r.s(8)),
                       child: _AminoCommunityCard(
                         community: communities[index],
                         ref: ref,
@@ -210,7 +213,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                     );
                   }
                   return Padding(
-                    padding: const EdgeInsets.only(right: 12),
+                    padding: EdgeInsets.only(right: r.s(12)),
                     child: _JoinCommunityCard(
                       onTap: () => context.go('/explore'),
                     ),
@@ -221,13 +224,13 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
 
             // ── Texto instrucional ──
             Padding(
-              padding: const EdgeInsets.only(top: 16, bottom: 16),
+              padding: EdgeInsets.only(top: r.s(16), bottom: r.s(16)),
               child: Center(
                 child: Text(
                   'Pressione e segure o card para mudar a posição',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.35),
-                    fontSize: 12,
+                    fontSize: r.fs(12),
                   ),
                 ),
               ),
@@ -235,14 +238,14 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
 
             // ── Botão outline "CRIE SUA COMUNIDADE" ──
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: EdgeInsets.symmetric(horizontal: r.s(24)),
               child: GestureDetector(
                 onTap: () => context.push('/community/create'),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: EdgeInsets.symmetric(vertical: r.s(16)),
                   decoration: BoxDecoration(
                     color: Colors.transparent,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(r.s(8)),
                     border: Border.all(
                       color: AppTheme.accentColor,
                       width: 1.5,
@@ -253,7 +256,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                       'CRIE SUA COMUNIDADE',
                       style: TextStyle(
                         color: AppTheme.accentColor,
-                        fontSize: 15,
+                        fontSize: r.fs(15),
                         fontWeight: FontWeight.w800,
                         letterSpacing: 0.5,
                       ),
@@ -281,47 +284,48 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
   }
 
   Widget _buildEmptyState() {
+      final r = context.r;
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.all(r.s(32)),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.groups_rounded,
-                color: context.textHint, size: 48),
-            const SizedBox(height: 12),
+                color: context.textHint, size: r.s(48)),
+            SizedBox(height: r.s(12)),
             const Text(
               'Nenhuma comunidade',
               style: TextStyle(
                 color: context.textPrimary,
-                fontSize: 16,
+                fontSize: r.fs(16),
                 fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: r.s(6)),
             const Text(
               'Explore e entre em comunidades para começar!',
               style: TextStyle(
                 color: context.textSecondary,
-                fontSize: 13,
+                fontSize: r.fs(13),
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 18),
+            SizedBox(height: r.s(18)),
             GestureDetector(
               onTap: () => context.go('/explore'),
               child: Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                    EdgeInsets.symmetric(horizontal: r.s(24), vertical: r.s(10)),
                 decoration: BoxDecoration(
                   color: AppTheme.primaryColor,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(r.s(20)),
                 ),
                 child: const Text(
                   'Explorar Comunidades',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 14,
+                    fontSize: r.fs(14),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -334,32 +338,33 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
   }
 
   Widget _buildErrorState() {
+      final r = context.r;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.error_outline_rounded,
-              color: AppTheme.errorColor, size: 40),
-          const SizedBox(height: 10),
+              color: AppTheme.errorColor, size: r.s(40)),
+          SizedBox(height: r.s(10)),
           const Text(
             'Erro ao carregar comunidades',
-            style: TextStyle(color: context.textPrimary, fontSize: 14),
+            style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: r.s(12)),
           GestureDetector(
             onTap: () => ref.invalidate(userCommunitiesProvider),
             child: Container(
               padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  EdgeInsets.symmetric(horizontal: r.s(20), vertical: r.s(10)),
               decoration: BoxDecoration(
                 color: AppTheme.primaryColor,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(r.s(16)),
               ),
               child: const Text(
                 'Tentar novamente',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 13,
+                  fontSize: r.fs(13),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -473,6 +478,7 @@ class _AminoCommunityCardState extends State<_AminoCommunityCard> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final color = _parseColor(widget.community.themeColor);
     final checkInStatus = widget.ref.watch(checkInStatusProvider);
     final statusMap = checkInStatus.valueOrNull ?? {};
@@ -493,7 +499,7 @@ class _AminoCommunityCardState extends State<_AminoCommunityCard> {
               top: _AminoCommunityCard._iconOverflow,
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(r.s(10)),
                   color: const Color(0xFF1E1E3A),
                   boxShadow: [
                     BoxShadow(
@@ -527,7 +533,7 @@ class _AminoCommunityCardState extends State<_AminoCommunityCard> {
                                       child: Icon(Icons.groups_rounded,
                                           color: Colors.white
                                               .withValues(alpha: 0.2),
-                                          size: 28),
+                                          size: r.s(28)),
                                     ),
                                   ),
                                 )
@@ -537,7 +543,7 @@ class _AminoCommunityCardState extends State<_AminoCommunityCard> {
                                     child: Icon(Icons.groups_rounded,
                                         color: Colors.white
                                             .withValues(alpha: 0.2),
-                                        size: 28),
+                                        size: r.s(28)),
                                   ),
                                 ),
 
@@ -546,7 +552,7 @@ class _AminoCommunityCardState extends State<_AminoCommunityCard> {
                             bottom: 0,
                             left: 0,
                             right: 0,
-                            height: 50,
+                            height: r.s(50),
                             child: Container(
                               decoration: const BoxDecoration(
                                 gradient: LinearGradient(
@@ -568,9 +574,9 @@ class _AminoCommunityCardState extends State<_AminoCommunityCard> {
                             right: 6,
                             child: Text(
                               widget.community.name,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 11,
+                                fontSize: r.fs(11),
                                 fontWeight: FontWeight.w700,
                                 height: 1.2,
                                 shadows: [
@@ -598,23 +604,23 @@ class _AminoCommunityCardState extends State<_AminoCommunityCard> {
                       GestureDetector(
                         onTap: _isCheckingIn ? null : _doCheckIn,
                         child: Padding(
-                          padding: const EdgeInsets.fromLTRB(6, 4, 6, 5),
+                          padding: EdgeInsets.fromLTRB(r.s(6), r.s(4), r.s(6), r.s(5)),
                           child: Container(
                             width: double.infinity,
-                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            padding: EdgeInsets.symmetric(vertical: r.s(4)),
                             decoration: BoxDecoration(
                               color: _isCheckingIn
                                   ? AppTheme.accentColor.withValues(alpha: 0.5)
                                   : AppTheme.accentColor,
-                              borderRadius: BorderRadius.circular(6),
+                              borderRadius: BorderRadius.circular(r.s(6)),
                             ),
                             child: _isCheckingIn
-                                ? const SizedBox(
-                                    height: 14,
+                                ? SizedBox(
+                                    height: r.s(14),
                                     child: Center(
                                       child: SizedBox(
-                                        width: 12,
-                                        height: 12,
+                                        width: r.s(12),
+                                        height: r.s(12),
                                         child: CircularProgressIndicator(
                                           strokeWidth: 1.5,
                                           color: Colors.white,
@@ -626,7 +632,7 @@ class _AminoCommunityCardState extends State<_AminoCommunityCard> {
                                     'CHECK IN',
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 10,
+                                      fontSize: r.fs(10),
                                       fontWeight: FontWeight.w800,
                                       letterSpacing: 0.5,
                                     ),
@@ -638,29 +644,29 @@ class _AminoCommunityCardState extends State<_AminoCommunityCard> {
                     else
                       // Streak badge — mostra quando já fez check-in hoje
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(6, 4, 6, 5),
+                        padding: EdgeInsets.fromLTRB(r.s(6), r.s(4), r.s(6), r.s(5)),
                         child: Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 3),
+                          padding: EdgeInsets.symmetric(vertical: r.s(3)),
                           decoration: BoxDecoration(
                             color: context.cardBgLight,
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: BorderRadius.circular(r.s(6)),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.local_fire_department_rounded,
                                 color: AppTheme.warningColor,
-                                size: 12,
+                                size: r.s(12),
                               ),
                               const SizedBox(width: 2),
                               Text(
                                 '$streak dia${streak > 1 ? 's' : ''}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: AppTheme.warningColor,
-                                  fontSize: 9,
+                                  fontSize: r.fs(9),
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -681,7 +687,7 @@ class _AminoCommunityCardState extends State<_AminoCommunityCard> {
                 width: _AminoCommunityCard._iconSize,
                 height: _AminoCommunityCard._iconSize,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(r.s(8)),
                   color: context.scaffoldBg,
                   border: Border.all(color: color, width: 2.5),
                   boxShadow: [
@@ -700,8 +706,8 @@ class _AminoCommunityCardState extends State<_AminoCommunityCard> {
                         memCacheWidth: 96,
                         memCacheHeight: 96,
                       )
-                    : const Icon(Icons.person,
-                        color: Colors.white54, size: 18),
+                    : Icon(Icons.person,
+                        color: Colors.white54, size: r.s(18)),
               ),
             ),
           ],
@@ -722,13 +728,14 @@ class _JoinCommunityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 120,
-        margin: const EdgeInsets.only(top: 18),
+        width: r.s(120),
+        margin: EdgeInsets.only(top: r.s(18)),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(r.s(10)),
           color: context.cardBgLight.withValues(alpha: 0.5),
           border: Border.all(
             color: Colors.white.withValues(alpha: 0.06),
@@ -742,15 +749,15 @@ class _JoinCommunityCard extends StatelessWidget {
             Icon(
               Icons.add,
               color: Colors.white.withValues(alpha: 0.55),
-              size: 28,
+              size: r.s(28),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: r.s(10)),
             // Texto
             Text(
               'Entrar em uma\ncomunidade',
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.55),
-                fontSize: 12,
+                fontSize: r.fs(12),
                 fontWeight: FontWeight.w500,
                 height: 1.3,
               ),
@@ -851,6 +858,7 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final color = _parseColor(widget.community.themeColor);
     final checkInStatus = widget.ref.watch(checkInStatusProvider);
     final statusMap = checkInStatus.valueOrNull ?? {};
@@ -868,9 +876,9 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
         children: [
           // Handle
           Container(
-            width: 32,
-            height: 3,
-            margin: const EdgeInsets.only(top: 10),
+            width: r.s(32),
+            height: r.s(3),
+            margin: EdgeInsets.only(top: r.s(10)),
             decoration: BoxDecoration(
               color: Colors.grey[700],
               borderRadius: BorderRadius.circular(2),
@@ -884,7 +892,7 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(16)),
                 child: SizedBox(
-                  height: 140,
+                  height: r.s(140),
                   width: double.infinity,
                   child: widget.community.bannerUrl != null
                       ? CachedNetworkImage(
@@ -918,7 +926,7 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
                 bottom: 0,
                 left: 0,
                 right: 0,
-                height: 60,
+                height: r.s(60),
                 child: Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -937,14 +945,14 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
 
           // Ícone + Nome + Tagline
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+            padding: EdgeInsets.fromLTRB(r.s(16), 0, r.s(16), 0),
             child: Row(
               children: [
                 Container(
-                  width: 48,
-                  height: 48,
+                  width: r.s(48),
+                  height: r.s(48),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(r.s(12)),
                     color: context.cardBg,
                     border: Border.all(color: color, width: 2),
                   ),
@@ -955,9 +963,9 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
                           fit: BoxFit.cover,
                         )
                       : Icon(Icons.groups_rounded,
-                          color: context.textHint, size: 24),
+                          color: context.textHint, size: r.s(24)),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: r.s(12)),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -966,7 +974,7 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
                         widget.community.name,
                         style: TextStyle(
                           color: context.textPrimary,
-                          fontSize: 16,
+                          fontSize: r.fs(16),
                           fontWeight: FontWeight.w800,
                         ),
                         maxLines: 1,
@@ -978,7 +986,7 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
                           widget.community.tagline,
                           style: TextStyle(
                             color: context.textSecondary,
-                            fontSize: 11,
+                            fontSize: r.fs(11),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -991,11 +999,11 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
             ),
           ),
 
-          const SizedBox(height: 10),
+          SizedBox(height: r.s(10)),
 
           // Estatísticas
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: r.s(16)),
             child: Row(
               children: [
                 _StatChip(
@@ -1003,14 +1011,14 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
                   label: '${_formatCount(widget.community.membersCount)} membros',
                   color: AppTheme.accentColor,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: r.s(8)),
                 _StatChip(
                   icon: Icons.article_rounded,
                   label: '${_formatCount(widget.community.postsCount)} posts',
                   color: AppTheme.aminoPurple,
                 ),
                 if (hasCheckedIn && streak > 0) ...[
-                  const SizedBox(width: 8),
+                  SizedBox(width: r.s(8)),
                   _StatChip(
                     icon: Icons.local_fire_department_rounded,
                     label: '$streak dia${streak > 1 ? 's' : ''}',
@@ -1023,14 +1031,14 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
 
           // Descrição
           if (widget.community.description.isNotEmpty) ...[
-            const SizedBox(height: 10),
+            SizedBox(height: r.s(10)),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: r.s(16)),
               child: Text(
                 widget.community.description,
                 style: TextStyle(
                   color: context.textSecondary,
-                  fontSize: 12,
+                  fontSize: r.fs(12),
                   height: 1.4,
                 ),
                 maxLines: 3,
@@ -1039,13 +1047,13 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
             ),
           ],
 
-          const SizedBox(height: 16),
+          SizedBox(height: r.s(16)),
 
           // Botões
           Padding(
             padding: EdgeInsets.only(
-              left: 16,
-              right: 16,
+              left: r.s(16),
+              right: r.s(16),
               bottom: MediaQuery.of(context).padding.bottom + 12,
             ),
             child: Row(
@@ -1057,16 +1065,16 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
                       context.push('/community/${widget.community.id}');
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 11),
+                      padding: EdgeInsets.symmetric(vertical: r.s(11)),
                       decoration: BoxDecoration(
                         color: AppTheme.primaryColor,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(r.s(8)),
                       ),
                       child: const Text(
                         'Abrir',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 14,
+                          fontSize: r.fs(14),
                           fontWeight: FontWeight.w800,
                         ),
                         textAlign: TextAlign.center,
@@ -1074,22 +1082,22 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: r.s(8)),
                 // Botão Check In ou badge de streak
                 if (!hasCheckedIn)
                   GestureDetector(
                     onTap: _isCheckingIn ? null : _doCheckIn,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 11),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: r.s(16), vertical: r.s(11)),
                       decoration: BoxDecoration(
                         color: AppTheme.accentColor,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(r.s(8)),
                       ),
                       child: _isCheckingIn
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
+                          ? SizedBox(
+                              width: r.s(16),
+                              height: r.s(16),
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 color: Colors.white,
@@ -1099,7 +1107,7 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
                               'Check In',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 13,
+                                fontSize: r.fs(13),
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -1107,11 +1115,11 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
                   )
                 else
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 11),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: r.s(12), vertical: r.s(11)),
                     decoration: BoxDecoration(
                       color: context.cardBg,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(r.s(8)),
                       border: Border.all(
                           color: AppTheme.warningColor.withValues(alpha: 0.4),
                           width: 1),
@@ -1119,14 +1127,14 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.local_fire_department_rounded,
-                            color: AppTheme.warningColor, size: 16),
-                        const SizedBox(width: 4),
+                        Icon(Icons.local_fire_department_rounded,
+                            color: AppTheme.warningColor, size: r.s(16)),
+                        SizedBox(width: r.s(4)),
                         Text(
                           '$streak dia${streak > 1 ? 's' : ''}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppTheme.warningColor,
-                            fontSize: 13,
+                            fontSize: r.fs(13),
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -1155,23 +1163,24 @@ class _StatChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: r.s(8), vertical: r.s(4)),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(r.s(16)),
         border: Border.all(color: color.withValues(alpha: 0.25), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: color, size: 12),
-          const SizedBox(width: 4),
+          Icon(icon, color: color, size: r.s(12)),
+          SizedBox(width: r.s(4)),
           Text(
             label,
             style: TextStyle(
               color: color,
-              fontSize: 10,
+              fontSize: r.fs(10),
               fontWeight: FontWeight.w600,
             ),
           ),

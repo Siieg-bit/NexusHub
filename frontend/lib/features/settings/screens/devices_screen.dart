@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Tela de Dispositivos Conectados — lista sessões ativas e permite revogar.
 /// Baseado na tabela device_fingerprints do schema v5.
@@ -42,10 +43,10 @@ class _DevicesScreenState extends State<DevicesScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(r.s(16)),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
-        title: const Text('Revogar Dispositivo', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
+        title: Text('Revogar Dispositivo', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
         content: Text('Isso encerrará a sessão neste dispositivo. '
             'O usuário precisará fazer login novamente.', style: TextStyle(color: Colors.grey[500])),
         actions: [
@@ -55,10 +56,10 @@ class _DevicesScreenState extends State<DevicesScreen> {
           GestureDetector(
             onTap: () => Navigator.pop(ctx, true),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
                 color: AppTheme.errorColor,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(r.s(20)),
                 boxShadow: [
                   BoxShadow(
                     color: AppTheme.errorColor.withValues(alpha: 0.3),
@@ -86,10 +87,10 @@ class _DevicesScreenState extends State<DevicesScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Dispositivo revogado', style: TextStyle(color: context.textPrimary)),
+            content: Text('Dispositivo revogado', style: TextStyle(color: context.textPrimary)),
             backgroundColor: context.surfaceColor,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(12)), side: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
           ),
         );
       }
@@ -100,7 +101,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
             content: Text('Erro: $e', style: const TextStyle(color: Colors.white)),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(12))),
           ),
         );
       }
@@ -113,10 +114,10 @@ class _DevicesScreenState extends State<DevicesScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(r.s(16)),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
-        title: const Text('Revogar Todos os Outros', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
+        title: Text('Revogar Todos os Outros', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
         content: Text('Isso encerrará todas as sessões exceto a atual. '
             'Todos os outros dispositivos precisarão fazer login novamente.', style: TextStyle(color: Colors.grey[500])),
         actions: [
@@ -126,10 +127,10 @@ class _DevicesScreenState extends State<DevicesScreen> {
           GestureDetector(
             onTap: () => Navigator.pop(ctx, true),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
                 color: AppTheme.errorColor,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(r.s(20)),
                 boxShadow: [
                   BoxShadow(
                     color: AppTheme.errorColor.withValues(alpha: 0.3),
@@ -154,10 +155,10 @@ class _DevicesScreenState extends State<DevicesScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Todas as outras sessões foram encerradas', style: TextStyle(color: context.textPrimary)),
+            content: Text('Todas as outras sessões foram encerradas', style: TextStyle(color: context.textPrimary)),
             backgroundColor: context.surfaceColor,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(12)), side: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
           ),
         );
       }
@@ -168,7 +169,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
             content: Text('Erro: $e', style: const TextStyle(color: Colors.white)),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(12))),
           ),
         );
       }
@@ -192,6 +193,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
@@ -205,15 +207,15 @@ class _DevicesScreenState extends State<DevicesScreen> {
             GestureDetector(
               onTap: _revokeAllOthers,
               child: Container(
-                margin: const EdgeInsets.only(right: 16),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                margin: EdgeInsets.only(right: r.s(16)),
+                padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(6)),
                 decoration: BoxDecoration(
                   color: AppTheme.errorColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(r.s(20)),
                   border: Border.all(color: AppTheme.errorColor.withValues(alpha: 0.3)),
                 ),
                 child: const Text('Revogar Outros',
-                    style: TextStyle(color: AppTheme.errorColor, fontSize: 12, fontWeight: FontWeight.w700)),
+                    style: TextStyle(color: AppTheme.errorColor, fontSize: r.fs(12), fontWeight: FontWeight.w700)),
               ),
             ),
         ],
@@ -226,48 +228,48 @@ class _DevicesScreenState extends State<DevicesScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.devices_rounded,
-                          size: 64,
+                          size: r.s(64),
                           color: Colors.grey[600]?.withValues(alpha: 0.3)),
-                      const SizedBox(height: 16),
+                      SizedBox(height: r.s(16)),
                       Text('Nenhum dispositivo registrado',
                           style: TextStyle(
-                              color: Colors.grey[500], fontSize: 16)),
+                              color: Colors.grey[500], fontSize: r.fs(16))),
                     ],
                   ),
                 )
               : ListView.builder(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(r.s(16)),
                   itemCount: _devices.length + 1,
                   itemBuilder: (context, index) {
                     if (index == 0) {
                       // Info card
                       return Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(14),
+                        margin: EdgeInsets.only(bottom: r.s(16)),
+                        padding: EdgeInsets.all(r.s(14)),
                         decoration: BoxDecoration(
                           color: context.surfaceColor,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(r.s(16)),
                           border: Border.all(
                               color: Colors.white.withValues(alpha: 0.05)),
                         ),
                         child: Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(8),
+                              padding: EdgeInsets.all(r.s(8)),
                               decoration: BoxDecoration(
                                 color: AppTheme.primaryColor.withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.info_rounded,
-                                  color: AppTheme.primaryColor, size: 20),
+                              child: Icon(Icons.info_rounded,
+                                  color: AppTheme.primaryColor, size: r.s(20)),
                             ),
-                            const SizedBox(width: 12),
+                            SizedBox(width: r.s(12)),
                             Expanded(
                               child: Text(
                                 'Gerencie os dispositivos conectados à sua conta. '
                                 'Revogue dispositivos que você não reconhece.',
                                 style: TextStyle(
-                                    fontSize: 13,
+                                    fontSize: r.fs(13),
                                     color: Colors.grey[500],
                                     height: 1.4),
                               ),
@@ -291,11 +293,11 @@ class _DevicesScreenState extends State<DevicesScreen> {
                     final isCurrentDevice =
                         device['is_current'] as bool? ?? false;
                     return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(16),
+                      margin: EdgeInsets.only(bottom: r.s(12)),
+                      padding: EdgeInsets.all(r.s(16)),
                       decoration: BoxDecoration(
                         color: context.surfaceColor,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(r.s(16)),
                         border: Border.all(
                             color: isCurrentDevice
                                 ? AppTheme.primaryColor.withValues(alpha: 0.3)
@@ -313,8 +315,8 @@ class _DevicesScreenState extends State<DevicesScreen> {
                       child: Row(
                         children: [
                           Container(
-                            width: 48,
-                            height: 48,
+                            width: r.s(48),
+                            height: r.s(48),
                             decoration: BoxDecoration(
                               gradient: isCurrentDevice
                                   ? LinearGradient(
@@ -329,7 +331,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                               color: isCurrentDevice
                                   ? null
                                   : Colors.white.withValues(alpha: 0.05),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(r.s(12)),
                             ),
                             child: Icon(
                               _getDeviceIcon(deviceType),
@@ -338,7 +340,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                                   : context.textPrimary,
                             ),
                           ),
-                          const SizedBox(width: 16),
+                          SizedBox(width: r.s(16)),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -350,13 +352,13 @@ class _DevicesScreenState extends State<DevicesScreen> {
                                           style: TextStyle(
                                               color: context.textPrimary,
                                               fontWeight: FontWeight.w700,
-                                              fontSize: 15)),
+                                              fontSize: r.fs(15))),
                                     ),
                                     if (isCurrentDevice) ...[
-                                      const SizedBox(width: 8),
+                                      SizedBox(width: r.s(8)),
                                       Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 8, vertical: 4),
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: r.s(8), vertical: r.s(4)),
                                         decoration: BoxDecoration(
                                           gradient: const LinearGradient(
                                             colors: [
@@ -365,57 +367,57 @@ class _DevicesScreenState extends State<DevicesScreen> {
                                             ],
                                           ),
                                           borderRadius:
-                                              BorderRadius.circular(20),
+                                              BorderRadius.circular(r.s(20)),
                                         ),
                                         child: const Text('Atual',
                                             style: TextStyle(
                                                 color: Colors.white,
-                                                fontSize: 10,
+                                                fontSize: r.fs(10),
                                                 fontWeight: FontWeight.w800)),
                                       ),
                                     ],
                                   ],
                                 ),
-                                const SizedBox(height: 4),
+                                SizedBox(height: r.s(4)),
                                 Text(
                                   [os, browser]
                                       .where((s) => s.isNotEmpty)
                                       .join(' · '),
                                   style: TextStyle(
                                       color: Colors.grey[500],
-                                      fontSize: 12),
+                                      fontSize: r.fs(12)),
                                 ),
                                 if (ipAddress.isNotEmpty) ...[
                                   const SizedBox(height: 2),
                                   Text('IP: $ipAddress',
                                       style: TextStyle(
                                           color: Colors.grey[600],
-                                          fontSize: 11)),
+                                          fontSize: r.fs(11))),
                                 ],
                                 if (lastSeen != null) ...[
                                   const SizedBox(height: 2),
                                   Text(
                                     'Último acesso: ${lastSeen.day.toString().padLeft(2, '0')}/${lastSeen.month.toString().padLeft(2, '0')}/${lastSeen.year} ${lastSeen.hour.toString().padLeft(2, '0')}:${lastSeen.minute.toString().padLeft(2, '0')}',
                                     style: TextStyle(
-                                        color: Colors.grey[600], fontSize: 11),
+                                        color: Colors.grey[600], fontSize: r.fs(11)),
                                   ),
                                 ],
                               ],
                             ),
                           ),
                           if (!isCurrentDevice) ...[
-                            const SizedBox(width: 12),
+                            SizedBox(width: r.s(12)),
                             GestureDetector(
                               onTap: () =>
                                   _revokeDevice(device['id'] as String),
                               child: Container(
-                                padding: const EdgeInsets.all(8),
+                                padding: EdgeInsets.all(r.s(8)),
                                 decoration: BoxDecoration(
                                   color: AppTheme.errorColor.withValues(alpha: 0.1),
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(Icons.close_rounded,
-                                    color: AppTheme.errorColor, size: 20),
+                                child: Icon(Icons.close_rounded,
+                                    color: AppTheme.errorColor, size: r.s(20)),
                               ),
                             ),
                           ],

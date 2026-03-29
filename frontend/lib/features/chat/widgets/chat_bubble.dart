@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import 'nine_slice_bubble.dart';
+import '../../../core/utils/responsive.dart';
 export '../../../core/widgets/avatar_with_frame.dart';
 
 /// Custom Chat Bubble com suporte a frames equipáveis — estilo Amino Apps.
@@ -59,6 +60,7 @@ class ChatBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     // Se tem frame de imagem, usar o frame
     if (bubbleFrameUrl != null && bubbleFrameUrl!.isNotEmpty) {
       return _buildFramedBubble(context);
@@ -69,6 +71,7 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildDefaultBubble(BuildContext context) {
+      final r = context.r;
     return Align(
       alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
       child: Padding(
@@ -93,7 +96,7 @@ class ChatBubble extends StatelessWidget {
               bottom: 8,
             ),
             child: DefaultTextStyle(
-              style: TextStyle(color: _textColor(context), fontSize: 14),
+              style: TextStyle(color: _textColor(context), fontSize: r.fs(14)),
               child: child,
             ),
           ),
@@ -234,9 +237,10 @@ class AminoPlusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Container(
       height: height,
-      padding: const EdgeInsets.symmetric(horizontal: 6),
+      padding: EdgeInsets.symmetric(horizontal: r.s(6)),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
@@ -278,11 +282,12 @@ class StreakBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(r.s(12)),
       decoration: BoxDecoration(
         color: context.cardBg,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(r.s(12)),
         border: Border.all(
           color: currentStreak > 0
               ? AppTheme.warningColor.withValues(alpha: 0.3)
@@ -301,9 +306,9 @@ class StreakBar extends StatelessWidget {
                 color: currentStreak > 0
                     ? AppTheme.warningColor
                     : Colors.grey[600],
-                size: 20,
+                size: r.s(20),
               ),
-              const SizedBox(width: 6),
+              SizedBox(width: r.s(6)),
               Text(
                 'Sequência de Check-in',
                 style: TextStyle(
@@ -311,7 +316,7 @@ class StreakBar extends StatelessWidget {
                       ? context.textPrimary
                       : Colors.grey[600],
                   fontWeight: FontWeight.w600,
-                  fontSize: 13,
+                  fontSize: r.fs(13),
                 ),
               ),
               const Spacer(),
@@ -320,12 +325,12 @@ class StreakBar extends StatelessWidget {
                   'Recorde: $maxStreak dias',
                   style: TextStyle(
                     color: Colors.grey[600],
-                    fontSize: 11,
+                    fontSize: r.fs(11),
                   ),
                 ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: r.s(8)),
           // Streak dots (últimos 7 dias)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -334,8 +339,8 @@ class StreakBar extends StatelessWidget {
               return Column(
                 children: [
                   Container(
-                    width: 32,
-                    height: 32,
+                    width: r.s(32),
+                    height: r.s(32),
                     decoration: BoxDecoration(
                       color: isActive
                           ? AppTheme.warningColor.withValues(alpha: 0.2)
@@ -350,25 +355,25 @@ class StreakBar extends StatelessWidget {
                     ),
                     child: Center(
                       child: isActive
-                          ? const Icon(Icons.check_rounded,
-                              size: 16, color: AppTheme.warningColor)
+                          ? Icon(Icons.check_rounded,
+                              size: r.s(16), color: AppTheme.warningColor)
                           : Text(
                               '${i + 1}',
                               style: TextStyle(
                                 color: Colors.grey[600],
-                                fontSize: 11,
+                                fontSize: r.fs(11),
                               ),
                             ),
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: r.s(4)),
                   Text(
                     _dayLabel(i),
                     style: TextStyle(
                       color: isActive
                           ? AppTheme.warningColor
                           : Colors.grey[600],
-                      fontSize: 9,
+                      fontSize: r.fs(9),
                       fontWeight:
                           isActive ? FontWeight.w600 : FontWeight.normal,
                     ),
@@ -378,18 +383,18 @@ class StreakBar extends StatelessWidget {
             }),
           ),
           if (currentStreak > 0) ...[
-            const SizedBox(height: 8),
+            SizedBox(height: r.s(8)),
             Row(
               children: [
-                const Icon(Icons.local_fire_department_rounded,
-                    size: 14, color: AppTheme.warningColor),
-                const SizedBox(width: 4),
+                Icon(Icons.local_fire_department_rounded,
+                    size: r.s(14), color: AppTheme.warningColor),
+                SizedBox(width: r.s(4)),
                 Text(
                   '$currentStreak dia${currentStreak > 1 ? 's' : ''} seguido${currentStreak > 1 ? 's' : ''}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppTheme.warningColor,
                     fontWeight: FontWeight.bold,
-                    fontSize: 12,
+                    fontSize: r.fs(12),
                   ),
                 ),
                 const Spacer(),
@@ -397,7 +402,7 @@ class StreakBar extends StatelessWidget {
                   'Total: $checkInDays check-ins',
                   style: TextStyle(
                     color: Colors.grey[600],
-                    fontSize: 11,
+                    fontSize: r.fs(11),
                   ),
                 ),
               ],

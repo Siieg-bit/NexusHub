@@ -7,6 +7,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/utils/amino_animations.dart';
 import '../../../core/services/supabase_service.dart';
 import '../providers/auth_provider.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Tela de login — visual Amino Apps (fundo escuro, inputs arredondados, verde).
 class LoginScreen extends ConsumerStatefulWidget {
@@ -44,38 +45,39 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final authState = ref.watch(authProvider);
 
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 28),
+          padding: EdgeInsets.symmetric(horizontal: r.s(28)),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 16),
+                SizedBox(height: r.s(16)),
 
                 // Botão voltar
                 AminoAnimations.fadeIn(
                   child: GestureDetector(
                     onTap: () => context.go('/onboarding'),
                     child: Container(
-                      width: 40,
-                      height: 40,
+                      width: r.s(40),
+                      height: r.s(40),
                       decoration: BoxDecoration(
                         color: context.cardBg,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(r.s(12)),
                       ),
                       child: Icon(Icons.arrow_back_rounded,
-                          color: context.textPrimary, size: 20),
+                          color: context.textPrimary, size: r.s(20)),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 32),
+                SizedBox(height: r.s(32)),
 
                 // Título
                 AminoAnimations.slideUp(
@@ -86,24 +88,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         'Bem-vindo\nde volta!',
                         style: TextStyle(
                           color: context.textPrimary,
-                          fontSize: 32,
+                          fontSize: r.fs(32),
                           fontWeight: FontWeight.w800,
                           height: 1.1,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: r.s(8)),
                       const Text(
                         'Faça login para continuar',
                         style: TextStyle(
                           color: context.textSecondary,
-                          fontSize: 15,
+                          fontSize: r.fs(15),
                         ),
                       ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 40),
+                SizedBox(height: r.s(40)),
 
                 // Campo Email
                 AminoAnimations.slideUp(
@@ -122,7 +124,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                SizedBox(height: r.s(16)),
 
                 // Campo Senha
                 AminoAnimations.slideUp(
@@ -140,7 +142,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ? Icons.visibility_off_outlined
                             : Icons.visibility_outlined,
                         color: context.textHint,
-                        size: 20,
+                        size: r.s(20),
                       ),
                     ),
                     validator: (value) {
@@ -152,7 +154,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 8),
+                SizedBox(height: r.s(8)),
 
                 // Esqueceu a senha
                 Align(
@@ -179,8 +181,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     },
                     style: TextButton.styleFrom(
                       foregroundColor: AppTheme.primaryColor,
-                      textStyle: const TextStyle(
-                        fontSize: 13,
+                      textStyle: TextStyle(
+                        fontSize: r.fs(13),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -192,38 +194,38 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 if (authState.error != null)
                   AminoAnimations.scaleIn(
                     child: Container(
-                      padding: const EdgeInsets.all(12),
-                      margin: const EdgeInsets.only(bottom: 16),
+                      padding: EdgeInsets.all(r.s(12)),
+                      margin: EdgeInsets.only(bottom: r.s(16)),
                       decoration: BoxDecoration(
                         color: AppTheme.errorColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(r.s(12)),
                         border: Border.all(
                           color: AppTheme.errorColor.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.error_outline,
-                              color: AppTheme.errorColor, size: 20),
-                          const SizedBox(width: 8),
+                          Icon(Icons.error_outline,
+                              color: AppTheme.errorColor, size: r.s(20)),
+                          SizedBox(width: r.s(8)),
                           Expanded(
                             child: Text(authState.error!,
-                                style: const TextStyle(
-                                    color: AppTheme.errorColor, fontSize: 13)),
+                                style: TextStyle(
+                                    color: AppTheme.errorColor, fontSize: r.fs(13))),
                           ),
                         ],
                       ),
                     ),
                   ),
 
-                const SizedBox(height: 8),
+                SizedBox(height: r.s(8)),
 
                 // Botão Login
                 AminoAnimations.slideUp(
                   delay: const Duration(milliseconds: 200),
                   child: SizedBox(
                     width: double.infinity,
-                    height: 52,
+                    height: r.s(52),
                     child: ElevatedButton(
                       onPressed: authState.isLoading ? null : _handleLogin,
                       style: ElevatedButton.styleFrom(
@@ -233,17 +235,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             AppTheme.primaryColor.withValues(alpha: 0.5),
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(r.s(14)),
                         ),
-                        textStyle: const TextStyle(
-                          fontSize: 16,
+                        textStyle: TextStyle(
+                          fontSize: r.fs(16),
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                       child: authState.isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
+                          ? SizedBox(
+                              height: r.s(20),
+                              width: r.s(20),
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 color: Colors.white,
@@ -254,7 +256,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 28),
+                SizedBox(height: r.s(28)),
 
                 // Divisor "ou"
                 Row(
@@ -265,11 +267,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         color: context.dividerClr,
                       ),
                     ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: r.s(16)),
                       child: Text('ou',
                           style: TextStyle(
-                              color: context.textHint, fontSize: 13)),
+                              color: context.textHint, fontSize: r.fs(13))),
                     ),
                     Expanded(
                       child: Container(
@@ -280,22 +282,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ],
                 ),
 
-                const SizedBox(height: 28),
+                SizedBox(height: r.s(28)),
 
                 // Google Login (translúcido)
                 AminoAnimations.slideUp(
                   delay: const Duration(milliseconds: 250),
                   child: SizedBox(
                     width: double.infinity,
-                    height: 52,
+                    height: r.s(52),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(r.s(14)),
                       child: BackdropFilter(
                         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                         child: Container(
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.06),
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(r.s(14)),
                             border: Border.all(
                               color: Colors.white.withValues(alpha: 0.12),
                             ),
@@ -305,12 +307,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 .read(authProvider.notifier)
                                 .signInWithGoogle(),
                             icon: Icon(Icons.g_mobiledata_rounded,
-                                size: 28, color: context.textPrimary),
+                                size: r.s(28), color: context.textPrimary),
                             label: const Text('Continuar com Google'),
                             style: TextButton.styleFrom(
                               foregroundColor: context.textPrimary,
-                              textStyle: const TextStyle(
-                                fontSize: 15,
+                              textStyle: TextStyle(
+                                fontSize: r.fs(15),
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -321,7 +323,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 40),
+                SizedBox(height: r.s(40)),
 
                 // Link para cadastro
                 Center(
@@ -330,21 +332,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     children: [
                       const Text('Não tem conta? ',
                           style: TextStyle(
-                              color: context.textSecondary, fontSize: 14)),
+                              color: context.textSecondary, fontSize: r.fs(14))),
                       GestureDetector(
                         onTap: () => context.go('/signup'),
                         child: const Text('Criar conta',
                             style: TextStyle(
                               color: AppTheme.primaryColor,
                               fontWeight: FontWeight.w700,
-                              fontSize: 14,
+                              fontSize: r.fs(14),
                             )),
                       ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 32),
+                SizedBox(height: r.s(32)),
               ],
             ),
           ),
@@ -379,51 +381,52 @@ class _AminoTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
       keyboardType: keyboardType,
-      style: TextStyle(color: context.textPrimary, fontSize: 15),
+      style: TextStyle(color: context.textPrimary, fontSize: r.fs(15)),
       validator: validator,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: context.textHint, fontSize: 15),
-        prefixIcon: Icon(icon, color: context.textHint, size: 20),
+        hintStyle: TextStyle(color: context.textHint, fontSize: r.fs(15)),
+        prefixIcon: Icon(icon, color: context.textHint, size: r.s(20)),
         suffixIcon: suffixIcon != null
             ? Padding(
-                padding: const EdgeInsets.only(right: 12),
+                padding: EdgeInsets.only(right: r.s(12)),
                 child: suffixIcon,
               )
             : null,
         filled: true,
         fillColor: context.cardBg,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(r.s(14)),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(r.s(14)),
           borderSide: BorderSide(
             color: context.dividerClr.withValues(alpha: 0.5),
             width: 1,
           ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(r.s(14)),
           borderSide: const BorderSide(
             color: AppTheme.primaryColor,
             width: 2,
           ),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(r.s(14)),
           borderSide: const BorderSide(
             color: AppTheme.errorColor,
             width: 1,
           ),
         ),
         contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(16)),
       ),
     );
   }

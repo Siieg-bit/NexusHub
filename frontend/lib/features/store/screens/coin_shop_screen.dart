@@ -3,6 +3,7 @@ import '../../../core/services/iap_service.dart';
 import '../../../core/services/ad_service.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/helpers.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Tela de Compra de Moedas — Estilo Amino original.
 /// Header azul celeste com moeda dourada, corpo claro com pacotes de moedas.
@@ -123,6 +124,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       body: _isLoading
@@ -148,15 +150,15 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                       children: [
                         // Top bar
                         Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 4, vertical: 4),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: r.s(4), vertical: r.s(4)),
                           child: Row(
                             children: [
                               IconButton(
-                                icon: const Icon(
+                                icon: Icon(
                                     Icons.arrow_back_ios_rounded,
                                     color: Colors.white,
-                                    size: 20),
+                                    size: r.s(20)),
                                 onPressed: () => Navigator.pop(context),
                               ),
                               const Expanded(
@@ -166,7 +168,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w700,
-                                    fontSize: 17,
+                                    fontSize: r.fs(17),
                                   ),
                                 ),
                               ),
@@ -177,7 +179,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                                   style: TextStyle(
                                     color: Colors.white70,
                                     fontWeight: FontWeight.w600,
-                                    fontSize: 13,
+                                    fontSize: r.fs(13),
                                   ),
                                 ),
                               ),
@@ -187,12 +189,12 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
 
                         // Moeda dourada + saldo
                         Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          padding: EdgeInsets.symmetric(vertical: r.s(16)),
                           child: Column(
                             children: [
                               Container(
-                                width: 56,
-                                height: 56,
+                                width: r.s(56),
+                                height: r.s(56),
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   gradient: const LinearGradient(
@@ -214,25 +216,25 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                                     'A',
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 24,
+                                      fontSize: r.fs(24),
                                       fontWeight: FontWeight.w900,
                                     ),
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              SizedBox(height: r.s(8)),
                               Text(
                                 _formatCoins(_userCoins),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 28,
+                                  fontSize: r.fs(28),
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
                               const Text(
                                 'Amino Coins',
                                 style: TextStyle(
-                                    color: Colors.white70, fontSize: 13),
+                                    color: Colors.white70, fontSize: r.fs(13)),
                               ),
                             ],
                           ),
@@ -247,31 +249,31 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                 // =============================================================
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(r.s(16)),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Assistir anúncio
                         _buildAdRewardCard(),
-                        const SizedBox(height: 16),
+                        SizedBox(height: r.s(16)),
 
                         // Pacotes de moedas
                         const Text(
                           'Pacotes de Moedas',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: r.fs(16),
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF333333),
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: r.s(12)),
                         ...IAPService.coinPackages
                             .map(_buildCoinPackageCard),
-                        const SizedBox(height: 16),
+                        SizedBox(height: r.s(16)),
 
                         // Amino+ card
                         _buildAminoPlusCard(),
-                        const SizedBox(height: 24),
+                        SizedBox(height: r.s(24)),
                       ],
                     ),
                   ),
@@ -282,12 +284,13 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
   }
 
   Widget _buildAdRewardCard() {
+      final r = context.r;
     final remaining = AdService.remainingAdsToday;
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(r.s(14)),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(r.s(12)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -299,15 +302,15 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(r.s(10)),
             decoration: BoxDecoration(
               color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(r.s(10)),
             ),
             child: const Icon(Icons.play_circle_filled_rounded,
-                color: Color(0xFF4CAF50), size: 28),
+                color: Color(0xFF4CAF50), size: r.s(28)),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: r.s(14)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -316,14 +319,14 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                   'Assistir Anúncio',
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
-                    fontSize: 14,
+                    fontSize: r.fs(14),
                     color: Color(0xFF333333),
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   'Ganhe 5 moedas grátis ($remaining restantes)',
-                  style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                  style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
                 ),
               ],
             ),
@@ -333,18 +336,18 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                 ? null
                 : _watchAdForCoins,
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 14, vertical: 8),
+              padding: EdgeInsets.symmetric(
+                  horizontal: r.s(14), vertical: r.s(8)),
               decoration: BoxDecoration(
                 color: _isWatchingAd || !AdService.canWatchAd
                     ? Colors.grey[300]
                     : const Color(0xFF4CAF50),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(r.s(20)),
               ),
               child: _isWatchingAd
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
+                  ? SizedBox(
+                      width: r.s(16),
+                      height: r.s(16),
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white),
                     )
@@ -353,7 +356,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
-                        fontSize: 12,
+                        fontSize: r.fs(12),
                       ),
                     ),
             ),
@@ -364,13 +367,14 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
   }
 
   Widget _buildCoinPackageCard(CoinPackage pkg) {
+      final r = context.r;
     final isPopular = pkg.coins == 1200;
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
+      margin: EdgeInsets.only(bottom: r.s(10)),
+      padding: EdgeInsets.all(r.s(14)),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(r.s(12)),
         border: isPopular
             ? Border.all(color: const Color(0xFFFF9800), width: 2)
             : null,
@@ -386,8 +390,8 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
         children: [
           // Moeda dourada
           Container(
-            width: 44,
-            height: 44,
+            width: r.s(44),
+            height: r.s(44),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: const LinearGradient(
@@ -398,11 +402,11 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
               child: Text('A',
                   style: TextStyle(
                       color: Colors.white,
-                      fontSize: 18,
+                      fontSize: r.fs(18),
                       fontWeight: FontWeight.w900)),
             ),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: r.s(14)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -411,26 +415,26 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                   children: [
                     Text(
                       '${formatCount(pkg.coins)} Moedas',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w700,
-                        fontSize: 15,
+                        fontSize: r.fs(15),
                         color: Color(0xFF333333),
                       ),
                     ),
                     if (isPopular) ...[
-                      const SizedBox(width: 8),
+                      SizedBox(width: r.s(8)),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: r.s(6), vertical: 2),
                         decoration: BoxDecoration(
                           color: const Color(0xFFFF9800),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(r.s(8)),
                         ),
                         child: const Text(
                           'POPULAR',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 9,
+                            fontSize: r.fs(9),
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -444,7 +448,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                     'Melhor custo-benefício!',
                     style: TextStyle(
                       color: Color(0xFFFF9800),
-                      fontSize: 11,
+                      fontSize: r.fs(11),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -455,27 +459,27 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
           GestureDetector(
             onTap: _isPurchasing ? null : () => _purchaseCoins(pkg),
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 14, vertical: 8),
+              padding: EdgeInsets.symmetric(
+                  horizontal: r.s(14), vertical: r.s(8)),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [Color(0xFFFF9800), Color(0xFFFFB74D)],
                 ),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(r.s(20)),
               ),
               child: _isPurchasing
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
+                  ? SizedBox(
+                      width: r.s(16),
+                      height: r.s(16),
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white),
                     )
                   : Text(
                       pkg.priceLabel,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
-                        fontSize: 13,
+                        fontSize: r.fs(13),
                       ),
                     ),
             ),
@@ -486,15 +490,16 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
   }
 
   Widget _buildAminoPlusCard() {
+      final r = context.r;
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(r.s(20)),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFFFF6B35), Color(0xFFFF8F00)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(r.s(16)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -503,56 +508,56 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
             children: [
               Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    EdgeInsets.symmetric(horizontal: r.s(8), vertical: r.s(4)),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.25),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(r.s(8)),
                 ),
                 child: const Text(
                   'A+',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w900,
-                    fontSize: 14,
+                    fontSize: r.fs(14),
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: r.s(10)),
               const Text(
                 'Amino+',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 20,
+                  fontSize: r.fs(20),
                   fontWeight: FontWeight.w800,
                 ),
               ),
               const Spacer(),
               if (IAPService.isAminoPlus)
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 4),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: r.s(10), vertical: r.s(4)),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.25),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(r.s(12)),
                   ),
                   child: const Text(
                     'ATIVO',
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w800,
-                      fontSize: 11,
+                      fontSize: r.fs(11),
                     ),
                   ),
                 ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: r.s(12)),
           _aminoPlusBenefit('Sem anúncios'),
           _aminoPlusBenefit('Badge exclusiva no perfil'),
           _aminoPlusBenefit('Chat bubbles premium'),
           _aminoPlusBenefit('200 moedas/mês grátis'),
           _aminoPlusBenefit('Acesso antecipado a novidades'),
-          const SizedBox(height: 16),
+          SizedBox(height: r.s(16)),
           if (!IAPService.isAminoPlus)
             GestureDetector(
               onTap: () {
@@ -564,10 +569,10 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
               },
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: EdgeInsets.symmetric(vertical: r.s(14)),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(r.s(24)),
                 ),
                 alignment: Alignment.center,
                 child: const Text(
@@ -575,7 +580,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                   style: TextStyle(
                     color: Color(0xFFFF6B35),
                     fontWeight: FontWeight.w800,
-                    fontSize: 15,
+                    fontSize: r.fs(15),
                   ),
                 ),
               ),
@@ -587,17 +592,17 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
 
   Widget _aminoPlusBenefit(String text) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
+      padding: EdgeInsets.only(bottom: r.s(4)),
       child: Row(
         children: [
-          const Icon(Icons.check_circle_rounded,
-              color: Colors.white70, size: 16),
-          const SizedBox(width: 8),
+          Icon(Icons.check_circle_rounded,
+              color: Colors.white70, size: r.s(16)),
+          SizedBox(width: r.s(8)),
           Text(
             text,
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
-              fontSize: 13,
+              fontSize: r.fs(13),
               fontWeight: FontWeight.w600,
             ),
           ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Configurações de Privacidade — Controles de quem pode ver perfil, enviar DM, etc.
 /// Réplica 1:1 das opções de privacidade do Amino.
@@ -102,6 +103,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
@@ -119,13 +121,13 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
           GestureDetector(
             onTap: _saveSettings,
             child: Container(
-              margin: const EdgeInsets.only(right: 16, top: 10, bottom: 10),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              margin: EdgeInsets.only(right: r.s(16), top: r.s(10), bottom: r.s(10)),
+              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(6)),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [AppTheme.primaryColor, AppTheme.accentColor],
                 ),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(r.s(20)),
                 boxShadow: [
                   BoxShadow(
                     color: AppTheme.primaryColor.withValues(alpha: 0.3),
@@ -140,7 +142,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
-                  fontSize: 14,
+                  fontSize: r.fs(14),
                 ),
               ),
             ),
@@ -151,7 +153,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
           ? const Center(
               child: CircularProgressIndicator(color: AppTheme.primaryColor))
           : ListView(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(r.s(16)),
               children: [
                 // ============================================================
                 // PERFIL
@@ -186,7 +188,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                   onChanged: (v) => setState(() => _showWall = v),
                 ),
 
-                const SizedBox(height: 24),
+                SizedBox(height: r.s(24)),
 
                 // ============================================================
                 // COMUNICAÇÃO
@@ -214,7 +216,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                   onChanged: (v) => setState(() => _allowMentions = v),
                 ),
 
-                const SizedBox(height: 24),
+                SizedBox(height: r.s(24)),
 
                 // ============================================================
                 // VISIBILIDADE
@@ -242,17 +244,17 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                   onChanged: (v) => setState(() => _allowSearchByName = v),
                 ),
 
-                const SizedBox(height: 24),
+                SizedBox(height: r.s(24)),
 
                 // ============================================================
                 // SEGUIDORES
                 // ============================================================
                 const _SectionHeader(title: 'Seguidores'),
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(r.s(16)),
                   decoration: BoxDecoration(
                     color: context.surfaceColor,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(r.s(16)),
                     border: Border.all(
                       color: Colors.white.withValues(alpha: 0.05),
                     ),
@@ -264,11 +266,11 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                         'Quem pode te seguir',
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
-                          fontSize: 14,
+                          fontSize: r.fs(14),
                           color: context.textPrimary,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: r.s(12)),
                       _RadioOption(
                         label: 'Todos',
                         value: 'everyone',
@@ -291,7 +293,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                SizedBox(height: r.s(24)),
 
                 // ============================================================
                 // DADOS
@@ -300,7 +302,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                 Container(
                   decoration: BoxDecoration(
                     color: context.surfaceColor,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(r.s(16)),
                     border: Border.all(
                       color: Colors.white.withValues(alpha: 0.05),
                     ),
@@ -320,7 +322,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                         subtitle: Text(
                           'Baixar uma cópia dos seus dados',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: r.fs(12),
                             color: Colors.grey[500],
                           ),
                         ),
@@ -371,7 +373,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                             builder: (ctx) => AlertDialog(
                               backgroundColor: context.surfaceColor,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(r.s(16)),
                                 side: BorderSide(
                                   color: Colors.white.withValues(alpha: 0.05),
                                 ),
@@ -412,7 +414,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                                             children: [
                                               Text('Digite "EXCLUIR" para confirmar:',
                                                   style: TextStyle(color: Colors.grey[400])),
-                                              const SizedBox(height: 12),
+                                              SizedBox(height: r.s(12)),
                                               TextField(
                                                 controller: confirmCtrl,
                                                 style: TextStyle(color: context.textPrimary),
@@ -422,7 +424,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                                                   filled: true,
                                                   fillColor: context.scaffoldBg,
                                                   border: OutlineInputBorder(
-                                                    borderRadius: BorderRadius.circular(12),
+                                                    borderRadius: BorderRadius.circular(r.s(12)),
                                                     borderSide: BorderSide.none,
                                                   ),
                                                 ),
@@ -472,11 +474,11 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                                     );
                                   },
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16, vertical: 8),
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: r.s(16), vertical: r.s(8)),
                                     decoration: BoxDecoration(
                                       color: AppTheme.errorColor,
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(r.s(12)),
                                       boxShadow: [
                                         BoxShadow(
                                           color: AppTheme.errorColor
@@ -503,7 +505,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 32),
+                SizedBox(height: r.s(32)),
               ],
             ),
     );
@@ -516,13 +518,14 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: r.s(12)),
       child: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontWeight: FontWeight.w800,
-          fontSize: 16,
+          fontSize: r.fs(16),
           color: AppTheme.primaryColor,
         ),
       ),
@@ -547,12 +550,13 @@ class _SettingToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      margin: EdgeInsets.only(bottom: r.s(8)),
+      padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(12)),
       decoration: BoxDecoration(
         color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(r.s(16)),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.05),
         ),
@@ -560,14 +564,14 @@ class _SettingToggle extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(r.s(8)),
             decoration: BoxDecoration(
               color: AppTheme.primaryColor.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: AppTheme.primaryColor, size: 20),
+            child: Icon(icon, color: AppTheme.primaryColor, size: r.s(20)),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: r.s(12)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -576,7 +580,7 @@ class _SettingToggle extends StatelessWidget {
                   title,
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
-                    fontSize: 14,
+                    fontSize: r.fs(14),
                     color: context.textPrimary,
                   ),
                 ),
@@ -585,7 +589,7 @@ class _SettingToggle extends StatelessWidget {
                   subtitle,
                   style: TextStyle(
                     color: Colors.grey[500],
-                    fontSize: 12,
+                    fontSize: r.fs(12),
                   ),
                 ),
               ],
@@ -620,6 +624,7 @@ class _RadioOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Theme(
       data: Theme.of(context).copyWith(
         unselectedWidgetColor: Colors.grey[500],
@@ -628,7 +633,7 @@ class _RadioOption extends StatelessWidget {
         title: Text(
           label,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: r.fs(14),
             color: context.textPrimary,
             fontWeight: FontWeight.w500,
           ),

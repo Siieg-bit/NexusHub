@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Mural do Usuário (The Wall) — Mensagens públicas no perfil, estilo Amino.
 class UserWallScreen extends StatefulWidget {
@@ -87,6 +88,7 @@ class _UserWallScreenState extends State<UserWallScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final isOwnWall = widget.userId == SupabaseService.currentUserId;
 
     return Scaffold(
@@ -117,8 +119,8 @@ class _UserWallScreenState extends State<UserWallScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(Icons.dashboard_rounded,
-                                size: 64, color: Colors.grey[600]),
-                            const SizedBox(height: 16),
+                                size: r.s(64), color: Colors.grey[600]),
+                            SizedBox(height: r.s(16)),
                             Text('Nenhuma mensagem no mural',
                                 style: TextStyle(color: Colors.grey[500])),
                           ],
@@ -129,7 +131,7 @@ class _UserWallScreenState extends State<UserWallScreen> {
                         backgroundColor: context.surfaceColor,
                         onRefresh: _loadMessages,
                         child: ListView.builder(
-                          padding: const EdgeInsets.all(16),
+                          padding: EdgeInsets.all(r.s(16)),
                           itemCount: _messages.length,
                           itemBuilder: (context, index) {
                             final msg = _messages[index];
@@ -143,11 +145,11 @@ class _UserWallScreenState extends State<UserWallScreen> {
                                 authorId == SupabaseService.currentUserId;
 
                             return Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.all(14),
+                              margin: EdgeInsets.only(bottom: r.s(12)),
+                              padding: EdgeInsets.all(r.s(14)),
                               decoration: BoxDecoration(
                                 color: context.surfaceColor,
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(r.s(16)),
                                 border: Border.all(
                                   color: Colors.white.withValues(alpha: 0.05),
                                 ),
@@ -184,13 +186,13 @@ class _UserWallScreenState extends State<UserWallScreen> {
                                             child: author?['icon_url'] == null
                                                 ? Icon(
                                                     Icons.person_rounded,
-                                                    size: 16,
+                                                    size: r.s(16),
                                                     color: context.textPrimary)
                                                 : null,
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(width: 8),
+                                      SizedBox(width: r.s(8)),
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment:
@@ -202,14 +204,14 @@ class _UserWallScreenState extends State<UserWallScreen> {
                                               style: TextStyle(
                                                   fontWeight: FontWeight.w700,
                                                   color: context.textPrimary,
-                                                  fontSize: 14),
+                                                  fontSize: r.fs(14)),
                                             ),
                                             Text(
                                               timeago.format(createdAt,
                                                   locale: 'pt_BR'),
                                               style: TextStyle(
                                                   color: Colors.grey[500],
-                                                  fontSize: 11),
+                                                  fontSize: r.fs(11)),
                                             ),
                                           ],
                                         ),
@@ -218,18 +220,18 @@ class _UserWallScreenState extends State<UserWallScreen> {
                                         IconButton(
                                           icon: Icon(
                                               Icons.delete_outline_rounded,
-                                              size: 18,
+                                              size: r.s(18),
                                               color: Colors.grey[500]),
                                           onPressed: () => _deleteMessage(
                                               msg['id'] as String),
                                         ),
                                     ],
                                   ),
-                                  const SizedBox(height: 12),
+                                  SizedBox(height: r.s(12)),
                                   Text(
                                     msg['content'] as String? ?? '',
                                     style: TextStyle(
-                                      fontSize: 14,
+                                      fontSize: r.fs(14),
                                       color: context.textPrimary,
                                     ),
                                   ),
@@ -244,9 +246,9 @@ class _UserWallScreenState extends State<UserWallScreen> {
           // Input para nova mensagem
           Container(
             padding: EdgeInsets.only(
-              left: 16,
-              right: 16,
-              top: 12,
+              left: r.s(16),
+              right: r.s(16),
+              top: r.s(12),
               bottom: MediaQuery.of(context).padding.bottom + 12,
             ),
             decoration: BoxDecoration(
@@ -261,10 +263,10 @@ class _UserWallScreenState extends State<UserWallScreen> {
               children: [
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: EdgeInsets.symmetric(horizontal: r.s(16)),
                     decoration: BoxDecoration(
                       color: context.scaffoldBg,
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(r.s(24)),
                       border: Border.all(
                         color: Colors.white.withValues(alpha: 0.05),
                       ),
@@ -277,7 +279,7 @@ class _UserWallScreenState extends State<UserWallScreen> {
                         border: InputBorder.none,
                         hintStyle: TextStyle(
                           color: Colors.grey[500],
-                          fontSize: 14,
+                          fontSize: r.fs(14),
                         ),
                       ),
                       maxLines: 3,
@@ -285,12 +287,12 @@ class _UserWallScreenState extends State<UserWallScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: r.s(12)),
                 GestureDetector(
                   onTap: _isSending ? null : _sendMessage,
                   child: Container(
-                    width: 48,
-                    height: 48,
+                    width: r.s(48),
+                    height: r.s(48),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: const LinearGradient(
@@ -307,8 +309,8 @@ class _UserWallScreenState extends State<UserWallScreen> {
                       ],
                     ),
                     child: _isSending
-                        ? const Padding(
-                            padding: EdgeInsets.all(14.0),
+                        ? Padding(
+                            padding: EdgeInsets.all(r.s(14.0)),
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               valueColor:

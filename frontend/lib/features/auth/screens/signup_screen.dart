@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/utils/amino_animations.dart';
 import '../providers/auth_provider.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Tela de cadastro — visual Amino Apps (fundo escuro, inputs arredondados, verde).
 class SignupScreen extends ConsumerStatefulWidget {
@@ -55,38 +56,39 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final authState = ref.watch(authProvider);
 
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 28),
+          padding: EdgeInsets.symmetric(horizontal: r.s(28)),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 16),
+                SizedBox(height: r.s(16)),
 
                 // Botão voltar
                 AminoAnimations.fadeIn(
                   child: GestureDetector(
                     onTap: () => context.go('/onboarding'),
                     child: Container(
-                      width: 40,
-                      height: 40,
+                      width: r.s(40),
+                      height: r.s(40),
                       decoration: BoxDecoration(
                         color: context.cardBg,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(r.s(12)),
                       ),
                       child: Icon(Icons.arrow_back_rounded,
-                          color: context.textPrimary, size: 20),
+                          color: context.textPrimary, size: r.s(20)),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 32),
+                SizedBox(height: r.s(32)),
 
                 // Título
                 AminoAnimations.slideUp(
@@ -97,24 +99,24 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         'Criar\nConta',
                         style: TextStyle(
                           color: context.textPrimary,
-                          fontSize: 32,
+                          fontSize: r.fs(32),
                           fontWeight: FontWeight.w800,
                           height: 1.1,
                         ),
                       ),
-                      SizedBox(height: 8),
+                      SizedBox(height: r.s(8)),
                       Text(
                         'Junte-se a milhares de comunidades',
                         style: TextStyle(
                           color: context.textSecondary,
-                          fontSize: 15,
+                          fontSize: r.fs(15),
                         ),
                       ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 36),
+                SizedBox(height: r.s(36)),
 
                 // Nickname
                 AminoAnimations.slideUp(
@@ -132,7 +134,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     },
                   ),
                 ),
-                const SizedBox(height: 14),
+                SizedBox(height: r.s(14)),
 
                 // Email
                 AminoAnimations.slideUp(
@@ -150,7 +152,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     },
                   ),
                 ),
-                const SizedBox(height: 14),
+                SizedBox(height: r.s(14)),
 
                 // Senha
                 AminoAnimations.slideUp(
@@ -168,7 +170,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                             ? Icons.visibility_off_outlined
                             : Icons.visibility_outlined,
                         color: context.textHint,
-                        size: 20,
+                        size: r.s(20),
                       ),
                     ),
                     validator: (value) {
@@ -178,7 +180,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     },
                   ),
                 ),
-                const SizedBox(height: 14),
+                SizedBox(height: r.s(14)),
 
                 // Confirmar Senha
                 AminoAnimations.slideUp(
@@ -195,7 +197,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     },
                   ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: r.s(12)),
 
                 // Termos (checkbox estilo Amino)
                 AminoAnimations.fadeIn(
@@ -207,13 +209,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       children: [
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
-                          width: 22,
-                          height: 22,
+                          width: r.s(22),
+                          height: r.s(22),
                           decoration: BoxDecoration(
                             color: _acceptedTerms
                                 ? AppTheme.primaryColor
                                 : Colors.transparent,
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: BorderRadius.circular(r.s(6)),
                             border: Border.all(
                               color: _acceptedTerms
                                   ? AppTheme.primaryColor
@@ -222,16 +224,16 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                             ),
                           ),
                           child: _acceptedTerms
-                              ? const Icon(Icons.check_rounded,
-                                  color: Colors.white, size: 16)
+                              ? Icon(Icons.check_rounded,
+                                  color: Colors.white, size: r.s(16))
                               : null,
                         ),
-                        const SizedBox(width: 10),
+                        SizedBox(width: r.s(10)),
                         const Expanded(
                           child: Text(
                             'Aceito os Termos de Uso e Política de Privacidade',
                             style: TextStyle(
-                                color: context.textSecondary, fontSize: 13),
+                                color: context.textSecondary, fontSize: r.fs(13)),
                           ),
                         ),
                       ],
@@ -242,26 +244,26 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 // Erro
                 if (authState.error != null)
                   Padding(
-                    padding: const EdgeInsets.only(top: 12),
+                    padding: EdgeInsets.only(top: r.s(12)),
                     child: AminoAnimations.scaleIn(
                       child: Container(
-                        padding: const EdgeInsets.all(12),
+                        padding: EdgeInsets.all(r.s(12)),
                         decoration: BoxDecoration(
                           color: AppTheme.errorColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(r.s(12)),
                           border: Border.all(
                             color: AppTheme.errorColor.withValues(alpha: 0.3),
                           ),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.error_outline,
-                                color: AppTheme.errorColor, size: 20),
-                            const SizedBox(width: 8),
+                            Icon(Icons.error_outline,
+                                color: AppTheme.errorColor, size: r.s(20)),
+                            SizedBox(width: r.s(8)),
                             Expanded(
                               child: Text(authState.error!,
-                                  style: const TextStyle(
-                                      color: AppTheme.errorColor, fontSize: 13)),
+                                  style: TextStyle(
+                                      color: AppTheme.errorColor, fontSize: r.fs(13))),
                             ),
                           ],
                         ),
@@ -269,14 +271,14 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     ),
                   ),
 
-                const SizedBox(height: 20),
+                SizedBox(height: r.s(20)),
 
                 // Botão Criar Conta
                 AminoAnimations.slideUp(
                   delay: const Duration(milliseconds: 280),
                   child: SizedBox(
                     width: double.infinity,
-                    height: 52,
+                    height: r.s(52),
                     child: ElevatedButton(
                       onPressed: authState.isLoading ? null : _handleSignup,
                       style: ElevatedButton.styleFrom(
@@ -286,17 +288,17 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                             AppTheme.primaryColor.withValues(alpha: 0.5),
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(r.s(14)),
                         ),
-                        textStyle: const TextStyle(
-                          fontSize: 16,
+                        textStyle: TextStyle(
+                          fontSize: r.fs(16),
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                       child: authState.isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
+                          ? SizedBox(
+                              height: r.s(20),
+                              width: r.s(20),
                               child: CircularProgressIndicator(
                                   strokeWidth: 2, color: Colors.white),
                             )
@@ -305,7 +307,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                SizedBox(height: r.s(24)),
 
                 // Divisor "ou"
                 Row(
@@ -316,11 +318,11 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         color: context.dividerClr,
                       ),
                     ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: r.s(16)),
                       child: Text('ou',
                           style: TextStyle(
-                              color: context.textHint, fontSize: 13)),
+                              color: context.textHint, fontSize: r.fs(13))),
                     ),
                     Expanded(
                       child: Container(
@@ -331,22 +333,22 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   ],
                 ),
 
-                const SizedBox(height: 24),
+                SizedBox(height: r.s(24)),
 
                 // Google Signup (translúcido)
                 AminoAnimations.slideUp(
                   delay: const Duration(milliseconds: 320),
                   child: SizedBox(
                     width: double.infinity,
-                    height: 52,
+                    height: r.s(52),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(r.s(14)),
                       child: BackdropFilter(
                         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                         child: Container(
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.06),
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(r.s(14)),
                             border: Border.all(
                               color: Colors.white.withValues(alpha: 0.12),
                             ),
@@ -356,12 +358,12 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                 .read(authProvider.notifier)
                                 .signInWithGoogle(),
                             icon: Icon(Icons.g_mobiledata_rounded,
-                                size: 28, color: context.textPrimary),
+                                size: r.s(28), color: context.textPrimary),
                             label: const Text('Continuar com Google'),
                             style: TextButton.styleFrom(
                               foregroundColor: context.textPrimary,
-                              textStyle: const TextStyle(
-                                fontSize: 15,
+                              textStyle: TextStyle(
+                                fontSize: r.fs(15),
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -372,7 +374,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 32),
+                SizedBox(height: r.s(32)),
 
                 // Link para login
                 Center(
@@ -381,21 +383,21 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     children: [
                       const Text('Já tem conta? ',
                           style: TextStyle(
-                              color: context.textSecondary, fontSize: 14)),
+                              color: context.textSecondary, fontSize: r.fs(14))),
                       GestureDetector(
                         onTap: () => context.go('/login'),
                         child: const Text('Fazer login',
                             style: TextStyle(
                               color: AppTheme.primaryColor,
                               fontWeight: FontWeight.w700,
-                              fontSize: 14,
+                              fontSize: r.fs(14),
                             )),
                       ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 32),
+                SizedBox(height: r.s(32)),
               ],
             ),
           ),
@@ -430,51 +432,52 @@ class _AminoTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
       keyboardType: keyboardType,
-      style: TextStyle(color: context.textPrimary, fontSize: 15),
+      style: TextStyle(color: context.textPrimary, fontSize: r.fs(15)),
       validator: validator,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: context.textHint, fontSize: 15),
-        prefixIcon: Icon(icon, color: context.textHint, size: 20),
+        hintStyle: TextStyle(color: context.textHint, fontSize: r.fs(15)),
+        prefixIcon: Icon(icon, color: context.textHint, size: r.s(20)),
         suffixIcon: suffixIcon != null
             ? Padding(
-                padding: const EdgeInsets.only(right: 12),
+                padding: EdgeInsets.only(right: r.s(12)),
                 child: suffixIcon,
               )
             : null,
         filled: true,
         fillColor: context.cardBg,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(r.s(14)),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(r.s(14)),
           borderSide: BorderSide(
             color: context.dividerClr.withValues(alpha: 0.5),
             width: 1,
           ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(r.s(14)),
           borderSide: const BorderSide(
             color: AppTheme.primaryColor,
             width: 2,
           ),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(r.s(14)),
           borderSide: const BorderSide(
             color: AppTheme.errorColor,
             width: 1,
           ),
         ),
         contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(16)),
       ),
     );
   }

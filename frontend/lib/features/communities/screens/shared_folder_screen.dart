@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Shared Folder — Pasta Compartilhada da Comunidade.
 ///
@@ -124,28 +125,28 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
           color: context.surfaceColor,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(r.s(20)),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 40,
-              height: 4,
+              width: r.s(40),
+              height: r.s(4),
               decoration: BoxDecoration(
                 color: Colors.grey[700],
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: r.s(16)),
             const Text(
               'Upload para Shared Folder',
               style: TextStyle(
                 color: context.textPrimary,
                 fontWeight: FontWeight.w800,
-                fontSize: 18,
+                fontSize: r.fs(18),
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: r.s(20)),
             _UploadOption(
               icon: Icons.photo_library_rounded,
               label: 'Imagem da Galeria',
@@ -170,7 +171,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
               color: const Color(0xFFFF9800),
               onTap: () => Navigator.pop(ctx, 'file'),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: r.s(8)),
           ],
         ),
       ),
@@ -279,7 +280,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: context.surfaceColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(16))),
         title: const Text('Excluir arquivo',
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w700)),
@@ -295,7 +296,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.errorColor,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
+                  borderRadius: BorderRadius.circular(r.s(10))),
             ),
             child: const Text('Excluir',
                 style: TextStyle(
@@ -335,6 +336,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
@@ -349,12 +351,12 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
               style: TextStyle(
                 fontWeight: FontWeight.w800,
                 color: context.textPrimary,
-                fontSize: 18,
+                fontSize: r.fs(18),
               ),
             ),
             Text(
               '${_allFiles.length} ${_allFiles.length == 1 ? 'arquivo' : 'arquivos'}',
-              style: TextStyle(color: Colors.grey[500], fontSize: 12),
+              style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
             ),
           ],
         ),
@@ -364,8 +366,8 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
           indicatorWeight: 3,
           labelColor: AppTheme.accentColor,
           unselectedLabelColor: Colors.grey[600],
-          labelStyle: const TextStyle(
-              fontWeight: FontWeight.w700, fontSize: 13),
+          labelStyle: TextStyle(
+              fontWeight: FontWeight.w700, fontSize: r.fs(13)),
           tabs: _tabs.map((t) => Tab(text: t)).toList(),
         ),
       ),
@@ -373,13 +375,13 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
         onPressed: _isUploading ? null : _uploadFile,
         backgroundColor: AppTheme.aminoPink,
         child: _isUploading
-            ? const SizedBox(
-                width: 24,
-                height: 24,
+            ? SizedBox(
+                width: r.s(24),
+                height: r.s(24),
                 child: CircularProgressIndicator(
                     strokeWidth: 2, color: Colors.white),
               )
-            : const Icon(Icons.add_rounded, color: Colors.white, size: 28),
+            : Icon(Icons.add_rounded, color: Colors.white, size: r.s(28)),
       ),
       body: _isLoading
           ? const Center(
@@ -394,20 +396,20 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.folder_open_rounded,
-                            color: Colors.grey[700], size: 64),
-                        const SizedBox(height: 12),
+                            color: Colors.grey[700], size: r.s(64)),
+                        SizedBox(height: r.s(12)),
                         Text(
                           'Nenhum arquivo',
                           style: TextStyle(
                               color: Colors.grey[600],
-                              fontSize: 16,
+                              fontSize: r.fs(16),
                               fontWeight: FontWeight.w600),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: r.s(4)),
                         Text(
                           'Toque no + para fazer upload',
                           style: TextStyle(
-                              color: Colors.grey[700], fontSize: 13),
+                              color: Colors.grey[700], fontSize: r.fs(13)),
                         ),
                       ],
                     ),
@@ -431,6 +433,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
   }
 
   Widget _buildMixedView(List<Map<String, dynamic>> files) {
+      final r = context.r;
     final images = files
         .where(
             (f) => (f['file_type'] as String? ?? '').startsWith('image/'))
@@ -445,7 +448,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
         // Grid de imagens
         if (images.isNotEmpty) ...[
           SliverPadding(
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(r.s(8)),
             sliver: SliverGrid(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
@@ -482,8 +485,9 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
   }
 
   Widget _buildListView(List<Map<String, dynamic>> files) {
+      final r = context.r;
     return ListView.builder(
-      padding: const EdgeInsets.all(8),
+      padding: EdgeInsets.all(r.s(8)),
       itemCount: files.length,
       itemBuilder: (ctx, i) => _FileTile(
         file: files[i],
@@ -514,33 +518,34 @@ class _UploadOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        margin: EdgeInsets.only(bottom: r.s(8)),
+        padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(14)),
         decoration: BoxDecoration(
           color: context.cardBg,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(r.s(12)),
         ),
         child: Row(
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: r.s(40),
+              height: r.s(40),
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(r.s(10)),
               ),
-              child: Icon(icon, color: color, size: 22),
+              child: Icon(icon, color: color, size: r.s(22)),
             ),
-            const SizedBox(width: 14),
+            SizedBox(width: r.s(14)),
             Text(
               label,
               style: TextStyle(
                 color: context.textPrimary,
                 fontWeight: FontWeight.w600,
-                fontSize: 15,
+                fontSize: r.fs(15),
               ),
             ),
             const Spacer(),
@@ -560,6 +565,7 @@ class _ImageTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final url = file['file_url'] as String? ?? '';
     final uploaderName =
         (file['profiles'] as Map?)?['username'] as String? ?? 'Anônimo';
@@ -568,7 +574,7 @@ class _ImageTile extends StatelessWidget {
       onTap: () => _showFullImage(context, url),
       onLongPress: () => _showOptions(context),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(r.s(4)),
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -578,7 +584,7 @@ class _ImageTile extends StatelessWidget {
               errorBuilder: (_, __, ___) => Container(
                 color: context.cardBg,
                 child: Icon(Icons.broken_image_rounded,
-                    color: Colors.grey[700], size: 32),
+                    color: Colors.grey[700], size: r.s(32)),
               ),
             ),
             // Gradient overlay com nome do uploader
@@ -587,7 +593,7 @@ class _ImageTile extends StatelessWidget {
               left: 0,
               right: 0,
               child: Container(
-                padding: const EdgeInsets.all(4),
+                padding: EdgeInsets.all(r.s(4)),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.bottomCenter,
@@ -600,9 +606,9 @@ class _ImageTile extends StatelessWidget {
                 ),
                 child: Text(
                   uploaderName,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
-                    fontSize: 9,
+                    fontSize: r.fs(9),
                     fontWeight: FontWeight.w600,
                   ),
                   maxLines: 1,
@@ -708,6 +714,7 @@ class _FileTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final name = file['file_name'] as String? ?? 'Arquivo';
     final mimeType = file['file_type'] as String?;
     final size = file['file_size'] as int?;
@@ -717,25 +724,25 @@ class _FileTile extends StatelessWidget {
     final color = _colorForType(mimeType);
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      padding: const EdgeInsets.all(12),
+      margin: EdgeInsets.symmetric(horizontal: r.s(8), vertical: r.s(4)),
+      padding: EdgeInsets.all(r.s(12)),
       decoration: BoxDecoration(
         color: context.cardBg,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(r.s(12)),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Row(
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: r.s(44),
+            height: r.s(44),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(r.s(10)),
             ),
-            child: Icon(_iconForType(mimeType), color: color, size: 24),
+            child: Icon(_iconForType(mimeType), color: color, size: r.s(24)),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: r.s(12)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -745,7 +752,7 @@ class _FileTile extends StatelessWidget {
                   style: TextStyle(
                     color: context.textPrimary,
                     fontWeight: FontWeight.w600,
-                    fontSize: 14,
+                    fontSize: r.fs(14),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -753,7 +760,7 @@ class _FileTile extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   '$uploaderName  •  ${formatSize(size)}  •  ${timeAgo(createdAt)}',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 11),
+                  style: TextStyle(color: Colors.grey[600], fontSize: r.fs(11)),
                 ),
               ],
             ),

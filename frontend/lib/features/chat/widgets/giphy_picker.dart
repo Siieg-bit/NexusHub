@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../../config/app_theme.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Giphy Picker — busca e seleciona GIFs usando a API pública do Giphy.
 /// Retorna a URL do GIF selecionado via Navigator.pop().
@@ -31,6 +32,7 @@ class GiphyPicker extends StatefulWidget {
 class _GiphyPickerState extends State<GiphyPicker> {
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return const _GiphyPickerBody();
   }
 }
@@ -122,6 +124,7 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Container(
       decoration: BoxDecoration(
         color: context.scaffoldBg,
@@ -132,9 +135,9 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
           // Handle
           Center(
             child: Container(
-              margin: const EdgeInsets.only(top: 8),
-              width: 40,
-              height: 4,
+              margin: EdgeInsets.only(top: r.s(8)),
+              width: r.s(40),
+              height: r.s(4),
               decoration: BoxDecoration(
                 color: context.textHint,
                 borderRadius: BorderRadius.circular(2),
@@ -143,30 +146,30 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
           ),
           // Header
           Padding(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(r.s(12)),
             child: Row(
               children: [
                 const Text('GIFs',
                     style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: r.fs(18))),
                 const Spacer(),
                 // Powered by GIPHY badge
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      EdgeInsets.symmetric(horizontal: r.s(8), vertical: r.s(4)),
                   decoration: BoxDecoration(
                     color: context.cardBg,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(r.s(8)),
                   ),
                   child: const Text('Powered by GIPHY',
-                      style: TextStyle(fontSize: 10, color: context.textHint)),
+                      style: TextStyle(fontSize: r.fs(10), color: context.textHint)),
                 ),
               ],
             ),
           ),
           // Search
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: EdgeInsets.symmetric(horizontal: r.s(12)),
             child: TextField(
               controller: _searchController,
               onSubmitted: _search,
@@ -179,7 +182,7 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
                     Icon(Icons.search_rounded, color: context.textHint),
                 suffixIcon: _query.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear_rounded, size: 18),
+                        icon: Icon(Icons.clear_rounded, size: r.s(18)),
                         onPressed: () {
                           _searchController.clear();
                           _query = '';
@@ -190,15 +193,15 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
                 filled: true,
                 fillColor: context.cardBg,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(r.s(12)),
                   borderSide: BorderSide.none,
                 ),
                 contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(10)),
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: r.s(12)),
           // Grid
           Expanded(
             child: _isLoading
@@ -210,7 +213,7 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
                       )
                     : GridView.builder(
                         controller: widget.scrollController,
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        padding: EdgeInsets.symmetric(horizontal: r.s(12)),
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
@@ -229,7 +232,7 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
                           return GestureDetector(
                             onTap: () => Navigator.pop(context, fullUrl),
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(r.s(12)),
                               child: Image.network(
                                 previewUrl,
                                 fit: BoxFit.cover,

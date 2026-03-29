@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'shimmer_loading.dart';
+import '../utils/responsive.dart';
 
 /// ============================================================================
 /// PaginatedListView — Widget reutilizável de lista com paginação e infinite scroll.
@@ -157,6 +158,7 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     // ── First load: shimmer ──
     if (_isFirstLoad) {
       return _buildShimmer();
@@ -180,7 +182,7 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
           (widget.shrinkWrap
               ? const NeverScrollableScrollPhysics()
               : const AlwaysScrollableScrollPhysics()),
-      padding: widget.padding ?? const EdgeInsets.symmetric(vertical: 8),
+      padding: widget.padding ?? EdgeInsets.symmetric(vertical: r.s(8)),
       itemCount:
           _items.length + (widget.header != null ? 1 : 0) + (_hasMore ? 1 : 0),
       itemBuilder: (context, index) {
@@ -193,12 +195,12 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
 
         // Loading indicator at bottom
         if (itemIndex >= _items.length) {
-          return const Padding(
-            padding: EdgeInsets.all(16),
+          return Padding(
+            padding: EdgeInsets.all(r.s(16)),
             child: Center(
               child: SizedBox(
-                width: 24,
-                height: 24,
+                width: r.s(24),
+                height: r.s(24),
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
             ),
@@ -249,25 +251,26 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
   }
 
   Widget _buildError() {
+      final r = context.r;
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.all(r.s(32)),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.error_outline_rounded,
-                size: 48, color: Theme.of(context).colorScheme.error),
-            const SizedBox(height: 16),
+                size: r.s(48), color: Theme.of(context).colorScheme.error),
+            SizedBox(height: r.s(16)),
             Text('Algo deu errado',
                 style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
+            SizedBox(height: r.s(8)),
             Text(_error ?? 'Erro desconhecido',
                 textAlign: TextAlign.center,
                 style: Theme.of(context)
                     .textTheme
                     .bodySmall
                     ?.copyWith(color: Colors.grey)),
-            const SizedBox(height: 16),
+            SizedBox(height: r.s(16)),
             FilledButton.icon(
               onPressed: _loadFirstPage,
               icon: const Icon(Icons.refresh_rounded),
@@ -280,14 +283,15 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
   }
 
   Widget _buildEmpty() {
+      final r = context.r;
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.all(r.s(32)),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(widget.emptyIcon, style: const TextStyle(fontSize: 48)),
-            const SizedBox(height: 16),
+            Text(widget.emptyIcon, style: TextStyle(fontSize: r.fs(48))),
+            SizedBox(height: r.s(16)),
             Text(widget.emptyMessage,
                 textAlign: TextAlign.center,
                 style: Theme.of(context)
@@ -403,6 +407,7 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     if (_isFirstLoad) {
       return GridView.builder(
         padding: widget.padding,
@@ -435,7 +440,7 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
       },
       child: GridView.builder(
         controller: _scrollController,
-        padding: widget.padding ?? const EdgeInsets.all(8),
+        padding: widget.padding ?? EdgeInsets.all(r.s(8)),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: widget.crossAxisCount,
           mainAxisSpacing: widget.mainAxisSpacing,
@@ -447,7 +452,7 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
           if (index >= _items.length) {
             return const Center(
               child: Padding(
-                padding: EdgeInsets.all(8),
+                padding: EdgeInsets.all(r.s(8)),
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
             );

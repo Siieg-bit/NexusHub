@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Create Story Screen — Criação de stories estilo Amino/Instagram.
 ///
@@ -159,6 +160,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
@@ -166,20 +168,20 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
           children: [
             // ── Top bar ──
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
               child: Row(
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.of(context).pop(),
-                    child: const Icon(Icons.close_rounded,
-                        color: Colors.white, size: 28),
+                    child: Icon(Icons.close_rounded,
+                        color: Colors.white, size: r.s(28)),
                   ),
                   const Spacer(),
                   const Text(
                     'Criar Story',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 16,
+                      fontSize: r.fs(16),
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -187,18 +189,18 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                   GestureDetector(
                     onTap: _isSubmitting ? null : _submitStory,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: r.s(16), vertical: r.s(8)),
                       decoration: BoxDecoration(
                         color: _isSubmitting
                             ? AppTheme.accentColor.withValues(alpha: 0.5)
                             : AppTheme.accentColor,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(r.s(20)),
                       ),
                       child: _isSubmitting
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
+                          ? SizedBox(
+                              width: r.s(16),
+                              height: r.s(16),
                               child: CircularProgressIndicator(
                                   strokeWidth: 2, color: Colors.white),
                             )
@@ -207,7 +209,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w700,
-                                fontSize: 13,
+                                fontSize: r.fs(13),
                               ),
                             ),
                     ),
@@ -218,7 +220,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
 
             // ── Type selector ──
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               child: Row(
                 children: [
                   _TypeChip(
@@ -230,7 +232,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                       _mediaUrl = null;
                     }),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: r.s(8)),
                   _TypeChip(
                     label: 'Imagem',
                     icon: Icons.image_rounded,
@@ -250,9 +252,9 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
             // ── Preview ──
             Expanded(
               child: Container(
-                margin: const EdgeInsets.all(16),
+                margin: EdgeInsets.all(r.s(16)),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(r.s(16)),
                   color: _type == 'text'
                       ? _bgColors[_selectedBgIndex]
                       : context.cardBg,
@@ -270,19 +272,19 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                     if (_type == 'text')
                       Center(
                         child: Padding(
-                          padding: const EdgeInsets.all(24),
+                          padding: EdgeInsets.all(r.s(24)),
                           child: TextField(
                             controller: _textController,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
-                              fontSize: 22,
+                              fontSize: r.fs(22),
                               fontWeight: FontWeight.w800,
                               height: 1.4,
                             ),
                             decoration: const InputDecoration(
                               hintText: 'Escreva algo...',
                               hintStyle: TextStyle(
-                                  color: Colors.white38, fontSize: 22),
+                                  color: Colors.white38, fontSize: r.fs(22)),
                               border: InputBorder.none,
                             ),
                             textAlign: TextAlign.center,
@@ -298,16 +300,16 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                         left: 16,
                         right: 16,
                         child: Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: EdgeInsets.all(r.s(8)),
                           decoration: BoxDecoration(
                             color: Colors.black.withValues(alpha: 0.4),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(r.s(12)),
                           ),
                           child: TextField(
                             controller: _textController,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
-                              fontSize: 14,
+                              fontSize: r.fs(14),
                             ),
                             decoration: const InputDecoration(
                               hintText: 'Adicionar legenda...',
@@ -328,13 +330,13 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                         child: GestureDetector(
                           onTap: _pickImage,
                           child: Container(
-                            padding: const EdgeInsets.all(8),
+                            padding: EdgeInsets.all(r.s(8)),
                             decoration: BoxDecoration(
                               color: Colors.black.withValues(alpha: 0.5),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.camera_alt_rounded,
-                                color: Colors.white, size: 20),
+                            child: Icon(Icons.camera_alt_rounded,
+                                color: Colors.white, size: r.s(20)),
                           ),
                         ),
                       ),
@@ -347,9 +349,9 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
             if (_type == 'text')
               Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
                 child: SizedBox(
-                  height: 40,
+                  height: r.s(40),
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: _bgColors.length,
@@ -359,14 +361,14 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                         onTap: () =>
                             setState(() => _selectedBgIndex = i),
                         child: Container(
-                          width: 36,
-                          height: 36,
-                          margin: const EdgeInsets.only(right: 8),
+                          width: r.s(36),
+                          height: r.s(36),
+                          margin: EdgeInsets.only(right: r.s(8)),
                           decoration: BoxDecoration(
                             color: _bgColors[i],
                             shape: BoxShape.circle,
                             border: isSelected
-                                ? Border.all(color: Colors.white, width: 3)
+                                ? Border.all(color: Colors.white, width: r.s(3))
                                 : Border.all(
                                     color: Colors.white24, width: 1),
                           ),
@@ -377,7 +379,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                 ),
               ),
 
-            const SizedBox(height: 8),
+            SizedBox(height: r.s(8)),
           ],
         ),
       ),
@@ -400,15 +402,16 @@ class _TypeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(8)),
         decoration: BoxDecoration(
           color: isSelected
               ? AppTheme.accentColor.withValues(alpha: 0.2)
               : Colors.white.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(r.s(20)),
           border: isSelected
               ? Border.all(
                   color: AppTheme.accentColor.withValues(alpha: 0.5))
@@ -418,14 +421,14 @@ class _TypeChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon,
-                size: 16,
+                size: r.s(16),
                 color: isSelected ? AppTheme.accentColor : Colors.grey[500]),
-            const SizedBox(width: 6),
+            SizedBox(width: r.s(6)),
             Text(
               label,
               style: TextStyle(
                 color: isSelected ? AppTheme.accentColor : Colors.grey[500],
-                fontSize: 13,
+                fontSize: r.fs(13),
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),

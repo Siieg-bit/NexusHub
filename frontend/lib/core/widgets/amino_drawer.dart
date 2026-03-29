@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/responsive.dart';
 
 /// AminoDrawer — Drawer customizado com animação push/scale estilo Amino.
 ///
@@ -81,6 +82,7 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return AnimatedBuilder(
       animation: _animController,
       builder: (context, _) {

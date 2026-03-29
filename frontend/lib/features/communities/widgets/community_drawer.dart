@@ -7,7 +7,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/models/community_model.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/services/supabase_service.dart';
-import '../screens/community_list_screen.dart'; // para checkInStatusProvider
+import '../screens/community_list_screen.dart';
+import '../../../core/utils/responsive.dart'; // para checkInStatusProvider
 
 /// Drawer estilo Amino Apps — réplica pixel-perfect.
 /// Estrutura: sidebar de comunidades (56px) + painel principal (flex).
@@ -107,6 +108,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final themeColor = _parseColor(widget.community.themeColor);
     final checkInStatus = ref.watch(checkInStatusProvider);
     final statusMap = checkInStatus.valueOrNull ?? {};
@@ -126,7 +128,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
             // Estilo web-preview: bg-[#070710], ícones de comunidades
             // ==============================================================
             Container(
-              width: 56,
+              width: r.s(56),
               decoration: BoxDecoration(
                 color: const Color(0xFF060D18),
                 border: Border(
@@ -138,7 +140,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
               ),
               child: Column(
                 children: [
-                  const SizedBox(height: 10),
+                  SizedBox(height: r.s(10)),
                   // Exit button
                   GestureDetector(
                     onTap: () {
@@ -150,23 +152,23 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                     child: Column(
                       children: [
                         Icon(Icons.logout_rounded,
-                            color: Colors.grey[600], size: 18),
+                            color: Colors.grey[600], size: r.s(18)),
                         const SizedBox(height: 2),
                         Text('Sair',
                             style: TextStyle(
                                 color: Colors.grey[600],
-                                fontSize: 8,
+                                fontSize: r.fs(8),
                                 fontWeight: FontWeight.w500)),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: r.s(8)),
                   Container(
-                    width: 32,
+                    width: r.s(32),
                     height: 1,
                     color: Colors.white.withValues(alpha: 0.1),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: r.s(8)),
 
                   // Comunidade atual (highlighted)
                   Expanded(
@@ -176,29 +178,29 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                           // Comunidade atual
                           Container(
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(r.s(12)),
                               border: Border.all(
                                   color: Colors.white, width: 2),
                             ),
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(r.s(10)),
                               child: widget.community.iconUrl != null
                                   ? CachedNetworkImage(
                                       imageUrl: widget.community.iconUrl!,
-                                      width: 40,
-                                      height: 40,
+                                      width: r.s(40),
+                                      height: r.s(40),
                                       fit: BoxFit.cover,
                                     )
                                   : Container(
-                                      width: 40,
-                                      height: 40,
+                                      width: r.s(40),
+                                      height: r.s(40),
                                       color: themeColor,
-                                      child: const Icon(Icons.groups_rounded,
-                                          color: Colors.white70, size: 20),
+                                      child: Icon(Icons.groups_rounded,
+                                          color: Colors.white70, size: r.s(20)),
                                     ),
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: r.s(8)),
 
                           // Botão adicionar comunidade
                           GestureDetector(
@@ -209,8 +211,8 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                               });
                             },
                             child: Container(
-                              width: 40,
-                              height: 40,
+                              width: r.s(40),
+                              height: r.s(40),
                               decoration: BoxDecoration(
                                 color: context.surfaceColor,
                                 shape: BoxShape.circle,
@@ -220,7 +222,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                                 ),
                               ),
                               child: Icon(Icons.add_rounded,
-                                  color: Colors.grey[600], size: 16),
+                                  color: Colors.grey[600], size: r.s(16)),
                             ),
                           ),
                         ],
@@ -242,7 +244,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                   // Estilo web-preview: cover image + gradient + avatar + check-in
                   // ========================================================
                   SizedBox(
-                    height: 220,
+                    height: r.s(220),
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
@@ -293,7 +295,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                                 'Bem-vindo(a) a',
                                 style: TextStyle(
                                   color: Colors.white.withValues(alpha: 0.6),
-                                  fontSize: 10,
+                                  fontSize: r.fs(10),
                                   letterSpacing: 3,
                                   fontWeight: FontWeight.w400,
                                 ),
@@ -301,9 +303,9 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                               const SizedBox(height: 2),
                               Text(
                                 widget.community.name.toUpperCase(),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 18,
+                                  fontSize: r.fs(18),
                                   fontWeight: FontWeight.w900,
                                   letterSpacing: 1.5,
                                 ),
@@ -336,8 +338,8 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                                 alignment: Alignment.center,
                                 children: [
                                   Container(
-                                    width: 68,
-                                    height: 68,
+                                    width: r.s(68),
+                                    height: r.s(68),
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       border: Border.all(
@@ -354,8 +356,8 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                                                   widget.currentUser!.iconUrl!)
                                               : null,
                                       child: widget.currentUser?.iconUrl == null
-                                          ? const Icon(Icons.person_rounded,
-                                              color: Colors.white70, size: 28)
+                                          ? Icon(Icons.person_rounded,
+                                              color: Colors.white70, size: r.s(28))
                                           : null,
                                     ),
                                   ),
@@ -364,8 +366,8 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                                     top: 0,
                                     right: 0,
                                     child: Container(
-                                      width: 24,
-                                      height: 24,
+                                      width: r.s(24),
+                                      height: r.s(24),
                                       decoration: BoxDecoration(
                                         color: const Color(0xFF2563EB),
                                         shape: BoxShape.circle,
@@ -373,36 +375,36 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                                             color: context.scaffoldBg,
                                             width: 2),
                                       ),
-                                      child: const Icon(Icons.add_rounded,
-                                          color: Colors.white, size: 12),
+                                      child: Icon(Icons.add_rounded,
+                                          color: Colors.white, size: r.s(12)),
                                     ),
                                   ),
                                 ],
                               ),
                               ),
-                              const SizedBox(height: 6),
+                              SizedBox(height: r.s(6)),
                               // User name
                               Text(
                                 widget.currentUser?.nickname ?? 'Meu Perfil',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 13,
+                                  fontSize: r.fs(13),
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              SizedBox(height: r.s(8)),
                               // Check In button ou Streak badge
                               if (!hasCheckedIn)
                                 GestureDetector(
                                   onTap: _isCheckingIn ? null : _doCheckIn,
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 24, vertical: 7),
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: r.s(24), vertical: r.s(7)),
                                     decoration: BoxDecoration(
                                       color: _isCheckingIn
                                           ? AppTheme.primaryColor.withValues(alpha: 0.5)
                                           : AppTheme.primaryColor,
-                                      borderRadius: BorderRadius.circular(8),
+                                      borderRadius: BorderRadius.circular(r.s(8)),
                                       boxShadow: [
                                         BoxShadow(
                                           color: AppTheme.primaryColor
@@ -413,9 +415,9 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                                       ],
                                     ),
                                     child: _isCheckingIn
-                                        ? const SizedBox(
-                                            width: 16,
-                                            height: 16,
+                                        ? SizedBox(
+                                            width: r.s(16),
+                                            height: r.s(16),
                                             child: CircularProgressIndicator(
                                               strokeWidth: 2,
                                               color: Colors.white,
@@ -425,7 +427,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                                             'Check In',
                                             style: TextStyle(
                                               color: Colors.white,
-                                              fontSize: 13,
+                                              fontSize: r.fs(13),
                                               fontWeight: FontWeight.w700,
                                             ),
                                           ),
@@ -434,11 +436,11 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                               else
                                 // Streak badge — já fez check-in hoje
                                 Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 7),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: r.s(16), vertical: r.s(7)),
                                   decoration: BoxDecoration(
                                     color: context.surfaceColor,
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(r.s(8)),
                                     border: Border.all(
                                       color: AppTheme.warningColor.withValues(alpha: 0.4),
                                       width: 1,
@@ -447,17 +449,17 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      const Icon(
+                                      Icon(
                                         Icons.local_fire_department_rounded,
                                         color: AppTheme.warningColor,
-                                        size: 16,
+                                        size: r.s(16),
                                       ),
-                                      const SizedBox(width: 4),
+                                      SizedBox(width: r.s(4)),
                                       Text(
                                         '$streak dia${streak > 1 ? 's' : ''}',
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           color: AppTheme.warningColor,
-                                          fontSize: 13,
+                                          fontSize: r.fs(13),
                                           fontWeight: FontWeight.w700,
                                         ),
                                       ),
@@ -476,8 +478,8 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                   // ========================================================
                   Expanded(
                     child: ListView(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 8),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: r.s(8), vertical: r.s(8)),
                       children: [
                         _AminoDrawerItem(
                           icon: Icons.star_rounded,
@@ -577,8 +579,8 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
 
                         // "See More..."
                         Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: r.s(12), vertical: r.s(8)),
                           child: GestureDetector(
                             onTap: () {
                               Navigator.pop(context);
@@ -594,9 +596,9 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                                 Text('Ver Mais...',
                                     style: TextStyle(
                                         color: Colors.grey[500],
-                                        fontSize: 13)),
+                                        fontSize: r.fs(13))),
                                 Icon(Icons.chevron_right_rounded,
-                                    color: Colors.grey[600], size: 16),
+                                    color: Colors.grey[600], size: r.s(16)),
                               ],
                             ),
                           ),
@@ -604,7 +606,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
 
                         // Leader-only: Edit Community
                         if (_isLeader) ...[
-                          const SizedBox(height: 8),
+                          SizedBox(height: r.s(8)),
                           GestureDetector(
                             onTap: () {
                               Navigator.pop(context);
@@ -616,13 +618,13 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                             },
                             child: Container(
                               margin:
-                                  const EdgeInsets.symmetric(horizontal: 4),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 10),
+                                  EdgeInsets.symmetric(horizontal: r.s(4)),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: r.s(12), vertical: r.s(10)),
                               decoration: BoxDecoration(
                                 color: AppTheme.primaryColor
                                     .withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(r.s(10)),
                                 border: Border.all(
                                   color: AppTheme.primaryColor
                                       .withValues(alpha: 0.2),
@@ -631,16 +633,16 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                               child: Row(
                                 children: [
                                   Container(
-                                    width: 32,
-                                    height: 32,
+                                    width: r.s(32),
+                                    height: r.s(32),
                                     decoration: const BoxDecoration(
                                       color: AppTheme.primaryColor,
                                       shape: BoxShape.circle,
                                     ),
-                                    child: const Icon(Icons.settings_rounded,
-                                        color: Colors.white, size: 16),
+                                    child: Icon(Icons.settings_rounded,
+                                        color: Colors.white, size: r.s(16)),
                                   ),
-                                  const SizedBox(width: 12),
+                                  SizedBox(width: r.s(12)),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment:
@@ -650,7 +652,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                                           'Editar Comunidade',
                                           style: TextStyle(
                                             color: AppTheme.primaryColor,
-                                            fontSize: 13,
+                                            fontSize: r.fs(13),
                                             fontWeight: FontWeight.w700,
                                           ),
                                         ),
@@ -658,7 +660,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                                           'Nome, descrição, tags, capa, ícone',
                                           style: TextStyle(
                                               color: Colors.grey[600],
-                                              fontSize: 9),
+                                              fontSize: r.fs(9)),
                                         ),
                                       ],
                                     ),
@@ -671,15 +673,15 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
 
                         // Staff management section
                         if (_isStaff) ...[
-                          const SizedBox(height: 12),
+                          SizedBox(height: r.s(12)),
                           Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 4),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: r.s(12), vertical: r.s(4)),
                             child: Text(
                               'GERENCIAMENTO',
                               style: TextStyle(
                                 color: Colors.grey[600],
-                                fontSize: 10,
+                                fontSize: r.fs(10),
                                 fontWeight: FontWeight.w700,
                                 letterSpacing: 1,
                               ),
@@ -745,34 +747,35 @@ class _AminoDrawerItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(10)),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(r.s(10)),
         ),
         child: Row(
           children: [
             // Ícone em círculo colorido
             Container(
-              width: 32,
-              height: 32,
+              width: r.s(32),
+              height: r.s(32),
               decoration: BoxDecoration(
                 color: color,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: Colors.white, size: 16),
+              child: Icon(icon, color: Colors.white, size: r.s(16)),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: r.s(12)),
             // Label
             Expanded(
               child: Text(
                 label,
                 style: TextStyle(
                   color: context.textPrimary,
-                  fontSize: 14,
+                  fontSize: r.fs(14),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -781,18 +784,18 @@ class _AminoDrawerItem extends StatelessWidget {
             if (badge != null && badge! > 0)
               Container(
                 constraints: const BoxConstraints(minWidth: 20),
-                height: 20,
-                padding: const EdgeInsets.symmetric(horizontal: 4),
+                height: r.s(20),
+                padding: EdgeInsets.symmetric(horizontal: r.s(4)),
                 decoration: BoxDecoration(
                   color: AppTheme.errorColor,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(r.s(10)),
                 ),
                 child: Center(
                   child: Text(
                     '$badge',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 10,
+                      fontSize: r.fs(10),
                       fontWeight: FontWeight.w700,
                     ),
                   ),

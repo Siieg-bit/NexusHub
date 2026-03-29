@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
+import '../utils/responsive.dart';
 
 /// Widget de shimmer/skeleton loading para exibir enquanto dados carregam.
 ///
@@ -41,6 +42,7 @@ class _ShimmerLoadingState extends State<ShimmerLoading>
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final baseColor = isDark ? context.cardBg : const Color(0xFFE0E0E8);
     final highlightColor =
@@ -81,6 +83,7 @@ class ShimmerBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: width,
@@ -101,6 +104,7 @@ class ShimmerCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: size,
@@ -119,13 +123,14 @@ class PostCardSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return ShimmerLoading(
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        padding: const EdgeInsets.all(16),
+        margin: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(6)),
+        padding: EdgeInsets.all(r.s(16)),
         decoration: BoxDecoration(
           color: context.cardBg,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(r.s(16)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -133,38 +138,38 @@ class PostCardSkeleton extends StatelessWidget {
             // Header
             Row(
               children: [
-                const ShimmerCircle(size: 40),
-                const SizedBox(width: 12),
+                ShimmerCircle(size: r.s(40)),
+                SizedBox(width: r.s(12)),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
-                    ShimmerBox(width: 120, height: 14),
-                    SizedBox(height: 6),
-                    ShimmerBox(width: 80, height: 10),
+                    ShimmerBox(width: r.s(120), height: r.s(14)),
+                    SizedBox(height: r.s(6)),
+                    ShimmerBox(width: r.s(80), height: r.s(10)),
                   ],
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: r.s(16)),
             // Title
-            const ShimmerBox(width: double.infinity, height: 18),
-            const SizedBox(height: 8),
+            ShimmerBox(width: double.infinity, height: r.s(18)),
+            SizedBox(height: r.s(8)),
             // Body
-            const ShimmerBox(width: double.infinity, height: 12),
-            const SizedBox(height: 4),
-            const ShimmerBox(width: 200, height: 12),
-            const SizedBox(height: 16),
+            ShimmerBox(width: double.infinity, height: r.s(12)),
+            SizedBox(height: r.s(4)),
+            ShimmerBox(width: r.s(200), height: r.s(12)),
+            SizedBox(height: r.s(16)),
             // Image placeholder
             const ShimmerBox(
-                width: double.infinity, height: 180, borderRadius: 12),
-            const SizedBox(height: 16),
+                width: double.infinity, height: r.s(180), borderRadius: 12),
+            SizedBox(height: r.s(16)),
             // Actions
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: const [
-                ShimmerBox(width: 60, height: 24),
-                ShimmerBox(width: 60, height: 24),
-                ShimmerBox(width: 60, height: 24),
+                ShimmerBox(width: r.s(60), height: r.s(24)),
+                ShimmerBox(width: r.s(60), height: r.s(24)),
+                ShimmerBox(width: r.s(60), height: r.s(24)),
               ],
             ),
           ],
@@ -180,24 +185,25 @@ class ChatItemSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return ShimmerLoading(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
         child: Row(
           children: [
-            const ShimmerCircle(size: 48),
-            const SizedBox(width: 12),
+            ShimmerCircle(size: r.s(48)),
+            SizedBox(width: r.s(12)),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
-                  ShimmerBox(width: 160, height: 14),
-                  SizedBox(height: 6),
-                  ShimmerBox(width: 220, height: 10),
+                  ShimmerBox(width: r.s(160), height: r.s(14)),
+                  SizedBox(height: r.s(6)),
+                  ShimmerBox(width: r.s(220), height: r.s(10)),
                 ],
               ),
             ),
-            const ShimmerBox(width: 40, height: 10),
+            ShimmerBox(width: r.s(40), height: r.s(10)),
           ],
         ),
       ),
@@ -211,26 +217,27 @@ class CommunityCardSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return ShimmerLoading(
       child: Container(
-        width: 140,
-        margin: const EdgeInsets.only(right: 12),
+        width: r.s(140),
+        margin: EdgeInsets.only(right: r.s(12)),
         decoration: BoxDecoration(
           color: context.cardBg,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(r.s(16)),
         ),
         child: Column(
           children: const [
-            ShimmerBox(width: 140, height: 80, borderRadius: 16),
-            SizedBox(height: 8),
+            ShimmerBox(width: r.s(140), height: r.s(80), borderRadius: 16),
+            SizedBox(height: r.s(8)),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              child: ShimmerBox(width: 100, height: 12),
+              padding: EdgeInsets.symmetric(horizontal: r.s(8)),
+              child: ShimmerBox(width: r.s(100), height: r.s(12)),
             ),
-            SizedBox(height: 4),
+            SizedBox(height: r.s(4)),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              child: ShimmerBox(width: 60, height: 10),
+              padding: EdgeInsets.symmetric(horizontal: r.s(8)),
+              child: ShimmerBox(width: r.s(60), height: r.s(10)),
             ),
           ],
         ),

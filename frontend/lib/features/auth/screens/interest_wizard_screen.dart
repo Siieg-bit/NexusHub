@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Wizard de seleção de interesses em 4 passos, inspirado no Amino Apps.
 /// Passo 1: Boas-vindas e avatar
@@ -130,6 +131,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       body: SafeArea(
@@ -158,8 +160,9 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
   }
 
   Widget _buildHeader() {
+      final r = context.r;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: r.s(20), vertical: r.s(12)),
       child: Column(
         children: [
           Row(
@@ -168,15 +171,15 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
               if (_currentStep > 0)
                 GestureDetector(
                   onTap: _prevStep,
-                  child: Icon(Icons.arrow_back_ios_rounded, size: 20, color: context.textPrimary),
+                  child: Icon(Icons.arrow_back_ios_rounded, size: r.s(20), color: context.textPrimary),
                 )
               else
-                const SizedBox(width: 20),
+                SizedBox(width: r.s(20)),
               Text(
                 'Passo ${_currentStep + 1} de 4',
                 style: TextStyle(
                   color: Colors.grey[500],
-                  fontSize: 14,
+                  fontSize: r.fs(14),
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -184,15 +187,15 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
                 onTap: () => context.go('/'),
                 child: const Text(
                   'Pular',
-                  style: TextStyle(color: AppTheme.primaryColor, fontSize: 14, fontWeight: FontWeight.w700),
+                  style: TextStyle(color: AppTheme.primaryColor, fontSize: r.fs(14), fontWeight: FontWeight.w700),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: r.s(12)),
           // Progress bar
           ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(r.s(4)),
             child: LinearProgressIndicator(
               value: (_currentStep + 1) / 4,
               backgroundColor: Colors.white.withValues(alpha: 0.05),
@@ -206,14 +209,15 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
   }
 
   Widget _buildWelcomeStep() {
+      final r = context.r;
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(r.s(24)),
       child: Column(
         children: [
-          const SizedBox(height: 40),
+          SizedBox(height: r.s(40)),
           Container(
-            width: 120,
-            height: 120,
+            width: r.s(120),
+            height: r.s(120),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: const LinearGradient(
@@ -229,40 +233,40 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
                 ),
               ],
             ),
-            child: const Icon(Icons.waving_hand_rounded,
-                size: 56, color: Colors.white),
+            child: Icon(Icons.waving_hand_rounded,
+                size: r.s(56), color: Colors.white),
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: r.s(32)),
           Text(
             'Bem-vindo ao NexusHub!',
             style: TextStyle(
               color: context.textPrimary,
-              fontSize: 28,
+              fontSize: r.fs(28),
               fontWeight: FontWeight.w800,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: r.s(16)),
           Text(
             'Vamos personalizar sua experiência. Em poucos passos, '
             'você estará conectado com comunidades incríveis!',
             style: TextStyle(
               color: Colors.grey[500],
-              fontSize: 16,
+              fontSize: r.fs(16),
               height: 1.6,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: r.s(16)),
           Text(
             'Adicione uma bio para que outros membros te conheçam:',
             style: TextStyle(
               color: Colors.grey[600],
-              fontSize: 14,
+              fontSize: r.fs(14),
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: r.s(16)),
           TextField(
             controller: _bioController,
             maxLines: 3,
@@ -275,20 +279,20 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
               filled: true,
               fillColor: context.surfaceColor,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(r.s(16)),
                 borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(r.s(16)),
                 borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(r.s(16)),
                 borderSide: const BorderSide(color: AppTheme.primaryColor),
               ),
             ),
           ),
-          const SizedBox(height: 40),
+          SizedBox(height: r.s(40)),
           _buildCustomButton(
             text: 'Vamos Começar!',
             onTap: _nextStep,
@@ -299,14 +303,15 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
   }
 
   Widget _buildAminoIdStep() {
+      final r = context.r;
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(r.s(24)),
       child: Column(
         children: [
-          const SizedBox(height: 40),
+          SizedBox(height: r.s(40)),
           Container(
-            width: 100,
-            height: 100,
+            width: r.s(100),
+            height: r.s(100),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: AppTheme.primaryColor.withValues(alpha: 0.15),
@@ -318,31 +323,31 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
                 ),
               ],
             ),
-            child: const Icon(Icons.badge_rounded,
-                size: 48, color: AppTheme.primaryColor),
+            child: Icon(Icons.badge_rounded,
+                size: r.s(48), color: AppTheme.primaryColor),
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: r.s(32)),
           Text(
             'Escolha seu ID',
             style: TextStyle(
               color: context.textPrimary,
-              fontSize: 28,
+              fontSize: r.fs(28),
               fontWeight: FontWeight.w800,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: r.s(12)),
           Text(
             'Seu ID único é como outros membros vão te encontrar. '
             'Escolha algo memorável!',
             style: TextStyle(
               color: Colors.grey[500],
-              fontSize: 16,
+              fontSize: r.fs(16),
               height: 1.5,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: r.s(32)),
           TextField(
             controller: _aminoIdController,
             maxLength: 24,
@@ -355,15 +360,15 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
               filled: true,
               fillColor: context.surfaceColor,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(r.s(16)),
                 borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(r.s(16)),
                 borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(r.s(16)),
                 borderSide: const BorderSide(color: AppTheme.primaryColor),
               ),
               suffixIcon: _aminoIdController.text.length >= 3
@@ -373,12 +378,12 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
             ),
             onChanged: (_) => setState(() {}),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: r.s(8)),
           Text(
             'Mínimo 3 caracteres. Letras, números e underscores.',
-            style: TextStyle(color: Colors.grey[600], fontSize: 12),
+            style: TextStyle(color: Colors.grey[600], fontSize: r.fs(12)),
           ),
-          const SizedBox(height: 40),
+          SizedBox(height: r.s(40)),
           _buildCustomButton(
             text: 'Continuar',
             onTap: _nextStep,
@@ -389,31 +394,32 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
   }
 
   Widget _buildInterestsStep() {
+      final r = context.r;
     return Column(
       children: [
-        const SizedBox(height: 16),
+        SizedBox(height: r.s(16)),
         Text(
           'O que te interessa?',
           style: TextStyle(
             color: context.textPrimary,
-            fontSize: 24,
+            fontSize: r.fs(24),
             fontWeight: FontWeight.w800,
           ),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: r.s(8)),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: EdgeInsets.symmetric(horizontal: r.s(24)),
           child: Text(
             'Selecione pelo menos 3 categorias para personalizarmos suas recomendações.',
             style: TextStyle(
               color: Colors.grey[500],
-              fontSize: 14,
+              fontSize: r.fs(14),
             ),
             textAlign: TextAlign.center,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: r.s(8)),
         Text(
           '${_selectedInterests.length} selecionados',
           style: TextStyle(
@@ -423,10 +429,10 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
             fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: r.s(16)),
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: r.s(16)),
             child: GridView.builder(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
@@ -454,7 +460,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
                       color: isSelected
                           ? item.color.withValues(alpha: 0.25)
                           : context.surfaceColor,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(r.s(16)),
                       border: Border.all(
                         color: isSelected ? item.color : Colors.white.withValues(alpha: 0.05),
                         width: isSelected ? 2 : 1,
@@ -474,15 +480,15 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
                           item.icon,
                           color:
                               isSelected ? item.color : Colors.grey[500],
-                          size: 32,
+                          size: r.s(32),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: r.s(8)),
                         Text(
                           item.name,
                           style: TextStyle(
                             color:
                                 isSelected ? item.color : context.textPrimary,
-                            fontSize: 11,
+                            fontSize: r.fs(11),
                             fontWeight: isSelected
                                 ? FontWeight.w700
                                 : FontWeight.normal,
@@ -493,9 +499,9 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
                         ),
                         if (isSelected)
                           Padding(
-                            padding: const EdgeInsets.only(top: 4),
+                            padding: EdgeInsets.only(top: r.s(4)),
                             child: Icon(Icons.check_circle_rounded,
-                                color: item.color, size: 16),
+                                color: item.color, size: r.s(16)),
                           ),
                       ],
                     ),
@@ -506,7 +512,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(r.s(20)),
           child: _buildCustomButton(
             text: 'Continuar',
             onTap: _selectedInterests.length >= 3 ? _nextStep : null,
@@ -517,14 +523,15 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
   }
 
   Widget _buildSuggestedCommunitiesStep() {
+      final r = context.r;
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(r.s(24)),
       child: Column(
         children: [
-          const SizedBox(height: 20),
+          SizedBox(height: r.s(20)),
           Container(
-            width: 100,
-            height: 100,
+            width: r.s(100),
+            height: r.s(100),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: AppTheme.primaryColor.withValues(alpha: 0.15),
@@ -536,31 +543,31 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
                 ),
               ],
             ),
-            child: const Icon(Icons.celebration_rounded,
-                size: 48, color: AppTheme.primaryColor),
+            child: Icon(Icons.celebration_rounded,
+                size: r.s(48), color: AppTheme.primaryColor),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: r.s(24)),
           Text(
             'Tudo Pronto!',
             style: TextStyle(
               color: context.textPrimary,
-              fontSize: 28,
+              fontSize: r.fs(28),
               fontWeight: FontWeight.w800,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: r.s(12)),
           Text(
             'Seus interesses foram salvos. Agora vamos encontrar '
             'as melhores comunidades para você!',
             style: TextStyle(
               color: Colors.grey[500],
-              fontSize: 16,
+              fontSize: r.fs(16),
               height: 1.5,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: r.s(32)),
           // Preview dos interesses selecionados
           Wrap(
             spacing: 8,
@@ -573,22 +580,22 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
                     interest, Icons.star_rounded, AppTheme.primaryColor),
               );
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
                 decoration: BoxDecoration(
                   color: item.color.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(r.s(20)),
                   border: Border.all(color: item.color.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(item.icon, size: 16, color: item.color),
-                    const SizedBox(width: 6),
+                    Icon(item.icon, size: r.s(16), color: item.color),
+                    SizedBox(width: r.s(6)),
                     Text(
                       interest,
                       style: TextStyle(
                         color: item.color,
-                        fontSize: 12,
+                        fontSize: r.fs(12),
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -597,20 +604,20 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
               );
             }).toList(),
           ),
-          const SizedBox(height: 40),
+          SizedBox(height: r.s(40)),
           _buildCustomButton(
             text: 'Explorar Comunidades',
             onTap: _isLoading ? null : _finishWizard,
             isLoading: _isLoading,
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: r.s(16)),
           GestureDetector(
             onTap: () => context.go('/'),
             child: const Text(
               'Pular por enquanto',
               style: TextStyle(
                 color: AppTheme.primaryColor,
-                fontSize: 14,
+                fontSize: r.fs(14),
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -621,6 +628,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
   }
 
   Widget _buildCustomButton({
+      final r = context.r;
     required String text,
     required VoidCallback? onTap,
     bool isLoading = false,
@@ -630,9 +638,9 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
       onTap: isEnabled ? onTap : null,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: EdgeInsets.symmetric(vertical: r.s(16)),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(r.s(24)),
           gradient: isEnabled
               ? const LinearGradient(
                   colors: [AppTheme.primaryColor, AppTheme.accentColor],
@@ -653,9 +661,9 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
         ),
         child: Center(
           child: isLoading
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
+              ? SizedBox(
+                  width: r.s(20),
+                  height: r.s(20),
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
                     color: Colors.white,
@@ -665,7 +673,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
                   text,
                   style: TextStyle(
                     color: isEnabled ? Colors.white : Colors.grey[600],
-                    fontSize: 16,
+                    fontSize: r.fs(16),
                     fontWeight: FontWeight.w800,
                   ),
                 ),

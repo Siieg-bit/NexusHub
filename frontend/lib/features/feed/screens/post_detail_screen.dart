@@ -13,6 +13,7 @@ import '../widgets/block_content_renderer.dart';
 import '../widgets/poll_quiz_widget.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../moderation/widgets/report_dialog.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Provider para detalhes de um post.
 final postDetailProvider =
@@ -135,6 +136,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final postAsync = ref.watch(postDetailProvider(widget.postId));
     final commentsAsync = ref.watch(postCommentsProvider(widget.postId));
 
@@ -178,7 +180,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             icon: const Icon(Icons.more_vert_rounded),
             color: context.surfaceColor,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(r.s(12)),
             ),
             onSelected: (value) async {
               final post = ref.read(postDetailProvider(widget.postId)).valueOrNull;
@@ -197,7 +199,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     builder: (ctx) => AlertDialog(
                       backgroundColor: context.surfaceColor,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(r.s(16)),
                       ),
                       title: const Text('Deletar Post',
                           style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w700)),
@@ -267,8 +269,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   value: 'copy_link',
                   child: Row(
                     children: [
-                      Icon(Icons.link_rounded, size: 18, color: context.textSecondary),
-                      SizedBox(width: 10),
+                      Icon(Icons.link_rounded, size: r.s(18), color: context.textSecondary),
+                      SizedBox(width: r.s(10)),
                       Text('Copiar Link', style: TextStyle(color: context.textPrimary)),
                     ],
                   ),
@@ -277,8 +279,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   value: 'report',
                   child: Row(
                     children: [
-                      Icon(Icons.flag_rounded, size: 18, color: Colors.orange),
-                      SizedBox(width: 10),
+                      Icon(Icons.flag_rounded, size: r.s(18), color: Colors.orange),
+                      SizedBox(width: r.s(10)),
                       Text('Reportar', style: TextStyle(color: context.textPrimary)),
                     ],
                   ),
@@ -288,8 +290,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     value: 'delete',
                     child: Row(
                       children: [
-                        Icon(Icons.delete_rounded, size: 18, color: AppTheme.errorColor),
-                        SizedBox(width: 10),
+                        Icon(Icons.delete_rounded, size: r.s(18), color: AppTheme.errorColor),
+                        SizedBox(width: r.s(10)),
                         Text('Deletar', style: TextStyle(color: AppTheme.errorColor)),
                       ],
                     ),
@@ -322,16 +324,16 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     // HEADER DO POST
                     // ======================================================
                     Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: EdgeInsets.all(r.s(16)),
                       child: Row(
                         children: [
                           CosmeticAvatar(
                             userId: post.authorId,
                             avatarUrl: post.author?.iconUrl,
-                            size: 48,
+                            size: r.s(48),
                             onTap: () => context.push('/user/${post.authorId}'),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: r.s(12)),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -343,13 +345,13 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                       style: TextStyle(
                                         fontWeight: FontWeight.w700,
                                         color: context.textPrimary,
-                                        fontSize: 16,
+                                        fontSize: r.fs(16),
                                       ),
                                     ),
                                     if (post.author != null) ...[
-                                      const SizedBox(width: 8),
+                                      SizedBox(width: r.s(8)),
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                        padding: EdgeInsets.symmetric(horizontal: r.s(8), vertical: 2),
                                         decoration: BoxDecoration(
                                           gradient: LinearGradient(
                                             colors: [
@@ -357,7 +359,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                               AppTheme.getLevelColor(post.author!.level).withValues(alpha: 0.7),
                                             ],
                                           ),
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius: BorderRadius.circular(r.s(12)),
                                           boxShadow: [
                                             BoxShadow(
                                               color: AppTheme.getLevelColor(post.author!.level).withValues(alpha: 0.3),
@@ -368,9 +370,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                         ),
                                         child: Text(
                                           'Lv.${post.author!.level}',
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             color: Colors.white,
-                                            fontSize: 10,
+                                            fontSize: r.fs(10),
                                             fontWeight: FontWeight.w800,
                                           ),
                                         ),
@@ -378,12 +380,12 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                     ],
                                   ],
                                 ),
-                                const SizedBox(height: 4),
+                                SizedBox(height: r.s(4)),
                                 Text(
                                   timeago.format(post.createdAt, locale: 'pt_BR'),
                                   style: TextStyle(
                                     color: Colors.grey[500],
-                                    fontSize: 12,
+                                    fontSize: r.fs(12),
                                   ),
                                 ),
                               ],
@@ -398,11 +400,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     // ======================================================
                     if (post.title != null && post.title!.isNotEmpty)
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: EdgeInsets.symmetric(horizontal: r.s(16)),
                         child: Text(
                           post.title!,
                           style: TextStyle(
-                            fontSize: 22,
+                            fontSize: r.fs(22),
                             fontWeight: FontWeight.w800,
                             color: context.textPrimary,
                           ),
@@ -414,7 +416,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     // ======================================================
                     if (post.tags.isNotEmpty)
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                        padding: EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16), r.s(4)),
                         child: Wrap(
                           spacing: 6,
                           runSpacing: 4,
@@ -425,12 +427,12 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                 context.push('/search?q=%23$tag');
                               },
                               child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 4),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: r.s(10), vertical: r.s(4)),
                                 decoration: BoxDecoration(
                                   color: AppTheme.primaryColor
                                       .withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(r.s(12)),
                                   border: Border.all(
                                     color: AppTheme.primaryColor
                                         .withValues(alpha: 0.3),
@@ -438,9 +440,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                 ),
                                 child: Text(
                                   '#$tag',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: AppTheme.primaryColor,
-                                    fontSize: 12,
+                                    fontSize: r.fs(12),
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -455,7 +457,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     // ======================================================
                     if (post.hasBlockContent)
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: EdgeInsets.symmetric(vertical: r.s(16)),
                         child: BlockContentRenderer(
                           blocks: post.contentBlocks!,
                           backgroundUrl: post.backgroundUrl,
@@ -463,11 +465,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       )
                     else
                       Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.all(r.s(16)),
                         child: Text(
                           post.content,
                           style: TextStyle(
-                            fontSize: 15,
+                            fontSize: r.fs(15),
                             height: 1.7,
                             color: context.textPrimary,
                           ),
@@ -495,10 +497,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     // ======================================================
                     if (post.mediaUrl != null && post.mediaUrl!.isNotEmpty)
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
                         child: Container(
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(r.s(16)),
                             border: Border.all(
                               color: Colors.white.withValues(alpha: 0.05),
                             ),
@@ -511,7 +513,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             ],
                           ),
                           child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(r.s(16)),
                             child: CachedNetworkImage(
                               imageUrl: post.mediaUrl!,
                               width: double.infinity,
@@ -525,7 +527,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     // AÇÕES
                     // ======================================================
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      padding: EdgeInsets.symmetric(horizontal: r.s(8), vertical: r.s(8)),
                       child: Row(
                         children: [
                           TextButton.icon(
@@ -558,13 +560,13 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           const Spacer(),
                           Row(
                             children: [
-                              Icon(Icons.visibility_outlined, size: 16, color: Colors.grey[600]),
-                              const SizedBox(width: 4),
+                              Icon(Icons.visibility_outlined, size: r.s(16), color: Colors.grey[600]),
+                              SizedBox(width: r.s(4)),
                               Text(
                                 '${post.viewsCount}',
-                                style: TextStyle(color: Colors.grey[600], fontSize: 12, fontWeight: FontWeight.w600),
+                                style: TextStyle(color: Colors.grey[600], fontSize: r.fs(12), fontWeight: FontWeight.w600),
                               ),
-                              const SizedBox(width: 16),
+                              SizedBox(width: r.s(16)),
                             ],
                           ),
                         ],
@@ -577,11 +579,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     // COMENTÁRIOS
                     // ======================================================
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                      padding: EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(8)),
                       child: const Text(
                         'Comentários',
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: r.fs(18),
                           fontWeight: FontWeight.w800,
                           color: context.textPrimary,
                         ),
@@ -589,8 +591,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     ),
 
                     commentsAsync.when(
-                      loading: () => const Padding(
-                        padding: EdgeInsets.all(32),
+                      loading: () => Padding(
+                        padding: EdgeInsets.all(r.s(32)),
                         child: Center(
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
@@ -599,7 +601,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         ),
                       ),
                       error: (error, _) => Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.all(r.s(16)),
                         child: Text(
                           'Erro ao carregar comentários: $error',
                           style: const TextStyle(color: AppTheme.errorColor),
@@ -608,7 +610,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       data: (comments) {
                         if (comments.isEmpty) {
                           return Padding(
-                            padding: const EdgeInsets.all(32),
+                            padding: EdgeInsets.all(r.s(32)),
                             child: Center(
                               child: Text(
                                 'Nenhum comentário ainda. Seja o primeiro!',
@@ -632,7 +634,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       },
                     ),
 
-                    const SizedBox(height: 80),
+                    SizedBox(height: r.s(80)),
                   ],
                 ),
               ),
@@ -642,7 +644,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             // INPUT DE COMENTÁRIO
             // ======================================================
             Container(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+              padding: EdgeInsets.fromLTRB(r.s(16), r.s(12), r.s(16), r.s(12)),
               decoration: BoxDecoration(
                 color: context.surfaceColor,
                 border: Border(
@@ -663,7 +665,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       child: Container(
                         decoration: BoxDecoration(
                           color: context.scaffoldBg,
-                          borderRadius: BorderRadius.circular(24),
+                          borderRadius: BorderRadius.circular(r.s(24)),
                           border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
                         ),
                         child: TextField(
@@ -674,18 +676,18 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             hintText: 'Escreva um comentário...',
                             hintStyle: TextStyle(color: Colors.grey[600]),
                             border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            contentPadding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
                           ),
                           maxLines: 3,
                           minLines: 1,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: r.s(12)),
                     GestureDetector(
                       onTap: _isSending ? null : _sendComment,
                       child: Container(
-                        padding: const EdgeInsets.all(12),
+                        padding: EdgeInsets.all(r.s(12)),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [AppTheme.primaryColor, AppTheme.accentColor],
@@ -702,18 +704,18 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           ],
                         ),
                         child: _isSending
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
+                            ? SizedBox(
+                                width: r.s(20),
+                                height: r.s(20),
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
                                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                                 ),
                               )
-                            : const Icon(
+                            : Icon(
                                 Icons.send_rounded,
                                 color: Colors.white,
-                                size: 20,
+                                size: r.s(20),
                               ),
                       ),
                     ),
@@ -728,12 +730,13 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   Widget _buildQAHeader(PostModel post) {
+      final r = context.r;
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+      padding: EdgeInsets.all(r.s(16)),
       decoration: BoxDecoration(
         color: const Color(0xFF1A237E).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(r.s(14)),
         border: Border.all(
           color: const Color(0xFF3F51B5).withValues(alpha: 0.3),
         ),
@@ -741,21 +744,21 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       child: Row(
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: r.s(40),
+            height: r.s(40),
             decoration: BoxDecoration(
               color: const Color(0xFF3F51B5).withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(r.s(10)),
             ),
             child: const Center(
               child: Text('Q',
                   style: TextStyle(
                       color: Color(0xFF3F51B5),
                       fontWeight: FontWeight.w800,
-                      fontSize: 20)),
+                      fontSize: r.fs(20))),
             ),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: r.s(14)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -763,12 +766,12 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 const Text('Pergunta & Resposta',
                     style: TextStyle(
                         fontWeight: FontWeight.w700,
-                        fontSize: 14,
+                        fontSize: r.fs(14),
                         color: Color(0xFF3F51B5))),
                 const SizedBox(height: 2),
                 Text(
                   'Responda nos coment\u00e1rios abaixo \u2022 ${post.commentsCount} respostas',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                  style: TextStyle(fontSize: r.fs(12), color: Colors.grey[500]),
                 ),
               ],
             ),
@@ -776,15 +779,15 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           GestureDetector(
             onTap: () => _commentFocusNode.requestFocus(),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(6)),
               decoration: BoxDecoration(
                 color: const Color(0xFF3F51B5),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(r.s(20)),
               ),
               child: const Text('Responder',
                   style: TextStyle(
                       color: Colors.white,
-                      fontSize: 12,
+                      fontSize: r.fs(12),
                       fontWeight: FontWeight.w700)),
             ),
           ),
@@ -845,14 +848,15 @@ class _CommentTileState extends State<_CommentTile> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final comment = widget.comment;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(10)),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.all(r.s(12)),
         decoration: BoxDecoration(
           color: context.surfaceColor,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(r.s(16)),
           border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         ),
         child: Row(
@@ -861,10 +865,10 @@ class _CommentTileState extends State<_CommentTile> {
             CosmeticAvatar(
               userId: comment.authorId,
               avatarUrl: comment.author?.iconUrl,
-              size: 36,
+              size: r.s(36),
               onTap: () => context.push('/user/${comment.authorId}'),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: r.s(12)),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -875,27 +879,27 @@ class _CommentTileState extends State<_CommentTile> {
                         comment.author?.nickname ?? 'Usuário',
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
-                          fontSize: 14,
+                          fontSize: r.fs(14),
                           color: context.textPrimary,
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: r.s(8)),
                       Text(
                         timeago.format(comment.createdAt, locale: 'pt_BR'),
-                        style: TextStyle(color: Colors.grey[600], fontSize: 11),
+                        style: TextStyle(color: Colors.grey[600], fontSize: r.fs(11)),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: r.s(6)),
                   Text(
                     comment.content,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: r.fs(14),
                       height: 1.4,
                       color: context.textPrimary,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: r.s(8)),
                   Row(
                     children: [
                       GestureDetector(
@@ -904,22 +908,22 @@ class _CommentTileState extends State<_CommentTile> {
                           children: [
                             Icon(
                               _isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                              size: 16,
+                              size: r.s(16),
                               color: _isLiked ? const Color(0xFFEF4444) : Colors.grey[500],
                             ),
-                            const SizedBox(width: 4),
+                            SizedBox(width: r.s(4)),
                             Text(
                               '$_likesCount',
                               style: TextStyle(
                                 color: _isLiked ? const Color(0xFFEF4444) : Colors.grey[500],
-                                fontSize: 12,
+                                fontSize: r.fs(12),
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(width: 20),
+                      SizedBox(width: r.s(20)),
                       GestureDetector(
                         onTap: () {
                           // Focar no campo de comentário com @mention
@@ -936,7 +940,7 @@ class _CommentTileState extends State<_CommentTile> {
                           'Responder',
                           style: TextStyle(
                             color: Colors.grey[500],
-                            fontSize: 12,
+                            fontSize: r.fs(12),
                             fontWeight: FontWeight.w600,
                           ),
                         ),

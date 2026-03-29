@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Editar Perfil da Comunidade — estilo Amino Apps.
 ///
@@ -67,7 +68,7 @@ class _EditCommunityProfileScreenState
     final picker = ImagePicker();
     final image = await picker.pickImage(
       source: ImageSource.gallery,
-      maxWidth: 1200,
+      maxWidth: r.w(1200),
       imageQuality: 85,
     );
     if (image == null) return null;
@@ -167,6 +168,7 @@ class _EditCommunityProfileScreenState
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
@@ -180,29 +182,29 @@ class _EditCommunityProfileScreenState
           'Editar Perfil',
           style: TextStyle(
             color: context.textPrimary,
-            fontSize: 17,
+            fontSize: r.fs(17),
             fontWeight: FontWeight.w700,
           ),
         ),
         centerTitle: true,
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 12),
+            padding: EdgeInsets.only(right: r.s(12)),
             child: GestureDetector(
               onTap: _isSaving ? null : _save,
               child: Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
                 decoration: BoxDecoration(
                   color: _isSaving
                       ? AppTheme.accentColor.withValues(alpha: 0.5)
                       : AppTheme.accentColor,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(r.s(20)),
                 ),
                 child: _isSaving
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
+                    ? SizedBox(
+                        width: r.s(16),
+                        height: r.s(16),
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
                           color: Colors.white,
@@ -213,7 +215,7 @@ class _EditCommunityProfileScreenState
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
-                          fontSize: 13,
+                          fontSize: r.fs(13),
                         ),
                       ),
               ),
@@ -229,24 +231,24 @@ class _EditCommunityProfileScreenState
               ),
             )
           : SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: r.s(16)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 16),
+                  SizedBox(height: r.s(16)),
 
                   // ══════════════════════════════════════════════════════
                   // BANNER
                   // ══════════════════════════════════════════════════════
                   const _SectionLabel(text: 'Banner'),
-                  const SizedBox(height: 8),
+                  SizedBox(height: r.s(8)),
                   GestureDetector(
                     onTap: _pickBanner,
                     child: Container(
-                      height: 140,
+                      height: r.s(140),
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(r.s(12)),
                         color: context.cardBg,
                         image: _localBannerUrl != null
                             ? DecorationImage(
@@ -260,13 +262,13 @@ class _EditCommunityProfileScreenState
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(Icons.add_photo_alternate_rounded,
-                                    color: context.textHint, size: 36),
-                                const SizedBox(height: 4),
+                                    color: context.textHint, size: r.s(36)),
+                                SizedBox(height: r.s(4)),
                                 Text(
                                   'Toque para adicionar banner',
                                   style: TextStyle(
                                     color: context.textHint,
-                                    fontSize: 12,
+                                    fontSize: r.fs(12),
                                   ),
                                 ),
                               ],
@@ -277,14 +279,14 @@ class _EditCommunityProfileScreenState
                                   bottom: 8,
                                   right: 8,
                                   child: Container(
-                                    padding: const EdgeInsets.all(6),
+                                    padding: EdgeInsets.all(r.s(6)),
                                     decoration: BoxDecoration(
                                       color:
                                           Colors.black.withValues(alpha: 0.6),
                                       shape: BoxShape.circle,
                                     ),
-                                    child: const Icon(Icons.edit_rounded,
-                                        color: Colors.white, size: 16),
+                                    child: Icon(Icons.edit_rounded,
+                                        color: Colors.white, size: r.s(16)),
                                   ),
                                 ),
                               ],
@@ -301,19 +303,19 @@ class _EditCommunityProfileScreenState
                           'Remover banner',
                           style: TextStyle(
                             color: AppTheme.errorColor,
-                            fontSize: 12,
+                            fontSize: r.fs(12),
                           ),
                         ),
                       ),
                     ),
 
-                  const SizedBox(height: 20),
+                  SizedBox(height: r.s(20)),
 
                   // ══════════════════════════════════════════════════════
                   // AVATAR
                   // ══════════════════════════════════════════════════════
                   const _SectionLabel(text: 'Avatar'),
-                  const SizedBox(height: 8),
+                  SizedBox(height: r.s(8)),
                   Center(
                     child: GestureDetector(
                       onTap: _pickAvatar,
@@ -327,14 +329,14 @@ class _EditCommunityProfileScreenState
                                 : null,
                             child: _localIconUrl == null
                                 ? Icon(Icons.person_rounded,
-                                    color: context.textHint, size: 40)
+                                    color: context.textHint, size: r.s(40))
                                 : null,
                           ),
                           Positioned(
                             bottom: 0,
                             right: 0,
                             child: Container(
-                              padding: const EdgeInsets.all(6),
+                              padding: EdgeInsets.all(r.s(6)),
                               decoration: BoxDecoration(
                                 color: AppTheme.accentColor,
                                 shape: BoxShape.circle,
@@ -343,8 +345,8 @@ class _EditCommunityProfileScreenState
                                   width: 2,
                                 ),
                               ),
-                              child: const Icon(Icons.camera_alt_rounded,
-                                  color: Colors.white, size: 14),
+                              child: Icon(Icons.camera_alt_rounded,
+                                  color: Colors.white, size: r.s(14)),
                             ),
                           ),
                         ],
@@ -360,32 +362,32 @@ class _EditCommunityProfileScreenState
                           'Remover avatar local',
                           style: TextStyle(
                             color: AppTheme.errorColor,
-                            fontSize: 12,
+                            fontSize: r.fs(12),
                           ),
                         ),
                       ),
                     ),
 
-                  const SizedBox(height: 24),
+                  SizedBox(height: r.s(24)),
 
                   // ══════════════════════════════════════════════════════
                   // NICKNAME LOCAL
                   // ══════════════════════════════════════════════════════
                   const _SectionLabel(text: 'Nickname nesta comunidade'),
-                  const SizedBox(height: 8),
+                  SizedBox(height: r.s(8)),
                   _AminoTextField(
                     controller: _nicknameController,
                     hintText: 'Deixe vazio para usar o global',
                     maxLength: 24,
                   ),
 
-                  const SizedBox(height: 20),
+                  SizedBox(height: r.s(20)),
 
                   // ══════════════════════════════════════════════════════
                   // BIO LOCAL
                   // ══════════════════════════════════════════════════════
                   const _SectionLabel(text: 'Bio nesta comunidade'),
-                  const SizedBox(height: 8),
+                  SizedBox(height: r.s(8)),
                   _AminoTextField(
                     controller: _bioController,
                     hintText: 'Deixe vazio para usar a bio global',
@@ -393,16 +395,16 @@ class _EditCommunityProfileScreenState
                     maxLength: 500,
                   ),
 
-                  const SizedBox(height: 16),
+                  SizedBox(height: r.s(16)),
 
                   // ══════════════════════════════════════════════════════
                   // NOTA INFORMATIVA
                   // ══════════════════════════════════════════════════════
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: EdgeInsets.all(r.s(12)),
                     decoration: BoxDecoration(
                       color: AppTheme.accentColor.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(r.s(10)),
                       border: Border.all(
                         color: AppTheme.accentColor.withValues(alpha: 0.2),
                       ),
@@ -410,15 +412,15 @@ class _EditCommunityProfileScreenState
                     child: Row(
                       children: [
                         Icon(Icons.info_outline_rounded,
-                            color: AppTheme.accentColor, size: 18),
-                        const SizedBox(width: 10),
+                            color: AppTheme.accentColor, size: r.s(18)),
+                        SizedBox(width: r.s(10)),
                         Expanded(
                           child: Text(
                             'Estas configurações se aplicam apenas a esta comunidade. '
                             'Campos vazios usarão seu perfil global.',
                             style: TextStyle(
                               color: context.textSecondary,
-                              fontSize: 12,
+                              fontSize: r.fs(12),
                               height: 1.4,
                             ),
                           ),
@@ -427,7 +429,7 @@ class _EditCommunityProfileScreenState
                     ),
                   ),
 
-                  const SizedBox(height: 40),
+                  SizedBox(height: r.s(40)),
                 ],
               ),
             ),
@@ -445,11 +447,12 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Text(
       text.toUpperCase(),
       style: TextStyle(
         color: context.textSecondary,
-        fontSize: 11,
+        fontSize: r.fs(11),
         fontWeight: FontWeight.w700,
         letterSpacing: 1.2,
       ),
@@ -472,44 +475,45 @@ class _AminoTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return TextField(
       controller: controller,
       maxLines: maxLines,
       maxLength: maxLength,
       style: TextStyle(
         color: context.textPrimary,
-        fontSize: 15,
+        fontSize: r.fs(15),
       ),
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: TextStyle(
           color: context.textHint,
-          fontSize: 14,
+          fontSize: r.fs(14),
         ),
         filled: true,
         fillColor: context.cardBg,
         counterStyle: TextStyle(
           color: context.textHint,
-          fontSize: 11,
+          fontSize: r.fs(11),
         ),
         contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(12)),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(r.s(10)),
           borderSide: BorderSide(
             color: context.dividerClr,
             width: 0.5,
           ),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(r.s(10)),
           borderSide: BorderSide(
             color: context.dividerClr,
             width: 0.5,
           ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(r.s(10)),
           borderSide: const BorderSide(
             color: AppTheme.accentColor,
             width: 1.5,

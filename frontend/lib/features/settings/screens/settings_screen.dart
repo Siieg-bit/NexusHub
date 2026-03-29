@@ -8,6 +8,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/providers/theme_provider.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/services/cache_service.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Tela de Configurações Gerais — Hub central para todas as configurações.
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -33,13 +34,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(r.s(16)),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
         title: const Row(
           children: [
             Icon(Icons.download_rounded, color: AppTheme.primaryColor),
-            SizedBox(width: 8),
+            SizedBox(width: r.s(8)),
             Text('Exportar Dados', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
           ],
         ),
@@ -51,7 +52,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           GestureDetector(
             onTap: () => Navigator.pop(ctx),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               child: Text('Cancelar', style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w700)),
             ),
           ),
@@ -76,12 +77,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               }
             },
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [AppTheme.primaryColor, AppTheme.accentColor],
                 ),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(r.s(12)),
                 boxShadow: [
                   BoxShadow(
                     color: AppTheme.primaryColor.withValues(alpha: 0.3),
@@ -104,13 +105,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(r.s(16)),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
         title: const Row(
           children: [
             Icon(Icons.warning_rounded, color: AppTheme.errorColor),
-            SizedBox(width: 8),
+            SizedBox(width: r.s(8)),
             Text('Excluir Conta', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
           ],
         ),
@@ -123,17 +124,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           GestureDetector(
             onTap: () => Navigator.pop(ctx, false),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               child: Text('Cancelar', style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w700)),
             ),
           ),
           GestureDetector(
             onTap: () => Navigator.pop(ctx, true),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
                 color: AppTheme.errorColor,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(r.s(12)),
                 boxShadow: [
                   BoxShadow(
                     color: AppTheme.errorColor.withValues(alpha: 0.3),
@@ -159,17 +160,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(r.s(16)),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
-        title: const Text('Confirmação Final', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
+        title: Text('Confirmação Final', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
                 'Digite "EXCLUIR" para confirmar a exclusão permanente da sua conta.',
                 style: TextStyle(color: Colors.grey[500])),
-            const SizedBox(height: 12),
+            SizedBox(height: r.s(12)),
             TextField(
               controller: confirmCtrl,
               style: TextStyle(color: context.textPrimary),
@@ -177,11 +178,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 hintText: 'EXCLUIR',
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(r.s(12)),
                   borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(r.s(12)),
                   borderSide: const BorderSide(color: AppTheme.errorColor),
                 ),
               ),
@@ -192,7 +193,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           GestureDetector(
             onTap: () => Navigator.pop(ctx, false),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               child: Text('Cancelar', style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w700)),
             ),
           ),
@@ -203,10 +204,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               }
             },
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
                 color: AppTheme.errorColor,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(r.s(12)),
                 boxShadow: [
                   BoxShadow(
                     color: AppTheme.errorColor.withValues(alpha: 0.3),
@@ -257,6 +258,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
@@ -269,7 +271,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
           : ListView(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(r.s(16)),
               children: [
                 // ============================================================
                 // PERFIL CARD
@@ -281,10 +283,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     }
                   },
                   child: Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(r.s(16)),
                     decoration: BoxDecoration(
                       color: context.surfaceColor,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(r.s(16)),
                       border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
                       boxShadow: [
                         BoxShadow(
@@ -315,12 +317,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     _profile!['icon_url'] as String)
                                 : null,
                             child: _profile?['icon_url'] == null
-                                ? const Icon(Icons.person_rounded,
-                                    color: AppTheme.primaryColor, size: 28)
+                                ? Icon(Icons.person_rounded,
+                                    color: AppTheme.primaryColor, size: r.s(28))
                                 : null,
                           ),
                         ),
-                        const SizedBox(width: 14),
+                        SizedBox(width: r.s(14)),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -329,13 +331,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 _profile?['nickname'] as String? ?? 'Usuário',
                                 style: TextStyle(
                                     color: context.textPrimary,
-                                    fontWeight: FontWeight.w800, fontSize: 16),
+                                    fontWeight: FontWeight.w800, fontSize: r.fs(16)),
                               ),
                               Text(
                                 'Nível ${_profile?['level'] ?? 1}',
                                 style: TextStyle(
                                     color: Colors.grey[500],
-                                    fontSize: 12,
+                                    fontSize: r.fs(12),
                                     fontWeight: FontWeight.w700),
                               ),
                             ],
@@ -347,7 +349,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: r.s(24)),
 
                 // ============================================================
                 // CONTA
@@ -384,7 +386,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 filled: true,
                                 fillColor: context.scaffoldBg,
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(r.s(12)),
                                   borderSide: BorderSide.none,
                                 ),
                               ),
@@ -446,7 +448,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     },
                   ),
                 ]),
-                const SizedBox(height: 20),
+                SizedBox(height: r.s(20)),
 
                 // ============================================================
                 // PREFERÊNCIAS
@@ -480,18 +482,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                         ),
                         builder: (ctx) => Padding(
-                          padding: const EdgeInsets.all(24),
+                          padding: EdgeInsets.all(r.s(24)),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               const Text('Idioma',
                                   style: TextStyle(
                                       color: context.textPrimary,
-                                      fontSize: 18,
+                                      fontSize: r.fs(18),
                                       fontWeight: FontWeight.w800)),
-                              const SizedBox(height: 16),
+                              SizedBox(height: r.s(16)),
                               ...AppLocale.values.map((locale) => ListTile(
-                                leading: Text(locale.flag, style: const TextStyle(fontSize: 24)),
+                                leading: Text(locale.flag, style: TextStyle(fontSize: r.fs(24))),
                                 title: Text(locale.label,
                                     style: TextStyle(color: context.textPrimary)),
                                 trailing: currentLocale == locale
@@ -525,13 +527,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         builder: (ctx) => AlertDialog(
                           backgroundColor: context.surfaceColor,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(r.s(16)),
                             side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
                           ),
                           title: const Row(
                             children: [
                               Icon(Icons.cleaning_services_rounded, color: AppTheme.accentColor),
-                              SizedBox(width: 8),
+                              SizedBox(width: r.s(8)),
                               Text('Limpar Cache', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
                             ],
                           ),
@@ -545,19 +547,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             GestureDetector(
                               onTap: () => Navigator.pop(ctx, false),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
                                 child: Text('Cancelar', style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w700)),
                               ),
                             ),
                             GestureDetector(
                               onTap: () => Navigator.pop(ctx, true),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
                                     colors: [AppTheme.primaryColor, AppTheme.accentColor],
                                   ),
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(r.s(12)),
                                 ),
                                 child: const Text('Limpar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
                               ),
@@ -579,7 +581,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     },
                   ),
                 ]),
-                const SizedBox(height: 20),
+                SizedBox(height: r.s(20)),
 
                 // ============================================================
                 // GAMIFICAÇÃO
@@ -602,7 +604,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     onTap: () => context.push('/inventory'),
                   ),
                 ]),
-                const SizedBox(height: 20),
+                SizedBox(height: r.s(20)),
 
                 // ============================================================
                 // SEGURANÇA
@@ -620,7 +622,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     onTap: () => context.push('/settings/devices'),
                   ),
                 ]),
-                const SizedBox(height: 20),
+                SizedBox(height: r.s(20)),
 
                 // ============================================================
                 // SUPORTE
@@ -673,7 +675,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 filled: true,
                                 fillColor: context.scaffoldBg,
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(r.s(12)),
                                   borderSide: BorderSide.none,
                                 ),
                               ),
@@ -719,7 +721,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     },
                   ),
                 ]),
-                const SizedBox(height: 20),
+                SizedBox(height: r.s(20)),
 
                 // ============================================================
                 // DADOS
@@ -737,7 +739,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     onTap: () => _deleteAccount(),
                   ),
                 ]),
-                const SizedBox(height: 20),
+                SizedBox(height: r.s(20)),
 
                 // ============================================================
                 // LOGOUT
@@ -749,10 +751,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       builder: (ctx) => AlertDialog(
                         backgroundColor: context.surfaceColor,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(r.s(16)),
                           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
                         ),
-                        title: const Text('Sair', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
+                        title: Text('Sair', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
                         content: Text(
                             'Tem certeza que deseja sair da sua conta?',
                             style: TextStyle(color: Colors.grey[500])),
@@ -760,17 +762,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           GestureDetector(
                             onTap: () => Navigator.pop(ctx, false),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
                               child: Text('Cancelar', style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w700)),
                             ),
                           ),
                           GestureDetector(
                             onTap: () => Navigator.pop(ctx, true),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
                               decoration: BoxDecoration(
                                 color: AppTheme.errorColor,
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(r.s(12)),
                                 boxShadow: [
                                   BoxShadow(
                                     color: AppTheme.errorColor.withValues(alpha: 0.3),
@@ -793,24 +795,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   },
                   child: Container(
                     width: double.infinity,
-                    height: 48,
+                    height: r.s(48),
                     decoration: BoxDecoration(
                       color: Colors.transparent,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(r.s(12)),
                       border: Border.all(color: AppTheme.errorColor),
                     ),
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.logout_rounded, color: AppTheme.errorColor),
-                        SizedBox(width: 8),
+                        SizedBox(width: r.s(8)),
                         Text('Sair da Conta',
                             style: TextStyle(color: AppTheme.errorColor, fontWeight: FontWeight.w800)),
                       ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 32),
+                SizedBox(height: r.s(32)),
               ],
             ),
     );
@@ -823,13 +825,14 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: EdgeInsets.only(bottom: r.s(8)),
       child: Text(
         title,
         style: TextStyle(
           fontWeight: FontWeight.w800,
-          fontSize: 15,
+          fontSize: r.fs(15),
           color: Colors.grey[500],
         ),
       ),
@@ -843,10 +846,11 @@ class _SettingsGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Container(
       decoration: BoxDecoration(
         color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(r.s(16)),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Column(
@@ -880,16 +884,17 @@ class _SettingsItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return ListTile(
-      leading: Icon(icon, color: AppTheme.primaryColor, size: 22),
+      leading: Icon(icon, color: AppTheme.primaryColor, size: r.s(22)),
       title: Text(title,
-          style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w700, fontSize: 14)),
+          style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w700, fontSize: r.fs(14))),
       subtitle: subtitle != null
           ? Text(subtitle!,
-              style: TextStyle(color: Colors.grey[600], fontSize: 11))
+              style: TextStyle(color: Colors.grey[600], fontSize: r.fs(11)))
           : null,
       trailing: Icon(Icons.chevron_right_rounded,
-          color: Colors.grey[600], size: 20),
+          color: Colors.grey[600], size: r.s(20)),
       onTap: onTap,
     );
   }
@@ -903,17 +908,18 @@ class _ThemeToggleItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return ListTile(
       leading: Icon(
         isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
         color: AppTheme.primaryColor,
-        size: 22,
+        size: r.s(22),
       ),
       title: const Text('Aparência',
-          style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w700, fontSize: 14)),
+          style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w700, fontSize: r.fs(14))),
       subtitle: Text(
         isDark ? 'Tema escuro' : 'Tema claro',
-        style: TextStyle(color: Colors.grey[600], fontSize: 11),
+        style: TextStyle(color: Colors.grey[600], fontSize: r.fs(11)),
       ),
       trailing: Switch(
         value: isDark,

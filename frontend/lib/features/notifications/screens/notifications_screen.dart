@@ -6,6 +6,7 @@ import 'package:timeago/timeago.dart' as timeago;
 
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Provider para notificações do usuário.
 final notificationsProvider =
@@ -46,11 +47,11 @@ class NotificationsScreen extends ConsumerWidget {
           GestureDetector(
             onTap: () => _markAllAsRead(ref),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              margin: const EdgeInsets.only(right: 16),
+              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+              margin: EdgeInsets.only(right: r.s(16)),
               decoration: BoxDecoration(
                 color: context.surfaceColor,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(r.s(20)),
                 border: Border.all(
                   color: Colors.white.withValues(alpha: 0.05),
                 ),
@@ -59,7 +60,7 @@ class NotificationsScreen extends ConsumerWidget {
                 'Marcar todas',
                 style: TextStyle(
                   color: AppTheme.primaryColor,
-                  fontSize: 12,
+                  fontSize: r.fs(12),
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -85,15 +86,15 @@ class NotificationsScreen extends ConsumerWidget {
                 children: [
                   Icon(
                     Icons.notifications_off_rounded,
-                    size: 64,
+                    size: r.s(64),
                     color: Colors.grey[600],
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: r.s(16)),
                   Text(
                     'Nenhuma notificação',
                     style: TextStyle(
                       color: Colors.grey[500],
-                      fontSize: 16,
+                      fontSize: r.fs(16),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -103,9 +104,9 @@ class NotificationsScreen extends ConsumerWidget {
           }
 
           return ListView.separated(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(r.s(16)),
             itemCount: notifications.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            separatorBuilder: (context, index) => SizedBox(height: r.s(12)),
             itemBuilder: (context, index) =>
                 _NotificationTile(data: notifications[index]),
           );
@@ -172,6 +173,7 @@ class _NotificationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final type = data['notification_type'] as String? ?? 'general';
     final isRead = data['is_read'] as bool? ?? false;
     final actor = data['profiles'] as Map<String, dynamic>?;
@@ -205,10 +207,10 @@ class _NotificationTile extends StatelessWidget {
         }
       },
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(r.s(16)),
         decoration: BoxDecoration(
           color: context.surfaceColor,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(r.s(16)),
           border: Border.all(
             color: isRead
                 ? Colors.white.withValues(alpha: 0.05)
@@ -230,8 +232,8 @@ class _NotificationTile extends StatelessWidget {
             Stack(
               children: [
                 Container(
-                  width: 48,
-                  height: 48,
+                  width: r.s(48),
+                  height: r.s(48),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: iconColor.withValues(alpha: 0.15),
@@ -244,14 +246,14 @@ class _NotificationTile extends StatelessWidget {
                         : null,
                   ),
                   child: actor?['icon_url'] == null
-                      ? Icon(_getIcon(type), color: iconColor, size: 24)
+                      ? Icon(_getIcon(type), color: iconColor, size: r.s(24))
                       : null,
                 ),
                 Positioned(
                   bottom: 0,
                   right: 0,
                   child: Container(
-                    padding: const EdgeInsets.all(4),
+                    padding: EdgeInsets.all(r.s(4)),
                     decoration: BoxDecoration(
                       color: context.surfaceColor,
                       shape: BoxShape.circle,
@@ -260,12 +262,12 @@ class _NotificationTile extends StatelessWidget {
                         width: 2,
                       ),
                     ),
-                    child: Icon(_getIcon(type), color: iconColor, size: 12),
+                    child: Icon(_getIcon(type), color: iconColor, size: r.s(12)),
                   ),
                 ),
               ],
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: r.s(16)),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -274,29 +276,29 @@ class _NotificationTile extends StatelessWidget {
                     data['content'] as String? ?? 'Notificação',
                     style: TextStyle(
                       color: context.textPrimary,
-                      fontSize: 14,
+                      fontSize: r.fs(14),
                       fontWeight: isRead ? FontWeight.w500 : FontWeight.w700,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: r.s(6)),
                   Text(
                     timeago.format(createdAt, locale: 'pt_BR'),
                     style: TextStyle(
                       color: Colors.grey[500],
-                      fontSize: 12,
+                      fontSize: r.fs(12),
                     ),
                   ),
                 ],
               ),
             ),
             if (!isRead) ...[
-              const SizedBox(width: 12),
+              SizedBox(width: r.s(12)),
               Container(
-                width: 10,
-                height: 10,
-                margin: const EdgeInsets.only(top: 6),
+                width: r.s(10),
+                height: r.s(10),
+                margin: EdgeInsets.only(top: r.s(6)),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [AppTheme.primaryColor, AppTheme.accentColor],

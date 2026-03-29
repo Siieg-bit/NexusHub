@@ -3,6 +3,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../screens/story_viewer_screen.dart';
 import '../screens/create_story_screen.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Story Carousel — Carrossel horizontal de stories no topo do feed.
 ///
@@ -91,20 +92,21 @@ class _StoryCarouselState extends State<StoryCarousel> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return SizedBox(
-      height: 100,
+      height: r.s(100),
       child: _isLoading
           ? const Center(
               child: SizedBox(
-                width: 20,
-                height: 20,
+                width: r.s(20),
+                height: r.s(20),
                 child: CircularProgressIndicator(
                     strokeWidth: 2, color: AppTheme.accentColor),
               ),
             )
           : ListView.builder(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
               itemCount: _storyGroups.length + 1, // +1 para o botão "Criar"
               itemBuilder: (ctx, i) {
                 if (i == 0) return _buildCreateButton(ctx);
@@ -115,8 +117,9 @@ class _StoryCarouselState extends State<StoryCarousel> {
   }
 
   Widget _buildCreateButton(BuildContext context) {
+      final r = context.r;
     return Padding(
-      padding: const EdgeInsets.only(right: 12),
+      padding: EdgeInsets.only(right: r.s(12)),
       child: GestureDetector(
         onTap: () {
           Navigator.of(context).push(MaterialPageRoute(
@@ -130,8 +133,8 @@ class _StoryCarouselState extends State<StoryCarousel> {
             Stack(
               children: [
                 Container(
-                  width: 60,
-                  height: 60,
+                  width: r.s(60),
+                  height: r.s(60),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: context.cardBg,
@@ -140,17 +143,17 @@ class _StoryCarouselState extends State<StoryCarousel> {
                       width: 2,
                     ),
                   ),
-                  child: const Icon(Icons.add_rounded,
-                      color: AppTheme.accentColor, size: 28),
+                  child: Icon(Icons.add_rounded,
+                      color: AppTheme.accentColor, size: r.s(28)),
                 ),
               ],
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: r.s(4)),
             const Text(
               'Seu Story',
               style: TextStyle(
                 color: context.textPrimary,
-                fontSize: 10,
+                fontSize: r.fs(10),
                 fontWeight: FontWeight.w600,
               ),
               maxLines: 1,
@@ -172,7 +175,7 @@ class _StoryCarouselState extends State<StoryCarousel> {
         group['stories'] as List<Map<String, dynamic>>;
 
     return Padding(
-      padding: const EdgeInsets.only(right: 12),
+      padding: EdgeInsets.only(right: r.s(12)),
       child: GestureDetector(
         onTap: () {
           Navigator.of(context).push(MaterialPageRoute(
@@ -186,8 +189,8 @@ class _StoryCarouselState extends State<StoryCarousel> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 64,
-              height: 64,
+              width: r.s(64),
+              height: r.s(64),
               padding: const EdgeInsets.all(2),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
@@ -228,16 +231,16 @@ class _StoryCarouselState extends State<StoryCarousel> {
                 ),
               ),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: r.s(4)),
             SizedBox(
-              width: 64,
+              width: r.s(64),
               child: Text(
                 username,
                 style: TextStyle(
                   color: hasUnviewed
                       ? context.textPrimary
                       : Colors.grey[600],
-                  fontSize: 10,
+                  fontSize: r.fs(10),
                   fontWeight:
                       hasUnviewed ? FontWeight.w700 : FontWeight.w500,
                 ),

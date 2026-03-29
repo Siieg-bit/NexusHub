@@ -10,6 +10,7 @@ import '../../../core/utils/helpers.dart';
 import '../../../core/widgets/amino_top_bar.dart';
 import '../../../core/widgets/amino_particles_bg.dart';
 import '../../../core/providers/notification_provider.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Provider para busca de comunidades.
 final searchCommunitiesProvider =
@@ -131,6 +132,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       body: AminoParticlesBg(
@@ -169,10 +171,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           if (_myCommunities.isNotEmpty) ...[
                             _buildSectionHeader('Minhas Comunidades'),
                             SizedBox(
-                              height: 180,
+                              height: r.s(180),
                               child: ListView.builder(
                                 scrollDirection: Axis.horizontal,
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                padding: EdgeInsets.symmetric(horizontal: r.s(16)),
                                 itemCount: _myCommunities.length,
                                 itemBuilder: (context, index) =>
                                     _MyCommunityCard(community: _myCommunities[index]),
@@ -184,10 +186,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           if (_newCommunities.isNotEmpty) ...[
                             _buildSectionHeader('New Communities'),
                             SizedBox(
-                              height: 120,
+                              height: r.s(120),
                               child: ListView.builder(
                                 scrollDirection: Axis.horizontal,
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                padding: EdgeInsets.symmetric(horizontal: r.s(16)),
                                 itemCount: _newCommunities.length,
                                 itemBuilder: (context, index) =>
                                     _NewCommunityCard(community: _newCommunities[index]),
@@ -210,7 +212,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                             (c) => _RecommendedCommunityTile(community: c),
                           ),
 
-                          const SizedBox(height: 20),
+                          SizedBox(height: r.s(20)),
                         ],
                       ),
                     ),
@@ -225,15 +227,16 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   // BANNER CAROUSEL — Estilo Amino (banner grande + dots)
   // ==========================================================================
   Widget _buildBannerCarousel() {
+      final r = context.r;
     // Banners de exemplo (serão substituídos por dados reais)
     final bannerItems = _recommendedCommunities.take(5).toList();
     if (bannerItems.isEmpty) return const SizedBox.shrink();
 
     return Column(
       children: [
-        const SizedBox(height: 8),
+        SizedBox(height: r.s(8)),
         SizedBox(
-          height: 160,
+          height: r.s(160),
           child: PageView.builder(
             controller: _bannerPageController,
             itemCount: bannerItems.length,
@@ -243,9 +246,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               return GestureDetector(
                 onTap: () => context.push('/community/${community.id}'),
                 child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  margin: EdgeInsets.symmetric(horizontal: r.s(4)),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(r.s(12)),
                     color: context.cardBg,
                   ),
                   clipBehavior: Clip.antiAlias,
@@ -287,7 +290,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                         bottom: 0,
                         left: 0,
                         right: 0,
-                        height: 80,
+                        height: r.s(80),
                         child: Container(
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
@@ -310,10 +313,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           children: [
                             // Ícone da comunidade
                             Container(
-                              width: 36,
-                              height: 36,
+                              width: r.s(36),
+                              height: r.s(36),
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(r.s(10)),
                                 color: context.cardBg,
                               ),
                               clipBehavior: Clip.antiAlias,
@@ -323,9 +326,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                       fit: BoxFit.cover,
                                     )
                                   : Icon(Icons.groups_rounded,
-                                      color: context.textHint, size: 20),
+                                      color: context.textHint, size: r.s(20)),
                             ),
-                            const SizedBox(width: 10),
+                            SizedBox(width: r.s(10)),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -333,9 +336,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                 children: [
                                   Text(
                                     community.name,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 15,
+                                      fontSize: r.fs(15),
                                       fontWeight: FontWeight.w700,
                                     ),
                                     maxLines: 1,
@@ -345,7 +348,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                     '${formatCount(community.membersCount)} membros',
                                     style: TextStyle(
                                       color: Colors.white.withValues(alpha: 0.7),
-                                      fontSize: 11,
+                                      fontSize: r.fs(11),
                                     ),
                                   ),
                                 ],
@@ -353,17 +356,17 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                             ),
                             // Botão Join
                             Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 8),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: r.s(16), vertical: r.s(8)),
                               decoration: BoxDecoration(
                                 color: AppTheme.primaryColor,
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius: BorderRadius.circular(r.s(20)),
                               ),
                               child: const Text(
                                 'Entrar',
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 12,
+                                  fontSize: r.fs(12),
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -378,7 +381,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             },
           ),
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: r.s(10)),
         // Dots de paginação
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -386,19 +389,19 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             bannerItems.length,
             (i) => AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              margin: const EdgeInsets.symmetric(horizontal: 3),
+              margin: EdgeInsets.symmetric(horizontal: r.s(3)),
               width: _currentBanner == i ? 20 : 6,
-              height: 6,
+              height: r.s(6),
               decoration: BoxDecoration(
                 color: _currentBanner == i
                     ? Colors.white
                     : context.textHint.withValues(alpha: 0.4),
-                borderRadius: BorderRadius.circular(3),
+                borderRadius: BorderRadius.circular(r.s(3)),
               ),
             ),
           ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: r.s(4)),
       ],
     );
   }
@@ -407,14 +410,15 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   // SECTION HEADER — Estilo Amino
   // ==========================================================================
   Widget _buildSectionHeader(String title, {VoidCallback? onSeeAll}) {
+      final r = context.r;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+      padding: EdgeInsets.fromLTRB(r.s(16), r.s(20), r.s(16), r.s(12)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(title,
               style: TextStyle(
-                  fontSize: 18,
+                  fontSize: r.fs(18),
                   fontWeight: FontWeight.w700,
                   color: context.textPrimary)),
           if (onSeeAll != null)
@@ -425,11 +429,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   Text('Ver Tudo',
                       style: TextStyle(
                           color: AppTheme.accentColor,
-                          fontSize: 13,
+                          fontSize: r.fs(13),
                           fontWeight: FontWeight.w600)),
                   const SizedBox(width: 2),
                   Icon(Icons.chevron_right_rounded,
-                      color: AppTheme.accentColor, size: 18),
+                      color: AppTheme.accentColor, size: r.s(18)),
                 ],
               ),
             ),
@@ -468,14 +472,15 @@ class _MyCommunityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final color = _parseColor(community.themeColor);
     return GestureDetector(
       onTap: () => context.push('/community/${community.id}'),
       child: Container(
-        width: 130,
-        margin: const EdgeInsets.only(right: 12),
+        width: r.s(130),
+        margin: EdgeInsets.only(right: r.s(12)),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(r.s(12)),
           color: context.cardBg,
         ),
         clipBehavior: Clip.antiAlias,
@@ -517,7 +522,7 @@ class _MyCommunityCard extends StatelessWidget {
                 ),
                 child: Center(
                   child: Icon(Icons.groups_rounded,
-                      color: Colors.white54, size: 36),
+                      color: Colors.white54, size: r.s(36)),
                 ),
               ),
 
@@ -526,7 +531,7 @@ class _MyCommunityCard extends StatelessWidget {
               bottom: 0,
               left: 0,
               right: 0,
-              height: 90,
+              height: r.s(90),
               child: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -548,10 +553,10 @@ class _MyCommunityCard extends StatelessWidget {
               right: 0,
               child: Center(
                 child: Container(
-                  width: 44,
-                  height: 44,
+                  width: r.s(44),
+                  height: r.s(44),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(r.s(12)),
                     color: context.cardBg.withValues(alpha: 0.8),
                     border: Border.all(
                       color: Colors.white.withValues(alpha: 0.2),
@@ -565,7 +570,7 @@ class _MyCommunityCard extends StatelessWidget {
                           fit: BoxFit.cover,
                         )
                       : Icon(Icons.groups_rounded,
-                          color: context.textHint, size: 22),
+                          color: context.textHint, size: r.s(22)),
                 ),
               ),
             ),
@@ -577,9 +582,9 @@ class _MyCommunityCard extends StatelessWidget {
               right: 8,
               child: Text(
                 community.name,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
-                  fontSize: 12,
+                  fontSize: r.fs(12),
                   fontWeight: FontWeight.w700,
                 ),
                 maxLines: 2,
@@ -594,16 +599,16 @@ class _MyCommunityCard extends StatelessWidget {
               left: 16,
               right: 16,
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 4),
+                padding: EdgeInsets.symmetric(vertical: r.s(4)),
                 decoration: BoxDecoration(
                   color: AppTheme.primaryColor,
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(r.s(4)),
                 ),
                 child: const Text(
                   'CHECK IN',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 10,
+                    fontSize: r.fs(10),
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.5,
                   ),
@@ -633,14 +638,15 @@ class _NewCommunityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final color = _parseColor(community.themeColor);
     return GestureDetector(
       onTap: () => context.push('/community/${community.id}'),
       child: Container(
-        width: 200,
-        margin: const EdgeInsets.only(right: 12),
+        width: r.s(200),
+        margin: EdgeInsets.only(right: r.s(12)),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(r.s(12)),
           color: context.cardBg,
         ),
         clipBehavior: Clip.antiAlias,
@@ -688,16 +694,16 @@ class _NewCommunityCard extends StatelessWidget {
               top: 8,
               left: 8,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: EdgeInsets.symmetric(horizontal: r.s(8), vertical: r.s(3)),
                 decoration: BoxDecoration(
                   color: AppTheme.successColor,
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(r.s(6)),
                 ),
                 child: const Text(
                   'NEW',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 9,
+                    fontSize: r.fs(9),
                     fontWeight: FontWeight.w900,
                     letterSpacing: 0.5,
                   ),
@@ -712,10 +718,10 @@ class _NewCommunityCard extends StatelessWidget {
               child: Row(
                 children: [
                   Container(
-                    width: 32,
-                    height: 32,
+                    width: r.s(32),
+                    height: r.s(32),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(r.s(8)),
                       color: context.cardBg,
                     ),
                     clipBehavior: Clip.antiAlias,
@@ -725,9 +731,9 @@ class _NewCommunityCard extends StatelessWidget {
                             fit: BoxFit.cover,
                           )
                         : Icon(Icons.groups_rounded,
-                            color: context.textHint, size: 16),
+                            color: context.textHint, size: r.s(16)),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: r.s(8)),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -735,9 +741,9 @@ class _NewCommunityCard extends StatelessWidget {
                       children: [
                         Text(
                           community.name,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white,
-                            fontSize: 12,
+                            fontSize: r.fs(12),
                             fontWeight: FontWeight.w700,
                           ),
                           maxLines: 1,
@@ -747,7 +753,7 @@ class _NewCommunityCard extends StatelessWidget {
                           '${formatCount(community.membersCount)} membros',
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.7),
-                            fontSize: 10,
+                            fontSize: r.fs(10),
                           ),
                         ),
                       ],
@@ -770,6 +776,7 @@ class _ForYouPostTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final title = post['title'] as String? ?? '';
     final content = post['content'] as String? ?? '';
     final imageUrl = post['image_url'] as String?;
@@ -782,11 +789,11 @@ class _ForYouPostTile extends StatelessWidget {
     return GestureDetector(
       onTap: () => context.push('/post/$postId'),
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        padding: const EdgeInsets.all(12),
+        margin: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(4)),
+        padding: EdgeInsets.all(r.s(12)),
         decoration: BoxDecoration(
           color: context.cardBg.withValues(alpha: 0.6),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(r.s(12)),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -794,16 +801,16 @@ class _ForYouPostTile extends StatelessWidget {
             // Thumbnail
             if (imageUrl != null)
               ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(r.s(8)),
                 child: CachedNetworkImage(
                   imageUrl: imageUrl,
-                  width: 64,
-                  height: 64,
+                  width: r.s(64),
+                  height: r.s(64),
                   fit: BoxFit.cover,
                   errorWidget: (_, __, ___) => const SizedBox.shrink(),
                 ),
               ),
-            if (imageUrl != null) const SizedBox(width: 12),
+            if (imageUrl != null) SizedBox(width: r.s(12)),
             // Content
             Expanded(
               child: Column(
@@ -815,22 +822,22 @@ class _ForYouPostTile extends StatelessWidget {
                       children: [
                         if (community['icon_url'] != null)
                           ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
+                            borderRadius: BorderRadius.circular(r.s(4)),
                             child: CachedNetworkImage(
                               imageUrl: community['icon_url'] as String,
-                              width: 14,
-                              height: 14,
+                              width: r.s(14),
+                              height: r.s(14),
                               fit: BoxFit.cover,
                             ),
                           ),
                         if (community['icon_url'] != null)
-                          const SizedBox(width: 4),
+                          SizedBox(width: r.s(4)),
                         Expanded(
                           child: Text(
                             community['name'] as String? ?? '',
                             style: TextStyle(
                               color: context.textHint,
-                              fontSize: 10,
+                              fontSize: r.fs(10),
                               fontWeight: FontWeight.w600,
                             ),
                             maxLines: 1,
@@ -839,14 +846,14 @@ class _ForYouPostTile extends StatelessWidget {
                         ),
                       ],
                     ),
-                  if (community != null) const SizedBox(height: 4),
+                  if (community != null) SizedBox(height: r.s(4)),
                   // Title
                   if (title.isNotEmpty)
                     Text(
                       title,
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
-                        fontSize: 14,
+                        fontSize: r.fs(14),
                         color: context.textPrimary,
                       ),
                       maxLines: 2,
@@ -860,13 +867,13 @@ class _ForYouPostTile extends StatelessWidget {
                       content,
                       style: TextStyle(
                         color: context.textSecondary,
-                        fontSize: 12,
+                        fontSize: r.fs(12),
                         height: 1.3,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: r.s(6)),
                   // Author + stats
                   Row(
                     children: [
@@ -883,42 +890,42 @@ class _ForYouPostTile extends StatelessWidget {
                               ? Text(
                                   ((author['nickname'] as String?) ?? '?')[0]
                                       .toUpperCase(),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: AppTheme.primaryColor,
                                     fontWeight: FontWeight.w800,
-                                    fontSize: 8,
+                                    fontSize: r.fs(8),
                                   ),
                                 )
                               : null,
                         ),
-                        const SizedBox(width: 4),
+                        SizedBox(width: r.s(4)),
                         Flexible(
                           child: Text(
                             author['nickname'] as String? ?? '',
                             style: TextStyle(
                               color: context.textHint,
-                              fontSize: 11,
+                              fontSize: r.fs(11),
                               fontWeight: FontWeight.w500,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: r.s(8)),
                       ],
                       Icon(Icons.favorite_rounded,
-                          size: 12, color: context.textHint),
+                          size: r.s(12), color: context.textHint),
                       const SizedBox(width: 2),
                       Text('$likesCount',
                           style: TextStyle(
-                              color: context.textHint, fontSize: 11)),
-                      const SizedBox(width: 8),
+                              color: context.textHint, fontSize: r.fs(11))),
+                      SizedBox(width: r.s(8)),
                       Icon(Icons.chat_bubble_rounded,
-                          size: 12, color: context.textHint),
+                          size: r.s(12), color: context.textHint),
                       const SizedBox(width: 2),
                       Text('$commentsCount',
                           style: TextStyle(
-                              color: context.textHint, fontSize: 11)),
+                              color: context.textHint, fontSize: r.fs(11))),
                     ],
                   ),
                 ],
@@ -938,23 +945,24 @@ class _RecommendedCommunityTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return GestureDetector(
       onTap: () => context.push('/community/${community.id}'),
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        padding: const EdgeInsets.all(10),
+        margin: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(4)),
+        padding: EdgeInsets.all(r.s(10)),
         decoration: BoxDecoration(
           color: context.cardBg.withValues(alpha: 0.6),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(r.s(12)),
         ),
         child: Row(
           children: [
             // Ícone da comunidade
             Container(
-              width: 48,
-              height: 48,
+              width: r.s(48),
+              height: r.s(48),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(r.s(14)),
                 color: context.surfaceColor,
               ),
               clipBehavior: Clip.antiAlias,
@@ -962,9 +970,9 @@ class _RecommendedCommunityTile extends StatelessWidget {
                   ? CachedNetworkImage(
                       imageUrl: community.iconUrl!, fit: BoxFit.cover)
                   : Icon(Icons.groups_rounded,
-                      color: context.textHint, size: 24),
+                      color: context.textHint, size: r.s(24)),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: r.s(12)),
             // Info
             Expanded(
               child: Column(
@@ -973,29 +981,29 @@ class _RecommendedCommunityTile extends StatelessWidget {
                   Text(community.name,
                       style: TextStyle(
                           fontWeight: FontWeight.w600,
-                          fontSize: 14,
+                          fontSize: r.fs(14),
                           color: context.textPrimary)),
                   const SizedBox(height: 2),
                   Text(
                     '${formatCount(community.membersCount)} membros',
                     style: TextStyle(
-                        color: context.textSecondary, fontSize: 12),
+                        color: context.textSecondary, fontSize: r.fs(12)),
                   ),
                 ],
               ),
             ),
             // Botão Entrar
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(7)),
               decoration: BoxDecoration(
                 color: AppTheme.primaryColor,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(r.s(20)),
               ),
               child: const Text(
                 'Entrar',
                 style: TextStyle(
                     color: Colors.white,
-                    fontSize: 12,
+                    fontSize: r.fs(12),
                     fontWeight: FontWeight.w700),
               ),
             ),

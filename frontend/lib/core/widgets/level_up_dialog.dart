@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
+import '../utils/responsive.dart';
 
 /// Dialog fullscreen de Level Up estilo Amino Apps.
 ///
@@ -133,7 +134,7 @@ class _LevelUpContentState extends State<_LevelUpContent>
         x: _random.nextDouble(),
         y: _random.nextDouble() * -1.0,
         speed: 0.2 + _random.nextDouble() * 0.5,
-        size: 4 + _random.nextDouble() * 8,
+        size: r.s(4) + _random.nextDouble() * 8,
         color: [
           AppTheme.accentColor,
           AppTheme.fabPink,
@@ -159,6 +160,7 @@ class _LevelUpContentState extends State<_LevelUpContent>
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final levelColor = AppTheme.getLevelColor(widget.newLevel);
 
     return Material(
@@ -193,37 +195,37 @@ class _LevelUpContentState extends State<_LevelUpContent>
                 );
               },
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
+                padding: EdgeInsets.symmetric(horizontal: r.s(40)),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // Estrela decorativa
                     Icon(
                       Icons.auto_awesome_rounded,
-                      size: 40,
+                      size: r.s(40),
                       color: const Color(0xFFFFD700).withValues(alpha: 0.8),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: r.s(8)),
 
                     // "LEVEL UP!"
                     const Text(
                       'LEVEL UP!',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: r.fs(16),
                         fontWeight: FontWeight.w800,
                         color: context.textSecondary,
                         letterSpacing: 4,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: r.s(20)),
 
                     // Número do nível com glow
                     AnimatedBuilder(
                       animation: _glowAnimation,
                       builder: (context, _) {
                         return Container(
-                          width: 120,
-                          height: 120,
+                          width: r.s(120),
+                          height: r.s(120),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             gradient: RadialGradient(
@@ -250,7 +252,7 @@ class _LevelUpContentState extends State<_LevelUpContent>
                                 Text(
                                   '${widget.newLevel}',
                                   style: TextStyle(
-                                    fontSize: 52,
+                                    fontSize: r.fs(52),
                                     fontWeight: FontWeight.w900,
                                     color: levelColor,
                                     height: 1,
@@ -268,12 +270,12 @@ class _LevelUpContentState extends State<_LevelUpContent>
                         );
                       },
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: r.s(24)),
 
                     // Título desbloqueado
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 8),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: r.s(20), vertical: r.s(8)),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
@@ -281,7 +283,7 @@ class _LevelUpContentState extends State<_LevelUpContent>
                             levelColor.withValues(alpha: 0.1),
                           ],
                         ),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(r.s(20)),
                         border: Border.all(
                           color: levelColor.withValues(alpha: 0.5),
                         ),
@@ -289,34 +291,34 @@ class _LevelUpContentState extends State<_LevelUpContent>
                       child: Text(
                         widget.newTitle,
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: r.fs(18),
                           fontWeight: FontWeight.w800,
                           color: levelColor,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: r.s(12)),
 
                     Text(
                       'Novo título desbloqueado!',
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: r.fs(13),
                         color: context.textSecondary,
                       ),
                     ),
-                    const SizedBox(height: 40),
+                    SizedBox(height: r.s(40)),
 
                     // Botão "Incrível!"
                     SizedBox(
-                      width: 200,
+                      width: r.s(200),
                       child: ElevatedButton(
                         onPressed: () => Navigator.of(context).pop(),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: levelColor,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          padding: EdgeInsets.symmetric(vertical: r.s(14)),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
+                            borderRadius: BorderRadius.circular(r.s(25)),
                           ),
                           elevation: 8,
                           shadowColor: levelColor.withValues(alpha: 0.5),
@@ -324,7 +326,7 @@ class _LevelUpContentState extends State<_LevelUpContent>
                         child: const Text(
                           'Incrível!',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: r.fs(16),
                             fontWeight: FontWeight.w800,
                           ),
                         ),

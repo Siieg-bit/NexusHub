@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Tela de Seguidores / Seguindo — Lista de conexões sociais.
 class FollowersScreen extends StatefulWidget {
@@ -69,6 +70,7 @@ class _FollowersScreenState extends State<FollowersScreen>
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
@@ -111,6 +113,7 @@ class _FollowersScreenState extends State<FollowersScreen>
   }
 
   Widget _buildList(List<Map<String, dynamic>> list, String profileKey) {
+      final r = context.r;
     if (list.isEmpty) {
       return Center(
         child: Text(
@@ -121,9 +124,9 @@ class _FollowersScreenState extends State<FollowersScreen>
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(r.s(16)),
       itemCount: list.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 12),
+      separatorBuilder: (context, index) => SizedBox(height: r.s(12)),
       itemBuilder: (context, index) {
         final item = list[index];
         final profile = item['profiles'] as Map<String, dynamic>? ?? item;
@@ -135,20 +138,20 @@ class _FollowersScreenState extends State<FollowersScreen>
         return Container(
           decoration: BoxDecoration(
             color: context.surfaceColor,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(r.s(16)),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.05),
             ),
           ),
           child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            contentPadding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
             onTap: () {
               if (userId != null) context.push('/user/$userId');
             },
             leading: CosmeticAvatar(
               userId: userId,
               avatarUrl: avatarUrl,
-              size: 48,
+              size: r.s(48),
             ),
             title: Text(
               nickname,
@@ -161,7 +164,7 @@ class _FollowersScreenState extends State<FollowersScreen>
               'Nível $level',
               style: TextStyle(
                 color: Colors.grey[500],
-                fontSize: 12,
+                fontSize: r.fs(12),
               ),
             ),
             trailing: _FollowButton(targetUserId: userId ?? ''),
@@ -252,6 +255,7 @@ class _FollowButtonState extends State<_FollowButton> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     if (_isLoading || widget.targetUserId == SupabaseService.currentUserId) {
       return const SizedBox.shrink();
     }
@@ -259,9 +263,9 @@ class _FollowButtonState extends State<_FollowButton> {
     return GestureDetector(
       onTap: _toggleFollow,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(r.s(20)),
           gradient: _isFollowing
               ? null
               : const LinearGradient(
@@ -284,7 +288,7 @@ class _FollowButtonState extends State<_FollowButton> {
         child: Text(
           _isFollowing ? 'Seguindo' : 'Seguir',
           style: TextStyle(
-            fontSize: 12,
+            fontSize: r.fs(12),
             fontWeight: FontWeight.w700,
             color: _isFollowing ? Colors.grey[500] : context.textPrimary,
           ),

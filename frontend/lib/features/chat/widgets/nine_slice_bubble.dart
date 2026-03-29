@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
+import '../../../core/utils/responsive.dart';
 
 /// NineSliceBubble — Motor de renderização 9-slice para Chat Bubbles.
 ///
@@ -44,23 +45,24 @@ class NineSliceBubble extends StatelessWidget {
     required this.imageUrl,
     required this.isMine,
     this.maxWidth = 280,
-    this.sliceInsets = const EdgeInsets.all(24),
-    this.contentPadding = const EdgeInsets.symmetric(
-      horizontal: 20,
-      vertical: 14,
+    this.sliceInsets = EdgeInsets.all(r.s(24)),
+    this.contentPadding = EdgeInsets.symmetric(
+      horizontal: r.s(20),
+      vertical: r.s(14),
     ),
   });
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Align(
       alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
       child: Padding(
         padding: EdgeInsets.only(
           left: isMine ? 48 : 4,
           right: isMine ? 4 : 48,
-          top: 3,
-          bottom: 3,
+          top: r.s(3),
+          bottom: r.s(3),
         ),
         child: Container(
           constraints: BoxConstraints(maxWidth: maxWidth, minHeight: 48),
@@ -83,9 +85,9 @@ class NineSliceBubble extends StatelessWidget {
               Padding(
                 padding: contentPadding,
                 child: DefaultTextStyle(
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
-                    fontSize: 14,
+                    fontSize: r.fs(14),
                     height: 1.4,
                   ),
                   child: child,
@@ -114,6 +116,7 @@ class _NineSliceImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return CachedNetworkImage(
       imageUrl: imageUrl,
       memCacheWidth: 600,
@@ -140,13 +143,13 @@ class _NineSliceImage extends StatelessWidget {
       placeholder: (_, __) => Container(
         decoration: BoxDecoration(
           color: AppTheme.primaryColor.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(r.s(16)),
         ),
       ),
       errorWidget: (_, __, ___) => Container(
         decoration: BoxDecoration(
           color: context.surfaceColor,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(r.s(16)),
           border: Border.all(
             color: AppTheme.primaryColor.withValues(alpha: 0.3),
             width: 1,
@@ -185,14 +188,15 @@ class ProceduralBubbleFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Align(
       alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
       child: Padding(
         padding: EdgeInsets.only(
           left: isMine ? 48 : 4,
           right: isMine ? 4 : 48,
-          top: 3,
-          bottom: 3,
+          top: r.s(3),
+          bottom: r.s(3),
         ),
         child: Container(
           constraints: BoxConstraints(maxWidth: maxWidth, minHeight: 48),
@@ -204,11 +208,11 @@ class ProceduralBubbleFrame extends StatelessWidget {
               isMine: isMine,
             ),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              padding: EdgeInsets.symmetric(horizontal: r.s(18), vertical: r.s(12)),
               child: DefaultTextStyle(
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
-                  fontSize: 14,
+                  fontSize: r.fs(14),
                   height: 1.4,
                 ),
                 child: child,

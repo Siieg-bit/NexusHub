@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
+import '../utils/responsive.dart';
 
 /// AminoCustomTitle — Pílula de título customizado estilo Amino.
 ///
@@ -25,6 +26,7 @@ class AminoCustomTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     // Calcular cor da borda (mais clara que o fundo)
     final borderColor = Color.lerp(color, Colors.white, 0.3)!;
     // Calcular se o texto deve ser branco ou preto
@@ -33,10 +35,10 @@ class AminoCustomTitle extends StatelessWidget {
         : Colors.white;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+      padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(3)),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(r.s(12)),
         border: Border.all(
           color: borderColor.withValues(alpha: 0.4),
           width: 0.8,
@@ -52,7 +54,7 @@ class AminoCustomTitle extends StatelessWidget {
       child: Text(
         title,
         style: TextStyle(
-          fontSize: 10,
+          fontSize: r.fs(10),
           fontWeight: FontWeight.w700,
           color: textColor,
           letterSpacing: 0.3,
@@ -90,6 +92,7 @@ class AminoCustomTitleList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     if (titles.isEmpty) return const SizedBox.shrink();
 
     return Wrap(
@@ -110,10 +113,10 @@ class AminoCustomTitleList extends StatelessWidget {
         }),
         if (titles.length > maxVisible)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            padding: EdgeInsets.symmetric(horizontal: r.s(8), vertical: r.s(3)),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(r.s(12)),
               border: Border.all(
                 color: Colors.white.withValues(alpha: 0.15),
                 width: 0.8,
@@ -122,7 +125,7 @@ class AminoCustomTitleList extends StatelessWidget {
             child: Text(
               '+${titles.length - maxVisible}',
               style: TextStyle(
-                fontSize: 10,
+                fontSize: r.fs(10),
                 fontWeight: FontWeight.w700,
                 color: context.textSecondary,
               ),

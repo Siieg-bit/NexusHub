@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
+import '../utils/responsive.dart';
 
 /// AminoBottomNavBar — Bottom Navigation Bar customizada com CustomPainter.
 ///
@@ -32,6 +33,7 @@ class AminoBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Container(
       decoration: BoxDecoration(
         color: context.surfaceColor,
@@ -51,7 +53,7 @@ class AminoBottomNavBar extends StatelessWidget {
             showNotch: showCreate,
           ),
           child: SizedBox(
-            height: 58,
+            height: r.s(58),
             child: Row(
               children: [
                 // ── Menu ──
@@ -86,8 +88,8 @@ class AminoBottomNavBar extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Container(
-                            width: 46,
-                            height: 46,
+                            width: r.s(46),
+                            height: r.s(46),
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
                                 colors: [
@@ -107,8 +109,8 @@ class AminoBottomNavBar extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            child: const Icon(Icons.add_rounded,
-                                color: Colors.white, size: 28),
+                            child: Icon(Icons.add_rounded,
+                                color: Colors.white, size: r.s(28)),
                           ),
                         ],
                       ),
@@ -159,6 +161,7 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final color = isSelected ? AppTheme.accentColor : const Color(0xFF6B7B8D);
 
     return Expanded(
@@ -173,18 +176,18 @@ class _NavItem extends StatelessWidget {
               duration: const Duration(milliseconds: 200),
               height: 2,
               width: isSelected ? 20 : 0,
-              margin: const EdgeInsets.only(bottom: 4),
+              margin: EdgeInsets.only(bottom: r.s(4)),
               decoration: BoxDecoration(
                 color: AppTheme.accentColor,
                 borderRadius: BorderRadius.circular(1),
               ),
             ),
-            Icon(icon, size: 22, color: color),
+            Icon(icon, size: r.s(22), color: color),
             const SizedBox(height: 2),
             Text(
               label,
               style: TextStyle(
-                fontSize: 10,
+                fontSize: r.fs(10),
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 color: color,
               ),
@@ -214,6 +217,7 @@ class _NavItemAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final color = isSelected ? AppTheme.accentColor : const Color(0xFF6B7B8D);
 
     return Expanded(
@@ -228,15 +232,15 @@ class _NavItemAvatar extends StatelessWidget {
               duration: const Duration(milliseconds: 200),
               height: 2,
               width: isSelected ? 20 : 0,
-              margin: const EdgeInsets.only(bottom: 4),
+              margin: EdgeInsets.only(bottom: r.s(4)),
               decoration: BoxDecoration(
                 color: AppTheme.accentColor,
                 borderRadius: BorderRadius.circular(1),
               ),
             ),
             Container(
-              width: 22,
-              height: 22,
+              width: r.s(22),
+              height: r.s(22),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
@@ -248,15 +252,15 @@ class _NavItemAvatar extends StatelessWidget {
                 child: avatarUrl != null && avatarUrl!.isNotEmpty
                     ? Image.network(avatarUrl!, fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) =>
-                            Icon(Icons.person, size: 14, color: color))
-                    : Icon(Icons.person, size: 14, color: color),
+                            Icon(Icons.person, size: r.s(14), color: color))
+                    : Icon(Icons.person, size: r.s(14), color: color),
               ),
             ),
             const SizedBox(height: 2),
             Text(
               label,
               style: TextStyle(
-                fontSize: 10,
+                fontSize: r.fs(10),
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 color: color,
               ),

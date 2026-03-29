@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Flag Center — Centro de denúncias para Leaders/Curators.
 /// Permite revisar denúncias (Art Theft, Bullying, etc.) e tomar ações.
@@ -75,6 +76,7 @@ class _FlagCenterScreenState extends State<FlagCenterScreen>
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
@@ -125,17 +127,17 @@ class _FlagCenterScreenState extends State<FlagCenterScreen>
           children: [
             Icon(
               isPending ? Icons.check_circle_rounded : Icons.history_rounded,
-              size: 64,
+              size: r.s(64),
               color: Colors.grey[600],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: r.s(16)),
             Text(
               isPending
                   ? 'Nenhuma denúncia pendente'
                   : 'Nenhuma denúncia resolvida',
               style: TextStyle(
                 color: Colors.grey[500],
-                fontSize: 16,
+                fontSize: r.fs(16),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -149,7 +151,7 @@ class _FlagCenterScreenState extends State<FlagCenterScreen>
       color: AppTheme.primaryColor,
       backgroundColor: context.surfaceColor,
       child: ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(r.s(16)),
         itemCount: flags.length,
         itemBuilder: (context, index) {
           final flag = flags[index];
@@ -214,17 +216,18 @@ class _FlagCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final type = flag['type'] as String? ?? 'other';
     final reason = flag['reason'] as String? ?? '';
     final reporter = flag['profiles'] as Map<String, dynamic>?;
     final status = flag['status'] as String? ?? 'pending';
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.only(bottom: r.s(16)),
+      padding: EdgeInsets.all(r.s(16)),
       decoration: BoxDecoration(
         color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(r.s(16)),
         border: Border.all(
           color: isPending
               ? AppTheme.warningColor.withValues(alpha: 0.3)
@@ -247,10 +250,10 @@ class _FlagCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(4)),
                 decoration: BoxDecoration(
                   color: _flagTypeColor(type).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(r.s(12)),
                   border: Border.all(
                     color: _flagTypeColor(type).withValues(alpha: 0.3),
                   ),
@@ -259,7 +262,7 @@ class _FlagCard extends StatelessWidget {
                   _flagTypeLabel(type),
                   style: TextStyle(
                     color: _flagTypeColor(type),
-                    fontSize: 12,
+                    fontSize: r.fs(12),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -268,12 +271,12 @@ class _FlagCard extends StatelessWidget {
               if (!isPending)
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(4)),
                   decoration: BoxDecoration(
                     color: status == 'approved'
                         ? AppTheme.primaryColor.withValues(alpha: 0.15)
                         : AppTheme.errorColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(r.s(12)),
                     border: Border.all(
                       color: status == 'approved'
                           ? AppTheme.primaryColor.withValues(alpha: 0.3)
@@ -286,29 +289,29 @@ class _FlagCard extends StatelessWidget {
                       color: status == 'approved'
                           ? AppTheme.primaryColor
                           : AppTheme.errorColor,
-                      fontSize: 12,
+                      fontSize: r.fs(12),
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: r.s(16)),
           // Reporter
           Row(
             children: [
               CosmeticAvatar(
                 userId: reporter?['id'] as String?,
                 avatarUrl: reporter?['avatar_url'] as String?,
-                size: 32,
+                size: r.s(32),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: r.s(12)),
               Expanded(
                 child: Text(
                   'Reportado por ${reporter?['nickname'] ?? 'Anônimo'}',
                   style: TextStyle(
                     color: Colors.grey[500],
-                    fontSize: 13,
+                    fontSize: r.fs(13),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -316,29 +319,29 @@ class _FlagCard extends StatelessWidget {
             ],
           ),
           if (reason.isNotEmpty) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: r.s(12)),
             Text(
               reason,
               style: TextStyle(
                 color: context.textPrimary,
-                fontSize: 14,
+                fontSize: r.fs(14),
                 height: 1.4,
               ),
             ),
           ],
           // Ações
           if (isPending) ...[
-            const SizedBox(height: 16),
+            SizedBox(height: r.s(16)),
             Row(
               children: [
                 Expanded(
                   child: GestureDetector(
                     onTap: onReject,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: EdgeInsets.symmetric(vertical: r.s(12)),
                       decoration: BoxDecoration(
                         color: Colors.transparent,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(r.s(20)),
                         border: Border.all(
                           color: Colors.white.withValues(alpha: 0.08),
                         ),
@@ -349,18 +352,18 @@ class _FlagCard extends StatelessWidget {
                         style: TextStyle(
                           color: Colors.grey[500],
                           fontWeight: FontWeight.w700,
-                          fontSize: 14,
+                          fontSize: r.fs(14),
                         ),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: r.s(12)),
                 Expanded(
                   child: GestureDetector(
                     onTap: onApprove,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: EdgeInsets.symmetric(vertical: r.s(12)),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
@@ -370,7 +373,7 @@ class _FlagCard extends StatelessWidget {
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(r.s(20)),
                         boxShadow: [
                           BoxShadow(
                             color: AppTheme.errorColor.withValues(alpha: 0.3),
@@ -385,7 +388,7 @@ class _FlagCard extends StatelessWidget {
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
-                          fontSize: 14,
+                          fontSize: r.fs(14),
                         ),
                       ),
                     ),

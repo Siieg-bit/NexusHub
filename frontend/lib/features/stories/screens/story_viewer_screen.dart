@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Story Viewer — Visualizador fullscreen de stories estilo Instagram/Amino.
 ///
@@ -148,6 +149,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final story = widget.stories[_currentIndex];
     final type = story['type'] as String? ?? 'image';
     final mediaUrl = story['media_url'] as String?;
@@ -193,12 +195,12 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
                 color: _parseColor(bgColor),
                 child: Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(32),
+                    padding: EdgeInsets.all(r.s(32)),
                     child: Text(
                       textContent ?? '',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 24,
+                        fontSize: r.fs(24),
                         fontWeight: FontWeight.w800,
                         height: 1.4,
                       ),
@@ -215,7 +217,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
               top: 0,
               left: 0,
               right: 0,
-              height: 120,
+              height: r.s(120),
               child: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -233,7 +235,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
               bottom: 0,
               left: 0,
               right: 0,
-              height: 160,
+              height: r.s(160),
               child: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -261,7 +263,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(2),
                         child: SizedBox(
-                          height: 3,
+                          height: r.s(3),
                           child: i < _currentIndex
                               ? const LinearProgressIndicator(
                                   value: 1,
@@ -309,33 +311,33 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
                         avatarUrl != null ? NetworkImage(avatarUrl) : null,
                     child: avatarUrl == null
                         ? Text(username[0].toUpperCase(),
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 12))
+                            style: TextStyle(
+                                color: Colors.white, fontSize: r.fs(12)))
                         : null,
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: r.s(8)),
                   Text(
                     username,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
-                      fontSize: 14,
+                      fontSize: r.fs(14),
                       shadows: [Shadow(blurRadius: 4, color: Colors.black)],
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: r.s(8)),
                   Text(
                     _timeAgo(createdAt),
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.7),
-                      fontSize: 12,
+                      fontSize: r.fs(12),
                     ),
                   ),
                   const Spacer(),
                   GestureDetector(
                     onTap: () => Navigator.of(context).pop(),
-                    child: const Icon(Icons.close_rounded,
-                        color: Colors.white, size: 24),
+                    child: Icon(Icons.close_rounded,
+                        color: Colors.white, size: r.s(24)),
                   ),
                 ],
               ),
@@ -348,16 +350,16 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
                 left: 16,
                 right: 16,
                 child: Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: EdgeInsets.all(r.s(12)),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(r.s(12)),
                   ),
                   child: Text(
                     textContent,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 16,
+                      fontSize: r.fs(16),
                       fontWeight: FontWeight.w600,
                     ),
                     textAlign: TextAlign.center,
@@ -373,10 +375,10 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
               child: Center(
                 child: Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(r.s(30)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -384,8 +386,8 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
                       return GestureDetector(
                         onTap: () => _sendReaction(r),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Text(r, style: const TextStyle(fontSize: 24)),
+                          padding: EdgeInsets.symmetric(horizontal: r.s(8)),
+                          child: Text(r, style: TextStyle(fontSize: r.fs(24))),
                         ),
                       );
                     }).toList(),
@@ -402,23 +404,23 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
                 right: 0,
                 child: Center(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 4),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: r.s(12), vertical: r.s(4)),
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.4),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(r.s(12)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.visibility_rounded,
-                            color: Colors.white70, size: 14),
-                        const SizedBox(width: 4),
+                        Icon(Icons.visibility_rounded,
+                            color: Colors.white70, size: r.s(14)),
+                        SizedBox(width: r.s(4)),
                         Text(
                           '${story['views_count'] ?? 0}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white70,
-                            fontSize: 12,
+                            fontSize: r.fs(12),
                             fontWeight: FontWeight.w600,
                           ),
                         ),

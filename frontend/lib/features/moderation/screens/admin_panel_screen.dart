@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Painel de Administração Global — Team Amino.
 /// Visão geral de todas as comunidades, usuários e ações de moderação.
@@ -70,6 +71,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
@@ -110,8 +112,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
   }
 
   Widget _buildOverviewTab() {
+      final r = context.r;
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(r.s(16)),
       children: [
         // Stats cards
         Row(
@@ -124,7 +127,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                 color: AppTheme.primaryColor,
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: r.s(12)),
             Expanded(
               child: _StatCard(
                 icon: Icons.groups_rounded,
@@ -135,7 +138,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: r.s(12)),
         Row(
           children: [
             Expanded(
@@ -146,7 +149,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                 color: AppTheme.successColor,
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: r.s(12)),
             Expanded(
               child: _StatCard(
                 icon: Icons.flag_rounded,
@@ -162,6 +165,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
   }
 
   Widget _buildActionsTab() {
+      final r = context.r;
     if (_recentActions.isEmpty) {
       return Center(
         child: Text(
@@ -171,16 +175,16 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       );
     }
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(r.s(16)),
       itemCount: _recentActions.length,
       itemBuilder: (context, index) {
         final action = _recentActions[index];
         return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
+          margin: EdgeInsets.only(bottom: r.s(12)),
+          padding: EdgeInsets.all(r.s(16)),
           decoration: BoxDecoration(
             color: context.surfaceColor,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(r.s(16)),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.05),
             ),
@@ -188,15 +192,15 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: EdgeInsets.all(r.s(10)),
                 decoration: BoxDecoration(
                   color: AppTheme.warningColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(Icons.gavel_rounded,
-                    color: AppTheme.warningColor, size: 20),
+                    color: AppTheme.warningColor, size: r.s(20)),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: r.s(16)),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -205,17 +209,17 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                       action['action'] as String? ?? 'Ação',
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
-                        fontSize: 15,
+                        fontSize: r.fs(15),
                         color: context.textPrimary,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: r.s(4)),
                     if (action['reason'] != null)
                       Text(
                         action['reason'] as String,
                         style: TextStyle(
                           color: Colors.grey[500],
-                          fontSize: 13,
+                          fontSize: r.fs(13),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -242,8 +246,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             Text('Esta mensagem ser\u00e1 enviada para todos os usu\u00e1rios.',
-                style: TextStyle(color: Colors.grey[400], fontSize: 13)),
-            const SizedBox(height: 16),
+                style: TextStyle(color: Colors.grey[400], fontSize: r.fs(13))),
+            SizedBox(height: r.s(16)),
             TextField(
               controller: msgCtrl,
               maxLines: 4,
@@ -254,7 +258,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                 filled: true,
                 fillColor: context.scaffoldBg,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(r.s(12)),
                   borderSide: BorderSide.none,
                 ),
               ),
@@ -305,8 +309,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
   }
 
   Widget _buildToolsTab() {
+      final r = context.r;
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(r.s(16)),
       children: [
         _ToolItem(
           icon: Icons.broadcast_on_personal_rounded,
@@ -361,11 +366,12 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(r.s(20)),
       decoration: BoxDecoration(
         color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(r.s(16)),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.05),
         ),
@@ -381,28 +387,28 @@ class _StatCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(r.s(10)),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(r.s(12)),
             ),
-            child: Icon(icon, color: color, size: 24),
+            child: Icon(icon, color: color, size: r.s(24)),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: r.s(16)),
           Text(
             value,
             style: TextStyle(
               color: color,
-              fontSize: 28,
+              fontSize: r.fs(28),
               fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: r.s(4)),
           Text(
             label,
             style: TextStyle(
               color: Colors.grey[500],
-              fontSize: 13,
+              fontSize: r.fs(13),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -427,14 +433,15 @@ class _ToolItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
+        margin: EdgeInsets.only(bottom: r.s(12)),
+        padding: EdgeInsets.all(r.s(16)),
         decoration: BoxDecoration(
           color: context.surfaceColor,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(r.s(16)),
           border: Border.all(
             color: Colors.white.withValues(alpha: 0.05),
           ),
@@ -442,14 +449,14 @@ class _ToolItem extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(r.s(12)),
               decoration: BoxDecoration(
                 color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(r.s(12)),
               ),
-              child: Icon(icon, color: AppTheme.primaryColor, size: 24),
+              child: Icon(icon, color: AppTheme.primaryColor, size: r.s(24)),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: r.s(16)),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -458,16 +465,16 @@ class _ToolItem extends StatelessWidget {
                     label,
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
-                      fontSize: 16,
+                      fontSize: r.fs(16),
                       color: context.textPrimary,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: r.s(4)),
                   Text(
                     description,
                     style: TextStyle(
                       color: Colors.grey[500],
-                      fontSize: 13,
+                      fontSize: r.fs(13),
                     ),
                   ),
                 ],

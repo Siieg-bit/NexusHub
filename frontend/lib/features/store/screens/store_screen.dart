@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/helpers.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Tela Store — Loja de itens virtuais (Avatar Frames, Chat Bubbles, Sticker Packs).
 /// Design fiel ao Amino Apps: header azul celeste com moeda dourada, banner Amino+.
@@ -78,7 +79,7 @@ class _StoreScreenState extends State<StoreScreen>
           content: const Text('Moedas insuficientes!'),
           backgroundColor: AppTheme.errorColor,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(10))),
         ),
       );
       return;
@@ -95,7 +96,7 @@ class _StoreScreenState extends State<StoreScreen>
             backgroundColor: AppTheme.primaryColor,
             behavior: SnackBarBehavior.floating,
             shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(10))),
           ),
         );
       }
@@ -107,7 +108,7 @@ class _StoreScreenState extends State<StoreScreen>
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
             shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(10))),
           ),
         );
       }
@@ -122,6 +123,7 @@ class _StoreScreenState extends State<StoreScreen>
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       body: NestedScrollView(
@@ -150,26 +152,26 @@ class _StoreScreenState extends State<StoreScreen>
                   children: [
                     // Top row: back + title + saldo
                     Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: r.s(12), vertical: r.s(8)),
                       child: Row(
                         children: [
                           const Text(
                             'Loja',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 20,
+                              fontSize: r.fs(20),
                               fontWeight: FontWeight.w800,
                             ),
                           ),
                           const Spacer(),
                           // Saldo de moedas — pill dourada
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 6),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: r.s(12), vertical: r.s(6)),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(r.s(20)),
                               border: Border.all(
                                 color: Colors.white.withValues(alpha: 0.3),
                               ),
@@ -178,14 +180,14 @@ class _StoreScreenState extends State<StoreScreen>
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 const Icon(Icons.monetization_on_rounded,
-                                    color: Color(0xFFFFD700), size: 18),
-                                const SizedBox(width: 4),
+                                    color: Color(0xFFFFD700), size: r.s(18)),
+                                SizedBox(width: r.s(4)),
                                 Text(
                                   formatCount(_userCoins),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w800,
-                                    fontSize: 14,
+                                    fontSize: r.fs(14),
                                   ),
                                 ),
                               ],
@@ -197,14 +199,14 @@ class _StoreScreenState extends State<StoreScreen>
 
                     // Moeda dourada grande central — ícone do Amino Store
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: EdgeInsets.symmetric(vertical: r.s(16)),
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
                           // Glow effect
                           Container(
-                            width: 100,
-                            height: 100,
+                            width: r.s(100),
+                            height: r.s(100),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               boxShadow: [
@@ -219,8 +221,8 @@ class _StoreScreenState extends State<StoreScreen>
                           ),
                           // Moeda
                           Container(
-                            width: 80,
-                            height: 80,
+                            width: r.s(80),
+                            height: r.s(80),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               gradient: const LinearGradient(
@@ -246,7 +248,7 @@ class _StoreScreenState extends State<StoreScreen>
                                 'AC',
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 28,
+                                  fontSize: r.fs(28),
                                   fontWeight: FontWeight.w900,
                                   letterSpacing: 2,
                                 ),
@@ -260,34 +262,34 @@ class _StoreScreenState extends State<StoreScreen>
                     // Saldo grande
                     Text(
                       '${formatCount(_userCoins)} Moedas',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 24,
+                        fontSize: r.fs(24),
                         fontWeight: FontWeight.w800,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: r.s(4)),
                     Text(
                       'Compre itens exclusivos para personalizar seu perfil',
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.7),
-                        fontSize: 12,
+                        fontSize: r.fs(12),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: r.s(16)),
 
                     // ========================================================
                     // BANNER AMINO+ — laranja/dourado
                     // ========================================================
                     Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 16),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
+                      margin: EdgeInsets.symmetric(horizontal: r.s(16)),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: r.s(16), vertical: r.s(12)),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Color(0xFFFF8C00), Color(0xFFFFA500)],
                         ),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(r.s(12)),
                         boxShadow: [
                           BoxShadow(
                             color:
@@ -300,16 +302,16 @@ class _StoreScreenState extends State<StoreScreen>
                       child: Row(
                         children: [
                           Container(
-                            width: 36,
-                            height: 36,
+                            width: r.s(36),
+                            height: r.s(36),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(r.s(10)),
                             ),
-                            child: const Icon(Icons.workspace_premium_rounded,
-                                color: Colors.white, size: 20),
+                            child: Icon(Icons.workspace_premium_rounded,
+                                color: Colors.white, size: r.s(20)),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: r.s(12)),
                           const Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -319,39 +321,39 @@ class _StoreScreenState extends State<StoreScreen>
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w800,
-                                    fontSize: 14,
+                                    fontSize: r.fs(14),
                                   ),
                                 ),
                                 Text(
                                   'Itens exclusivos e moedas b\u00f4nus!',
                                   style: TextStyle(
                                     color: Colors.white70,
-                                    fontSize: 11,
+                                    fontSize: r.fs(11),
                                   ),
                                 ),
                               ],
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 6),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: r.s(12), vertical: r.s(6)),
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(r.s(20)),
                             ),
                             child: const Text(
                               'Assinar',
                               style: TextStyle(
                                 color: Color(0xFFFF8C00),
                                 fontWeight: FontWeight.w800,
-                                fontSize: 12,
+                                fontSize: r.fs(12),
                               ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: r.s(16)),
                   ],
                 ),
               ),
@@ -375,17 +377,17 @@ class _StoreScreenState extends State<StoreScreen>
                 indicatorSize: TabBarIndicatorSize.label,
                 dividerColor: Colors.transparent,
                 labelStyle:
-                    const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                    TextStyle(fontWeight: FontWeight.w700, fontSize: r.fs(13)),
                 unselectedLabelStyle:
-                    const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+                    TextStyle(fontWeight: FontWeight.w500, fontSize: r.fs(13)),
                 tabs: List.generate(
                   _tabs.length,
                   (i) => Tab(
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(_tabIcons[i], size: 16),
-                        const SizedBox(width: 6),
+                        Icon(_tabIcons[i], size: r.s(16)),
+                        SizedBox(width: r.s(6)),
                         Text(_tabs[i]),
                       ],
                     ),
@@ -411,13 +413,14 @@ class _StoreScreenState extends State<StoreScreen>
   }
 
   Widget _buildItemGrid(List<Map<String, dynamic>> items) {
+      final r = context.r;
     if (items.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.storefront_outlined, size: 48, color: Colors.grey[700]),
-            const SizedBox(height: 12),
+            Icon(Icons.storefront_outlined, size: r.s(48), color: Colors.grey[700]),
+            SizedBox(height: r.s(12)),
             Text('Nenhum item dispon\u00edvel',
                 style: TextStyle(
                     color: Colors.grey[500], fontWeight: FontWeight.w600)),
@@ -427,7 +430,7 @@ class _StoreScreenState extends State<StoreScreen>
     }
 
     return GridView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(r.s(16)),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         mainAxisSpacing: 12,
@@ -506,6 +509,7 @@ class _StoreItemCardState extends State<_StoreItemCard>
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final price = widget.item['price'] as int? ?? 0;
     final name = widget.item['name'] as String? ?? 'Item';
     final imageUrl = widget.item['image_url'] as String?;
@@ -515,7 +519,7 @@ class _StoreItemCardState extends State<_StoreItemCard>
     return Container(
       decoration: BoxDecoration(
         color: context.cardBg,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(r.s(16)),
         border: Border.all(
           color: isLimited
               ? AppTheme.errorColor.withValues(alpha: 0.3)
@@ -566,7 +570,7 @@ class _StoreItemCardState extends State<_StoreItemCard>
                           child: Icon(
                             _getTypeIcon(type),
                             color: Colors.grey[700],
-                            size: 40,
+                            size: r.s(40),
                           ),
                         ),
                 ),
@@ -609,11 +613,11 @@ class _StoreItemCardState extends State<_StoreItemCard>
                     top: 8,
                     right: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: r.s(8), vertical: r.s(3)),
                       decoration: BoxDecoration(
                         color: AppTheme.errorColor,
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(r.s(6)),
                         boxShadow: [
                           BoxShadow(
                             color: AppTheme.errorColor.withValues(alpha: 0.4),
@@ -625,7 +629,7 @@ class _StoreItemCardState extends State<_StoreItemCard>
                         'LIMITADO',
                         style: TextStyle(
                             color: Colors.white,
-                            fontSize: 9,
+                            fontSize: r.fs(9),
                             fontWeight: FontWeight.w800,
                             letterSpacing: 0.5),
                       ),
@@ -637,22 +641,22 @@ class _StoreItemCardState extends State<_StoreItemCard>
                   left: 8,
                   child: Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                        EdgeInsets.symmetric(horizontal: r.s(6), vertical: r.s(3)),
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.4),
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(r.s(6)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(_getTypeIcon(type),
-                            size: 10, color: Colors.white70),
-                        const SizedBox(width: 3),
+                            size: r.s(10), color: Colors.white70),
+                        SizedBox(width: r.s(3)),
                         Text(
                           _getTypeLabel(type),
-                          style: const TextStyle(
+                          style: TextStyle(
                               color: Colors.white70,
-                              fontSize: 9,
+                              fontSize: r.fs(9),
                               fontWeight: FontWeight.w600),
                         ),
                       ],
@@ -664,7 +668,7 @@ class _StoreItemCardState extends State<_StoreItemCard>
           ),
           // Info + Purchase
           Padding(
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(r.s(10)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -672,17 +676,17 @@ class _StoreItemCardState extends State<_StoreItemCard>
                   name,
                   style: TextStyle(
                       fontWeight: FontWeight.w700,
-                      fontSize: 13,
+                      fontSize: r.fs(13),
                       color: context.textPrimary),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: r.s(8)),
                 GestureDetector(
                   onTap: widget.onPurchase,
                   child: Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    padding: EdgeInsets.symmetric(vertical: r.s(8)),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
@@ -690,22 +694,22 @@ class _StoreItemCardState extends State<_StoreItemCard>
                           AppTheme.warningColor.withValues(alpha: 0.1),
                         ],
                       ),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(r.s(10)),
                       border: Border.all(
                           color: AppTheme.warningColor.withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.monetization_on_rounded,
-                            color: AppTheme.warningColor, size: 14),
-                        const SizedBox(width: 4),
+                        Icon(Icons.monetization_on_rounded,
+                            color: AppTheme.warningColor, size: r.s(14)),
+                        SizedBox(width: r.s(4)),
                         Text(
                           price.toString(),
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppTheme.warningColor,
                             fontWeight: FontWeight.w800,
-                            fontSize: 13,
+                            fontSize: r.fs(13),
                           ),
                         ),
                       ],

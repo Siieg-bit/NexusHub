@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/cosmetics_provider.dart';
 import 'avatar_with_frame.dart';
+import '../utils/responsive.dart';
 
 /// Widget de Avatar com cosméticos equipados — carrega automaticamente
 /// o frame do Provider Global de Cosméticos.
@@ -15,7 +16,7 @@ import 'avatar_with_frame.dart';
 /// CosmeticAvatar(
 ///   userId: user.id,
 ///   avatarUrl: user.iconUrl,
-///   size: 40,
+///   size: r.s(40),
 /// )
 /// ```
 class CosmeticAvatar extends ConsumerWidget {

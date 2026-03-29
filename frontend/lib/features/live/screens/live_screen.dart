@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import 'screening_room_screen.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Tela Live — exibe Screening Rooms, Voice Chats e Video Chats ativos.
 ///
@@ -50,7 +51,7 @@ class _LiveScreenState extends State<LiveScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: context.surfaceColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(16))),
         title: const Text('Criar Screening Room',
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w800)),
@@ -68,7 +69,7 @@ class _LiveScreenState extends State<LiveScreen> {
                 filled: true,
                 fillColor: context.cardBg,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(r.s(12)),
                   borderSide: BorderSide.none,
                 ),
               ),
@@ -87,7 +88,7 @@ class _LiveScreenState extends State<LiveScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primaryColor,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
+                  borderRadius: BorderRadius.circular(r.s(10))),
             ),
             child: const Text('Criar',
                 style: TextStyle(
@@ -185,6 +186,7 @@ class _LiveScreenState extends State<LiveScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
@@ -216,7 +218,7 @@ class _LiveScreenState extends State<LiveScreen> {
               child: _activeSessions.isEmpty
                   ? _buildEmptyState()
                   : ListView.builder(
-                      padding: const EdgeInsets.all(12),
+                      padding: EdgeInsets.all(r.s(12)),
                       itemCount: _activeSessions.length,
                       itemBuilder: (ctx, i) =>
                           _buildSessionCard(_activeSessions[i]),
@@ -226,6 +228,7 @@ class _LiveScreenState extends State<LiveScreen> {
   }
 
   Widget _buildEmptyState() {
+      final r = context.r;
     return ListView(
       children: [
         SizedBox(height: MediaQuery.of(context).size.height * 0.2),
@@ -234,25 +237,25 @@ class _LiveScreenState extends State<LiveScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 100,
-                height: 100,
+                width: r.s(100),
+                height: r.s(100),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: AppTheme.primaryColor.withValues(alpha: 0.1),
                 ),
-                child: const Icon(Icons.live_tv_rounded,
-                    size: 48, color: AppTheme.primaryColor),
+                child: Icon(Icons.live_tv_rounded,
+                    size: r.s(48), color: AppTheme.primaryColor),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: r.s(24)),
               const Text(
                 'Nenhuma Sala Ativa',
                 style: TextStyle(
                   color: context.textPrimary,
                   fontWeight: FontWeight.w800,
-                  fontSize: 20,
+                  fontSize: r.fs(20),
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: r.s(8)),
               Text(
                 'Screening Rooms, Voice Chats e Video Chats\naparecerão aqui quando estiverem ativos.',
                 style: TextStyle(color: Colors.grey[500], height: 1.5),
@@ -266,6 +269,7 @@ class _LiveScreenState extends State<LiveScreen> {
   }
 
   Widget _buildSessionCard(Map<String, dynamic> session) {
+      final r = context.r;
     final type = session['type'] as String? ?? 'voice';
     final color = _typeColor(type);
     final creatorProfile = session['profiles'] as Map<String, dynamic>?;
@@ -287,26 +291,26 @@ class _LiveScreenState extends State<LiveScreen> {
         }
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(14),
+        margin: EdgeInsets.only(bottom: r.s(10)),
+        padding: EdgeInsets.all(r.s(14)),
         decoration: BoxDecoration(
           color: context.cardBg,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(r.s(16)),
           border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         child: Row(
           children: [
             // Ícone do tipo
             Container(
-              width: 50,
-              height: 50,
+              width: r.s(50),
+              height: r.s(50),
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(r.s(14)),
               ),
-              child: Icon(_typeIcon(type), color: color, size: 26),
+              child: Icon(_typeIcon(type), color: color, size: r.s(26)),
             ),
-            const SizedBox(width: 14),
+            SizedBox(width: r.s(14)),
             // Info
             Expanded(
               child: Column(
@@ -317,10 +321,10 @@ class _LiveScreenState extends State<LiveScreen> {
                     style: TextStyle(
                       color: context.textPrimary,
                       fontWeight: FontWeight.w700,
-                      fontSize: 15,
+                      fontSize: r.fs(15),
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: r.s(4)),
                   Row(
                     children: [
                       if (creatorAvatar != null)
@@ -333,18 +337,18 @@ class _LiveScreenState extends State<LiveScreen> {
                           radius: 8,
                           backgroundColor: context.surfaceColor,
                           child: Text(creatorName[0].toUpperCase(),
-                              style: const TextStyle(fontSize: 8)),
+                              style: TextStyle(fontSize: r.fs(8))),
                         ),
-                      const SizedBox(width: 6),
+                      SizedBox(width: r.s(6)),
                       Text(
                         creatorName,
                         style:
-                            TextStyle(color: Colors.grey[500], fontSize: 12),
+                            TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
                       ),
                       Text(
                         '  •  ${_timeAgo(createdAt)}',
                         style:
-                            TextStyle(color: Colors.grey[600], fontSize: 12),
+                            TextStyle(color: Colors.grey[600], fontSize: r.fs(12)),
                       ),
                     ],
                   ),
@@ -356,34 +360,34 @@ class _LiveScreenState extends State<LiveScreen> {
               children: [
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(6)),
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(r.s(20)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.people_rounded, color: color, size: 14),
-                      const SizedBox(width: 4),
+                      Icon(Icons.people_rounded, color: color, size: r.s(14)),
+                      SizedBox(width: r.s(4)),
                       Text(
                         '$participantCount',
                         style: TextStyle(
                           color: color,
                           fontWeight: FontWeight.w800,
-                          fontSize: 13,
+                          fontSize: r.fs(13),
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: r.s(4)),
                 Text(
                   'ENTRAR',
                   style: TextStyle(
                     color: color,
                     fontWeight: FontWeight.w800,
-                    fontSize: 9,
+                    fontSize: r.fs(9),
                     letterSpacing: 0.5,
                   ),
                 ),

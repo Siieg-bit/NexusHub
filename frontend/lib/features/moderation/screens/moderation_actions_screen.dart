@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Ações de Moderação — Tela para aplicar ações em um usuário/conteúdo.
 /// Suporta: Ban, Mute, Warn, Hide Post, Delete Post, Strike, Transfer Leader.
@@ -309,6 +310,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
@@ -321,17 +323,17 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
           : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(r.s(16)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Target user info
                   if (_targetUser != null)
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: EdgeInsets.all(r.s(16)),
                       decoration: BoxDecoration(
                         color: context.surfaceColor,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(r.s(16)),
                         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
                       ),
                       child: Row(
@@ -347,7 +349,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                                 ? Icon(Icons.person_rounded, color: context.textPrimary)
                                 : null,
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: r.s(12)),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -356,40 +358,40 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                                     'Usuário',
                                 style: TextStyle(
                                     color: context.textPrimary,
-                                    fontWeight: FontWeight.w700, fontSize: 16),
+                                    fontWeight: FontWeight.w700, fontSize: r.fs(16)),
                               ),
                               Text(
                                 'Nível ${_targetUser!['level'] ?? 1}',
                                 style: TextStyle(
                                     color: Colors.grey[500],
-                                    fontSize: 12),
+                                    fontSize: r.fs(12)),
                               ),
                             ],
                           ),
                         ],
                       ),
                     ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: r.s(20)),
 
                   // Seleção de ação
                   const Text('Tipo de Ação',
                       style:
-                          TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800, fontSize: 16)),
-                  const SizedBox(height: 12),
+                          TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800, fontSize: r.fs(16))),
+                  SizedBox(height: r.s(12)),
                   ..._actions.map((action) {
                     final id = action['id'] as String;
                     final isSelected = _selectedAction == id;
                     return GestureDetector(
                       onTap: () => setState(() => _selectedAction = id),
                       child: Container(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        padding: const EdgeInsets.all(14),
+                        margin: EdgeInsets.only(bottom: r.s(8)),
+                        padding: EdgeInsets.all(r.s(14)),
                         decoration: BoxDecoration(
                           color: isSelected
                               ? Color(action['color'] as int)
                                   .withValues(alpha: 0.1)
                               : context.surfaceColor,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(r.s(16)),
                           border: Border.all(
                             color: isSelected
                                 ? Color(action['color'] as int)
@@ -400,8 +402,8 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                         child: Row(
                           children: [
                             Icon(action['icon'] as IconData,
-                                color: Color(action['color'] as int), size: 22),
-                            const SizedBox(width: 12),
+                                color: Color(action['color'] as int), size: r.s(22)),
+                            SizedBox(width: r.s(12)),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -411,13 +413,13 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                                     style: TextStyle(
                                         color: isSelected ? Color(action['color'] as int) : context.textPrimary,
                                         fontWeight: FontWeight.w700,
-                                        fontSize: 14),
+                                        fontSize: r.fs(14)),
                                   ),
                                   Text(
                                     action['description'] as String,
                                     style: TextStyle(
                                         color: Colors.grey[500],
-                                        fontSize: 11),
+                                        fontSize: r.fs(11)),
                                   ),
                                 ],
                               ),
@@ -434,12 +436,12 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                   // Duração (para ban/mute)
                   if (_selectedAction == 'ban' ||
                       _selectedAction == 'mute') ...[
-                    const SizedBox(height: 16),
+                    SizedBox(height: r.s(16)),
                     const Text('Duração',
                         style: TextStyle(
                             color: context.textPrimary,
-                            fontWeight: FontWeight.w800, fontSize: 16)),
-                    const SizedBox(height: 8),
+                            fontWeight: FontWeight.w800, fontSize: r.fs(16))),
+                    SizedBox(height: r.s(8)),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
@@ -486,11 +488,11 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                   ],
 
                   // Motivo
-                  const SizedBox(height: 16),
+                  SizedBox(height: r.s(16)),
                   const Text('Motivo',
                       style:
-                          TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800, fontSize: 16)),
-                  const SizedBox(height: 8),
+                          TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800, fontSize: r.fs(16))),
+                  SizedBox(height: r.s(8)),
                   TextField(
                     controller: _reasonController,
                     maxLines: 3,
@@ -501,34 +503,34 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                       filled: true,
                       fillColor: context.surfaceColor,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(r.s(16)),
                         borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(r.s(16)),
                         borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(r.s(16)),
                         borderSide: const BorderSide(color: AppTheme.primaryColor),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: r.s(24)),
 
                   // Botão executar
                   GestureDetector(
                     onTap: _executeAction,
                     child: Container(
                       width: double.infinity,
-                      height: 52,
+                      height: r.s(52),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [AppTheme.errorColor, Color(0xFFD32F2F)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(r.s(16)),
                         boxShadow: [
                           BoxShadow(
                             color: AppTheme.errorColor.withValues(alpha: 0.3),
@@ -542,7 +544,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                         'Executar Ação',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 16,
+                          fontSize: r.fs(16),
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -570,16 +572,17 @@ class _DurationChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final isSelected = selected == hours;
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(10)),
         decoration: BoxDecoration(
           color: isSelected
               ? AppTheme.errorColor.withValues(alpha: 0.15)
               : context.surfaceColor,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(r.s(20)),
           border: Border.all(
             color: isSelected 
                 ? AppTheme.errorColor.withValues(alpha: 0.5)
@@ -591,7 +594,7 @@ class _DurationChip extends StatelessWidget {
           style: TextStyle(
             color: isSelected ? AppTheme.errorColor : Colors.grey[500],
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
-            fontSize: 13,
+            fontSize: r.fs(13),
           ),
         ),
       ),

@@ -13,6 +13,7 @@ import '../../../core/services/iap_service.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../chat/widgets/chat_bubble.dart'; // AvatarWithFrame, AminoPlusBadge
 import '../../feed/widgets/post_card.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Provider para perfil de um usuário.
 /// Tenta RPC get_user_profile primeiro; se falhar, busca direto da tabela.
@@ -223,6 +224,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final profileAsync = ref.watch(userProfileProvider(widget.userId));
     final equippedAsync = ref.watch(equippedItemsProvider(widget.userId));
     final currentUser = ref.watch(currentUserProvider);
@@ -243,7 +245,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           elevation: 0,
           leading: IconButton(
             icon: Icon(Icons.arrow_back_ios_rounded,
-                color: context.textPrimary, size: 20),
+                color: context.textPrimary, size: r.s(20)),
             onPressed: () => context.pop(),
           ),
         ),
@@ -252,19 +254,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.error_outline_rounded,
-                  size: 48, color: Colors.grey[700]),
-              const SizedBox(height: 12),
+                  size: r.s(48), color: Colors.grey[700]),
+              SizedBox(height: r.s(12)),
               Text('Erro ao carregar perfil',
-                  style: TextStyle(color: Colors.grey[500], fontSize: 15)),
-              const SizedBox(height: 16),
+                  style: TextStyle(color: Colors.grey[500], fontSize: r.fs(15))),
+              SizedBox(height: r.s(16)),
               GestureDetector(
                 onTap: () => ref.invalidate(userProfileProvider(widget.userId)),
                 child: Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      EdgeInsets.symmetric(horizontal: r.s(20), vertical: r.s(10)),
                   decoration: BoxDecoration(
                     color: AppTheme.primaryColor,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(r.s(8)),
                   ),
                   child: const Text('Tentar novamente',
                       style: TextStyle(
@@ -291,27 +293,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 backgroundColor: context.scaffoldBg.withValues(alpha: 0.95),
                 elevation: 0,
                 leading: IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_rounded,
-                      color: Colors.white, size: 20),
+                  icon: Icon(Icons.arrow_back_ios_rounded,
+                      color: Colors.white, size: r.s(20)),
                   onPressed: () => context.pop(),
                 ),
                 title: GestureDetector(
                   onTap: () => context.push('/wallet'),
                   child: Container(
-                    height: 28,
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    height: r.s(28),
+                    padding: EdgeInsets.symmetric(horizontal: r.s(10)),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [Color(0xFFFF9800), Color(0xFFFFB74D)],
                       ),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(r.s(14)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
-                          width: 16,
-                          height: 16,
+                          width: r.s(16),
+                          height: r.s(16),
                           decoration: const BoxDecoration(
                             shape: BoxShape.circle,
                             gradient: LinearGradient(
@@ -322,30 +324,30 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             child: Text('A',
                                 style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 9,
+                                    fontSize: r.fs(9),
                                     fontWeight: FontWeight.w900,
                                     height: 1.0)),
                           ),
                         ),
-                        const SizedBox(width: 4),
+                        SizedBox(width: r.s(4)),
                         Text(
                           _formatCoins(user.coins),
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white,
-                            fontSize: 12,
+                            fontSize: r.fs(12),
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        const SizedBox(width: 4),
+                        SizedBox(width: r.s(4)),
                         Container(
-                          width: 16,
-                          height: 16,
+                          width: r.s(16),
+                          height: r.s(16),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.3),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.add,
-                              color: Colors.white, size: 11),
+                          child: Icon(Icons.add,
+                              color: Colors.white, size: r.s(11)),
                         ),
                       ],
                     ),
@@ -354,8 +356,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 centerTitle: true,
                 actions: [
                   IconButton(
-                    icon: const Icon(Icons.share_outlined,
-                        color: Colors.white, size: 22),
+                    icon: Icon(Icons.share_outlined,
+                        color: Colors.white, size: r.s(22)),
                     onPressed: () {
                       final link = 'https://nexushub.app/u/${widget.userId}';
                       Clipboard.setData(ClipboardData(text: link));
@@ -373,7 +375,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           ? Icons.menu_rounded
                           : Icons.more_horiz_rounded,
                       color: Colors.white,
-                      size: 22,
+                      size: r.s(22),
                     ),
                     onPressed: isOwnProfile
                         ? () => context.push('/settings')
@@ -387,7 +389,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               // ================================================================
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  padding: EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16), 0),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -395,23 +397,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       AvatarWithFrame(
                         avatarUrl: user.iconUrl,
                         frameUrl: frameUrl,
-                        size: 80,
+                        size: r.s(80),
                         showAminoPlus: isAminoPlus,
                       ),
                       const Spacer(),
                       // Botão Edit Profile / Seguir
                       Padding(
-                        padding: const EdgeInsets.only(top: 16),
+                        padding: EdgeInsets.only(top: r.s(16)),
                         child: isOwnProfile
                             ? GestureDetector(
                                 onTap: () => context.push('/profile/edit'),
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 8),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: r.s(16), vertical: r.s(8)),
                                   decoration: BoxDecoration(
                                     color:
                                         Colors.white.withValues(alpha: 0.08),
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(r.s(8)),
                                     border: Border.all(
                                       color:
                                           Colors.white.withValues(alpha: 0.15),
@@ -421,14 +423,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Icon(Icons.edit_rounded,
-                                          size: 14, color: Colors.grey[400]),
-                                      const SizedBox(width: 6),
+                                          size: r.s(14), color: Colors.grey[400]),
+                                      SizedBox(width: r.s(6)),
                                       Text(
                                         'Edit Profile',
                                         style: TextStyle(
                                           color: Colors.grey[300],
                                           fontWeight: FontWeight.w600,
-                                          fontSize: 13,
+                                          fontSize: r.fs(13),
                                         ),
                                       ),
                                     ],
@@ -438,13 +440,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             : GestureDetector(
                                 onTap: () => _toggleFollow(ref, user),
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 20, vertical: 8),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: r.s(20), vertical: r.s(8)),
                                   decoration: BoxDecoration(
                                     color: user.isFollowing == true
                                         ? Colors.transparent
                                         : AppTheme.accentColor,
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(r.s(8)),
                                     border: user.isFollowing == true
                                         ? Border.all(
                                             color: AppTheme.accentColor)
@@ -454,10 +456,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                     user.isFollowing == true
                                         ? 'Seguindo'
                                         : 'Seguir',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w700,
-                                      fontSize: 13,
+                                      fontSize: r.fs(13),
                                     ),
                                   ),
                                 ),
@@ -473,7 +475,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               // ================================================================
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  padding: EdgeInsets.fromLTRB(r.s(16), r.s(12), r.s(16), 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -486,19 +488,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                               style: TextStyle(
                                 color: context.textPrimary,
                                 fontWeight: FontWeight.w800,
-                                fontSize: 22,
+                                fontSize: r.fs(22),
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           if (isAminoPlus) ...[
-                            const SizedBox(width: 6),
+                            SizedBox(width: r.s(6)),
                             const AminoPlusBadge(),
                           ],
                           if (user.isNicknameVerified) ...[
-                            const SizedBox(width: 4),
-                            const Icon(Icons.verified_rounded,
-                                color: AppTheme.accentColor, size: 18),
+                            SizedBox(width: r.s(4)),
+                            Icon(Icons.verified_rounded,
+                                color: AppTheme.accentColor, size: r.s(18)),
                           ],
                         ],
                       ),
@@ -507,7 +509,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         Text(
                           '@${user.aminoId}',
                           style: TextStyle(
-                              color: Colors.grey[500], fontSize: 13),
+                              color: Colors.grey[500], fontSize: r.fs(13)),
                         ),
                     ],
                   ),
@@ -520,7 +522,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               SliverToBoxAdapter(
                 child: Padding(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
                   child: Row(
                     children: [
                       Expanded(
@@ -528,10 +530,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           onTap: () =>
                               context.push('/followers/${widget.userId}'),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            padding: EdgeInsets.symmetric(vertical: r.s(14)),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.06),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(r.s(12)),
                               border: Border.all(
                                 color: Colors.white.withValues(alpha: 0.08),
                               ),
@@ -543,30 +545,30 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                   style: TextStyle(
                                     color: context.textPrimary,
                                     fontWeight: FontWeight.w800,
-                                    fontSize: 20,
+                                    fontSize: r.fs(20),
                                   ),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
                                   'Followers',
                                   style: TextStyle(
-                                      color: Colors.grey[500], fontSize: 12),
+                                      color: Colors.grey[500], fontSize: r.fs(12)),
                                 ),
                               ],
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: r.s(12)),
                       Expanded(
                         child: GestureDetector(
                           onTap: () =>
                               context.push('/following/${widget.userId}'),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            padding: EdgeInsets.symmetric(vertical: r.s(14)),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.06),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(r.s(12)),
                               border: Border.all(
                                 color: Colors.white.withValues(alpha: 0.08),
                               ),
@@ -578,14 +580,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                   style: TextStyle(
                                     color: context.textPrimary,
                                     fontWeight: FontWeight.w800,
-                                    fontSize: 20,
+                                    fontSize: r.fs(20),
                                   ),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
                                   'Following',
                                   style: TextStyle(
-                                      color: Colors.grey[500], fontSize: 12),
+                                      color: Colors.grey[500], fontSize: r.fs(12)),
                                 ),
                               ],
                             ),
@@ -603,14 +605,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               SliverToBoxAdapter(
                 child: Padding(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(4)),
                   child: user.bio.isNotEmpty
                       ? Text(
                           user.bio,
                           style: TextStyle(
                             color: Colors.grey[300],
                             height: 1.5,
-                            fontSize: 14,
+                            fontSize: r.fs(14),
                           ),
                         )
                       : isOwnProfile
@@ -620,7 +622,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                 'Clique aqui para adicionar sua biografia!',
                                 style: TextStyle(
                                   color: AppTheme.accentColor,
-                                  fontSize: 13,
+                                  fontSize: r.fs(13),
                                 ),
                               ),
                             )
@@ -634,15 +636,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               SliverToBoxAdapter(
                 child: Padding(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
                   child: GestureDetector(
                     onTap: () => context.push('/store'),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 12),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: r.s(14), vertical: r.s(12)),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.06),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(r.s(12)),
                         border: Border.all(
                           color: Colors.white.withValues(alpha: 0.08),
                         ),
@@ -650,22 +652,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       child: Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: r.s(8), vertical: r.s(4)),
                             decoration: BoxDecoration(
                               color: const Color(0xFFFFD700),
-                              borderRadius: BorderRadius.circular(6),
+                              borderRadius: BorderRadius.circular(r.s(6)),
                             ),
                             child: const Text(
                               'Amino+',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w900,
-                                fontSize: 11,
+                                fontSize: r.fs(11),
                               ),
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          SizedBox(width: r.s(10)),
                           Expanded(
                             child: Text(
                               isAminoPlus
@@ -673,7 +675,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                   : 'Try Amino+ for free today!',
                               style: TextStyle(
                                 color: Colors.grey[400],
-                                fontSize: 13,
+                                fontSize: r.fs(13),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -691,7 +693,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               SliverToBoxAdapter(
                 child: Padding(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(4)),
                   child: Divider(
                     color: Colors.white.withValues(alpha: 0.08),
                     height: 1,
@@ -712,7 +714,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               SliverToBoxAdapter(
                 child: Padding(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(4)),
                   child: Divider(
                     color: Colors.white.withValues(alpha: 0.08),
                     height: 1,
@@ -737,13 +739,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     controller: _tabController,
                     labelColor: context.textPrimary,
                     unselectedLabelColor: Colors.grey[600],
-                    labelStyle: const TextStyle(
+                    labelStyle: TextStyle(
                       fontWeight: FontWeight.w800,
-                      fontSize: 16,
+                      fontSize: r.fs(16),
                     ),
-                    unselectedLabelStyle: const TextStyle(
+                    unselectedLabelStyle: TextStyle(
                       fontWeight: FontWeight.w600,
-                      fontSize: 16,
+                      fontSize: r.fs(16),
                     ),
                     indicatorColor: context.textPrimary,
                     indicatorWeight: 3,
@@ -827,14 +829,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(r.s(16)),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 36,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 16),
+              width: r.s(36),
+              height: r.s(4),
+              margin: EdgeInsets.only(bottom: r.s(16)),
               decoration: BoxDecoration(
                 color: Colors.grey[700],
                 borderRadius: BorderRadius.circular(2),
@@ -867,14 +869,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: EdgeInsets.symmetric(vertical: r.s(12)),
         child: Row(
           children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(width: 12),
+            Icon(icon, color: color, size: r.s(20)),
+            SizedBox(width: r.s(12)),
             Text(label,
                 style: TextStyle(
-                    color: color, fontSize: 14, fontWeight: FontWeight.w500)),
+                    color: color, fontSize: r.fs(14), fontWeight: FontWeight.w500)),
           ],
         ),
       ),
@@ -894,11 +896,11 @@ class _LinkedCommunitiesSection extends ConsumerWidget {
     final communitiesAsync = ref.watch(userLinkedCommunitiesProvider(userId));
 
     return communitiesAsync.when(
-      loading: () => const Padding(
-        padding: EdgeInsets.all(16),
+      loading: () => Padding(
+        padding: EdgeInsets.all(r.s(16)),
         child: SizedBox(
-          height: 20,
-          width: 20,
+          height: r.s(20),
+          width: r.s(20),
           child: CircularProgressIndicator(
               color: AppTheme.accentColor, strokeWidth: 2),
         ),
@@ -908,7 +910,7 @@ class _LinkedCommunitiesSection extends ConsumerWidget {
         if (communities.isEmpty) return const SizedBox.shrink();
 
         return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+          padding: EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16), r.s(8)),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -916,11 +918,11 @@ class _LinkedCommunitiesSection extends ConsumerWidget {
                 'Linked Communities',
                 style: TextStyle(
                   color: Colors.grey[500],
-                  fontSize: 13,
+                  fontSize: r.fs(13),
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: r.s(10)),
               Wrap(
                 spacing: 16,
                 runSpacing: 12,
@@ -934,19 +936,19 @@ class _LinkedCommunitiesSection extends ConsumerWidget {
                         children: [
                           // Ícone da comunidade
                           ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(r.s(8)),
                             child: community.iconUrl != null
                                 ? CachedNetworkImage(
                                     imageUrl: community.iconUrl!,
-                                    width: 32,
-                                    height: 32,
+                                    width: r.s(32),
+                                    height: r.s(32),
                                     fit: BoxFit.cover,
                                     errorWidget: (_, __, ___) =>
                                         _communityPlaceholder(community),
                                   )
                                 : _communityPlaceholder(community),
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: r.s(8)),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -956,7 +958,7 @@ class _LinkedCommunitiesSection extends ConsumerWidget {
                                   style: TextStyle(
                                     color: context.textPrimary,
                                     fontWeight: FontWeight.w700,
-                                    fontSize: 13,
+                                    fontSize: r.fs(13),
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -966,7 +968,7 @@ class _LinkedCommunitiesSection extends ConsumerWidget {
                                     'ID:${community.endpoint}',
                                     style: TextStyle(
                                       color: Colors.grey[600],
-                                      fontSize: 10,
+                                      fontSize: r.fs(10),
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -989,11 +991,11 @@ class _LinkedCommunitiesSection extends ConsumerWidget {
 
   Widget _communityPlaceholder(CommunityModel community) {
     return Container(
-      width: 32,
-      height: 32,
+      width: r.s(32),
+      height: r.s(32),
       decoration: BoxDecoration(
         color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(r.s(8)),
       ),
       child: Center(
         child: Text(
@@ -1001,7 +1003,7 @@ class _LinkedCommunitiesSection extends ConsumerWidget {
           style: TextStyle(
             color: context.textPrimary,
             fontWeight: FontWeight.w800,
-            fontSize: 14,
+            fontSize: r.fs(14),
           ),
         ),
       ),
@@ -1031,11 +1033,11 @@ class _StoriesTab extends ConsumerWidget {
           children: [
             Text('Failed to load data.',
                 style: TextStyle(color: Colors.grey[500])),
-            const SizedBox(height: 12),
+            SizedBox(height: r.s(12)),
             GestureDetector(
               onTap: () => ref.invalidate(userPostsProvider(userId)),
               child: Icon(Icons.refresh_rounded,
-                  color: Colors.grey[500], size: 32),
+                  color: Colors.grey[500], size: r.s(32)),
             ),
           ],
         ),
@@ -1047,8 +1049,8 @@ class _StoriesTab extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.article_outlined,
-                    size: 48, color: Colors.grey[700]),
-                const SizedBox(height: 12),
+                    size: r.s(48), color: Colors.grey[700]),
+                SizedBox(height: r.s(12)),
                 Text('Nenhum post ainda',
                     style: TextStyle(
                         color: Colors.grey[500],
@@ -1086,7 +1088,7 @@ class _WallTab extends ConsumerWidget {
       children: [
         // Input para nova mensagem
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
           decoration: BoxDecoration(
             color: context.surfaceColor,
             border: Border(
@@ -1101,27 +1103,27 @@ class _WallTab extends ConsumerWidget {
                 child: TextField(
                   controller: wallController,
                   style: TextStyle(
-                      color: context.textPrimary, fontSize: 14),
+                      color: context.textPrimary, fontSize: r.fs(14)),
                   decoration: InputDecoration(
                     hintText: 'Escreva no mural...',
-                    hintStyle: TextStyle(color: Colors.grey[600], fontSize: 14),
+                    hintStyle: TextStyle(color: Colors.grey[600], fontSize: r.fs(14)),
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 8),
+                    contentPadding: EdgeInsets.symmetric(
+                        horizontal: r.s(12), vertical: r.s(8)),
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: r.s(8)),
               GestureDetector(
                 onTap: () => _postMessage(ref, context),
                 child: Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(r.s(8)),
                   decoration: BoxDecoration(
                     color: AppTheme.primaryColor,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(r.s(8)),
                   ),
-                  child: const Icon(Icons.send_rounded,
-                      color: Colors.white, size: 18),
+                  child: Icon(Icons.send_rounded,
+                      color: Colors.white, size: r.s(18)),
                 ),
               ),
             ],
@@ -1140,11 +1142,11 @@ class _WallTab extends ConsumerWidget {
                 children: [
                   Text('Failed to load data.',
                       style: TextStyle(color: Colors.grey[500])),
-                  const SizedBox(height: 12),
+                  SizedBox(height: r.s(12)),
                   GestureDetector(
                     onTap: () => ref.invalidate(userWallProvider(userId)),
                     child: Icon(Icons.refresh_rounded,
-                        color: Colors.grey[500], size: 32),
+                        color: Colors.grey[500], size: r.s(32)),
                   ),
                 ],
               ),
@@ -1158,7 +1160,7 @@ class _WallTab extends ConsumerWidget {
               }
 
               return ListView.builder(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(r.s(16)),
                 itemCount: messages.length,
                 itemBuilder: (context, index) {
                   final msg = messages[index];
@@ -1172,11 +1174,11 @@ class _WallTab extends ConsumerWidget {
                       isOwnWall || authorId == SupabaseService.currentUserId;
 
                   return Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(14),
+                    margin: EdgeInsets.only(bottom: r.s(12)),
+                    padding: EdgeInsets.all(r.s(14)),
                     decoration: BoxDecoration(
                       color: context.surfaceColor,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(r.s(12)),
                       border: Border.all(
                         color: Colors.white.withValues(alpha: 0.05),
                       ),
@@ -1203,16 +1205,16 @@ class _WallTab extends ConsumerWidget {
                                         ((profile['nickname'] as String?) ??
                                                 '?')[0]
                                             .toUpperCase(),
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           color: AppTheme.primaryColor,
                                           fontWeight: FontWeight.w800,
-                                          fontSize: 12,
+                                          fontSize: r.fs(12),
                                         ),
                                       )
                                     : null,
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: r.s(8)),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1223,14 +1225,14 @@ class _WallTab extends ConsumerWidget {
                                     style: TextStyle(
                                       color: context.textPrimary,
                                       fontWeight: FontWeight.w700,
-                                      fontSize: 13,
+                                      fontSize: r.fs(13),
                                     ),
                                   ),
                                   Text(
                                     _timeAgo(createdAt),
                                     style: TextStyle(
                                         color: Colors.grey[600],
-                                        fontSize: 11),
+                                        fontSize: r.fs(11)),
                                   ),
                                 ],
                               ),
@@ -1240,16 +1242,16 @@ class _WallTab extends ConsumerWidget {
                                 onTap: () => _deleteMessage(
                                     ref, msg['id'] as String),
                                 child: Icon(Icons.close_rounded,
-                                    color: Colors.grey[600], size: 16),
+                                    color: Colors.grey[600], size: r.s(16)),
                               ),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: r.s(8)),
                         Text(
                           msg['content'] as String? ?? '',
                           style: TextStyle(
                             color: Colors.grey[300],
-                            fontSize: 13,
+                            fontSize: r.fs(13),
                             height: 1.4,
                           ),
                         ),
@@ -1348,35 +1350,36 @@ class _PinnedWikisSectionState extends State<_PinnedWikisSection> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     if (_isLoading) return const SizedBox.shrink();
     if (_pinnedWikis.isEmpty) return const SizedBox.shrink();
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      padding: EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16), r.s(8)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.push_pin_rounded, size: 14, color: AppTheme.primaryColor),
-              const SizedBox(width: 6),
+              Icon(Icons.push_pin_rounded, size: r.s(14), color: AppTheme.primaryColor),
+              SizedBox(width: r.s(6)),
               Text(
                 'Pinned Wikis',
                 style: TextStyle(
                   color: Colors.grey[500],
-                  fontSize: 13,
+                  fontSize: r.fs(13),
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: r.s(10)),
           SizedBox(
-            height: 100,
+            height: r.s(100),
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: _pinnedWikis.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              separatorBuilder: (_, __) => SizedBox(width: r.s(12)),
               itemBuilder: (context, index) {
                 final bookmark = _pinnedWikis[index];
                 final wiki = bookmark['wiki_entries'] as Map<String, dynamic>;
@@ -1388,10 +1391,10 @@ class _PinnedWikisSectionState extends State<_PinnedWikisSection> {
                 return GestureDetector(
                   onTap: () => context.push('/wiki/$wikiId'),
                   child: Container(
-                    width: 140,
+                    width: r.s(140),
                     decoration: BoxDecoration(
                       color: context.surfaceColor,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(r.s(12)),
                       border: Border.all(
                         color: Colors.white.withValues(alpha: 0.08),
                       ),
@@ -1406,37 +1409,37 @@ class _PinnedWikisSectionState extends State<_PinnedWikisSection> {
                           child: coverUrl != null
                               ? CachedNetworkImage(
                                   imageUrl: coverUrl,
-                                  height: 50,
-                                  width: 140,
+                                  height: r.s(50),
+                                  width: r.s(140),
                                   fit: BoxFit.cover,
                                   errorWidget: (_, __, ___) => Container(
-                                    height: 50,
+                                    height: r.s(50),
                                     color: AppTheme.primaryColor
                                         .withValues(alpha: 0.15),
                                     child: const Center(
                                       child: Icon(Icons.auto_stories_rounded,
                                           color: AppTheme.primaryColor,
-                                          size: 20),
+                                          size: r.s(20)),
                                     ),
                                   ),
                                 )
                               : Container(
-                                  height: 50,
-                                  width: 140,
+                                  height: r.s(50),
+                                  width: r.s(140),
                                   color: AppTheme.primaryColor
                                       .withValues(alpha: 0.15),
                                   child: const Center(
                                     child: Icon(Icons.auto_stories_rounded,
                                         color: AppTheme.primaryColor,
-                                        size: 20),
+                                        size: r.s(20)),
                                   ),
                                 ),
                         ),
                         // Title + category
                         Expanded(
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 6),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: r.s(8), vertical: r.s(6)),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -1446,7 +1449,7 @@ class _PinnedWikisSectionState extends State<_PinnedWikisSection> {
                                   style: TextStyle(
                                     color: context.textPrimary,
                                     fontWeight: FontWeight.w700,
-                                    fontSize: 11,
+                                    fontSize: r.fs(11),
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -1456,7 +1459,7 @@ class _PinnedWikisSectionState extends State<_PinnedWikisSection> {
                                     category,
                                     style: TextStyle(
                                       color: Colors.grey[600],
-                                      fontSize: 9,
+                                      fontSize: r.fs(9),
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,

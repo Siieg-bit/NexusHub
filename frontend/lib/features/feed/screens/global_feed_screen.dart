@@ -6,6 +6,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/models/post_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../widgets/post_card.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Provider para feed global (posts de todas as comunidades do usuário).
 final globalFeedProvider = FutureProvider<List<PostModel>>((ref) async {
@@ -49,12 +50,12 @@ class GlobalFeedScreen extends ConsumerWidget {
             title: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(6),
+                  padding: EdgeInsets.all(r.s(6)),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [AppTheme.primaryColor, AppTheme.accentColor],
                     ),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(r.s(8)),
                     boxShadow: [
                       BoxShadow(
                         color: AppTheme.primaryColor.withValues(alpha: 0.3),
@@ -63,16 +64,16 @@ class GlobalFeedScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  child: const Icon(Icons.hub_rounded,
-                      color: Colors.white, size: 20),
+                  child: Icon(Icons.hub_rounded,
+                      color: Colors.white, size: r.s(20)),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: r.s(10)),
                 const Text(
                   'NexusHub',
                   style: TextStyle(
                     color: context.textPrimary,
                     fontWeight: FontWeight.w800,
-                    fontSize: 20,
+                    fontSize: r.fs(20),
                   ),
                 ),
               ],
@@ -100,11 +101,11 @@ class GlobalFeedScreen extends ConsumerWidget {
           // ================================================================
           SliverToBoxAdapter(
             child: SizedBox(
-              height: 100,
+              height: r.s(100),
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
                 children: [
                   _QuickAction(
                     icon: Icons.add_circle_rounded,
@@ -146,7 +147,7 @@ class GlobalFeedScreen extends ConsumerWidget {
           // ================================================================
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              padding: EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(8)),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -154,17 +155,17 @@ class GlobalFeedScreen extends ConsumerWidget {
                     'Feed',
                     style: TextStyle(
                       color: context.textPrimary,
-                      fontSize: 20,
+                      fontSize: r.fs(20),
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                   GestureDetector(
                     onTap: () => ref.invalidate(globalFeedProvider),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(6)),
                       decoration: BoxDecoration(
                         color: context.surfaceColor,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(r.s(20)),
                         border: Border.all(
                           color: Colors.white.withValues(alpha: 0.05),
                         ),
@@ -174,7 +175,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                         style: TextStyle(
                           color: AppTheme.primaryColor,
                           fontWeight: FontWeight.w700,
-                          fontSize: 12,
+                          fontSize: r.fs(12),
                         ),
                       ),
                     ),
@@ -193,24 +194,24 @@ class GlobalFeedScreen extends ConsumerWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline_rounded,
-                        size: 48, color: AppTheme.errorColor),
-                    const SizedBox(height: 16),
+                    Icon(Icons.error_outline_rounded,
+                        size: r.s(48), color: AppTheme.errorColor),
+                    SizedBox(height: r.s(16)),
                     Text(
                       'Erro ao carregar feed: $error',
                       style: TextStyle(color: context.textPrimary),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: r.s(16)),
                     GestureDetector(
                       onTap: () => ref.invalidate(globalFeedProvider),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        padding: EdgeInsets.symmetric(horizontal: r.s(24), vertical: r.s(12)),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [AppTheme.primaryColor, AppTheme.accentColor],
                           ),
-                          borderRadius: BorderRadius.circular(24),
+                          borderRadius: BorderRadius.circular(r.s(24)),
                           boxShadow: [
                             BoxShadow(
                               color: AppTheme.primaryColor.withValues(alpha: 0.3),
@@ -240,14 +241,14 @@ class GlobalFeedScreen extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.explore_rounded,
-                            size: 64, color: Colors.grey[600]),
-                        const SizedBox(height: 16),
+                            size: r.s(64), color: Colors.grey[600]),
+                        SizedBox(height: r.s(16)),
                         const Text('Seu feed está vazio',
                             style: TextStyle(
                                 color: context.textPrimary,
-                                fontSize: 18,
+                                fontSize: r.fs(18),
                                 fontWeight: FontWeight.w700)),
-                        const SizedBox(height: 8),
+                        SizedBox(height: r.s(8)),
                         Text(
                           'Explore e entre em comunidades para ver posts aqui!',
                           style: TextStyle(color: Colors.grey[500]),
@@ -268,7 +269,7 @@ class GlobalFeedScreen extends ConsumerWidget {
             },
           ),
 
-          const SliverToBoxAdapter(child: SizedBox(height: 80)),
+          SliverToBoxAdapter(child: SizedBox(height: r.s(80))),
         ],
       ),
     );
@@ -290,20 +291,21 @@ class _QuickAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 80,
-        margin: const EdgeInsets.only(right: 12),
+        width: r.s(80),
+        margin: EdgeInsets.only(right: r.s(12)),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 50,
-              height: 50,
+              width: r.s(50),
+              height: r.s(50),
               decoration: BoxDecoration(
                 color: context.surfaceColor,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(r.s(16)),
                 border: Border.all(
                   color: Colors.white.withValues(alpha: 0.05),
                 ),
@@ -315,13 +317,13 @@ class _QuickAction extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Icon(icon, color: color, size: 24),
+              child: Icon(icon, color: color, size: r.s(24)),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: r.s(8)),
             Text(
               label,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: r.fs(11),
                 color: Colors.grey[500],
                 fontWeight: FontWeight.w600,
               ),

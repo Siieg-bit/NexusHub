@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 import '../../../config/app_theme.dart';
+import '../../../core/utils/responsive.dart';
 
 /// Widget de gravação de Voice Notes — réplica pixel-perfect do Amino.
 ///
@@ -181,8 +182,9 @@ class _VoiceRecorderState extends State<VoiceRecorder>
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
       decoration: BoxDecoration(
         color: context.cardBg,
         border: Border(
@@ -195,17 +197,17 @@ class _VoiceRecorderState extends State<VoiceRecorder>
           GestureDetector(
             onTap: _cancelRecording,
             child: Container(
-              width: 40,
-              height: 40,
+              width: r.s(40),
+              height: r.s(40),
               decoration: BoxDecoration(
                 color: AppTheme.errorColor.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.delete_rounded,
-                  color: AppTheme.errorColor, size: 20),
+              child: Icon(Icons.delete_rounded,
+                  color: AppTheme.errorColor, size: r.s(20)),
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: r.s(12)),
 
           // ── Waveform + Timer ──
           Expanded(
@@ -219,8 +221,8 @@ class _VoiceRecorderState extends State<VoiceRecorder>
                     AnimatedBuilder(
                       animation: _pulseAnimation,
                       builder: (_, __) => Container(
-                        width: 8,
-                        height: 8,
+                        width: r.s(8),
+                        height: r.s(8),
                         decoration: BoxDecoration(
                           color: AppTheme.errorColor,
                           shape: BoxShape.circle,
@@ -234,23 +236,23 @@ class _VoiceRecorderState extends State<VoiceRecorder>
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: r.s(8)),
                     Text(
                       _formatDuration(_seconds),
                       style: TextStyle(
                         color: context.textPrimary,
-                        fontSize: 16,
+                        fontSize: r.fs(16),
                         fontWeight: FontWeight.w700,
                         fontFeatures: [FontFeature.tabularFigures()],
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: r.s(6)),
 
                 // Waveform
                 SizedBox(
-                  height: 32,
+                  height: r.s(32),
                   child: CustomPaint(
                     size: const Size(double.infinity, 32),
                     painter: _WaveformPainter(
@@ -262,20 +264,20 @@ class _VoiceRecorderState extends State<VoiceRecorder>
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: r.s(12)),
 
           // ── Botão Enviar ──
           GestureDetector(
             onTap: _stopAndSend,
             child: Container(
-              width: 48,
-              height: 48,
+              width: r.s(48),
+              height: r.s(48),
               decoration: const BoxDecoration(
                 color: AppTheme.primaryColor,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.send_rounded,
-                  color: Colors.white, size: 22),
+              child: Icon(Icons.send_rounded,
+                  color: Colors.white, size: r.s(22)),
             ),
           ),
         ],
@@ -396,6 +398,7 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final bgColor = widget.isMine
         ? Colors.white.withValues(alpha: 0.15)
         : AppTheme.accentColor.withValues(alpha: 0.1);
@@ -403,7 +406,7 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
         widget.isMine ? Colors.white : AppTheme.accentColor;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
       constraints: const BoxConstraints(minWidth: 180),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -412,8 +415,8 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
           GestureDetector(
             onTap: _togglePlay,
             child: Container(
-              width: 36,
-              height: 36,
+              width: r.s(36),
+              height: r.s(36),
               decoration: BoxDecoration(
                 color: bgColor,
                 shape: BoxShape.circle,
@@ -423,11 +426,11 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
                     ? Icons.pause_rounded
                     : Icons.play_arrow_rounded,
                 color: fgColor,
-                size: 22,
+                size: r.s(22),
               ),
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: r.s(10)),
 
           // Waveform estático + progress
           Expanded(
@@ -437,7 +440,7 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
               children: [
                 // Waveform bars estáticas
                 SizedBox(
-                  height: 24,
+                  height: r.s(24),
                   child: CustomPaint(
                     size: const Size(double.infinity, 24),
                     painter: _StaticWaveformPainter(
@@ -453,7 +456,7 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
                   _formatDuration(widget.durationSeconds),
                   style: TextStyle(
                     color: fgColor.withValues(alpha: 0.7),
-                    fontSize: 10,
+                    fontSize: r.fs(10),
                     fontWeight: FontWeight.w500,
                   ),
                 ),

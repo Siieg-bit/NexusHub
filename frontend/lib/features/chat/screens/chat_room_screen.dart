@@ -13,6 +13,7 @@ import '../../../core/services/supabase_service.dart';
 import '../widgets/giphy_picker.dart';
 import '../widgets/sticker_picker.dart';
 import '../widgets/voice_recorder.dart';
+import '../../../core/utils/responsive.dart';
 
 /// ============================================================================
 /// 19+ TIPOS DE MENSAGEM (mapeados do Amino original):
@@ -401,32 +402,32 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             color: context.surfaceColor,
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(r.s(20)),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               // Handle bar
               Container(
-                width: 40, height: 4,
+                width: r.s(40), height: r.s(4),
                 decoration: BoxDecoration(
                   color: Colors.grey[700],
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: r.s(16)),
               // Header
               Row(
                 children: [
                   Container(
-                    width: 44, height: 44,
+                    width: r.s(44), height: r.s(44),
                     decoration: BoxDecoration(
                       color: AppTheme.warningColor.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.monetization_on_rounded,
-                        color: AppTheme.warningColor, size: 24),
+                    child: Icon(Icons.monetization_on_rounded,
+                        color: AppTheme.warningColor, size: r.s(24)),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: r.s(12)),
                   const Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -434,14 +435,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                           style: TextStyle(
                               color: context.textPrimary,
                               fontWeight: FontWeight.w800,
-                              fontSize: 18)),
+                              fontSize: r.fs(18))),
                       Text('Envie moedas para este chat',
-                          style: TextStyle(color: Colors.grey, fontSize: 13)),
+                          style: TextStyle(color: Colors.grey, fontSize: r.fs(13))),
                     ],
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: r.s(20)),
               // Valores pré-definidos
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -453,12 +454,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       customController.clear();
                     }),
                     child: Container(
-                      width: 72, height: 72,
+                      width: r.s(72), height: r.s(72),
                       decoration: BoxDecoration(
                         color: isSelected
                             ? AppTheme.warningColor.withValues(alpha: 0.15)
                             : context.cardBg,
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(r.s(14)),
                         border: Border.all(
                           color: isSelected
                               ? AppTheme.warningColor
@@ -473,15 +474,15 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                               color: isSelected
                                   ? AppTheme.warningColor
                                   : Colors.grey[600],
-                              size: 22),
-                          const SizedBox(height: 4),
+                              size: r.s(22)),
+                          SizedBox(height: r.s(4)),
                           Text('$amount',
                               style: TextStyle(
                                 color: isSelected
                                     ? AppTheme.warningColor
                                     : context.textPrimary,
                                 fontWeight: FontWeight.w800,
-                                fontSize: 15,
+                                fontSize: r.fs(15),
                               )),
                         ],
                       ),
@@ -489,7 +490,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   );
                 }).toList(),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: r.s(16)),
               // Campo custom
               TextField(
                 controller: customController,
@@ -501,19 +502,19 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 decoration: InputDecoration(
                   hintText: 'Ou digite um valor...',
                   hintStyle: TextStyle(color: Colors.grey[600]),
-                  prefixIcon: const Icon(Icons.edit_rounded,
-                      color: AppTheme.warningColor, size: 18),
+                  prefixIcon: Icon(Icons.edit_rounded,
+                      color: AppTheme.warningColor, size: r.s(18)),
                   filled: true,
                   fillColor: context.cardBg,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(r.s(12)),
                     borderSide: BorderSide.none,
                   ),
-                  contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 12),
+                  contentPadding: EdgeInsets.symmetric(
+                      horizontal: r.s(16), vertical: r.s(12)),
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: r.s(20)),
               // Botão enviar
               SizedBox(
                 width: double.infinity,
@@ -522,27 +523,27 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       ? () => Navigator.pop(ctx, selectedAmount)
                       : null,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: EdgeInsets.symmetric(vertical: r.s(14)),
                     decoration: BoxDecoration(
                       color: selectedAmount != null && selectedAmount! > 0
                           ? AppTheme.warningColor
                           : Colors.grey[800],
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(r.s(12)),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.send_rounded,
-                            color: Colors.white, size: 18),
-                        const SizedBox(width: 8),
+                        Icon(Icons.send_rounded,
+                            color: Colors.white, size: r.s(18)),
+                        SizedBox(width: r.s(8)),
                         Text(
                           selectedAmount != null && selectedAmount! > 0
                               ? 'Enviar $selectedAmount moedas'
                               : 'Selecione um valor',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w700,
-                            fontSize: 15,
+                            fontSize: r.fs(15),
                           ),
                         ),
                       ],
@@ -550,7 +551,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: r.s(8)),
             ],
           ),
         ),
@@ -616,6 +617,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // ========================================================================
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     final currentUserId = SupabaseService.currentUserId;
     final threadTitle = _threadInfo?['title'] as String? ?? 'Chat';
     final threadType = _threadInfo?['type'] as String? ?? 'group';
@@ -630,7 +632,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_rounded,
-              color: context.textPrimary, size: 20),
+              color: context.textPrimary, size: r.s(20)),
           onPressed: () => context.pop(),
         ),
         titleSpacing: 0,
@@ -649,11 +651,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                           ? Icons.person_rounded
                           : Icons.group_rounded,
                       color: Colors.grey[500],
-                      size: 16,
+                      size: r.s(16),
                     )
                   : null,
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: r.s(10)),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -661,12 +663,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   Text(threadTitle,
                       style: TextStyle(
                           fontWeight: FontWeight.w700,
-                          fontSize: 15,
+                          fontSize: r.fs(15),
                           color: context.textPrimary)),
                   if (threadType != 'dm')
                     Text('$memberCount members',
                         style: TextStyle(
-                            fontSize: 11, color: Colors.grey[500])),
+                            fontSize: r.fs(11), color: Colors.grey[500])),
                 ],
               ),
             ),
@@ -683,14 +685,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           GestureDetector(
             onTap: () => _sendMessage(type: 'voice_chat'),
             child: Container(
-              width: 34,
-              height: 34,
-              margin: const EdgeInsets.only(right: 4),
+              width: r.s(34),
+              height: r.s(34),
+              margin: EdgeInsets.only(right: r.s(4)),
               decoration: BoxDecoration(
                 color: context.surfaceColor,
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.mic_rounded, color: Colors.grey[500], size: 16),
+              child: Icon(Icons.mic_rounded, color: Colors.grey[500], size: r.s(16)),
             ),
           ),
           // Menu
@@ -698,7 +700,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             icon: Icon(Icons.more_vert_rounded, color: Colors.grey[500]),
             color: context.surfaceColor,
             shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(12))),
             onSelected: (val) {
               switch (val) {
                 case 'members':
@@ -728,7 +730,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               child: Container(
                 width: double.infinity,
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
                 decoration: BoxDecoration(
                   color: AppTheme.warningColor.withValues(alpha: 0.08),
                   border: Border(
@@ -738,21 +740,21 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.push_pin_rounded,
-                        size: 14, color: AppTheme.warningColor),
-                    const SizedBox(width: 8),
+                    Icon(Icons.push_pin_rounded,
+                        size: r.s(14), color: AppTheme.warningColor),
+                    SizedBox(width: r.s(8)),
                     Expanded(
                       child: Text(
                         _pinnedMessages.first['content'] as String? ??
                             'Mensagem fixada',
                         style: TextStyle(
-                            fontSize: 12, color: Colors.grey[400]),
+                            fontSize: r.fs(12), color: Colors.grey[400]),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     Icon(Icons.keyboard_arrow_right_rounded,
-                        size: 16, color: Colors.grey[600]),
+                        size: r.s(16), color: Colors.grey[600]),
                   ],
                 ),
               ),
@@ -772,33 +774,33 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Container(
-                              width: 72,
-                              height: 72,
+                              width: r.s(72),
+                              height: r.s(72),
                               decoration: BoxDecoration(
                                 color: context.surfaceColor,
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(Icons.chat_bubble_outline_rounded,
-                                  size: 32, color: Colors.grey[700]),
+                                  size: r.s(32), color: Colors.grey[700]),
                             ),
-                            const SizedBox(height: 16),
+                            SizedBox(height: r.s(16)),
                             Text('Nenhuma mensagem ainda',
                                 style: TextStyle(
                                     color: Colors.grey[400],
-                                    fontSize: 15,
+                                    fontSize: r.fs(15),
                                     fontWeight: FontWeight.w600)),
-                            const SizedBox(height: 6),
+                            SizedBox(height: r.s(6)),
                             Text('Comece a conversa!',
                                 style: TextStyle(
-                                    color: Colors.grey[600], fontSize: 12)),
+                                    color: Colors.grey[600], fontSize: r.fs(12))),
                           ],
                         ),
                       )
                     : ListView.builder(
                         controller: _scrollController,
                         reverse: true,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: r.s(12), vertical: r.s(8)),
                         itemCount: _messages.length,
                         itemBuilder: (context, index) {
                           final message = _messages[index];
@@ -825,19 +827,19 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           // ================================================================
           if (_replyingTo != null)
             Container(
-              padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
+              padding: EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(8), 0),
               color: context.surfaceColor,
               child: Row(
                 children: [
                   Container(
-                    width: 3,
-                    height: 32,
+                    width: r.s(3),
+                    height: r.s(32),
                     decoration: BoxDecoration(
                       color: AppTheme.primaryColor,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: r.s(8)),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -845,15 +847,15 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       children: [
                         Text(
                           _replyingTo!.author?.nickname ?? 'User',
-                          style: const TextStyle(
+                          style: TextStyle(
                               color: AppTheme.primaryColor,
-                              fontSize: 12,
+                              fontSize: r.fs(12),
                               fontWeight: FontWeight.w600),
                         ),
                         Text(
                           _replyingTo!.content ?? '',
                           style: TextStyle(
-                              fontSize: 12, color: Colors.grey[500]),
+                              fontSize: r.fs(12), color: Colors.grey[500]),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -863,9 +865,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   GestureDetector(
                     onTap: () => setState(() => _replyingTo = null),
                     child: Padding(
-                      padding: const EdgeInsets.all(8),
+                      padding: EdgeInsets.all(r.s(8)),
                       child: Icon(Icons.close_rounded,
-                          size: 18, color: Colors.grey[500]),
+                          size: r.s(18), color: Colors.grey[500]),
                     ),
                   ),
                 ],
@@ -915,7 +917,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             )
           else
           Container(
-            padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+            padding: EdgeInsets.fromLTRB(r.s(8), r.s(8), r.s(8), r.s(8)),
             decoration: BoxDecoration(
               color: context.surfaceColor,
               border: Border(
@@ -930,23 +932,23 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   GestureDetector(
                     onTap: () => _showMediaOptions(context),
                     child: Container(
-                      width: 36,
-                      height: 36,
+                      width: r.s(36),
+                      height: r.s(36),
                       decoration: BoxDecoration(
                         color: AppTheme.primaryColor.withValues(alpha: 0.15),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.add_rounded,
-                          color: AppTheme.primaryColor, size: 20),
+                      child: Icon(Icons.add_rounded,
+                          color: AppTheme.primaryColor, size: r.s(20)),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: r.s(8)),
                   // Input
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
                         color: context.cardBg,
-                        borderRadius: BorderRadius.circular(24),
+                        borderRadius: BorderRadius.circular(r.s(24)),
                         border: Border.all(
                             color: Colors.white.withValues(alpha: 0.05)),
                       ),
@@ -956,14 +958,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                             child: TextField(
                               controller: _messageController,
                               style: TextStyle(
-                                  color: context.textPrimary, fontSize: 14),
+                                  color: context.textPrimary, fontSize: r.fs(14)),
                               decoration: InputDecoration(
                                 hintText: 'Message...',
                                 hintStyle: TextStyle(
-                                    color: Colors.grey[600], fontSize: 14),
+                                    color: Colors.grey[600], fontSize: r.fs(14)),
                                 border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 10),
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: r.s(16), vertical: r.s(10)),
                               ),
                               maxLines: 4,
                               minLines: 1,
@@ -977,34 +979,34 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                   () => _showEmojiPicker = !_showEmojiPicker);
                             },
                             child: Padding(
-                              padding: const EdgeInsets.only(right: 8),
+                              padding: EdgeInsets.only(right: r.s(8)),
                               child: Icon(Icons.emoji_emotions_outlined,
-                                  color: Colors.grey[600], size: 20),
+                                  color: Colors.grey[600], size: r.s(20)),
                             ),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: r.s(8)),
                   // Botão enviar
                   GestureDetector(
                     onTap: _isSending ? null : () => _sendMessage(),
                     child: Container(
-                      width: 40,
-                      height: 40,
+                      width: r.s(40),
+                      height: r.s(40),
                       decoration: const BoxDecoration(
                         color: AppTheme.primaryColor,
                         shape: BoxShape.circle,
                       ),
                       child: _isSending
-                          ? const Padding(
-                              padding: EdgeInsets.all(10),
+                          ? Padding(
+                              padding: EdgeInsets.all(r.s(10)),
                               child: CircularProgressIndicator(
                                   strokeWidth: 2, color: Colors.white),
                             )
-                          : const Icon(Icons.send_rounded,
-                              color: Colors.white, size: 18),
+                          : Icon(Icons.send_rounded,
+                              color: Colors.white, size: r.s(18)),
                     ),
                   ),
                 ],
@@ -1027,20 +1029,20 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(r.s(20)),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // Handle bar
             Container(
-              width: 36,
-              height: 4,
+              width: r.s(36),
+              height: r.s(4),
               decoration: BoxDecoration(
                 color: Colors.grey[700],
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: r.s(20)),
             Wrap(
               spacing: 16,
               runSpacing: 16,
@@ -1164,7 +1166,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         builder: (ctx, setDialogState) => AlertDialog(
           backgroundColor: context.surfaceColor,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(16))),
           title: const Text('Criar Enquete',
               style: TextStyle(
                   color: context.textPrimary, fontWeight: FontWeight.w700)),
@@ -1173,28 +1175,28 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 _dialogInput(questionCtrl, 'Pergunta'),
-                const SizedBox(height: 8),
+                SizedBox(height: r.s(8)),
                 ...List.generate(
                     optionCtrls.length,
                     (i) => Padding(
-                          padding: const EdgeInsets.only(bottom: 4),
+                          padding: EdgeInsets.only(bottom: r.s(4)),
                           child: _dialogInput(optionCtrls[i], 'Option ${i + 1}'),
                         )),
                 GestureDetector(
                   onTap: () => setDialogState(
                       () => optionCtrls.add(TextEditingController())),
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 8),
+                    padding: EdgeInsets.only(top: r.s(8)),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.add_rounded,
-                            size: 16, color: AppTheme.primaryColor),
-                        const SizedBox(width: 4),
+                        Icon(Icons.add_rounded,
+                            size: r.s(16), color: AppTheme.primaryColor),
+                        SizedBox(width: r.s(4)),
                         const Text('Adicionar Opção',
                             style: TextStyle(
                                 color: AppTheme.primaryColor,
-                                fontSize: 13,
+                                fontSize: r.fs(13),
                                 fontWeight: FontWeight.w600)),
                       ],
                     ),
@@ -1229,7 +1231,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryColor,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(r.s(10))),
               ),
               child: const Text('Enviar',
                   style: TextStyle(
@@ -1247,7 +1249,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: context.surfaceColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(16))),
         title: const Text('Compartilhar Link',
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w700)),
@@ -1267,7 +1269,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primaryColor,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
+                  borderRadius: BorderRadius.circular(r.s(10))),
             ),
             child: const Text('Enviar',
                 style: TextStyle(
@@ -1283,20 +1285,20 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     return Container(
       decoration: BoxDecoration(
         color: context.cardBg,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(r.s(10)),
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: TextField(
         controller: controller,
-        style: TextStyle(color: context.textPrimary, fontSize: 13),
+        style: TextStyle(color: context.textPrimary, fontSize: r.fs(13)),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: TextStyle(color: Colors.grey[700], fontSize: 13),
+          hintStyle: TextStyle(color: Colors.grey[700], fontSize: r.fs(13)),
           prefixIcon:
-              icon != null ? Icon(icon, size: 18, color: Colors.grey[600]) : null,
+              icon != null ? Icon(icon, size: r.s(18), color: Colors.grey[600]) : null,
           border: InputBorder.none,
           contentPadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(12)),
         ),
       ),
     );
@@ -1313,15 +1315,15 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(r.s(16)),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // Handle bar
             Container(
-              width: 36,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 16),
+              width: r.s(36),
+              height: r.s(4),
+              margin: EdgeInsets.only(bottom: r.s(16)),
               decoration: BoxDecoration(
                 color: Colors.grey[700],
                 borderRadius: BorderRadius.circular(2),
@@ -1337,18 +1339,18 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                           _addReaction(message.id, emoji);
                         },
                         child: Container(
-                          padding: const EdgeInsets.all(10),
+                          padding: EdgeInsets.all(r.s(10)),
                           decoration: BoxDecoration(
                             color: context.cardBg,
                             shape: BoxShape.circle,
                           ),
                           child:
-                              Text(emoji, style: const TextStyle(fontSize: 22)),
+                              Text(emoji, style: TextStyle(fontSize: r.fs(22))),
                         ),
                       ))
                   .toList(),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: r.s(16)),
             _actionTile(Icons.reply_rounded, 'Responder', () {
               Navigator.pop(ctx);
               setState(() => _replyingTo = message);
@@ -1400,14 +1402,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: EdgeInsets.symmetric(vertical: r.s(12)),
         child: Row(
           children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(width: 12),
+            Icon(icon, color: color, size: r.s(20)),
+            SizedBox(width: r.s(12)),
             Text(label,
                 style: TextStyle(
-                    color: color, fontSize: 14, fontWeight: FontWeight.w500)),
+                    color: color, fontSize: r.fs(14), fontWeight: FontWeight.w500)),
           ],
         ),
       ),
@@ -1422,15 +1424,15 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(r.s(16)),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 36,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 16),
+              width: r.s(36),
+              height: r.s(4),
+              margin: EdgeInsets.only(bottom: r.s(16)),
               decoration: BoxDecoration(
                 color: Colors.grey[700],
                 borderRadius: BorderRadius.circular(2),
@@ -1439,21 +1441,21 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             const Text('Mensagens Fixadas',
                 style: TextStyle(
                     fontWeight: FontWeight.w700,
-                    fontSize: 16,
+                    fontSize: r.fs(16),
                     color: context.textPrimary)),
-            const SizedBox(height: 12),
+            SizedBox(height: r.s(12)),
             ..._pinnedMessages.map((m) => Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.all(12),
+                  margin: EdgeInsets.only(bottom: r.s(8)),
+                  padding: EdgeInsets.all(r.s(12)),
                   decoration: BoxDecoration(
                     color: context.cardBg,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(r.s(12)),
                     border: Border.all(
                         color: Colors.white.withValues(alpha: 0.05)),
                   ),
                   child: Text(m['content'] as String? ?? '',
                       style: TextStyle(
-                          fontSize: 13, color: Colors.grey[300])),
+                          fontSize: r.fs(13), color: Colors.grey[300])),
                 )),
           ],
         ),
@@ -1463,26 +1465,26 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   Widget _badgeIcon(IconData icon, int count) {
     return Container(
-      width: 34,
-      height: 34,
-      margin: const EdgeInsets.only(right: 4),
+      width: r.s(34),
+      height: r.s(34),
+      margin: EdgeInsets.only(right: r.s(4)),
       child: Stack(
         children: [
           Container(
-            width: 34,
-            height: 34,
+            width: r.s(34),
+            height: r.s(34),
             decoration: BoxDecoration(
               color: context.surfaceColor,
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: Colors.grey[500], size: 16),
+            child: Icon(icon, color: Colors.grey[500], size: r.s(16)),
           ),
           if (count > 0)
             Positioned(
               right: 0,
               top: 0,
               child: Container(
-                padding: const EdgeInsets.all(3),
+                padding: EdgeInsets.all(r.s(3)),
                 decoration: BoxDecoration(
                   color: AppTheme.warningColor,
                   shape: BoxShape.circle,
@@ -1492,9 +1494,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     const BoxConstraints(minWidth: 14, minHeight: 14),
                 child: Text(
                   '$count',
-                  style: const TextStyle(
+                  style: TextStyle(
                       color: Colors.white,
-                      fontSize: 8,
+                      fontSize: r.fs(8),
                       fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
@@ -1513,14 +1515,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       child: Row(
         children: [
           Icon(icon,
-              size: 18,
+              size: r.s(18),
               color: isDestructive ? AppTheme.errorColor : Colors.grey[400]),
-          const SizedBox(width: 10),
+          SizedBox(width: r.s(10)),
           Text(label,
               style: TextStyle(
                   color:
                       isDestructive ? AppTheme.errorColor : Colors.grey[300],
-                  fontSize: 13)),
+                  fontSize: r.fs(13))),
         ],
       ),
     );
@@ -1546,20 +1548,21 @@ class _MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     // System messages
     if (message.isSystemMessage) {
       return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: EdgeInsets.symmetric(vertical: r.s(8)),
         child: Center(
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(6)),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(r.s(12)),
             ),
             child: Text(
               message.content ?? '',
-              style: TextStyle(color: Colors.grey[500], fontSize: 12),
+              style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
             ),
           ),
         ),
@@ -1590,17 +1593,17 @@ class _MessageBubble extends StatelessWidget {
                     ? Text(
                         (message.author?.nickname ?? '?')[0].toUpperCase(),
                         style: TextStyle(
-                            fontSize: 11, color: Colors.grey[400]),
+                            fontSize: r.fs(11), color: Colors.grey[400]),
                       )
                     : null,
               ),
             )
           else if (!isMe)
-            const SizedBox(width: 32),
-          const SizedBox(width: 8),
+            SizedBox(width: r.s(32)),
+          SizedBox(width: r.s(8)),
           Flexible(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(10)),
               decoration: BoxDecoration(
                 color: isMe
                     ? AppTheme.primaryColor
@@ -1619,12 +1622,12 @@ class _MessageBubble extends StatelessWidget {
                 children: [
                   if (!isMe && showAvatar)
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 4),
+                      padding: EdgeInsets.only(bottom: r.s(4)),
                       child: Text(
                         message.author?.nickname ?? 'User',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppTheme.primaryColor,
-                          fontSize: 11,
+                          fontSize: r.fs(11),
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -1633,14 +1636,14 @@ class _MessageBubble extends StatelessWidget {
                   _buildContent(context),
                   // Hora
                   Padding(
-                    padding: const EdgeInsets.only(top: 4),
+                    padding: EdgeInsets.only(top: r.s(4)),
                     child: Text(
                       _formatTime(message.createdAt),
                       style: TextStyle(
                         color: isMe
                             ? Colors.white.withValues(alpha: 0.6)
                             : Colors.grey[600],
-                        fontSize: 10,
+                        fontSize: r.fs(10),
                       ),
                     ),
                   ),
@@ -1654,6 +1657,7 @@ class _MessageBubble extends StatelessWidget {
   }
 
   Widget _buildContent(BuildContext context) {
+      final r = context.r;
     final type = message.type;
     final textColor = isMe ? Colors.white : context.textPrimary;
 
@@ -1663,13 +1667,13 @@ class _MessageBubble extends StatelessWidget {
     // Imagem: tipo text mas com media_url e media_type == 'image'
     if (message.mediaUrl != null && message.mediaType == 'image') {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(r.s(8)),
         child: CachedNetworkImage(
           imageUrl: message.mediaUrl!,
-          width: 200,
+          width: r.s(200),
           fit: BoxFit.cover,
           placeholder: (_, __) => Container(
-            width: 200, height: 150,
+            width: r.s(200), height: r.s(150),
             color: Colors.grey[800],
             child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
           ),
@@ -1680,10 +1684,10 @@ class _MessageBubble extends StatelessWidget {
     // GIF: tipo text mas com media_url e media_type == 'gif'
     if (message.mediaUrl != null && message.mediaType == 'gif') {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(r.s(8)),
         child: CachedNetworkImage(
           imageUrl: message.mediaUrl!,
-          width: 180,
+          width: r.s(180),
           fit: BoxFit.cover,
         ),
       );
@@ -1693,8 +1697,8 @@ class _MessageBubble extends StatelessWidget {
     if (type == 'sticker' || message.stickerUrl != null) {
       final url = message.stickerUrl ?? message.mediaUrl;
       return url != null
-          ? CachedNetworkImage(imageUrl: url, width: 120, height: 120)
-          : const Text('🎭', style: TextStyle(fontSize: 48));
+          ? CachedNetworkImage(imageUrl: url, width: r.s(120), height: r.s(120))
+          : Text('🎭', style: TextStyle(fontSize: r.fs(48)));
     }
 
     // Voice note
@@ -1702,18 +1706,18 @@ class _MessageBubble extends StatelessWidget {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.play_circle_rounded, color: textColor, size: 32),
-          const SizedBox(width: 8),
+          Icon(Icons.play_circle_rounded, color: textColor, size: r.s(32)),
+          SizedBox(width: r.s(8)),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Audio', style: TextStyle(color: textColor, fontSize: 13)),
+              Text('Audio', style: TextStyle(color: textColor, fontSize: r.fs(13))),
               if (message.mediaDuration != null)
                 Text('${message.mediaDuration}s',
-                    style: TextStyle(color: textColor.withValues(alpha: 0.6), fontSize: 11)),
+                    style: TextStyle(color: textColor.withValues(alpha: 0.6), fontSize: r.fs(11))),
               Container(
-                width: 120,
-                height: 4,
+                width: r.s(120),
+                height: r.s(4),
                 decoration: BoxDecoration(
                   color: textColor.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(2),
@@ -1728,14 +1732,14 @@ class _MessageBubble extends StatelessWidget {
     // Video
     if (type == 'video') {
       return Container(
-        width: 200,
-        height: 150,
+        width: r.s(200),
+        height: r.s(150),
         decoration: BoxDecoration(
           color: Colors.black26,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(r.s(8)),
         ),
         child: const Center(
-          child: Icon(Icons.play_circle_rounded, color: Colors.white, size: 48),
+          child: Icon(Icons.play_circle_rounded, color: Colors.white, size: r.s(48)),
         ),
       );
     }
@@ -1744,17 +1748,17 @@ class _MessageBubble extends StatelessWidget {
     if (type == 'system_tip') {
       final amount = message.tipAmount ?? 0;
       return Container(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.all(r.s(12)),
         decoration: BoxDecoration(
           color: AppTheme.warningColor.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(r.s(12)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.monetization_on_rounded,
                 color: AppTheme.warningColor),
-            const SizedBox(width: 8),
+            SizedBox(width: r.s(8)),
             Text('$amount coins',
                 style: const TextStyle(
                     fontWeight: FontWeight.bold,
@@ -1772,16 +1776,16 @@ class _MessageBubble extends StatelessWidget {
           ? const Color(0xFF4CAF50)
           : const Color(0xFFFF5722);
       return Container(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.all(r.s(12)),
         decoration: BoxDecoration(
           color: accentColor.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(r.s(12)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, color: accentColor),
-            const SizedBox(width: 8),
+            SizedBox(width: r.s(8)),
             Text(label,
                 style: TextStyle(
                     fontWeight: FontWeight.w600, color: accentColor)),
@@ -1797,22 +1801,22 @@ class _MessageBubble extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(r.s(10)),
             decoration: BoxDecoration(
               color: textColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(r.s(8)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.link_rounded, color: textColor, size: 16),
-                const SizedBox(width: 8),
+                Icon(Icons.link_rounded, color: textColor, size: r.s(16)),
+                SizedBox(width: r.s(8)),
                 Flexible(
                   child: Text(
                     url,
                     style: TextStyle(
                       color: textColor,
-                      fontSize: 13,
+                      fontSize: r.fs(13),
                       decoration: TextDecoration.underline,
                     ),
                     maxLines: 2,
@@ -1824,9 +1828,9 @@ class _MessageBubble extends StatelessWidget {
           ),
           if (message.content != null && message.content != url && message.content!.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.only(top: 4),
+              padding: EdgeInsets.only(top: r.s(4)),
               child: Text(message.content!,
-                  style: TextStyle(color: textColor, fontSize: 14)),
+                  style: TextStyle(color: textColor, fontSize: r.fs(14))),
             ),
         ],
       );
@@ -1850,18 +1854,18 @@ class _MessageBubble extends StatelessWidget {
                 style: TextStyle(
                     color: textColor,
                     fontWeight: FontWeight.w600,
-                    fontSize: 14)),
-            const SizedBox(height: 8),
+                    fontSize: r.fs(14))),
+            SizedBox(height: r.s(8)),
             ...options.map((opt) => Container(
-                  margin: const EdgeInsets.only(bottom: 4),
+                  margin: EdgeInsets.only(bottom: r.s(4)),
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
                   decoration: BoxDecoration(
                     color: textColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(r.s(8)),
                   ),
                   child: Text(opt,
-                      style: TextStyle(color: textColor, fontSize: 13)),
+                      style: TextStyle(color: textColor, fontSize: r.fs(13))),
                 )),
           ],
         );
@@ -1876,14 +1880,14 @@ class _MessageBubble extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(r.s(8)),
             decoration: BoxDecoration(
               border: Border(
                 left: BorderSide(
                     color: isMe
                         ? Colors.white.withValues(alpha: 0.5)
                         : AppTheme.primaryColor,
-                    width: 3),
+                    width: r.s(3)),
               ),
             ),
             child: Text(
@@ -1892,14 +1896,14 @@ class _MessageBubble extends StatelessWidget {
                 color: isMe
                     ? Colors.white.withValues(alpha: 0.6)
                     : Colors.grey[500],
-                fontSize: 11,
+                fontSize: r.fs(11),
                 fontStyle: FontStyle.italic,
               ),
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: r.s(4)),
           Text(message.content ?? '',
-              style: TextStyle(color: textColor, fontSize: 14)),
+              style: TextStyle(color: textColor, fontSize: r.fs(14))),
         ],
       );
     }
@@ -1907,20 +1911,20 @@ class _MessageBubble extends StatelessWidget {
     // Shared user
     if (type == 'share_user') {
       return Container(
-        padding: const EdgeInsets.all(10),
+        padding: EdgeInsets.all(r.s(10)),
         decoration: BoxDecoration(
           color: textColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(r.s(8)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.person_rounded, color: textColor, size: 16),
-            const SizedBox(width: 8),
+            Icon(Icons.person_rounded, color: textColor, size: r.s(16)),
+            SizedBox(width: r.s(8)),
             Text('Perfil compartilhado',
                 style: TextStyle(
                     color: textColor,
-                    fontSize: 13,
+                    fontSize: r.fs(13),
                     fontWeight: FontWeight.w500)),
           ],
         ),
@@ -1930,7 +1934,7 @@ class _MessageBubble extends StatelessWidget {
     // Default: texto simples
     return Text(
       message.content ?? '',
-      style: TextStyle(color: textColor, fontSize: 14),
+      style: TextStyle(color: textColor, fontSize: r.fs(14)),
     );
   }
 
@@ -1958,23 +1962,24 @@ class _MediaOptionItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final r = context.r;
     return GestureDetector(
       onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 52,
-            height: 52,
+            width: r.s(52),
+            height: r.s(52),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(r.s(16)),
             ),
-            child: Icon(icon, color: color, size: 24),
+            child: Icon(icon, color: color, size: r.s(24)),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: r.s(6)),
           Text(label,
-              style: TextStyle(fontSize: 11, color: Colors.grey[500])),
+              style: TextStyle(fontSize: r.fs(11), color: Colors.grey[500])),
         ],
       ),
     );
