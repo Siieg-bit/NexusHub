@@ -38,6 +38,7 @@ class PostModel {
   final DateTime updatedAt;
   final UserModel? author;
   final bool isLiked;
+  final List<Map<String, dynamic>>? contentBlocks;
 
   const PostModel({
     required this.id,
@@ -71,6 +72,7 @@ class PostModel {
     required this.updatedAt,
     this.author,
     this.isLiked = false,
+    this.contentBlocks,
   });
 
   factory PostModel.fromJson(Map<String, dynamic> json) {
@@ -120,6 +122,9 @@ class PostModel {
               ? UserModel.fromJson(json['author'] as Map<String, dynamic>)
               : null),
       isLiked: json['is_liked'] as bool? ?? false,
+      contentBlocks: (json['content_blocks'] as List<dynamic>?)
+          ?.map((e) => Map<String, dynamic>.from(e as Map))
+          .toList(),
     );
   }
 
@@ -177,6 +182,32 @@ class PostModel {
       updatedAt: updatedAt,
       author: author,
       isLiked: isLiked ?? this.isLiked,
+      contentBlocks: contentBlocks,
     );
+  }
+
+  /// Verifica se o post tem conteúdo em blocos (editor rico)
+  bool get hasBlockContent => contentBlocks != null && contentBlocks!.isNotEmpty;
+
+  /// Extrai lista de URLs de mídia dos blocos e da mediaList
+  List<String> get mediaUrls {
+    final urls = <String>[];
+    if (mediaList.isNotEmpty) {
+      for (final m in mediaList) {
+        if (m is Map && m['url'] != null) {
+          urls.add(m['url'] as String);
+        } else if (m is String) {
+          urls.add(m);
+        }
+      }
+    }
+    if (contentBlocks != null) {
+      for (final block in contentBlocks!) {
+        if (block['type'] == 'image' && block['url'] != null) {
+          urls.add(block['url'] as String);
+        }
+      }
+    }
+    return urls;
   }
 }

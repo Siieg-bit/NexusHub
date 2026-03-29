@@ -9,6 +9,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/models/post_model.dart';
 import '../../../core/models/comment_model.dart';
 import '../../../core/services/supabase_service.dart';
+import '../widgets/block_content_renderer.dart';
 
 /// Provider para detalhes de um post.
 final postDetailProvider =
@@ -312,19 +313,28 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       ),
 
                     // ======================================================
-                    // CONTEÚDO
+                    // CONTEÚDO (Block Editor ou texto simples)
                     // ======================================================
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Text(
-                        post.content,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          height: 1.7,
-                          color: AppTheme.textPrimary,
+                    if (post.hasBlockContent)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: BlockContentRenderer(
+                          blocks: post.contentBlocks!,
+                          backgroundUrl: post.backgroundUrl,
+                        ),
+                      )
+                    else
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Text(
+                          post.content,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            height: 1.7,
+                            color: AppTheme.textPrimary,
+                          ),
                         ),
                       ),
-                    ),
 
                     // ======================================================
                     // MÍDIA

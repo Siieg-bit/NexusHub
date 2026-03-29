@@ -8,6 +8,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/models/post_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/amino_animations.dart';
+import 'block_content_renderer.dart';
 
 /// Card de post no feed — estilo Amino Apps (web-preview).
 /// Suporta todos os 9 tipos de post com renderização interativa.
@@ -151,20 +152,29 @@ class _PostCardState extends State<PostCard>
                 ),
               ),
 
-            // ── Content ──
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-              child: Text(
-                _post.content,
-                style: TextStyle(
-                  color: Colors.grey[400],
-                  fontSize: 12,
-                  height: 1.5,
+            // ── Content (Block Editor ou texto simples) ──
+            if (_post.hasBlockContent)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                child: BlockContentPreview(
+                  blocks: _post.contentBlocks!,
+                  maxLines: 3,
                 ),
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                child: Text(
+                  _post.content,
+                  style: TextStyle(
+                    color: Colors.grey[400],
+                    fontSize: 12,
+                    height: 1.5,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-            ),
 
             // ── Type-specific content ──
             _buildTypeSpecificContent(),
