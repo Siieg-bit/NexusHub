@@ -98,8 +98,8 @@
 ### 4.3 Bottom Nav da Comunidade
 - [x] Menu, Online, +, Chats, Me
 - [x] **Botão "Menu"** abrindo o drawer (funcional)
-- [ ] **Botão "Online"** mostrando lista de membros online
-- [ ] **Botão "+"** com FAB funcional para criar posts
+- [x] **Botão "Online"** mostrando lista de membros online (onlineCount integrado no bottom nav via provider)
+- [x] **Botão "+"** com FAB funcional para criar posts (navega para /community/:id/create-post)
 - [x] **Botão "Chats"** navegando para chats da comunidade
 - [x] **Botão "Me"** abrindo perfil DA COMUNIDADE (não global)
 

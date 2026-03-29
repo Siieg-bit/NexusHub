@@ -328,6 +328,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                   currentIndex: _bottomIndex,
                   showOnline: showOnline,
                   showCreate: showCreate,
+                  onlineCount: ref.watch(onlineMembersCountProvider(widget.communityId)).valueOrNull ?? 0,
                   avatarUrl: ref.watch(currentUserProfileProvider).valueOrNull?.avatarUrl,
                   onMenuTap: () => AminoDrawerController.of(context)?.toggle(),
                   onCreateTap: () => context.push(
