@@ -14,6 +14,7 @@ import '../../feed/widgets/post_card.dart';
 import '../widgets/community_drawer.dart';
 import '../../../core/widgets/amino_drawer.dart';
 import '../../../core/widgets/amino_bottom_nav.dart';
+import '../../../core/widgets/level_up_dialog.dart';
 import '../../stories/widgets/story_carousel.dart';
 import 'community_list_screen.dart'; // para checkInStatusProvider
 
@@ -1206,16 +1207,18 @@ class _CheckInBarState extends ConsumerState<_CheckInBar> {
         final repEarned = result['reputation_earned'] as int? ?? 0;
         final newStreak = result['streak'] as int? ?? 0;
         final levelUp = result['level_up'] as bool? ?? false;
+        final newLevel = result['new_level'] as int? ?? 0;
         if (mounted) {
           ref.invalidate(checkInStatusProvider);
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(
-              levelUp
-                  ? 'Check-in! +$repEarned rep | Streak: $newStreak dias | LEVEL UP!'
-                  : 'Check-in! +$repEarned rep | Streak: $newStreak dias',
+              'Check-in! +$repEarned rep | Streak: $newStreak dias',
             ),
             backgroundColor: AppTheme.primaryColor,
           ));
+          if (levelUp && newLevel > 0) {
+            LevelUpDialog.show(context, newLevel: newLevel);
+          }
         }
       } else {
         final error = result?['error'] ?? 'Erro desconhecido';
