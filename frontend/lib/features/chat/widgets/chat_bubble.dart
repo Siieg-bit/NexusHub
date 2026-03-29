@@ -222,80 +222,9 @@ class _BubblePainter extends CustomPainter {
 }
 
 /// Widget para exibir o avatar com frame equipado — estilo Amino.
-class AvatarWithFrame extends StatelessWidget {
-  final String? avatarUrl;
-  final String? frameUrl;
-  final double size;
-  final bool showAminoPlus;
-
-  const AvatarWithFrame({
-    super.key,
-    this.avatarUrl,
-    this.frameUrl,
-    this.size = 48,
-    this.showAminoPlus = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: size + 8,
-      height: size + 8,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Avatar
-          CircleAvatar(
-            radius: size / 2,
-            backgroundColor: AppTheme.surfaceColor,
-            backgroundImage: avatarUrl != null && avatarUrl!.isNotEmpty
-                ? CachedNetworkImageProvider(avatarUrl!)
-                : null,
-            child: avatarUrl == null || avatarUrl!.isEmpty
-                ? Icon(Icons.person_rounded,
-                    size: size * 0.5, color: Colors.grey[600])
-                : null,
-          ),
-
-          // Frame overlay
-          if (frameUrl != null && frameUrl!.isNotEmpty)
-            SizedBox(
-              width: size + 8,
-              height: size + 8,
-              child: CachedNetworkImage(
-                imageUrl: frameUrl!,
-                fit: BoxFit.contain,
-                errorWidget: (_, __, ___) => const SizedBox.shrink(),
-              ),
-            ),
-
-          // Amino+ badge
-          if (showAminoPlus)
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: Container(
-                width: size * 0.35,
-                height: size * 0.35,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
-                  ),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppTheme.scaffoldBg, width: 2),
-                ),
-                child: Icon(
-                  Icons.add_rounded,
-                  size: size * 0.2,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
+// AvatarWithFrame foi movido para core/widgets/avatar_with_frame.dart
+// Re-exportar para manter compatibilidade com imports existentes.
+export '../../../core/widgets/avatar_with_frame.dart';
 
 /// Badge de Amino+ para exibir ao lado do nome.
 class AminoPlusBadge extends StatelessWidget {

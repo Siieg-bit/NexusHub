@@ -5,7 +5,7 @@
 - [x] 2. Bottom Navigation Bar Global (ícones pena/grid/balão/prédio, cores ciano) ✓
 - [x] 3. Bottom Navigation Bar Comunidade (5 tabs, FAB rosa central, avatar no "Me") ✓
 - [x] 4. Top Bar Global (pílula de moedas proporcional, espaçamentos exatos) ✓
-- [ ] 5. Sidebar/Drawer da comunidade (animação push/scale, módulos dinâmicos do ACM)
+- [x] 5. Sidebar/Drawer da comunidade (animação push/scale, módulos dinâmicos do ACM) ✓
 - [ ] 6. Avatar Frames que vazam a borda (overflow visible, não ClipOval)
 - [ ] 7. Chat Bubbles customizados (9-patch com decorações, não apenas cor de fundo)
 
