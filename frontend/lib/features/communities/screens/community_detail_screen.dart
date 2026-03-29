@@ -12,6 +12,8 @@ import '../../../core/utils/helpers.dart';
 import '../../../core/utils/amino_animations.dart';
 import '../../feed/widgets/post_card.dart';
 import '../widgets/community_drawer.dart';
+import '../../../core/widgets/amino_drawer.dart';
+import '../../../core/widgets/amino_bottom_nav.dart';
 import '../../stories/widgets/story_carousel.dart';
 import 'community_list_screen.dart'; // para checkInStatusProvider
 
@@ -296,13 +298,14 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
         final welcomeBanner =
             layout['welcome_banner'] as Map<String, dynamic>? ?? {};
 
-        return Scaffold(
-          backgroundColor: AppTheme.scaffoldBg,
+        return AminoDrawerController(
           drawer: CommunityDrawer(
             community: community,
             currentUser: ref.watch(currentUserProfileProvider).valueOrNull,
             userRole: userRole,
           ),
+          child: Scaffold(
+            backgroundColor: AppTheme.scaffoldBg,
           body: _bottomIndex == 0
               ? _buildHomePage(
                   community, themeColor, isMember, userRole, layout,
@@ -317,96 +320,18 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                               community, themeColor, isMember, userRole,
                               layout, visible, welcomeBanner),
           // ================================================================
-          // BOTTOM NAVIGATION BAR — Réplica pixel-perfect do Amino
-          // 5 itens: Menu | Online(raio) | FAB Rosa(+) | Chats | Me(avatar)
-          // Cor ativa: ciano #00BCD4, inativa: cinza
-          // FAB central: rosa #E91E63 com sombra rosa
+          // BOTTOM NAVIGATION BAR — CustomPainter pixel-perfect do Amino
           // ================================================================
           bottomNavigationBar: isMember
-              ? Container(
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceColor,
-                    border: Border(
-                      top: BorderSide(
-                        color: AppTheme.dividerColor.withValues(alpha: 0.3),
-                        width: 0.5,
-                      ),
-                    ),
-                  ),
-                  child: SafeArea(
-                    child: SizedBox(
-                      height: 56,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          // ── Menu (hamburger) ──
-                          _BottomBarItem(
-                            icon: Icons.menu_rounded,
-                            label: 'Menu',
-                            isSelected: _bottomIndex == 0,
-                            badgeCount: 0,
-                            onTap: () {
-                              if (_bottomIndex == 0) {
-                                Scaffold.of(context).openDrawer();
-                              } else {
-                                setState(() => _bottomIndex = 0);
-                              }
-                            },
-                          ),
-                          // ── Online (ícone raio/flash — estilo Amino) ──
-                          if (showOnline)
-                            _BottomBarOnlineItem(
-                              communityId: widget.communityId,
-                              isSelected: _bottomIndex == 1,
-                              onTap: () =>
-                                  setState(() => _bottomIndex = 1),
-                            ),
-                          // ── FAB Central Rosa (+) — estilo Amino ──
-                          if (showCreate)
-                            GestureDetector(
-                              onTap: () => context.push(
-                                  '/community/${widget.communityId}/create-post'),
-                              child: Container(
-                                width: 44,
-                                height: 44,
-                                decoration: BoxDecoration(
-                                  color: AppTheme.fabPink,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: AppTheme.fabPink
-                                          .withValues(alpha: 0.45),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 3),
-                                    ),
-                                  ],
-                                ),
-                                child: const Icon(Icons.add_rounded,
-                                    color: Colors.white, size: 26),
-                              ),
-                            ),
-                          // ── Chats (balão) ──
-                          _BottomBarItem(
-                            icon: Icons.chat_bubble_outline_rounded,
-                            label: 'Chats',
-                            isSelected: _bottomIndex == 3,
-                            badgeCount: 0,
-                            onTap: () =>
-                                setState(() => _bottomIndex = 3),
-                          ),
-                          // ── Me (avatar do usuário) ──
-                          _BottomBarItem(
-                            icon: Icons.person_outline_rounded,
-                            label: 'Eu',
-                            isSelected: _bottomIndex == 4,
-                            badgeCount: 0,
-                            onTap: () =>
-                                setState(() => _bottomIndex = 4),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+              ? AminoBottomNavBar(
+                  currentIndex: _bottomIndex,
+                  showOnline: showOnline,
+                  showCreate: showCreate,
+                  avatarUrl: ref.watch(currentUserProfileProvider).valueOrNull?.avatarUrl,
+                  onMenuTap: () => AminoDrawerController.of(context)?.toggle(),
+                  onCreateTap: () => context.push(
+                      '/community/${widget.communityId}/create-post'),
+                  onTap: (index) => setState(() => _bottomIndex = index),
                 )
               : null,
           // Join FAB for non-members
@@ -429,7 +354,8 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                   ),
                 )
               : null,
-        );
+          ),
+        ); // fecha AminoDrawerController
       },
     );
   }
@@ -458,7 +384,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             builder: (ctx) => Padding(
               padding: const EdgeInsets.all(8),
               child: GestureDetector(
-                onTap: () => Scaffold.of(ctx).openDrawer(),
+                onTap: () => AminoDrawerController.of(ctx)?.toggle(),
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.3),
