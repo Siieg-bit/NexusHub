@@ -201,7 +201,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
         case 'hide_post':
           if (widget.targetPostId != null) {
             await SupabaseService.table('posts')
-                .update({'is_hidden': true}).eq('id', widget.targetPostId!);
+                .update({'status': 'disabled'}).eq('id', widget.targetPostId!);
           }
           break;
 

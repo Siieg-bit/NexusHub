@@ -33,7 +33,7 @@ final postCommentsProvider =
   final response = await SupabaseService.table('comments')
       .select('*, profiles!comments_author_id_fkey(*)')
       .eq('post_id', postId)
-      .eq('is_hidden', false)
+      .eq('status', 'ok')
       .order('created_at', ascending: true);
 
   return (response as List)
