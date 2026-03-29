@@ -102,16 +102,16 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
                   fit: BoxFit.cover,
                   memCacheWidth: 60,
                   memCacheHeight: 60,
-                  placeholder: (_, __) => _avatarPlaceholder(),
-                  errorWidget: (_, __, ___) => _avatarPlaceholder(),
+                  placeholder: (ctx, __) => _avatarPlaceholder(ctx),
+                  errorWidget: (ctx, __, ___) => _avatarPlaceholder(ctx),
                 )
-              : _avatarPlaceholder(),
+              : _avatarPlaceholder(context),
         ),
       ),
     );
   }
 
-  Widget _avatarPlaceholder() {
+  Widget _avatarPlaceholder(BuildContext context) {
       final r = context.r;
     return Container(
       color: context.cardBg,

@@ -559,7 +559,7 @@ class _AcmScreenState extends State<AcmScreen>
                         errorBuilder: (_, __, ___) => Container(
                               width: r.s(80),
                               height: r.s(80),
-                              color: context.surfaceColorLight,
+                              color: context.surfaceColor,
                               child: const Icon(Icons.broken_image_rounded),
                             )),
                   ),
@@ -616,7 +616,7 @@ class _AcmScreenState extends State<AcmScreen>
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => Container(
                             height: r.s(100),
-                            color: context.surfaceColorLight,
+                            color: context.surfaceColor,
                             child: const Center(
                                 child: Icon(Icons.broken_image_rounded)),
                           )),

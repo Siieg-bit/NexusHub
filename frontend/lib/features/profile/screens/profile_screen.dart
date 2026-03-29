@@ -949,9 +949,9 @@ class _LinkedCommunitiesSection extends ConsumerWidget {
                                     height: r.s(32),
                                     fit: BoxFit.cover,
                                     errorWidget: (_, __, ___) =>
-                                        _communityPlaceholder(community),
+                                        _communityPlaceholder(context, community),
                                   )
-                                : _communityPlaceholder(community),
+                                : _communityPlaceholder(context, community),
                           ),
                           SizedBox(width: r.s(8)),
                           Expanded(
@@ -994,8 +994,7 @@ class _LinkedCommunitiesSection extends ConsumerWidget {
     );
   }
 
-  Widget _communityPlaceholder(CommunityModel community) {
-
+  Widget _communityPlaceholder(BuildContext context, CommunityModel community) {
       final r = context.r;
     return Container(
       width: r.s(32),

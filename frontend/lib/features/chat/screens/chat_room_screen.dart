@@ -713,10 +713,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               }
             },
             itemBuilder: (ctx) => [
-              _buildPopupItem('members', Icons.people_rounded, 'Membros'),
-              _buildPopupItem('settings', Icons.settings_rounded, 'Configurações'),
+              _buildPopupItem(r, 'members', Icons.people_rounded, 'Membros'),
+              _buildPopupItem(r, 'settings', Icons.settings_rounded, 'Configurações'),
               _buildPopupItem(
-                  'leave', Icons.exit_to_app_rounded, 'Sair do Chat',
+                  r, 'leave', Icons.exit_to_app_rounded, 'Sair do Chat',
                   isDestructive: true),
             ],
           ),
@@ -1523,7 +1523,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   PopupMenuItem<String> _buildPopupItem(
-      String value, IconData icon, String label,
+      Responsive r, String value, IconData icon, String label,
       {bool isDestructive = false}) {
     return PopupMenuItem(
       value: value,

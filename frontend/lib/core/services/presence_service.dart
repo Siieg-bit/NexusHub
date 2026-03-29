@@ -145,8 +145,8 @@ class PresenceService {
       final state = channel.presenceState();
       final onlineUserIds = <String>{};
 
-      for (final entry in state.entries) {
-        for (final presence in entry.value) {
+      for (final entry in state) {
+        for (final presence in entry.presences) {
           final userId = presence.payload['user_id'] as String?;
           if (userId != null) {
             onlineUserIds.add(userId);

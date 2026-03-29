@@ -628,12 +628,10 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
   }
 
   Widget _buildCustomButton({
-      final r = context.r;
     required String text,
     required VoidCallback? onTap,
     bool isLoading = false,
   }) {
-
       final r = context.r;
     final isEnabled = onTap != null;
     return GestureDetector(

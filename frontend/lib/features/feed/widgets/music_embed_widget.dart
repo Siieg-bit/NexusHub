@@ -217,9 +217,7 @@ class MusicEmbedWidget extends StatelessWidget {
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: r.fs(14),
-                            color: isDark
-                                ? context.textPrimary
-                                : context.textPrimaryLight,
+                            color: context.textPrimary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -230,9 +228,7 @@ class MusicEmbedWidget extends StatelessWidget {
                             artist!,
                             style: TextStyle(
                               fontSize: r.fs(12),
-                              color: isDark
-                                  ? context.textSecondary
-                                  : context.textSecondaryLight,
+                              color: context.textSecondary,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,

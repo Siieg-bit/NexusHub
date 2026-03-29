@@ -656,7 +656,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   // AMINO INPUT FIELD (estilo escuro, sem borda visível)
   // ========================================================================
   Widget _buildAminoInput({
-      final r = context.r;
     required TextEditingController controller,
     required String hint,
     IconData? icon,

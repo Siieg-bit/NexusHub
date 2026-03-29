@@ -89,10 +89,10 @@ class AvatarWithFrame extends StatelessWidget {
                         height: size,
                         memCacheWidth: (size * 2).toInt(),
                         memCacheHeight: (size * 2).toInt(),
-                        placeholder: (_, __) => _avatarPlaceholder(),
-                        errorWidget: (_, __, ___) => _avatarPlaceholder(),
+                        placeholder: (ctx, __) => _avatarPlaceholder(ctx),
+                        errorWidget: (ctx, __, ___) => _avatarPlaceholder(ctx),
                       )
-                    : _avatarPlaceholder(),
+                    : _avatarPlaceholder(context),
               ),
             ),
 
@@ -168,7 +168,7 @@ class AvatarWithFrame extends StatelessWidget {
     );
   }
 
-  Widget _avatarPlaceholder() {
+  Widget _avatarPlaceholder(BuildContext context) {
     return Container(
       color: context.surfaceColor,
       child: Center(

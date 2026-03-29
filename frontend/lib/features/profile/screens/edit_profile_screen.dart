@@ -211,7 +211,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Widget _buildTextField({
-      final r = context.r;
     required TextEditingController controller,
     required String label,
     required IconData icon,
@@ -220,6 +219,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     int? maxLength,
     String? Function(String?)? validator,
   }) {
+    final r = context.r;
     return Container(
       decoration: BoxDecoration(
         color: context.surfaceColor,

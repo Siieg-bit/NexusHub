@@ -208,12 +208,6 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     return true;
   }
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
   Color _parseColor(String hex) {
     try {
       return Color(int.parse(hex.replaceFirst('#', '0xFF')));
@@ -1266,12 +1260,7 @@ class _LiveChatroomsSectionState extends State<_LiveChatroomsSection> {
         child: RefreshIndicator(
           color: AppTheme.primaryColor,
           onRefresh: () async {
-            ref.invalidate(communityDetailProvider);
-            ref.invalidate(communityMembershipProvider);
-            ref.invalidate(communityHomeLayoutProvider);
-            ref.invalidate(currentUserProfileProvider);
-            ref.invalidate(onlineCountProvider);
-            await Future.delayed(const Duration(milliseconds: 300));
+            await _loadChats();
           },
           child: ListView.builder(
           scrollDirection: Axis.horizontal,

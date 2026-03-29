@@ -45,10 +45,10 @@ class NineSliceBubble extends StatelessWidget {
     required this.imageUrl,
     required this.isMine,
     this.maxWidth = 280,
-    this.sliceInsets = EdgeInsets.all(r.s(24)),
-    this.contentPadding = EdgeInsets.symmetric(
-      horizontal: r.s(20),
-      vertical: r.s(14),
+    this.sliceInsets = const EdgeInsets.all(24),
+    this.contentPadding = const EdgeInsets.symmetric(
+      horizontal: 20,
+      vertical: 14,
     ),
   });
 

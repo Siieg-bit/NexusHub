@@ -649,7 +649,7 @@ class _AminoCommunityCardState extends State<_AminoCommunityCard> {
                           width: double.infinity,
                           padding: EdgeInsets.symmetric(vertical: r.s(3)),
                           decoration: BoxDecoration(
-                            color: context.cardBgLight,
+                            color: context.cardBgAlt,
                             borderRadius: BorderRadius.circular(r.s(6)),
                           ),
                           child: Row(
@@ -736,7 +736,7 @@ class _JoinCommunityCard extends StatelessWidget {
         margin: EdgeInsets.only(top: r.s(18)),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(r.s(10)),
-          color: context.cardBgLight.withValues(alpha: 0.5),
+          color: context.cardBgAlt.withValues(alpha: 0.5),
           border: Border.all(
             color: Colors.white.withValues(alpha: 0.06),
             width: 0.5,

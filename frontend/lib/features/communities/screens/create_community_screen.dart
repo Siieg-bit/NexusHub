@@ -335,7 +335,6 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
   }
 
   Widget _buildTextField({
-      final r = context.r;
     required TextEditingController controller,
     required String label,
     required String hint,
@@ -344,6 +343,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
     int? maxLength,
     String? Function(String?)? validator,
   }) {
+    final r = context.r;
     return TextFormField(
       controller: controller,
       maxLines: maxLines,

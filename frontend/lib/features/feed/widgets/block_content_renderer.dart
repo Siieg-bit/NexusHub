@@ -58,24 +58,24 @@ class BlockContentRenderer extends StatelessWidget {
 
     switch (type) {
       case 'text':
-        return _buildTextBlock(block);
+        return _buildTextBlock(block, context);
       case 'heading':
-        return _buildHeadingBlock(block);
+        return _buildHeadingBlock(block, context);
       case 'image':
-        return _buildImageBlock(block);
+        return _buildImageBlock(block, context);
       case 'divider':
-        return _buildDividerBlock();
+        return _buildDividerBlock(context);
       case 'quote':
-        return _buildQuoteBlock(block);
+        return _buildQuoteBlock(block, context);
       case 'link':
-        return _buildLinkBlock(block);
+        return _buildLinkBlock(block, context);
       default:
-        return _buildTextBlock(block);
+        return _buildTextBlock(block, context);
     }
   }
 
   /// Bloco de texto — parágrafo com formatação básica
-  Widget _buildTextBlock(Map<String, dynamic> block) {
+  Widget _buildTextBlock(Map<String, dynamic> block, BuildContext context) {
       final r = context.r;
     final content = block['content'] as String? ?? '';
     final isBold = block['bold'] == true;
@@ -99,7 +99,7 @@ class BlockContentRenderer extends StatelessWidget {
   }
 
   /// Bloco de heading — título de seção
-  Widget _buildHeadingBlock(Map<String, dynamic> block) {
+  Widget _buildHeadingBlock(Map<String, dynamic> block, BuildContext context) {
     final content = block['content'] as String? ?? '';
     final level = block['level'] as int? ?? 2;
 
@@ -120,7 +120,7 @@ class BlockContentRenderer extends StatelessWidget {
   }
 
   /// Bloco de imagem — imagem inline com legenda opcional
-  Widget _buildImageBlock(Map<String, dynamic> block) {
+  Widget _buildImageBlock(Map<String, dynamic> block, BuildContext context) {
       final r = context.r;
     final url = block['url'] as String? ?? '';
     final caption = block['caption'] as String?;
@@ -180,7 +180,7 @@ class BlockContentRenderer extends StatelessWidget {
   }
 
   /// Bloco de divisor — separador visual
-  Widget _buildDividerBlock() {
+  Widget _buildDividerBlock(BuildContext context) {
       final r = context.r;
     return Padding(
       padding: EdgeInsets.symmetric(
@@ -222,7 +222,7 @@ class BlockContentRenderer extends StatelessWidget {
   }
 
   /// Bloco de citação — quote com barra lateral
-  Widget _buildQuoteBlock(Map<String, dynamic> block) {
+  Widget _buildQuoteBlock(Map<String, dynamic> block, BuildContext context) {
       final r = context.r;
     final content = block['content'] as String? ?? '';
 
@@ -257,7 +257,7 @@ class BlockContentRenderer extends StatelessWidget {
   }
 
   /// Bloco de link — preview de link embutido
-  Widget _buildLinkBlock(Map<String, dynamic> block) {
+  Widget _buildLinkBlock(Map<String, dynamic> block, BuildContext context) {
       final r = context.r;
     final url = block['url'] as String? ?? '';
     final title = block['title'] as String? ?? url;
