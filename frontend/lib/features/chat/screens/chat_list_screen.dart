@@ -302,10 +302,25 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                           // Global — mostrar recomendados
                           return _buildRecommendedChats();
                         }
-                        if (chatRooms.isEmpty) {
+
+                        // Filtrar por comunidade selecionada na sidebar
+                        final filtered = _selectedSidebarIndex >= 2
+                            ? communitiesAsync.whenOrNull(
+                                data: (communities) {
+                                  final idx = _selectedSidebarIndex - 2;
+                                  if (idx >= communities.length) return chatRooms;
+                                  final cid = communities[idx].id;
+                                  return chatRooms
+                                      .where((c) => c.communityId == cid)
+                                      .toList();
+                                },
+                              ) ?? chatRooms
+                            : chatRooms;
+
+                        if (filtered.isEmpty) {
                           return _buildEmptyChats();
                         }
-                        return _buildChatList(chatRooms);
+                        return _buildChatList(filtered);
                       },
                     ),
                   ),

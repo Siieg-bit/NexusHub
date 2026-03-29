@@ -176,7 +176,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
   @override
   void initState() {
     super.initState();
-    _activeTabs = ['Regras', 'Destaque', 'Recentes', 'Chats Públicos'];
+    _activeTabs = ['Regras', 'Destaque', 'Recentes', 'Chats'];
     _tabController = TabController(length: _activeTabs.length, vsync: this);
     _tabController.index = 1; // Featured como padrão
   }
@@ -304,6 +304,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             community: community,
             currentUser: ref.watch(currentUserProfileProvider).valueOrNull,
             userRole: userRole,
+            onChatsTap: () => setState(() => _bottomIndex = 3),
           ),
           child: Scaffold(
             backgroundColor: context.scaffoldBg,
@@ -744,7 +745,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                         communityId: widget.communityId,
                         ref: ref,
                         isFeatured: false);
-                  case 'Chats Públicos':
+                  case 'Chats':
                     return _ChatTab(communityId: widget.communityId);
                   default:
                     return const SizedBox.shrink();
@@ -942,8 +943,11 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                         fontWeight: FontWeight.w700)),
                 const Spacer(),
                 GestureDetector(
-                  onTap: () => context.go('/chats'),
-                  child: Text('Meus Chats',
+                  onTap: () {
+                    // Navegar para a tela de chats global com foco na comunidade
+                    context.go('/chats');
+                  },
+                  child: Text('Ver Todos',
                       style: TextStyle(
                           color: AppTheme.primaryColor,
                           fontSize: 12,
@@ -1584,12 +1588,47 @@ class _ChatTabState extends State<_ChatTab> {
 
   Future<void> _loadChats() async {
     try {
-      final response = await SupabaseService.table('chat_threads')
+      final userId = SupabaseService.currentUserId;
+
+      // Buscar chats públicos da comunidade (visíveis para todos)
+      final publicResponse = await SupabaseService.table('chat_threads')
           .select()
           .eq('community_id', widget.communityId)
+          .eq('type', 'public')
           .order('last_message_at', ascending: false)
-          .limit(30);
-      _chats = List<Map<String, dynamic>>.from(response as List);
+          .limit(20);
+
+      // Buscar chats privados/grupo onde o usuário é membro
+      List<dynamic> privateChats = [];
+      if (userId != null) {
+        final memberResponse = await SupabaseService.table('chat_members')
+            .select('thread_id, chat_threads!inner(*)')
+            .eq('user_id', userId)
+            .neq('chat_threads.type', 'public');
+        privateChats = (memberResponse as List)
+            .where((e) =>
+                e['chat_threads'] != null &&
+                e['chat_threads']['community_id'] == widget.communityId)
+            .map((e) => e['chat_threads'] as Map<String, dynamic>)
+            .toList();
+      }
+
+      // Combinar e deduplicar por id
+      final allChats = <String, Map<String, dynamic>>{};
+      for (final c in List<Map<String, dynamic>>.from(publicResponse as List)) {
+        allChats[c['id'] as String] = c;
+      }
+      for (final c in privateChats) {
+        allChats[c['id'] as String] = c as Map<String, dynamic>;
+      }
+
+      _chats = allChats.values.toList()
+        ..sort((a, b) {
+          final aTime = a['last_message_at'] as String? ?? '';
+          final bTime = b['last_message_at'] as String? ?? '';
+          return bTime.compareTo(aTime);
+        });
+
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
@@ -1613,7 +1652,7 @@ class _ChatTabState extends State<_ChatTab> {
             Icon(Icons.chat_bubble_outline_rounded,
                 size: 48, color: context.textHint),
             const SizedBox(height: 12),
-            Text('Nenhum chat público ainda',
+            Text('Nenhum chat nesta comunidade ainda',
                 style: TextStyle(color: Colors.grey[600], fontSize: 13)),
           ],
         ),

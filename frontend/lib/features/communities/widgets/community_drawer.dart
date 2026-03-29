@@ -18,12 +18,14 @@ class CommunityDrawer extends ConsumerStatefulWidget {
   final CommunityModel community;
   final UserModel? currentUser;
   final String? userRole;
+  final VoidCallback? onChatsTap;
 
   const CommunityDrawer({
     super.key,
     required this.community,
     this.currentUser,
     this.userRole,
+    this.onChatsTap,
   });
 
   @override
@@ -490,9 +492,11 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                           badge: 0,
                           onTap: () {
                             Navigator.pop(context);
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              if (context.mounted) context.go('/chats');
-                            });
+                            if (widget.onChatsTap != null) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                widget.onChatsTap!();
+                              });
+                            }
                           },
                         ),
                         _AminoDrawerItem(
