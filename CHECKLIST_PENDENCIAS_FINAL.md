@@ -19,5 +19,5 @@ Pendências extraídas dos 3 documentos de auditoria, cruzadas com o código atu
 
 ## Prioridade BAIXA (Polish)
 
-- [ ] 10. **Temas Customizáveis** — `theme_provider.dart` existe mas só tem dark theme. Adicionar light theme funcional.
+- [x] 10. **Temas Customizáveis** — Light theme completo já implementado no app_theme.dart com cores light dedicadas (scaffoldBgLight, surfaceColorLight, textPrimaryLight, etc.). ThemeNotifier com toggle dark/light, persistência via SharedPreferences, suporte a ThemeMode.system. MaterialApp.router já usa theme/darkTheme/themeMode.
 - [ ] 11. **Animações de Transição** — `flutter_animate` está no pubspec mas pouco usado. Melhorar transições entre telas.
