@@ -4,6 +4,7 @@ plugins {
     // The Flutter Gradle Plugin must be applied after the Android plugin.
     id "dev.flutter.flutter-gradle-plugin"
     id "com.google.gms.google-services"
+    id "com.google.firebase.crashlytics"
 }
 
 def localProperties = new Properties()
@@ -49,14 +50,22 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
+
+        // Apenas arm64-v8a e armeabi-v7a para reduzir tamanho do APK.
+        // Para a Play Store, use AAB (App Bundle) — split automático por arquitetura.
+        ndk {
+            abiFilters "arm64-v8a", "armeabi-v7a"
+        }
     }
 
     signingConfigs {
         release {
-            // storeFile file("keystore/nexushub-release.jks")
-            // storePassword System.getenv("KEYSTORE_PASSWORD")
-            // keyAlias "nexushub"
-            // keyPassword System.getenv("KEY_PASSWORD")
+            if (System.getenv("KEYSTORE_PATH")) {
+                storeFile file(System.getenv("KEYSTORE_PATH"))
+                storePassword System.getenv("KEYSTORE_PASSWORD")
+                keyAlias System.getenv("KEY_ALIAS")
+                keyPassword System.getenv("KEY_PASSWORD")
+            }
         }
     }
 
@@ -65,11 +74,47 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release.storeFile != null
+                ? signingConfigs.release
+                : signingConfigs.debug
         }
         debug {
             signingConfig signingConfigs.debug
+            minifyEnabled false
+            shrinkResources false
         }
+    }
+
+    // ============================================================================
+    // ABI SPLITS — Gera APKs separados por arquitetura de CPU
+    // Reduz o APK universal de ~450MB para ~50-80MB por arquitetura
+    // ============================================================================
+    splits {
+        abi {
+            enable true
+            reset()
+            include "arm64-v8a", "armeabi-v7a"
+            universalApk false
+        }
+    }
+
+    // Versão codes únicos por ABI (necessário para publicar na Play Store)
+    applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            def abiVersionCode = ['armeabi-v7a': 1, 'arm64-v8a': 2]
+            def abi = output.getFilter(com.android.build.OutputFile.ABI)
+            if (abi != null) {
+                output.versionCodeOverride =
+                    abiVersionCode.get(abi, 0) * 1000 + variant.versionCode
+            }
+        }
+    }
+
+    // Otimização do App Bundle (AAB) para a Play Store
+    bundle {
+        language { enableSplit = true }
+        density { enableSplit = true }
+        abi { enableSplit = true }
     }
 }
 
@@ -84,6 +129,7 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:33.7.0')
     implementation 'com.google.firebase:firebase-messaging'
     implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.firebase:firebase-crashlytics'
 
     // Google Play Services (AdMob)
     implementation 'com.google.android.gms:play-services-ads:23.6.0'

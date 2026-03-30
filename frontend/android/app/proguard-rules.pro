@@ -28,3 +28,31 @@
 -keepattributes Signature
 -keepattributes *Annotation*
 -keep class sun.misc.Unsafe { *; }
+
+# Firebase Crashlytics — mantém stack traces legíveis
+-keepattributes SourceFile,LineNumberTable
+-keep public class * extends java.lang.Exception
+-renamesourcefileattribute SourceFile
+
+# Kotlin
+-keep class kotlin.** { *; }
+-keep class kotlinx.** { *; }
+-dontwarn kotlin.**
+
+# OkHttp / Ktor
+-keep class okhttp3.** { *; }
+-keep class okio.** { *; }
+-dontwarn okhttp3.**
+-dontwarn okio.**
+
+# Enums
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
+
+# Suprime avisos de libs de terceiros
+-dontwarn javax.annotation.**
+-dontwarn org.conscrypt.**
+-dontwarn org.bouncycastle.**
+-dontwarn org.openjsse.**

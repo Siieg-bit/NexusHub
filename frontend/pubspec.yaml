@@ -44,11 +44,12 @@ dependencies:
   emoji_picker_flutter: ^1.6.4
 
   # Voice/Video Calls (Agora.io RTC)
+  # agora_rtc_engine usa SDKs nativos para 4 arquiteturas — use ABI splits no build
   agora_rtc_engine: ^6.3.1
 
   # HTTP & Networking
   http: ^1.2.0
-  dio: ^5.4.1
+  # dio removido — não utilizado no código (substituído por http)
 
   # Storage & Cache
   shared_preferences: ^2.2.2
@@ -74,7 +75,7 @@ dependencies:
 
   # In-App Purchases (RevenueCat)
   purchases_flutter: ^8.0.0
-  purchases_ui_flutter: ^8.0.0
+  # purchases_ui_flutter removido — não utilizado no código
   # Ads (AdMob — rewarded only)
   google_mobile_ads: ^5.1.0
 
@@ -84,10 +85,10 @@ dependencies:
   share_plus: ^10.0.0
   connectivity_plus: ^6.0.0
   flutter_markdown: ^0.7.0
-  pull_to_refresh: ^2.0.0
+  # pull_to_refresh removido — não utilizado no código
   infinite_scroll_pagination: ^4.0.0
   flutter_animate: ^4.5.0
-  google_fonts: ^6.1.0
+  # google_fonts removido — fonte Plus Jakarta Sans já está em assets/fonts/ (local)
   collection: ^1.18.0
   flutter_local_notifications: ^18.0.0
   permission_handler: ^11.3.0
