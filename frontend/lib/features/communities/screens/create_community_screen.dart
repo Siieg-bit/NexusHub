@@ -83,7 +83,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao criar comunidade: $e')),
+          SnackBar(content: Text('Erro ao criar comunidade. Tente novamente.')),
         );
       }
     } finally {

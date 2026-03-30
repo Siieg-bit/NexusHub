@@ -113,7 +113,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao salvar: $e'),
+            content: Text('Erro ao salvar. Tente novamente.'),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),

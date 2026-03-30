@@ -142,7 +142,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro: $e'),
+            content: Text('Ocorreu um erro. Tente novamente.'),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -194,7 +194,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro: $e'),
+            content: Text('Ocorreu um erro. Tente novamente.'),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(

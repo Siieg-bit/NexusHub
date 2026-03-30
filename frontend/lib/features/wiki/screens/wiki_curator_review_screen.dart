@@ -126,7 +126,7 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro: $e'),
+            content: Text('Ocorreu um erro. Tente novamente.'),
             backgroundColor: AppTheme.errorColor,
           ),
         );

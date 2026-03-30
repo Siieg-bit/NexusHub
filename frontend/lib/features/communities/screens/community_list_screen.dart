@@ -498,7 +498,7 @@ class _AminoCommunityCardState extends State<_AminoCommunityCard> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro no check-in: $e'),
+            content: Text('Erro no check-in. Tente novamente.'),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -878,7 +878,7 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro no check-in: $e'),
+            content: Text('Erro no check-in. Tente novamente.'),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),

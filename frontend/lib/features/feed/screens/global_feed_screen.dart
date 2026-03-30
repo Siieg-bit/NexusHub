@@ -212,7 +212,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                         size: r.s(48), color: AppTheme.errorColor),
                     SizedBox(height: r.s(16)),
                     Text(
-                      'Erro ao carregar feed: $error',
+                      'Erro ao carregar feed. Tente novamente.',
                       style: TextStyle(color: context.textPrimary),
                       textAlign: TextAlign.center,
                     ),

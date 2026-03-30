@@ -100,7 +100,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro no upload: $e'),
+            content: Text('Erro no upload. Tente novamente.'),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -134,7 +134,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro no upload: $e'),
+            content: Text('Erro no upload. Tente novamente.'),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -322,7 +322,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro: $e'),
+            content: Text('Ocorreu um erro. Tente novamente.'),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -433,7 +433,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Erro ao salvar: $e')),
+                    SnackBar(content: Text('Erro ao salvar. Tente novamente.')),
                   );
                 }
               }

@@ -216,7 +216,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao criar grupo: $e')),
+          SnackBar(content: Text('Erro ao criar grupo. Tente novamente.')),
         );
       }
     } finally {

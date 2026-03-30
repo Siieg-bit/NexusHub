@@ -177,7 +177,7 @@ class _BlockEditorState extends State<BlockEditor> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro no upload: $e'),
+            content: Text('Erro no upload. Tente novamente.'),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),

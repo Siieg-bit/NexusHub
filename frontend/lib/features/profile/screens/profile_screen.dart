@@ -1301,7 +1301,7 @@ class _WallTab extends ConsumerWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: $e')),
+          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
         );
       }
     }

@@ -120,7 +120,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: $e')),
+          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
         );
       }
     }
@@ -509,7 +509,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                                                   if (context.mounted) {
                                                     ScaffoldMessenger.of(context).showSnackBar(
                                                       SnackBar(
-                                                        content: Text('Erro: $e'),
+                                                        content: Text('Ocorreu um erro. Tente novamente.'),
                                                         behavior: SnackBarBehavior.floating,
                                                       ),
                                                     );

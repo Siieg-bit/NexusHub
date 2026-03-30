@@ -84,7 +84,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao comentar: $e')),
+          SnackBar(content: Text('Erro ao comentar. Tente novamente.')),
         );
       }
     } finally {
@@ -128,7 +128,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: $e')),
+          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
         );
       }
     }
@@ -241,7 +241,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     } catch (e) {
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Erro: $e')),
+                          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
                         );
                       }
                     }
@@ -278,7 +278,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       ));
                     }
                   } catch (e) {
-                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro: $e')));
+                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Ocorreu um erro. Tente novamente.')));
                   }
                   break;
                 case 'hide':
@@ -300,7 +300,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       }
                     }
                   } catch (e) {
-                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro: $e')));
+                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Ocorreu um erro. Tente novamente.')));
                   }
                   break;
               }
@@ -700,7 +700,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       error: (error, _) => Padding(
                         padding: EdgeInsets.all(r.s(16)),
                         child: Text(
-                          'Erro ao carregar comentários: $error',
+                          'Erro ao carregar comentários. Tente novamente.',
                           style: const TextStyle(color: AppTheme.errorColor),
                         ),
                       ),
@@ -992,7 +992,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   } catch (e) {
                     if (ctx.mounted) {
                       ScaffoldMessenger.of(ctx).showSnackBar(
-                        SnackBar(content: Text('Erro: $e')),
+                        SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
                       );
                     }
                   }

@@ -129,7 +129,7 @@ class _LiveScreenState extends State<LiveScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao criar sala: $e'),
+            content: Text('Erro ao criar sala. Tente novamente.'),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),

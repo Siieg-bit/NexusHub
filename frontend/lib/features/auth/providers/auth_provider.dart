@@ -110,7 +110,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       }
     } catch (e) {
       // Mesmo se o perfil falhar, a sessão é válida
-      state = state.copyWith(isLoading: false, error: 'Erro ao carregar perfil: $e');
+      state = state.copyWith(isLoading: false, error: 'Erro ao carregar perfil. Tente novamente.');
     }
   }
 
@@ -129,7 +129,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(isLoading: false, error: e.message);
       return false;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: 'Erro inesperado: $e');
+      state = state.copyWith(isLoading: false, error: 'Ocorreu um erro inesperado. Tente novamente.');
       return false;
     }
   }
@@ -150,7 +150,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(isLoading: false, error: e.message);
       return false;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: 'Erro inesperado: $e');
+      state = state.copyWith(isLoading: false, error: 'Ocorreu um erro inesperado. Tente novamente.');
       return false;
     }
   }
@@ -163,7 +163,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       return true;
     } catch (e) {
       state = state.copyWith(
-          isLoading: false, error: 'Erro no login com Google: $e');
+          isLoading: false, error: 'Erro no login com Google. Tente novamente.');
       return false;
     }
   }
@@ -176,7 +176,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       return true;
     } catch (e) {
       state = state.copyWith(
-          isLoading: false, error: 'Erro no login com Apple: $e');
+          isLoading: false, error: 'Erro no login com Apple. Tente novamente.');
       return false;
     }
   }
@@ -193,7 +193,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await SupabaseService.auth.signOut();
       state = const AuthState();
     } catch (e) {
-      state = state.copyWith(error: 'Erro ao sair: $e');
+      state = state.copyWith(error: 'Erro ao sair. Tente novamente.');
     }
   }
 

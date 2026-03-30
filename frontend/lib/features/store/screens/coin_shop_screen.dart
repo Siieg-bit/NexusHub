@@ -575,7 +575,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                     }
                   }
                 } catch (e) {
-                  if (mounted) _showError('Erro: $e');
+                  if (mounted) _showError('Ocorreu um erro. Tente novamente.');
                 } finally {
                   if (mounted) setState(() => _isPurchasing = false);
                 }

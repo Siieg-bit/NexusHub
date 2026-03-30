@@ -71,7 +71,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao vincular ${provider.name}: $e'),
+            content: Text('Erro ao vincular ${provider.name}. Tente novamente.'),
             behavior: SnackBarBehavior.floating,
             backgroundColor: AppTheme.errorColor,
           ),
@@ -151,7 +151,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao desvincular: $e'),
+            content: Text('Erro ao desvincular. Tente novamente.'),
             behavior: SnackBarBehavior.floating,
             backgroundColor: AppTheme.errorColor,
           ),

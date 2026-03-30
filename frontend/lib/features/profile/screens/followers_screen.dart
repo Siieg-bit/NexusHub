@@ -255,7 +255,7 @@ class _FollowButtonState extends State<_FollowButton> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro: $e', style: TextStyle(color: context.textPrimary)),
+            content: Text('Ocorreu um erro. Tente novamente.', style: TextStyle(color: context.textPrimary)),
             backgroundColor: AppTheme.errorColor,
           ),
         );

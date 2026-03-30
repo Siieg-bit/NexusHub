@@ -293,7 +293,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Erro: $e'),
+                      content: Text('Ocorreu um erro. Tente novamente.'),
                       behavior: SnackBarBehavior.floating,
                     ),
                   );

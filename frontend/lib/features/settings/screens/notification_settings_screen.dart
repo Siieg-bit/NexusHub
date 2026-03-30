@@ -124,7 +124,7 @@ class _NotificationSettingsScreenState
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: $e')),
+          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
         );
       }
     }

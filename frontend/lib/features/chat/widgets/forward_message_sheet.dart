@@ -115,7 +115,7 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
         setState(() => _sending = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao encaminhar: $e'),
+            content: Text('Erro ao encaminhar. Tente novamente.'),
             behavior: SnackBarBehavior.floating,
           ),
         );

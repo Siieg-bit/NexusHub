@@ -520,7 +520,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao enviar: $e'),
+            content: Text('Erro ao enviar. Tente novamente.'),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -550,7 +550,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro no upload: $e'),
+            content: Text('Erro no upload. Tente novamente.'),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -1111,7 +1111,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Erro ao enviar áudio: $e'),
+                          content: Text('Erro ao enviar áudio. Tente novamente.'),
                           backgroundColor: AppTheme.errorColor,
                           behavior: SnackBarBehavior.floating,
                         ),
@@ -1497,7 +1497,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro no upload do vídeo: $e'),
+            content: Text('Erro no upload do vídeo. Tente novamente.'),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -1763,7 +1763,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Erro ao apagar: $e'),
+                      content: Text('Erro ao apagar. Tente novamente.'),
                       backgroundColor: AppTheme.errorColor,
                     ),
                   );
@@ -1794,7 +1794,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Erro ao apagar: $e'),
+                        content: Text('Erro ao apagar. Tente novamente.'),
                         backgroundColor: AppTheme.errorColor,
                       ),
                     );
@@ -1887,7 +1887,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Erro ao editar: $e'),
+                        content: Text('Erro ao editar. Tente novamente.'),
                         backgroundColor: AppTheme.errorColor,
                       ),
                     );

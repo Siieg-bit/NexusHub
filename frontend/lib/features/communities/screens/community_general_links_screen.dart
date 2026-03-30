@@ -47,7 +47,7 @@ class _CommunityGeneralLinksScreenState
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        _showError('Erro ao carregar links: $e');
+        _showError('Erro ao carregar links. Tente novamente.');
       }
     }
   }
@@ -195,7 +195,7 @@ class _CommunityGeneralLinksScreenState
         );
       }
     } catch (e) {
-      _showError('Erro ao salvar link: $e');
+      _showError('Erro ao salvar link. Tente novamente.');
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -254,7 +254,7 @@ class _CommunityGeneralLinksScreenState
         );
       }
     } catch (e) {
-      _showError('Erro ao remover link: $e');
+      _showError('Erro ao remover link. Tente novamente.');
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -276,7 +276,7 @@ class _CommunityGeneralLinksScreenState
             .eq('id', _links[i]['id'] as String);
       }
     } catch (e) {
-      _showError('Erro ao reordenar: $e');
+      _showError('Erro ao reordenar. Tente novamente.');
     }
   }
 
@@ -397,7 +397,7 @@ class _CommunityGeneralLinksScreenState
                                   setState(() {
                                     _links[index]['is_active'] = isActive;
                                   });
-                                  _showError('Erro ao atualizar: $e');
+                                  _showError('Erro ao atualizar. Tente novamente.');
                                 }
                               },
                             );

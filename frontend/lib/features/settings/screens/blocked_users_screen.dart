@@ -134,7 +134,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro: $e', style: const TextStyle(color: Colors.white)),
+            content: Text('Ocorreu um erro. Tente novamente.', style: const TextStyle(color: Colors.white)),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(

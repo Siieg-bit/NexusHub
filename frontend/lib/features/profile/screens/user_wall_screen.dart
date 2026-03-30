@@ -60,7 +60,7 @@ class _UserWallScreenState extends State<UserWallScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: $e')),
+          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
         );
       }
     } finally {
@@ -75,7 +75,7 @@ class _UserWallScreenState extends State<UserWallScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: $e')),
+          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
         );
       }
     }

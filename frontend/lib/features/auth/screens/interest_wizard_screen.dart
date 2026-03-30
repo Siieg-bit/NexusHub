@@ -113,7 +113,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao salvar: $e')),
+          SnackBar(content: Text('Erro ao salvar. Tente novamente.')),
         );
       }
     } finally {

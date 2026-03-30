@@ -73,7 +73,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Erro: $e')),
+                    SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
                   );
                 }
               }
@@ -237,7 +237,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao excluir conta: $e')),
+          SnackBar(content: Text('Erro ao excluir conta. Tente novamente.')),
         );
       }
     }
@@ -421,7 +421,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     if (context.mounted) {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
-                                          content: Text('Erro: $e'),
+                                          content: Text('Ocorreu um erro. Tente novamente.'),
                                           behavior: SnackBarBehavior.floating,
                                         ),
                                       );

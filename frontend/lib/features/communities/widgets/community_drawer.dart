@@ -121,7 +121,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro no check-in: $e'),
+            content: Text('Erro no check-in. Tente novamente.'),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),

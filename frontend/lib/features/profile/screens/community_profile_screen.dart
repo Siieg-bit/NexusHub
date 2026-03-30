@@ -453,7 +453,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                   } catch (e) {
                                     if (mounted) {
                                       ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text('Erro: $e')),
+                                        SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
                                       );
                                     }
                                   }
@@ -522,7 +522,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                   } catch (e) {
                                     if (mounted) {
                                       ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text('Erro ao abrir chat: $e')),
+                                        SnackBar(content: Text('Erro ao abrir chat. Tente novamente.')),
                                       );
                                     }
                                   }
@@ -1364,7 +1364,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: $e')),
+          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
         );
       }
     }

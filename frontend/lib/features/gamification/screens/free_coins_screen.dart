@@ -89,7 +89,7 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao carregar anúncio: $e',
+            content: Text('Erro ao carregar anúncio. Tente novamente.',
                 style: const TextStyle(color: Colors.white)),
             backgroundColor: const Color(0xFFE53935),
           ),

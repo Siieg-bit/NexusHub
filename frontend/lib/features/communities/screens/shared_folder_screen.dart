@@ -267,7 +267,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro no upload: $e'),
+            content: Text('Erro no upload. Tente novamente.'),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),

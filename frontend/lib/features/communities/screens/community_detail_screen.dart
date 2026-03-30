@@ -243,7 +243,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: $e')),
+          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
         );
       }
     }
@@ -829,7 +829,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                   color: AppTheme.primaryColor, strokeWidth: 2.5),
             ),
             error: (e, _) => Center(
-                child: Text('Erro: $e',
+                child: Text('Ocorreu um erro. Tente novamente.',
                     style: TextStyle(color: context.textSecondary))),
             data: (members) {
               final onlineMembers = members.where((m) {
@@ -1129,7 +1129,7 @@ class _CheckInBarState extends ConsumerState<_CheckInBar> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Erro: $e'),
+          content: Text('Ocorreu um erro. Tente novamente.'),
           backgroundColor: AppTheme.errorColor,
         ));
       }
