@@ -28,20 +28,43 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
   Object? _error;
   StackTrace? _stackTrace;
 
+  // Guarda o handler original para restaurar ao desmontar
+  FlutterExceptionHandler? _previousErrorHandler;
+
   @override
   void initState() {
     super.initState();
+    _previousErrorHandler = FlutterError.onError;
+
     // Capturar erros de Flutter que não são capturados por try/catch
     FlutterError.onError = (FlutterErrorDetails details) {
-      // Reportar para o log
-      FlutterError.presentError(details);
+      // Sempre reportar para o log (chama o handler anterior se existir)
+      if (_previousErrorHandler != null) {
+        _previousErrorHandler!(details);
+      } else {
+        FlutterError.presentError(details);
+      }
+
       if (mounted) {
-        setState(() {
-          _error = details.exception;
-          _stackTrace = details.stack;
+        // Adiar o setState para depois do frame atual terminar,
+        // evitando o erro "setState() called during build".
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            setState(() {
+              _error = details.exception;
+              _stackTrace = details.stack;
+            });
+          }
         });
       }
     };
+  }
+
+  @override
+  void dispose() {
+    // Restaurar o handler original ao desmontar para não vazar
+    FlutterError.onError = _previousErrorHandler;
+    super.dispose();
   }
 
   void _reset() {
@@ -54,11 +77,12 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
   @override
   Widget build(BuildContext context) {
     if (_error != null) {
-      return widget.fallback ?? _DefaultErrorFallback(
-        error: _error!,
-        stackTrace: _stackTrace,
-        onRetry: _reset,
-      );
+      return widget.fallback ??
+          _DefaultErrorFallback(
+            error: _error!,
+            stackTrace: _stackTrace,
+            onRetry: _reset,
+          );
     }
     return widget.child;
   }
