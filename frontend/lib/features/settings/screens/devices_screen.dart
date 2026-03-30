@@ -32,7 +32,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
           .eq('user_id', userId)
           .order('last_seen_at', ascending: false);
 
-      _devices = List<Map<String, dynamic>>.from(res as List);
+      _devices = List<Map<String, dynamic>>.from(res as List?);
     } catch (e) {
       debugPrint('[devices_screen] Erro: $e');
     }
@@ -296,7 +296,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                     final browser = device['browser'] as String? ?? '';
                     final ipAddress = device['ip_address'] as String? ?? '';
                     final lastSeen = device['last_seen_at'] != null
-                        ? DateTime.tryParse(device['last_seen_at'] as String)
+                        ? DateTime.tryParse(device['last_seen_at'] as String?)
                         : null;
                     final isCurrentDevice =
                         device['is_current'] as bool? ?? false;
@@ -417,7 +417,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                             SizedBox(width: r.s(12)),
                             GestureDetector(
                               onTap: () =>
-                                  _revokeDevice(device['id'] as String),
+                                  _revokeDevice(device['id'] as String?),
                               child: Container(
                                 padding: EdgeInsets.all(r.s(8)),
                                 decoration: BoxDecoration(

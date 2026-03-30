@@ -102,8 +102,8 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
           .eq('community_id', widget.communityId)
           .ilike('title', pattern)
           .limit(5);
-      final suggestions = (postRes as List)
-          .map((e) => e['title'] as String)
+      final suggestions = (postRes as List?)
+          .map((e) => e['title'] as String?)
           .toList();
       if (mounted) {
         setState(() {
@@ -154,7 +154,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
       }
 
       final postRes = await postQuery.limit(30);
-      _posts = List<Map<String, dynamic>>.from(postRes as List);
+      _posts = List<Map<String, dynamic>>.from(postRes as List?);
 
       // Buscar membros
       final memberRes = await SupabaseService.table('community_members')
@@ -163,7 +163,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
           .eq('is_banned', false)
           .ilike('profiles.nickname', pattern)
           .limit(20);
-      _members = (memberRes as List)
+      _members = (memberRes as List?)
           .where((e) => e['profiles'] != null)
           .map((e) => e['profiles'] as Map<String, dynamic>)
           .toList();
@@ -176,7 +176,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
           .ilike('title', pattern)
           .order('created_at', ascending: false)
           .limit(20);
-      _wikis = List<Map<String, dynamic>>.from(wikiRes as List);
+      _wikis = List<Map<String, dynamic>>.from(wikiRes as List?);
 
       if (mounted) setState(() => _isSearching = false);
     } catch (e) {

@@ -63,7 +63,7 @@ final userCosmeticsProvider =
     String? chatBubbleColor;
     String? chatBubbleImageUrl;
 
-    for (final item in (equipped as List)) {
+    for (final item in (equipped as List?)) {
       final storeItem = item['store_items'] as Map<String, dynamic>?;
       if (storeItem == null) continue;
 
@@ -121,8 +121,8 @@ final batchCosmeticsProvider =
 
     // Agrupar por user_id
     final byUser = <String, List<Map<String, dynamic>>>{};
-    for (final item in (equipped as List)) {
-      final uid = item['user_id'] as String;
+    for (final item in (equipped as List?)) {
+      final uid = item['user_id'] as String?;
       byUser.putIfAbsent(uid, () => []).add(Map<String, dynamic>.from(item));
     }
 

@@ -343,7 +343,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                             backgroundColor: context.scaffoldBg,
                             backgroundImage: _targetUser!['icon_url'] != null
                                 ? CachedNetworkImageProvider(
-                                    _targetUser!['icon_url'] as String)
+                                    _targetUser!['icon_url'] as String?)
                                 : null,
                             child: _targetUser!['icon_url'] == null
                                 ? Icon(Icons.person_rounded, color: context.textPrimary)
@@ -379,7 +379,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                           TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800, fontSize: r.fs(16))),
                   SizedBox(height: r.s(12)),
                   ..._actions.map((action) {
-                    final id = action['id'] as String;
+                    final id = action['id'] as String?;
                     final isSelected = _selectedAction == id;
                     return GestureDetector(
                       onTap: () => setState(() => _selectedAction = id),
@@ -388,13 +388,13 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                         padding: EdgeInsets.all(r.s(14)),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? Color(action['color'] as int)
+                              ? Color(action['color'] as int?)
                                   .withValues(alpha: 0.1)
                               : context.surfaceColor,
                           borderRadius: BorderRadius.circular(r.s(16)),
                           border: Border.all(
                             color: isSelected
-                                ? Color(action['color'] as int)
+                                ? Color(action['color'] as int?)
                                     .withValues(alpha: 0.5)
                                 : Colors.white.withValues(alpha: 0.05),
                           ),
@@ -402,21 +402,21 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                         child: Row(
                           children: [
                             Icon(action['icon'] as IconData,
-                                color: Color(action['color'] as int), size: r.s(22)),
+                                color: Color(action['color'] as int?), size: r.s(22)),
                             SizedBox(width: r.s(12)),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    action['label'] as String,
+                                    action['label'] as String?,
                                     style: TextStyle(
-                                        color: isSelected ? Color(action['color'] as int) : context.textPrimary,
+                                        color: isSelected ? Color(action['color'] as int?) : context.textPrimary,
                                         fontWeight: FontWeight.w700,
                                         fontSize: r.fs(14)),
                                   ),
                                   Text(
-                                    action['description'] as String,
+                                    action['description'] as String?,
                                     style: TextStyle(
                                         color: Colors.grey[500],
                                         fontSize: r.fs(11)),
@@ -426,7 +426,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                             ),
                             if (isSelected)
                               Icon(Icons.check_circle_rounded,
-                                  color: Color(action['color'] as int)),
+                                  color: Color(action['color'] as int?)),
                           ],
                         ),
                       ),

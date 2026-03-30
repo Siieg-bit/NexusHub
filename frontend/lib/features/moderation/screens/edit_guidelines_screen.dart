@@ -126,8 +126,8 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
 
   void _insertTemplate(Map<String, dynamic> section) {
     final current = _guidelinesController.text;
-    final title = section['title'] as String;
-    final template = section['template'] as String;
+    final title = section['title'] as String?;
+    final template = section['template'] as String?;
     final newText =
         '$current${current.isEmpty ? '' : '\n\n'}## $title\n\n$template';
     _guidelinesController.text = newText;
@@ -251,7 +251,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
                       ),
                       SizedBox(width: r.s(6)),
                       Text(
-                        section['title'] as String,
+                        section['title'] as String?,
                         style: TextStyle(
                           color: context.textPrimary,
                           fontSize: r.fs(12),

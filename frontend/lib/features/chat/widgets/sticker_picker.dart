@@ -108,7 +108,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
           .eq('user_id', userId)
           .order('used_at', ascending: false)
           .limit(20);
-      _recentStickers = List<Map<String, dynamic>>.from(res as List);
+      _recentStickers = List<Map<String, dynamic>>.from(res as List?);
     } catch (e) {
       debugPrint('[sticker_picker] Erro: $e');
     }
@@ -141,9 +141,9 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
           .select('sticker_id, sticker_url, sticker_name')
           .eq('user_id', userId)
           .order('created_at', ascending: false);
-      _favoriteStickers = List<Map<String, dynamic>>.from(res as List);
+      _favoriteStickers = List<Map<String, dynamic>>.from(res as List?);
       _favoriteStickerIds = _favoriteStickers
-          .map((s) => s['sticker_id'] as String)
+          .map((s) => s['sticker_id'] as String?)
           .toSet();
     } catch (e) {
       debugPrint('[sticker_picker] Erro: $e');
@@ -157,7 +157,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
           .eq('type', 'sticker')
           .eq('is_active', true)
           .order('name');
-      final items = List<Map<String, dynamic>>.from(res as List);
+      final items = List<Map<String, dynamic>>.from(res as List?);
 
       final packs = <String, List<Map<String, dynamic>>>{};
       for (final item in items) {
@@ -302,7 +302,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
                   unselectedLabelColor: context.textSecondary,
                   indicatorColor: AppTheme.primaryColor,
                   tabs: _packs
-                      .map((p) => Tab(text: p['name'] as String))
+                      .map((p) => Tab(text: p['name'] as String?))
                       .toList(),
                 ),
                 // Sticker grid
@@ -310,7 +310,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
                   child: TabBarView(
                     controller: _tabController,
                     children: _packs.map((pack) {
-                      final packName = pack['name'] as String;
+                      final packName = pack['name'] as String?;
                       if (packName == 'Emojis') {
                         return _buildEmojiGrid();
                       }

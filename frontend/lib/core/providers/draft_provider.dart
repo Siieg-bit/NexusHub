@@ -22,7 +22,7 @@ class PostDraftsNotifier extends AsyncNotifier<List<PostDraftModel>> {
         .eq('user_id', userId)
         .order('updated_at', ascending: false);
 
-    return (data as List)
+    return (data as List?)
         .map((e) => PostDraftModel.fromJson(Map<String, dynamic>.from(e as Map)))
         .toList();
   }

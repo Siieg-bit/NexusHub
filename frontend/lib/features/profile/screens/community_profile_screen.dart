@@ -76,7 +76,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           .eq('status', 'ok')
           .order('created_at', ascending: false)
           .limit(20);
-      _userPosts = List<Map<String, dynamic>>.from(postsRes as List);
+      _userPosts = List<Map<String, dynamic>>.from(postsRes as List?);
 
       // Mural (wall comments)
       final wallRes = await SupabaseService.table('comments')
@@ -85,18 +85,18 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           .order('created_at', ascending: false)
           .limit(30);
       _wallComments =
-          (wallRes as List).map((e) => CommentModel.fromJson(e)).toList();
+          (wallRes as List?)?.map((e) => CommentModel.fromJson(e)).toList();
 
       // Contagem de seguidores/seguindo
       final followersRes = await SupabaseService.table('follows')
           .select()
           .eq('following_id', widget.userId);
-      _followersCount = (followersRes as List).length;
+      _followersCount = (followersRes as List?)?.length;
 
       final followingRes = await SupabaseService.table('follows')
           .select()
           .eq('follower_id', widget.userId);
-      _followingCount = (followingRes as List).length;
+      _followingCount = (followingRes as List?)?.length;
 
       if (!mounted) return;
       if (mounted) setState(() => _isLoading = false);
@@ -139,7 +139,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
     final localBannerUrl = _membership?['local_banner_url'] as String?;
     final localBio = _membership?['local_bio'] as String?;
     final joinedAt = _membership?['joined_at'] != null
-        ? DateTime.tryParse(_membership!['joined_at'] as String)
+        ? DateTime.tryParse(_membership!['joined_at'] as String?)
         : null;
     final coins = _user?.coins ?? 0;
     final isOnline = _user?.isOnline ?? false;
@@ -969,7 +969,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                           children: [
                             if (post['title'] != null)
                               Text(
-                                post['title'] as String,
+                                post['title'] as String?,
                                 style: TextStyle(
                                     color: context.textPrimary,
                                     fontWeight: FontWeight.w700,
@@ -978,7 +978,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                             if (post['content'] != null) ...[
                               SizedBox(height: r.s(4)),
                               Text(
-                                post['content'] as String,
+                                post['content'] as String?,
                                 maxLines: 3,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
@@ -1173,7 +1173,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           .limit(50);
       if (mounted) {
         setState(() {
-          _savedPosts = List<Map<String, dynamic>>.from(res as List);
+          _savedPosts = List<Map<String, dynamic>>.from(res as List?);
           _savedPostsLoaded = true;
         });
       }
@@ -1249,7 +1249,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                   ClipRRect(
                     borderRadius: BorderRadius.circular(r.s(8)),
                     child: CachedNetworkImage(
-                      imageUrl: post['cover_image_url'] as String,
+                      imageUrl: post['cover_image_url'] as String?,
                       width: r.s(60),
                       height: r.s(60),
                       fit: BoxFit.cover,
@@ -1357,7 +1357,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           .limit(30);
       if (!mounted) return;
       setState(() {
-        _wallComments = (wallRes as List)
+        _wallComments = (wallRes as List?)
             .map((e) => CommentModel.fromJson(e))
             .toList();
       });

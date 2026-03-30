@@ -48,7 +48,7 @@ class SystemAccountService {
 
       String chatId;
       if (chat != null) {
-        chatId = chat['id'] as String;
+        chatId = chat['id'] as String?;
       } else {
         // Criar chat de anúncios se não existir
         final newChat = await SupabaseService.table('chat_threads')
@@ -60,7 +60,7 @@ class SystemAccountService {
             })
             .select('id')
             .single();
-        chatId = newChat['id'] as String;
+        chatId = newChat['id'] as String?;
       }
 
       // Enviar mensagem de broadcast
@@ -81,7 +81,7 @@ class SystemAccountService {
           .select('user_id')
           .eq('community_id', communityId);
 
-      final notifications = (members as List)
+      final notifications = (members as List?)
           .map((m) => {
                 'user_id': m['user_id'],
                 'notification_type': 'broadcast',

@@ -369,7 +369,7 @@ class _NotificationTile extends StatelessWidget {
                     image: actor?['icon_url'] != null
                         ? DecorationImage(
                             image: CachedNetworkImageProvider(
-                                actor!['icon_url'] as String),
+                                actor!['icon_url'] as String?),
                             fit: BoxFit.cover,
                           )
                         : null,

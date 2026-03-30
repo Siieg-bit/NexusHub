@@ -42,7 +42,7 @@ final communityFeedProvider =
       .order('created_at', ascending: false)
       .limit(30);
 
-  return (response as List).map((e) {
+  return (response as List?)?.map((e) {
     final map = Map<String, dynamic>.from(e);
     if (map['profiles'] != null) {
       map['author'] = map['profiles'];
@@ -60,7 +60,7 @@ final communityMembersProvider =
       .eq('community_id', communityId)
       .order('role', ascending: false)
       .limit(50);
-  return List<Map<String, dynamic>>.from(response as List);
+  return List<Map<String, dynamic>>.from(response as List?);
 });
 
 final communityChatProvider =
@@ -71,7 +71,7 @@ final communityChatProvider =
       .eq('community_id', communityId)
       .order('last_message_at', ascending: false)
       .limit(20);
-  return List<Map<String, dynamic>>.from(response as List);
+  return List<Map<String, dynamic>>.from(response as List?);
 });
 
 final communityMembershipProvider =
@@ -690,7 +690,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                       ClipRRect(
                         borderRadius: BorderRadius.circular(r.s(8)),
                         child: CachedNetworkImage(
-                          imageUrl: welcomeBanner['image_url'] as String,
+                          imageUrl: welcomeBanner['image_url'] as String?,
                           width: r.s(40),
                           height: r.s(40),
                           fit: BoxFit.cover,
@@ -1260,7 +1260,7 @@ class _LiveChatroomsSectionState extends State<_LiveChatroomsSection> {
           .limit(6);
       if (mounted) {
         setState(() {
-          _chats = List<Map<String, dynamic>>.from(response as List);
+          _chats = List<Map<String, dynamic>>.from(response as List?);
         });
       }
     } catch (e) {
@@ -1315,7 +1315,7 @@ class _LiveChatroomsSectionState extends State<_LiveChatroomsSection> {
                                 top: Radius.circular(12)),
                             child: chat['icon_url'] != null
                                 ? CachedNetworkImage(
-                                    imageUrl: chat['icon_url'] as String,
+                                    imageUrl: chat['icon_url'] as String?,
                                     fit: BoxFit.cover,
                                   )
                                 : Container(
@@ -1654,7 +1654,7 @@ class _ChatTabState extends State<_ChatTab> {
             .select('thread_id, chat_threads!inner(*)')
             .eq('user_id', userId)
             .neq('chat_threads.type', 'public');
-        privateChats = (memberResponse as List)
+        privateChats = (memberResponse as List?)
             .where((e) =>
                 e['chat_threads'] != null &&
                 e['chat_threads']['community_id'] == widget.communityId)
@@ -1664,11 +1664,11 @@ class _ChatTabState extends State<_ChatTab> {
 
       // Combinar e deduplicar por id
       final allChats = <String, Map<String, dynamic>>{};
-      for (final c in List<Map<String, dynamic>>.from(publicResponse as List)) {
-        allChats[c['id'] as String] = c;
+      for (final c in List<Map<String, dynamic>>.from(publicResponse as List?)) {
+        allChats[c['id'] as String?] = c;
       }
       for (final c in privateChats) {
-        allChats[c['id'] as String] = c as Map<String, dynamic>;
+        allChats[c['id'] as String?] = c as Map<String, dynamic>;
       }
 
       _chats = allChats.values.toList()
@@ -1740,7 +1740,7 @@ class _ChatTabState extends State<_ChatTab> {
                     child: chat['icon_url'] != null
                         ? ClipOval(
                             child: CachedNetworkImage(
-                              imageUrl: chat['icon_url'] as String,
+                              imageUrl: chat['icon_url'] as String?,
                               fit: BoxFit.cover,
                             ),
                           )

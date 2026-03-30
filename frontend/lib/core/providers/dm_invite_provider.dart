@@ -29,7 +29,7 @@ final pendingDmInvitesProvider =
       .eq('status', 'invite_sent')
       .order('joined_at', ascending: false);
 
-  return (data as List)
+  return (data as List?)
       .map((e) => Map<String, dynamic>.from(e as Map))
       .toList();
 });

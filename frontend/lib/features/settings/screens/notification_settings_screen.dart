@@ -78,7 +78,7 @@ class _NotificationSettingsScreenState
           _onlyFriendsMessages = res['only_friends_messages'] as bool? ?? false;
           _pauseAllUntil = res['pause_all_until'] != null;
           if (res['pause_all_until'] != null) {
-            _pauseUntilDate = DateTime.tryParse(res['pause_all_until'] as String);
+            _pauseUntilDate = DateTime.tryParse(res['pause_all_until'] as String?);
           }
         });
       }

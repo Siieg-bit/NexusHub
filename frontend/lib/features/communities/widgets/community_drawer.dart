@@ -54,7 +54,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
           .limit(10);
       if (mounted) {
         setState(() {
-          _generalLinks = List<Map<String, dynamic>>.from(res as List);
+          _generalLinks = List<Map<String, dynamic>>.from(res as List?);
         });
       }
     } catch (_) {

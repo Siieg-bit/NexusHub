@@ -38,12 +38,12 @@ class _StoryCarouselState extends State<StoryCarousel> {
           .gte('expires_at', DateTime.now().toIso8601String())
           .order('created_at', ascending: false);
 
-      final stories = List<Map<String, dynamic>>.from(res as List);
+      final stories = List<Map<String, dynamic>>.from(res as List?);
 
       // Agrupar por autor
       final Map<String, Map<String, dynamic>> grouped = {};
       for (final story in stories) {
-        final authorId = story['author_id'] as String;
+        final authorId = story['author_id'] as String?;
         if (!grouped.containsKey(authorId)) {
           grouped[authorId] = {
             'author_id': authorId,
@@ -52,7 +52,7 @@ class _StoryCarouselState extends State<StoryCarousel> {
             'has_unviewed': false,
           };
         }
-        (grouped[authorId]!['stories'] as List).add(story);
+        (grouped[authorId]!['stories'] as List?).add(story);
       }
 
       // Verificar quais foram visualizadas pelo usuário atual
@@ -61,8 +61,8 @@ class _StoryCarouselState extends State<StoryCarousel> {
         final viewedRes = await SupabaseService.table('story_views')
             .select('story_id')
             .eq('viewer_id', currentUserId);
-        final viewedIds = (viewedRes as List)
-            .map((v) => v['story_id'] as String)
+        final viewedIds = (viewedRes as List?)
+            .map((v) => v['story_id'] as String?)
             .toSet();
 
         for (final group in grouped.values) {

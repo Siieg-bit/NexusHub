@@ -51,7 +51,7 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
           .neq('community_id', widget.currentCommunityId);
 
       final list = <Map<String, dynamic>>[];
-      for (final item in (result as List)) {
+      for (final item in (result as List?)) {
         final community = item['communities'] as Map<String, dynamic>?;
         if (community != null) {
           list.add(Map<String, dynamic>.from(community));
@@ -144,7 +144,7 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
               image: community['icon_url'] != null
                   ? DecorationImage(
                       image: CachedNetworkImageProvider(
-                          community['icon_url'] as String),
+                          community['icon_url'] as String?),
                       fit: BoxFit.cover,
                     )
                   : null,
@@ -316,7 +316,7 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
                                         ? DecorationImage(
                                             image:
                                                 CachedNetworkImageProvider(
-                                                    c['icon_url'] as String),
+                                                    c['icon_url'] as String?),
                                             fit: BoxFit.cover,
                                           )
                                         : null,

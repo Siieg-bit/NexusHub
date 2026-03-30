@@ -56,7 +56,7 @@ final userProfileProvider =
       final followersRes = await SupabaseService.table('follows')
           .select('id')
           .eq('following_id', userId);
-      map['followers_count'] = (followersRes as List).length;
+      map['followers_count'] = (followersRes as List?)?.length;
     } catch (_) {
       map['followers_count'] = 0;
     }
@@ -65,7 +65,7 @@ final userProfileProvider =
       final followingRes = await SupabaseService.table('follows')
           .select('id')
           .eq('follower_id', userId);
-      map['following_count'] = (followingRes as List).length;
+      map['following_count'] = (followingRes as List?)?.length;
     } catch (_) {
       map['following_count'] = 0;
     }
@@ -76,7 +76,7 @@ final userProfileProvider =
           .select('id')
           .eq('author_id', userId)
           .eq('status', 'ok');
-      map['posts_count'] = (postsRes as List).length;
+      map['posts_count'] = (postsRes as List?)?.length;
     } catch (_) {
       map['posts_count'] = 0;
     }
@@ -89,7 +89,7 @@ final userProfileProvider =
             .select('id')
             .eq('follower_id', viewerId)
             .eq('following_id', userId);
-        map['is_following'] = (followCheck as List).isNotEmpty;
+        map['is_following'] = (followCheck as List?).isNotEmpty;
       } catch (_) {
         map['is_following'] = false;
       }
@@ -111,7 +111,7 @@ final userPostsProvider =
       .order('created_at', ascending: false)
       .limit(20);
 
-  return (response as List).map((e) {
+  return (response as List?)?.map((e) {
     final map = Map<String, dynamic>.from(e);
     if (map['profiles'] != null) map['author'] = map['profiles'];
     return PostModel.fromJson(map);
@@ -127,7 +127,7 @@ final userLinkedCommunitiesProvider =
       .eq('is_banned', false)
       .order('joined_at', ascending: false);
 
-  return (response as List)
+  return (response as List?)
       .where((e) => e['communities'] != null)
       .map((e) =>
           CommunityModel.fromJson(e['communities'] as Map<String, dynamic>))
@@ -146,7 +146,7 @@ final userWallProvider =
         .eq('status', 'ok')
         .order('created_at', ascending: false)
         .limit(50);
-    return (res as List).map((e) {
+    return (res as List?)?.map((e) {
       final map = Map<String, dynamic>.from(e);
       // Normalizar: mover profiles para campo 'author' para compatibilidade
       if (map['profiles'] != null) {
@@ -1217,7 +1217,7 @@ class _WallTab extends ConsumerWidget {
                                 backgroundImage:
                                     profile['icon_url'] != null
                                         ? CachedNetworkImageProvider(
-                                            profile['icon_url'] as String)
+                                            profile['icon_url'] as String?)
                                         : null,
                                 child: profile['icon_url'] == null
                                     ? Text(
@@ -1259,7 +1259,7 @@ class _WallTab extends ConsumerWidget {
                             if (canDelete)
                               GestureDetector(
                                 onTap: () => _deleteMessage(
-                                    ref, msg['id'] as String),
+                                    ref, msg['id'] as String?),
                                 child: Icon(Icons.close_rounded,
                                     color: Colors.grey[600], size: r.s(16)),
                               ),
@@ -1358,7 +1358,7 @@ class _PinnedWikisSectionState extends State<_PinnedWikisSection> {
           .not('wiki_id', 'is', null)
           .order('created_at', ascending: false)
           .limit(10);
-      final list = (res as List).where((e) => e['wiki_entries'] != null).toList();
+      final list = (res as List?)?.where((e) => e['wiki_entries'] != null).toList();
       if (mounted) {
         setState(() {
           _pinnedWikis = List<Map<String, dynamic>>.from(list);
@@ -1408,7 +1408,7 @@ class _PinnedWikisSectionState extends State<_PinnedWikisSection> {
                 final title = wiki['title'] as String? ?? 'Wiki';
                 final coverUrl = wiki['cover_image_url'] as String?;
                 final category = wiki['category'] as String?;
-                final wikiId = wiki['id'] as String;
+                final wikiId = wiki['id'] as String?;
 
                 return GestureDetector(
                   onTap: () => context.push('/wiki/$wikiId'),

@@ -39,7 +39,7 @@ class _WikiListScreenState extends State<WikiListScreen> {
           .eq('community_id', widget.communityId)
           .eq('status', 'approved')
           .order('created_at', ascending: false);
-      _entries = List<Map<String, dynamic>>.from(res as List);
+      _entries = List<Map<String, dynamic>>.from(res as List?);
 
       final cats = <String>{};
       for (final e in _entries) {
@@ -455,7 +455,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
             .eq('wiki_entry_id', widget.wikiId)
             .order('created_at', ascending: false)
             .limit(20);
-        _whatILikeList = List<Map<String, dynamic>>.from(likesRes as List);
+        _whatILikeList = List<Map<String, dynamic>>.from(likesRes as List?);
       } catch (e) {
         debugPrint('[wiki_screen] Erro: $e');
       }

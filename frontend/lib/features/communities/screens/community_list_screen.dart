@@ -24,7 +24,7 @@ final userCommunitiesProvider =
       .eq('is_banned', false)
       .order('joined_at', ascending: false);
 
-  return (response as List)
+  return (response as List?)
       .where((e) => e['communities'] != null)
       .map((e) =>
           CommunityModel.fromJson(e['communities'] as Map<String, dynamic>))
@@ -44,8 +44,8 @@ final checkInStatusProvider =
       .eq('is_banned', false);
 
   final Map<String, Map<String, dynamic>> result = {};
-  for (final row in (response as List)) {
-    final communityId = row['community_id'] as String;
+  for (final row in (response as List?)) {
+    final communityId = row['community_id'] as String?;
     final lastCheckin = row['last_checkin_at'] as String?;
     // Derivar has_checkin_today comparando last_checkin_at com data UTC atual.
     // O campo has_checkin_today pode estar stale se não há cron de reset,
@@ -76,7 +76,7 @@ final suggestedCommunitiesProvider =
       .order('members_count', ascending: false)
       .limit(50);
 
-  return (response as List)
+  return (response as List?)
       .map((e) => CommunityModel.fromJson(e as Map<String, dynamic>))
       .toList();
 });

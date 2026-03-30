@@ -55,7 +55,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           .select('*, profiles(*)')
           .order('created_at', ascending: false)
           .limit(20);
-      _recentActions = List<Map<String, dynamic>>.from(actions as List);
+      _recentActions = List<Map<String, dynamic>>.from(actions as List?);
 
       if (!mounted) return;
       if (mounted) setState(() => _isLoading = false);
@@ -216,7 +216,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                     SizedBox(height: r.s(4)),
                     if (action['reason'] != null)
                       Text(
-                        action['reason'] as String,
+                        action['reason'] as String?,
                         style: TextStyle(
                           color: Colors.grey[500],
                           fontSize: r.fs(13),

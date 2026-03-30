@@ -66,7 +66,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
           .order('joined_at', ascending: false);
       if (mounted) {
         setState(() {
-          _communities = (res as List)
+          _communities = (res as List?)
               .where((e) => e['communities'] != null)
               .map((e) => Map<String, dynamic>.from(e['communities']))
               .toList();
@@ -91,7 +91,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
           .limit(100);
       if (mounted) {
         setState(() {
-          _members = List<Map<String, dynamic>>.from(res as List);
+          _members = List<Map<String, dynamic>>.from(res as List?);
           _filteredMembers = _members;
           _isLoadingMembers = false;
         });
@@ -176,7 +176,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
         'members_count': _selectedMemberIds.length + 1,
       }).select().single();
 
-      final threadId = threadRes['id'] as String;
+      final threadId = threadRes['id'] as String?;
 
       // Adicionar o criador como membro (host)
       await SupabaseService.table('chat_members').insert({
@@ -406,7 +406,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
         ),
         SizedBox(height: r.s(16)),
         ..._communities.map((community) {
-          final id = community['id'] as String;
+          final id = community['id'] as String?;
           final name = community['name'] as String? ?? 'Comunidade';
           final iconUrl = community['icon_url'] as String?;
           final isSelected = _selectedCommunityId == id;

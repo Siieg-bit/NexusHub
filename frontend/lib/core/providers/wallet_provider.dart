@@ -55,7 +55,7 @@ class WalletNotifier extends AsyncNotifier<WalletState> {
 
     return WalletState(
       coins: (profileRes?['coins'] as int?) ?? 0,
-      transactions: List<Map<String, dynamic>>.from(txRes as List),
+      transactions: List<Map<String, dynamic>>.from(txRes as List?),
     );
   }
 

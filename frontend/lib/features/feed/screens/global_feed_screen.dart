@@ -21,7 +21,7 @@ final globalFeedProvider = FutureProvider<List<PostModel>>((ref) async {
       .order('created_at', ascending: false)
       .limit(30);
 
-  return (response as List).map((e) {
+  return (response as List?)?.map((e) {
     final map = Map<String, dynamic>.from(e);
     if (map['profiles'] != null) map['author'] = map['profiles'];
     return PostModel.fromJson(map);

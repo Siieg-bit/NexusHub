@@ -40,7 +40,7 @@ class _CommunityGeneralLinksScreenState
           .order('sort_order', ascending: true);
       if (mounted) {
         setState(() {
-          _links = List<Map<String, dynamic>>.from(res as List);
+          _links = List<Map<String, dynamic>>.from(res as List?);
           _isLoading = false;
         });
       }
@@ -180,7 +180,7 @@ class _CommunityGeneralLinksScreenState
       } else {
         await SupabaseService.table('community_general_links')
             .update(data)
-            .eq('id', existing['id'] as String);
+            .eq('id', existing['id'] as String?);
       }
       await _loadLinks();
       if (mounted) {
@@ -243,7 +243,7 @@ class _CommunityGeneralLinksScreenState
     try {
       await SupabaseService.table('community_general_links')
           .delete()
-          .eq('id', link['id'] as String);
+          .eq('id', link['id'] as String?);
       await _loadLinks();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -273,7 +273,7 @@ class _CommunityGeneralLinksScreenState
       for (int i = 0; i < _links.length; i++) {
         await SupabaseService.table('community_general_links')
             .update({'sort_order': i})
-            .eq('id', _links[i]['id'] as String);
+            .eq('id', _links[i]['id'] as String?);
       }
     } catch (e) {
       _showError('Erro ao reordenar. Tente novamente.');
@@ -391,7 +391,7 @@ class _CommunityGeneralLinksScreenState
                                   await SupabaseService.table(
                                           'community_general_links')
                                       .update({'is_active': !isActive})
-                                      .eq('id', link['id'] as String);
+                                      .eq('id', link['id'] as String?);
                                 } catch (e) {
                                   if (!mounted) return;
                                   setState(() {

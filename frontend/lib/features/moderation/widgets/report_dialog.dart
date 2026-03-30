@@ -195,7 +195,7 @@ class _ReportDialogState extends State<ReportDialog> {
 
           // Tipos de flag
           ...(_flagTypes.map((type) {
-            final id = type['id'] as String;
+            final id = type['id'] as String?;
             final isSelected = _selectedType == id;
             return GestureDetector(
               onTap: () => setState(() => _selectedType = id),
@@ -205,28 +205,28 @@ class _ReportDialogState extends State<ReportDialog> {
                     EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(12)),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? Color(type['color'] as int).withValues(alpha: 0.1)
+                      ? Color(type['color'] as int?).withValues(alpha: 0.1)
                       : context.cardBg,
                   borderRadius: BorderRadius.circular(r.s(12)),
                   border: isSelected
                       ? Border.all(
-                          color: Color(type['color'] as int)
+                          color: Color(type['color'] as int?)
                               .withValues(alpha: 0.5))
                       : null,
                 ),
                 child: Row(
                   children: [
                     Icon(type['icon'] as IconData,
-                        color: Color(type['color'] as int), size: r.s(20)),
+                        color: Color(type['color'] as int?), size: r.s(20)),
                     SizedBox(width: r.s(12)),
                     Text(
-                      type['label'] as String,
+                      type['label'] as String?,
                       style: TextStyle(fontSize: r.fs(14)),
                     ),
                     const Spacer(),
                     if (isSelected)
                       Icon(Icons.check_circle_rounded,
-                          color: Color(type['color'] as int), size: r.s(20)),
+                          color: Color(type['color'] as int?), size: r.s(20)),
                   ],
                 ),
               ),

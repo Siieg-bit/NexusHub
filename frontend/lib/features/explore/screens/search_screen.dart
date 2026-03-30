@@ -52,14 +52,14 @@ class _SearchScreenState extends State<SearchScreen>
           .select()
           .ilike('name', pattern)
           .limit(20);
-      _communities = List<Map<String, dynamic>>.from(commRes as List);
+      _communities = List<Map<String, dynamic>>.from(commRes as List?);
 
       // Buscar usuários
       final userRes = await SupabaseService.table('profiles')
           .select()
           .ilike('nickname', pattern)
           .limit(20);
-      _users = List<Map<String, dynamic>>.from(userRes as List);
+      _users = List<Map<String, dynamic>>.from(userRes as List?);
 
       // Buscar posts
       final postRes = await SupabaseService.table('posts')
@@ -67,7 +67,7 @@ class _SearchScreenState extends State<SearchScreen>
           .ilike('title', pattern)
           .order('created_at', ascending: false)
           .limit(20);
-      _posts = List<Map<String, dynamic>>.from(postRes as List);
+      _posts = List<Map<String, dynamic>>.from(postRes as List?);
 
       if (mounted) setState(() => _isSearching = false);
     } catch (e) {
@@ -203,7 +203,7 @@ class _SearchScreenState extends State<SearchScreen>
                 color: AppTheme.primaryColor.withValues(alpha: 0.1),
                 image: c['icon_url'] != null
                     ? DecorationImage(
-                        image: CachedNetworkImageProvider(c['icon_url'] as String),
+                        image: CachedNetworkImageProvider(c['icon_url'] as String?),
                         fit: BoxFit.cover,
                       )
                     : null,

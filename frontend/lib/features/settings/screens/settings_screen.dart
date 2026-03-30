@@ -319,7 +319,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 AppTheme.primaryColor.withValues(alpha: 0.2),
                             backgroundImage: _profile?['icon_url'] != null
                                 ? CachedNetworkImageProvider(
-                                    _profile!['icon_url'] as String)
+                                    _profile!['icon_url'] as String?)
                                 : null,
                             child: _profile?['icon_url'] == null
                                 ? Icon(Icons.person_rounded,

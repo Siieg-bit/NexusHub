@@ -20,7 +20,7 @@ final allCommunityMembersProvider =
           '*, profiles!community_members_user_id_fkey(id, nickname, icon_url, level, online_status)')
       .eq('community_id', communityId)
       .order('joined_at', ascending: false);
-  return List<Map<String, dynamic>>.from(response as List);
+  return List<Map<String, dynamic>>.from(response as List?);
 });
 
 // =============================================================================

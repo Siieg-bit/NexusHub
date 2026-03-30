@@ -35,7 +35,7 @@ class _LiveScreenState extends State<LiveScreen> {
           .order('created_at', ascending: false);
 
       final res = await query;
-      _activeSessions = List<Map<String, dynamic>>.from(res as List);
+      _activeSessions = List<Map<String, dynamic>>.from(res as List?);
       if (!mounted) return;
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
@@ -121,7 +121,7 @@ class _LiveScreenState extends State<LiveScreen> {
       if (mounted) {
         Navigator.of(context).push(MaterialPageRoute(
           builder: (_) => ScreeningRoomScreen(
-            threadId: thread['id'] as String,
+            threadId: thread['id'] as String?,
           ),
         ));
       }
@@ -287,8 +287,8 @@ class _LiveScreenState extends State<LiveScreen> {
         if (type == 'screening_room') {
           Navigator.of(context).push(MaterialPageRoute(
             builder: (_) => ScreeningRoomScreen(
-              threadId: session['thread_id'] as String,
-              callSessionId: session['id'] as String,
+              threadId: session['thread_id'] as String?,
+              callSessionId: session['id'] as String?,
             ),
           ));
         }

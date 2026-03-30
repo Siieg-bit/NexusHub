@@ -99,7 +99,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
     }
 
     // Registrar visualização
-    _registerView(story['id'] as String);
+    _registerView(story['id'] as String?);
   }
 
   void _onProgressComplete(AnimationStatus status) {

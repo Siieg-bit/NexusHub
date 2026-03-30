@@ -59,7 +59,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
           .maybeSingle();
 
       if (folderRes != null) {
-        _folderId = folderRes['id'] as String;
+        _folderId = folderRes['id'] as String?;
       } else {
         // Criar folder se não existe
         final newFolder = await SupabaseService.table('shared_folders')
@@ -69,7 +69,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
             })
             .select()
             .single();
-        _folderId = newFolder['id'] as String;
+        _folderId = newFolder['id'] as String?;
       }
 
       await _loadFiles();
@@ -86,7 +86,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
           .eq('folder_id', _folderId!)
           .eq('status', 'ok')
           .order('created_at', ascending: false);
-      _allFiles = List<Map<String, dynamic>>.from(res as List);
+      _allFiles = List<Map<String, dynamic>>.from(res as List?);
       if (!mounted) return;
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
@@ -473,7 +473,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
                 (ctx, i) => _ImageTile(
                   file: images[i],
                   onDelete: () =>
-                      _deleteFile(images[i]['id'] as String),
+                      _deleteFile(images[i]['id'] as String?),
                 ),
                 childCount: images.length,
               ),
@@ -489,7 +489,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
                 formatSize: _formatFileSize,
                 timeAgo: _timeAgo,
                 onDelete: () =>
-                    _deleteFile(others[i]['id'] as String),
+                    _deleteFile(others[i]['id'] as String?),
               ),
               childCount: others.length,
             ),
@@ -515,7 +515,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
           file: files[i],
           formatSize: _formatFileSize,
           timeAgo: _timeAgo,
-          onDelete: () => _deleteFile(files[i]['id'] as String),
+          onDelete: () => _deleteFile(files[i]['id'] as String?),
         ),
       ),
     );

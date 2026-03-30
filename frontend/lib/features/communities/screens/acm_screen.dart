@@ -90,13 +90,13 @@ class _AcmScreenState extends State<AcmScreen>
           .select('id')
           .eq('community_id', widget.communityId)
           .gte('joined_at', sevenDaysAgo);
-      _newMembers7d = (newMembersRes as List).length;
+      _newMembers7d = (newMembersRes as List?)?.length;
 
       final flagsRes = await SupabaseService.table('flags')
           .select('id')
           .eq('community_id', widget.communityId)
           .eq('status', 'pending');
-      _pendingFlags = (flagsRes as List).length;
+      _pendingFlags = (flagsRes as List?)?.length;
 
       final thirtyDaysAgo = DateTime.now()
           .subtract(const Duration(days: 30))
@@ -106,18 +106,18 @@ class _AcmScreenState extends State<AcmScreen>
           .select('id')
           .eq('community_id', widget.communityId)
           .gte('created_at', thirtyDaysAgo);
-      _modActions30d = (modRes as List).length;
+      _modActions30d = (modRes as List?)?.length;
 
       final postsRes = await SupabaseService.table('posts')
           .select('id')
           .eq('community_id', widget.communityId)
           .eq('status', 'ok');
-      _totalPosts = (postsRes as List).length;
+      _totalPosts = (postsRes as List?)?.length;
 
       final chatsRes = await SupabaseService.table('chat_threads')
           .select('id')
           .eq('community_id', widget.communityId);
-      _totalChats = (chatsRes as List).length;
+      _totalChats = (chatsRes as List?)?.length;
     } catch (e) {
       debugPrint('[acm_screen] Erro: $e');
     }

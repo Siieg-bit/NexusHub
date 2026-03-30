@@ -227,7 +227,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         // Reputação é best-effort, não bloqueia criação do post
       }
 
-      final postId = result['id'] as String;
+      final postId = result['id'] as String?;
 
       // Crosspost: criar post-espelho na comunidade destino
       if (_selectedType == 'crosspost' && _crosspostCommunity != null) {
@@ -291,7 +291,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               .select()
               .single();
 
-          final qId = qResult['id'] as String;
+          final qId = qResult['id'] as String?;
           final opts = q.options
               .asMap()
               .entries

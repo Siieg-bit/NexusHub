@@ -127,7 +127,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
           _identities.firstWhere((i) => i['provider'] == provider);
       await SupabaseService.client.auth.unlinkIdentity(
         UserIdentity(
-          id: identity['id'] as String,
+          id: identity['id'] as String?,
           userId: SupabaseService.currentUserId ?? '',
           identityData: const {},
           identityId: identity['identity_id'] as String? ?? '',

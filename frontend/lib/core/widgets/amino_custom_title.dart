@@ -104,7 +104,7 @@ class AminoCustomTitleList extends StatelessWidget {
           final titleText =
               t is Map ? (t['title'] ?? '') : t.toString();
           final titleColor = t is Map && t['color'] != null
-              ? _parseColor(t['color'] as String)
+              ? _parseColor(t['color'] as String?)
               : AppTheme.primaryColor.withValues(alpha: 0.3);
           return AminoCustomTitle(
             title: titleText,
