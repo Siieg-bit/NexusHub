@@ -15,6 +15,7 @@ import 'core/services/iap_service.dart';
 import 'core/services/ad_service.dart';
 import 'core/services/cache_service.dart';
 import 'core/services/analytics_service.dart';
+import 'core/services/error_handler.dart';
 import 'core/widgets/error_boundary.dart';
 import 'firebase_options.dart';
 
@@ -132,6 +133,9 @@ class NexusHubApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'NexusHub',
       debugShowCheckedModeBanner: false,
+      // Conectar o scaffoldMessengerKey do ErrorHandler para que
+      // SnackBars globais (ErrorHandler.showSuccess/showError/etc) funcionem.
+      scaffoldMessengerKey: ErrorHandler.scaffoldKey,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
