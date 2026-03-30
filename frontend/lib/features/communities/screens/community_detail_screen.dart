@@ -11,7 +11,7 @@ import '../../../core/utils/amino_animations.dart';
 import '../widgets/community_drawer.dart';
 import '../../../core/widgets/amino_drawer.dart';
 import '../../../core/widgets/amino_bottom_nav.dart';
-import 'community_list_screen.dart';
+import '../providers/community_shared_providers.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/providers/presence_provider.dart';
 import '../../../core/services/presence_service.dart';
@@ -235,7 +235,9 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                   showOnline: showOnline,
                   showCreate: showCreate,
                   onlineCount: ref.watch(onlineCountProvider(widget.communityId)),
-                  avatarUrl: ref.watch(currentUserProfileProvider).valueOrNull?.iconUrl,
+                  avatarUrl: ref.watch(
+                    currentUserProfileProvider.select((a) => a.valueOrNull?.iconUrl),
+                  ),
                   onMenuTap: () => AminoDrawerController.of(context)?.toggle(),
                   onCreateTap: () => context.push(
                       '/community/${widget.communityId}/create-post'),

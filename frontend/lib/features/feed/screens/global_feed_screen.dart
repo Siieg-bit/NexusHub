@@ -269,7 +269,9 @@ class GlobalFeedScreen extends ConsumerWidget {
 
               return SliverList(
                 delegate: SliverChildBuilderDelegate(
-                  (context, index) => PostCard(post: posts[index]),
+                  (context, index) => RepaintBoundary(
+                    child: PostCard(post: posts[index]),
+                  ),
                   childCount: posts.length,
                 ),
               );

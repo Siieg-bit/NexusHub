@@ -1403,14 +1403,16 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                           final showAvatar = index == _messages.length - 1 ||
                               _messages[index + 1].authorId != message.authorId;
 
-                          return GestureDetector(
-                            onLongPress: () => _showMessageActions(message),
-                            child: MessageBubble(
-                              message: message,
-                              isMe: isMe,
-                              showAvatar: showAvatar,
-                              onReactionTap: (emoji) =>
-                                  _addReaction(message.id, emoji),
+                          return RepaintBoundary(
+                            child: GestureDetector(
+                              onLongPress: () => _showMessageActions(message),
+                              child: MessageBubble(
+                                message: message,
+                                isMe: isMe,
+                                showAvatar: showAvatar,
+                                onReactionTap: (emoji) =>
+                                    _addReaction(message.id, emoji),
+                              ),
                             ),
                           );
                         },

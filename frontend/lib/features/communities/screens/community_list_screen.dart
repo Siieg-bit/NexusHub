@@ -11,75 +11,7 @@ import '../../../core/widgets/amino_top_bar.dart';
 import '../../../core/widgets/amino_particles_bg.dart';
 import '../../../core/providers/notification_provider.dart';
 import '../../../core/utils/responsive.dart';
-
-/// Provider para comunidades do usuário.
-final userCommunitiesProvider =
-    FutureProvider<List<CommunityModel>>((ref) async {
-  final userId = SupabaseService.currentUserId;
-  if (userId == null) return [];
-
-  final response = await SupabaseService.table('community_members')
-      .select('community_id, communities(*)')
-      .eq('user_id', userId)
-      .eq('is_banned', false)
-      .order('joined_at', ascending: false);
-
-  return (response as List? ?? [])
-      .where((e) => e['communities'] != null)
-      .map((e) =>
-          CommunityModel.fromJson(e['communities'] as Map<String, dynamic>))
-      .toList();
-});
-
-/// Provider para status de check-in de todas as comunidades do usuário.
-/// Retorna Map<communityId, {has_checkin_today, consecutive_checkin_days}>.
-final checkInStatusProvider =
-    FutureProvider<Map<String, Map<String, dynamic>>>((ref) async {
-  final userId = SupabaseService.currentUserId;
-  if (userId == null) return {};
-
-  final response = await SupabaseService.table('community_members')
-      .select('community_id, has_checkin_today, consecutive_checkin_days, last_checkin_at')
-      .eq('user_id', userId)
-      .eq('is_banned', false);
-
-  final Map<String, Map<String, dynamic>> result = {};
-  for (final row in ((response as List? ?? []))) {
-    final communityId = (row['community_id'] as String?) ?? '';
-    final lastCheckin = row['last_checkin_at'] as String?;
-    // Derivar has_checkin_today comparando last_checkin_at com data UTC atual.
-    // O campo has_checkin_today pode estar stale se não há cron de reset,
-    // então usamos last_checkin_at como fonte de verdade.
-    bool checkedInToday = false;
-    if (lastCheckin != null) {
-      final lastDate = DateTime.parse(lastCheckin).toUtc();
-      final nowUtc = DateTime.now().toUtc();
-      checkedInToday = lastDate.year == nowUtc.year &&
-          lastDate.month == nowUtc.month &&
-          lastDate.day == nowUtc.day;
-    }
-    result[communityId] = {
-      'has_checkin_today': checkedInToday,
-      'consecutive_checkin_days': row['consecutive_checkin_days'] as int? ?? 0,
-    };
-  }
-  return result;
-});
-
-/// Provider para comunidades sugeridas.
-final suggestedCommunitiesProvider =
-    FutureProvider<List<CommunityModel>>((ref) async {
-  final response = await SupabaseService.table('communities')
-      .select()
-      .eq('is_active', true)
-      .eq('is_searchable', true)
-      .order('members_count', ascending: false)
-      .limit(50);
-
-  return (response as List? ?? [])
-      .map((e) => CommunityModel.fromJson(e as Map<String, dynamic>))
-      .toList();
-});
+import '../providers/community_shared_providers.dart';
 
 class CommunityListScreen extends ConsumerStatefulWidget {
   final bool isExplore;
@@ -233,7 +165,6 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                           padding: EdgeInsets.only(right: r.s(8)),
                           child: _AminoCommunityCard(
                             community: community,
-                            ref: ref,
                             onTap: () => context.push('/community/${community.id}'),
                             onLongPress: () {
                               HapticFeedback.mediumImpact();
@@ -311,7 +242,6 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
       isScrollControlled: true,
       builder: (_) => _CommunityPreviewSheet(
         community: community,
-        ref: ref,
       ),
     );
   }
@@ -423,9 +353,8 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
 // - Ícone flutuante no canto superior esquerdo, parcialmente fora do card
 //   com borda colorida (themeColor)
 // ============================================================================
-class _AminoCommunityCard extends StatefulWidget {
+class _AminoCommunityCard extends ConsumerStatefulWidget {
   final CommunityModel community;
-  final WidgetRef ref;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
 
@@ -435,16 +364,16 @@ class _AminoCommunityCard extends StatefulWidget {
 
   const _AminoCommunityCard({
     required this.community,
-    required this.ref,
     required this.onTap,
     required this.onLongPress,
   });
 
   @override
-  State<_AminoCommunityCard> createState() => _AminoCommunityCardState();
+  ConsumerState<_AminoCommunityCard> createState() =>
+      _AminoCommunityCardState();
 }
 
-class _AminoCommunityCardState extends State<_AminoCommunityCard> {
+class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
   bool _isCheckingIn = false;
 
   Color _parseColor(String hex) {
@@ -466,7 +395,7 @@ class _AminoCommunityCardState extends State<_AminoCommunityCard> {
       if (!mounted) return;
 
       // Invalidar o provider para atualizar o status em todos os cards
-      widget.ref.invalidate(checkInStatusProvider);
+      ref.invalidate(checkInStatusProvider);
 
       if (mounted) {
         final data = result as Map<String, dynamic>?;
@@ -514,7 +443,7 @@ class _AminoCommunityCardState extends State<_AminoCommunityCard> {
   Widget build(BuildContext context) {
     final r = context.r;
     final color = _parseColor(widget.community.themeColor);
-    final checkInStatus = widget.ref.watch(checkInStatusProvider);
+    final checkInStatus = ref.watch(checkInStatusProvider);
     final statusMap = checkInStatus.valueOrNull ?? {};
     final myStatus = statusMap[widget.community.id];
     final hasCheckedIn = myStatus?['has_checkin_today'] as bool? ?? false;
@@ -807,20 +736,20 @@ class _JoinCommunityCard extends StatelessWidget {
 // ============================================================================
 // PREVIEW DA COMUNIDADE — Bottom sheet (long press)
 // ============================================================================
-class _CommunityPreviewSheet extends StatefulWidget {
+class _CommunityPreviewSheet extends ConsumerStatefulWidget {
   final CommunityModel community;
-  final WidgetRef ref;
 
   const _CommunityPreviewSheet({
     required this.community,
-    required this.ref,
   });
 
   @override
-  State<_CommunityPreviewSheet> createState() => _CommunityPreviewSheetState();
+  ConsumerState<_CommunityPreviewSheet> createState() =>
+      _CommunityPreviewSheetState();
 }
 
-class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
+class _CommunityPreviewSheetState
+    extends ConsumerState<_CommunityPreviewSheet> {
   bool _isCheckingIn = false;
 
   Color _parseColor(String hex) {
@@ -847,7 +776,7 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
       });
       if (!mounted) return;
 
-      widget.ref.invalidate(checkInStatusProvider);
+      ref.invalidate(checkInStatusProvider);
 
       if (mounted) {
         final data = result as Map<String, dynamic>?;
@@ -895,7 +824,7 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
   Widget build(BuildContext context) {
     final r = context.r;
     final color = _parseColor(widget.community.themeColor);
-    final checkInStatus = widget.ref.watch(checkInStatusProvider);
+    final checkInStatus = ref.watch(checkInStatusProvider);
     final statusMap = checkInStatus.valueOrNull ?? {};
     final myStatus = statusMap[widget.community.id];
     final hasCheckedIn = myStatus?['has_checkin_today'] as bool? ?? false;

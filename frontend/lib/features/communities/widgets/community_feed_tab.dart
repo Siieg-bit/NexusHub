@@ -141,11 +141,13 @@ class CommunityFeedTab extends ConsumerWidget {
               );
             }
             final postIndex = index - 1;
-            return AminoAnimations.staggerItem(
-              index: postIndex,
-              child: PostCard(
-                post: posts[postIndex],
-                showCommunity: false,
+            return RepaintBoundary(
+              child: AminoAnimations.staggerItem(
+                index: postIndex,
+                child: PostCard(
+                  post: posts[postIndex],
+                  showCommunity: false,
+                ),
               ),
             );
           },

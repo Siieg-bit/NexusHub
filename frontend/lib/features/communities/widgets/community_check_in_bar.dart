@@ -4,8 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/level_up_dialog.dart';
-import '../../../core/utils/responsive.dart'; // checkInStatusProvider
-import '../../communities/screens/community_list_screen.dart'; // ReputationRewards, checkInStatusProvider
+import '../../../core/utils/responsive.dart';
+import '../../../core/utils/helpers.dart'; // ReputationRewards
+import '../providers/community_shared_providers.dart'; // checkInStatusProvider
 
 // =============================================================================
 // CHECK-IN BAR — Estilo Amino (streak progress + botão verde)

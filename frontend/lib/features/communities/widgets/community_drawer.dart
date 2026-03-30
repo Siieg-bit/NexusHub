@@ -7,7 +7,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/models/community_model.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/services/supabase_service.dart';
-import '../screens/community_list_screen.dart';
+import '../providers/community_shared_providers.dart';
 import '../../../core/utils/responsive.dart'; // para checkInStatusProvider
 
 /// Drawer estilo Amino Apps — réplica pixel-perfect.
