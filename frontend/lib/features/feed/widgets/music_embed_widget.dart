@@ -77,9 +77,13 @@ class MusicEmbedWidget extends StatelessWidget {
   }
 
   Future<void> _openUrl() async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (e) {
+      debugPrint('[music_embed] URL inválida: $url — $e');
     }
   }
 

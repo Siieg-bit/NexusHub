@@ -49,7 +49,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
   }
 
   Future<void> _saveProfile() async {
-    if (!_formKey.currentState!.validate()) return;
+    if ((_formKey.currentState?.validate() != true)) return;
 
     setState(() => _isLoading = true);
     try {

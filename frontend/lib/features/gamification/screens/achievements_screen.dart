@@ -290,7 +290,7 @@ class _AchievementTile extends StatelessWidget {
         rarityColor = const Color(0xFF2196F3);
         break;
       default:
-        rarityColor = Colors.grey[500]!;
+        rarityColor = (Colors.grey[500] ?? Colors.grey);
     }
 
     return Container(

@@ -35,6 +35,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
   late AnimationController _progressController;
   Timer? _autoAdvanceTimer;
   VideoPlayerController? _videoController;
+  VoidCallback? _videoEndListener;
 
   static const _reactions = ['❤️', '🔥', '😂', '😮', '😢', '👏'];
 
@@ -52,6 +53,9 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
   void dispose() {
     _progressController.dispose();
     _autoAdvanceTimer?.cancel();
+    if (_videoEndListener != null) {
+      _videoController?.removeListener(_videoEndListener!);
+    }
     _videoController?.dispose();
     super.dispose();
   }
@@ -65,12 +69,16 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
       _videoController!.play();
       _videoController!.setLooping(false);
       // Avança para o próximo story quando o vídeo terminar
-      _videoController!.addListener(() {
-        if (_videoController!.value.position >= _videoController!.value.duration &&
-            _videoController!.value.duration > Duration.zero) {
+      _videoEndListener = () {
+        if (!mounted) return;
+        final vc = _videoController;
+        if (vc != null &&
+            vc.value.position >= vc.value.duration &&
+            vc.value.duration > Duration.zero) {
           _advance();
         }
-      });
+      };
+      _videoController!.addListener(_videoEndListener!);
     }
   }
 

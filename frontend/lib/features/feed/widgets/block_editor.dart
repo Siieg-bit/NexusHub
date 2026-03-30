@@ -360,7 +360,7 @@ class _BlockWidget extends StatelessWidget {
                   children: [
                     _MiniAction(
                       icon: Icons.drag_indicator_rounded,
-                      color: Colors.grey[600]!,
+                      color: (Colors.grey[600] ?? Colors.grey),
                       onTap: () {},
                     ),
                     _MiniAction(

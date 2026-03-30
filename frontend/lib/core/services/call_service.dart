@@ -385,16 +385,18 @@ class CallService {
       await _engine?.stopPreview();
 
       // Atualizar status no Supabase
-      await SupabaseService.table('call_participants')
-          .update({
-            'status': 'disconnected',
-            'left_at': DateTime.now().toIso8601String(),
-          })
-          .eq('call_session_id', activeCall!.id)
-          .eq('user_id', userId!);
+      if (userId != null && activeCall != null) {
+        await SupabaseService.table('call_participants')
+            .update({
+              'status': 'disconnected',
+              'left_at': DateTime.now().toIso8601String(),
+            })
+            .eq('call_session_id', activeCall!.id)
+            .eq('user_id', userId);
+      }
 
       // Se o criador saiu, encerrar a chamada
-      if (activeCall!.creatorId == userId) {
+      if (activeCall != null && activeCall!.creatorId == userId) {
         await endCall();
       }
     } catch (e) {

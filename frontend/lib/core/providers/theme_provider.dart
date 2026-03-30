@@ -21,7 +21,7 @@ class ThemeNotifier extends StateNotifier<ThemeMode> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final themeIndex = prefs.getInt(_kThemeKey);
-      if (themeIndex != null && themeIndex < ThemeMode.values.length) {
+      if (themeIndex != null && themeIndex < ThemeMode.values.length && mounted) {
         state = ThemeMode.values[themeIndex];
       }
     } catch (_) {

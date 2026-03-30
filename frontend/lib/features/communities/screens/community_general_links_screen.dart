@@ -162,6 +162,7 @@ class _CommunityGeneralLinksScreenState
         ],
       ),
     );
+    if (!mounted) return;
 
     if (result != true) return;
 

@@ -423,8 +423,25 @@ class CacheService {
     }
   }
 
+  /// Nomes válidos de boxes gerenciados.
+  static const _validBoxNames = {
+    _postsBox,
+    _communitiesBox,
+    _messagesBox,
+    _profilesBox,
+    _feedBox,
+    _metadataBox,
+    _notificationsBox,
+    _wikiBox,
+  };
+
   /// Limpa o cache de um box específico.
+  /// Aceita apenas nomes de boxes gerenciados pelo CacheService.
   static Future<void> clearBox(String boxName) async {
+    if (!_validBoxNames.contains(boxName)) {
+      debugPrint('CacheService: Box "$boxName" não é gerenciado. Ignorando.');
+      return;
+    }
     try {
       await Hive.box<String>(boxName).clear();
     } catch (e) {

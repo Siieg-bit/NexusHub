@@ -165,7 +165,7 @@ class _AppPermissionsScreenState extends State<AppPermissionsScreen>
                   width: r.s(40),
                   height: r.s(40),
                   decoration: BoxDecoration(
-                    color: (isGranted ? AppTheme.primaryColor : Colors.grey[700]!)
+                    color: (isGranted ? AppTheme.primaryColor : (Colors.grey[700] ?? Colors.grey))
                         .withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(r.s(10)),
                   ),

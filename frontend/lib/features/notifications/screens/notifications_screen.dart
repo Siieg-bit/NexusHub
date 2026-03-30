@@ -172,6 +172,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             color: AppTheme.primaryColor,
             onRefresh: () async {
               await ref.read(notificationProvider.notifier).refresh();
+              if (!mounted) return;
             },
             child: ListView.separated(
               controller: _scrollController,
@@ -318,7 +319,7 @@ class _NotificationTile extends StatelessWidget {
       case 'ban':
         return AppTheme.errorColor;
       default:
-        return Colors.grey[500]!;
+        return (Colors.grey[500] ?? Colors.grey);
     }
   }
 

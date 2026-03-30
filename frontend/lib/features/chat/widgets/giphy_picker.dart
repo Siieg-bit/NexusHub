@@ -190,7 +190,7 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
                         icon: Icon(Icons.clear_rounded, size: r.s(18)),
                         onPressed: () {
                           _searchController.clear();
-                          _query = '';
+                          setState(() => _query = '');
                           _loadTrending();
                         },
                       )

@@ -46,7 +46,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
   }
 
   Future<void> _createCommunity() async {
-    if (!_formKey.currentState!.validate()) return;
+    if ((_formKey.currentState?.validate() != true)) return;
 
     setState(() => _isLoading = true);
 

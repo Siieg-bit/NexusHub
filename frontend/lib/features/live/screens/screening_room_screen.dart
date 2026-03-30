@@ -607,7 +607,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
               decoration: BoxDecoration(
                 color: _isPlaying
                     ? AppTheme.successColor.withValues(alpha: 0.8)
-                    : Colors.grey[800]!.withValues(alpha: 0.8),
+                    : (Colors.grey[800] ?? Colors.grey).withValues(alpha: 0.8),
                 borderRadius: BorderRadius.circular(r.s(8)),
               ),
               child: Row(

@@ -127,6 +127,7 @@ class _FollowersScreenState extends State<FollowersScreen>
       color: AppTheme.primaryColor,
       onRefresh: () async {
         await _loadData();
+        if (!mounted) return;
       },
       child: ListView.separated(
         physics: const AlwaysScrollableScrollPhysics(),

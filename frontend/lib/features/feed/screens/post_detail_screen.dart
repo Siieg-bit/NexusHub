@@ -412,6 +412,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   ref.invalidate(postDetailProvider);
                   ref.invalidate(postCommentsProvider);
                   await Future.delayed(const Duration(milliseconds: 300));
+                  if (!mounted) return;
                 },
                 child: SingleChildScrollView(
                 child: Column(

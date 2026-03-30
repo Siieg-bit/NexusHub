@@ -195,7 +195,7 @@ class _FlagCard extends StatelessWidget {
       case 'off_topic':
         return AppTheme.accentColor;
       default:
-        return Colors.grey[500]!;
+        return (Colors.grey[500] ?? Colors.grey);
     }
   }
 

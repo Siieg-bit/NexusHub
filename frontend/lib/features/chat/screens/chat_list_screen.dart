@@ -353,6 +353,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
         ref.invalidate(chatCommunitiesProvider);
         ref.invalidate(pendingDmInvitesProvider);
         await Future.delayed(const Duration(milliseconds: 300));
+        if (!mounted) return;
       },
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),

@@ -466,7 +466,7 @@ class _NotificationSettingsScreenState
                   title: 'Sons',
                   subtitle: 'Sons de notificação dentro do app',
                   value: _inAppSounds,
-                  color: Colors.grey[500]!,
+                  color: (Colors.grey[500] ?? Colors.grey),
                   onChanged: (v) => setState(() => _inAppSounds = v),
                 ),
                 _NotifToggle(
@@ -474,7 +474,7 @@ class _NotificationSettingsScreenState
                   title: 'Vibração',
                   subtitle: 'Vibrar ao receber notificações',
                   value: _inAppVibration,
-                  color: Colors.grey[500]!,
+                  color: (Colors.grey[500] ?? Colors.grey),
                   onChanged: (v) => setState(() => _inAppVibration = v),
                 ),
                 SizedBox(height: r.s(32)),

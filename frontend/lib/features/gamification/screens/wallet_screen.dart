@@ -443,7 +443,7 @@ class _WalletScreenState extends State<WalletScreen> {
                 prefixIcon: const Icon(Icons.person_rounded,
                     color: Color(0xFF00AAFF)),
                 enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey[300]!),
+                  borderSide: BorderSide(color: (Colors.grey[300] ?? Colors.grey)),
                 ),
                 focusedBorder: const UnderlineInputBorder(
                   borderSide: BorderSide(color: Color(0xFF00AAFF)),
@@ -461,7 +461,7 @@ class _WalletScreenState extends State<WalletScreen> {
                 prefixIcon: const Icon(Icons.monetization_on_rounded,
                     color: Color(0xFFFF9800)),
                 enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey[300]!),
+                  borderSide: BorderSide(color: (Colors.grey[300] ?? Colors.grey)),
                 ),
                 focusedBorder: const UnderlineInputBorder(
                   borderSide: BorderSide(color: Color(0xFFFF9800)),
@@ -572,7 +572,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   prefixIcon: const Icon(Icons.person_rounded,
                       color: Color(0xFF00AAFF)),
                   enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey[300]!),
+                    borderSide: BorderSide(color: (Colors.grey[300] ?? Colors.grey)),
                   ),
                   focusedBorder: const UnderlineInputBorder(
                     borderSide: BorderSide(color: Color(0xFF00AAFF)),
@@ -601,7 +601,7 @@ class _WalletScreenState extends State<WalletScreen> {
                     side: BorderSide(
                         color: isSelected
                             ? Colors.transparent
-                            : Colors.grey[300]!),
+                            : (Colors.grey[300] ?? Colors.grey)),
                     onSelected: (_) {
                       setDialogState(() => selectedAmount = amount);
                     },

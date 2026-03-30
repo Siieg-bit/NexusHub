@@ -144,6 +144,7 @@ class _WikiListScreenState extends State<WikiListScreen> {
               color: AppTheme.primaryColor,
               onRefresh: () async {
                 await _loadEntries();
+                if (!mounted) return;
               },
               child: Column(
               children: [

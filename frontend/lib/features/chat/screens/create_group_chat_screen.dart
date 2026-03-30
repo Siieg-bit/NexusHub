@@ -316,7 +316,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
             border: Border.all(
               color: isActive
                   ? AppTheme.primaryColor
-                  : Colors.grey[700]!,
+                  : (Colors.grey[700] ?? Colors.grey),
               width: 2,
             ),
             boxShadow: isCurrent
@@ -825,7 +825,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                                     border: Border.all(
                                       color: isSelected
                                           ? AppTheme.primaryColor
-                                          : Colors.grey[600]!,
+                                          : (Colors.grey[600] ?? Colors.grey),
                                       width: 2,
                                     ),
                                   ),

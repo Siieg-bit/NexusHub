@@ -347,6 +347,7 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
   bool _isLoading = false;
   bool _hasMore = true;
   bool _isFirstLoad = true;
+  String? _error;
   late ScrollController _scrollController;
 
   @override
@@ -384,8 +385,13 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
           _isFirstLoad = false;
         });
       }
-    } catch (_) {
-      if (mounted) setState(() => _isFirstLoad = false);
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isFirstLoad = false;
+          _error = e.toString();
+        });
+      }
     }
   }
 
@@ -402,8 +408,13 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
           _isLoading = false;
         });
       }
-    } catch (_) {
-      if (mounted) setState(() => _isLoading = false);
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _error = e.toString();
+        });
+      }
     }
   }
 
@@ -426,6 +437,34 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
       );
     }
 
+    // Error state
+    if (_error != null && _items.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.error_outline_rounded,
+                size: r.s(48), color: Theme.of(context).colorScheme.error),
+            SizedBox(height: r.s(16)),
+            Text('Algo deu errado',
+                style: Theme.of(context).textTheme.titleMedium),
+            SizedBox(height: r.s(8)),
+            FilledButton.icon(
+              onPressed: () {
+                setState(() {
+                  _error = null;
+                  _isFirstLoad = true;
+                });
+                _loadFirstPage();
+              },
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Tentar novamente'),
+            ),
+          ],
+        ),
+      );
+    }
+
     if (_items.isEmpty) {
       return Center(
         child: Text(widget.emptyMessage,
@@ -439,6 +478,7 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
         _currentPage = 0;
         _hasMore = true;
         await _loadFirstPage();
+        if (!mounted) return;
       },
       child: GridView.builder(
         controller: _scrollController,

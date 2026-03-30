@@ -129,7 +129,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
       if (widget.targetUserId != null) {
         final user = await SupabaseService.table('profiles')
             .select()
-            .eq('id', widget.targetUserId!)
+            .eq('id', widget.targetUserId ?? '')
             .single();
         if (!mounted) return;
         _targetUser = user;
@@ -163,8 +163,10 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
       });
 
       // Executar ação específica
+      final targetUid = widget.targetUserId;
       switch (_selectedAction) {
         case 'ban':
+          if (targetUid == null) break;
           await SupabaseService.table('community_members')
               .update({
                 'is_banned': true,
@@ -174,20 +176,22 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                     .toIso8601String(),
               })
               .eq('community_id', widget.communityId)
-              .eq('user_id', widget.targetUserId!);
+              .eq('user_id', targetUid);
           break;
 
         case 'unban':
+          if (targetUid == null) break;
           await SupabaseService.table('community_members')
               .update({
                 'is_banned': false,
                 'banned_until': null,
               })
               .eq('community_id', widget.communityId)
-              .eq('user_id', widget.targetUserId!);
+              .eq('user_id', targetUid);
           break;
 
         case 'mute':
+          if (targetUid == null) break;
           await SupabaseService.table('community_members')
               .update({
                 'is_muted': true,
@@ -197,7 +201,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                     .toIso8601String(),
               })
               .eq('community_id', widget.communityId)
-              .eq('user_id', widget.targetUserId!);
+              .eq('user_id', targetUid);
           break;
 
         case 'hide_post':
@@ -275,7 +279,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
             await SupabaseService.table('community_members')
                 .delete()
                 .eq('community_id', widget.communityId)
-                .eq('user_id', widget.targetUserId!);
+                .eq('user_id', targetUid ?? '');
             // Notificar o usuário
             await SupabaseService.table('notifications').insert({
               'user_id': widget.targetUserId,

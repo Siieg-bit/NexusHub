@@ -76,8 +76,8 @@ class _StoryCarouselState extends State<StoryCarousel> {
 
       // Colocar stories não vistas primeiro
       _storyGroups.sort((a, b) {
-        final aUnseen = a['has_unviewed'] as bool;
-        final bUnseen = b['has_unviewed'] as bool;
+        final aUnseen = a['has_unviewed'] as bool? ?? false;
+        final bUnseen = b['has_unviewed'] as bool? ?? false;
         if (aUnseen && !bUnseen) return -1;
         if (!aUnseen && bUnseen) return 1;
         return 0;
@@ -208,7 +208,7 @@ class _StoryCarouselState extends State<StoryCarousel> {
                     : null,
                 border: hasUnviewed
                     ? null
-                    : Border.all(color: Colors.grey[700]!, width: 2),
+                    : Border.all(color: Colors.grey[700] ?? Colors.grey, width: 2),
               ),
               child: Container(
                 decoration: BoxDecoration(

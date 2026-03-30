@@ -90,6 +90,7 @@ class _StoreScreenState extends State<StoreScreen>
       await SupabaseService.client.rpc('purchase_store_item', params: {
         'p_item_id': item['id'],
       });
+      if (!mounted) return;
       setState(() => _userCoins -= price);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -436,6 +437,7 @@ class _StoreScreenState extends State<StoreScreen>
       onRefresh: () async {
         setState(() => _isLoading = true);
         await _loadStore();
+        if (!mounted) return;
       },
       child: GridView.builder(
         physics: const AlwaysScrollableScrollPhysics(),

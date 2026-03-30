@@ -1306,7 +1306,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   bgColor: context.scaffoldBg,
                   indicatorColor: AppTheme.primaryColor,
                   iconColorSelected: AppTheme.primaryColor,
-                  iconColor: Colors.grey[600]!,
+                  iconColor: (Colors.grey[600] ?? Colors.grey),
                   checkPlatformCompatibility: true,
                   recentTabBehavior: RecentTabBehavior.RECENT,
                   recentsLimit: 20,

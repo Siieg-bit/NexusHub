@@ -336,7 +336,7 @@ class ImagePickerGrid extends StatelessWidget {
                 color: Colors.grey[800],
                 borderRadius: BorderRadius.circular(r.s(8)),
                 border: Border.all(
-                    color: Colors.grey[600]!, style: BorderStyle.solid),
+                    color: (Colors.grey[600] ?? Colors.grey), style: BorderStyle.solid),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,

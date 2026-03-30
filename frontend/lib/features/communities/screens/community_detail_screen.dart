@@ -1205,7 +1205,7 @@ class _CheckInBarState extends ConsumerState<_CheckInBar> {
                               color: context.dividerClr,
                               shape: BoxShape.circle,
                               border: Border.all(
-                                  color: Colors.grey[700]!, width: 1),
+                                  color: (Colors.grey[700] ?? Colors.grey), width: 1),
                             ),
                           ),
                         ),
@@ -1299,6 +1299,7 @@ class _LiveChatroomsSectionState extends State<_LiveChatroomsSection> {
           color: AppTheme.primaryColor,
           onRefresh: () async {
             await _loadChats();
+            if (!mounted) return;
           },
           child: ListView.builder(
           scrollDirection: Axis.horizontal,

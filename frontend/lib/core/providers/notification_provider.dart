@@ -41,6 +41,7 @@ class NotificationState {
 class NotificationNotifier extends AsyncNotifier<NotificationState> {
   int _page = 0;
   static const _pageSize = 20;
+  bool _isLoadingMore = false;
   RealtimeChannel? _channel;
 
   /// Select com join para trazer dados do ator (quem gerou a notificação).
@@ -142,8 +143,9 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
 
   Future<void> loadMore() async {
     final current = state.valueOrNull;
-    if (current == null || !current.hasMore) return;
+    if (current == null || !current.hasMore || _isLoadingMore) return;
 
+    _isLoadingMore = true;
     _page++;
     try {
       final userId = SupabaseService.currentUserId;
@@ -162,6 +164,8 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
       ));
     } catch (e) {
       _page--;
+    } finally {
+      _isLoadingMore = false;
     }
   }
 

@@ -32,6 +32,7 @@ class CrosspostPicker extends StatefulWidget {
 class _CrosspostPickerState extends State<CrosspostPicker> {
   List<Map<String, dynamic>> _communities = [];
   bool _loading = true;
+  String? _loadError;
 
   @override
   void initState() {
@@ -66,7 +67,12 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
         });
       }
     } catch (e) {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _loadError = e.toString();
+        });
+      }
     }
   }
 
@@ -265,27 +271,54 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
                   ? const Center(
                       child: CircularProgressIndicator(
                           color: AppTheme.accentColor))
-                  : _communities.isEmpty
+                  : _loadError != null
                       ? Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.groups_rounded,
-                                  size: r.s(48), color: Colors.grey[600]),
+                              Icon(Icons.error_outline_rounded,
+                                  size: r.s(48), color: Colors.redAccent),
                               SizedBox(height: r.s(12)),
                               Text(
-                                'Nenhuma outra comunidade encontrada',
-                                style: TextStyle(color: Colors.grey[500]),
+                                'Erro ao carregar comunidades',
+                                style: TextStyle(color: Colors.grey[400]),
                               ),
-                              SizedBox(height: r.s(4)),
-                              Text(
-                                'Entre em mais comunidades para fazer crosspost',
-                                style: TextStyle(
-                                    color: Colors.grey[600], fontSize: r.fs(12)),
+                              SizedBox(height: r.s(8)),
+                              FilledButton.icon(
+                                onPressed: () {
+                                  setState(() {
+                                    _loading = true;
+                                    _loadError = null;
+                                  });
+                                  _loadCommunities();
+                                },
+                                icon: const Icon(Icons.refresh_rounded),
+                                label: const Text('Tentar novamente'),
                               ),
                             ],
                           ),
                         )
+                      : _communities.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.groups_rounded,
+                                      size: r.s(48), color: Colors.grey[600]),
+                                  SizedBox(height: r.s(12)),
+                                  Text(
+                                    'Nenhuma outra comunidade encontrada',
+                                    style: TextStyle(color: Colors.grey[500]),
+                                  ),
+                                  SizedBox(height: r.s(4)),
+                                  Text(
+                                    'Entre em mais comunidades para fazer crosspost',
+                                    style: TextStyle(
+                                        color: Colors.grey[600], fontSize: r.fs(12)),
+                                  ),
+                                ],
+                              ),
+                            )
                       : ListView.builder(
                           controller: scrollController,
                           padding: EdgeInsets.all(r.s(16)),

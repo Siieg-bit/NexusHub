@@ -81,8 +81,6 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
   }
 
   Future<void> _saveGuidelines() async {
-
-      final r = context.r;
     if (_isSaving) return;
     setState(() => _isSaving = true);
 
@@ -92,6 +90,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
               'id', widget.communityId);
 
       if (mounted) {
+        final r = context.r;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(

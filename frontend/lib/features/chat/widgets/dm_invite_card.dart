@@ -95,7 +95,7 @@ class DmInviteCard extends ConsumerWidget {
                     }
                   },
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: Colors.grey[700]!),
+                    side: BorderSide(color: (Colors.grey[700] ?? Colors.grey)),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(r.s(10))),
                     padding: EdgeInsets.symmetric(vertical: r.s(10)),
