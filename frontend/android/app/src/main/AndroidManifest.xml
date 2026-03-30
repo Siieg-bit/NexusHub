@@ -36,7 +36,7 @@
         <!-- AdMob App ID (produção) -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-XXXXXXXXXXXXXXXX~XXXXXXXXXX" />
+            android:value="ca-app-pub-7192605876220796~8519538940" />
 
         <!-- Firebase Cloud Messaging -->
         <meta-data

@@ -7,11 +7,11 @@ import 'supabase_service.dart';
 ///
 /// Usa o SDK real do Google Mobile Ads (AdMob).
 /// App ID configurado no AndroidManifest.xml:
-///   ca-app-pub-XXXXXXXXXXXXXXXX~XXXXXXXXXX
+///   ca-app-pub-7192605876220796~8519538940
 class AdService {
   // IDs reais de produção
   static const String _rewardedAdUnitAndroid =
-      'ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX';
+      'ca-app-pub-7192605876220796/7206457273';
 
   // IDs de teste (usados em debug)
   static const String _rewardedAdUnitAndroidTest =

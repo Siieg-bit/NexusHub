@@ -52,7 +52,7 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
   String _query = '';
 
   // Giphy Public Beta Key (rate limited but free for dev)
-  static const _apiKey = 'SUA_GIPHY_API_KEY_AQUI';
+  static const _apiKey = 'XaT2twgclfFioBckgzQFjs9IxRAPodOc';
 
   @override
   void initState() {

@@ -8,11 +8,11 @@ class AppConfig {
   // ============================================================================
 
   /// URL do projeto Supabase
-  static const String supabaseUrl = 'https://SEU_PROJETO.supabase.co';
+  static const String supabaseUrl = 'https://ylvzqqvcanzzswjkqeya.supabase.co';
 
   /// Chave anônima do Supabase (publishable key — segura para uso no client)
   static const String supabaseAnonKey =
-      'SUA_SUPABASE_ANON_KEY_AQUI';
+      'sb_publishable_HYsYzaF8DuBgXpqJAICJ1Q_b73GLUeb';
 
   // ============================================================================
   // APP

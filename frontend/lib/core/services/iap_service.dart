@@ -4,11 +4,11 @@ import 'supabase_service.dart';
 
 /// Serviço de In-App Purchases via RevenueCat.
 ///
-/// API Key Android: SUA_REVENUECAT_KEY_AQUI
+/// API Key Android: test_vLhJHaVBiGHrRySKvvnWlaqWrfN
 /// Entitlement: amino_plus
 /// Produtos: coins_100, coins_500, coins_1200, coins_3000, coins_7000, amino_plus_monthly
 class IAPService {
-  static const String _apiKeyAndroid = 'SUA_REVENUECAT_KEY_AQUI';
+  static const String _apiKeyAndroid = 'test_vLhJHaVBiGHrRySKvvnWlaqWrfN';
   static const String entitlementAminoPlus = 'amino_plus';
 
   /// Identificadores dos produtos configurados no Google Play Console

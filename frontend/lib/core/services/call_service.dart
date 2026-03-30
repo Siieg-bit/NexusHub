@@ -84,7 +84,7 @@ class CallSession {
 class CallService {
   // ── Agora Configuration ──
   // SUBSTITUA pelo seu App ID do Agora Console (https://console.agora.io)
-  static const String _agoraAppId = 'SEU_AGORA_APP_ID_AQUI';
+  static const String _agoraAppId = 'dc3fc8b039374782af029efa33f17198';
 
   // Para produção, gere tokens temporários via Supabase Edge Function.
   // Em modo de teste, deixe vazio (o Agora permite sem token em modo dev).
