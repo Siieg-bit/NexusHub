@@ -5,141 +5,24 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../config/app_theme.dart';
 import '../../../core/models/community_model.dart';
-import '../../../core/models/post_model.dart';
-import '../../../core/models/user_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../core/utils/amino_animations.dart';
-import '../../feed/widgets/post_card.dart';
 import '../widgets/community_drawer.dart';
 import '../../../core/widgets/amino_drawer.dart';
 import '../../../core/widgets/amino_bottom_nav.dart';
-import '../../../core/widgets/level_up_dialog.dart';
-import '../../stories/widgets/story_carousel.dart';
 import 'community_list_screen.dart';
-import '../../../core/utils/responsive.dart'; // para checkInStatusProvider
+import '../../../core/utils/responsive.dart';
 import '../../../core/providers/presence_provider.dart';
 import '../../../core/services/presence_service.dart';
 
-// =============================================================================
-// PROVIDERS
-// =============================================================================
-
-final communityDetailProvider =
-    FutureProvider.family<CommunityModel, String>((ref, id) async {
-  final response =
-      await SupabaseService.table('communities').select().eq('id', id).single();
-  return CommunityModel.fromJson(response);
-});
-
-final communityFeedProvider =
-    FutureProvider.family<List<PostModel>, String>((ref, communityId) async {
-  final response = await SupabaseService.table('posts')
-      .select('*, profiles!posts_author_id_fkey(*)')
-      .eq('community_id', communityId)
-      .eq('status', 'ok')
-      .order('is_pinned', ascending: false)
-      .order('created_at', ascending: false)
-      .limit(30);
-
-  return (response as List? ?? []).map((e) {
-    final map = Map<String, dynamic>.from(e);
-    if (map['profiles'] != null) {
-      map['author'] = map['profiles'];
-    }
-    return PostModel.fromJson(map);
-  }).toList();
-});
-
-final communityMembersProvider =
-    FutureProvider.family<List<Map<String, dynamic>>, String>(
-        (ref, communityId) async {
-  final response = await SupabaseService.table('community_members')
-      .select(
-          '*, profiles!community_members_user_id_fkey(id, nickname, icon_url, level, online_status)')
-      .eq('community_id', communityId)
-      .order('role', ascending: false)
-      .limit(50);
-  return List<Map<String, dynamic>>.from(response as List? ?? []);
-});
-
-final communityChatProvider =
-    FutureProvider.family<List<Map<String, dynamic>>, String>(
-        (ref, communityId) async {
-  final response = await SupabaseService.table('chat_threads')
-      .select('*, chat_members(count)')
-      .eq('community_id', communityId)
-      .order('last_message_at', ascending: false)
-      .limit(20);
-  return List<Map<String, dynamic>>.from(response as List? ?? []);
-});
-
-final communityMembershipProvider =
-    FutureProvider.family<Map<String, dynamic>?, String>(
-        (ref, communityId) async {
-  final userId = SupabaseService.currentUserId;
-  if (userId == null) return null;
-  final response = await SupabaseService.table('community_members')
-      .select()
-      .eq('community_id', communityId)
-      .eq('user_id', userId)
-      .maybeSingle();
-  return response;
-});
-
-final currentUserProfileProvider = FutureProvider<UserModel?>((ref) async {
-  final userId = SupabaseService.currentUserId;
-  if (userId == null) return null;
-  try {
-    final response = await SupabaseService.table('profiles')
-        .select()
-        .eq('id', userId)
-        .single();
-    return UserModel.fromJson(response);
-  } catch (_) {
-    return null;
-  }
-});
-
-final communityHomeLayoutProvider =
-    FutureProvider.family<Map<String, dynamic>, String>(
-        (ref, communityId) async {
-  try {
-    final response = await SupabaseService.table('communities')
-        .select('home_layout')
-        .eq('id', communityId)
-        .single();
-    return response['home_layout'] as Map<String, dynamic>? ?? _defaultLayout;
-  } catch (_) {
-    return _defaultLayout;
-  }
-});
-
-// onlineMembersCountProvider removido — agora usa onlineCountProvider do presence_provider.dart
-
-const Map<String, dynamic> _defaultLayout = {
-  'sections_order': ['header', 'check_in', 'live_chats', 'tabs'],
-  'sections_visible': {
-    'check_in': true,
-    'live_chats': true,
-    'featured_posts': true,
-    'latest_feed': true,
-    'public_chats': true,
-    'guidelines': true,
-  },
-  'featured_type': 'list',
-  'welcome_banner': {
-    'enabled': false,
-    'image_url': null,
-    'text': null,
-    'link': null,
-  },
-  'pinned_chat_ids': [],
-  'bottom_bar': {
-    'show_online_count': true,
-    'show_create_button': true,
-  },
-};
+// Extracted providers & widgets
+import '../providers/community_detail_providers.dart';
+import '../widgets/community_check_in_bar.dart';
+import '../widgets/community_live_chats.dart';
+import '../widgets/community_guidelines_tab.dart';
+import '../widgets/community_feed_tab.dart';
+import '../widgets/community_chat_tab.dart';
 
 // =============================================================================
 // MAIN SCREEN — Estilo Amino Apps
@@ -179,7 +62,6 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
   void dispose() {
     _isDisposed = true;
     _tabController.dispose();
-    // Não sair do canal aqui — o provider gerencia o ciclo de vida
     super.dispose();
   }
 
@@ -225,8 +107,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
   }
 
   Future<void> _joinCommunity() async {
-
-      final r = context.r;
+    final r = context.r;
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
@@ -287,7 +168,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
         final membership = membershipAsync.valueOrNull;
         final isMember = membership != null;
         final userRole = membership?['role'] as String?;
-        final layout = layoutAsync.valueOrNull ?? _defaultLayout;
+        final layout = layoutAsync.valueOrNull ?? defaultLayout;
 
         // Rebuild tabs based on layout (apenas se o layout mudou)
         if (_lastLayout != layout) {
@@ -318,7 +199,6 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             },
             onGuidelinesTap: () {
               if (_isDisposed || !mounted) return;
-              // Voltar para home e mudar para tab Regras
               setState(() {
                 _bottomIndex = 0;
                 final idx = _activeTabs.indexOf('Regras');
@@ -327,7 +207,6 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             },
             onRecentFeedTap: () {
               if (_isDisposed || !mounted) return;
-              // Voltar para home e mudar para tab Recentes
               setState(() {
                 _bottomIndex = 0;
                 final idx = _activeTabs.indexOf('Recentes');
@@ -350,9 +229,6 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                           : _buildHomePage(
                               community, themeColor, isMember, userRole,
                               layout, visible, welcomeBanner),
-          // ================================================================
-          // BOTTOM NAVIGATION BAR — CustomPainter pixel-perfect do Amino
-          // ================================================================
           bottomNavigationBar: isMember
               ? AminoBottomNavBar(
                   currentIndex: _bottomIndex,
@@ -366,7 +242,6 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                   onTap: (index) => setState(() => _bottomIndex = index),
                 )
               : null,
-          // Join FAB for non-members
           floatingActionButton: !isMember
               ? AminoAnimations.pulseGlow(
                   glowColor: AppTheme.primaryColor,
@@ -387,7 +262,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                 )
               : null,
           ),
-        ); // fecha AminoDrawerController
+        );
       },
     );
   }
@@ -404,7 +279,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     Map<String, dynamic> visible,
     Map<String, dynamic> welcomeBanner,
   ) {
-      final r = context.r;
+    final r = context.r;
     return NestedScrollView(
       headerSliverBuilder: (context, innerBoxIsScrolled) => [
         // HEADER
@@ -433,7 +308,6 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             // Claim gifts
             GestureDetector(
               onTap: () {
-                // Presentes diários da comunidade
                 showModalBottomSheet(
                   context: context,
                   backgroundColor: context.surfaceColor,
@@ -478,7 +352,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('🎁 ', style: TextStyle(fontSize: r.fs(11))),
+                    Text('\uD83C\uDF81 ', style: TextStyle(fontSize: r.fs(11))),
                     Text('Presentes',
                         style: TextStyle(
                             color: Colors.white,
@@ -492,7 +366,6 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             // Gallery
             GestureDetector(
               onTap: () {
-                // Galeria da comunidade - mostra posts com mídia
                 context.push('/community/${widget.communityId}/wiki');
               },
               child: Container(
@@ -737,7 +610,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
         // CHECK-IN BAR
         if (isMember && visible['check_in'] != false)
           SliverToBoxAdapter(
-            child: _CheckInBar(
+            child: CommunityCheckInBar(
               communityId: widget.communityId,
               themeColor: themeColor,
             ),
@@ -746,7 +619,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
         // LIVE CHATROOMS
         if (visible['live_chats'] != false)
           SliverToBoxAdapter(
-            child: _LiveChatroomsSection(
+            child: CommunityLiveChats(
               communityId: widget.communityId,
               community: community,
             ),
@@ -782,19 +655,17 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
               children: _activeTabs.map((tab) {
                 switch (tab) {
                   case 'Regras':
-                    return _GuidelinesTab(community: community);
+                    return CommunityGuidelinesTab(community: community);
                   case 'Destaque':
-                    return _FeedTab(
+                    return CommunityFeedTab(
                         communityId: widget.communityId,
-                        ref: ref,
                         isFeatured: true);
                   case 'Recentes':
-                    return _FeedTab(
+                    return CommunityFeedTab(
                         communityId: widget.communityId,
-                        ref: ref,
                         isFeatured: false);
                   case 'Chats':
-                    return _ChatTab(communityId: widget.communityId);
+                    return CommunityChatTab(communityId: widget.communityId);
                   default:
                     return const SizedBox.shrink();
                 }
@@ -811,14 +682,13 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
   // ONLINE PAGE — Membros online
   // ================================================================
   Widget _buildOnlinePage(CommunityModel community) {
-      final r = context.r;
+    final r = context.r;
     final membersAsync = ref.watch(communityMembersProvider(widget.communityId));
     final presenceAsync = ref.watch(communityPresenceProvider(widget.communityId));
     final onlineUserIds = presenceAsync.valueOrNull ?? {};
 
     return Column(
       children: [
-        // App bar
         SafeArea(
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
@@ -974,7 +844,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
   // CHATS PAGE — Lista de chats da comunidade
   // ================================================================
   Widget _buildChatsPage(CommunityModel community) {
-      final r = context.r;
+    final r = context.r;
     return Column(
       children: [
         SafeArea(
@@ -996,7 +866,6 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                 const Spacer(),
                 GestureDetector(
                   onTap: () {
-                    // Navegar para a tela de chats global com foco na comunidade
                     context.go('/chats');
                   },
                   child: Text('Ver Todos',
@@ -1010,7 +879,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
           ),
         ),
         Expanded(
-          child: _ChatTab(communityId: widget.communityId),
+          child: CommunityChatTab(communityId: widget.communityId),
         ),
       ],
     );
@@ -1020,7 +889,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
   // ME PAGE — Perfil do usuário na comunidade
   // ================================================================
   Widget _buildMePage(CommunityModel community) {
-      final r = context.r;
+    final r = context.r;
     final userId = SupabaseService.currentUserId;
     if (userId == null) {
       return Center(
@@ -1083,719 +952,6 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
           ),
         ),
       ],
-    );
-  }
-}
-
-
-
-
-
-// =============================================================================
-// CHECK-IN BAR — Estilo Amino (streak progress + botão verde)
-// =============================================================================
-class _CheckInBar extends ConsumerStatefulWidget {
-  final String communityId;
-  final Color themeColor;
-
-  const _CheckInBar({required this.communityId, required this.themeColor});
-
-  @override
-  ConsumerState<_CheckInBar> createState() => _CheckInBarState();
-}
-
-class _CheckInBarState extends ConsumerState<_CheckInBar> {
-  bool _loading = false;
-
-  Future<void> _doCheckIn() async {
-    if (_loading) return;
-    setState(() => _loading = true);
-    try {
-      final userId = SupabaseService.currentUserId;
-      if (userId == null) return;
-      final result = await SupabaseService.rpc('perform_checkin', params: {
-        'p_user_id': userId,
-        'p_community_id': widget.communityId,
-      });
-      if (!mounted) return;
-      if (result != null && result['success'] == true) {
-        final repEarned = result['reputation_earned'] as int? ?? 0;
-        final newStreak = result['streak'] as int? ?? 0;
-        final levelUp = result['level_up'] as bool? ?? false;
-        final newLevel = result['new_level'] as int? ?? 0;
-        if (mounted) {
-          ref.invalidate(checkInStatusProvider);
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(
-              'Check-in! +$repEarned rep | Streak: $newStreak dias',
-            ),
-            backgroundColor: AppTheme.primaryColor,
-          ));
-          if (levelUp && newLevel > 0) {
-            LevelUpDialog.show(context, newLevel: newLevel);
-          }
-        }
-      } else {
-        final error = result?['error'] ?? 'Erro desconhecido';
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('$error'),
-            backgroundColor: AppTheme.errorColor,
-          ));
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Ocorreu um erro. Tente novamente.'),
-          backgroundColor: AppTheme.errorColor,
-        ));
-      }
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final r = context.r;
-    final checkInStatus = ref.watch(checkInStatusProvider);
-    final statusMap = checkInStatus.valueOrNull ?? {};
-    final myStatus = statusMap[widget.communityId];
-    final hasCheckedIn = myStatus?['has_checkin_today'] as bool? ?? false;
-    final streak = myStatus?['consecutive_checkin_days'] as int? ?? 0;
-
-    if (hasCheckedIn) return const SizedBox.shrink();
-
-    return Container(
-      color: context.cardBg,
-      padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
-      child: Column(
-        children: [
-          Text(
-            'Faça Check In para ganhar +${ReputationRewards.checkIn} rep',
-            style: TextStyle(
-              color: context.textPrimary,
-              fontSize: r.fs(13),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: r.s(8)),
-          // 7-day streak bar
-          Row(
-            children: List.generate(7, (i) {
-              final filled = i < (streak % 7);
-              return Expanded(
-                child: Container(
-                  height: r.s(6),
-                  margin: EdgeInsets.only(right: i < 6 ? 3 : 0),
-                  decoration: BoxDecoration(
-                    color: filled
-                        ? AppTheme.primaryColor
-                        : context.dividerClr,
-                    borderRadius: BorderRadius.circular(r.s(3)),
-                  ),
-                  child: filled
-                      ? null
-                      : Center(
-                          child: Container(
-                            width: r.s(8),
-                            height: r.s(8),
-                            decoration: BoxDecoration(
-                              color: context.dividerClr,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                  color: (Colors.grey[700] ?? Colors.grey), width: 1),
-                            ),
-                          ),
-                        ),
-                ),
-              );
-            }),
-          ),
-          SizedBox(height: r.s(10)),
-          SizedBox(
-            width: double.infinity,
-            height: r.s(40),
-            child: ElevatedButton(
-              onPressed: _loading ? null : _doCheckIn,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryColor,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(r.s(10))),
-                textStyle: TextStyle(
-                    fontWeight: FontWeight.w700, fontSize: r.fs(14)),
-              ),
-              child: _loading
-                  ? SizedBox(
-                      width: r.s(20),
-                      height: r.s(20),
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : const Text('Check In'),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// =============================================================================
-// LIVE CHATROOMS SECTION — Estilo Amino (horizontal scroll cards)
-// =============================================================================
-class _LiveChatroomsSection extends StatefulWidget {
-  final String communityId;
-  final CommunityModel community;
-
-  const _LiveChatroomsSection(
-      {required this.communityId, required this.community});
-
-  @override
-  State<_LiveChatroomsSection> createState() => _LiveChatroomsSectionState();
-}
-
-class _LiveChatroomsSectionState extends State<_LiveChatroomsSection> {
-  List<Map<String, dynamic>> _chats = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadChats();
-  }
-
-  Future<void> _loadChats() async {
-    try {
-      final response = await SupabaseService.table('chat_threads')
-          .select()
-          .eq('community_id', widget.communityId)
-          .order('last_message_at', ascending: false)
-          .limit(6);
-      if (mounted) {
-        setState(() {
-          _chats = List<Map<String, dynamic>>.from(response as List? ?? []);
-        });
-      }
-    } catch (e) {
-      debugPrint('[community_detail_screen] Erro: $e');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final r = context.r;
-    if (_chats.isEmpty) return const SizedBox.shrink();
-
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
-      child: SizedBox(
-        height: r.s(130),
-        child: RefreshIndicator(
-          color: AppTheme.primaryColor,
-          onRefresh: () async {
-            await _loadChats();
-            if (!mounted) return;
-          },
-          child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          itemCount: _chats.length,
-          itemBuilder: (context, index) {
-            final chat = _chats[index];
-            final membersCount = chat['members_count'] as int? ?? 0;
-
-            return AminoAnimations.cardPress(
-              onTap: () => context.push('/chat/${chat['id']}'),
-              child: Container(
-                width: r.s(150),
-                margin: EdgeInsets.only(right: r.s(8)),
-                decoration: BoxDecoration(
-                  color: context.cardBg,
-                  borderRadius: BorderRadius.circular(r.s(12)),
-                  border: Border.all(
-                    color: context.dividerClr.withValues(alpha: 0.2),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Cover
-                    Expanded(
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          ClipRRect(
-                            borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(12)),
-                            child: chat['icon_url'] != null
-                                ? CachedNetworkImage(
-                                    imageUrl: chat['icon_url'] as String? ?? '',
-                                    fit: BoxFit.cover,
-                                  )
-                                : Container(
-                                    color: context.surfaceColor,
-                                    child: Icon(Icons.chat_rounded,
-                                        color: context.textHint, size: r.s(24)),
-                                  ),
-                          ),
-                          Container(
-                            decoration: BoxDecoration(
-                              borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(12)),
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  Colors.transparent,
-                                  context.cardBg,
-                                ],
-                              ),
-                            ),
-                          ),
-                          // Live indicator
-                          Positioned(
-                            top: 6,
-                            left: 6,
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: r.s(6), vertical: 2),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.5),
-                                borderRadius: BorderRadius.circular(r.s(10)),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                    width: r.s(5),
-                                    height: r.s(5),
-                                    decoration: const BoxDecoration(
-                                      color: AppTheme.primaryColor,
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                  SizedBox(width: r.s(3)),
-                                  Text('Ao Vivo',
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: r.fs(8),
-                                          fontWeight: FontWeight.w700)),
-                                ],
-                              ),
-                            ),
-                          ),
-                          // Members count
-                          Positioned(
-                            bottom: 6,
-                            right: 6,
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: r.s(6), vertical: 2),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.5),
-                                borderRadius: BorderRadius.circular(r.s(10)),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.people_rounded,
-                                      color: Colors.white, size: r.s(10)),
-                                  SizedBox(width: r.s(3)),
-                                  Text('$membersCount',
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: r.fs(9),
-                                          fontWeight: FontWeight.w600)),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Info
-                    Padding(
-                      padding: EdgeInsets.all(r.s(8)),
-                      child: Text(
-                        chat['title'] as String? ?? 'Chat',
-                        style: TextStyle(
-                            color: context.textPrimary,
-                            fontSize: r.fs(11),
-                            fontWeight: FontWeight.w600),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-        ),
-      ),
-    );
-  }
-}
-
-// =============================================================================
-// TAB: Guidelines — Estilo Amino
-// =============================================================================
-class _GuidelinesTab extends StatelessWidget {
-  final CommunityModel community;
-  const _GuidelinesTab({required this.community});
-
-  @override
-  Widget build(BuildContext context) {
-    final r = context.r;
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(r.s(12)),
-      child: Container(
-        decoration: BoxDecoration(
-          color: context.cardBg,
-          borderRadius: BorderRadius.circular(r.s(12)),
-        ),
-        padding: EdgeInsets.all(r.s(16)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.public_rounded,
-                    color: Color(0xFFFF9800), size: r.s(18)),
-                SizedBox(width: r.s(8)),
-                Text(
-                  'Community Guidelines',
-                  style: TextStyle(
-                    color: context.textPrimary,
-                    fontSize: r.fs(16),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: r.s(16)),
-            Text(
-              community.description.isNotEmpty
-                  ? community.description
-                  : 'Nenhuma diretriz foi definida para esta comunidade ainda.',
-              style: TextStyle(
-                color: Colors.grey[300],
-                fontSize: r.fs(13),
-                height: 1.6,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// =============================================================================
-// TAB: Feed (Featured / Latest)
-// =============================================================================
-class _FeedTab extends StatelessWidget {
-  final String communityId;
-  final WidgetRef ref;
-  final bool isFeatured;
-
-  const _FeedTab(
-      {required this.communityId, required this.ref, this.isFeatured = false});
-
-  @override
-  Widget build(BuildContext context) {
-    final r = context.r;
-    final feedAsync = ref.watch(communityFeedProvider(communityId));
-
-    return feedAsync.when(
-      loading: () => Center(
-        child: CircularProgressIndicator(
-            color: AppTheme.primaryColor, strokeWidth: 2.5),
-      ),
-      error: (error, _) => Center(
-          child: Text('Erro: $error',
-              style: TextStyle(color: context.textSecondary))),
-      data: (posts) {
-        if (posts.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.article_outlined,
-                    size: r.s(48), color: context.textHint),
-                SizedBox(height: r.s(12)),
-                Text(
-                  'Nenhum post ainda. Seja o primeiro a postar!',
-                  style: TextStyle(color: Colors.grey[600], fontSize: r.fs(13)),
-                ),
-              ],
-            ),
-          );
-        }
-
-        // Featured mode: compact list style (like Amino)
-        if (isFeatured) {
-          return ListView.builder(
-            padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
-            itemCount: posts.length,
-            itemBuilder: (context, index) {
-              final post = posts[index];
-              return AminoAnimations.staggerItem(
-                index: index,
-                child: AminoAnimations.cardPress(
-                  onTap: () => context.push('/post/${post.id}'),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                        vertical: r.s(10), horizontal: r.s(4)),
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color:
-                              context.dividerClr.withValues(alpha: 0.15),
-                          width: 0.5,
-                        ),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: r.s(6),
-                          height: r.s(6),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryColor,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        SizedBox(width: r.s(10)),
-                        Expanded(
-                          child: Text(
-                            post.title ?? '',
-                            style: TextStyle(
-                              color: context.textPrimary,
-                              fontSize: r.fs(13),
-                              fontWeight: FontWeight.w500,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        if (post.mediaUrls.isNotEmpty)
-                          Padding(
-                            padding: EdgeInsets.only(left: r.s(8)),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(r.s(6)),
-                              child: CachedNetworkImage(
-                                imageUrl: post.mediaUrls.first,
-                                width: r.s(40),
-                                height: r.s(40),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          );
-        }
-
-        // Latest mode: full post cards with Story Carousel on top
-        return ListView.builder(
-          padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
-          itemCount: posts.length + 1, // +1 para o carrossel de stories
-          itemBuilder: (context, index) {
-            if (index == 0) {
-              return Padding(
-                padding: EdgeInsets.only(bottom: r.s(8)),
-                child: StoryCarousel(communityId: communityId),
-              );
-            }
-            final postIndex = index - 1;
-            return AminoAnimations.staggerItem(
-              index: postIndex,
-              child: PostCard(
-                post: posts[postIndex],
-                showCommunity: false,
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-}
-
-// =============================================================================
-// TAB: Chat
-// =============================================================================
-class _ChatTab extends StatefulWidget {
-  final String communityId;
-  const _ChatTab({required this.communityId});
-
-  @override
-  State<_ChatTab> createState() => _ChatTabState();
-}
-
-class _ChatTabState extends State<_ChatTab> {
-  List<Map<String, dynamic>> _chats = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadChats();
-  }
-
-  Future<void> _loadChats() async {
-    try {
-      final userId = SupabaseService.currentUserId;
-
-      // Buscar chats públicos da comunidade (visíveis para todos)
-      final publicResponse = await SupabaseService.table('chat_threads')
-          .select()
-          .eq('community_id', widget.communityId)
-          .eq('type', 'public')
-          .order('last_message_at', ascending: false)
-          .limit(20);
-
-      // Buscar chats privados/grupo onde o usuário é membro
-      List<dynamic> privateChats = [];
-      if (userId != null) {
-        final memberResponse = await SupabaseService.table('chat_members')
-            .select('thread_id, chat_threads!inner(*)')
-            .eq('user_id', userId)
-            .neq('chat_threads.type', 'public');
-        privateChats = (memberResponse as List? ?? [])
-            .where((e) =>
-                e['chat_threads'] != null &&
-                e['chat_threads']['community_id'] == widget.communityId)
-            .map((e) => e['chat_threads'] as Map<String, dynamic>)
-            .toList();
-      }
-
-      // Combinar e deduplicar por id
-      final allChats = <String, Map<String, dynamic>>{};
-      for (final c in List<Map<String, dynamic>>.from(publicResponse as List? ?? [])) {
-        allChats[c['id'] as String? ?? ''] = c;
-      }
-      for (final c in privateChats) {
-        allChats[c['id'] as String? ?? ''] = c as Map<String, dynamic>;
-      }
-
-      _chats = allChats.values.toList()
-        ..sort((a, b) {
-          final aTime = a['last_message_at'] as String? ?? '';
-          final bTime = b['last_message_at'] as String? ?? '';
-          return bTime.compareTo(aTime);
-        });
-
-      if (mounted) setState(() => _isLoading = false);
-    } catch (e) {
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final r = context.r;
-    if (_isLoading) {
-      return Center(
-        child: CircularProgressIndicator(
-            color: AppTheme.primaryColor, strokeWidth: 2.5),
-      );
-    }
-
-    if (_chats.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.chat_bubble_outline_rounded,
-                size: r.s(48), color: context.textHint),
-            SizedBox(height: r.s(12)),
-            Text('Nenhum chat nesta comunidade ainda',
-                style: TextStyle(color: Colors.grey[600], fontSize: r.fs(13))),
-          ],
-        ),
-      );
-    }
-
-    return ListView.builder(
-      padding: EdgeInsets.all(r.s(12)),
-      itemCount: _chats.length,
-      itemBuilder: (context, index) {
-        final chat = _chats[index];
-        return AminoAnimations.staggerItem(
-          index: index,
-          child: AminoAnimations.cardPress(
-            onTap: () => context.push('/chat/${chat['id']}'),
-            child: Container(
-              padding: EdgeInsets.symmetric(vertical: r.s(10)),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: context.dividerClr.withValues(alpha: 0.2),
-                    width: 0.5,
-                  ),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: r.s(44),
-                    height: r.s(44),
-                    decoration: BoxDecoration(
-                      color: context.surfaceColor,
-                      shape: BoxShape.circle,
-                    ),
-                    child: chat['icon_url'] != null
-                        ? ClipOval(
-                            child: CachedNetworkImage(
-                              imageUrl: chat['icon_url'] as String? ?? '',
-                              fit: BoxFit.cover,
-                            ),
-                          )
-                        : Icon(Icons.tag_rounded,
-                            color: context.textHint, size: r.s(18)),
-                  ),
-                  SizedBox(width: r.s(12)),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          chat['title'] as String? ?? 'Chat',
-                          style: TextStyle(
-                              color: context.textPrimary,
-                              fontWeight: FontWeight.w600,
-                              fontSize: r.fs(13)),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '${chat['members_count'] ?? 0} membros',
-                          style: TextStyle(
-                              color: Colors.grey[600], fontSize: r.fs(10)),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(Icons.chevron_right_rounded,
-                      color: Colors.grey[600], size: r.s(16)),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 }
