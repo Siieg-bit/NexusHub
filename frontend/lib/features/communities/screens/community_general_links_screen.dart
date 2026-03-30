@@ -123,7 +123,7 @@ class _CommunityGeneralLinksScreenState
                   onChanged: (v) => isActive.value = v,
                   title: const Text('Ativo',
                       style: TextStyle(color: Colors.white70)),
-                  activeThumbColor: AppTheme.accentColor,
+                  activeColor: AppTheme.accentColor,
                   contentPadding: EdgeInsets.zero,
                 ),
               ),

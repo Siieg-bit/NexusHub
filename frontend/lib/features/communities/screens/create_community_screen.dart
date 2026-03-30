@@ -299,7 +299,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                   ),
                 ),
                 child: DropdownButtonFormField<String>(
-                  initialValue: _selectedLanguage,
+                  value: _selectedLanguage,
                   dropdownColor: context.surfaceColor,
                   style: TextStyle(color: context.textPrimary),
                   decoration: InputDecoration(

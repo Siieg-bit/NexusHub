@@ -116,8 +116,8 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
             // Animação: escala + desloca para a direita + cantos arredondados
             Transform(
               transform: Matrix4.identity()
-                ..translateByDouble(slide, 0, 0, 1)
-                ..scaleByDouble(scale, scale, 1.0, 1),
+                ..setTranslationRaw(slide, 0, 0)
+                ..scale(scale, scale, 1.0),
               alignment: Alignment.centerLeft,
               child: GestureDetector(
                 onTap: _isOpen ? close : null,

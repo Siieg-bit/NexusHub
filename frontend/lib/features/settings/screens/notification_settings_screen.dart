@@ -246,7 +246,7 @@ class _NotificationSettingsScreenState
                       Switch(
                         value: _pushEnabled,
                         onChanged: (v) => setState(() => _pushEnabled = v),
-                        activeThumbColor: AppTheme.primaryColor,
+                        activeColor: AppTheme.primaryColor,
                         activeTrackColor: AppTheme.primaryColor.withValues(alpha: 0.3),
                         inactiveThumbColor: Colors.grey[400],
                         inactiveTrackColor: Colors.grey[800],
@@ -448,7 +448,7 @@ class _NotificationSettingsScreenState
                                 });
                               }
                             },
-                            activeThumbColor: AppTheme.warningColor,
+                            activeColor: AppTheme.warningColor,
                             activeTrackColor:
                                 AppTheme.warningColor.withValues(alpha: 0.3),
                             inactiveThumbColor: Colors.grey[400],
@@ -576,7 +576,7 @@ class _NotifToggle extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeThumbColor: color,
+            activeColor: color,
             activeTrackColor: color.withValues(alpha: 0.3),
             inactiveThumbColor: Colors.grey[400],
             inactiveTrackColor: Colors.grey[800],

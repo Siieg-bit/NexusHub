@@ -318,7 +318,7 @@ class _AcmScreenState extends State<AcmScreen>
             subtitle: Text(mod.description,
                 style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
             value: isEnabled,
-            activeThumbColor: AppTheme.primaryColor,
+            activeColor: AppTheme.primaryColor,
             onChanged: (val) {
               setState(() => _config[mod.key] = val);
             },
@@ -736,7 +736,7 @@ class _AcmScreenState extends State<AcmScreen>
                 title: const Text('Ativar Banner',
                     style: TextStyle(fontWeight: FontWeight.w500)),
                 value: welcomeBanner['enabled'] as bool? ?? false,
-                activeThumbColor: AppTheme.primaryColor,
+                activeColor: AppTheme.primaryColor,
                 onChanged: (val) {
                   setState(() {
                     welcomeBanner['enabled'] = val;
@@ -840,7 +840,7 @@ class _AcmScreenState extends State<AcmScreen>
                 subtitle: Text('Exibe contagem de online na bottom bar',
                     style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
                 value: bottomBar['show_online_count'] as bool? ?? true,
-                activeThumbColor: AppTheme.primaryColor,
+                activeColor: AppTheme.primaryColor,
                 onChanged: (val) {
                   setState(() {
                     bottomBar['show_online_count'] = val;
@@ -855,7 +855,7 @@ class _AcmScreenState extends State<AcmScreen>
                 subtitle: Text('Botão central para criar posts',
                     style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
                 value: bottomBar['show_create_button'] as bool? ?? true,
-                activeThumbColor: AppTheme.primaryColor,
+                activeColor: AppTheme.primaryColor,
                 onChanged: (val) {
                   setState(() {
                     bottomBar['show_create_button'] = val;
@@ -955,7 +955,7 @@ class _AcmScreenState extends State<AcmScreen>
           subtitle: Text(s.description,
               style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
           value: isEnabled,
-          activeThumbColor: AppTheme.primaryColor,
+          activeColor: AppTheme.primaryColor,
           onChanged: (val) {
             setState(() {
               visible[s.key] = val;

@@ -613,7 +613,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
               Switch(
                 value: _isPublic,
                 onChanged: (v) => setState(() => _isPublic = v),
-                activeThumbColor: AppTheme.primaryColor,
+                activeColor: AppTheme.primaryColor,
               ),
             ],
           ),
