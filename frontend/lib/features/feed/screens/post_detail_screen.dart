@@ -264,7 +264,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   break;
                 case 'pin_profile':
                   try {
-                    final isPinned = post.extra?['is_pinned_profile'] == true;
+                    final isPinned = post.isPinned;
                     await SupabaseService.table('posts')
                         .update({'is_pinned_profile': !isPinned})
                         .eq('id', widget.postId);
@@ -345,7 +345,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     child: Row(
                       children: [
                         Icon(
-                          (post?.extra?['is_pinned_profile'] == true)
+                          (post?.isPinned == true)
                               ? Icons.push_pin_rounded
                               : Icons.push_pin_outlined,
                           size: r.s(18),
@@ -353,7 +353,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         ),
                         SizedBox(width: r.s(10)),
                         Text(
-                          (post?.extra?['is_pinned_profile'] == true)
+                          (post?.isPinned == true)
                               ? 'Desafixar do Perfil'
                               : 'Fixar no Perfil',
                           style: TextStyle(color: context.textPrimary),
@@ -897,7 +897,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   void _showEditPostDialog(PostModel post) {
     final r = context.r;
     final titleCtrl = TextEditingController(text: post.title ?? '');
-    final contentCtrl = TextEditingController(text: post.content ?? '');
+    final contentCtrl = TextEditingController(text: post.content);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

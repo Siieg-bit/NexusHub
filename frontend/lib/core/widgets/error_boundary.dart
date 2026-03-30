@@ -79,7 +79,7 @@ class _DefaultErrorFallback extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.darkBg,
+      backgroundColor: AppTheme.scaffoldBg,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),

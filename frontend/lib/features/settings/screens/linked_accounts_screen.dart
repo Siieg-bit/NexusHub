@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
@@ -32,6 +33,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
                     'provider': i.provider,
                     'created_at': i.createdAt,
                     'id': i.id,
+                    'identity_id': i.identityId,
                   })
               .toList();
           _isLoading = false;
@@ -48,17 +50,19 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
     return _identities.any((i) => i['provider'] == provider);
   }
 
-  Future<void> _linkGoogle() async {
+  Future<void> _linkProvider(OAuthProvider provider) async {
     setState(() => _isLinking = true);
     try {
-      await SupabaseService.client.auth.linkIdentity(
-        OAuthProvider.google,
+      final res = await SupabaseService.client.auth.getLinkIdentityUrl(
+        provider,
       );
+      // Abre a URL de vinculação no navegador
+      await SupabaseService.client.auth.getSessionFromUrl(Uri.parse(res.url));
       await _loadIdentities();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Conta Google vinculada com sucesso!'),
+          SnackBar(
+            content: Text('Conta ${provider.name} vinculada com sucesso!'),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -67,37 +71,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao vincular Google: $e'),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: AppTheme.errorColor,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isLinking = false);
-    }
-  }
-
-  Future<void> _linkApple() async {
-    setState(() => _isLinking = true);
-    try {
-      await SupabaseService.client.auth.linkIdentity(
-        OAuthProvider.apple,
-      );
-      await _loadIdentities();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Conta Apple vinculada com sucesso!'),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro ao vincular Apple: $e'),
+            content: Text('Erro ao vincular ${provider.name}: $e'),
             behavior: SnackBarBehavior.floating,
             backgroundColor: AppTheme.errorColor,
           ),
@@ -156,10 +130,11 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
           id: identity['id'] as String,
           userId: SupabaseService.currentUserId ?? '',
           identityData: const {},
+          identityId: identity['identity_id'] as String? ?? '',
           provider: provider,
-          lastSignInAt: DateTime.now().toIso8601String(),
           createdAt: (identity['created_at'] as DateTime?)
               ?.toIso8601String(),
+          lastSignInAt: DateTime.now().toIso8601String(),
           updatedAt: DateTime.now().toIso8601String(),
         ),
       );
@@ -199,7 +174,10 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
         title: Text(
           'Contas Vinculadas',
           style: TextStyle(
-              color: context.textPrimary, fontWeight: FontWeight.w800),
+            color: context.textPrimary,
+            fontSize: r.fs(18),
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
       body: _isLoading
@@ -207,82 +185,71 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
           : ListView(
               padding: EdgeInsets.all(r.s(16)),
               children: [
-                Container(
-                  padding: EdgeInsets.all(r.s(16)),
-                  decoration: BoxDecoration(
-                    color: context.surfaceColor,
-                    borderRadius: BorderRadius.circular(r.s(16)),
-                  ),
-                  child: Text(
-                    'Vincule suas contas de redes sociais para fazer login mais facilmente no NexusHub.',
-                    style: TextStyle(
-                        color: Colors.grey[400], fontSize: r.fs(13)),
+                Text(
+                  'Vincule suas contas sociais para fazer login mais facilmente.',
+                  style: TextStyle(
+                    color: Colors.grey[400],
+                    fontSize: r.fs(14),
                   ),
                 ),
-                SizedBox(height: r.s(20)),
-                _buildProviderTile(
-                  r: r,
+                SizedBox(height: r.s(24)),
+                _ProviderTile(
                   provider: 'google',
                   label: 'Google',
                   icon: Icons.g_mobiledata_rounded,
-                  color: Colors.red,
-                  onLink: _linkGoogle,
+                  isLinked: _isProviderLinked('google'),
+                  isLoading: _isLinking,
+                  onLink: () => _linkProvider(OAuthProvider.google),
+                  onUnlink: () => _unlinkProvider('google'),
                 ),
                 SizedBox(height: r.s(12)),
-                _buildProviderTile(
-                  r: r,
+                _ProviderTile(
                   provider: 'apple',
                   label: 'Apple',
                   icon: Icons.apple_rounded,
-                  color: Colors.white,
-                  onLink: _linkApple,
-                ),
-                SizedBox(height: r.s(12)),
-                _buildProviderTile(
-                  r: r,
-                  provider: 'email',
-                  label: 'E-mail / Senha',
-                  icon: Icons.email_rounded,
-                  color: AppTheme.primaryColor,
-                  onLink: null, // E-mail é gerenciado nas configurações de conta
+                  isLinked: _isProviderLinked('apple'),
+                  isLoading: _isLinking,
+                  onLink: () => _linkProvider(OAuthProvider.apple),
+                  onUnlink: () => _unlinkProvider('apple'),
                 ),
               ],
             ),
     );
   }
+}
 
-  Widget _buildProviderTile({
-    required Responsive r,
-    required String provider,
-    required String label,
-    required IconData icon,
-    required Color color,
-    required VoidCallback? onLink,
-  }) {
-    final isLinked = _isProviderLinked(provider);
+class _ProviderTile extends StatelessWidget {
+  final String provider;
+  final String label;
+  final IconData icon;
+  final bool isLinked;
+  final bool isLoading;
+  final VoidCallback onLink;
+  final VoidCallback onUnlink;
+
+  const _ProviderTile({
+    required this.provider,
+    required this.label,
+    required this.icon,
+    required this.isLinked,
+    required this.isLoading,
+    required this.onLink,
+    required this.onUnlink,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
     return Container(
       padding: EdgeInsets.all(r.s(16)),
       decoration: BoxDecoration(
-        color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(r.s(16)),
-        border: Border.all(
-          color: isLinked
-              ? AppTheme.primaryColor.withValues(alpha: 0.3)
-              : Colors.transparent,
-        ),
+        color: context.cardBg,
+        borderRadius: BorderRadius.circular(r.s(12)),
       ),
       child: Row(
         children: [
-          Container(
-            width: r.s(44),
-            height: r.s(44),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: color, size: r.s(24)),
-          ),
-          SizedBox(width: r.s(16)),
+          Icon(icon, size: r.s(28), color: context.textPrimary),
+          SizedBox(width: r.s(12)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -291,52 +258,37 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
                   label,
                   style: TextStyle(
                     color: context.textPrimary,
-                    fontWeight: FontWeight.w700,
-                    fontSize: r.fs(15),
+                    fontSize: r.fs(16),
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(
                   isLinked ? 'Vinculado' : 'Não vinculado',
                   style: TextStyle(
-                    color: isLinked ? Colors.green : Colors.grey[600],
+                    color: isLinked ? Colors.green : Colors.grey[500],
                     fontSize: r.fs(12),
                   ),
                 ),
               ],
             ),
           ),
-          if (provider != 'email')
-            _isLinking
-                ? SizedBox(
-                    width: r.s(20),
-                    height: r.s(20),
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                            AppTheme.primaryColor)),
-                  )
-                : isLinked
-                    ? TextButton(
-                        onPressed: () => _unlinkProvider(provider),
-                        child: Text(
-                          'Desvincular',
-                          style: TextStyle(
-                              color: Colors.red, fontSize: r.fs(13)),
-                        ),
-                      )
-                    : ElevatedButton(
-                        onPressed: onLink,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryColor,
-                          padding: EdgeInsets.symmetric(
-                              horizontal: r.s(16), vertical: r.s(8)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(r.s(20)),
-                          ),
-                        ),
-                        child: Text('Vincular',
-                            style: TextStyle(fontSize: r.fs(13))),
-                      ),
+          if (isLoading)
+            SizedBox(
+              width: r.s(20),
+              height: r.s(20),
+              child: const CircularProgressIndicator(strokeWidth: 2),
+            )
+          else
+            TextButton(
+              onPressed: isLinked ? onUnlink : onLink,
+              child: Text(
+                isLinked ? 'Desvincular' : 'Vincular',
+                style: TextStyle(
+                  color: isLinked ? Colors.red : AppTheme.primaryColor,
+                  fontSize: r.fs(14),
+                ),
+              ),
+            ),
         ],
       ),
     );

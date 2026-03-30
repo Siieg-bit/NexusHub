@@ -232,7 +232,6 @@ class AppTheme {
               color: textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
           labelMedium: TextStyle(color: textSecondary, fontSize: 12),
           labelSmall: TextStyle(color: textHint, fontSize: 10),
-        ),
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: scaffoldBg,
@@ -397,7 +396,6 @@ class AppTheme {
               fontWeight: FontWeight.w600),
           labelMedium: TextStyle(color: textSecondaryLight, fontSize: 12),
           labelSmall: TextStyle(color: textHintLight, fontSize: 10),
-        ),
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: surfaceColorLight,

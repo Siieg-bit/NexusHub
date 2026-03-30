@@ -1307,6 +1307,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               ),
             ),
         ],
+        ),
       ),
     );
   }
@@ -1372,9 +1373,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     if (sticker != null) {
                       _sendMessage(
                         type: 'sticker',
-                        mediaUrl: sticker['sticker_url'] as String?,
-                        stickerId: sticker['sticker_id'] as String?,
-                        stickerUrl: sticker['sticker_url'] as String?,
+                        mediaUrl: sticker['sticker_url'],
+                        stickerId: sticker['sticker_id'],
+                        stickerUrl: sticker['sticker_url'],
                       );
                     }
                   },
@@ -1482,7 +1483,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       final bytes = await video.readAsBytes();
       await SupabaseService.storage
           .from('chat-media')
-          .uploadBinary(path, bytes, options: const StorageFileUploadOptions(contentType: 'video/mp4'));
+          .uploadBinary(path, bytes, fileOptions: const FileOptions(contentType: 'video/mp4'));
       final url = SupabaseService.storage.from('chat-media').getPublicUrl(path);
       await _sendMessage(type: 'video', mediaUrl: url, mediaType: 'video');
     } catch (e) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:video_player/video_player.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
@@ -107,9 +108,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
           'stories/${widget.communityId}/$userId/${DateTime.now().millisecondsSinceEpoch}_${video.name}';
       await SupabaseService.client.storage
           .from('media')
-          .uploadBinary(path, bytes, options: const StorageFileUploadOptions(
-            contentType: 'video/mp4',
-          ));
+          .uploadBinary(path, bytes, fileOptions: const FileOptions(contentType: 'video/mp4'));
       final url =
           SupabaseService.client.storage.from('media').getPublicUrl(path);
 
