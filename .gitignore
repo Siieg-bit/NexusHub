@@ -1,13 +1,60 @@
+# =============================================================================
+# NexusHub — .gitignore
+# =============================================================================
+
+# ── Node / JS ──
 node_modules/
+web-preview/client/node_modules/
+
+# ── Flutter / Dart ──
 .dart_tool/
 build/
 .flutter-plugins
 .flutter-plugins-dependencies
 *.iml
+.packages
+
+# ── IDEs ──
 .idea/
 .vscode/
+
+# ── Sistema Operacional ──
 .DS_Store
+Thumbs.db
 *.log
+
+# =============================================================================
+# SEGURANÇA — Nunca versionar estes arquivos
+# =============================================================================
+
+# Variáveis de ambiente (contêm credenciais reais)
 .env
+frontend/.env
+# Manter apenas os templates de exemplo
 !.env.example
-web-preview/client/node_modules/
+!frontend/.env.example
+
+# Firebase — contêm API keys e project IDs reais
+frontend/android/app/google-services.json
+frontend/ios/Runner/GoogleService-Info.plist
+frontend/lib/firebase_options.dart
+
+# Android Keystore — chaves de assinatura do APK
+*.jks
+*.keystore
+frontend/android/key.properties
+frontend/android/app/upload-keystore.jks
+
+# iOS Certificates
+*.p12
+*.mobileprovision
+*.cer
+
+# Supabase CLI — arquivos temporários com metadados da infraestrutura
+backend/supabase/.temp/
+backend/supabase/supabase/.temp/
+
+# Chaves privadas e certificados
+*.pem
+*.key
+*.crt
