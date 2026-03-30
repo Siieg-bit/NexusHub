@@ -91,6 +91,7 @@ class _VoiceRecorderState extends State<VoiceRecorder>
           path: path,
         );
 
+        if (!mounted) return;
         setState(() {
           _isRecording = true;
           _filePath = path;
@@ -102,6 +103,7 @@ class _VoiceRecorderState extends State<VoiceRecorder>
 
         // Timer de duração
         _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+          if (!mounted) return;
           if (mounted) setState(() => _seconds++);
         });
 

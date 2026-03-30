@@ -51,7 +51,8 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final userId = SupabaseService.currentUserId!;
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) return;
       final response = await SupabaseService.table('communities')
           .insert({
             'name': _nameController.text.trim(),

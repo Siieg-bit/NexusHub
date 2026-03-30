@@ -254,6 +254,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           .single();
       _profile = res;
 
+      if (!mounted) return;
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);

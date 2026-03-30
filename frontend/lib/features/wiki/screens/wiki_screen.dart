@@ -150,6 +150,7 @@ class _WikiListScreenState extends State<WikiListScreen> {
                   padding: EdgeInsets.all(r.s(16)),
                   child: TextField(
                     controller: _searchController,
+                    if (!mounted) return;
                     onChanged: (_) => setState(() {}),
                     style: TextStyle(color: context.textPrimary),
                     decoration: InputDecoration(
@@ -177,12 +178,14 @@ class _WikiListScreenState extends State<WikiListScreen> {
                         _CategoryChip(
                           label: 'Todos',
                           isSelected: _selectedCategory == null,
+                          if (!mounted) return;
                           onTap: () => setState(() => _selectedCategory = null),
                         ),
                         ..._categories.map((cat) => _CategoryChip(
                               label: cat,
                               isSelected: _selectedCategory == cat,
                               onTap: () =>
+                                  if (!mounted) return;
                                   setState(() => _selectedCategory = cat),
                             )),
                       ],
@@ -216,6 +219,7 @@ class _WikiListScreenState extends State<WikiListScreen> {
                             final entry = _filteredEntries[index];
                             return _WikiEntryCard(
                               entry: entry,
+                              if (!mounted) return;
                               onTap: () => context.push('/wiki/${entry['id']}'),
                             );
                           },
@@ -507,6 +511,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
         'user_id': userId,
         'rating': rating,
       });
+      if (!mounted) return;
       setState(() => _userRating = rating);
       // Reload to get updated average
       _loadEntry();

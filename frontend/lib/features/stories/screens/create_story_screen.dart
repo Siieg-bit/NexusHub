@@ -59,6 +59,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
     final image = await picker.pickImage(source: ImageSource.gallery);
     if (image == null) return;
 
+    if (!mounted) return;
     setState(() => _isSubmitting = true);
 
     try {
@@ -72,12 +73,14 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
       final url =
           SupabaseService.client.storage.from('media').getPublicUrl(path);
 
+      if (!mounted) return;
       setState(() {
         _mediaUrl = url;
         _type = 'image';
         _isSubmitting = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isSubmitting = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -99,6 +102,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
     );
     if (video == null) return;
 
+    if (!mounted) return;
     setState(() => _isSubmitting = true);
 
     try {
@@ -120,12 +124,14 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
       _videoPreviewController!.setLooping(true);
       _videoPreviewController!.play();
 
+      if (!mounted) return;
       setState(() {
         _mediaUrl = url;
         _type = 'video';
         _isSubmitting = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isSubmitting = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

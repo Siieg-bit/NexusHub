@@ -73,6 +73,7 @@ class _AcmScreenState extends State<AcmScreen>
       // Load real stats
       await _loadStats();
 
+      if (!mounted) return;
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
@@ -972,6 +973,7 @@ class _AcmScreenState extends State<AcmScreen>
     return RefreshIndicator(
       onRefresh: () async {
         await _loadStats();
+        if (!mounted) return;
         setState(() {});
       },
       child: ListView(

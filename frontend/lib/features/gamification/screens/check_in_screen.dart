@@ -80,11 +80,13 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
       final result = await SupabaseService.rpc('play_lucky_draw');
       if (result != null) {
         final data = result as Map<String, dynamic>;
+        if (!mounted) return;
         setState(() {
           _luckyDrawUsed = true;
           _luckyDrawPrize = data['coins_won'] as int? ?? 0;
         });
       } else {
+        if (!mounted) return;
         setState(() => _luckyDrawUsed = true);
       }
     } catch (_) {
@@ -105,6 +107,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
       if (result != null) {
         final data = result as Map<String, dynamic>;
         if (data['success'] == true) {
+          if (!mounted) return;
           setState(() {
             _consecutiveDays = data['restored_streak'] as int? ?? 1;
           });
@@ -161,6 +164,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
       if (result != null) {
         final data = result as Map<String, dynamic>;
         if (data['success'] == true) {
+          if (!mounted) return;
           setState(() {
             _checkedIn = true;
             _consecutiveDays = data['consecutive_days'] as int? ?? 0;
@@ -170,6 +174,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
           _pulseController.stop();
           _celebrateController.forward();
         } else {
+          if (!mounted) return;
           setState(() => _checkedIn = true);
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(

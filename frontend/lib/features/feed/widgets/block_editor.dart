@@ -154,6 +154,7 @@ class _BlockEditorState extends State<BlockEditor> {
     final image = await picker.pickImage(source: ImageSource.gallery);
     if (image == null) return;
 
+    if (!mounted) return;
     setState(() => _isUploading = true);
 
     try {
@@ -164,12 +165,14 @@ class _BlockEditorState extends State<BlockEditor> {
       await SupabaseService.client.storage.from('media').uploadBinary(path, bytes);
       final url = SupabaseService.client.storage.from('media').getPublicUrl(path);
 
+      if (!mounted) return;
       setState(() {
         _blocks[index].imageUrl = url;
         _isUploading = false;
       });
       _notifyChanged();
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isUploading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -195,6 +198,7 @@ class _BlockEditorState extends State<BlockEditor> {
     final image = await picker.pickImage(source: ImageSource.gallery);
     if (image == null) {
       // Remover bloco se cancelou
+      if (!mounted) return;
       setState(() {
         _blocks.removeAt(index);
         _focusedBlockIndex = null;

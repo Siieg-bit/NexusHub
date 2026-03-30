@@ -93,6 +93,7 @@ class _CallScreenState extends State<CallScreen> {
 
   Future<void> _loadParticipants() async {
     final p = await CallService.getParticipants();
+    if (!mounted) return;
     if (mounted) setState(() => _participants = p);
   }
 
@@ -107,16 +108,19 @@ class _CallScreenState extends State<CallScreen> {
 
   Future<void> _toggleMute() async {
     await CallService.toggleMute();
+    if (!mounted) return;
     setState(() => _isMuted = CallService.isMuted);
   }
 
   Future<void> _toggleSpeaker() async {
     await CallService.toggleSpeaker();
+    if (!mounted) return;
     setState(() => _isSpeakerOn = CallService.isSpeakerOn);
   }
 
   Future<void> _toggleCamera() async {
     await CallService.toggleCamera();
+    if (!mounted) return;
     setState(() => _isCameraOn = CallService.isCameraOn);
   }
 
@@ -126,6 +130,7 @@ class _CallScreenState extends State<CallScreen> {
 
   Future<void> _endCall() async {
     await CallService.leaveCall();
+    if (!mounted) return;
     if (mounted) Navigator.of(context).pop();
   }
 

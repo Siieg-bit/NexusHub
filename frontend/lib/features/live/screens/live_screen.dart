@@ -36,6 +36,7 @@ class _LiveScreenState extends State<LiveScreen> {
 
       final res = await query;
       _activeSessions = List<Map<String, dynamic>>.from(res as List);
+      if (!mounted) return;
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);

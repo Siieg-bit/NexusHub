@@ -111,6 +111,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           .select()
           .eq('id', widget.threadId)
           .single();
+      if (!mounted) return;
       if (mounted) setState(() => _threadInfo = res);
     } catch (_) {
       // Thread info is best-effort; chat still works without it
@@ -156,6 +157,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           .single();
       final pinnedId = threadData['pinned_message_id'] as String?;
       if (pinnedId == null) {
+        if (!mounted) return;
         if (mounted) setState(() => _pinnedMessages = []);
         return;
       }
@@ -305,6 +307,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         'user_id': userId,
         'background_url': url,
       });
+      if (!mounted) return;
       if (mounted) setState(() => _chatBackground = url);
     } catch (e) {
       debugPrint('[ChatRoom] Background save error: $e');
@@ -1750,6 +1753,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 await SupabaseService.rpc('delete_chat_message_for_me', params: {
                   'p_message_id': message.id,
                 });
+                if (!mounted) return;
                 if (mounted) setState(() => _messages.remove(message));
               } catch (e) {
                 if (mounted) {

@@ -94,6 +94,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       final url =
           SupabaseService.storage.from('post-media').getPublicUrl(path);
 
+      if (!mounted) return;
       setState(() => _mediaUrls.add(url));
     } catch (e) {
       if (mounted) {
@@ -127,6 +128,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       final url =
           SupabaseService.storage.from('post-media').getPublicUrl(path);
 
+      if (!mounted) return;
       setState(() => _coverImageUrl = url);
     } catch (e) {
       if (mounted) {

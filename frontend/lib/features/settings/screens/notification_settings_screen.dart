@@ -58,6 +58,7 @@ class _NotificationSettingsScreenState
           .maybeSingle();
 
       if (res != null) {
+        if (!mounted) return;
         setState(() {
           _pushEnabled = res['push_enabled'] as bool? ?? true;
           _pushLikes = res['push_likes'] as bool? ?? true;
@@ -434,6 +435,7 @@ class _NotificationSettingsScreenState
                                   lastDate: now.add(const Duration(days: 30)),
                                 );
                                 if (picked != null) {
+                                  if (!mounted) return;
                                   setState(() {
                                     _pauseAllUntil = true;
                                     _pauseUntilDate = picked;

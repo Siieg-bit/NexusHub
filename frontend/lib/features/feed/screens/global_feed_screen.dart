@@ -89,6 +89,7 @@ class GlobalFeedScreen extends ConsumerWidget {
               // Check-in
               IconButton(
                 icon: Icon(Icons.calendar_today_rounded, color: context.textPrimary),
+                if (!context.mounted) return;
                 onPressed: () => context.push('/check-in'),
                 tooltip: 'Check-in Diário',
               ),
@@ -98,6 +99,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                   smallSize: 8,
                   child: Icon(Icons.notifications_outlined, color: context.textPrimary),
                 ),
+                if (!context.mounted) return;
                 onPressed: () => context.push('/notifications'),
               ),
             ],
@@ -118,30 +120,35 @@ class GlobalFeedScreen extends ConsumerWidget {
                     icon: Icons.add_circle_rounded,
                     label: 'Criar\nComunidade',
                     color: AppTheme.primaryColor,
+                    if (!context.mounted) return;
                     onTap: () => context.push('/create-community'),
                   ),
                   _QuickAction(
                     icon: Icons.calendar_today_rounded,
                     label: 'Check-in\nDiário',
                     color: AppTheme.warningColor,
+                    if (!context.mounted) return;
                     onTap: () => context.push('/check-in'),
                   ),
                   _QuickAction(
                     icon: Icons.leaderboard_rounded,
                     label: 'Ranking\nGlobal',
                     color: AppTheme.accentColor,
+                    if (!context.mounted) return;
                     onTap: () => context.push('/leaderboard'),
                   ),
                   _QuickAction(
                     icon: Icons.quiz_rounded,
                     label: 'Quiz\nDiário',
                     color: AppTheme.primaryColor,
+                    if (!context.mounted) return;
                     onTap: () => context.push('/quiz'),
                   ),
                   _QuickAction(
                     icon: Icons.store_rounded,
                     label: 'Loja de\nCoins',
                     color: AppTheme.warningColor,
+                    if (!context.mounted) return;
                     onTap: () => context.push('/wallet'),
                   ),
                 ],

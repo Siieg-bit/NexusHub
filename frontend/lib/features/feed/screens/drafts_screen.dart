@@ -175,6 +175,7 @@ class _DraftCard extends ConsumerWidget {
       },
       child: GestureDetector(
         onTap: () {
+          if (!context.mounted) return;
           context.push('/create-post', extra: {'draftId': draft.id});
         },
         child: Container(

@@ -57,6 +57,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           .limit(20);
       _recentActions = List<Map<String, dynamic>>.from(actions as List);
 
+      if (!mounted) return;
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);

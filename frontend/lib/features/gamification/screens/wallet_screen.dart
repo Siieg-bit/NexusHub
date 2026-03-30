@@ -45,6 +45,7 @@ class _WalletScreenState extends State<WalletScreen> {
         _transactions = List<Map<String, dynamic>>.from(txRes as List);
       } catch (_) {}
 
+      if (!mounted) return;
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);

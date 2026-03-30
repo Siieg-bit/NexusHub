@@ -34,6 +34,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
 
       _blockedUsers = List<Map<String, dynamic>>.from(res as List);
     } catch (_) {}
+    if (!mounted) return;
     if (mounted) setState(() => _isLoading = false);
   }
 
@@ -110,6 +111,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
 
     try {
       await SupabaseService.table('blocks').delete().eq('id', blockId);
+      if (!mounted) return;
       setState(() {
         _blockedUsers.removeWhere((b) => b['id'] == blockId);
       });

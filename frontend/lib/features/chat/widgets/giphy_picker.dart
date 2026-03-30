@@ -73,6 +73,7 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
       final response = await http.get(url);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        if (!mounted) return;
         setState(() {
           _gifs = List<Map<String, dynamic>>.from(data['data'] as List);
         });

@@ -37,6 +37,7 @@ class _UserWallScreenState extends State<UserWallScreen> {
           .order('created_at', ascending: false)
           .limit(50);
       _messages = List<Map<String, dynamic>>.from(res as List);
+      if (!mounted) return;
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);

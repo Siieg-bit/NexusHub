@@ -68,6 +68,7 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
       const int rewardCoins = 5;
       final success = await AdService.showRewardedAd(rewardCoins: rewardCoins);
       if (success) {
+        if (!mounted) return;
         setState(() {
           _balance += rewardCoins;
           _adsWatchedToday++;

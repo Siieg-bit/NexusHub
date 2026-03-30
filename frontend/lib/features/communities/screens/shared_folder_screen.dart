@@ -87,6 +87,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
           .eq('status', 'ok')
           .order('created_at', ascending: false);
       _allFiles = List<Map<String, dynamic>>.from(res as List);
+      if (!mounted) return;
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);

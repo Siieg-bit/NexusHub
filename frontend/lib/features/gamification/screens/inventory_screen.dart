@@ -50,6 +50,7 @@ class _InventoryScreenState extends State<InventoryScreen>
           .map((i) => i['id'] as String)
           .toSet();
 
+      if (!mounted) return;
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
@@ -82,6 +83,7 @@ class _InventoryScreenState extends State<InventoryScreen>
       await SupabaseService.table('user_purchases')
           .update({'is_equipped': !isEquipped}).eq('id', itemId);
 
+      if (!mounted) return;
       setState(() {
         if (isEquipped) {
           _equippedIds.remove(itemId);

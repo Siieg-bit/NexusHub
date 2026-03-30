@@ -86,7 +86,8 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
     if (_selected.isEmpty) return;
     setState(() => _sending = true);
     try {
-      final userId = SupabaseService.currentUserId!;
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) return;
       for (final threadId in _selected) {
         await SupabaseService.table('chat_messages').insert({
           'thread_id': threadId,

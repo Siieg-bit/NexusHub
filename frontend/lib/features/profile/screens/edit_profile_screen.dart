@@ -53,7 +53,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
 
     setState(() => _isLoading = true);
     try {
-      final userId = SupabaseService.currentUserId!;
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) return;
       await SupabaseService.table('profiles').update({
         'nickname': _nicknameController.text.trim(),
         'bio': _bioController.text.trim(),

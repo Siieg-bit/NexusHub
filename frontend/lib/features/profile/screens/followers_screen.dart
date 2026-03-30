@@ -56,6 +56,7 @@ class _FollowersScreenState extends State<FollowersScreen>
           .order('created_at', ascending: false);
       _following = List<Map<String, dynamic>>.from(followingRes as List);
 
+      if (!mounted) return;
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
@@ -151,6 +152,7 @@ class _FollowersScreenState extends State<FollowersScreen>
           child: ListTile(
             contentPadding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
             onTap: () {
+              if (!mounted) return;
               if (userId != null) context.push('/user/$userId');
             },
             leading: CosmeticAvatar(

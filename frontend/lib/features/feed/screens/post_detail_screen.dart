@@ -235,6 +235,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             behavior: SnackBarBehavior.floating,
                           ),
                         );
+                        if (!mounted) return;
                         context.pop();
                       }
                     } catch (e) {
@@ -425,6 +426,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             userId: post.authorId,
                             avatarUrl: post.author?.iconUrl,
                             size: r.s(48),
+                            if (!mounted) return;
                             onTap: () => context.push('/user/${post.authorId}'),
                           ),
                           SizedBox(width: r.s(12)),
@@ -518,6 +520,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             return GestureDetector(
                               onTap: () {
                                 // Navegar para busca com tag
+                                if (!mounted) return;
                                 context.push('/search?q=%23$tag');
                               },
                               child: Container(

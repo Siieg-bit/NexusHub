@@ -45,6 +45,7 @@ class _FlagCenterScreenState extends State<FlagCenterScreen>
           .limit(50);
       _resolvedFlags = List<Map<String, dynamic>>.from(resolved as List);
 
+      if (!mounted) return;
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);

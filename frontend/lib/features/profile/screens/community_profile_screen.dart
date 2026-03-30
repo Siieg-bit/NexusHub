@@ -98,6 +98,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           .eq('follower_id', widget.userId);
       _followingCount = (followingRes as List).length;
 
+      if (!mounted) return;
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
@@ -495,6 +496,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                         .or('created_by.eq.$currentUserId,created_by.eq.${widget.userId}')
                                         .maybeSingle();
                                     if (existing != null) {
+                                      if (!mounted) return;
                                       if (mounted) context.push('/community/${widget.communityId}/chat/${existing['id']}');
                                     } else {
                                       // Criar novo DM
@@ -512,6 +514,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                         {'thread_id': newThread['id'], 'user_id': currentUserId},
                                         {'thread_id': newThread['id'], 'user_id': widget.userId},
                                       ]);
+                                      if (!mounted) return;
                                       if (mounted) context.push('/community/${widget.communityId}/chat/${newThread['id']}');
                                     }
                                   } catch (e) {
@@ -1281,6 +1284,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                       await SupabaseService.table('bookmarks')
                           .delete()
                           .eq('id', bookmark['id']);
+                      if (!mounted) return;
                       setState(() => _savedPosts.removeAt(index));
                     } catch (_) {}
                   },
@@ -1347,6 +1351,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           .eq('profile_wall_id', widget.userId)
           .order('created_at', ascending: false)
           .limit(30);
+      if (!mounted) return;
       setState(() {
         _wallComments = (wallRes as List)
             .map((e) => CommentModel.fromJson(e))

@@ -59,6 +59,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
       // Carregar dados de check-in para o heatmap
       await _loadCheckinHeatmap(userId);
 
+      if (!mounted) return;
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);

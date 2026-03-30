@@ -1288,6 +1288,7 @@ class _LiveChatroomsSectionState extends State<_LiveChatroomsSection> {
             final membersCount = chat['members_count'] as int? ?? 0;
 
             return AminoAnimations.cardPress(
+              if (!mounted) return;
               onTap: () => context.push('/chat/${chat['id']}'),
               child: Container(
                 width: r.s(150),

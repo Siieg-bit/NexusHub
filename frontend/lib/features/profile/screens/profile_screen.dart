@@ -807,7 +807,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       if (user.isFollowing == true) {
         await SupabaseService.table('follows')
             .delete()
-            .eq('follower_id', SupabaseService.currentUserId!)
+            .eq('follower_id', SupabaseService.currentUserId ?? '')
             .eq('following_id', widget.userId);
       } else {
         await SupabaseService.table('follows').insert({
@@ -1208,6 +1208,7 @@ class _WallTab extends ConsumerWidget {
                           children: [
                             GestureDetector(
                               onTap: () =>
+                                  if (!mounted) return;
                                   context.push('/user/$authorId'),
                               child: CircleAvatar(
                                 radius: 16,

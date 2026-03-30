@@ -59,6 +59,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
       _loadModerationStats(),
       _loadGamificationStats(),
     ]);
+    if (!mounted) return;
     if (mounted) setState(() => _isLoading = false);
   }
 

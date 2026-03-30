@@ -145,6 +145,7 @@ class _EditCommunityProfileScreenState
             behavior: SnackBarBehavior.floating,
           ),
         );
+        if (!mounted) return;
         Navigator.of(context).pop(true);
       }
     } catch (e) {

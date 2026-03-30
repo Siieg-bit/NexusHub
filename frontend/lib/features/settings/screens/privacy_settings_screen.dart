@@ -50,6 +50,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
           .eq('id', userId)
           .maybeSingle();
       if (profileRes != null) {
+        if (!mounted) return;
         setState(() {
           _isGhostMode = profileRes['is_ghost_mode'] as bool? ?? false;
           _disableIncomingChats = profileRes['disable_incoming_chats'] as bool? ?? false;

@@ -34,6 +34,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
 
       _devices = List<Map<String, dynamic>>.from(res as List);
     } catch (_) {}
+    if (!mounted) return;
     if (mounted) setState(() => _isLoading = false);
   }
 
@@ -83,6 +84,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
       await SupabaseService.table('device_fingerprints')
           .delete()
           .eq('id', deviceId);
+      if (!mounted) return;
       setState(() {
         _devices.removeWhere((d) => d['id'] == deviceId);
       });

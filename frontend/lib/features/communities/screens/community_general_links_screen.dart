@@ -238,6 +238,7 @@ class _CommunityGeneralLinksScreenState
 
     if (confirmed != true) return;
 
+    if (!mounted) return;
     setState(() => _isSaving = true);
     try {
       await SupabaseService.table('community_general_links')
@@ -392,6 +393,7 @@ class _CommunityGeneralLinksScreenState
                                       .update({'is_active': !isActive})
                                       .eq('id', link['id'] as String);
                                 } catch (e) {
+                                  if (!mounted) return;
                                   setState(() {
                                     _links[index]['is_active'] = isActive;
                                   });
