@@ -267,7 +267,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                           ),
                         ),
                         SizedBox(height: r.s(12)),
-                        ...IAPService.coinPackages
+                        ...IAPService.fallbackCoinPackages
                             .map(_buildCoinPackageCard),
                         SizedBox(height: r.s(16)),
 

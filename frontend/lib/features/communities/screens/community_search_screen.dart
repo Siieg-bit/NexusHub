@@ -131,7 +131,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
       final pattern = '%$query%';
 
       // Buscar posts com filtros
-      var postQuery = SupabaseService.table('posts')
+      dynamic postQuery = SupabaseService.table('posts')
           .select('*, profiles!posts_author_id_fkey(id, nickname, icon_url, level)')
           .eq('community_id', widget.communityId)
           .ilike('title', pattern);
@@ -233,7 +233,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
     );
   }
 
-  Widget _buildSearchField(ResponsiveHelper r) {
+  Widget _buildSearchField(Responsive r) {
     return Container(
       height: r.s(40),
       decoration: BoxDecoration(
@@ -269,7 +269,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
     );
   }
 
-  Widget _buildSuggestionsOverlay(ResponsiveHelper r) {
+  Widget _buildSuggestionsOverlay(Responsive r) {
     final items = [
       if (_query.isEmpty && _recentSearches.isNotEmpty) ..._recentSearches.take(5),
       ..._suggestions,
@@ -312,7 +312,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
   // ─────────────────────────────────────────────
   // TAB: POSTS
   // ─────────────────────────────────────────────
-  Widget _buildPostsTab(ResponsiveHelper r) {
+  Widget _buildPostsTab(Responsive r) {
     return Column(
       children: [
         // Barra de filtros
@@ -335,7 +335,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
     );
   }
 
-  Widget _buildPostFilters(ResponsiveHelper r) {
+  Widget _buildPostFilters(Responsive r) {
     return Container(
       height: r.s(44),
       padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(6)),
@@ -373,7 +373,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
     );
   }
 
-  void _showSortDialog(ResponsiveHelper r) {
+  void _showSortDialog(Responsive r) {
     showModalBottomSheet(
       context: context,
       backgroundColor: context.cardBg,
@@ -431,7 +431,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
     );
   }
 
-  void _showTypeDialog(ResponsiveHelper r) {
+  void _showTypeDialog(Responsive r) {
     showModalBottomSheet(
       context: context,
       backgroundColor: context.cardBg,
@@ -474,7 +474,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
     );
   }
 
-  Widget _buildPostTile(ResponsiveHelper r, Map<String, dynamic> post) {
+  Widget _buildPostTile(Responsive r, Map<String, dynamic> post) {
     final author = post['profiles'] as Map<String, dynamic>?;
     final title = post['title'] as String? ?? '';
     final type = post['type'] as String? ?? 'text';
@@ -531,7 +531,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
                         CosmeticAvatar(
                           userId: author['id'] as String? ?? '',
                           avatarUrl: author['icon_url'] as String?,
-                          radius: r.s(8),
+                          size: r.s(16),
                         ),
                         SizedBox(width: r.s(4)),
                         Text(
@@ -574,7 +574,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
   // ─────────────────────────────────────────────
   // TAB: MEMBROS
   // ─────────────────────────────────────────────
-  Widget _buildMembersTab(ResponsiveHelper r) {
+  Widget _buildMembersTab(Responsive r) {
     return _query.isEmpty
         ? _buildEmptySearch(r, 'Busque membros desta comunidade')
         : _isSearching
@@ -590,7 +590,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
                   );
   }
 
-  Widget _buildMemberTile(ResponsiveHelper r, Map<String, dynamic> member) {
+  Widget _buildMemberTile(Responsive r, Map<String, dynamic> member) {
     final nickname = member['nickname'] as String? ?? '';
     final level = member['level'] as int? ?? 1;
     final reputation = member['reputation'] as int? ?? 0;
@@ -609,7 +609,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
             CosmeticAvatar(
               userId: member['id'] as String? ?? '',
               avatarUrl: member['icon_url'] as String?,
-              radius: r.s(22),
+              size: r.s(44),
             ),
             SizedBox(width: r.s(12)),
             Expanded(
@@ -644,7 +644,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
   // ─────────────────────────────────────────────
   // TAB: WIKI
   // ─────────────────────────────────────────────
-  Widget _buildWikiTab(ResponsiveHelper r) {
+  Widget _buildWikiTab(Responsive r) {
     return _query.isEmpty
         ? _buildEmptySearch(r, 'Busque artigos wiki desta comunidade')
         : _isSearching
@@ -660,7 +660,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
                   );
   }
 
-  Widget _buildWikiTile(ResponsiveHelper r, Map<String, dynamic> wiki) {
+  Widget _buildWikiTile(Responsive r, Map<String, dynamic> wiki) {
     final title = wiki['title'] as String? ?? '';
     final author = wiki['profiles'] as Map<String, dynamic>?;
     final content = wiki['content'] as String? ?? '';
@@ -731,7 +731,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
   // ─────────────────────────────────────────────
   // ESTADOS VAZIOS
   // ─────────────────────────────────────────────
-  Widget _buildEmptySearch(ResponsiveHelper r, String message) {
+  Widget _buildEmptySearch(Responsive r, String message) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -792,7 +792,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
     );
   }
 
-  Widget _buildNoResults(ResponsiveHelper r, String message) {
+  Widget _buildNoResults(Responsive r, String message) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -825,7 +825,7 @@ class _FilterChip extends StatelessWidget {
   final String label;
   final IconData icon;
   final VoidCallback onTap;
-  final ResponsiveHelper r;
+  final Responsive r;
 
   const _FilterChip({
     required this.label,
@@ -875,7 +875,7 @@ class _SortOption extends StatelessWidget {
   final IconData icon;
   final bool selected;
   final VoidCallback onTap;
-  final ResponsiveHelper r;
+  final Responsive r;
 
   const _SortOption({
     required this.label,
@@ -910,7 +910,7 @@ class _SortOption extends StatelessWidget {
 
 class _PostTypeBadge extends StatelessWidget {
   final String type;
-  final ResponsiveHelper r;
+  final Responsive r;
 
   const _PostTypeBadge({required this.type, required this.r});
 
