@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -20,6 +21,7 @@ class NotificationsScreen extends ConsumerStatefulWidget {
 
 class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   final _scrollController = ScrollController();
+  Timer? _scrollDebounce;
 
   @override
   void initState() {
@@ -29,6 +31,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
   @override
   void dispose() {
+    _scrollDebounce?.cancel();
     _scrollController.dispose();
     super.dispose();
   }
@@ -36,8 +39,12 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   void _onScroll() {
     if (!_scrollController.hasClients) return;
     if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      ref.read(notificationProvider.notifier).loadMore();
+        _scrollController.position.maxScrollExtent - 300) {
+      // Debounce de 100ms para evitar chamadas duplicadas
+      if (_scrollDebounce?.isActive ?? false) return;
+      _scrollDebounce = Timer(const Duration(milliseconds: 100), () {
+        ref.read(notificationProvider.notifier).loadMore();
+      });
     }
   }
 
@@ -178,11 +185,70 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               padding: EdgeInsets.all(r.s(16)),
-              itemCount: notifications.length + (notifState.hasMore ? 1 : 0),
+              itemCount: notifications.length +
+                  (notifState.loadMoreError != null
+                      ? 1
+                      : notifState.hasMore
+                          ? 1
+                          : 0),
               separatorBuilder: (context, index) => SizedBox(height: r.s(12)),
               itemBuilder: (context, index) {
-                // Loading indicator no final da lista
+                // Trailing widget: retry banner ou loading spinner
                 if (index >= notifications.length) {
+                  // Erro em página intermediária → retry inline
+                  if (notifState.loadMoreError != null) {
+                    return Padding(
+                      padding: EdgeInsets.symmetric(vertical: r.s(8)),
+                      child: Container(
+                        padding: EdgeInsets.all(r.s(12)),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(r.s(10)),
+                          border: Border.all(
+                              color: Colors.red.withValues(alpha: 0.2)),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.error_outline_rounded,
+                                color: Colors.red[300], size: r.s(20)),
+                            SizedBox(width: r.s(10)),
+                            Expanded(
+                              child: Text(
+                                'Erro ao carregar mais notificações',
+                                style: TextStyle(
+                                  color: Colors.red[300],
+                                  fontSize: r.fs(13),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () => ref
+                                  .read(notificationProvider.notifier)
+                                  .retryLoadMore(),
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: r.s(12), vertical: r.s(6)),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(r.s(8)),
+                                ),
+                                child: Text(
+                                  'Tentar novamente',
+                                  style: TextStyle(
+                                    color: Colors.red[300],
+                                    fontSize: r.fs(12),
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+                  // Loading spinner
                   return Padding(
                     padding: EdgeInsets.symmetric(vertical: r.s(16)),
                     child: const Center(

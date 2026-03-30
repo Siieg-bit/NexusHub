@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_service.dart';
+import '../services/cache_service.dart';
 import 'package:flutter/foundation.dart';
 
 /// ============================================================================
@@ -12,6 +13,8 @@ import 'package:flutter/foundation.dart';
 /// - Contagem de não lidas
 /// - Marcar como lida (individual e em massa)
 /// - Realtime para novas notificações
+/// - Feedback de erro em páginas intermediárias (Sprint 3D)
+/// - Cache offline-first via CacheService (Sprint 3D)
 /// ============================================================================
 
 class NotificationState {
@@ -19,21 +22,30 @@ class NotificationState {
   final int unreadCount;
   final bool hasMore;
 
+  /// Erro ocorrido ao carregar página intermediária.
+  /// Quando não-nulo, a tela deve exibir retry inline ao invés de spinner.
+  final String? loadMoreError;
+
   const NotificationState({
     this.notifications = const [],
     this.unreadCount = 0,
     this.hasMore = true,
+    this.loadMoreError,
   });
 
   NotificationState copyWith({
     List<Map<String, dynamic>>? notifications,
     int? unreadCount,
     bool? hasMore,
+    String? loadMoreError,
+    bool clearLoadMoreError = false,
   }) {
     return NotificationState(
       notifications: notifications ?? this.notifications,
       unreadCount: unreadCount ?? this.unreadCount,
       hasMore: hasMore ?? this.hasMore,
+      loadMoreError:
+          clearLoadMoreError ? null : (loadMoreError ?? this.loadMoreError),
     );
   }
 }
@@ -65,6 +77,17 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
     final userId = SupabaseService.currentUserId;
     if (userId == null) return const NotificationState();
 
+    // ── Cache-first: exibir dados do cache enquanto busca rede ──
+    final cached = CacheService.getCachedNotifications();
+    NotificationState? cachedState;
+    if (cached != null && cached.isNotEmpty) {
+      cachedState = NotificationState(
+        notifications: cached,
+        unreadCount: cached.where((n) => n['is_read'] != true).length,
+        hasMore: cached.length >= _pageSize,
+      );
+    }
+
     try {
       final res = await SupabaseService.table('notifications')
           .select(_selectWithActor)
@@ -79,6 +102,9 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
           .count(CountOption.exact);
 
       final list = List<Map<String, dynamic>>.from(res as List? ?? []);
+
+      // Atualizar cache com dados frescos
+      CacheService.cacheNotifications(list);
 
       return NotificationState(
         notifications: list,
@@ -102,12 +128,16 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
 
         final list = List<Map<String, dynamic>>.from(res as List? ?? []);
 
+        CacheService.cacheNotifications(list);
+
         return NotificationState(
           notifications: list,
           unreadCount: unreadRes.count,
           hasMore: list.length >= _pageSize,
         );
       } catch (_) {
+        // Se offline e temos cache, usar cache
+        if (cachedState != null) return cachedState;
         return const NotificationState();
       }
     }
@@ -161,12 +191,27 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
       state = AsyncData(current.copyWith(
         notifications: [...current.notifications, ...list],
         hasMore: list.length >= _pageSize,
+        clearLoadMoreError: true,
       ));
     } catch (e) {
       _page--;
+      // Surfacear o erro no state para que a tela mostre retry inline
+      state = AsyncData(current.copyWith(
+        loadMoreError: 'Erro ao carregar mais notificações',
+      ));
+      debugPrint('[notification_provider] loadMore error: $e');
     } finally {
       _isLoadingMore = false;
     }
+  }
+
+  /// Retry explícito após falha em loadMore.
+  /// Limpa o erro e tenta novamente.
+  Future<void> retryLoadMore() async {
+    final current = state.valueOrNull;
+    if (current == null) return;
+    state = AsyncData(current.copyWith(clearLoadMoreError: true));
+    await loadMore();
   }
 
   Future<void> markAsRead(String notificationId) async {

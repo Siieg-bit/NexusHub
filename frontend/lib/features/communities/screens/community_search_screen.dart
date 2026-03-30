@@ -31,7 +31,8 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
 
   bool _isSearching = false;
   String _query = '';
-  Timer? _debounce;
+  Timer? _suggestDebounce;
+  Timer? _searchDebounce;
 
   // Resultados
   List<Map<String, dynamic>> _posts = [];
@@ -65,13 +66,15 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
     _tabController.dispose();
     _searchController.dispose();
     _focusNode.dispose();
-    _debounce?.cancel();
+    _suggestDebounce?.cancel();
+    _searchDebounce?.cancel();
     super.dispose();
   }
 
   void _onSearchChanged(String value) {
     setState(() => _query = value);
-    _debounce?.cancel();
+    _suggestDebounce?.cancel();
+    _searchDebounce?.cancel();
     if (value.trim().isEmpty) {
       setState(() {
         _posts = [];
@@ -84,11 +87,11 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
       return;
     }
     // Debounce de 300ms para autocomplete
-    _debounce = Timer(const Duration(milliseconds: 300), () {
+    _suggestDebounce = Timer(const Duration(milliseconds: 300), () {
       _fetchSuggestions(value.trim());
     });
     // Debounce de 600ms para busca completa
-    _debounce = Timer(const Duration(milliseconds: 600), () {
+    _searchDebounce = Timer(const Duration(milliseconds: 600), () {
       _performSearch(value.trim());
     });
   }

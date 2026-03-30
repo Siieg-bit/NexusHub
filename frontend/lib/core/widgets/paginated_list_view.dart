@@ -6,6 +6,11 @@ import '../utils/responsive.dart';
 /// ============================================================================
 /// PaginatedListView — Widget reutilizável de lista com paginação e infinite scroll.
 ///
+/// Melhorias Sprint 3D:
+/// - Feedback inline de erro em páginas intermediárias (retry banner)
+/// - Debounce de scroll (evita chamadas duplicadas de _loadNextPage)
+/// - Prefetch threshold configurável
+///
 /// Uso:
 /// ```dart
 /// PaginatedListView<PostModel>(
@@ -42,6 +47,10 @@ class PaginatedListView<T> extends StatefulWidget {
   final bool enableRefresh;
   final Future<void> Function()? onRefresh;
 
+  /// Distância em pixels antes do final da lista para iniciar prefetch.
+  /// Padrão: 300px. Valores maiores iniciam o carregamento mais cedo.
+  final double prefetchThreshold;
+
   const PaginatedListView({
     super.key,
     required this.fetchPage,
@@ -59,6 +68,7 @@ class PaginatedListView<T> extends StatefulWidget {
     this.shimmerCount = 5,
     this.enableRefresh = true,
     this.onRefresh,
+    this.prefetchThreshold = 300,
   });
 
   @override
@@ -71,8 +81,15 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
   bool _isLoading = false;
   bool _hasMore = true;
   bool _isFirstLoad = true;
-  String? _error;
+
+  /// Erro na primeira carga (tela inteira de erro).
+  String? _firstLoadError;
+
+  /// Erro em páginas intermediárias (banner inline de retry).
+  String? _loadMoreError;
+
   late ScrollController _scrollController;
+  Timer? _scrollDebounce;
 
   @override
   void initState() {
@@ -84,6 +101,7 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
 
   @override
   void dispose() {
+    _scrollDebounce?.cancel();
     if (widget.scrollController == null) {
       _scrollController.dispose();
     }
@@ -93,15 +111,20 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
   void _onScroll() {
     if (!_scrollController.hasClients) return;
     if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      _loadNextPage();
+        _scrollController.position.maxScrollExtent - widget.prefetchThreshold) {
+      // Debounce de 100ms para evitar chamadas duplicadas em scroll rápido
+      if (_scrollDebounce?.isActive ?? false) return;
+      _scrollDebounce = Timer(const Duration(milliseconds: 100), () {
+        _loadNextPage();
+      });
     }
   }
 
   Future<void> _loadFirstPage() async {
     setState(() {
       _isFirstLoad = true;
-      _error = null;
+      _firstLoadError = null;
+      _loadMoreError = null;
     });
     try {
       final items = await widget.fetchPage(0, widget.pageSize);
@@ -117,7 +140,7 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = e.toString();
+          _firstLoadError = e.toString();
           _isFirstLoad = false;
         });
       }
@@ -125,7 +148,7 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
   }
 
   Future<void> _loadNextPage() async {
-    if (_isLoading || !_hasMore) return;
+    if (_isLoading || !_hasMore || _loadMoreError != null) return;
     setState(() => _isLoading = true);
     try {
       final items = await widget.fetchPage(_currentPage, widget.pageSize);
@@ -135,16 +158,23 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
           _currentPage++;
           _hasMore = items.length >= widget.pageSize;
           _isLoading = false;
+          _loadMoreError = null;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _error = e.toString();
+          _loadMoreError = e.toString();
         });
       }
     }
+  }
+
+  /// Retry para erro em página intermediária.
+  void _retryLoadMore() {
+    setState(() => _loadMoreError = null);
+    _loadNextPage();
   }
 
   Future<void> _refresh() async {
@@ -153,8 +183,21 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
     }
     _currentPage = 0;
     _hasMore = true;
-    _error = null;
+    _firstLoadError = null;
+    _loadMoreError = null;
     await _loadFirstPage();
+  }
+
+  /// Calcula quantos itens extras existem no final da lista:
+  /// - 1 para loading spinner (quando carregando)
+  /// - 1 para retry banner (quando erro intermediário)
+  /// - 1 para spinner de "mais itens" (quando hasMore e sem erro)
+  /// - 0 quando não há mais itens e sem erro
+  int get _trailingCount {
+    if (_isLoading) return 1;
+    if (_loadMoreError != null) return 1;
+    if (_hasMore) return 1;
+    return 0;
   }
 
   @override
@@ -165,8 +208,8 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
       return _buildShimmer();
     }
 
-    // ── Error state ──
-    if (_error != null && _items.isEmpty) {
+    // ── Error state (first load failed, no items) ──
+    if (_firstLoadError != null && _items.isEmpty) {
       return _buildError();
     }
 
@@ -176,6 +219,7 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
     }
 
     // ── List with items ──
+    final headerOffset = widget.header != null ? 1 : 0;
     final listView = ListView.builder(
       controller: widget.shrinkWrap ? null : _scrollController,
       shrinkWrap: widget.shrinkWrap,
@@ -184,28 +228,18 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
               ? const NeverScrollableScrollPhysics()
               : const AlwaysScrollableScrollPhysics()),
       padding: widget.padding ?? EdgeInsets.symmetric(vertical: r.s(8)),
-      itemCount:
-          _items.length + (widget.header != null ? 1 : 0) + (_hasMore ? 1 : 0),
+      itemCount: _items.length + headerOffset + _trailingCount,
       itemBuilder: (context, index) {
         // Header
         if (widget.header != null && index == 0) {
           return widget.header!;
         }
 
-        final itemIndex = widget.header != null ? index - 1 : index;
+        final itemIndex = index - headerOffset;
 
-        // Loading indicator at bottom
+        // Trailing widget (loading / error / prefetch spinner)
         if (itemIndex >= _items.length) {
-          return Padding(
-            padding: EdgeInsets.all(r.s(16)),
-            child: Center(
-              child: SizedBox(
-                width: r.s(24),
-                height: r.s(24),
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            ),
-          );
+          return _buildTrailing(r);
         }
 
         final item = _items[itemIndex];
@@ -229,6 +263,72 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
     }
 
     return listView;
+  }
+
+  /// Widget exibido no final da lista: spinner, retry banner, ou nada.
+  Widget _buildTrailing(ResponsiveUtil r) {
+    // Erro em página intermediária → banner de retry inline
+    if (_loadMoreError != null) {
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
+        child: Container(
+          padding: EdgeInsets.all(r.s(12)),
+          decoration: BoxDecoration(
+            color: Colors.red.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(r.s(10)),
+            border: Border.all(color: Colors.red.withValues(alpha: 0.2)),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.error_outline_rounded,
+                  color: Colors.red[300], size: r.s(20)),
+              SizedBox(width: r.s(10)),
+              Expanded(
+                child: Text(
+                  'Erro ao carregar mais itens',
+                  style: TextStyle(
+                    color: Colors.red[300],
+                    fontSize: r.fs(13),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: _retryLoadMore,
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: r.s(12), vertical: r.s(6)),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(r.s(8)),
+                  ),
+                  child: Text(
+                    'Tentar novamente',
+                    style: TextStyle(
+                      color: Colors.red[300],
+                      fontSize: r.fs(12),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Loading spinner
+    return Padding(
+      padding: EdgeInsets.all(r.s(16)),
+      child: Center(
+        child: SizedBox(
+          width: r.s(24),
+          height: r.s(24),
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      ),
+    );
   }
 
   Widget _buildShimmer() {
@@ -265,7 +365,7 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
             Text('Algo deu errado',
                 style: Theme.of(context).textTheme.titleMedium),
             SizedBox(height: r.s(8)),
-            Text(_error ?? 'Erro desconhecido',
+            Text(_firstLoadError ?? 'Erro desconhecido',
                 textAlign: TextAlign.center,
                 style: Theme.of(context)
                     .textTheme
@@ -308,6 +408,8 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
 
 /// ============================================================================
 /// PaginatedGridView — Grid com paginação e infinite scroll.
+///
+/// Mesmas melhorias Sprint 3D: error inline, debounce, prefetch configurável.
 /// ============================================================================
 class PaginatedGridView<T> extends StatefulWidget {
   final FetchPage<T> fetchPage;
@@ -321,6 +423,7 @@ class PaginatedGridView<T> extends StatefulWidget {
   final EdgeInsets? padding;
   final ScrollController? scrollController;
   final Widget Function(BuildContext context)? shimmerBuilder;
+  final double prefetchThreshold;
 
   const PaginatedGridView({
     super.key,
@@ -335,6 +438,7 @@ class PaginatedGridView<T> extends StatefulWidget {
     this.padding,
     this.scrollController,
     this.shimmerBuilder,
+    this.prefetchThreshold = 300,
   });
 
   @override
@@ -347,8 +451,10 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
   bool _isLoading = false;
   bool _hasMore = true;
   bool _isFirstLoad = true;
-  String? _error;
+  String? _firstLoadError;
+  String? _loadMoreError;
   late ScrollController _scrollController;
+  Timer? _scrollDebounce;
 
   @override
   void initState() {
@@ -360,6 +466,7 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
 
   @override
   void dispose() {
+    _scrollDebounce?.cancel();
     if (widget.scrollController == null) {
       _scrollController.dispose();
     }
@@ -369,8 +476,11 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
   void _onScroll() {
     if (!_scrollController.hasClients) return;
     if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      _loadNextPage();
+        _scrollController.position.maxScrollExtent - widget.prefetchThreshold) {
+      if (_scrollDebounce?.isActive ?? false) return;
+      _scrollDebounce = Timer(const Duration(milliseconds: 100), () {
+        _loadNextPage();
+      });
     }
   }
 
@@ -383,21 +493,22 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
           _currentPage = 1;
           _hasMore = items.length >= widget.pageSize;
           _isFirstLoad = false;
-          _error = null;
+          _firstLoadError = null;
+          _loadMoreError = null;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _isFirstLoad = false;
-          _error = e.toString();
+          _firstLoadError = e.toString();
         });
       }
     }
   }
 
   Future<void> _loadNextPage() async {
-    if (_isLoading || !_hasMore) return;
+    if (_isLoading || !_hasMore || _loadMoreError != null) return;
     setState(() => _isLoading = true);
     try {
       final items = await widget.fetchPage(_currentPage, widget.pageSize);
@@ -407,16 +518,29 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
           _currentPage++;
           _hasMore = items.length >= widget.pageSize;
           _isLoading = false;
+          _loadMoreError = null;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _error = e.toString();
+          _loadMoreError = e.toString();
         });
       }
     }
+  }
+
+  void _retryLoadMore() {
+    setState(() => _loadMoreError = null);
+    _loadNextPage();
+  }
+
+  int get _trailingCount {
+    if (_isLoading) return 1;
+    if (_loadMoreError != null) return 1;
+    if (_hasMore) return 1;
+    return 0;
   }
 
   @override
@@ -438,8 +562,8 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
       );
     }
 
-    // Error state
-    if (_error != null && _items.isEmpty) {
+    // Error state (first load)
+    if (_firstLoadError != null && _items.isEmpty) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -453,7 +577,7 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
             FilledButton.icon(
               onPressed: () {
                 setState(() {
-                  _error = null;
+                  _firstLoadError = null;
                   _isFirstLoad = true;
                 });
                 _loadFirstPage();
@@ -478,6 +602,8 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
         _items.clear();
         _currentPage = 0;
         _hasMore = true;
+        _firstLoadError = null;
+        _loadMoreError = null;
         await _loadFirstPage();
         if (!mounted) return;
       },
@@ -490,9 +616,33 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
           crossAxisSpacing: widget.crossAxisSpacing,
           childAspectRatio: widget.childAspectRatio,
         ),
-        itemCount: _items.length + (_hasMore ? 1 : 0),
+        itemCount: _items.length + _trailingCount,
         itemBuilder: (context, index) {
           if (index >= _items.length) {
+            // Erro em página intermediária
+            if (_loadMoreError != null) {
+              return Center(
+                child: GestureDetector(
+                  onTap: _retryLoadMore,
+                  child: Padding(
+                    padding: EdgeInsets.all(r.s(8)),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.error_outline_rounded,
+                            color: Colors.red[300], size: r.s(20)),
+                        SizedBox(height: r.s(4)),
+                        Text('Toque para tentar novamente',
+                            style: TextStyle(
+                              color: Colors.red[300],
+                              fontSize: r.fs(11),
+                            )),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }
             return Center(
               child: Padding(
                 padding: EdgeInsets.all(r.s(8)),
