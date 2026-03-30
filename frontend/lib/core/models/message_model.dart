@@ -138,7 +138,7 @@ class MessageModel {
   bool get isTextMessage => type == 'text' && mediaUrl == null && replyToId == null;
   bool get isImageMessage => mediaType == 'image' && mediaUrl != null;
   bool get isGifMessage => mediaType == 'gif' && mediaUrl != null;
-  bool get isSystemMessage => type.startsWith('system_');
+  bool get isSystemMessage => type == 'system' || type.startsWith('system_');
   bool get isStickerMessage => type == 'sticker' || stickerUrl != null;
   bool get isVoiceNote => type == 'voice_note';
   bool get isGif => mediaType == 'gif';
