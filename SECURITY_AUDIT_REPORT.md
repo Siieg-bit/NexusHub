@@ -20,11 +20,11 @@ Foram encontradas várias chaves de produção e tokens hardcoded diretamente no
    - **Impacto:** O App Certificate é um segredo de servidor. Sua exposição permite que terceiros gerem tokens válidos e utilizem sua cota do Agora gratuitamente.
 
 3. **RevenueCat (API Key)**
-   - **Onde:** `frontend/lib/core/services/iap_service.dart` (linha 11: `SUA_REVENUECAT_KEY_AQUI`)
+   - **Onde:** `frontend/lib/core/services/iap_service.dart` (linha 11: `[CHAVE_REMOVIDA]`)
    - **Impacto:** Exposição da chave de testes de pagamentos in-app.
 
 4. **Giphy (API Key)**
-   - **Onde:** `frontend/lib/features/chat/widgets/giphy_picker.dart` (linha 55: `SUA_GIPHY_API_KEY_AQUI`)
+   - **Onde:** `frontend/lib/features/chat/widgets/giphy_picker.dart` (linha 55: `[CHAVE_REMOVIDA]`)
    - **Impacto:** Uso não autorizado da cota da API do Giphy.
 
 5. **AdMob (App ID e Ad Unit IDs)**
@@ -43,7 +43,7 @@ Mesmo que você remova as chaves do código atual, **elas já estão salvas no h
 
 ### 🟡 Risco Médio: Arquivos de Configuração Rastreados
 - **`google-services.json`:** O arquivo está sendo rastreado pelo Git (`frontend/android/app/google-services.json`). Embora atualmente contenha placeholders, é uma prática perigosa, pois um desenvolvedor pode acidentalmente commitar o arquivo real de produção.
-- **Arquivos `.temp` do Supabase:** O diretório `backend/supabase/.temp/` e `backend/supabase/supabase/.temp/` estão sendo commitados. Eles vazam informações da infraestrutura, como a URL do pooler do banco de dados (`postgresql://postgres.SEU_PROJECT_REF@aws-1-us-east-1.pooler.supabase.com:5432/postgres`).
+- **Arquivos `.temp` do Supabase:** O diretório `backend/supabase/.temp/` e `backend/supabase/supabase/.temp/` estão sendo commitados. Eles vazam informações da infraestrutura, como a URL do pooler do banco de dados (`postgresql://postgres.[PROJECT_REF]@aws-1-us-east-1.pooler.supabase.com:5432/postgres`).
 
 ---
 
