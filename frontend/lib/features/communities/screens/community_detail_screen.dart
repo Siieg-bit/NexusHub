@@ -159,8 +159,10 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   int _bottomIndex = 0; // 0=Home, 1=Online, 2=Create, 3=Chats, 4=Me
+  bool _isDisposed = false;
 
   List<String> _activeTabs = [];
+  Map<String, dynamic>? _lastLayout;
 
   @override
   void initState() {
@@ -175,12 +177,15 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
 
   @override
   void dispose() {
+    _isDisposed = true;
     _tabController.dispose();
     // Não sair do canal aqui — o provider gerencia o ciclo de vida
     super.dispose();
   }
 
-  void _rebuildTabs(Map<String, dynamic> layout) {
+  void _rebuildTabsIfNeeded(Map<String, dynamic> layout) {
+    if (_isDisposed || !mounted) return;
+
     final visible =
         layout['sections_visible'] as Map<String, dynamic>? ?? {};
     final tabs = <String>[];
@@ -191,12 +196,15 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
 
     if (tabs.length != _activeTabs.length ||
         !_listEquals(tabs, _activeTabs)) {
-      _activeTabs = tabs;
-      _tabController.dispose();
-      _tabController = TabController(length: tabs.length, vsync: this);
-      if (tabs.contains('Destaque')) {
-        _tabController.index = tabs.indexOf('Destaque');
-      }
+      setState(() {
+        _activeTabs = tabs;
+        final oldController = _tabController;
+        _tabController = TabController(length: tabs.length, vsync: this);
+        if (tabs.contains('Destaque')) {
+          _tabController.index = tabs.indexOf('Destaque');
+        }
+        oldController.dispose();
+      });
     }
   }
 
@@ -281,10 +289,13 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
         final userRole = membership?['role'] as String?;
         final layout = layoutAsync.valueOrNull ?? _defaultLayout;
 
-        // Rebuild tabs based on layout
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) _rebuildTabs(layout);
-        });
+        // Rebuild tabs based on layout (apenas se o layout mudou)
+        if (_lastLayout != layout) {
+          _lastLayout = layout;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _rebuildTabsIfNeeded(layout);
+          });
+        }
 
         final visible =
             layout['sections_visible'] as Map<String, dynamic>? ?? {};
@@ -300,8 +311,12 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             community: community,
             currentUser: ref.watch(currentUserProfileProvider).valueOrNull,
             userRole: userRole,
-            onChatsTap: () => setState(() => _bottomIndex = 3),
+            onChatsTap: () {
+              if (_isDisposed || !mounted) return;
+              setState(() => _bottomIndex = 3);
+            },
             onGuidelinesTap: () {
+              if (_isDisposed || !mounted) return;
               // Voltar para home e mudar para tab Regras
               setState(() {
                 _bottomIndex = 0;
@@ -310,6 +325,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
               });
             },
             onRecentFeedTap: () {
+              if (_isDisposed || !mounted) return;
               // Voltar para home e mudar para tab Recentes
               setState(() {
                 _bottomIndex = 0;
