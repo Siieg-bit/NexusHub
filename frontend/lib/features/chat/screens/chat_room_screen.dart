@@ -12,6 +12,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/models/message_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/services/call_service.dart';
+import '../../../core/services/realtime_service.dart';
 import 'call_screen.dart';
 import '../widgets/giphy_picker.dart';
 import '../widgets/forward_message_sheet.dart';
@@ -60,6 +61,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   final List<MessageModel> _messages = [];
   RealtimeChannel? _channel;
   bool _isLoading = true;
+  bool _realtimeConnected = true;
   bool _isSending = false;
   Map<String, dynamic>? _threadInfo;
   MessageModel? _replyingTo;
@@ -104,8 +106,19 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose();
-    _channel?.unsubscribe();
+    RealtimeService.instance.unsubscribe('chat:${widget.threadId}');
+    RealtimeService.instance.connectionStatus
+        .removeListener(_onRealtimeStatusChanged);
     super.dispose();
+  }
+
+  void _onRealtimeStatusChanged() {
+    if (!mounted) return;
+    final status = RealtimeService.instance.connectionStatus.value;
+    final connected = status == RealtimeConnectionStatus.connected;
+    if (connected != _realtimeConnected) {
+      setState(() => _realtimeConnected = connected);
+    }
   }
 
   // ==========================================================================
@@ -322,9 +335,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // ==========================================================================
 
   void _subscribeToRealtime() {
-    _channel = SupabaseService.client
-        .channel('chat:${widget.threadId}')
-        .onPostgresChanges(
+    // Usar RealtimeService para reconexão automática com backoff
+    _channel = RealtimeService.instance.subscribeWithRetry(
+      channelName: 'chat:${widget.threadId}',
+      configure: (channel) {
+        channel.onPostgresChanges(
           event: PostgresChangeEvent.insert,
           schema: 'public',
           table: 'chat_messages',
@@ -358,8 +373,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               debugPrint('Realtime message error: $e');
             }
           },
-        )
-        .subscribe();
+        );
+      },
+    );
+
+    // Escutar mudanças de status de conexão
+    RealtimeService.instance.connectionStatus
+        .addListener(_onRealtimeStatusChanged);
   }
 
   void _scrollToBottom() {
@@ -1320,6 +1340,37 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             : null,
         child: Column(
         children: [
+          // ── Connection status banner ──
+          if (!_realtimeConnected)
+            Container(
+              width: double.infinity,
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(6)),
+              color: AppTheme.warningColor.withValues(alpha: 0.12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: r.s(12),
+                    height: r.s(12),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 1.5,
+                      color: AppTheme.warningColor,
+                    ),
+                  ),
+                  SizedBox(width: r.s(8)),
+                  Text(
+                    'Reconectando...',
+                    style: TextStyle(
+                      fontSize: r.fs(12),
+                      color: AppTheme.warningColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
           // ── Pinned message banner ──
           if (_pinnedMessages.isNotEmpty)
             GestureDetector(

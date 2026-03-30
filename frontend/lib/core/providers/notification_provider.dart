@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_service.dart';
 import '../services/cache_service.dart';
+import '../services/realtime_service.dart';
 import 'package:flutter/foundation.dart';
 
 /// ============================================================================
@@ -67,7 +68,10 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
     _subscribeRealtime();
 
     ref.onDispose(() {
-      _channel?.unsubscribe();
+      final userId = SupabaseService.currentUserId;
+      if (userId != null) {
+        RealtimeService.instance.unsubscribe('notifications:$userId');
+      }
     });
 
     return _fetch();
@@ -147,10 +151,11 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
     final userId = SupabaseService.currentUserId;
     if (userId == null) return;
 
-    _channel?.unsubscribe();
-    _channel = SupabaseService.client
-        .channel('notifications:$userId')
-        .onPostgresChanges(
+    // Usar RealtimeService para reconexão automática com backoff
+    _channel = RealtimeService.instance.subscribeWithRetry(
+      channelName: 'notifications:$userId',
+      configure: (channel) {
+        channel.onPostgresChanges(
           event: PostgresChangeEvent.insert,
           schema: 'public',
           table: 'notifications',
@@ -167,8 +172,9 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
               unreadCount: current.unreadCount + 1,
             ));
           },
-        )
-        .subscribe();
+        );
+      },
+    );
   }
 
   Future<void> loadMore() async {

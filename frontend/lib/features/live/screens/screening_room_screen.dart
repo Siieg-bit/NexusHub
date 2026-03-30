@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/services/realtime_service.dart';
 import '../../../core/utils/responsive.dart';
 
 /// Screening Room — Assistir vídeos juntos estilo Amino.
@@ -67,7 +68,9 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
 
   @override
   void dispose() {
-    _channel?.unsubscribe();
+    if (_sessionId != null) {
+      RealtimeService.instance.unsubscribe('screening_$_sessionId');
+    }
     _chatController.dispose();
     _scrollController.dispose();
     SystemChrome.setPreferredOrientations(DeviceOrientation.values);
@@ -150,37 +153,41 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
 
   void _subscribeToRealtime() {
     if (_sessionId == null) return;
-    _channel = SupabaseService.client.channel('screening_$_sessionId');
 
-    _channel!
-        .onBroadcast(
-          event: 'chat',
-          callback: (payload) {
-            if (mounted) {
-              setState(() {
-                _chatMessages.add(payload);
-              });
-              _scrollToBottom();
-            }
-          },
-        )
-        .onBroadcast(
-          event: 'video_control',
-          callback: (payload) {
-            if (mounted) {
-              setState(() {
-                _currentVideoUrl = payload['video_url'] as String?;
-                _currentVideoTitle = payload['video_title'] as String?;
-                _isPlaying = payload['is_playing'] as bool? ?? false;
-              });
-            }
-          },
-        )
-        .onBroadcast(
-          event: 'participant_update',
-          callback: (_) => _loadParticipants(),
-        )
-        .subscribe();
+    // Usar RealtimeService para reconexão automática com backoff
+    _channel = RealtimeService.instance.subscribeWithRetry(
+      channelName: 'screening_$_sessionId',
+      configure: (channel) {
+        channel
+            .onBroadcast(
+              event: 'chat',
+              callback: (payload) {
+                if (mounted) {
+                  setState(() {
+                    _chatMessages.add(payload);
+                  });
+                  _scrollToBottom();
+                }
+              },
+            )
+            .onBroadcast(
+              event: 'video_control',
+              callback: (payload) {
+                if (mounted) {
+                  setState(() {
+                    _currentVideoUrl = payload['video_url'] as String?;
+                    _currentVideoTitle = payload['video_title'] as String?;
+                    _isPlaying = payload['is_playing'] as bool? ?? false;
+                  });
+                }
+              },
+            )
+            .onBroadcast(
+              event: 'participant_update',
+              callback: (_) => _loadParticipants(),
+            );
+      },
+    );
   }
 
   void _scrollToBottom() {

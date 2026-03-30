@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_service.dart';
+import '../services/realtime_service.dart';
 import '../models/message_model.dart';
 
 /// ============================================================================
@@ -109,7 +110,7 @@ class ThreadMessagesNotifier
 
     // Cleanup quando o provider é descartado
     ref.onDispose(() {
-      _channel?.unsubscribe();
+      RealtimeService.instance.unsubscribe('messages:$threadId');
     });
 
     return _fetchPage(threadId, 0);
@@ -138,10 +139,11 @@ class ThreadMessagesNotifier
   }
 
   void _subscribeRealtime(String threadId) {
-    _channel?.unsubscribe();
-    _channel = SupabaseService.client
-        .channel('messages:$threadId')
-        .onPostgresChanges(
+    // Usar RealtimeService para reconexão automática com backoff
+    _channel = RealtimeService.instance.subscribeWithRetry(
+      channelName: 'messages:$threadId',
+      configure: (channel) {
+        channel.onPostgresChanges(
           event: PostgresChangeEvent.insert,
           schema: 'public',
           table: 'chat_messages',
@@ -176,8 +178,9 @@ class ThreadMessagesNotifier
 
             state = AsyncData([...current, message]);
           },
-        )
-        .subscribe();
+        );
+      },
+    );
   }
 
   Future<void> loadOlder() async {
