@@ -76,7 +76,6 @@ class _FlagCenterScreenState extends State<FlagCenterScreen>
 
   @override
   Widget build(BuildContext context) {
-    final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(

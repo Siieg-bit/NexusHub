@@ -424,7 +424,6 @@ class AminoHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final r = context.r;
     return Hero(
       tag: tag,
       flightShuttleBuilder: (
@@ -477,7 +476,6 @@ class AminoAnimatedListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final r = context.r;
     return ListView.builder(
       controller: controller,
       padding: padding,

@@ -10,7 +10,6 @@ import '../widgets/crosspost_picker.dart';
 import '../../../core/utils/responsive.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/draft_provider.dart';
-import '../../../core/models/post_draft_model.dart';
 
 /// Editor rico de criação de posts — estilo Amino Apps.
 /// Suporta os 9 tipos exatos do Amino:

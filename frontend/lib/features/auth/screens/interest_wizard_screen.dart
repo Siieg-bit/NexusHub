@@ -131,7 +131,6 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       body: SafeArea(

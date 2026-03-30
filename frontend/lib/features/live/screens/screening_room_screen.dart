@@ -366,7 +366,6 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final r = context.r;
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(

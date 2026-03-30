@@ -70,7 +70,6 @@ class _FollowersScreenState extends State<FollowersScreen>
 
   @override
   Widget build(BuildContext context) {
-    final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(

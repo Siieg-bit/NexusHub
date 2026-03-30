@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/cosmetics_provider.dart';
 import 'avatar_with_frame.dart';
-import '../utils/responsive.dart';
 
 /// Widget de Avatar com cosméticos equipados — carrega automaticamente
 /// o frame do Provider Global de Cosméticos.

@@ -480,7 +480,6 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
     final type = post['type'] as String? ?? 'text';
     final likesCount = post['likes_count'] as int? ?? 0;
     final commentsCount = post['comments_count'] as int? ?? 0;
-    final createdAt = post['created_at'] as String?;
     final thumbnailUrl = post['thumbnail_url'] as String?;
 
     return InkWell(

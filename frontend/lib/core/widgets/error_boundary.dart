@@ -29,7 +29,7 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
   StackTrace? _stackTrace;
 
   // Guarda o handler original para restaurar ao desmontar
-  FlutterExceptionHandler? _previousErrorHandler;
+  void Function(FlutterErrorDetails)? _previousErrorHandler;
 
   @override
   void initState() {

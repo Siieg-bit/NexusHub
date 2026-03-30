@@ -32,7 +32,6 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
   int _pendingFlags = 0;
   int _resolvedFlags = 0;
   int _bannedUsers = 0;
-  List<Map<String, dynamic>> _topFlaggedContent = [];
   List<Map<String, dynamic>> _recentFlags = [];
 
   // Estatísticas de gamificação

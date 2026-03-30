@@ -121,7 +121,6 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final r = context.r;
     final communitiesAsync = ref.watch(userCommunitiesProvider);
     // Observar status de check-in para rebuild automático
     ref.watch(checkInStatusProvider);
@@ -194,50 +193,63 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
             // ── Grade horizontal de cards com drag & drop ──
             SizedBox(
               height: r.s(195),
-              child: ReorderableListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: EdgeInsets.only(left: r.s(14), right: r.s(8), top: r.s(18)),
-                itemCount: (_reorderedCommunities ?? communities).length,
-                onReorder: (oldIndex, newIndex) {
-                  HapticFeedback.mediumImpact();
-                  setState(() {
-                    if (newIndex > oldIndex) newIndex--;
-                    final list = List<CommunityModel>.from(
-                        _reorderedCommunities ?? communities);
-                    final item = list.removeAt(oldIndex);
-                    list.insert(newIndex, item);
-                    _reorderedCommunities = list;
-                  });
-                },
-                proxyDecorator: (child, index, animation) {
-                  return AnimatedBuilder(
-                    animation: animation,
-                    builder: (context, child) => Transform.scale(
-                      scale: 1.05,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: child,
-                      ),
-                    ),
-                    child: child,
-                  );
-                },
-                itemBuilder: (context, index) {
-                  final community = (_reorderedCommunities ?? communities)[index];
-                  return Padding(
-                    key: ValueKey(community.id),
-                    padding: EdgeInsets.only(right: r.s(8)),
-                    child: _AminoCommunityCard(
-                      community: community,
-                      ref: ref,
-                      onTap: () => context.push('/community/${community.id}'),
-                      onLongPress: () {
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ReorderableListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: EdgeInsets.only(left: r.s(14), right: r.s(8), top: r.s(18)),
+                      itemCount: (_reorderedCommunities ?? communities).length,
+                      onReorder: (oldIndex, newIndex) {
                         HapticFeedback.mediumImpact();
-                        _showCommunityPreview(context, community);
+                        setState(() {
+                          if (newIndex > oldIndex) newIndex--;
+                          final list = List<CommunityModel>.from(
+                              _reorderedCommunities ?? communities);
+                          final item = list.removeAt(oldIndex);
+                          list.insert(newIndex, item);
+                          _reorderedCommunities = list;
+                        });
+                      },
+                      proxyDecorator: (child, index, animation) {
+                        return AnimatedBuilder(
+                          animation: animation,
+                          builder: (context, child) => Transform.scale(
+                            scale: 1.05,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: child,
+                            ),
+                          ),
+                          child: child,
+                        );
+                      },
+                      itemBuilder: (context, index) {
+                        final community = (_reorderedCommunities ?? communities)[index];
+                        return Padding(
+                          key: ValueKey(community.id),
+                          padding: EdgeInsets.only(right: r.s(8)),
+                          child: _AminoCommunityCard(
+                            community: community,
+                            ref: ref,
+                            onTap: () => context.push('/community/${community.id}'),
+                            onLongPress: () {
+                              HapticFeedback.mediumImpact();
+                              _showCommunityPreview(context, community);
+                            },
+                          ),
+                        );
                       },
                     ),
-                  );
-                },
+                  ),
+                  // Card fixo para entrar em nova comunidade
+                  Padding(
+                    padding: EdgeInsets.only(right: r.s(8)),
+                    child: _JoinCommunityCard(
+                      onTap: () => context.push('/community/search'),
+                    ),
+                  ),
+                ],
               ),
             ),
 

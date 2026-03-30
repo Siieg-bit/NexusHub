@@ -42,7 +42,6 @@ class _ShimmerLoadingState extends State<ShimmerLoading>
 
   @override
   Widget build(BuildContext context) {
-    final r = context.r;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final baseColor = isDark ? context.cardBg : const Color(0xFFE0E0E8);
     final highlightColor =
@@ -83,7 +82,6 @@ class ShimmerBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final r = context.r;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: width,

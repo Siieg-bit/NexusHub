@@ -60,7 +60,6 @@ class ChatBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final r = context.r;
     // Se tem frame de imagem, usar o frame
     if (bubbleFrameUrl != null && bubbleFrameUrl!.isNotEmpty) {
       return _buildFramedBubble(context);

@@ -32,7 +32,6 @@ class GiphyPicker extends StatefulWidget {
 class _GiphyPickerState extends State<GiphyPicker> {
   @override
   Widget build(BuildContext context) {
-    final r = context.r;
     return const _GiphyPickerBody();
   }
 }
