@@ -156,7 +156,7 @@ class CommunityDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late TabController _tabController;
   int _bottomIndex = 0; // 0=Home, 1=Online, 2=Create, 3=Chats, 4=Me
   bool _isDisposed = false;
