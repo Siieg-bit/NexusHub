@@ -36,7 +36,7 @@ class _UserWallScreenState extends State<UserWallScreen> {
           .eq('status', 'ok')
           .order('created_at', ascending: false)
           .limit(50);
-      _messages = List<Map<String, dynamic>>.from(res as List?);
+      _messages = List<Map<String, dynamic>>.from(res as List? ?? []);
       if (!mounted) return;
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
@@ -182,7 +182,7 @@ class _UserWallScreenState extends State<UserWallScreen> {
                                                 author?['icon_url'] != null
                                                     ? CachedNetworkImageProvider(
                                                         author!['icon_url']
-                                                            as String?)
+                                                            as String? ?? '')
                                                     : null,
                                             child: author?['icon_url'] == null
                                                 ? Icon(
@@ -224,7 +224,7 @@ class _UserWallScreenState extends State<UserWallScreen> {
                                               size: r.s(18),
                                               color: Colors.grey[500]),
                                           onPressed: () => _deleteMessage(
-                                              msg['id'] as String?),
+                                              msg['id'] as String? ?? ''),
                                         ),
                                     ],
                                   ),

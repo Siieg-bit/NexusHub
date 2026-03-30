@@ -35,7 +35,7 @@ class _FlagCenterScreenState extends State<FlagCenterScreen>
           .eq('community_id', widget.communityId)
           .eq('status', 'pending')
           .order('created_at', ascending: false);
-      _pendingFlags = List<Map<String, dynamic>>.from(pending as List?);
+      _pendingFlags = List<Map<String, dynamic>>.from(pending as List? ?? []);
 
       final resolved = await SupabaseService.table('flags')
           .select('*, profiles!flags_reporter_id_fkey(*)')
@@ -43,7 +43,7 @@ class _FlagCenterScreenState extends State<FlagCenterScreen>
           .neq('status', 'pending')
           .order('created_at', ascending: false)
           .limit(50);
-      _resolvedFlags = List<Map<String, dynamic>>.from(resolved as List?);
+      _resolvedFlags = List<Map<String, dynamic>>.from(resolved as List? ?? []);
 
       if (!mounted) return;
       if (mounted) setState(() => _isLoading = false);

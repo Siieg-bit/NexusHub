@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_service.dart';
+import 'package:flutter/foundation.dart';
 
 /// ============================================================================
 /// NotificationProvider — State Management para notificações.
@@ -76,7 +77,7 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
           .eq('is_read', false)
           .count(CountOption.exact);
 
-      final list = List<Map<String, dynamic>>.from(res as List?);
+      final list = List<Map<String, dynamic>>.from(res as List? ?? []);
 
       return NotificationState(
         notifications: list,
@@ -98,7 +99,7 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
             .eq('is_read', false)
             .count(CountOption.exact);
 
-        final list = List<Map<String, dynamic>>.from(res as List?);
+        final list = List<Map<String, dynamic>>.from(res as List? ?? []);
 
         return NotificationState(
           notifications: list,
@@ -154,7 +155,7 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
           .order('created_at', ascending: false)
           .range(_page * _pageSize, (_page + 1) * _pageSize - 1);
 
-      final list = List<Map<String, dynamic>>.from(res as List?);
+      final list = List<Map<String, dynamic>>.from(res as List? ?? []);
       state = AsyncData(current.copyWith(
         notifications: [...current.notifications, ...list],
         hasMore: list.length >= _pageSize,

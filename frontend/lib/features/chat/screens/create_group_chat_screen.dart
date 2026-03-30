@@ -66,7 +66,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
           .order('joined_at', ascending: false);
       if (mounted) {
         setState(() {
-          _communities = (res as List?)
+          _communities = (res as List? ?? [])
               .where((e) => e['communities'] != null)
               .map((e) => Map<String, dynamic>.from(e['communities']))
               .toList();
@@ -91,7 +91,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
           .limit(100);
       if (mounted) {
         setState(() {
-          _members = List<Map<String, dynamic>>.from(res as List?);
+          _members = List<Map<String, dynamic>>.from(res as List? ?? []);
           _filteredMembers = _members;
           _isLoadingMembers = false;
         });
@@ -613,7 +613,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
               Switch(
                 value: _isPublic,
                 onChanged: (v) => setState(() => _isPublic = v),
-                activeColor: AppTheme.primaryColor,
+                activeThumbColor: AppTheme.primaryColor,
               ),
             ],
           ),

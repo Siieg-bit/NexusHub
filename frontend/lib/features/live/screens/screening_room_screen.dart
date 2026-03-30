@@ -137,7 +137,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
           .eq('call_session_id', _sessionId!)
           .eq('status', 'connected');
       _participants.clear();
-      _participants.addAll(List<Map<String, dynamic>>.from(res as List?));
+      _participants.addAll(List<Map<String, dynamic>>.from(res as List? ?? []));
       _viewerCount = _participants.length;
       if (!mounted) return;
       if (mounted) setState(() {});

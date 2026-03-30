@@ -32,7 +32,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
           .eq('blocker_id', userId)
           .order('created_at', ascending: false);
 
-      _blockedUsers = List<Map<String, dynamic>>.from(res as List?);
+      _blockedUsers = List<Map<String, dynamic>>.from(res as List? ?? []);
     } catch (e) {
       debugPrint('[blocked_users_screen] Erro: $e');
     }
@@ -212,7 +212,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                         blocked['nickname'] as String? ?? 'Usuário';
                     final iconUrl = blocked['icon_url'] as String?;
                     final blockedAt = block['created_at'] != null
-                        ? DateTime.tryParse(block['created_at'] as String?)
+                        ? DateTime.tryParse(block['created_at'] as String? ?? '')
                         : null;
 
                     return Container(
@@ -259,7 +259,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                           ),
                           GestureDetector(
                             onTap: () =>
-                                _unblockUser(block['id'] as String?, nickname),
+                                _unblockUser(block['id'] as String? ?? '', nickname),
                             child: Container(
                               padding: EdgeInsets.symmetric(
                                 horizontal: r.s(12),

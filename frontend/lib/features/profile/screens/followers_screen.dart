@@ -46,7 +46,7 @@ class _FollowersScreenState extends State<FollowersScreen>
               '*, profiles!follows_follower_id_fkey(id, nickname, icon_url, level)')
           .eq('following_id', widget.userId)
           .order('created_at', ascending: false);
-      _followers = List<Map<String, dynamic>>.from(followersRes as List?);
+      _followers = List<Map<String, dynamic>>.from(followersRes as List? ?? []);
 
       // Seguindo
       final followingRes = await SupabaseService.table('follows')
@@ -54,7 +54,7 @@ class _FollowersScreenState extends State<FollowersScreen>
               '*, profiles!follows_following_id_fkey(id, nickname, icon_url, level)')
           .eq('follower_id', widget.userId)
           .order('created_at', ascending: false);
-      _following = List<Map<String, dynamic>>.from(followingRes as List?);
+      _following = List<Map<String, dynamic>>.from(followingRes as List? ?? []);
 
       if (!mounted) return;
       if (mounted) setState(() => _isLoading = false);

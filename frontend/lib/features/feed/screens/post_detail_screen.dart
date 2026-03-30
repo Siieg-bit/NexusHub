@@ -37,7 +37,7 @@ final postCommentsProvider =
       .eq('status', 'ok')
       .order('created_at', ascending: true);
 
-  return (response as List?)
+  return (response as List? ?? [])
       .map((e) => CommentModel.fromJson(e as Map<String, dynamic>))
       .toList();
 });
@@ -426,7 +426,6 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             userId: post.authorId,
                             avatarUrl: post.author?.iconUrl,
                             size: r.s(48),
-                            if (!mounted) return;
                             onTap: () => context.push('/user/${post.authorId}'),
                           ),
                           SizedBox(width: r.s(12)),

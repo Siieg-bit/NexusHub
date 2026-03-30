@@ -26,13 +26,14 @@ final chatListProvider = FutureProvider<List<ChatRoomModel>>((ref) async {
       .eq('user_id', userId)
       .order('joined_at', ascending: false);
 
-  return (response as List?)
+  final chats = (response as List? ?? [])
       .where((e) => e['chat_threads'] != null)
       .map((e) =>
           ChatRoomModel.fromJson(e['chat_threads'] as Map<String, dynamic>))
-      .toList()
-    ..sort((a, b) => (b.lastMessageAt ?? b.createdAt)
+      .toList();
+  chats.sort((a, b) => (b.lastMessageAt ?? b.createdAt)
         .compareTo(a.lastMessageAt ?? a.createdAt));
+  return chats;
 });
 
 /// Provider para comunidades do usuário (sidebar).
@@ -45,7 +46,7 @@ final chatCommunitiesProvider =
       .eq('user_id', userId)
       .order('joined_at', ascending: false)
       .limit(10);
-  return (response as List?)
+  return (response as List? ?? [])
       .where((e) => e['communities'] != null)
       .map((e) => CommunityModel.fromJson(e['communities']))
       .toList();

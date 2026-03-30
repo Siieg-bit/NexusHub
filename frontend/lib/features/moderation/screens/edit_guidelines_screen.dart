@@ -251,7 +251,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
                       ),
                       SizedBox(width: r.s(6)),
                       Text(
-                        section['title'] as String?,
+                        section['title'] as String? ?? '',
                         style: TextStyle(
                           color: context.textPrimary,
                           fontSize: r.fs(12),

@@ -20,7 +20,7 @@ final searchCommunitiesProvider =
         .select()
         .order('members_count', ascending: false)
         .limit(20);
-    return (response as List?)
+    return (response as List? ?? [])
         .map((e) => CommunityModel.fromJson(e as Map<String, dynamic>))
         .toList();
   }
@@ -29,7 +29,7 @@ final searchCommunitiesProvider =
       .ilike('name', '%$query%')
       .order('members_count', ascending: false)
       .limit(20);
-  return (response as List?)
+  return (response as List? ?? [])
       .map((e) => CommunityModel.fromJson(e as Map<String, dynamic>))
       .toList();
 });
@@ -86,7 +86,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             .eq('user_id', userId)
             .order('joined_at', ascending: false)
             .limit(20);
-        _myCommunities = (myRes as List?)
+        _myCommunities = (myRes as List? ?? [])
             .where((e) => e['communities'] != null)
             .map((e) => CommunityModel.fromJson(e['communities']))
             .toList();
@@ -98,7 +98,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           .order('members_count', ascending: false)
           .limit(20);
       _recommendedCommunities =
-          (recRes as List?)?.map((e) => CommunityModel.fromJson(e)).toList();
+          (recRes as List? ?? []).map((e) => CommunityModel.fromJson(e)).toList();
 
       // New Communities — mais recentes
       try {
@@ -107,7 +107,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             .order('created_at', ascending: false)
             .limit(10);
         _newCommunities =
-            (newRes as List?)?.map((e) => CommunityModel.fromJson(e)).toList();
+            (newRes as List? ?? []).map((e) => CommunityModel.fromJson(e)).toList();
       } catch (e) {
         debugPrint('[explore_screen] Erro: $e');
       }
@@ -119,7 +119,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             .eq('status', 'ok')
             .order('likes_count', ascending: false)
             .limit(15);
-        _forYouPosts = List<Map<String, dynamic>>.from(forYouRes as List?);
+        _forYouPosts = List<Map<String, dynamic>>.from(forYouRes as List? ?? []);
       } catch (e) {
         debugPrint('[explore_screen] Erro: $e');
       }
@@ -830,7 +830,7 @@ class _ForYouPostTile extends StatelessWidget {
                           ClipRRect(
                             borderRadius: BorderRadius.circular(r.s(4)),
                             child: CachedNetworkImage(
-                              imageUrl: community['icon_url'] as String?,
+                              imageUrl: community['icon_url'] as String? ?? '',
                               width: r.s(14),
                               height: r.s(14),
                               fit: BoxFit.cover,
@@ -890,7 +890,7 @@ class _ForYouPostTile extends StatelessWidget {
                               AppTheme.primaryColor.withValues(alpha: 0.2),
                           backgroundImage: author['icon_url'] != null
                               ? CachedNetworkImageProvider(
-                                  author['icon_url'] as String?)
+                                  author['icon_url'] as String? ?? '')
                               : null,
                           child: author['icon_url'] == null
                               ? Text(

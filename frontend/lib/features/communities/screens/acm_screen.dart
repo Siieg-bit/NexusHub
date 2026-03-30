@@ -90,13 +90,13 @@ class _AcmScreenState extends State<AcmScreen>
           .select('id')
           .eq('community_id', widget.communityId)
           .gte('joined_at', sevenDaysAgo);
-      _newMembers7d = (newMembersRes as List?)?.length;
+      _newMembers7d = (newMembersRes as List?)?.length ?? 0;
 
       final flagsRes = await SupabaseService.table('flags')
           .select('id')
           .eq('community_id', widget.communityId)
           .eq('status', 'pending');
-      _pendingFlags = (flagsRes as List?)?.length;
+      _pendingFlags = (flagsRes as List?)?.length ?? 0;
 
       final thirtyDaysAgo = DateTime.now()
           .subtract(const Duration(days: 30))
@@ -106,18 +106,18 @@ class _AcmScreenState extends State<AcmScreen>
           .select('id')
           .eq('community_id', widget.communityId)
           .gte('created_at', thirtyDaysAgo);
-      _modActions30d = (modRes as List?)?.length;
+      _modActions30d = (modRes as List?)?.length ?? 0;
 
       final postsRes = await SupabaseService.table('posts')
           .select('id')
           .eq('community_id', widget.communityId)
           .eq('status', 'ok');
-      _totalPosts = (postsRes as List?)?.length;
+      _totalPosts = (postsRes as List?)?.length ?? 0;
 
       final chatsRes = await SupabaseService.table('chat_threads')
           .select('id')
           .eq('community_id', widget.communityId);
-      _totalChats = (chatsRes as List?)?.length;
+      _totalChats = (chatsRes as List?)?.length ?? 0;
     } catch (e) {
       debugPrint('[acm_screen] Erro: $e');
     }
@@ -318,7 +318,7 @@ class _AcmScreenState extends State<AcmScreen>
             subtitle: Text(mod.description,
                 style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
             value: isEnabled,
-            activeColor: AppTheme.primaryColor,
+            activeThumbColor: AppTheme.primaryColor,
             onChanged: (val) {
               setState(() => _config[mod.key] = val);
             },
@@ -736,7 +736,7 @@ class _AcmScreenState extends State<AcmScreen>
                 title: const Text('Ativar Banner',
                     style: TextStyle(fontWeight: FontWeight.w500)),
                 value: welcomeBanner['enabled'] as bool? ?? false,
-                activeColor: AppTheme.primaryColor,
+                activeThumbColor: AppTheme.primaryColor,
                 onChanged: (val) {
                   setState(() {
                     welcomeBanner['enabled'] = val;
@@ -840,7 +840,7 @@ class _AcmScreenState extends State<AcmScreen>
                 subtitle: Text('Exibe contagem de online na bottom bar',
                     style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
                 value: bottomBar['show_online_count'] as bool? ?? true,
-                activeColor: AppTheme.primaryColor,
+                activeThumbColor: AppTheme.primaryColor,
                 onChanged: (val) {
                   setState(() {
                     bottomBar['show_online_count'] = val;
@@ -855,7 +855,7 @@ class _AcmScreenState extends State<AcmScreen>
                 subtitle: Text('Botão central para criar posts',
                     style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
                 value: bottomBar['show_create_button'] as bool? ?? true,
-                activeColor: AppTheme.primaryColor,
+                activeThumbColor: AppTheme.primaryColor,
                 onChanged: (val) {
                   setState(() {
                     bottomBar['show_create_button'] = val;
@@ -955,7 +955,7 @@ class _AcmScreenState extends State<AcmScreen>
           subtitle: Text(s.description,
               style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
           value: isEnabled,
-          activeColor: AppTheme.primaryColor,
+          activeThumbColor: AppTheme.primaryColor,
           onChanged: (val) {
             setState(() {
               visible[s.key] = val;

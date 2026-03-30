@@ -769,7 +769,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                                 Switch(
                                   value: !_commentsBlocked,
                                   onChanged: (v) => setState(() => _commentsBlocked = !v),
-                                  activeColor: AppTheme.primaryColor,
+                                  activeThumbColor: AppTheme.primaryColor,
                                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                 ),
                               ],
@@ -999,16 +999,18 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                     padding: EdgeInsets.only(bottom: r.s(4)),
                     child: Row(
                       children: [
-                        Radio<int>(
-                          value: oi,
+                        RadioGroup<int>(
                           groupValue: q.correctIndex,
                           onChanged: (v) {
                             setState(() => q.correctIndex = v ?? 0);
                           },
-                          activeColor: AppTheme.successColor,
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
-                          visualDensity: VisualDensity.compact,
+                          child: Radio<int>(
+                            value: oi,
+                            activeColor: AppTheme.successColor,
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                            visualDensity: VisualDensity.compact,
+                          ),
                         ),
                         Expanded(
                           child: TextField(

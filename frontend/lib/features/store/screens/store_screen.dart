@@ -52,7 +52,7 @@ class _StoreScreenState extends State<StoreScreen>
           .select()
           .eq('is_active', true)
           .order('created_at', ascending: false);
-      _items = List<Map<String, dynamic>>.from(res as List?);
+      _items = List<Map<String, dynamic>>.from(res as List? ?? []);
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);

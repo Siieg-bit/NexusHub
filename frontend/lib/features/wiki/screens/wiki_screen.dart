@@ -39,7 +39,7 @@ class _WikiListScreenState extends State<WikiListScreen> {
           .eq('community_id', widget.communityId)
           .eq('status', 'approved')
           .order('created_at', ascending: false);
-      _entries = List<Map<String, dynamic>>.from(res as List?);
+      _entries = List<Map<String, dynamic>>.from(res as List? ?? []);
 
       final cats = <String>{};
       for (final e in _entries) {
@@ -150,7 +150,6 @@ class _WikiListScreenState extends State<WikiListScreen> {
                   padding: EdgeInsets.all(r.s(16)),
                   child: TextField(
                     controller: _searchController,
-                    if (!mounted) return;
                     onChanged: (_) => setState(() {}),
                     style: TextStyle(color: context.textPrimary),
                     decoration: InputDecoration(
@@ -178,14 +177,13 @@ class _WikiListScreenState extends State<WikiListScreen> {
                         _CategoryChip(
                           label: 'Todos',
                           isSelected: _selectedCategory == null,
-                          if (!mounted) return;
                           onTap: () => setState(() => _selectedCategory = null),
                         ),
                         ..._categories.map((cat) => _CategoryChip(
                               label: cat,
                               isSelected: _selectedCategory == cat,
                               onTap: () =>
-                                  if (!mounted) return;
+
                                   setState(() => _selectedCategory = cat),
                             )),
                       ],
@@ -219,7 +217,6 @@ class _WikiListScreenState extends State<WikiListScreen> {
                             final entry = _filteredEntries[index];
                             return _WikiEntryCard(
                               entry: entry,
-                              if (!mounted) return;
                               onTap: () => context.push('/wiki/${entry['id']}'),
                             );
                           },
@@ -455,7 +452,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
             .eq('wiki_entry_id', widget.wikiId)
             .order('created_at', ascending: false)
             .limit(20);
-        _whatILikeList = List<Map<String, dynamic>>.from(likesRes as List?);
+        _whatILikeList = List<Map<String, dynamic>>.from(likesRes as List? ?? []);
       } catch (e) {
         debugPrint('[wiki_screen] Erro: $e');
       }

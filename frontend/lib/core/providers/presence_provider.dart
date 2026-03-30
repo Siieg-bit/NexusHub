@@ -73,8 +73,6 @@ final globalPresenceProvider =
 class GlobalPresenceNotifier extends StreamNotifier<Set<String>> {
   @override
   Stream<Set<String>> build() {
-    final presence = PresenceService.instance;
-
     return _mergeInitialAndStream();
   }
 

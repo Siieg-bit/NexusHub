@@ -75,7 +75,7 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
         final data = jsonDecode(response.body);
         if (!mounted) return;
         setState(() {
-          _gifs = List<Map<String, dynamic>>.from(data['data'] as List?);
+          _gifs = List<Map<String, dynamic>>.from(data['data'] as List? ?? []);
         });
       }
     } catch (e) {
@@ -100,7 +100,7 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
-          _gifs = List<Map<String, dynamic>>.from(data['data'] as List?);
+          _gifs = List<Map<String, dynamic>>.from(data['data'] as List? ?? []);
         });
       }
     } catch (e) {

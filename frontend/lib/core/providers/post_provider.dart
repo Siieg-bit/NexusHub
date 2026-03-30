@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/supabase_service.dart';
 import '../models/post_model.dart';
+import 'package:flutter/foundation.dart';
 
 /// ============================================================================
 /// PostProvider — State Management com AsyncNotifier para posts/feed.

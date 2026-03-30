@@ -40,17 +40,16 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
       final allRes = await SupabaseService.table('achievements')
           .select()
           .order('sort_order');
-      _allAchievements = List<Map<String, dynamic>>.from(allRes as List?);
+      _allAchievements = List<Map<String, dynamic>>.from(allRes as List? ?? []);
 
       // Carregar conquistas desbloqueadas pelo usuário
       final unlockedRes = await SupabaseService.table('user_achievements')
           .select('achievement_id, unlocked_at')
           .eq('user_id', userId);
-      final unlocked = List<Map<String, dynamic>>.from(unlockedRes as List?);
+      final unlocked = List<Map<String, dynamic>>.from(unlockedRes as List? ?? []);
 
       _unlockedIds = unlocked
-          .map((u) => u['achievement_id'] as String?)
-          .toSet();
+          .map((u) => (u['achievement_id'] as String?) ?? '').toSet();
       _progressMap = {
         for (final u in unlocked)
           u['achievement_id'] as String: 100,
@@ -82,8 +81,8 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
       int maxStreak = 0;
       DateTime? lastDate;
 
-      for (final row in List<Map<String, dynamic>>.from(checkins as List?)) {
-        final dateStr = row['checkin_date'] as String?;
+      for (final row in List<Map<String, dynamic>>.from(checkins as List? ?? [])) {
+        final dateStr = (row['checkin_date'] as String?) ?? '';
         data[dateStr] = 1; // Nível 1 para check-in simples
 
         // Calcular streaks

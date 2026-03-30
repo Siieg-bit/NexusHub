@@ -78,7 +78,7 @@ class _NotificationSettingsScreenState
           _onlyFriendsMessages = res['only_friends_messages'] as bool? ?? false;
           _pauseAllUntil = res['pause_all_until'] != null;
           if (res['pause_all_until'] != null) {
-            _pauseUntilDate = DateTime.tryParse(res['pause_all_until'] as String?);
+            _pauseUntilDate = DateTime.tryParse(res['pause_all_until'] as String? ?? '');
           }
         });
       }
@@ -246,7 +246,7 @@ class _NotificationSettingsScreenState
                       Switch(
                         value: _pushEnabled,
                         onChanged: (v) => setState(() => _pushEnabled = v),
-                        activeColor: AppTheme.primaryColor,
+                        activeThumbColor: AppTheme.primaryColor,
                         activeTrackColor: AppTheme.primaryColor.withValues(alpha: 0.3),
                         inactiveThumbColor: Colors.grey[400],
                         inactiveTrackColor: Colors.grey[800],
@@ -448,7 +448,7 @@ class _NotificationSettingsScreenState
                                 });
                               }
                             },
-                            activeColor: AppTheme.warningColor,
+                            activeThumbColor: AppTheme.warningColor,
                             activeTrackColor:
                                 AppTheme.warningColor.withValues(alpha: 0.3),
                             inactiveThumbColor: Colors.grey[400],
@@ -576,7 +576,7 @@ class _NotifToggle extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: color,
+            activeThumbColor: color,
             activeTrackColor: color.withValues(alpha: 0.3),
             inactiveThumbColor: Colors.grey[400],
             inactiveTrackColor: Colors.grey[800],

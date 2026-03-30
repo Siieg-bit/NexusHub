@@ -43,12 +43,11 @@ class _InventoryScreenState extends State<InventoryScreen>
           .select('*, store_items(*)')
           .eq('user_id', userId)
           .order('purchased_at', ascending: false);
-      _items = List<Map<String, dynamic>>.from(res as List?);
+      _items = List<Map<String, dynamic>>.from(res as List? ?? []);
 
       _equippedIds = _items
           .where((i) => i['is_equipped'] == true)
-          .map((i) => i['id'] as String?)
-          .toSet();
+          .map((i) => (i['id'] as String?) ?? '').toSet();
 
       if (!mounted) return;
       if (mounted) setState(() => _isLoading = false);
@@ -76,7 +75,7 @@ class _InventoryScreenState extends State<InventoryScreen>
   Future<void> _toggleEquip(Map<String, dynamic> item) async {
 
       final r = context.r;
-    final itemId = item['id'] as String?;
+    final itemId = (item['id'] as String?) ?? '';
     final isEquipped = _equippedIds.contains(itemId);
 
     try {

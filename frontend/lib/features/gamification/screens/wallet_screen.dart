@@ -42,7 +42,7 @@ class _WalletScreenState extends State<WalletScreen> {
             .eq('user_id', userId)
             .order('created_at', ascending: false)
             .limit(50);
-        _transactions = List<Map<String, dynamic>>.from(txRes as List?);
+        _transactions = List<Map<String, dynamic>>.from(txRes as List? ?? []);
       } catch (e) {
         debugPrint('[wallet_screen] Erro: $e');
       }
@@ -358,7 +358,7 @@ class _WalletScreenState extends State<WalletScreen> {
                             tx['description'] as String? ?? type;
                         final isPositive = amount >= 0;
                         final createdAt = tx['created_at'] != null
-                            ? DateTime.parse(tx['created_at'] as String?)
+                            ? DateTime.parse(tx['created_at'] as String? ?? '')
                             : DateTime.now();
 
                         return ListTile(
@@ -409,10 +409,7 @@ class _WalletScreenState extends State<WalletScreen> {
           ],
         ),
       ),
-    ).then((_) {
-      userIdCtrl.dispose();
-      amountCtrl.dispose();
-    });
+    );
   }
 
   // ===========================================================================

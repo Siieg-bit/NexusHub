@@ -651,7 +651,7 @@ class _SettingToggle extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: AppTheme.primaryColor,
+            activeThumbColor: AppTheme.primaryColor,
             activeTrackColor: AppTheme.primaryColor.withValues(alpha: 0.3),
             inactiveThumbColor: Colors.grey[500],
             inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
@@ -682,21 +682,23 @@ class _RadioOption extends StatelessWidget {
       data: Theme.of(context).copyWith(
         unselectedWidgetColor: Colors.grey[500],
       ),
-      child: RadioListTile<String>(
-        title: Text(
-          label,
-          style: TextStyle(
-            fontSize: r.fs(14),
-            color: context.textPrimary,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        value: value,
+      child: RadioGroup<String>(
         groupValue: groupValue,
         onChanged: onChanged,
-        activeColor: AppTheme.primaryColor,
-        dense: true,
-        contentPadding: EdgeInsets.zero,
+        child: RadioListTile<String>(
+          title: Text(
+            label,
+            style: TextStyle(
+              fontSize: r.fs(14),
+              color: context.textPrimary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          value: value,
+          activeColor: AppTheme.primaryColor,
+          dense: true,
+          contentPadding: EdgeInsets.zero,
+        ),
       ),
     );
   }

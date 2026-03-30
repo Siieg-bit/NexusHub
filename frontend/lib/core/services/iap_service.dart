@@ -138,14 +138,14 @@ class IAPService {
       return false;
     }
     try {
-      CustomerInfo customerInfo;
       if (package.revenueCatPackage != null) {
-        customerInfo =
-            await Purchases.purchasePackage(package.revenueCatPackage!);
+        await Purchases.purchasePackage(package.revenueCatPackage!);
       } else {
         // Compra direta pelo ID do produto
-        customerInfo =
-            await Purchases.purchaseProduct(package.id);
+        final products = await Purchases.getProducts([package.id]);
+        if (products.isNotEmpty) {
+          await Purchases.purchaseStoreProduct(products.first);
+        }
       }
       // Creditar moedas no Supabase após compra confirmada
       await _creditCoins(package.coins);

@@ -102,7 +102,7 @@ class ShimmerCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final r = context.r;
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: size,

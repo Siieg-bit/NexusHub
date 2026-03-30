@@ -54,7 +54,7 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
           .select('thread_id, chat_threads(*)')
           .eq('user_id', userId)
           .eq('status', 'accepted');
-      final chats = (rows as List?)
+      final chats = (rows as List? ?? [])
           .where((e) => e['chat_threads'] != null)
           .map((e) =>
               ChatRoomModel.fromJson(e['chat_threads'] as Map<String, dynamic>))

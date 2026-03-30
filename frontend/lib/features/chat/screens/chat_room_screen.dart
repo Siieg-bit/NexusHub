@@ -130,7 +130,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         setState(() {
           _messages.clear();
           _messages.addAll(
-            (response as List?)?.map((e) {
+            (response as List? ?? []).map((e) {
               final map = Map<String, dynamic>.from(e as Map);
               if (map['profiles'] != null) {
                 map['sender'] = map['profiles'];
@@ -167,7 +167,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           .limit(1);
       if (mounted) {
         setState(() {
-          _pinnedMessages = List<Map<String, dynamic>>.from(res as List?);
+          _pinnedMessages = List<Map<String, dynamic>>.from(res as List? ?? []);
         });
       }
     } catch (_) {

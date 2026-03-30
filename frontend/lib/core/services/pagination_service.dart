@@ -29,7 +29,7 @@ class PaginationService {
         .order(orderBy, ascending: ascending)
         .range(page * pageSize, (page + 1) * pageSize - 1);
 
-    return List<Map<String, dynamic>>.from(res as List?);
+    return List<Map<String, dynamic>>.from(res as List? ?? []);
   }
 
   /// Busca comunidades paginadas (para Discover)
@@ -55,7 +55,7 @@ class PaginationService {
         .order(orderBy, ascending: ascending)
         .range(page * pageSize, (page + 1) * pageSize - 1);
 
-    return List<Map<String, dynamic>>.from(res as List?);
+    return List<Map<String, dynamic>>.from(res as List? ?? []);
   }
 
   /// Busca mensagens de chat paginadas (ordem inversa — mais recentes primeiro)
@@ -70,7 +70,7 @@ class PaginationService {
         .order('created_at', ascending: false)
         .range(page * pageSize, (page + 1) * pageSize - 1);
 
-    return List<Map<String, dynamic>>.from(res as List?);
+    return List<Map<String, dynamic>>.from(res as List? ?? []);
   }
 
   /// Busca threads de chat paginadas
@@ -89,7 +89,7 @@ class PaginationService {
         .order('updated_at', ascending: false)
         .range(page * pageSize, (page + 1) * pageSize - 1);
 
-    return List<Map<String, dynamic>>.from(res as List?);
+    return List<Map<String, dynamic>>.from(res as List? ?? []);
   }
 
   /// Busca membros de uma comunidade paginados
@@ -111,7 +111,7 @@ class PaginationService {
         .order('joined_at', ascending: false)
         .range(page * pageSize, (page + 1) * pageSize - 1);
 
-    return List<Map<String, dynamic>>.from(res as List?);
+    return List<Map<String, dynamic>>.from(res as List? ?? []);
   }
 
   /// Busca wiki entries paginadas
@@ -138,7 +138,7 @@ class PaginationService {
         .order('created_at', ascending: false)
         .range(page * pageSize, (page + 1) * pageSize - 1);
 
-    return List<Map<String, dynamic>>.from(res as List?);
+    return List<Map<String, dynamic>>.from(res as List? ?? []);
   }
 
   /// Busca notificações paginadas
@@ -155,7 +155,7 @@ class PaginationService {
         .order('created_at', ascending: false)
         .range(page * pageSize, (page + 1) * pageSize - 1);
 
-    return List<Map<String, dynamic>>.from(res as List?);
+    return List<Map<String, dynamic>>.from(res as List? ?? []);
   }
 
   /// Busca itens da loja paginados
@@ -179,7 +179,7 @@ class PaginationService {
         .order('created_at', ascending: false)
         .range(page * pageSize, (page + 1) * pageSize - 1);
 
-    return List<Map<String, dynamic>>.from(res as List?);
+    return List<Map<String, dynamic>>.from(res as List? ?? []);
   }
 
   /// Busca transações da wallet paginadas
@@ -196,7 +196,7 @@ class PaginationService {
         .order('created_at', ascending: false)
         .range(page * pageSize, (page + 1) * pageSize - 1);
 
-    return List<Map<String, dynamic>>.from(res as List?);
+    return List<Map<String, dynamic>>.from(res as List? ?? []);
   }
 
   /// Busca comentários de um post paginados
@@ -211,7 +211,7 @@ class PaginationService {
         .order('created_at', ascending: true)
         .range(page * pageSize, (page + 1) * pageSize - 1);
 
-    return List<Map<String, dynamic>>.from(res as List?);
+    return List<Map<String, dynamic>>.from(res as List? ?? []);
   }
 
   /// Busca flags/reports paginados (moderação)
@@ -233,7 +233,7 @@ class PaginationService {
         .order('created_at', ascending: false)
         .range(page * pageSize, (page + 1) * pageSize - 1);
 
-    return List<Map<String, dynamic>>.from(res as List?);
+    return List<Map<String, dynamic>>.from(res as List? ?? []);
   }
 
   /// Busca seguidores/seguindo paginados
@@ -254,7 +254,7 @@ class PaginationService {
         .order('created_at', ascending: false)
         .range(page * pageSize, (page + 1) * pageSize - 1);
 
-    return List<Map<String, dynamic>>.from(res as List?);
+    return List<Map<String, dynamic>>.from(res as List? ?? []);
   }
 
   /// Busca leaderboard paginado
@@ -269,7 +269,7 @@ class PaginationService {
         .order('local_reputation', ascending: false)
         .range(page * pageSize, (page + 1) * pageSize - 1);
 
-    return List<Map<String, dynamic>>.from(res as List?);
+    return List<Map<String, dynamic>>.from(res as List? ?? []);
   }
 
   /// Busca resultados de pesquisa global
@@ -297,10 +297,10 @@ class PaginationService {
     ]);
 
     return {
-      'communities': List<Map<String, dynamic>>.from(results[0] as List?),
-      'users': List<Map<String, dynamic>>.from(results[1] as List?),
-      'posts': List<Map<String, dynamic>>.from(results[2] as List?),
-      'wiki': List<Map<String, dynamic>>.from(results[3] as List?),
+      'communities': List<Map<String, dynamic>>.from(results[0] as List? ?? []),
+      'users': List<Map<String, dynamic>>.from(results[1] as List? ?? []),
+      'posts': List<Map<String, dynamic>>.from(results[2] as List? ?? []),
+      'wiki': List<Map<String, dynamic>>.from(results[3] as List? ?? []),
     };
   }
 }

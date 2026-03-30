@@ -44,7 +44,7 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
       if (mounted) {
         setState(() {
           _balance = wallet?['coins'] as int? ?? 0;
-          _adsWatchedToday = (adCount as List?)?.length;
+          _adsWatchedToday = (adCount as List?)?.length ?? 0;
         });
       }
     } catch (e) {

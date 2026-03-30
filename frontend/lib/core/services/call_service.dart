@@ -45,10 +45,10 @@ class CallSession {
 
   factory CallSession.fromJson(Map<String, dynamic> json) {
     return CallSession(
-      id: json['id'] as String?,
-      threadId: json['thread_id'] as String?,
+      id: json['id'] as String? ?? '',
+      threadId: json['thread_id'] as String? ?? '',
       type: _parseType(json['type'] as String? ?? 'voice'),
-      creatorId: json['creator_id'] as String?,
+      creatorId: json['creator_id'] as String? ?? '',
       status: json['status'] as String? ?? 'active',
       createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ??
           DateTime.now(),
@@ -426,7 +426,7 @@ class CallService {
           .select('*, profiles!call_participants_user_id_fkey(*)')
           .eq('call_session_id', activeCall!.id)
           .eq('status', 'connected');
-      return List<Map<String, dynamic>>.from(res as List?);
+      return List<Map<String, dynamic>>.from(res as List? ?? []);
     } catch (_) {
       return [];
     }

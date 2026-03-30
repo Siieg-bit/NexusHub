@@ -382,7 +382,7 @@ class _CardPressWidgetState extends State<_CardPressWidget> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         curve: Curves.easeInOut,
-        transform: Matrix4.identity()..scale(_isPressed ? 0.97 : 1.0),
+        transform: Matrix4.identity()..scaleByDouble(_isPressed ? 0.97 : 1.0, _isPressed ? 0.97 : 1.0, 1.0, 1),
         child: AnimatedOpacity(
           duration: const Duration(milliseconds: 150),
           opacity: _isPressed ? 0.85 : 1.0,

@@ -46,9 +46,9 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
             .eq('user_id', userId);
 
         final optionIds =
-            (options as List?)?.map((o) => o['id'] as String?).toSet();
-        for (final vote in (votes as List?)) {
-          if (optionIds.contains(vote['option_id'])) {
+            (options as List? ?? []).map((o) => o['id'] as String?).toSet();
+        for (final vote in ((votes as List? ?? []))) {
+          if (optionIds.contains(vote['option_id']) == true) {
             _selectedOption = (options)
                 .indexWhere((o) => o['id'] == vote['option_id']);
             _hasVoted = true;
@@ -59,7 +59,7 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
 
       if (mounted) {
         setState(() {
-          _options = (options as List?)
+          _options = (options as List? ?? [])
               .map((o) => Map<String, dynamic>.from(o as Map))
               .toList();
           _totalVotes =
@@ -317,7 +317,7 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
           .eq('post_id', widget.post.id)
           .order('sort_order', ascending: true);
 
-      if (mounted && (questions as List?).isNotEmpty) {
+      if (mounted && (questions as List?)?.isNotEmpty == true) {
         setState(() {
           _questions = questions
               .map((q) => Map<String, dynamic>.from(q as Map))
@@ -652,7 +652,7 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
                   SizedBox(width: r.s(8)),
                   Expanded(
                     child: Text(
-                      q['explanation'] as String?,
+                      q['explanation'] as String? ?? '',
                       style: TextStyle(
                         fontSize: r.fs(12),
                         color: context.textSecondary,

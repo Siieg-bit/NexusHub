@@ -33,7 +33,7 @@ class ChatThreadsNotifier extends AsyncNotifier<List<Map<String, dynamic>>> {
         .order('updated_at', referencedTable: 'chat_threads', ascending: false)
         .limit(50);
 
-    return List<Map<String, dynamic>>.from(res as List?);
+    return List<Map<String, dynamic>>.from(res as List? ?? []);
   }
 
   Future<void> refresh() async {

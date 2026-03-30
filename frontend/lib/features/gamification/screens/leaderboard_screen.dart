@@ -40,7 +40,7 @@ final leaderboardProvider =
   });
 
   if (result == null) return [];
-  return (result as List?)?.map((e) => e as Map<String, dynamic>).toList();
+  return (result as List? ?? []).map((e) => e as Map<String, dynamic>).toList();
 });
 
 // =============================================================================
@@ -641,7 +641,7 @@ class _LeaderboardTile extends StatelessWidget {
                     data['role'] != 'member') ...[
                   SizedBox(height: r.s(3)),
                   Text(
-                    (data['role'] as String?).toUpperCase(),
+                    (data['role'] as String? ?? '').toUpperCase(),
                     style: TextStyle(
                       color: AppTheme.accentColor,
                       fontSize: r.fs(10),

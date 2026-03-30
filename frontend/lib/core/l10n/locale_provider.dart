@@ -1,9 +1,9 @@
-import 'dart:ui';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'app_strings.dart';
 import 'app_strings_pt.dart';
 import 'app_strings_en.dart';
+import 'package:flutter/foundation.dart';
 
 /// Idiomas suportados pelo app.
 enum AppLocale {

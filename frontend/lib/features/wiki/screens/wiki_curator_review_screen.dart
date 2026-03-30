@@ -35,7 +35,7 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
           .eq('community_id', widget.communityId)
           .eq('status', 'pending')
           .order('created_at', ascending: true);
-      _pendingEntries = List<Map<String, dynamic>>.from(res as List?);
+      _pendingEntries = List<Map<String, dynamic>>.from(res as List? ?? []);
       if (!mounted) return;
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {

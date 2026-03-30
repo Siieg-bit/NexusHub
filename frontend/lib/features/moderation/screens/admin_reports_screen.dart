@@ -149,7 +149,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
           .select('id, reason, status, created_at, reporter_id')
           .order('created_at', ascending: false)
           .limit(10);
-      _recentFlags = List<Map<String, dynamic>>.from(recent as List?);
+      _recentFlags = List<Map<String, dynamic>>.from(recent as List? ?? []);
     } catch (e) {
       debugPrint('[AdminReports] Erro ao carregar moderação: $e');
     }
@@ -171,7 +171,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
       final coinsData = await SupabaseService.table('profiles')
           .select('coin_balance');
       int total = 0;
-      for (final row in (coinsData as List?)) {
+      for (final row in ((coinsData as List? ?? []))) {
         total += (row['coin_balance'] as int? ?? 0);
       }
       _totalCoinsCirculating = total;
