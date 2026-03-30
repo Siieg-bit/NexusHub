@@ -812,10 +812,15 @@ class _PostCardState extends State<PostCard>
       child: Row(
         children: [
           // Like button (animated heart)
-          GestureDetector(
-            onTap: _toggleLike,
-            behavior: HitTestBehavior.opaque,
-            child: Row(
+          Semantics(
+            label: _post.isLiked
+                ? 'Descurtir post, ${_post.likesCount} curtidas'
+                : 'Curtir post, ${_post.likesCount} curtidas',
+            button: true,
+            child: GestureDetector(
+              onTap: _toggleLike,
+              behavior: HitTestBehavior.opaque,
+              child: Row(
               children: [
                 ScaleTransition(
                   scale: Tween<double>(begin: 1.0, end: 1.3)
@@ -845,13 +850,17 @@ class _PostCardState extends State<PostCard>
               ],
             ),
           ),
+          ),
           SizedBox(width: r.s(16)),
 
           // Comment button
-          GestureDetector(
-            onTap: () => context.push('/post/${_post.id}'),
-            behavior: HitTestBehavior.opaque,
-            child: Row(
+          Semantics(
+            label: 'Ver ${_post.commentsCount} comentários',
+            button: true,
+            child: GestureDetector(
+              onTap: () => context.push('/post/${_post.id}'),
+              behavior: HitTestBehavior.opaque,
+              child: Row(
               children: [
                 Icon(Icons.chat_bubble_outline_rounded,
                     size: r.s(16), color: Colors.grey[600]),
@@ -865,6 +874,7 @@ class _PostCardState extends State<PostCard>
                 ),
               ],
             ),
+          ),
           ),
 
           const Spacer(),

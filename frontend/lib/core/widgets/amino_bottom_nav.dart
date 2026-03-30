@@ -165,14 +165,18 @@ class _NavItem extends StatelessWidget {
     final color = isSelected ? AppTheme.accentColor : const Color(0xFF6B7B8D);
 
     return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Indicador ativo (linha ciano no topo)
-            AnimatedContainer(
+      child: Semantics(
+        label: label,
+        selected: isSelected,
+        button: true,
+        child: GestureDetector(
+          onTap: onTap,
+          behavior: HitTestBehavior.opaque,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Indicador ativo (linha ciano no topo)
+              AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               height: 2,
               width: isSelected ? 20 : 0,
@@ -182,17 +186,20 @@ class _NavItem extends StatelessWidget {
                 borderRadius: BorderRadius.circular(1),
               ),
             ),
-            Icon(icon, size: r.s(22), color: color),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: r.fs(10),
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: color,
+              ExcludeSemantics(child: Icon(icon, size: r.s(22), color: color)),
+              const SizedBox(height: 2),
+              ExcludeSemantics(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: r.fs(10),
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: color,
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -221,14 +228,18 @@ class _NavItemAvatar extends StatelessWidget {
     final color = isSelected ? AppTheme.accentColor : const Color(0xFF6B7B8D);
 
     return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Indicador ativo
-            AnimatedContainer(
+      child: Semantics(
+        label: label,
+        selected: isSelected,
+        button: true,
+        child: GestureDetector(
+          onTap: onTap,
+          behavior: HitTestBehavior.opaque,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Indicador ativo
+              AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               height: 2,
               width: isSelected ? 20 : 0,
@@ -256,16 +267,19 @@ class _NavItemAvatar extends StatelessWidget {
                     : Icon(Icons.person, size: r.s(14), color: color),
               ),
             ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: r.fs(10),
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: color,
+              const SizedBox(height: 2),
+              ExcludeSemantics(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: r.fs(10),
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: color,
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

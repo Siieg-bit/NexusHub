@@ -68,6 +68,10 @@ dependencies:
   firebase_core: ^3.0.0
   firebase_messaging: ^15.0.0
 
+  # Analytics & Crash Reporting
+  firebase_analytics: ^11.0.0
+  firebase_crashlytics: ^4.0.0
+
   # In-App Purchases (placeholder — configurar depois)
   # purchases_flutter: ^6.18.0
 

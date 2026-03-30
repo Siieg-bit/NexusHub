@@ -56,7 +56,7 @@ class AvatarWithFrame extends StatelessWidget {
     // O container total precisa acomodar o frame com overflow
     final totalSize = frameSize;
 
-    return GestureDetector(
+    final widget = GestureDetector(
       onTap: onTap,
       child: SizedBox(
         width: totalSize,
@@ -166,6 +166,14 @@ class AvatarWithFrame extends StatelessWidget {
         ),
       ),
     );
+    if (onTap != null) {
+      return Semantics(
+        label: 'Foto de perfil',
+        button: true,
+        child: widget,
+      );
+    }
+    return widget;
   }
 
   Widget _avatarPlaceholder(BuildContext context) {

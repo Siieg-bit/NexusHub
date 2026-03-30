@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:video_player/video_player.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
@@ -19,11 +20,12 @@ class CreateStoryScreen extends StatefulWidget {
 }
 
 class _CreateStoryScreenState extends State<CreateStoryScreen> {
-  String _type = 'text'; // text, image
+  String _type = 'text'; // text, image, video
   final _textController = TextEditingController();
   String? _mediaUrl;
   bool _isSubmitting = false;
   int _selectedBgIndex = 0;
+  VideoPlayerController? _videoPreviewController;
 
   static const _bgColors = [
     Color(0xFF0D1B2A),
@@ -72,6 +74,56 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
       setState(() {
         _mediaUrl = url;
         _type = 'image';
+        _isSubmitting = false;
+      });
+    } catch (e) {
+      setState(() => _isSubmitting = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro no upload: $e'),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _pickVideo() async {
+    final picker = ImagePicker();
+    final video = await picker.pickVideo(
+      source: ImageSource.gallery,
+      maxDuration: const Duration(seconds: 60),
+    );
+    if (video == null) return;
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      final userId = SupabaseService.currentUserId ?? 'unknown';
+      final bytes = await video.readAsBytes();
+      final path =
+          'stories/${widget.communityId}/$userId/${DateTime.now().millisecondsSinceEpoch}_${video.name}';
+      await SupabaseService.client.storage
+          .from('media')
+          .uploadBinary(path, bytes, options: const StorageFileUploadOptions(
+            contentType: 'video/mp4',
+          ));
+      final url =
+          SupabaseService.client.storage.from('media').getPublicUrl(path);
+
+      // Inicializar preview do vídeo
+      _videoPreviewController?.dispose();
+      _videoPreviewController =
+          VideoPlayerController.networkUrl(Uri.parse(url));
+      await _videoPreviewController!.initialize();
+      _videoPreviewController!.setLooping(true);
+      _videoPreviewController!.play();
+
+      setState(() {
+        _mediaUrl = url;
+        _type = 'video';
         _isSubmitting = false;
       });
     } catch (e) {
@@ -155,6 +207,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
   @override
   void dispose() {
     _textController.dispose();
+    _videoPreviewController?.dispose();
     super.dispose();
   }
 
@@ -238,12 +291,19 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                     icon: Icons.image_rounded,
                     isSelected: _type == 'image',
                     onTap: () {
-                      if (_mediaUrl == null) {
+                      if (_mediaUrl == null || _type != 'image') {
                         _pickImage();
                       } else {
                         setState(() => _type = 'image');
                       }
                     },
+                  ),
+                  SizedBox(width: r.s(8)),
+                  _TypeChip(
+                    label: 'Vídeo',
+                    icon: Icons.videocam_rounded,
+                    isSelected: _type == 'video',
+                    onTap: () => _pickVideo(),
                   ),
                 ],
               ),
@@ -268,6 +328,25 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
+                    // Preview de vídeo
+                    if (_type == 'video' && _videoPreviewController != null &&
+                        _videoPreviewController!.value.isInitialized)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(r.s(16)),
+                        child: FittedBox(
+                          fit: BoxFit.cover,
+                          child: SizedBox(
+                            width: _videoPreviewController!.value.size.width,
+                            height: _videoPreviewController!.value.size.height,
+                            child: VideoPlayer(_videoPreviewController!),
+                          ),
+                        ),
+                      )
+                    else if (_type == 'video')
+                      const Center(
+                        child: CircularProgressIndicator(color: Colors.white),
+                      ),
+
                     // Texto central
                     if (_type == 'text')
                       Center(

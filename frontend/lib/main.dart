@@ -14,6 +14,7 @@ import 'core/services/push_notification_service.dart';
 import 'core/services/iap_service.dart';
 import 'core/services/ad_service.dart';
 import 'core/services/cache_service.dart';
+import 'core/services/analytics_service.dart';
 import 'core/widgets/error_boundary.dart';
 
 void main() async {
@@ -36,6 +37,7 @@ void main() async {
   // Inicializar Firebase
   try {
     await Firebase.initializeApp();
+    await AnalyticsService.init();
   } catch (e) {
     debugPrint('[Main] Firebase init error (pode ignorar em dev): $e');
   }

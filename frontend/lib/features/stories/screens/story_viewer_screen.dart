@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:video_player/video_player.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
@@ -33,6 +34,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
   int _currentIndex = 0;
   late AnimationController _progressController;
   Timer? _autoAdvanceTimer;
+  VideoPlayerController? _videoController;
 
   static const _reactions = ['❤️', '🔥', '😂', '😮', '😢', '👏'];
 
@@ -50,24 +52,65 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
   void dispose() {
     _progressController.dispose();
     _autoAdvanceTimer?.cancel();
+    _videoController?.dispose();
     super.dispose();
+  }
+
+  Future<void> _initVideo(String url) async {
+    _videoController?.dispose();
+    _videoController = VideoPlayerController.networkUrl(Uri.parse(url));
+    await _videoController!.initialize();
+    if (mounted) {
+      setState(() {});
+      _videoController!.play();
+      _videoController!.setLooping(false);
+      // Avança para o próximo story quando o vídeo terminar
+      _videoController!.addListener(() {
+        if (_videoController!.value.position >= _videoController!.value.duration &&
+            _videoController!.value.duration > Duration.zero) {
+          _advance();
+        }
+      });
+    }
   }
 
   void _startStory() {
     final story = widget.stories[_currentIndex];
-    final duration = (story['duration'] as int?) ?? 5;
+    final type = story['type'] as String? ?? 'image';
+    final duration = (story['duration'] as int?) ?? (type == 'video' ? 15 : 5);
 
+    // Parar vídeo anterior se houver
+    _videoController?.pause();
+    _videoController?.dispose();
+    _videoController = null;
+
+    _progressController.removeStatusListener(_onProgressComplete);
     _progressController.duration = Duration(seconds: duration);
-    _progressController.forward(from: 0);
 
-    _progressController.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        _nextStory();
+    if (type == 'video') {
+      final mediaUrl = story['media_url'] as String?;
+      if (mediaUrl != null) {
+        // Inicializa o vídeo; o progresso será controlado pelo vídeo
+        _initVideo(mediaUrl);
       }
-    });
+    } else {
+      _progressController.forward(from: 0);
+      _progressController.addStatusListener(_onProgressComplete);
+    }
 
     // Registrar visualização
     _registerView(story['id'] as String);
+  }
+
+  void _onProgressComplete(AnimationStatus status) {
+    if (status == AnimationStatus.completed) {
+      _nextStory();
+    }
+  }
+
+  void _advance() {
+    if (!mounted) return;
+    _nextStory();
   }
 
   Future<void> _registerView(String storyId) async {
@@ -183,7 +226,23 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
           fit: StackFit.expand,
           children: [
             // ── Background / Media ──
-            if (type == 'image' && mediaUrl != null)
+            if (type == 'video' && mediaUrl != null)
+              _videoController != null && _videoController!.value.isInitialized
+                  ? FittedBox(
+                      fit: BoxFit.cover,
+                      child: SizedBox(
+                        width: _videoController!.value.size.width,
+                        height: _videoController!.value.size.height,
+                        child: VideoPlayer(_videoController!),
+                      ),
+                    )
+                  : Container(
+                      color: Colors.black,
+                      child: const Center(
+                        child: CircularProgressIndicator(color: Colors.white),
+                      ),
+                    )
+            else if (type == 'image' && mediaUrl != null)
               Image.network(
                 mediaUrl,
                 fit: BoxFit.cover,
