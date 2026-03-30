@@ -7,10 +7,15 @@ import os
 import requests
 import sys
 
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://SEU_PROJETO.supabase.co")
-SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", 
-    "SUA_SUPABASE_SERVICE_ROLE_KEY_AQUI"
-)
+# Carregue as variaveis de ambiente antes de executar:
+#   export SUPABASE_URL=https://SEU_PROJETO.supabase.co
+#   export SUPABASE_SERVICE_ROLE_KEY=SUA_SERVICE_ROLE_KEY
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+
+if not SUPABASE_URL or not SERVICE_ROLE_KEY:
+    print("ERRO: Defina SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY como variaveis de ambiente")
+    sys.exit(1)
 
 HEADERS = {
     "apikey": SERVICE_ROLE_KEY,
