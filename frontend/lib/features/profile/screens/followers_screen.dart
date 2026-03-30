@@ -245,7 +245,9 @@ class _FollowButtonState extends State<_FollowButton> {
             'p_action': 'follow',
             'p_source_id': widget.targetUserId,
           });
-        } catch (_) {}
+        } catch (e) {
+          debugPrint('[followers_screen] Erro: $e');
+        }
       }
 
       if (mounted) setState(() => _isFollowing = !_isFollowing);

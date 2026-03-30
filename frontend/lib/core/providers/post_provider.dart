@@ -107,7 +107,9 @@ class CommunityFeedNotifier
         newList[index] = updated;
         state = AsyncData(newList);
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[post_provider] Erro: $e');
+    }
   }
 
   bool get hasMore => _hasMore;

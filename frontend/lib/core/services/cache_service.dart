@@ -375,7 +375,9 @@ class CacheService {
     try {
       final box = Hive.box<String>(_metadataBox);
       await box.put('ts:$key', DateTime.now().toUtc().toIso8601String());
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[cache_service] Erro: $e');
+    }
   }
 
   /// Retorna o timestamp de última sincronização de um recurso.
@@ -452,7 +454,9 @@ class CacheService {
           }
         }
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[cache_service] Erro: $e');
+    }
     return total;
   }
 

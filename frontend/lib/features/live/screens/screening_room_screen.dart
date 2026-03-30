@@ -141,7 +141,9 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
       _viewerCount = _participants.length;
       if (!mounted) return;
       if (mounted) setState(() {});
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[screening_room_screen] Erro: $e');
+    }
   }
 
   void _subscribeToRealtime() {
@@ -352,7 +354,9 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
               .eq('id', _sessionId!);
         }
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[screening_room_screen] Erro: $e');
+    }
 
     if (mounted) Navigator.of(context).pop();
   }

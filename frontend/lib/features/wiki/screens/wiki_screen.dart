@@ -429,7 +429,9 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
           if (ratingRes != null) {
             _userRating = ratingRes['rating'] as int? ?? 0;
           }
-        } catch (_) {}
+        } catch (e) {
+          debugPrint('[wiki_screen] Erro: $e');
+        }
       }
 
       // Check if pinned/bookmarked to profile
@@ -441,7 +443,9 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
               .eq('wiki_id', widget.wikiId)
               .maybeSingle();
           _isPinnedToProfile = pinRes != null;
-        } catch (_) {}
+        } catch (e) {
+          debugPrint('[wiki_screen] Erro: $e');
+        }
       }
 
       // Load "What I Like" comments
@@ -452,7 +456,9 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
             .order('created_at', ascending: false)
             .limit(20);
         _whatILikeList = List<Map<String, dynamic>>.from(likesRes as List);
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('[wiki_screen] Erro: $e');
+      }
 
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
@@ -499,7 +505,9 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
           );
         }
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[wiki_screen] Erro: $e');
+    }
   }
 
   Future<void> _submitRating(int rating) async {
@@ -515,7 +523,9 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
       setState(() => _userRating = rating);
       // Reload to get updated average
       _loadEntry();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[wiki_screen] Erro: $e');
+    }
   }
 
   Future<void> _submitWhatILike() async {
@@ -531,7 +541,9 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
       });
       _whatILikeController.clear();
       _loadEntry();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[wiki_screen] Erro: $e');
+    }
   }
 
   @override

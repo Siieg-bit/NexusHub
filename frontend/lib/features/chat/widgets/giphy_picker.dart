@@ -78,7 +78,9 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
           _gifs = List<Map<String, dynamic>>.from(data['data'] as List);
         });
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[giphy_picker] Erro: $e');
+    }
     setState(() => _isLoading = false);
   }
 
@@ -101,7 +103,9 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
           _gifs = List<Map<String, dynamic>>.from(data['data'] as List);
         });
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[giphy_picker] Erro: $e');
+    }
     setState(() => _isLoading = false);
   }
 

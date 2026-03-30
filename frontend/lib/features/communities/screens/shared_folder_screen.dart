@@ -317,7 +317,9 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
       await SupabaseService.table('shared_files')
           .update({'status': 'removed'}).eq('id', fileId);
       await _loadFiles();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[shared_folder_screen] Erro: $e');
+    }
   }
 
   String _formatFileSize(int? bytes) {

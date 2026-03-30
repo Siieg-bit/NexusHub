@@ -33,7 +33,9 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
           .order('created_at', ascending: false);
 
       _blockedUsers = List<Map<String, dynamic>>.from(res as List);
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[blocked_users_screen] Erro: $e');
+    }
     if (!mounted) return;
     if (mounted) setState(() => _isLoading = false);
   }

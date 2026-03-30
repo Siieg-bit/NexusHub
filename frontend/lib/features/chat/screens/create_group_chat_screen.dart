@@ -129,7 +129,9 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
       if (picked != null && mounted) {
         setState(() => _coverImage = File(picked.path));
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[create_group_chat_screen] Erro: $e');
+    }
   }
 
   Future<void> _createGroupChat() async {

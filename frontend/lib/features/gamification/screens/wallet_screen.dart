@@ -43,7 +43,9 @@ class _WalletScreenState extends State<WalletScreen> {
             .order('created_at', ascending: false)
             .limit(50);
         _transactions = List<Map<String, dynamic>>.from(txRes as List);
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('[wallet_screen] Erro: $e');
+      }
 
       if (!mounted) return;
       if (mounted) setState(() => _isLoading = false);

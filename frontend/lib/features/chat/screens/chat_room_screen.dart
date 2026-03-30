@@ -773,7 +773,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       await SupabaseService.table('chat_messages')
           .update({'reactions': reactions}).eq('id', messageId);
       await _loadMessages();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[chat_room_screen] Erro: $e');
+    }
   }
 
   Future<void> _pinMessage(String messageId) async {
@@ -781,7 +783,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       await SupabaseService.table('chat_threads')
           .update({'pinned_message_id': messageId}).eq('id', widget.threadId);
       await _loadPinnedMessages();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[chat_room_screen] Erro: $e');
+    }
   }
 
   // ========================================================================

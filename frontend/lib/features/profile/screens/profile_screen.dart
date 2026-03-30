@@ -1313,7 +1313,9 @@ class _WallTab extends ConsumerWidget {
           .delete()
           .eq('id', messageId);
       ref.invalidate(userWallProvider(userId));
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[profile_screen] Erro: $e');
+    }
   }
 
   String _timeAgo(DateTime dt) {

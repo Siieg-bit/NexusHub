@@ -47,7 +47,9 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
           _adsWatchedToday = (adCount as List).length;
         });
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[free_coins_screen] Erro: $e');
+    }
   }
 
   String _formatCoins(int coins) {

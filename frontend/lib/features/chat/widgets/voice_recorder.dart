@@ -171,7 +171,9 @@ class _VoiceRecorderState extends State<VoiceRecorder>
         final file = File(_filePath!);
         if (await file.exists()) await file.delete();
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[voice_recorder] Erro: $e');
+    }
 
     widget.onCancel();
   }

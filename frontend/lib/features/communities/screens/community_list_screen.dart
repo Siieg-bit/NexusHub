@@ -116,7 +116,9 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
           _coins = profile['coins_count'] as int? ?? 0;
         });
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[community_list_screen] Erro: $e');
+    }
   }
 
   @override

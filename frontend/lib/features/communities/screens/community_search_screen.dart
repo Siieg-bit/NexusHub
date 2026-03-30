@@ -111,7 +111,9 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
           _showSuggestions = suggestions.isNotEmpty;
         });
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[community_search_screen] Erro: $e');
+    }
   }
 
   Future<void> _performSearch(String query) async {

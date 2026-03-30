@@ -187,7 +187,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
       // Encerrar presença em tempo real
       try {
         await PresenceService.instance.dispose();
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('[auth_provider] Erro: $e');
+      }
       await SupabaseService.auth.signOut();
       state = const AuthState();
     } catch (e) {

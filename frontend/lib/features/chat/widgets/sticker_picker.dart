@@ -109,7 +109,9 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
           .order('used_at', ascending: false)
           .limit(20);
       _recentStickers = List<Map<String, dynamic>>.from(res as List);
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[sticker_picker] Erro: $e');
+    }
   }
 
   Future<void> _addToRecentStickers(Map<String, dynamic> sticker) async {
@@ -126,7 +128,9 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
         'sticker_name': stickerName,
         'used_at': DateTime.now().toIso8601String(),
       }, onConflict: 'user_id,sticker_id');
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[sticker_picker] Erro: $e');
+    }
   }
 
   Future<void> _loadFavoriteStickers() async {
@@ -141,7 +145,9 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
       _favoriteStickerIds = _favoriteStickers
           .map((s) => s['sticker_id'] as String)
           .toSet();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[sticker_picker] Erro: $e');
+    }
   }
 
   Future<void> _loadStickerPacks() async {
@@ -164,7 +170,9 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
           .map((k) => {'name': k, 'count': packs[k]!.length})
           .toList();
       _stickersByPack = packs;
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[sticker_picker] Erro: $e');
+    }
 
     // Aba Emojis padrão
     _packs.insert(0, {'name': 'Emojis', 'count': _defaultStickers.length});
@@ -234,7 +242,9 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
           duration: const Duration(seconds: 1),
         ));
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[sticker_picker] Erro: $e');
+    }
   }
 
   @override

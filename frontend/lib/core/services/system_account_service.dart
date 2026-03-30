@@ -121,7 +121,9 @@ class SystemAccountService {
         'reference_id': communityId,
         'reference_type': 'community',
       });
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[system_account_service] Erro: $e');
+    }
   }
 
   /// Envia notificação de ação de moderação.
@@ -163,6 +165,8 @@ class SystemAccountService {
         'content': content,
         'reference_type': 'moderation',
       });
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[system_account_service] Erro: $e');
+    }
   }
 }

@@ -75,7 +75,9 @@ class LocaleNotifier extends StateNotifier<AppLocale> {
     try {
       final box = await Hive.openBox<String>(_boxName);
       await box.put(_key, locale.code);
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[locale_provider] Erro: $e');
+    }
   }
 }
 

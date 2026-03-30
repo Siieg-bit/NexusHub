@@ -325,7 +325,9 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
         });
         return;
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[poll_quiz_widget] Erro: $e');
+    }
 
     // Fallback para quizData inline
     final quizData = widget.post.quizData;
@@ -385,7 +387,9 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
         'score': _score,
         'total_questions': _questions.length,
       });
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[poll_quiz_widget] Erro: $e');
+    }
   }
 
   @override

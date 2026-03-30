@@ -440,7 +440,9 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                           'p_action': 'follow',
                                           'p_source_id': widget.userId,
                                         });
-                                      } catch (_) {}
+                                      } catch (e) {
+                                        debugPrint('[community_profile_screen] Erro: $e');
+                                      }
                                       if (mounted) {
                                         ScaffoldMessenger.of(context).showSnackBar(
                                           const SnackBar(content: Text('Seguindo!')),
@@ -1286,7 +1288,9 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                           .eq('id', bookmark['id']);
                       if (!mounted) return;
                       setState(() => _savedPosts.removeAt(index));
-                    } catch (_) {}
+                    } catch (e) {
+                      debugPrint('[community_profile_screen] Erro: $e');
+                    }
                   },
                 ),
               ],

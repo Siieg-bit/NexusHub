@@ -104,7 +104,9 @@ class _PostCardState extends State<PostCard>
         'user_id': SupabaseService.currentUserId,
         'option_index': optionIndex,
       });
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[post_card] Erro: $e');
+    }
   }
 
   void _answerQuiz(int optionIndex) {

@@ -1263,7 +1263,9 @@ class _LiveChatroomsSectionState extends State<_LiveChatroomsSection> {
           _chats = List<Map<String, dynamic>>.from(response as List);
         });
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[community_detail_screen] Erro: $e');
+    }
   }
 
   @override

@@ -155,7 +155,9 @@ class PushNotificationService {
           try {
             final data = jsonDecode(details.payload!);
             _notificationStreamController?.add(data);
-          } catch (_) {}
+          } catch (e) {
+            debugPrint('[push_notification_service] Erro: $e');
+          }
         }
       },
     );
@@ -276,7 +278,9 @@ class PushNotificationService {
         await SupabaseService.table('profiles').update({
           'fcm_token': null,
         }).eq('id', userId);
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('[push_notification_service] Erro: $e');
+      }
     }
     await _messaging.deleteToken();
   }

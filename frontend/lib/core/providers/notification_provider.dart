@@ -183,7 +183,9 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
         notifications: updated,
         unreadCount: (current.unreadCount - 1).clamp(0, 999),
       ));
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[notification_provider] Erro: $e');
+    }
   }
 
   Future<void> markAllAsRead() async {
@@ -207,7 +209,9 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
         notifications: updated,
         unreadCount: 0,
       ));
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[notification_provider] Erro: $e');
+    }
   }
 
   Future<void> refresh() async {

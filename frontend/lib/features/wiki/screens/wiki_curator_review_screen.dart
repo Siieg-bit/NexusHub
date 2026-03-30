@@ -83,7 +83,9 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
             'wiki_id': entryId,
             'action_url': '/wiki/$entryId',
           });
-        } catch (_) {}
+        } catch (e) {
+          debugPrint('[wiki_curator_review_screen] Erro: $e');
+        }
 
         // Log de moderação
         try {
@@ -97,7 +99,9 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
                 ? 'Wiki aprovada'
                 : rejectReason ?? 'Rejeitada',
           });
-        } catch (_) {}
+        } catch (e) {
+          debugPrint('[wiki_curator_review_screen] Erro: $e');
+        }
       }
 
       setState(() {

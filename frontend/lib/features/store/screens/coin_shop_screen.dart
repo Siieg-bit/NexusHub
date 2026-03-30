@@ -36,7 +36,9 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
             .single();
         _userCoins = profile['coins_count'] as int? ?? 0;
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[coin_shop_screen] Erro: $e');
+    }
     if (mounted) setState(() => _isLoading = false);
   }
 

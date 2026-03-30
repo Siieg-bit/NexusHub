@@ -76,7 +76,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               .single();
           _avatarUrl = profile['avatar_url'] as String?;
           _coins = profile['coins_count'] as int? ?? 0;
-        } catch (_) {}
+        } catch (e) {
+          debugPrint('[explore_screen] Erro: $e');
+        }
 
         // Minhas comunidades
         final myRes = await SupabaseService.table('community_members')
@@ -106,7 +108,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             .limit(10);
         _newCommunities =
             (newRes as List).map((e) => CommunityModel.fromJson(e)).toList();
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('[explore_screen] Erro: $e');
+      }
 
       // For You — posts populares recentes de comunidades do usuario
       try {
@@ -116,7 +120,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             .order('likes_count', ascending: false)
             .limit(15);
         _forYouPosts = List<Map<String, dynamic>>.from(forYouRes as List);
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('[explore_screen] Erro: $e');
+      }
 
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {

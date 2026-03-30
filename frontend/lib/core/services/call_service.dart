@@ -412,7 +412,9 @@ class CallService {
         'status': 'ended',
         'ended_at': DateTime.now().toIso8601String(),
       }).eq('id', activeCall!.id);
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[call_service] Erro: $e');
+    }
     _cleanup();
   }
 

@@ -126,7 +126,9 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
       // Incrementar views_count
       await SupabaseService.client.rpc('increment_story_views',
           params: {'p_story_id': storyId}).catchError((_) => null);
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[story_viewer_screen] Erro: $e');
+    }
   }
 
   void _nextStory() {
@@ -177,7 +179,9 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
           ),
         );
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[story_viewer_screen] Erro: $e');
+    }
   }
 
   String _timeAgo(String? dateStr) {

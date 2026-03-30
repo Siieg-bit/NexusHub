@@ -118,7 +118,9 @@ class _AcmScreenState extends State<AcmScreen>
           .select('id')
           .eq('community_id', widget.communityId);
       _totalChats = (chatsRes as List).length;
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[acm_screen] Erro: $e');
+    }
   }
 
   Map<String, dynamic> _defaultConfig() => {

@@ -87,7 +87,9 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
           _coins = profile['coins_count'] as int? ?? 0;
         });
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[chat_list_screen] Erro: $e');
+    }
   }
 
   @override

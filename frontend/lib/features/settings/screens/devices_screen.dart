@@ -33,7 +33,9 @@ class _DevicesScreenState extends State<DevicesScreen> {
           .order('last_seen_at', ascending: false);
 
       _devices = List<Map<String, dynamic>>.from(res as List);
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[devices_screen] Erro: $e');
+    }
     if (!mounted) return;
     if (mounted) setState(() => _isLoading = false);
   }
