@@ -4,10 +4,19 @@ import '../../config/app_theme.dart';
 /// Error Boundary global — captura erros de widgets filhos e exibe
 /// uma tela de fallback amigável em vez de crashar o app.
 ///
-/// Uso:
+/// Este widget deve ficar DENTRO do [MaterialApp] (via `builder`) para
+/// herdar automaticamente [Directionality], [Theme], [MediaQuery] e
+/// demais InheritedWidgets. Nunca o coloque acima do [MaterialApp].
+///
+/// Uso (em MaterialApp.router):
 /// ```dart
-/// ErrorBoundary(
-///   child: MyWidget(),
+/// MaterialApp.router(
+///   // ...
+///   builder: (context, child) {
+///     return ErrorBoundary(
+///       child: child ?? const SizedBox.shrink(),
+///     );
+///   },
 /// )
 /// ```
 class ErrorBoundary extends StatefulWidget {
@@ -89,6 +98,10 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
 }
 
 /// Tela de fallback padrão exibida quando ocorre um erro não tratado.
+///
+/// Como o [ErrorBoundary] agora vive dentro do [MaterialApp], este widget
+/// herda automaticamente [Directionality], [Theme] e [MediaQuery],
+/// podendo usar [Scaffold], [Text], [Icon] etc. sem problemas.
 class _DefaultErrorFallback extends StatelessWidget {
   final Object error;
   final StackTrace? stackTrace;

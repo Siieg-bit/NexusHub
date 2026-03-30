@@ -99,10 +99,8 @@ void main() async {
   });
 
   runApp(
-    ErrorBoundary(
-      child: const ProviderScope(
-        child: NexusHubApp(),
-      ),
+    const ProviderScope(
+      child: NexusHubApp(),
     ),
   );
 }
@@ -138,6 +136,14 @@ class NexusHubApp extends ConsumerWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
       routerConfig: router,
+      // ErrorBoundary agora fica DENTRO do MaterialApp, garantindo que
+      // Directionality, Theme, MediaQuery e todos os InheritedWidgets
+      // estejam sempre disponíveis — inclusive para o fallback de erro.
+      builder: (context, child) {
+        return ErrorBoundary(
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
     );
   }
 }
