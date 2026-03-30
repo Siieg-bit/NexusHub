@@ -383,6 +383,7 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
           _currentPage = 1;
           _hasMore = items.length >= widget.pageSize;
           _isFirstLoad = false;
+          _error = null;
         });
       }
     } catch (e) {

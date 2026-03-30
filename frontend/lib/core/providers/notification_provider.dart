@@ -221,6 +221,7 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
 
   Future<void> refresh() async {
     _page = 0;
+    _isLoadingMore = false;
     state = const AsyncLoading();
     state = await AsyncValue.guard(_fetch);
   }

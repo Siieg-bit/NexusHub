@@ -129,7 +129,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
       if (widget.targetUserId != null) {
         final user = await SupabaseService.table('profiles')
             .select()
-            .eq('id', widget.targetUserId ?? '')
+            .eq('id', widget.targetUserId!)
             .single();
         if (!mounted) return;
         _targetUser = user;
@@ -279,7 +279,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
             await SupabaseService.table('community_members')
                 .delete()
                 .eq('community_id', widget.communityId)
-                .eq('user_id', targetUid ?? '');
+                .eq('user_id', targetUid!);
             // Notificar o usuário
             await SupabaseService.table('notifications').insert({
               'user_id': widget.targetUserId,

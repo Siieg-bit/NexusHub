@@ -61,6 +61,10 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
   }
 
   Future<void> _initVideo(String url) async {
+    if (_videoEndListener != null) {
+      _videoController?.removeListener(_videoEndListener!);
+      _videoEndListener = null;
+    }
     _videoController?.dispose();
     _videoController = VideoPlayerController.networkUrl(Uri.parse(url));
     await _videoController!.initialize();
@@ -88,6 +92,10 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
     final duration = (story['duration'] as int?) ?? (type == 'video' ? 15 : 5);
 
     // Parar vídeo anterior se houver
+    if (_videoEndListener != null) {
+      _videoController?.removeListener(_videoEndListener!);
+      _videoEndListener = null;
+    }
     _videoController?.pause();
     _videoController?.dispose();
     _videoController = null;

@@ -385,18 +385,19 @@ class CallService {
       await _engine?.stopPreview();
 
       // Atualizar status no Supabase
-      if (userId != null && activeCall != null) {
+      final currentCall = activeCall;
+      if (userId != null && currentCall != null) {
         await SupabaseService.table('call_participants')
             .update({
               'status': 'disconnected',
               'left_at': DateTime.now().toIso8601String(),
             })
-            .eq('call_session_id', activeCall!.id)
+            .eq('call_session_id', currentCall.id)
             .eq('user_id', userId);
       }
 
       // Se o criador saiu, encerrar a chamada
-      if (activeCall != null && activeCall!.creatorId == userId) {
+      if (currentCall != null && currentCall.creatorId == userId) {
         await endCall();
       }
     } catch (e) {
@@ -407,13 +408,14 @@ class CallService {
 
   /// Encerrar a chamada (apenas criador)
   static Future<void> endCall() async {
-    if (activeCall == null) return;
+    final call = activeCall;
+    if (call == null) return;
     try {
       await _engine?.leaveChannel();
       await SupabaseService.table('call_sessions').update({
         'status': 'ended',
         'ended_at': DateTime.now().toIso8601String(),
-      }).eq('id', activeCall!.id);
+      }).eq('id', call.id);
     } catch (e) {
       debugPrint('[call_service] Erro: $e');
     }
@@ -422,11 +424,12 @@ class CallService {
 
   /// Buscar participantes ativos
   static Future<List<Map<String, dynamic>>> getParticipants() async {
-    if (activeCall == null) return [];
+    final call = activeCall;
+    if (call == null) return [];
     try {
       final res = await SupabaseService.table('call_participants')
           .select('*, profiles!call_participants_user_id_fkey(*)')
-          .eq('call_session_id', activeCall!.id)
+          .eq('call_session_id', call.id)
           .eq('status', 'connected');
       return List<Map<String, dynamic>>.from(res as List? ?? []);
     } catch (_) {
