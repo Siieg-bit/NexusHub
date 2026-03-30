@@ -55,7 +55,6 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
   int _page = 0;
   static const _pageSize = 20;
   bool _isLoadingMore = false;
-  RealtimeChannel? _channel;
 
   /// Select com join para trazer dados do ator (quem gerou a notificação).
   /// A foreign key `notifications_actor_id_fkey` aponta para `profiles`.
@@ -152,7 +151,7 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
     if (userId == null) return;
 
     // Usar RealtimeService para reconexão automática com backoff
-    _channel = RealtimeService.instance.subscribeWithRetry(
+    RealtimeService.instance.subscribeWithRetry(
       channelName: 'notifications:$userId',
       configure: (channel) {
         channel.onPostgresChanges(

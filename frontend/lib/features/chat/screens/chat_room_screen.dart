@@ -59,7 +59,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
   final List<MessageModel> _messages = [];
-  RealtimeChannel? _channel;
   bool _isLoading = true;
   bool _realtimeConnected = true;
   bool _isSending = false;
@@ -336,7 +335,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   void _subscribeToRealtime() {
     // Usar RealtimeService para reconexão automática com backoff
-    _channel = RealtimeService.instance.subscribeWithRetry(
+    RealtimeService.instance.subscribeWithRetry(
       channelName: 'chat:${widget.threadId}',
       configure: (channel) {
         channel.onPostgresChanges(

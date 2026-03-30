@@ -11,7 +11,6 @@ import '../../../core/utils/amino_animations.dart';
 import '../widgets/community_drawer.dart';
 import '../../../core/widgets/amino_drawer.dart';
 import '../../../core/widgets/amino_bottom_nav.dart';
-import '../providers/community_shared_providers.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/providers/presence_provider.dart';
 import '../../../core/services/presence_service.dart';

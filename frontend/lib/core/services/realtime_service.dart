@@ -183,14 +183,12 @@ class _ManagedChannel {
   final String name;
   RealtimeChannel channel;
   final void Function(RealtimeChannel channel) configure;
-  int retryCount;
+  int retryCount = 0;
   Timer? retryTimer;
 
   _ManagedChannel({
     required this.name,
     required this.channel,
     required this.configure,
-    this.retryCount = 0,
-    this.retryTimer,
   });
 }

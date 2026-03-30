@@ -167,7 +167,7 @@ class _ProfilePinnedWikisState extends State<ProfilePinnedWikis> {
     );
   }
 
-  Widget _coverPlaceholder(ResponsiveHelper r) {
+  Widget _coverPlaceholder(Responsive r) {
     return Container(
       height: r.s(50),
       width: r.s(140),

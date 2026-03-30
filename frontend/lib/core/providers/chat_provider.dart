@@ -98,7 +98,6 @@ class ThreadMessagesNotifier
   int _page = 0;
   bool _hasMore = true;
   static const _pageSize = 50;
-  RealtimeChannel? _channel;
 
   @override
   Future<List<MessageModel>> build(String threadId) async {
@@ -140,7 +139,7 @@ class ThreadMessagesNotifier
 
   void _subscribeRealtime(String threadId) {
     // Usar RealtimeService para reconexão automática com backoff
-    _channel = RealtimeService.instance.subscribeWithRetry(
+    RealtimeService.instance.subscribeWithRetry(
       channelName: 'messages:$threadId',
       configure: (channel) {
         channel.onPostgresChanges(

@@ -266,7 +266,7 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
   }
 
   /// Widget exibido no final da lista: spinner, retry banner, ou nada.
-  Widget _buildTrailing(ResponsiveUtil r) {
+  Widget _buildTrailing(Responsive r) {
     // Erro em página intermediária → banner de retry inline
     if (_loadMoreError != null) {
       return Padding(
