@@ -168,6 +168,19 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  /// Login com Apple OAuth.
+  Future<bool> signInWithApple() async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      await SupabaseService.auth.signInWithOAuth(OAuthProvider.apple);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+          isLoading: false, error: 'Erro no login com Apple: $e');
+      return false;
+    }
+  }
+
   /// Logout.
   Future<void> signOut() async {
     try {

@@ -490,6 +490,24 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
               ),
             ),
             SizedBox(width: r.s(6)),
+            // Busca dentro da comunidade
+            GestureDetector(
+              onTap: () => context.push(
+                '/community/${widget.communityId}/search',
+                extra: {'communityName': community.name},
+              ),
+              child: Container(
+                width: r.s(34),
+                height: r.s(34),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.search_rounded,
+                    color: Colors.white, size: r.s(18)),
+              ),
+            ),
+            SizedBox(width: r.s(6)),
             // Notifications
             GestureDetector(
               onTap: () => context.push('/notifications'),

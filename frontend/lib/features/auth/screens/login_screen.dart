@@ -323,8 +323,46 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
 
+                SizedBox(height: r.s(12)),
+                // Apple Login
+                AminoAnimations.slideUp(
+                  delay: const Duration(milliseconds: 300),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: r.s(52),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(r.s(14)),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.06),
+                            borderRadius: BorderRadius.circular(r.s(14)),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.12),
+                            ),
+                          ),
+                          child: TextButton.icon(
+                            onPressed: () => ref
+                                .read(authProvider.notifier)
+                                .signInWithApple(),
+                            icon: Icon(Icons.apple_rounded,
+                                size: r.s(24), color: context.textPrimary),
+                            label: const Text('Continuar com Apple'),
+                            style: TextButton.styleFrom(
+                              foregroundColor: context.textPrimary,
+                              textStyle: TextStyle(
+                                fontSize: r.fs(15),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
                 SizedBox(height: r.s(40)),
-
                 // Link para cadastro
                 Center(
                   child: Row(

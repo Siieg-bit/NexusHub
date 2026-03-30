@@ -52,6 +52,7 @@ import '../core/services/call_service.dart';
 import '../features/wiki/screens/wiki_screen.dart';
 import '../features/wiki/screens/wiki_curator_review_screen.dart';
 import '../features/communities/screens/shared_folder_screen.dart';
+import '../features/communities/screens/community_search_screen.dart';
 import '../features/moderation/screens/edit_guidelines_screen.dart';
 import '../features/moderation/screens/admin_reports_screen.dart';
 import '../features/live/screens/screening_room_screen.dart';
@@ -432,6 +433,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/search',
         name: 'search',
         builder: (context, state) => const SearchScreen(),
+      ),
+
+      // ====================================================================
+      // BUSCA DENTRO DA COMUNIDADE
+      // ====================================================================
+      GoRoute(
+        path: '/community/:communityId/search',
+        name: 'community-search',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return CommunitySearchScreen(
+            communityId: state.pathParameters['communityId']!,
+            communityName: extra['communityName'] as String? ?? 'Comunidade',
+          );
+        },
       ),
 
       // ====================================================================

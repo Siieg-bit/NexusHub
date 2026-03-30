@@ -30,8 +30,8 @@
 - [x] **Cards maiores verticalmente** - Fiel ao layout do Amino original
 - [x] **Botão CHECK IN nos cards** - Cada comunidade com seu próprio check-in
 - [x] **Indicador de notificações** por comunidade no card
-- [ ] **Reordenação por drag & drop** (long press)
-- [ ] **Botão "Create Your Own"** funcional com fluxo de criação
+- [x] **Reordenação por drag & drop** (long press)
+- [x] **Botão "Create Your Own"** funcional com fluxo de criação
 - [x] **Tela "Join Community"** - Aparece na primeira vez ao clicar numa comunidade (ícone, nome, membros, idioma, Amino ID, tags, botão JOIN COMMUNITY ciano, descrição)
 - [x] **Long press no card** para ver detalhes de comunidade já joinada (sem botão Join)
 - [x] **Estrutura para edição de comunidade** - Preparada para líder editar (nome, descrição, tags, avatar, capa)
@@ -46,8 +46,8 @@
 - [x] **Banner Amino+** - "Try Amino+ for free today!"
 - [x] **Tabs Stories/Wall** - Seções de conteúdo do perfil global
 - [x] **Header com Coins + Share + Menu** - Fiel ao print do Amino
-- [ ] **Configurações da conta** (email, senha, notificações)
-- [ ] **Amino+ / Assinatura** funcional
+- [x] **Configurações da conta** (email, senha, notificações)
+- [x] **Amino+ / Assinatura** funcional
 
 ### 3.2 Perfil por Comunidade (Dentro da Comunidade)
 - [x] **Perfil individual por comunidade** - Completamente separado
@@ -73,8 +73,8 @@
 - [x] Menu com ícones coloridos
 - [x] Botão Check In
 - [x] **Perfil do usuário NA COMUNIDADE** (não global)
-- [ ] **"See More..." expandir** para mostrar mais opções
-- [ ] **Seção "General"** com links customizáveis pelo admin
+- [x] **"See More..." expandir** para mostrar mais opções
+- [x] **Seção "General"** com links customizáveis pelo admin
 
 ### 4.5 Animações e Transições
 - [x] **Transições de tela** com framer-motion (fade + slide)
@@ -141,9 +141,9 @@
 - [x] **Check-in POR COMUNIDADE** (não global)
 - [x] **Sistema de XP** por ações (max 100 rep/dia)
 - [x] **Sistema de Levels** com 20 níveis progressivos (Newcomer → Supreme) baseado em reputação total
-- [ ] **Sistema de Coins** com economia funcional
-- [ ] **Loja de itens** (chat bubbles, profile frames)
-- [ ] **Leaderboard** por comunidade
+- [x] **Sistema de Coins** com economia funcional
+- [x] **Loja de itens** (chat bubbles, profile frames)
+- [x] **Leaderboard** por comunidade
 
 ## 9. MODERAÇÃO
 
@@ -156,19 +156,19 @@
 
 ## 10. AUTENTICAÇÃO
 
-- [ ] **Tela de Onboarding** com slides de boas-vindas
-- [ ] **Tela de Login** (email + senha)
-- [ ] **Tela de Signup** (email, nickname, avatar)
-- [ ] **Login social** (Google, Apple)
-- [ ] **Recuperação de senha**
-- [ ] **Verificação de email**
+- [x] **Tela de Onboarding** com slides de boas-vindas
+- [x] **Tela de Login** (email + senha)
+- [x] **Tela de Signup** (email, nickname, avatar)
+- [x] **Login social** (Google, Apple)
+- [x] **Recuperação de senha**
+- [x] **Verificação de email**
 
 ## 11. BUSCA
 
 - [x] **Busca global** por comunidades (com tabs, ID match, keyword search, tags coloridas)
-- [ ] **Busca dentro da comunidade** por posts, membros, wiki
-- [ ] **Filtros** por tipo, data, popularidade
-- [ ] **Sugestões de busca** (autocomplete)
+- [x] **Busca dentro da comunidade** por posts, membros, wiki
+- [x] **Filtros** por tipo, data, popularidade
+- [x] **Sugestões de busca** (autocomplete)
 
 ## 12. CONFIGURAÇÕES
 

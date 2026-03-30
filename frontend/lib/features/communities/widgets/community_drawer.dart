@@ -36,6 +36,31 @@ class CommunityDrawer extends ConsumerStatefulWidget {
 
 class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
   bool _isCheckingIn = false;
+  bool _showMore = false;
+  List<Map<String, dynamic>> _generalLinks = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadGeneralLinks();
+  }
+
+  Future<void> _loadGeneralLinks() async {
+    try {
+      final res = await SupabaseService.table('community_general_links')
+          .select()
+          .eq('community_id', widget.community.id)
+          .order('sort_order', ascending: true)
+          .limit(10);
+      if (mounted) {
+        setState(() {
+          _generalLinks = List<Map<String, dynamic>>.from(res as List);
+        });
+      }
+    } catch (_) {
+      // Tabela pode não existir ainda — ignorar silenciosamente
+    }
+  }
 
   Color _parseColor(String hex) {
     try {
@@ -600,31 +625,177 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                           },
                         ),
 
-                        // "See More..."
+                        // "See More..." expansível
                         Padding(
                           padding: EdgeInsets.symmetric(
                               horizontal: r.s(12), vertical: r.s(8)),
                           child: GestureDetector(
                             onTap: () {
-                              Navigator.pop(context);
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                if (context.mounted) {
-                                  context.push('/community/${widget.community.id}/wiki');
-                                }
-                              });
+                              HapticFeedback.selectionClick();
                             },
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('Ver Mais...',
+                                Text(_showMore ? 'Ver Menos' : 'Ver Mais...',
                                     style: TextStyle(
                                         color: Colors.grey[500],
                                         fontSize: r.fs(13))),
-                                Icon(Icons.chevron_right_rounded,
-                                    color: Colors.grey[600], size: r.s(16)),
+                                AnimatedRotation(
+                                  turns: _showMore ? 0.25 : 0,
+                                  duration: const Duration(milliseconds: 200),
+                                  child: Icon(Icons.chevron_right_rounded,
+                                      color: Colors.grey[600], size: r.s(16)),
+                                ),
                               ],
                             ),
                           ),
+                        ),
+                        // Seção expandida
+                        AnimatedCrossFade(
+                          firstChild: const SizedBox.shrink(),
+                          secondChild: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Seção General — links customizáveis
+                              if (_generalLinks.isNotEmpty) ...[
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: r.s(12), vertical: r.s(4)),
+                                  child: Text('General',
+                                      style: TextStyle(
+                                          color: Colors.grey[600],
+                                          fontSize: r.fs(11),
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: 0.5)),
+                                ),
+                                for (final link in _generalLinks)
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: r.s(12), vertical: r.s(4)),
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        Navigator.pop(context);
+                                        // Abrir URL do link
+                                        final url = link['url'] as String? ?? '';
+                                        if (url.isNotEmpty) {
+                                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(
+                                                content: Text('Abrindo: ${link['title']}'),
+                                                behavior: SnackBarBehavior.floating,
+                                              ),
+                                            );
+                                          });
+                                        }
+                                      },
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            width: r.s(28),
+                                            height: r.s(28),
+                                            decoration: BoxDecoration(
+                                              color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                                              borderRadius: BorderRadius.circular(r.s(6)),
+                                            ),
+                                            child: Icon(Icons.link_rounded,
+                                                color: AppTheme.primaryColor,
+                                                size: r.s(14)),
+                                          ),
+                                          SizedBox(width: r.s(10)),
+                                          Expanded(
+                                            child: Text(
+                                              link['title'] as String? ?? '',
+                                              style: TextStyle(
+                                                  color: Colors.white70,
+                                                  fontSize: r.fs(13)),
+                                            ),
+                                          ),
+                                          Icon(Icons.open_in_new_rounded,
+                                              color: Colors.grey[600],
+                                              size: r.s(14)),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                              ] else ...[
+                                // Mostrar leaderboard e busca como opções extras
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: r.s(12), vertical: r.s(4)),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                                        if (context.mounted) {
+                                          context.push('/community/${widget.community.id}/leaderboard');
+                                        }
+                                      });
+                                    },
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: r.s(28),
+                                          height: r.s(28),
+                                          decoration: BoxDecoration(
+                                            color: Colors.amber.withValues(alpha: 0.15),
+                                            borderRadius: BorderRadius.circular(r.s(6)),
+                                          ),
+                                          child: Icon(Icons.leaderboard_rounded,
+                                              color: Colors.amber, size: r.s(14)),
+                                        ),
+                                        SizedBox(width: r.s(10)),
+                                        Text('Ranking',
+                                            style: TextStyle(
+                                                color: Colors.white70,
+                                                fontSize: r.fs(13))),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: r.s(12), vertical: r.s(4)),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                                        if (context.mounted) {
+                                          context.push(
+                                            '/community/${widget.community.id}/search',
+                                            extra: {'communityName': widget.community.name},
+                                          );
+                                        }
+                                      });
+                                    },
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: r.s(28),
+                                          height: r.s(28),
+                                          decoration: BoxDecoration(
+                                            color: Colors.blue.withValues(alpha: 0.15),
+                                            borderRadius: BorderRadius.circular(r.s(6)),
+                                          ),
+                                          child: Icon(Icons.search_rounded,
+                                              color: Colors.blue, size: r.s(14)),
+                                        ),
+                                        SizedBox(width: r.s(10)),
+                                        Text('Buscar na Comunidade',
+                                            style: TextStyle(
+                                                color: Colors.white70,
+                                                fontSize: r.fs(13))),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              SizedBox(height: r.s(8)),
+                            ],
+                          ),
+                          crossFadeState: _showMore
+                              ? CrossFadeState.showSecond
+                              : CrossFadeState.showFirst,
+                          duration: const Duration(milliseconds: 250),
                         ),
 
                         // Leader-only: Edit Community

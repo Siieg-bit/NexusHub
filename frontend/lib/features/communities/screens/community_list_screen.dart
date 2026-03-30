@@ -94,6 +94,7 @@ class CommunityListScreen extends ConsumerStatefulWidget {
 class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
   String? _avatarUrl;
   int _coins = 0;
+  List<CommunityModel>? _reorderedCommunities;
 
   @override
   void initState() {
@@ -165,6 +166,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
     return RefreshIndicator(
       color: AppTheme.primaryColor,
       onRefresh: () async {
+        setState(() => _reorderedCommunities = null);
         ref.invalidate(userCommunitiesProvider);
         ref.invalidate(checkInStatusProvider);
       },
@@ -189,33 +191,50 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
               ),
             ),
 
-            // ── Grade horizontal de cards ──
+            // ── Grade horizontal de cards com drag & drop ──
             SizedBox(
               height: r.s(195),
-              child: ListView.builder(
+              child: ReorderableListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: EdgeInsets.only(left: r.s(14), right: r.s(8), top: r.s(18)),
-                itemCount: communities.length + 1,
-                itemBuilder: (context, index) {
-                  if (index < communities.length) {
-                    return Padding(
-                      padding: EdgeInsets.only(right: r.s(8)),
-                      child: _AminoCommunityCard(
-                        community: communities[index],
-                        ref: ref,
-                        onTap: () => context
-                            .push('/community/${communities[index].id}'),
-                        onLongPress: () {
-                          HapticFeedback.mediumImpact();
-                          _showCommunityPreview(context, communities[index]);
-                        },
+                itemCount: (_reorderedCommunities ?? communities).length,
+                onReorder: (oldIndex, newIndex) {
+                  HapticFeedback.mediumImpact();
+                  setState(() {
+                    if (newIndex > oldIndex) newIndex--;
+                    final list = List<CommunityModel>.from(
+                        _reorderedCommunities ?? communities);
+                    final item = list.removeAt(oldIndex);
+                    list.insert(newIndex, item);
+                    _reorderedCommunities = list;
+                  });
+                },
+                proxyDecorator: (child, index, animation) {
+                  return AnimatedBuilder(
+                    animation: animation,
+                    builder: (context, child) => Transform.scale(
+                      scale: 1.05,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: child,
                       ),
-                    );
-                  }
+                    ),
+                    child: child,
+                  );
+                },
+                itemBuilder: (context, index) {
+                  final community = (_reorderedCommunities ?? communities)[index];
                   return Padding(
-                    padding: EdgeInsets.only(right: r.s(12)),
-                    child: _JoinCommunityCard(
-                      onTap: () => context.go('/explore'),
+                    key: ValueKey(community.id),
+                    padding: EdgeInsets.only(right: r.s(8)),
+                    child: _AminoCommunityCard(
+                      community: community,
+                      ref: ref,
+                      onTap: () => context.push('/community/${community.id}'),
+                      onLongPress: () {
+                        HapticFeedback.mediumImpact();
+                        _showCommunityPreview(context, community);
+                      },
                     ),
                   );
                 },
@@ -227,7 +246,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
               padding: EdgeInsets.only(top: r.s(16), bottom: r.s(16)),
               child: Center(
                 child: Text(
-                  'Pressione e segure o card para mudar a posição',
+                  'Segure e arraste os cards para reordenar',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.35),
                     fontSize: r.fs(12),
