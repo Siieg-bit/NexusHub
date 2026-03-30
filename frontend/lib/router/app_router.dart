@@ -53,6 +53,7 @@ import '../features/wiki/screens/wiki_screen.dart';
 import '../features/wiki/screens/wiki_curator_review_screen.dart';
 import '../features/communities/screens/shared_folder_screen.dart';
 import '../features/communities/screens/community_search_screen.dart';
+import '../features/communities/screens/community_general_links_screen.dart';
 import '../features/moderation/screens/edit_guidelines_screen.dart';
 import '../features/moderation/screens/admin_reports_screen.dart';
 import '../features/live/screens/screening_room_screen.dart';
@@ -433,6 +434,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/search',
         name: 'search',
         builder: (context, state) => const SearchScreen(),
+      ),
+
+      // ====================================================================
+      // LINKS GERAIS DA COMUNIDADE (ADMIN)
+      // ====================================================================
+      GoRoute(
+        path: '/community/:communityId/general-links',
+        name: 'community-general-links',
+        builder: (context, state) => CommunityGeneralLinksScreen(
+          communityId: state.pathParameters['communityId']!,
+        ),
       ),
 
       // ====================================================================

@@ -788,6 +788,43 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                                     ),
                                   ),
                                 ),
+                                // Gerenciar Links — apenas para líderes
+                                if (_isLeader)
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: r.s(12), vertical: r.s(4)),
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        Navigator.pop(context);
+                                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                                          if (context.mounted) {
+                                            context.push(
+                                              '/community/${widget.community.id}/general-links',
+                                            );
+                                          }
+                                        });
+                                      },
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            width: r.s(28),
+                                            height: r.s(28),
+                                            decoration: BoxDecoration(
+                                              color: Colors.green.withValues(alpha: 0.15),
+                                              borderRadius: BorderRadius.circular(r.s(6)),
+                                            ),
+                                            child: Icon(Icons.add_link_rounded,
+                                                color: Colors.green, size: r.s(14)),
+                                          ),
+                                          SizedBox(width: r.s(10)),
+                                          Text('Gerenciar Links',
+                                              style: TextStyle(
+                                                  color: Colors.white70,
+                                                  fontSize: r.fs(13))),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                               ],
                               SizedBox(height: r.s(8)),
                             ],
