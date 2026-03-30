@@ -33,10 +33,10 @@
         android:usesCleartextTraffic="true"
         android:requestLegacyExternalStorage="true">
 
-        <!-- AdMob App ID (substituir pelo ID real em produção) -->
+        <!-- AdMob App ID (produção) -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713" />
+            android:value="ca-app-pub-XXXXXXXXXXXXXXXX~XXXXXXXXXX" />
 
         <!-- Firebase Cloud Messaging -->
         <meta-data

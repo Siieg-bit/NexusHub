@@ -1,43 +1,41 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'supabase_service.dart';
 
 /// Serviço de Anúncios — Gerencia Rewarded Ads para ganhar moedas.
 ///
-/// Implementação abstrata que funciona sem SDK de anúncios instalado.
-/// Para ativar anúncios reais:
-/// 1. Adicione `google_mobile_ads: ^5.3.0` ao pubspec.yaml
-/// 2. Crie uma conta em https://admob.google.com
-/// 3. Substitua os IDs de teste abaixo pelos seus IDs reais
-/// 4. Adicione o App ID no AndroidManifest.xml
-/// 5. Descomente as chamadas ao SDK no código abaixo
+/// Usa o SDK real do Google Mobile Ads (AdMob).
+/// App ID configurado no AndroidManifest.xml:
+///   ca-app-pub-XXXXXXXXXXXXXXXX~XXXXXXXXXX
 class AdService {
-  // IDs de teste — substituir por IDs reais em produção
-  static const String rewardedAdUnitAndroid =
+  // IDs reais de produção
+  static const String _rewardedAdUnitAndroid =
+      'ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX';
+
+  // IDs de teste (usados em debug)
+  static const String _rewardedAdUnitAndroidTest =
       'ca-app-pub-3940256099942544/5224354917';
-  static const String rewardedAdUnitIOS =
-      'ca-app-pub-3940256099942544/1712485313';
-  static const String bannerAdUnitAndroid =
-      'ca-app-pub-3940256099942544/6300978111';
-  static const String bannerAdUnitIOS =
-      'ca-app-pub-3940256099942544/2934735716';
+
+  static String get _adUnitId =>
+      kDebugMode ? _rewardedAdUnitAndroidTest : _rewardedAdUnitAndroid;
 
   static bool _initialized = false;
-  static bool _adReady = false;
+  static RewardedAd? _rewardedAd;
+  static bool _adLoading = false;
 
-  /// Limite diário de anúncios recompensados
-  static const int maxDailyRewardedAds = 10;
+  /// Limite diário de anúncios recompensados por usuário
+  static const int maxDailyRewardedAds = 3;
   static int _todayRewardedCount = 0;
   static DateTime? _lastRewardDate;
 
-  /// Inicializa o SDK de anúncios
+  /// Inicializa o SDK do AdMob e pré-carrega o primeiro anúncio
   static Future<void> initialize() async {
     if (_initialized) return;
     try {
-      // TODO: Quando google_mobile_ads estiver no pubspec, descomente:
-      // await MobileAds.instance.initialize();
+      await MobileAds.instance.initialize();
       _initialized = true;
-      _preloadRewardedAd();
+      await _loadRewardedAd();
       debugPrint('[AdService] AdMob inicializado com sucesso');
     } catch (e) {
       debugPrint('[AdService] Erro ao inicializar AdMob: $e');
@@ -47,7 +45,7 @@ class AdService {
   /// Verifica se ainda pode assistir anúncios hoje
   static bool get canWatchAd {
     _resetDailyCountIfNeeded();
-    return _todayRewardedCount < maxDailyRewardedAds;
+    return _todayRewardedCount < maxDailyRewardedAds && _initialized;
   }
 
   /// Retorna quantos anúncios restam hoje
@@ -57,66 +55,87 @@ class AdService {
   }
 
   /// Verifica se um anúncio está pronto para exibição
-  static bool get isAdReady => _adReady && _initialized;
+  static bool get isAdReady => _rewardedAd != null && _initialized;
 
-  /// Mostra um anúncio recompensado e credita moedas ao assistir completo.
+  /// Carrega o anúncio recompensado em background
+  static Future<void> _loadRewardedAd() async {
+    if (_adLoading || _rewardedAd != null) return;
+    _adLoading = true;
+    await RewardedAd.load(
+      adUnitId: _adUnitId,
+      request: const AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: (ad) {
+          _rewardedAd = ad;
+          _adLoading = false;
+          debugPrint('[AdService] Rewarded ad carregado');
+        },
+        onAdFailedToLoad: (error) {
+          _rewardedAd = null;
+          _adLoading = false;
+          debugPrint('[AdService] Falha ao carregar rewarded: ${error.message}');
+        },
+      ),
+    );
+  }
+
+  /// Mostra o anúncio recompensado e credita moedas ao completar.
   ///
   /// Retorna `true` se o usuário completou o anúncio e recebeu a recompensa.
-  /// Em modo de desenvolvimento (sem SDK), simula o anúncio.
-  static Future<bool> showRewardedAd({int rewardCoins = 5}) async {
-    if (!canWatchAd) return false;
-
-    try {
-      // TODO: Quando google_mobile_ads estiver no pubspec, substituir por:
-      // RewardedAd.show(...) com callback onUserEarnedReward
-
-      // Simulação para desenvolvimento — credita moedas diretamente
-      if (kDebugMode) {
-        debugPrint('[AdService] Simulando anúncio recompensado...');
-        await Future.delayed(const Duration(seconds: 1));
-      }
-
-      _todayRewardedCount++;
-      _lastRewardDate = DateTime.now();
-
-      // Creditar moedas no Supabase
-      await _creditAdReward(rewardCoins);
-
-      // Registrar no ad_rewards
-      await _logAdReward(rewardCoins);
-
-      debugPrint('[AdService] Recompensa de $rewardCoins moedas creditada');
-      return true;
-    } catch (e) {
-      debugPrint('[AdService] Erro ao mostrar anúncio: $e');
+  static Future<bool> showRewardedAd({int rewardCoins = 10}) async {
+    if (!canWatchAd) {
+      debugPrint('[AdService] Limite diário atingido ou não inicializado');
       return false;
     }
-  }
-
-  /// Pré-carrega o próximo anúncio recompensado
-  static Future<void> _preloadRewardedAd() async {
-    try {
-      // TODO: Quando google_mobile_ads estiver no pubspec:
-      // await RewardedAd.load(adUnitId: ..., request: AdRequest(), ...)
-      _adReady = true;
-    } catch (e) {
-      debugPrint('[AdService] Falha ao pré-carregar rewarded: $e');
-      _adReady = false;
+    if (_rewardedAd == null) {
+      debugPrint('[AdService] Anúncio não está pronto — tentando carregar...');
+      await _loadRewardedAd();
+      return false;
     }
+
+    final completer = Completer<bool>();
+
+    _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
+      onAdDismissedFullScreenContent: (ad) {
+        ad.dispose();
+        _rewardedAd = null;
+        _loadRewardedAd(); // pré-carrega o próximo
+        if (!completer.isCompleted) completer.complete(false);
+      },
+      onAdFailedToShowFullScreenContent: (ad, error) {
+        ad.dispose();
+        _rewardedAd = null;
+        _loadRewardedAd();
+        debugPrint('[AdService] Falha ao exibir anúncio: ${error.message}');
+        if (!completer.isCompleted) completer.complete(false);
+      },
+    );
+
+    await _rewardedAd!.show(
+      onUserEarnedReward: (ad, reward) async {
+        _todayRewardedCount++;
+        _lastRewardDate = DateTime.now();
+        await _creditAdReward(rewardCoins);
+        await _logAdReward(rewardCoins);
+        debugPrint('[AdService] Recompensa de $rewardCoins moedas creditada');
+        if (!completer.isCompleted) completer.complete(true);
+      },
+    );
+
+    return completer.future;
   }
 
-  /// Credita moedas da recompensa de anúncio via RPC
+  /// Credita moedas da recompensa de anúncio via RPC do Supabase
   static Future<void> _creditAdReward(int coins) async {
     final userId = SupabaseService.currentUserId;
     if (userId == null) return;
-
     try {
       await SupabaseService.client.rpc('transfer_coins', params: {
         'p_receiver_id': userId,
         'p_amount': coins,
       });
     } catch (e) {
-      // Fallback: atualizar diretamente
+      // Fallback: atualizar diretamente na coluna coins
       try {
         final current = await SupabaseService.table('profiles')
             .select('coins')
@@ -131,11 +150,10 @@ class AdService {
     }
   }
 
-  /// Registra a recompensa de anúncio na tabela ad_rewards
+  /// Registra a recompensa de anúncio na tabela ad_reward_logs
   static Future<void> _logAdReward(int coins) async {
     final userId = SupabaseService.currentUserId;
     if (userId == null) return;
-
     try {
       await SupabaseService.table('ad_reward_logs').insert({
         'user_id': userId,
@@ -143,7 +161,7 @@ class AdService {
         'coins_earned': coins,
       });
     } catch (e) {
-      debugPrint('[AdService] Erro ao registrar reward: $e');
+      debugPrint('[AdService] Erro ao registrar reward log: $e');
     }
   }
 
@@ -160,6 +178,7 @@ class AdService {
 
   /// Libera recursos
   static void dispose() {
-    _adReady = false;
+    _rewardedAd?.dispose();
+    _rewardedAd = null;
   }
 }

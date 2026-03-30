@@ -72,8 +72,11 @@ dependencies:
   firebase_analytics: ^11.0.0
   firebase_crashlytics: ^4.0.0
 
-  # In-App Purchases (placeholder — configurar depois)
-  # purchases_flutter: ^6.18.0
+  # In-App Purchases (RevenueCat)
+  purchases_flutter: ^8.0.0
+  purchases_ui_flutter: ^8.0.0
+  # Ads (AdMob — rewarded only)
+  google_mobile_ads: ^5.1.0
 
   # Utils
   uuid: ^4.3.3

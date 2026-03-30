@@ -1,23 +1,21 @@
-import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'supabase_service.dart';
 
 /// Serviço de In-App Purchases via RevenueCat.
 ///
-/// Implementação abstrata que funciona sem SDK de compras instalado.
-/// Para ativar compras reais:
-/// 1. Adicione `purchases_flutter: ^8.0.0` ao pubspec.yaml
-/// 2. Crie uma conta em https://app.revenuecat.com
-/// 3. Configure os produtos no Google Play Console
-/// 4. Substitua as chaves abaixo pelas suas chaves reais
-/// 5. Descomente as chamadas ao SDK no código abaixo
+/// API Key Android: SUA_REVENUECAT_KEY_AQUI
+/// Entitlement: amino_plus
+/// Produtos: coins_100, coins_500, coins_1200, coins_3000, coins_7000, amino_plus_monthly
 class IAPService {
-  static const String apiKeyAndroid = 'YOUR_REVENUECAT_ANDROID_KEY';
-
+  static const String _apiKeyAndroid = 'SUA_REVENUECAT_KEY_AQUI';
   static const String entitlementAminoPlus = 'amino_plus';
 
-  /// Pacotes de moedas disponíveis para compra
-  static const List<CoinPackage> coinPackages = [
+  /// Identificadores dos produtos configurados no Google Play Console
+  static const String _offeringDefault = 'default';
+
+  /// Pacotes de moedas com preços de referência (exibidos antes de carregar do RevenueCat)
+  static const List<CoinPackage> fallbackCoinPackages = [
     CoinPackage(id: 'coins_100', coins: 100, priceLabel: r'R$ 4,90'),
     CoinPackage(id: 'coins_500', coins: 500, priceLabel: r'R$ 19,90'),
     CoinPackage(id: 'coins_1200', coins: 1200, priceLabel: r'R$ 39,90'),
@@ -28,26 +26,51 @@ class IAPService {
   static bool _initialized = false;
   static bool _isAminoPlus = false;
 
-  /// Inicializa o serviço de compras
+  /// Inicializa o RevenueCat e faz login com o ID do usuário Supabase
   static Future<void> initialize() async {
     if (_initialized) return;
-
     try {
-      // TODO: Quando purchases_flutter estiver no pubspec:
-      // final config = PurchasesConfiguration(apiKeyAndroid);
-      // await Purchases.configure(config);
-      // final userId = SupabaseService.currentUserId;
-      // if (userId != null) await Purchases.logIn(userId);
+      await Purchases.setLogLevel(
+          kDebugMode ? LogLevel.debug : LogLevel.error);
+      final config = PurchasesConfiguration(_apiKeyAndroid);
+      await Purchases.configure(config);
+
+      final userId = SupabaseService.currentUserId;
+      if (userId != null) {
+        await Purchases.logIn(userId);
+      }
 
       _initialized = true;
       await _checkEntitlements();
-      debugPrint('[IAPService] Inicializado com sucesso');
+      debugPrint('[IAPService] RevenueCat inicializado com sucesso');
     } catch (e) {
       debugPrint('[IAPService] Erro ao inicializar: $e');
     }
   }
 
-  /// Verifica se o usuário tem Amino+
+  /// Faz login no RevenueCat quando o usuário fizer login no app
+  static Future<void> loginUser(String userId) async {
+    if (!_initialized) return;
+    try {
+      await Purchases.logIn(userId);
+      await _checkEntitlements();
+    } catch (e) {
+      debugPrint('[IAPService] Erro ao fazer login: $e');
+    }
+  }
+
+  /// Faz logout no RevenueCat quando o usuário sair do app
+  static Future<void> logoutUser() async {
+    if (!_initialized) return;
+    try {
+      await Purchases.logOut();
+      _isAminoPlus = false;
+    } catch (e) {
+      debugPrint('[IAPService] Erro ao fazer logout: $e');
+    }
+  }
+
+  /// Verifica se o usuário tem Amino+ ativo
   static Future<bool> checkAminoPlus() async {
     await _checkEntitlements();
     return _isAminoPlus;
@@ -55,105 +78,192 @@ class IAPService {
 
   static bool get isAminoPlus => _isAminoPlus;
 
-  /// Verifica entitlements atuais
+  /// Verifica entitlements atuais no RevenueCat
   static Future<void> _checkEntitlements() async {
     try {
-      // TODO: Quando purchases_flutter estiver no pubspec:
-      // final info = await Purchases.getCustomerInfo();
-      // _isAminoPlus = info.entitlements.active.containsKey(entitlementAminoPlus);
-
-      // Fallback: verificar no Supabase
+      final info = await Purchases.getCustomerInfo();
+      _isAminoPlus =
+          info.entitlements.active.containsKey(entitlementAminoPlus);
+      // Sincronizar com Supabase
       final userId = SupabaseService.currentUserId;
       if (userId != null) {
-        final profile = await SupabaseService.table('profiles')
-            .select('is_amino_plus')
-            .eq('id', userId)
-            .maybeSingle();
-        _isAminoPlus = profile?['is_amino_plus'] == true;
+        await SupabaseService.table('profiles')
+            .update({'is_amino_plus': _isAminoPlus}).eq('id', userId);
       }
     } catch (e) {
-      debugPrint('[IAPService] Erro ao verificar entitlements: $e');
+      // Fallback: verificar no Supabase
+      try {
+        final userId = SupabaseService.currentUserId;
+        if (userId != null) {
+          final profile = await SupabaseService.table('profiles')
+              .select('is_amino_plus')
+              .eq('id', userId)
+              .maybeSingle();
+          _isAminoPlus = profile?['is_amino_plus'] == true;
+        }
+      } catch (e2) {
+        debugPrint('[IAPService] Erro ao verificar entitlements: $e2');
+      }
     }
   }
 
-  /// Retorna as ofertas disponíveis como lista de CoinPackage
+  /// Retorna os pacotes disponíveis do RevenueCat
   static Future<List<CoinPackage>> getOfferings() async {
-    // TODO: Quando purchases_flutter estiver no pubspec:
-    // return await Purchases.getOfferings();
-    return coinPackages;
+    if (!_initialized) return fallbackCoinPackages;
+    try {
+      final offerings = await Purchases.getOfferings();
+      final current = offerings.getOffering(_offeringDefault) ??
+          offerings.current;
+      if (current == null) return fallbackCoinPackages;
+
+      return current.availablePackages.map((pkg) {
+        final coins = _coinsFromPackageId(pkg.storeProduct.identifier);
+        return CoinPackage(
+          id: pkg.storeProduct.identifier,
+          coins: coins,
+          priceLabel: pkg.storeProduct.priceString,
+          revenueCatPackage: pkg,
+        );
+      }).toList();
+    } catch (e) {
+      debugPrint('[IAPService] Erro ao buscar ofertas: $e');
+      return fallbackCoinPackages;
+    }
   }
 
-  /// Compra um pacote de moedas (simulado sem SDK)
+  /// Compra um pacote de moedas via RevenueCat
   static Future<bool> purchaseCoinPackage(CoinPackage package) async {
+    if (!_initialized) {
+      debugPrint('[IAPService] SDK não inicializado');
+      return false;
+    }
     try {
-      // TODO: Quando purchases_flutter estiver no pubspec:
-      // final result = await Purchases.purchasePackage(revenueCatPackage);
-      // Verificar result.customerInfo.entitlements
-
-      // Em modo de desenvolvimento, simular compra
-      if (kDebugMode) {
-        debugPrint('[IAPService] Simulando compra de ${package.coins} moedas');
+      CustomerInfo customerInfo;
+      if (package.revenueCatPackage != null) {
+        customerInfo =
+            await Purchases.purchasePackage(package.revenueCatPackage!);
+      } else {
+        // Compra direta pelo ID do produto
+        customerInfo =
+            await Purchases.purchaseProduct(package.id);
       }
-
+      // Creditar moedas no Supabase após compra confirmada
       await _creditCoins(package.coins);
+      debugPrint('[IAPService] ${package.coins} moedas creditadas');
       return true;
+    } on PurchasesErrorCode catch (e) {
+      if (e == PurchasesErrorCode.purchaseCancelledError) {
+        debugPrint('[IAPService] Compra cancelada pelo usuário');
+      } else {
+        debugPrint('[IAPService] Erro na compra: $e');
+      }
+      return false;
     } catch (e) {
-      debugPrint('[IAPService] Erro na compra: $e');
+      debugPrint('[IAPService] Erro inesperado na compra: $e');
       return false;
     }
   }
 
-  /// Assina Amino+
+  /// Assina Amino+ via RevenueCat
   static Future<bool> subscribeAminoPlus() async {
+    if (!_initialized) {
+      debugPrint('[IAPService] SDK não inicializado');
+      return false;
+    }
     try {
-      // TODO: Quando purchases_flutter estiver no pubspec:
-      // final result = await Purchases.purchasePackage(aminoPlusPackage);
-      // _isAminoPlus = result.customerInfo.entitlements.active.containsKey(entitlementAminoPlus);
+      final offerings = await Purchases.getOfferings();
+      final current = offerings.getOffering(_offeringDefault) ??
+          offerings.current;
+      if (current == null) {
+        debugPrint('[IAPService] Nenhuma oferta disponível');
+        return false;
+      }
 
-      // Atualizar perfil no Supabase
+      // Busca o pacote de assinatura Amino+
+      final aminoPlusPkg = current.availablePackages.firstWhere(
+        (p) => p.storeProduct.identifier.contains('amino_plus'),
+        orElse: () => current.availablePackages.first,
+      );
+
+      final customerInfo = await Purchases.purchasePackage(aminoPlusPkg);
+      _isAminoPlus =
+          customerInfo.entitlements.active.containsKey(entitlementAminoPlus);
+
+      // Sincronizar com Supabase
       final userId = SupabaseService.currentUserId;
-      if (userId != null) {
+      if (userId != null && _isAminoPlus) {
         await SupabaseService.table('profiles')
             .update({'is_amino_plus': true}).eq('id', userId);
-        _isAminoPlus = true;
       }
       return _isAminoPlus;
+    } on PurchasesErrorCode catch (e) {
+      if (e == PurchasesErrorCode.purchaseCancelledError) {
+        debugPrint('[IAPService] Assinatura cancelada pelo usuário');
+      } else {
+        debugPrint('[IAPService] Erro na assinatura: $e');
+      }
+      return false;
     } catch (e) {
-      debugPrint('[IAPService] Erro na assinatura: $e');
+      debugPrint('[IAPService] Erro inesperado na assinatura: $e');
       return false;
     }
   }
 
   /// Restaura compras anteriores
   static Future<bool> restorePurchases() async {
+    if (!_initialized) return false;
     try {
-      // TODO: Quando purchases_flutter estiver no pubspec:
-      // final info = await Purchases.restorePurchases();
-      // _isAminoPlus = info.entitlements.active.containsKey(entitlementAminoPlus);
-
-      await _checkEntitlements();
+      final info = await Purchases.restorePurchases();
+      _isAminoPlus =
+          info.entitlements.active.containsKey(entitlementAminoPlus);
+      // Sincronizar com Supabase
+      final userId = SupabaseService.currentUserId;
+      if (userId != null) {
+        await SupabaseService.table('profiles')
+            .update({'is_amino_plus': _isAminoPlus}).eq('id', userId);
+      }
+      debugPrint('[IAPService] Compras restauradas. Amino+: $_isAminoPlus');
       return true;
     } catch (e) {
-      debugPrint('[IAPService] Erro ao restaurar: $e');
+      debugPrint('[IAPService] Erro ao restaurar compras: $e');
       return false;
     }
   }
 
-  /// Credita moedas no banco de dados
+  /// Credita moedas no banco de dados via RPC do Supabase
   static Future<void> _creditCoins(int amount) async {
     final userId = SupabaseService.currentUserId;
     if (userId == null) return;
-
     try {
       await SupabaseService.client.rpc('transfer_coins', params: {
-        'p_from_user_id': userId,
-        'p_to_user_id': userId,
+        'p_receiver_id': userId,
         'p_amount': amount,
         'p_reason': 'iap_purchase',
       });
     } catch (e) {
-      debugPrint('[IAPService] Erro ao creditar moedas: $e');
+      // Fallback: atualizar diretamente
+      try {
+        final current = await SupabaseService.table('profiles')
+            .select('coins')
+            .eq('id', userId)
+            .maybeSingle();
+        final balance = (current?['coins'] ?? 0) as num;
+        await SupabaseService.table('profiles')
+            .update({'coins': balance + amount}).eq('id', userId);
+      } catch (e2) {
+        debugPrint('[IAPService] Erro ao creditar moedas: $e2');
+      }
     }
+  }
+
+  /// Retorna a quantidade de moedas com base no ID do produto
+  static int _coinsFromPackageId(String productId) {
+    if (productId.contains('100')) return 100;
+    if (productId.contains('500')) return 500;
+    if (productId.contains('1200')) return 1200;
+    if (productId.contains('3000')) return 3000;
+    if (productId.contains('7000')) return 7000;
+    return 0;
   }
 }
 
@@ -162,10 +272,12 @@ class CoinPackage {
   final String id;
   final int coins;
   final String priceLabel;
+  final Package? revenueCatPackage;
 
   const CoinPackage({
     required this.id,
     required this.coins,
     required this.priceLabel,
+    this.revenueCatPackage,
   });
 }
