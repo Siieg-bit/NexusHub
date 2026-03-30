@@ -307,7 +307,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           ),
         ],
       ),
-    );
+    ).then((_) {
+      msgCtrl.dispose();
+    });
   }
 
   Widget _buildToolsTab() {

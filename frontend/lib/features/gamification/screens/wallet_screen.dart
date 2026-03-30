@@ -409,7 +409,10 @@ class _WalletScreenState extends State<WalletScreen> {
           ],
         ),
       ),
-    );
+    ).then((_) {
+      userIdCtrl.dispose();
+      amountCtrl.dispose();
+    });
   }
 
   // ===========================================================================

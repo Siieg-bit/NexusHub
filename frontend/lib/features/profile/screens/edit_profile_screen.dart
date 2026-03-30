@@ -463,7 +463,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
           ),
         ],
       ),
-    );
+    ).then((_) {
+      urlCtrl.dispose();
+      labelCtrl.dispose();
+    });
   }
 
   Widget _buildTextField({

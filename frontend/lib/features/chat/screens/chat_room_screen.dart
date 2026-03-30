@@ -1591,7 +1591,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           ],
         ),
       ),
-    );
+    ).then((_) {
+      questionCtrl.dispose();
+      for (final c in optionCtrls) { c.dispose(); }
+    });
   }
 
   void _showLinkInput() {

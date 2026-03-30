@@ -323,7 +323,10 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
           ),
         ],
       ),
-    );
+    ).then((_) {
+      urlController.dispose();
+      titleController.dispose();
+    });
 
     urlController.dispose();
     titleController.dispose();
