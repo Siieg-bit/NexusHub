@@ -34,10 +34,10 @@ frontend/.env
 !.env.example
 !frontend/.env.example
 
-# Firebase — contêm API keys e project IDs reais
-frontend/android/app/google-services.json
+# Firebase — iOS plist permanece ignorado (não configurado)
 frontend/ios/Runner/GoogleService-Info.plist
-frontend/lib/firebase_options.dart
+# google-services.json e firebase_options.dart incluídos no repositório
+# (contêm apenas chaves públicas — API key do Firebase é segura para expor)
 
 # Android Keystore — chaves de assinatura do APK
 *.jks

@@ -16,6 +16,7 @@ import 'core/services/ad_service.dart';
 import 'core/services/cache_service.dart';
 import 'core/services/analytics_service.dart';
 import 'core/widgets/error_boundary.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,7 +37,9 @@ void main() async {
 
   // Inicializar Firebase
   try {
-    await Firebase.initializeApp();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
     await AnalyticsService.init();
   } catch (e) {
     debugPrint('[Main] Firebase init error (pode ignorar em dev): $e');

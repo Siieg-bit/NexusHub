@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "000000000000",
-    "project_id": "nexushub-placeholder",
-    "storage_bucket": "nexushub-placeholder.appspot.com"
+    "project_number": "884602945431",
+    "project_id": "aminexus-8dabd",
+    "storage_bucket": "aminexus-8dabd.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:000000000000:android:0000000000000000",
+        "mobilesdk_app_id": "1:884602945431:android:784997bcf65af896e20ed2",
         "android_client_info": {
           "package_name": "com.nexushub.app"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyPlaceholderKeyForDebugBuildsOnly"
+          "current_key": "AIzaSyAVrtW0plFDgkxfZCDE-FrKzNbKGb0ev1k"
         }
       ],
       "services": {
