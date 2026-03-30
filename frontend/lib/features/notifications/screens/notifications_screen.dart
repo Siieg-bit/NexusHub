@@ -34,6 +34,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   }
 
   void _onScroll() {
+    if (!_scrollController.hasClients) return;
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
       ref.read(notificationProvider.notifier).loadMore();

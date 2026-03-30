@@ -90,6 +90,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
         setState(() => _luckyDrawUsed = true);
       }
     } catch (_) {
+      if (!mounted) return;
       setState(() {
         _luckyDrawUsed = true;
         final rng = DateTime.now().millisecondsSinceEpoch % 10;

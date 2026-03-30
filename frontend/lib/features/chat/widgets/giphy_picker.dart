@@ -81,7 +81,7 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
     } catch (e) {
       debugPrint('[giphy_picker] Erro: $e');
     }
-    setState(() => _isLoading = false);
+    if (mounted) setState(() => _isLoading = false);
   }
 
   Future<void> _search(String query) async {
@@ -99,6 +99,7 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
       final response = await http.get(url);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        if (!mounted) return;
         setState(() {
           _gifs = List<Map<String, dynamic>>.from(data['data'] as List? ?? []);
         });
@@ -106,7 +107,7 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
     } catch (e) {
       debugPrint('[giphy_picker] Erro: $e');
     }
-    setState(() => _isLoading = false);
+    if (mounted) setState(() => _isLoading = false);
   }
 
   String _getGifUrl(Map<String, dynamic> gif) {

@@ -91,6 +91,7 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
   }
 
   void _onScroll() {
+    if (!_scrollController.hasClients) return;
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
       _loadNextPage();
@@ -365,6 +366,7 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
   }
 
   void _onScroll() {
+    if (!_scrollController.hasClients) return;
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
       _loadNextPage();
