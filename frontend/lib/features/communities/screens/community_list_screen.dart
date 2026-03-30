@@ -463,6 +463,7 @@ class _AminoCommunityCardState extends State<_AminoCommunityCard> {
       final result = await SupabaseService.rpc('daily_checkin', params: {
         'p_community_id': widget.community.id,
       });
+      if (!mounted) return;
 
       // Invalidar o provider para atualizar o status em todos os cards
       widget.ref.invalidate(checkInStatusProvider);
@@ -844,6 +845,7 @@ class _CommunityPreviewSheetState extends State<_CommunityPreviewSheet> {
       final result = await SupabaseService.rpc('daily_checkin', params: {
         'p_community_id': widget.community.id,
       });
+      if (!mounted) return;
 
       widget.ref.invalidate(checkInStatusProvider);
 

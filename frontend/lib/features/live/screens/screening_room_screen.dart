@@ -119,6 +119,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
 
       // Carregar participantes
       await _loadParticipants();
+      if (!mounted) return;
 
       // Inscrever no canal Realtime
       _subscribeToRealtime();
@@ -136,6 +137,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
           .select('*, profiles!user_id(username, avatar_url)')
           .eq('call_session_id', _sessionId!)
           .eq('status', 'connected');
+      if (!mounted) return;
       _participants.clear();
       _participants.addAll(List<Map<String, dynamic>>.from(res as List? ?? []));
       _viewerCount = _participants.length;
@@ -183,6 +185,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
 
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,

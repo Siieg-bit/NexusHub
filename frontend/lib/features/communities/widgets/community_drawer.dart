@@ -87,6 +87,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
       final result = await SupabaseService.rpc('daily_checkin', params: {
         'p_community_id': widget.community.id,
       });
+      if (!mounted) return;
 
       ref.invalidate(checkInStatusProvider);
 
@@ -536,6 +537,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                             Navigator.pop(context);
                             if (widget.onChatsTap != null) {
                               WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (!mounted) return;
                                 widget.onChatsTap!();
                               });
                             }
@@ -593,6 +595,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                             Navigator.pop(context);
                             if (widget.onRecentFeedTap != null) {
                               WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (!mounted) return;
                                 widget.onRecentFeedTap!();
                               });
                             }
@@ -606,6 +609,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                             Navigator.pop(context);
                             if (widget.onGuidelinesTap != null) {
                               WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (!mounted) return;
                                 widget.onGuidelinesTap!();
                               });
                             }
@@ -679,6 +683,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                                         final url = link['url'] as String? ?? '';
                                         if (url.isNotEmpty) {
                                           WidgetsBinding.instance.addPostFrameCallback((_) {
+                                            if (!mounted) return;
                                             ScaffoldMessenger.of(context).showSnackBar(
                                               SnackBar(
                                                 content: Text('Abrindo: ${link['title']}'),

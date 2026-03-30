@@ -79,6 +79,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         'p_content': _commentController.text.trim(),
         'p_post_id': widget.postId,
       });
+      if (!mounted) return;
       _commentController.clear();
       ref.invalidate(postCommentsProvider(widget.postId));
     } catch (e) {
@@ -269,6 +270,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     await SupabaseService.table('posts')
                         .update({'is_pinned_profile': !isPinned})
                         .eq('id', widget.postId);
+                    if (!mounted) return;
                     ref.invalidate(postDetailProvider(widget.postId));
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(

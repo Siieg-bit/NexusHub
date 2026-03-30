@@ -31,6 +31,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
           .select()
           .eq('user_id', userId)
           .order('last_seen_at', ascending: false);
+      if (!mounted) return;
 
       _devices = List<Map<String, dynamic>>.from(res as List? ?? []);
     } catch (e) {

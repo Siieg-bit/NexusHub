@@ -119,6 +119,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             .eq('status', 'ok')
             .order('likes_count', ascending: false)
             .limit(15);
+        if (!mounted) return;
         _forYouPosts = List<Map<String, dynamic>>.from(forYouRes as List? ?? []);
       } catch (e) {
         debugPrint('[explore_screen] Erro: $e');

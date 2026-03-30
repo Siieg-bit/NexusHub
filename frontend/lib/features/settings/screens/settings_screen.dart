@@ -252,6 +252,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           .select()
           .eq('id', userId)
           .single();
+      if (!mounted) return;
       _profile = res;
 
       if (!mounted) return;

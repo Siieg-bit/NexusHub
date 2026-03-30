@@ -49,6 +49,7 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
           .select('community_id, communities!community_members_community_id_fkey(id, name, icon_url, members_count)')
           .eq('user_id', userId)
           .neq('community_id', widget.currentCommunityId);
+      if (!mounted) return;
 
       final list = <Map<String, dynamic>>[];
       for (final item in ((result as List? ?? []))) {

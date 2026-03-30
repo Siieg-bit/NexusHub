@@ -49,6 +49,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
           .select('is_ghost_mode, disable_incoming_chats, disable_profile_comments')
           .eq('id', userId)
           .maybeSingle();
+      if (!mounted) return;
       if (profileRes != null) {
         if (!mounted) return;
         setState(() {
@@ -62,6 +63,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
           .select()
           .eq('user_id', userId)
           .maybeSingle();
+      if (!mounted) return;
 
       if (res != null) {
         setState(() {

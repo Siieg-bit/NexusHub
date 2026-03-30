@@ -35,6 +35,7 @@ class _LiveScreenState extends State<LiveScreen> {
           .order('created_at', ascending: false);
 
       final res = await query;
+      if (!mounted) return;
       _activeSessions = List<Map<String, dynamic>>.from(res as List? ?? []);
       if (!mounted) return;
       if (mounted) setState(() => _isLoading = false);

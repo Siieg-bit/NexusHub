@@ -31,6 +31,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
           .select('*, blocked:profiles!blocked_id(*)')
           .eq('blocker_id', userId)
           .order('created_at', ascending: false);
+      if (!mounted) return;
 
       _blockedUsers = List<Map<String, dynamic>>.from(res as List? ?? []);
     } catch (e) {

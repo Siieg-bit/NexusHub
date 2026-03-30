@@ -152,6 +152,7 @@ class _BlockEditorState extends State<BlockEditor> {
   Future<void> _pickImageForBlock(int index) async {
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
+    if (!mounted) return;
     if (image == null) return;
 
     if (!mounted) return;
@@ -163,6 +164,7 @@ class _BlockEditorState extends State<BlockEditor> {
       final path =
           'posts/${widget.communityId}/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
       await SupabaseService.client.storage.from('media').uploadBinary(path, bytes);
+      if (!mounted) return;
       final url = SupabaseService.client.storage.from('media').getPublicUrl(path);
 
       if (!mounted) return;
@@ -196,6 +198,7 @@ class _BlockEditorState extends State<BlockEditor> {
 
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
+    if (!mounted) return;
     if (image == null) {
       // Remover bloco se cancelou
       if (!mounted) return;
@@ -214,6 +217,7 @@ class _BlockEditorState extends State<BlockEditor> {
       final path =
           'posts/${widget.communityId}/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
       await SupabaseService.client.storage.from('media').uploadBinary(path, bytes);
+      if (!mounted) return;
       final url = SupabaseService.client.storage.from('media').getPublicUrl(path);
 
       setState(() {

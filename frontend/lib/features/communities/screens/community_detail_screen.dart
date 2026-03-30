@@ -293,6 +293,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
         if (_lastLayout != layout) {
           _lastLayout = layout;
           WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
             _rebuildTabsIfNeeded(layout);
           });
         }
@@ -1116,6 +1117,7 @@ class _CheckInBarState extends ConsumerState<_CheckInBar> {
         'p_user_id': userId,
         'p_community_id': widget.communityId,
       });
+      if (!mounted) return;
       if (result != null && result['success'] == true) {
         final repEarned = result['reputation_earned'] as int? ?? 0;
         final newStreak = result['streak'] as int? ?? 0;

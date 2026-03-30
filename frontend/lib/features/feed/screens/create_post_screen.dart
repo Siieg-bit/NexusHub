@@ -90,6 +90,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       await SupabaseService.storage
           .from('post-media')
           .uploadBinary(path, bytes);
+      if (!mounted) return;
 
       final url =
           SupabaseService.storage.from('post-media').getPublicUrl(path);
@@ -124,6 +125,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       await SupabaseService.storage
           .from('post-media')
           .uploadBinary(path, bytes);
+      if (!mounted) return;
 
       final url =
           SupabaseService.storage.from('post-media').getPublicUrl(path);

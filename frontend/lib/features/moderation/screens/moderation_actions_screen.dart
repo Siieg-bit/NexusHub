@@ -131,6 +131,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
             .select()
             .eq('id', widget.targetUserId!)
             .single();
+        if (!mounted) return;
         _targetUser = user;
       }
       if (mounted) setState(() => _isLoading = false);

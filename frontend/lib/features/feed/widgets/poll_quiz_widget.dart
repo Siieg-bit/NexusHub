@@ -44,6 +44,7 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
         final votes = await SupabaseService.table('poll_votes')
             .select('option_id')
             .eq('user_id', userId);
+        if (!mounted) return;
 
         final optionIds =
             (options as List? ?? []).map((o) => o['id'] as String?).toSet();

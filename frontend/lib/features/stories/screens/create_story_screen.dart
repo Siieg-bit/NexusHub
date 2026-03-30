@@ -57,6 +57,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
+    if (!mounted) return;
     if (image == null) return;
 
     if (!mounted) return;
@@ -70,6 +71,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
       await SupabaseService.client.storage
           .from('media')
           .uploadBinary(path, bytes);
+      if (!mounted) return;
       final url =
           SupabaseService.client.storage.from('media').getPublicUrl(path);
 
@@ -100,6 +102,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
       source: ImageSource.gallery,
       maxDuration: const Duration(seconds: 60),
     );
+    if (!mounted) return;
     if (video == null) return;
 
     if (!mounted) return;
@@ -121,6 +124,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
       _videoPreviewController =
           VideoPlayerController.networkUrl(Uri.parse(url));
       await _videoPreviewController!.initialize();
+      if (!mounted) return;
       _videoPreviewController!.setLooping(true);
       _videoPreviewController!.play();
 

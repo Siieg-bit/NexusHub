@@ -34,6 +34,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
             .select('coins_count')
             .eq('id', userId)
             .single();
+        if (!mounted) return;
         _userCoins = profile['coins_count'] as int? ?? 0;
       }
     } catch (e) {
@@ -67,6 +68,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
         return;
       }
       final success = await IAPService.purchaseCoinPackage(target.first);
+      if (!mounted) return;
       if (success) {
         setState(() => _userCoins += pkg.coins);
         _showSuccess('${pkg.coins} moedas adicionadas!');
@@ -86,6 +88,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
     setState(() => _isWatchingAd = true);
     try {
       final success = await AdService.showRewardedAd(rewardCoins: 5);
+      if (!mounted) return;
       if (success) {
         setState(() => _userCoins += 5);
         _showSuccess('+5 moedas ganhas!');

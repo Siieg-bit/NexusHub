@@ -1358,6 +1358,7 @@ class _PinnedWikisSectionState extends State<_PinnedWikisSection> {
           .not('wiki_id', 'is', null)
           .order('created_at', ascending: false)
           .limit(10);
+      if (!mounted) return;
       final list = (res as List? ?? []).where((e) => e['wiki_entries'] != null).toList();
       if (mounted) {
         setState(() {

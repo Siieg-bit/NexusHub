@@ -118,6 +118,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
         ],
       ),
     );
+    if (!mounted) return;
 
     if (confirm != true) return;
 

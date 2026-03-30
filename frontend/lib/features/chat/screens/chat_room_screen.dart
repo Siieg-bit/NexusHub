@@ -155,6 +155,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           .select('pinned_message_id')
           .eq('id', widget.threadId)
           .single();
+      if (!mounted) return;
       final pinnedId = threadData['pinned_message_id'] as String?;
       if (pinnedId == null) {
         if (!mounted) return;
@@ -341,6 +342,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       .select('id, nickname, icon_url')
                       .eq('id', authorId)
                       .single();
+                  if (!mounted) return;
                   newMessage['sender'] = senderData;
                   newMessage['author'] = senderData;
                 }
@@ -363,6 +365,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       if (_scrollController.hasClients) {
         _scrollController.animateTo(0,
             duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
@@ -1098,6 +1101,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     await SupabaseService.client.storage
                         .from('media')
                         .upload(storagePath, file);
+                    if (!mounted) return;
                     final url = SupabaseService.client.storage
                         .from('media')
                         .getPublicUrl(storagePath);
@@ -1377,6 +1381,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   onTap: () async {
                     Navigator.pop(ctx);
                     final sticker = await StickerPicker.show(context);
+                    if (!mounted) return;
                     if (sticker != null) {
                       _sendMessage(
                         type: 'sticker',

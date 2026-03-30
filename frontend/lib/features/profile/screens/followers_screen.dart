@@ -214,6 +214,7 @@ class _FollowButtonState extends State<_FollowButton> {
           .eq('follower_id', currentUserId)
           .eq('following_id', widget.targetUserId)
           .maybeSingle();
+      if (!mounted) return;
 
       _isFollowing = res != null;
       if (mounted) setState(() => _isLoading = false);

@@ -42,6 +42,7 @@ class _WalletScreenState extends State<WalletScreen> {
             .eq('user_id', userId)
             .order('created_at', ascending: false)
             .limit(50);
+        if (!mounted) return;
         _transactions = List<Map<String, dynamic>>.from(txRes as List? ?? []);
       } catch (e) {
         debugPrint('[wallet_screen] Erro: $e');
@@ -499,6 +500,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   'p_target_amino_id': targetAminoId,
                   'p_amount': amount,
                 });
+                if (!mounted) return;
                 setState(() => _coins -= amount);
                 await _loadWallet();
                 if (mounted) {
@@ -632,6 +634,7 @@ class _WalletScreenState extends State<WalletScreen> {
                     'p_target_user_id': targetAminoId,
                     'p_amount': selectedAmount,
                   });
+                  if (!mounted) return;
                   setState(() => _coins -= selectedAmount);
                   await _loadWallet();
                   if (mounted) {
