@@ -11,6 +11,7 @@ import '../features/auth/screens/interest_wizard_screen.dart';
 import '../features/chat/screens/chat_list_screen.dart';
 import '../features/chat/screens/chat_room_screen.dart';
 import '../features/communities/screens/community_detail_screen.dart';
+import '../features/communities/screens/community_info_screen.dart';
 import '../features/communities/screens/community_list_screen.dart';
 import '../features/communities/screens/create_community_screen.dart';
 import '../features/communities/screens/community_members_screen.dart';
@@ -185,6 +186,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/community/:communityId/members',
         name: 'community-members',
         builder: (context, state) => CommunityMembersScreen(
+          communityId: state.pathParameters['communityId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/community/:communityId/info',
+        name: 'community-info',
+        builder: (context, state) => CommunityInfoScreen(
           communityId: state.pathParameters['communityId']!,
         ),
       ),

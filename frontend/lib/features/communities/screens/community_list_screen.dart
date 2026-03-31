@@ -238,12 +238,183 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
   void _showCommunityPreview(BuildContext context, CommunityModel community) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (_) => _CommunityPreviewSheet(
-        community: community,
+      backgroundColor: context.surfaceColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        final r = ctx.r;
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: r.s(8)),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Handle
+                Container(
+                  width: r.s(32),
+                  height: r.s(3),
+                  margin: EdgeInsets.only(bottom: r.s(8)),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[700],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                // Header com nome da comunidade
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: r.s(40),
+                        height: r.s(40),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(r.s(10)),
+                          color: ctx.cardBg,
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: community.iconUrl != null && community.iconUrl!.isNotEmpty
+                            ? CachedNetworkImage(
+                                imageUrl: community.iconUrl!,
+                                fit: BoxFit.cover,
+                              )
+                            : Icon(Icons.groups_rounded, color: ctx.textHint, size: r.s(20)),
+                      ),
+                      SizedBox(width: r.s(12)),
+                      Expanded(
+                        child: Text(
+                          community.name,
+                          style: TextStyle(
+                            color: ctx.textPrimary,
+                            fontSize: r.fs(16),
+                            fontWeight: FontWeight.w800,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Divider(color: Colors.grey[800], height: 1),
+                // 1. Ver detalhes da comunidade
+                ListTile(
+                  leading: Icon(Icons.info_outline_rounded, color: AppTheme.accentColor, size: r.s(22)),
+                  title: Text(
+                    'Ver detalhes da comunidade',
+                    style: TextStyle(color: ctx.textPrimary, fontSize: r.fs(14), fontWeight: FontWeight.w600),
+                  ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    context.push('/community/${community.id}/info');
+                  },
+                ),
+                // 2. Reordenar comunidades
+                ListTile(
+                  leading: Icon(Icons.swap_vert_rounded, color: AppTheme.aminoPurple, size: r.s(22)),
+                  title: Text(
+                    'Reordenar comunidades',
+                    style: TextStyle(color: ctx.textPrimary, fontSize: r.fs(14), fontWeight: FontWeight.w600),
+                  ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _showReorderMode();
+                  },
+                ),
+                // 3. Sair da comunidade
+                ListTile(
+                  leading: Icon(Icons.exit_to_app_rounded, color: AppTheme.errorColor, size: r.s(22)),
+                  title: Text(
+                    'Sair da comunidade',
+                    style: TextStyle(color: AppTheme.errorColor, fontSize: r.fs(14), fontWeight: FontWeight.w600),
+                  ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _confirmLeaveCommunity(context, community);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showReorderMode() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Segure e arraste os cards para reordenar suas comunidades.'),
+        backgroundColor: AppTheme.accentColor,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
       ),
     );
+  }
+
+  Future<void> _confirmLeaveCommunity(BuildContext context, CommunityModel community) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        final r = ctx.r;
+        return AlertDialog(
+          backgroundColor: ctx.surfaceColor,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(16))),
+          title: Text(
+            'Sair da comunidade',
+            style: TextStyle(color: ctx.textPrimary, fontWeight: FontWeight.w800),
+          ),
+          content: Text(
+            'Tem certeza que deseja sair de "${community.name}"? Voc\u00ea poder\u00e1 entrar novamente depois.',
+            style: TextStyle(color: ctx.textSecondary, fontSize: r.fs(14)),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text('Cancelar', style: TextStyle(color: ctx.textSecondary)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text('Sair', style: TextStyle(color: AppTheme.errorColor, fontWeight: FontWeight.w700)),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true && mounted) {
+      try {
+        final userId = SupabaseService.currentUserId;
+        if (userId == null) return;
+
+        await SupabaseService.table('community_members')
+            .delete()
+            .eq('community_id', community.id)
+            .eq('user_id', userId);
+
+        if (mounted) {
+          ref.invalidate(userCommunitiesProvider);
+          setState(() => _reorderedCommunities = null);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Voc\u00ea saiu de "${community.name}".'),
+              backgroundColor: AppTheme.accentColor,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Erro ao sair da comunidade. Tente novamente.'),
+              backgroundColor: AppTheme.errorColor,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    }
   }
 
   Widget _buildEmptyState() {

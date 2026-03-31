@@ -11,6 +11,7 @@ import '../../../core/widgets/amino_top_bar.dart';
 import '../../../core/widgets/amino_particles_bg.dart';
 import '../../../core/providers/notification_provider.dart';
 import '../../../core/utils/responsive.dart';
+import '../../communities/providers/community_shared_providers.dart';
 
 /// Provider para busca de comunidades.
 final searchCommunitiesProvider =
@@ -137,6 +138,184 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     super.dispose();
   }
 
+  void _showCommunityContextMenu(BuildContext context, CommunityModel community) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: context.surfaceColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        final r = ctx.r;
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: r.s(8)),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Handle
+                Container(
+                  width: r.s(32),
+                  height: r.s(3),
+                  margin: EdgeInsets.only(bottom: r.s(8)),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[700],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                // Header
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: r.s(40),
+                        height: r.s(40),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(r.s(10)),
+                          color: ctx.cardBg,
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: community.iconUrl != null && community.iconUrl!.isNotEmpty
+                            ? CachedNetworkImage(
+                                imageUrl: community.iconUrl!,
+                                fit: BoxFit.cover,
+                              )
+                            : Icon(Icons.groups_rounded, color: ctx.textHint, size: r.s(20)),
+                      ),
+                      SizedBox(width: r.s(12)),
+                      Expanded(
+                        child: Text(
+                          community.name,
+                          style: TextStyle(
+                            color: ctx.textPrimary,
+                            fontSize: r.fs(16),
+                            fontWeight: FontWeight.w800,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Divider(color: Colors.grey[800], height: 1),
+                // 1. Ver detalhes
+                ListTile(
+                  leading: Icon(Icons.info_outline_rounded, color: AppTheme.accentColor, size: r.s(22)),
+                  title: Text(
+                    'Ver detalhes da comunidade',
+                    style: TextStyle(color: ctx.textPrimary, fontSize: r.fs(14), fontWeight: FontWeight.w600),
+                  ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    context.push('/community/${community.id}/info');
+                  },
+                ),
+                // 2. Reordenar
+                ListTile(
+                  leading: Icon(Icons.swap_vert_rounded, color: AppTheme.aminoPurple, size: r.s(22)),
+                  title: Text(
+                    'Reordenar comunidades',
+                    style: TextStyle(color: ctx.textPrimary, fontSize: r.fs(14), fontWeight: FontWeight.w600),
+                  ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('Segure e arraste os cards para reordenar suas comunidades.'),
+                        backgroundColor: AppTheme.accentColor,
+                        behavior: SnackBarBehavior.floating,
+                        duration: const Duration(seconds: 3),
+                      ),
+                    );
+                  },
+                ),
+                // 3. Sair
+                ListTile(
+                  leading: Icon(Icons.exit_to_app_rounded, color: AppTheme.errorColor, size: r.s(22)),
+                  title: Text(
+                    'Sair da comunidade',
+                    style: TextStyle(color: AppTheme.errorColor, fontSize: r.fs(14), fontWeight: FontWeight.w600),
+                  ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _confirmLeaveCommunity(context, community);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _confirmLeaveCommunity(BuildContext context, CommunityModel community) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        final r = ctx.r;
+        return AlertDialog(
+          backgroundColor: ctx.surfaceColor,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(16))),
+          title: Text(
+            'Sair da comunidade',
+            style: TextStyle(color: ctx.textPrimary, fontWeight: FontWeight.w800),
+          ),
+          content: Text(
+            'Tem certeza que deseja sair de "${community.name}"? Voc\u00ea poder\u00e1 entrar novamente depois.',
+            style: TextStyle(color: ctx.textSecondary, fontSize: r.fs(14)),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text('Cancelar', style: TextStyle(color: ctx.textSecondary)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text('Sair', style: TextStyle(color: AppTheme.errorColor, fontWeight: FontWeight.w700)),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true && mounted) {
+      try {
+        final userId = SupabaseService.currentUserId;
+        if (userId == null) return;
+
+        await SupabaseService.table('community_members')
+            .delete()
+            .eq('community_id', community.id)
+            .eq('user_id', userId);
+
+        if (mounted) {
+          // Refresh the list
+          await _loadData();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Voc\u00ea saiu de "${community.name}".'),
+              backgroundColor: AppTheme.accentColor,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Erro ao sair da comunidade. Tente novamente.'),
+              backgroundColor: AppTheme.errorColor,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final r = context.r;
@@ -184,7 +363,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                 padding: EdgeInsets.symmetric(horizontal: r.s(16)),
                                 itemCount: _myCommunities.length,
                                 itemBuilder: (context, index) =>
-                                    _MyCommunityCard(community: _myCommunities[index]),
+                                    _MyCommunityCard(
+                                      community: _myCommunities[index],
+                                      onLongPress: (c) => _showCommunityContextMenu(context, c),
+                                    ),
                               ),
                             ),
                           ],
@@ -467,7 +649,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 /// avatar do usuário e botão "CHECK IN" verde na parte inferior.
 class _MyCommunityCard extends StatelessWidget {
   final CommunityModel community;
-  const _MyCommunityCard({required this.community});
+  final void Function(CommunityModel)? onLongPress;
+  const _MyCommunityCard({required this.community, this.onLongPress});
 
   Color _parseColor(String hex) {
     try {
@@ -483,6 +666,7 @@ class _MyCommunityCard extends StatelessWidget {
     final color = _parseColor(community.themeColor);
     return GestureDetector(
       onTap: () => context.push('/community/${community.id}'),
+      onLongPress: () => onLongPress?.call(community),
       child: Container(
         width: r.s(130),
         margin: EdgeInsets.only(right: r.s(12)),
