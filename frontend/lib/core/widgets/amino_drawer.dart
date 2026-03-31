@@ -93,6 +93,8 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
   void _onHorizontalDragUpdate(DragUpdateDetails details) {
     final delta = details.primaryDelta ?? 0;
     if (_isOpen || _edgeDragActive) {
+      // Usa effectiveMaxSlide calculado no build para normalizar o drag.
+      // Como não temos acesso ao context aqui, usamos widget.maxSlide como fallback.
       _animController.value += delta / widget.maxSlide;
     }
   }
@@ -116,10 +118,15 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
 
   @override
   Widget build(BuildContext context) {
+    // Adaptar maxSlide à largura da tela para evitar overflow em telas estreitas.
+    // Usa no máximo 75% da largura da tela, limitado pelo maxSlide configurado.
+    final screenWidth = MediaQuery.of(context).size.width;
+    final effectiveMaxSlide = widget.maxSlide.clamp(0.0, screenWidth * 0.75);
+
     return AnimatedBuilder(
       animation: _animController,
       builder: (context, _) {
-        final slide = widget.maxSlide * _animController.value;
+        final slide = effectiveMaxSlide * _animController.value;
         final scale = 1 - ((1 - widget.minScale) * _animController.value);
         final radius = widget.cornerRadius * _animController.value;
 
@@ -131,7 +138,7 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
               top: 0,
               bottom: 0,
               left: 0,
-              width: widget.maxSlide,
+              width: effectiveMaxSlide,
               child: FadeTransition(
                 opacity: _animController,
                 child: SlideTransition(

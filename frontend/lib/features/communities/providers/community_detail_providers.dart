@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/models/community_model.dart';
@@ -26,13 +27,18 @@ final communityFeedProvider =
       .order('created_at', ascending: false)
       .limit(30);
 
-  return (response as List? ?? []).map((e) {
+  final maps = (response as List? ?? []).map((e) {
     final map = Map<String, dynamic>.from(e);
     if (map['profiles'] != null) {
       map['author'] = map['profiles'];
     }
-    return PostModel.fromJson(map);
+    return map;
   }).toList();
+
+  // Injetar is_liked para o usuário atual
+  await _injectIsLikedCommunity(maps);
+
+  return maps.map((map) => PostModel.fromJson(map)).toList();
 });
 
 /// Provider para posts em Destaque (is_featured = true).
@@ -47,14 +53,43 @@ final communityFeaturedFeedProvider =
       .order('created_at', ascending: false)
       .limit(30);
 
-  return (response as List? ?? []).map((e) {
+  final maps = (response as List? ?? []).map((e) {
     final map = Map<String, dynamic>.from(e);
     if (map['profiles'] != null) {
       map['author'] = map['profiles'];
     }
-    return PostModel.fromJson(map);
+    return map;
   }).toList();
+
+  // Injetar is_liked para o usuário atual
+  await _injectIsLikedCommunity(maps);
+
+  return maps.map((map) => PostModel.fromJson(map)).toList();
 });
+
+/// Helper: injeta is_liked em uma lista de maps de posts para o usuário atual.
+Future<void> _injectIsLikedCommunity(List<Map<String, dynamic>> posts) async {
+  final userId = SupabaseService.currentUserId;
+  if (userId == null || posts.isEmpty) return;
+
+  final postIds = posts.map((p) => p['id'] as String).toList();
+
+  try {
+    final likesRes = await SupabaseService.table('likes')
+        .select('post_id')
+        .eq('user_id', userId)
+        .inFilter('post_id', postIds);
+
+    final likedPostIds =
+        (likesRes as List).map((e) => e['post_id'] as String).toSet();
+
+    for (final post in posts) {
+      post['is_liked'] = likedPostIds.contains(post['id']);
+    }
+  } catch (e) {
+    debugPrint('[community_detail_providers] _injectIsLikedCommunity error: $e');
+  }
+}
 
 final communityMembersProvider =
     FutureProvider.family<List<Map<String, dynamic>>, String>(

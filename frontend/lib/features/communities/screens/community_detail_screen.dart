@@ -67,8 +67,12 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     super.dispose();
   }
 
+  bool _pendingTabRebuild = false;
+
   void _rebuildTabsIfNeeded(Map<String, dynamic> layout) {
     if (_isDisposed || !mounted) return;
+    // Evitar múltiplos rebuilds agendados no mesmo frame
+    if (_pendingTabRebuild) return;
 
     final visible =
         layout['sections_visible'] as Map<String, dynamic>? ?? {};
@@ -82,31 +86,31 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     if (tabs.length == _activeTabs.length &&
         _listEquals(tabs, _activeTabs)) return;
 
-    // Guard duplo: verificar mounted novamente antes de setState
-    if (_isDisposed || !mounted) return;
+    _pendingTabRebuild = true;
 
-    try {
+    // Agendar rebuild para o próximo frame (fora do build)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _pendingTabRebuild = false;
+      if (_isDisposed || !mounted) return;
+
       final oldController = _tabController;
       final newController = TabController(length: tabs.length, vsync: this);
       if (tabs.contains('Destaque')) {
         newController.index = tabs.indexOf('Destaque');
       }
+
       setState(() {
         _activeTabs = tabs;
         _tabController = newController;
       });
-      // Dispose do antigo no próximo frame para evitar uso após dispose
-      // durante o rebuild do widget tree
+
+      // Dispose do antigo após o frame de rebuild ter sido processado
       WidgetsBinding.instance.addPostFrameCallback((_) {
         try {
           oldController.dispose();
-        } catch (_) {
-          // Controller já foi disposed ou não está mais válido
-        }
+        } catch (_) {}
       });
-    } catch (e) {
-      debugPrint('[CommunityDetail] TabController rebuild error: $e');
-    }
+    });
   }
 
   bool _listEquals(List<String> a, List<String> b) {
@@ -218,10 +222,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
         // infinito do TabController.
         if (!_deepMapEquals(_lastLayout, layout)) {
           _lastLayout = layout;
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (_isDisposed || !mounted) return;
-            _rebuildTabsIfNeeded(layout);
-          });
+          _rebuildTabsIfNeeded(layout);
         }
 
         final visible =
@@ -1027,5 +1028,6 @@ class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   }
 
   @override
-  bool shouldRebuild(_SliverTabBarDelegate oldDelegate) => false;
+  bool shouldRebuild(_SliverTabBarDelegate oldDelegate) =>
+      tabBar.controller != oldDelegate.tabBar.controller;
 }

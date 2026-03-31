@@ -517,6 +517,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     }
 
     _messageController.clear();
+    if (!mounted) return;
     setState(() => _isSending = true);
 
     // Se membership não foi confirmada, tentar novamente antes de enviar
@@ -1809,6 +1810,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               top: false,
               child: VoiceRecorder(
                 onRecordingComplete: (filePath, duration) async {
+                  if (!mounted) return;
                   setState(() => _isRecordingVoice = false);
                   try {
                     final file = File(filePath);
@@ -1839,7 +1841,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     }
                   }
                 },
-                onCancel: () => setState(() => _isRecordingVoice = false),
+                onCancel: () {
+                  if (!mounted) return;
+                  setState(() => _isRecordingVoice = false);
+                },
               ),
             )
           else if (_membershipConfirmed || _isLoading)

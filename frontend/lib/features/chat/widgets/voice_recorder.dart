@@ -136,10 +136,10 @@ class _VoiceRecorderState extends State<VoiceRecorder>
         });
       } else {
         // Sem permissão
-        widget.onCancel();
+        if (mounted) widget.onCancel();
       }
     } catch (e) {
-      widget.onCancel();
+      if (mounted) widget.onCancel();
     }
   }
 
@@ -149,6 +149,7 @@ class _VoiceRecorderState extends State<VoiceRecorder>
 
     try {
       final path = await _recorder.stop();
+      if (!mounted) return;
       if (path != null && _seconds > 0) {
         HapticFeedback.lightImpact();
         widget.onRecordingComplete(path, _seconds);
@@ -156,6 +157,7 @@ class _VoiceRecorderState extends State<VoiceRecorder>
         widget.onCancel();
       }
     } catch (_) {
+      if (!mounted) return;
       widget.onCancel();
     }
   }
@@ -175,6 +177,7 @@ class _VoiceRecorderState extends State<VoiceRecorder>
       debugPrint('[voice_recorder] Erro: $e');
     }
 
+    if (!mounted) return;
     widget.onCancel();
   }
 

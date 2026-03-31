@@ -148,6 +148,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
     final user = ref.watch(currentUserProvider);
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -319,19 +320,23 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                     style: TextStyle(
                         color: Colors.grey[500], fontSize: r.fs(14))),
                 const Spacer(),
-                TabBar(
-                  controller: _bioTabController,
-                  isScrollable: true,
-                  labelColor: AppTheme.primaryColor,
-                  unselectedLabelColor: Colors.grey[600],
-                  indicatorColor: AppTheme.primaryColor,
-                  indicatorSize: TabBarIndicatorSize.label,
-                  labelStyle: TextStyle(
-                      fontSize: r.fs(12), fontWeight: FontWeight.w700),
-                  tabs: const [
-                    Tab(text: 'Editar'),
-                    Tab(text: 'Prévia'),
-                  ],
+                Flexible(
+                  child: TabBar(
+                    controller: _bioTabController,
+                    isScrollable: true,
+                    tabAlignment: TabAlignment.end,
+                    labelColor: AppTheme.primaryColor,
+                    unselectedLabelColor: Colors.grey[600],
+                    indicatorColor: AppTheme.primaryColor,
+                    indicatorSize: TabBarIndicatorSize.label,
+                    labelStyle: TextStyle(
+                        fontSize: r.fs(12), fontWeight: FontWeight.w700),
+                    dividerHeight: 0,
+                    tabs: const [
+                      Tab(text: 'Editar'),
+                      Tab(text: 'Prévia'),
+                    ],
+                  ),
                 ),
               ],
             ),

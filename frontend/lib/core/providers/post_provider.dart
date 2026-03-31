@@ -12,7 +12,39 @@ import 'package:flutter/foundation.dart';
 /// - Criar, editar, deletar post
 /// - Like/Unlike
 /// - Featured posts
+///
+/// IMPORTANTE: Todos os providers agora injetam `is_liked` consultando a
+/// tabela `likes` para o usuário atual, garantindo persistência visual.
 /// ============================================================================
+
+/// Helper: dado uma lista de maps de posts, consulta a tabela likes
+/// para o usuário atual e injeta `is_liked` em cada map.
+Future<List<Map<String, dynamic>>> _injectIsLiked(
+    List<Map<String, dynamic>> posts) async {
+  final userId = SupabaseService.currentUserId;
+  if (userId == null || posts.isEmpty) return posts;
+
+  final postIds = posts.map((p) => p['id'] as String).toList();
+
+  try {
+    final likesRes = await SupabaseService.table('likes')
+        .select('post_id')
+        .eq('user_id', userId)
+        .inFilter('post_id', postIds);
+
+    final likedPostIds =
+        (likesRes as List).map((e) => e['post_id'] as String).toSet();
+
+    for (final post in posts) {
+      post['is_liked'] = likedPostIds.contains(post['id']);
+    }
+  } catch (e) {
+    debugPrint('[post_provider] _injectIsLiked error: $e');
+    // Fallback: manter is_liked como false (default do PostModel)
+  }
+
+  return posts;
+}
 
 class CommunityFeedNotifier
     extends FamilyAsyncNotifier<List<PostModel>, String> {
@@ -35,9 +67,14 @@ class CommunityFeedNotifier
         .order('created_at', ascending: false)
         .range(page * _pageSize, (page + 1) * _pageSize - 1);
 
-    final list = res as List;
-    final posts =
-        list.map((e) => PostModel.fromJson(e as Map<String, dynamic>)).toList();
+    final list = (res as List)
+        .map((e) => Map<String, dynamic>.from(e as Map))
+        .toList();
+
+    // Injetar is_liked para o usuário atual
+    await _injectIsLiked(list);
+
+    final posts = list.map((e) => PostModel.fromJson(e)).toList();
     _hasMore = posts.length >= _pageSize;
     return posts;
   }
@@ -128,7 +165,11 @@ final postDetailProvider = FutureProvider.family<PostModel?, String>(
         .maybeSingle();
 
     if (res == null) return null;
-    return PostModel.fromJson(res);
+
+    final map = Map<String, dynamic>.from(res);
+    // Injetar is_liked
+    await _injectIsLiked([map]);
+    return PostModel.fromJson(map);
   },
 );
 
@@ -142,9 +183,13 @@ final featuredPostsProvider = FutureProvider.family<List<PostModel>, String>(
         .order('created_at', ascending: false)
         .limit(10);
 
-    final list = res as List;
-    return list
-        .map((e) => PostModel.fromJson(e as Map<String, dynamic>))
+    final list = (res as List)
+        .map((e) => Map<String, dynamic>.from(e as Map))
         .toList();
+
+    // Injetar is_liked para o usuário atual
+    await _injectIsLiked(list);
+
+    return list.map((e) => PostModel.fromJson(e)).toList();
   },
 );
