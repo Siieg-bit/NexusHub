@@ -6,7 +6,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../config/app_theme.dart';
 import '../../../core/models/community_model.dart';
-import '../../../core/providers/community_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../providers/community_shared_providers.dart';

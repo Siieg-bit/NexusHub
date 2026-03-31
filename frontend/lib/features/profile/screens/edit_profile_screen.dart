@@ -324,7 +324,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                   child: TabBar(
                     controller: _bioTabController,
                     isScrollable: true,
-                    tabAlignment: TabAlignment.end,
+                    tabAlignment: TabAlignment.start,
                     labelColor: AppTheme.primaryColor,
                     unselectedLabelColor: Colors.grey[600],
                     indicatorColor: AppTheme.primaryColor,

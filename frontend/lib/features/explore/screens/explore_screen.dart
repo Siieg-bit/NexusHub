@@ -11,7 +11,6 @@ import '../../../core/widgets/amino_top_bar.dart';
 import '../../../core/widgets/amino_particles_bg.dart';
 import '../../../core/providers/notification_provider.dart';
 import '../../../core/utils/responsive.dart';
-import '../../communities/providers/community_shared_providers.dart';
 
 /// Provider para busca de comunidades.
 final searchCommunitiesProvider =
