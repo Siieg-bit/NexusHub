@@ -92,12 +92,11 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
       for (final threadId in _selected) {
         await SupabaseService.table('chat_messages').insert({
           'thread_id': threadId,
-          'sender_id': userId,
+          'author_id': userId,
           'content': widget.messageContent,
-          'type': widget.mediaType == 'gif' ? 'gif' : 'forward',
+          'type': 'text',
           'media_url': widget.mediaUrl,
           'media_type': widget.mediaType,
-          'is_forwarded': true,
         });
       }
       if (mounted) {

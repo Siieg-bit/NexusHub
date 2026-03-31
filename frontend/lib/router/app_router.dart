@@ -150,16 +150,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // ROTAS DE COMUNIDADE
       // ====================================================================
       GoRoute(
+        path: '/community/create',
+        name: 'create-community',
+        builder: (context, state) => const CreateCommunityScreen(),
+      ),
+      GoRoute(
         path: '/community/:id',
         name: 'community-detail',
         builder: (context, state) => CommunityDetailScreen(
           communityId: state.pathParameters['id']!,
         ),
-      ),
-      GoRoute(
-        path: '/community/create',
-        name: 'create-community',
-        builder: (context, state) => const CreateCommunityScreen(),
       ),
       GoRoute(
         path: '/community/:communityId/acm',

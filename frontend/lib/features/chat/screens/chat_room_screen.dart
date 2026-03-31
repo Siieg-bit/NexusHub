@@ -81,7 +81,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   Future<void> _initChat() async {
     await _loadThreadInfo();
+    if (!mounted) return;
     await _ensureMembership();
+    if (!mounted) return;
     _loadMessages();
     _loadPinnedMessages();
     _subscribeToRealtime();
@@ -461,6 +463,20 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     final text = _messageController.text.trim();
     if (text.isEmpty && type == 'text' && mediaUrl == null) return;
 
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Sessão expirada. Faça login novamente.'),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
+
     _messageController.clear();
     setState(() => _isSending = true);
 
@@ -497,7 +513,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
       await SupabaseService.rpc('send_chat_message_with_reputation', params: {
         'p_thread_id': widget.threadId,
-        'p_author_id': SupabaseService.currentUserId,
+        'p_author_id': userId,
         'p_content': content,
         'p_type': mappedType,
         'p_media_url': finalMediaUrl,
@@ -1216,6 +1232,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     final threadIcon = _threadInfo?['icon_url'] as String?;
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: context.scaffoldBg,
@@ -1529,7 +1546,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           // ── Emoji picker ──
           if (_showEmojiPicker)
             SizedBox(
-              height: 250,
+              height: MediaQuery.of(context).size.height * 0.3 > 250 ? 250 : MediaQuery.of(context).size.height * 0.3,
               child: EmojiPicker(
                 onEmojiSelected: (category, emoji) {
                   _messageController.text += emoji.emoji;

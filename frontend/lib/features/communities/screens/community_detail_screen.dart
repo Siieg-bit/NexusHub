@@ -61,6 +61,8 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
   void dispose() {
     _isDisposed = true;
     _tabController.dispose();
+    // Limpar canal de presença para evitar dependents leak
+    PresenceService.instance.leaveChannel(widget.communityId);
     super.dispose();
   }
 

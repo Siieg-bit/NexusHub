@@ -148,13 +148,7 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
                               ]
                             : null,
                       ),
-                      child: Overlay(
-                        initialEntries: [
-                          OverlayEntry(
-                            builder: (_) => widget.child,
-                          ),
-                        ],
-                      ),
+                      child: widget.child,
                     ),
                   ),
                 ),
