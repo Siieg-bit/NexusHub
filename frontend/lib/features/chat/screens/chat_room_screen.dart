@@ -598,6 +598,192 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   // ==========================================================================
+  // CHAT MEMBERS — Bug #6 fix
+  // ==========================================================================
+
+  void _showChatMembers() {
+    final r = context.r;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: context.surfaceColor,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
+      ),
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.3,
+        maxChildSize: 0.85,
+        expand: false,
+        builder: (ctx, scrollCtrl) => _ChatMembersSheet(
+          threadId: widget.threadId,
+          scrollController: scrollCtrl,
+        ),
+      ),
+    );
+  }
+
+  // ==========================================================================
+  // CHAT SETTINGS — Bug #6 fix
+  // ==========================================================================
+
+  void _showChatSettings() {
+    final r = context.r;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: context.surfaceColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
+      ),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.all(r.s(16)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: r.s(36), height: r.s(4),
+              margin: EdgeInsets.only(bottom: r.s(16)),
+              decoration: BoxDecoration(
+                color: Colors.grey[700],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Text('Configurações do Chat',
+                style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: r.fs(16),
+                    color: context.textPrimary)),
+            SizedBox(height: r.s(16)),
+            _settingsTile(r, Icons.wallpaper_rounded, 'Fundo do Chat', () {
+              Navigator.pop(ctx);
+              _showBackgroundPicker();
+            }),
+            _settingsTile(r, Icons.notifications_rounded, 'Notificações', () {
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Configurações de notificação em breve!'),
+                  backgroundColor: AppTheme.primaryColor,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            }),
+            _settingsTile(r, Icons.people_rounded, 'Ver Membros', () {
+              Navigator.pop(ctx);
+              _showChatMembers();
+            }),
+            if (_threadInfo?['community_id'] != null)
+              _settingsTile(r, Icons.settings_rounded, 'Config. Gerais', () {
+                Navigator.pop(ctx);
+                context.push('/settings');
+              }),
+            SizedBox(height: r.s(8)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _settingsTile(Responsive r, IconData icon, String label, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: r.s(12)),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.grey[400], size: r.s(20)),
+            SizedBox(width: r.s(12)),
+            Expanded(
+              child: Text(label,
+                  style: TextStyle(color: context.textPrimary, fontSize: r.fs(14))),
+            ),
+            Icon(Icons.chevron_right_rounded, color: Colors.grey[600], size: r.s(18)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ==========================================================================
+  // LEAVE CHAT — Bug #5 fix
+  // ==========================================================================
+
+  void _leaveChatConfirm() {
+    final r = context.r;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: context.surfaceColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(16))),
+        title: Text('Sair do Chat',
+            style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w700)),
+        content: Text('Tem certeza que deseja sair deste chat?',
+            style: TextStyle(color: Colors.grey[400], fontSize: r.fs(14))),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await _leaveChat();
+            },
+            child: Text('Sair',
+                style: TextStyle(color: AppTheme.errorColor, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _leaveChat() async {
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) return;
+    try {
+      await SupabaseService.table('chat_members')
+          .delete()
+          .eq('thread_id', widget.threadId)
+          .eq('user_id', userId);
+      // Decrementar members_count
+      try {
+        await SupabaseService.rpc('decrement_chat_member_count', params: {
+          'p_thread_id': widget.threadId,
+        });
+      } catch (_) {
+        // RPC pode não existir — não bloquear saída
+      }
+      _membershipConfirmed = false;
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Você saiu do chat.'),
+            backgroundColor: AppTheme.primaryColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        context.pop();
+      }
+    } catch (e) {
+      debugPrint('[ChatRoom] Leave chat error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao sair do chat. Tente novamente.'),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  // ==========================================================================
   // MEDIA UPLOAD
   // ==========================================================================
 
@@ -1383,13 +1569,16 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             onSelected: (val) {
               switch (val) {
                 case 'members':
+                  _showChatMembers();
                   break;
                 case 'settings':
+                  _showChatSettings();
                   break;
                 case 'background':
                   _showBackgroundPicker();
                   break;
                 case 'leave':
+                  _leaveChatConfirm();
                   break;
               }
             },
@@ -1556,6 +1745,62 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               onDismiss: () => setState(() => _replyingTo = null),
             ),
 
+          // ── Membership CTA — Bug #4 fix ──
+          if (!_membershipConfirmed && !_isLoading)
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor.withValues(alpha: 0.08),
+                border: Border(top: BorderSide(color: AppTheme.primaryColor.withValues(alpha: 0.2))),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Você não é membro deste chat.',
+                      style: TextStyle(color: Colors.grey[400], fontSize: r.fs(13)),
+                    ),
+                  ),
+                  SizedBox(width: r.s(8)),
+                  ElevatedButton(
+                    onPressed: _isSending ? null : () async {
+                      setState(() => _isSending = true);
+                      await _ensureMembership();
+                      if (mounted) {
+                        setState(() => _isSending = false);
+                        if (_membershipConfirmed) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Você entrou no chat!'),
+                              backgroundColor: AppTheme.primaryColor,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryColor,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(r.s(10))),
+                      padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+                    ),
+                    child: _isSending
+                        ? SizedBox(
+                            width: r.s(16), height: r.s(16),
+                            child: const CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white),
+                          )
+                        : Text('Entrar no Chat',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: r.fs(13))),
+                  ),
+                ],
+              ),
+            ),
+
           // ── Voice recorder / Input bar ──
           if (_isRecordingVoice)
             SafeArea(
@@ -1595,7 +1840,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 onCancel: () => setState(() => _isRecordingVoice = false),
               ),
             )
-          else
+          else if (_membershipConfirmed || _isLoading)
             ChatInputBar(
               controller: _messageController,
               isSending: _isSending,
@@ -1810,6 +2055,160 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   fontSize: r.fs(13))),
         ],
       ),
+    );
+  }
+}
+
+
+// =============================================================================
+// CHAT MEMBERS SHEET — Mostra membros do chat (Bug #6 fix)
+// =============================================================================
+class _ChatMembersSheet extends StatefulWidget {
+  final String threadId;
+  final ScrollController scrollController;
+
+  const _ChatMembersSheet({
+    required this.threadId,
+    required this.scrollController,
+  });
+
+  @override
+  State<_ChatMembersSheet> createState() => _ChatMembersSheetState();
+}
+
+class _ChatMembersSheetState extends State<_ChatMembersSheet> {
+  List<Map<String, dynamic>> _members = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMembers();
+  }
+
+  Future<void> _loadMembers() async {
+    try {
+      final response = await SupabaseService.table('chat_members')
+          .select('*, profiles!chat_members_user_id_fkey(id, nickname, icon_url)')
+          .eq('thread_id', widget.threadId)
+          .order('joined_at', ascending: true)
+          .limit(100);
+      if (mounted) {
+        setState(() {
+          _members = List<Map<String, dynamic>>.from(response as List? ?? []);
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('[ChatMembersSheet] Error: $e');
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    return Column(
+      children: [
+        Container(
+          width: r.s(36), height: r.s(4),
+          margin: EdgeInsets.only(top: r.s(12), bottom: r.s(8)),
+          decoration: BoxDecoration(
+            color: Colors.grey[700],
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+          child: Row(
+            children: [
+              Text('Membros do Chat',
+                  style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: r.fs(16),
+                      color: context.textPrimary)),
+              const Spacer(),
+              Text('${_members.length}',
+                  style: TextStyle(color: Colors.grey[500], fontSize: r.fs(13))),
+            ],
+          ),
+        ),
+        Expanded(
+          child: _isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(
+                      color: AppTheme.primaryColor, strokeWidth: 2))
+              : _members.isEmpty
+                  ? Center(
+                      child: Text('Nenhum membro encontrado',
+                          style: TextStyle(color: Colors.grey[500], fontSize: r.fs(13))),
+                    )
+                  : ListView.builder(
+                      controller: widget.scrollController,
+                      padding: EdgeInsets.symmetric(horizontal: r.s(16)),
+                      itemCount: _members.length,
+                      itemBuilder: (context, index) {
+                        final member = _members[index];
+                        final profile = member['profiles'] as Map<String, dynamic>? ?? {};
+                        final nickname = profile['nickname'] as String? ?? 'Usuário';
+                        final iconUrl = profile['icon_url'] as String?;
+                        final role = member['role'] as String?;
+
+                        return Container(
+                          padding: EdgeInsets.symmetric(vertical: r.s(8)),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                  color: Colors.white.withValues(alpha: 0.05)),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                radius: r.s(18),
+                                backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.2),
+                                backgroundImage: iconUrl != null
+                                    ? CachedNetworkImageProvider(iconUrl)
+                                    : null,
+                                child: iconUrl == null
+                                    ? Text(nickname.isNotEmpty ? nickname[0].toUpperCase() : '?',
+                                        style: const TextStyle(
+                                            color: AppTheme.primaryColor,
+                                            fontWeight: FontWeight.w700))
+                                    : null,
+                              ),
+                              SizedBox(width: r.s(12)),
+                              Expanded(
+                                child: Text(nickname,
+                                    style: TextStyle(
+                                        color: context.textPrimary,
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: r.fs(14))),
+                              ),
+                              if (role != null && role != 'member')
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: r.s(8), vertical: r.s(3)),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(r.s(8)),
+                                  ),
+                                  child: Text(
+                                    role.toUpperCase(),
+                                    style: TextStyle(
+                                      color: AppTheme.primaryColor,
+                                      fontSize: r.fs(9),
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+        ),
+      ],
     );
   }
 }

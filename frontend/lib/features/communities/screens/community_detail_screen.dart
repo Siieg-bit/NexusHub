@@ -110,6 +110,29 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     return true;
   }
 
+  /// Deep equality para Maps (resolve Bug #1/#2).
+  bool _deepMapEquals(Map<String, dynamic>? a, Map<String, dynamic>? b) {
+    if (a == null && b == null) return true;
+    if (a == null || b == null) return false;
+    if (a.length != b.length) return false;
+    for (final key in a.keys) {
+      if (!b.containsKey(key)) return false;
+      final va = a[key];
+      final vb = b[key];
+      if (va is Map<String, dynamic> && vb is Map<String, dynamic>) {
+        if (!_deepMapEquals(va, vb)) return false;
+      } else if (va is List && vb is List) {
+        if (va.length != vb.length) return false;
+        for (int i = 0; i < va.length; i++) {
+          if (va[i] != vb[i]) return false;
+        }
+      } else if (va != vb) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   Color _parseColor(String hex) {
     try {
       return Color(int.parse(hex.replaceFirst('#', '0xFF')));
@@ -182,8 +205,11 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
         final userRole = membership?['role'] as String?;
         final layout = layoutAsync.valueOrNull ?? defaultLayout;
 
-        // Rebuild tabs based on layout (apenas se o layout mudou)
-        if (_lastLayout != layout) {
+        // Bug #1/#2 fix: Comparar por valor (deep equality) em vez de
+        // referência. Cada rebuild do FutureProvider cria um novo Map,
+        // então `!=` por referência era SEMPRE true, causando dispose/recreate
+        // infinito do TabController.
+        if (!_deepMapEquals(_lastLayout, layout)) {
           _lastLayout = layout;
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (_isDisposed || !mounted) return;

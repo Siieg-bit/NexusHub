@@ -147,10 +147,11 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
     // Carregar comunidades do usuário para a sidebar esquerda
     final userCommunitiesAsync = ref.watch(userCommunitiesProvider);
 
-    return Drawer(
-      backgroundColor: context.scaffoldBg,
-      width: MediaQuery.of(context).size.width * 0.85,
-      shape: const RoundedRectangleBorder(),
+    // Bug #7 fix: O Drawer não deve definir width próprio — o AminoDrawerController
+    // já posiciona este widget em um slot de maxSlide (280px). Definir 85% da tela
+    // causava overflow quando 85% > 280px.
+    return Container(
+      color: context.scaffoldBg,
       child: SafeArea(
         child: Row(
           children: [
@@ -647,6 +648,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                           child: GestureDetector(
                             onTap: () {
                               HapticFeedback.selectionClick();
+                              setState(() => _showMore = !_showMore);
                             },
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
