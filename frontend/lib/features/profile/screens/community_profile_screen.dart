@@ -708,7 +708,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                   Expanded(
                     child: GestureDetector(
                       onTap: () =>
-                          context.push('/following/${widget.userId}'),
+                          context.push('/user/${widget.userId}/followers?tab=following'),
                       child: Column(
                         children: [
                           Text(
@@ -734,7 +734,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                   Expanded(
                     child: GestureDetector(
                       onTap: () =>
-                          context.push('/followers/${widget.userId}'),
+                          context.push('/user/${widget.userId}/followers'),
                       child: Column(
                         children: [
                           Text(

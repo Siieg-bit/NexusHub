@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/services/media_upload_service.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../core/utils/responsive.dart';
 
@@ -26,6 +28,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
   bool _bioPreviewMode = false;
   late TabController _bioTabController;
 
+  // FIX Bug #4: FocusNode persistente para o campo de bio
+  final FocusNode _bioFocusNode = FocusNode();
+
+  // FIX Bug #5: Estado do avatar
+  String? _avatarUrl;
+  bool _isUploadingAvatar = false;
+
   @override
   void initState() {
     super.initState();
@@ -33,6 +42,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
     _nicknameController = TextEditingController(text: user?.nickname ?? '');
     _bioController = TextEditingController(text: user?.bio ?? '');
     _aminoIdController = TextEditingController(text: user?.aminoId ?? '');
+    _avatarUrl = user?.iconUrl;
     _bioTabController = TabController(length: 2, vsync: this);
     _bioTabController.addListener(() {
       setState(() => _bioPreviewMode = _bioTabController.index == 1);
@@ -45,6 +55,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
     _bioController.dispose();
     _aminoIdController.dispose();
     _bioTabController.dispose();
+    _bioFocusNode.dispose();
     super.dispose();
   }
 
@@ -56,12 +67,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
       final aminoId = _aminoIdController.text.trim();
-      await SupabaseService.table('profiles').update({
+      final updateData = <String, dynamic>{
         'nickname': _nicknameController.text.trim(),
         'bio': _bioController.text.trim(),
         // amino_id tem UNIQUE constraint — enviar null se vazio para evitar violação
         'amino_id': aminoId.isEmpty ? null : aminoId,
-      }).eq('id', userId);
+      };
+      // Incluir avatar se foi alterado
+      if (_avatarUrl != null) {
+        updateData['icon_url'] = _avatarUrl;
+      }
+      await SupabaseService.table('profiles').update(updateData).eq('id', userId);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -83,6 +99,28 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
     }
   }
 
+  /// FIX Bug #5: Upload de avatar via MediaUploadService
+  Future<void> _pickAndUploadAvatar() async {
+    setState(() => _isUploadingAvatar = true);
+    try {
+      final url = await MediaUploadService.uploadAvatar();
+      if (url != null && mounted) {
+        setState(() => _avatarUrl = url);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Erro ao fazer upload da foto.'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUploadingAvatar = false);
+    }
+  }
+
   /// Insere formatação Markdown no campo de bio.
   void _applyFormat(String prefix, String suffix, {String placeholder = 'texto'}) {
     final ctrl = _bioController;
@@ -100,6 +138,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
       selection: TextSelection.collapsed(
           offset: sel.isValid ? sel.start + replacement.length : newText.length),
     );
+    // FIX Bug #4: Re-focar o campo de bio após aplicar formatação
+    _bioFocusNode.requestFocus();
   }
 
   @override
@@ -150,59 +190,76 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Avatar
+              // Avatar — FIX Bug #5: GestureDetector com upload
               Center(
-                child: Stack(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppTheme.primaryColor.withValues(alpha: 0.2),
-                            blurRadius: 12,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                      ),
-                      child: CircleAvatar(
-                        radius: 50,
-                        backgroundColor: context.surfaceColor,
-                        child: Text(
-                          (user?.nickname ?? '?')[0].toUpperCase(),
-                          style: TextStyle(
-                            fontSize: r.fs(36),
-                            fontWeight: FontWeight.w800,
-                            color: AppTheme.primaryColor,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        padding: EdgeInsets.all(r.s(8)),
+                child: GestureDetector(
+                  onTap: _isUploadingAvatar ? null : _pickAndUploadAvatar,
+                  child: Stack(
+                    children: [
+                      Container(
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [AppTheme.primaryColor, AppTheme.accentColor],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
                           shape: BoxShape.circle,
-                          border: Border.all(
-                            color: context.scaffoldBg,
-                            width: r.s(3),
-                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                              blurRadius: 12,
+                              spreadRadius: 2,
+                            ),
+                          ],
                         ),
-                        child: Icon(
-                          Icons.camera_alt_rounded,
-                          color: Colors.white,
-                          size: r.s(18),
+                        child: CircleAvatar(
+                          radius: 50,
+                          backgroundColor: context.surfaceColor,
+                          backgroundImage: _avatarUrl != null && _avatarUrl!.isNotEmpty
+                              ? CachedNetworkImageProvider(_avatarUrl!)
+                              : null,
+                          child: _avatarUrl == null || _avatarUrl!.isEmpty
+                              ? Text(
+                                  (user?.nickname ?? '?')[0].toUpperCase(),
+                                  style: TextStyle(
+                                    fontSize: r.fs(36),
+                                    fontWeight: FontWeight.w800,
+                                    color: AppTheme.primaryColor,
+                                  ),
+                                )
+                              : null,
                         ),
                       ),
-                    ),
-                  ],
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          padding: EdgeInsets.all(r.s(8)),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: context.scaffoldBg,
+                              width: r.s(3),
+                            ),
+                          ),
+                          child: _isUploadingAvatar
+                              ? SizedBox(
+                                  width: r.s(18),
+                                  height: r.s(18),
+                                  child: const CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  ),
+                                )
+                              : Icon(
+                                  Icons.camera_alt_rounded,
+                                  color: Colors.white,
+                                  size: r.s(18),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               SizedBox(height: r.s(32)),
@@ -290,9 +347,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
             child: TabBarView(
               controller: _bioTabController,
               children: [
-                // Aba Editar
+                // Aba Editar — FIX Bug #4: focusNode persistente
                 TextField(
                   controller: _bioController,
+                  focusNode: _bioFocusNode,
                   maxLines: null,
                   expands: true,
                   maxLength: 500,
@@ -394,13 +452,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
         children: buttons
             .map((b) => Tooltip(
                   message: b.tooltip,
-                  child: InkWell(
-                    onTap: b.onTap,
-                    borderRadius: BorderRadius.circular(r.s(6)),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: r.s(8)),
-                      child: Icon(b.icon,
-                          size: r.s(18), color: Colors.grey[400]),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: b.onTap,
+                      borderRadius: BorderRadius.circular(r.s(6)),
+                      splashColor: AppTheme.primaryColor.withValues(alpha: 0.2),
+                      highlightColor: AppTheme.primaryColor.withValues(alpha: 0.1),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: r.s(8)),
+                        child: Icon(b.icon,
+                            size: r.s(18), color: Colors.grey[400]),
+                      ),
                     ),
                   ),
                 ))

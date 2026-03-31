@@ -242,10 +242,11 @@ class _FollowButtonState extends State<_FollowButton> {
         // Adicionar reputação por seguir alguém (best-effort)
         try {
           await SupabaseService.rpc('add_reputation', params: {
-            'p_community_id': null,
             'p_user_id': currentUserId,
-            'p_action': 'follow',
-            'p_source_id': widget.targetUserId,
+            'p_community_id': null,
+            'p_action_type': 'follow_user',
+            'p_raw_amount': 1,
+            'p_reference_id': widget.targetUserId,
           });
         } catch (e) {
           debugPrint('[followers_screen] Erro: $e');

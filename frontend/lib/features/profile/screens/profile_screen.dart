@@ -369,7 +369,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       Expanded(
                         child: GestureDetector(
                           onTap: () => context
-                              .push('/followers/${widget.userId}'),
+                              .push('/user/${widget.userId}/followers'),
                           child: Container(
                             padding:
                                 EdgeInsets.symmetric(vertical: r.s(14)),
@@ -409,7 +409,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       Expanded(
                         child: GestureDetector(
                           onTap: () => context
-                              .push('/following/${widget.userId}'),
+                              .push('/user/${widget.userId}/followers?tab=following'),
                           child: Container(
                             padding:
                                 EdgeInsets.symmetric(vertical: r.s(14)),
@@ -489,7 +489,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   padding: EdgeInsets.symmetric(
                       horizontal: r.s(16), vertical: r.s(8)),
                   child: GestureDetector(
-                    onTap: () => context.push('/store'),
+                    onTap: () => context.go('/store'),
                     child: Container(
                       padding: EdgeInsets.symmetric(
                           horizontal: r.s(14), vertical: r.s(12)),

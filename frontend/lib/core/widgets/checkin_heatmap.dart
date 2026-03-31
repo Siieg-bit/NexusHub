@@ -218,7 +218,7 @@ class CheckinHeatmap extends StatelessWidget {
           // ── Stats Row ──
           Row(
             children: [
-              Expanded(
+              Flexible(
                 child: _StatCard(
                   icon: Icons.local_fire_department_rounded,
                   label: 'Streak Atual',
@@ -227,7 +227,7 @@ class CheckinHeatmap extends StatelessWidget {
                 ),
               ),
               SizedBox(width: r.s(8)),
-              Expanded(
+              Flexible(
                 child: _StatCard(
                   icon: Icons.emoji_events_rounded,
                   label: 'Maior Streak',
@@ -236,7 +236,7 @@ class CheckinHeatmap extends StatelessWidget {
                 ),
               ),
               SizedBox(width: r.s(8)),
-              Expanded(
+              Flexible(
                 child: _StatCard(
                   icon: Icons.calendar_today_rounded,
                   label: 'Total',
@@ -316,6 +316,7 @@ class _StatCard extends StatelessWidget {
         border: Border.all(color: color.withValues(alpha: 0.15)),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, color: color, size: r.s(18)),
           SizedBox(height: r.s(4)),
@@ -326,6 +327,8 @@ class _StatCard extends StatelessWidget {
               fontWeight: FontWeight.w800,
               fontSize: r.fs(13),
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 2),
           Text(
@@ -336,6 +339,8 @@ class _StatCard extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
             textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
