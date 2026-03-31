@@ -111,6 +111,18 @@ final userPostsProvider =
   }).toList();
 });
 
+/// Provider para stories do usuário (tabela stories, NÃO posts).
+final userStoriesProvider =
+    FutureProvider.family<List<Map<String, dynamic>>, String>((ref, userId) async {
+  final response = await SupabaseService.table('stories')
+      .select('*, profiles!stories_author_id_fkey(id, nickname, icon_url)')
+      .eq('author_id', userId)
+      .eq('is_active', true)
+      .order('created_at', ascending: false)
+      .limit(30);
+  return List<Map<String, dynamic>>.from(response as List? ?? []);
+});
+
 /// Provider para comunidades vinculadas (Linked Communities) de qualquer usuário.
 final userLinkedCommunitiesProvider =
     FutureProvider.family<List<CommunityModel>, String>((ref, userId) async {

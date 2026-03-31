@@ -111,7 +111,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
         return Scaffold(
           backgroundColor: context.scaffoldBg,
-          body: NestedScrollView(
+          body: RefreshIndicator(
+            color: AppTheme.primaryColor,
+            onRefresh: () async {
+              ref.invalidate(userProfileProvider(widget.userId));
+              ref.invalidate(equippedItemsProvider(widget.userId));
+              await Future.delayed(const Duration(milliseconds: 300));
+            },
+            child: NestedScrollView(
             headerSliverBuilder: (context, innerBoxIsScrolled) => [
               // ================================================================
               // TOP BAR
@@ -614,6 +621,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               ],
             ),
           ),
+          ), // RefreshIndicator
         );
       },
     );

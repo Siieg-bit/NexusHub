@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -56,6 +57,27 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   final _commentController = TextEditingController();
   final _commentFocusNode = FocusNode();
   bool _isSending = false;
+  bool _viewRecorded = false;
+
+  /// Incrementa views_count uma única vez por abertura da tela.
+  Future<void> _recordView() async {
+    if (_viewRecorded) return;
+    _viewRecorded = true;
+    try {
+      // Incremento atômico via raw rpc (sem RPC dedicada, usamos update direto)
+      // Supabase não suporta increment inline, então buscamos o valor atual e incrementamos
+      final row = await SupabaseService.table('posts')
+          .select('views_count')
+          .eq('id', widget.postId)
+          .maybeSingle();
+      final current = (row?['views_count'] as int?) ?? 0;
+      await SupabaseService.table('posts')
+          .update({'views_count': current + 1})
+          .eq('id', widget.postId);
+    } catch (e) {
+      debugPrint('[NexusHub] Erro ao registrar visualização: $e');
+    }
+  }
 
   @override
   void dispose() {
@@ -67,25 +89,50 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   Future<void> _sendComment() async {
     if (_commentController.text.trim().isEmpty) return;
 
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Você precisa estar logado para comentar.')),
+        );
+      }
+      return;
+    }
+
     setState(() => _isSending = true);
     try {
       // Buscar community_id do post para reputação
-      final postData = ref.read(postDetailProvider(widget.postId)).valueOrNull;
-      final communityId = postData?.communityId;
+      var postData = ref.read(postDetailProvider(widget.postId)).valueOrNull;
+      String? communityId = postData?.communityId;
+
+      // Fallback: buscar community_id diretamente se o provider não carregou
+      if (communityId == null) {
+        try {
+          final row = await SupabaseService.table('posts')
+              .select('community_id')
+              .eq('id', widget.postId)
+              .maybeSingle();
+          communityId = row?['community_id'] as String?;
+        } catch (_) {}
+      }
 
       await SupabaseService.rpc('create_comment_with_reputation', params: {
         'p_community_id': communityId,
-        'p_author_id': SupabaseService.currentUserId,
+        'p_author_id': userId,
         'p_content': _commentController.text.trim(),
         'p_post_id': widget.postId,
       });
       if (!mounted) return;
       _commentController.clear();
+      _commentFocusNode.unfocus();
       ref.invalidate(postCommentsProvider(widget.postId));
+      // Atualizar contagem de comentários no post
+      ref.invalidate(postDetailProvider(widget.postId));
     } catch (e) {
+      debugPrint('[NexusHub] Erro ao comentar: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao comentar. Tente novamente.')),
+          SnackBar(content: Text('Erro ao comentar: ${e.toString().replaceAll('Exception: ', '')}')),
         );
       }
     } finally {
@@ -403,7 +450,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             style: const TextStyle(color: AppTheme.errorColor),
           ),
         ),
-        data: (post) => Column(
+        data: (post) {
+          // Registrar visualização uma única vez
+          if (!_viewRecorded) _recordView();
+          return Column(
           children: [
             Expanded(
               child: RefreshIndicator(
@@ -824,7 +874,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               ),
             ),
           ],
-        ),
+        );
+        },
       ),
     );
   }

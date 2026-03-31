@@ -55,10 +55,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
+      final aminoId = _aminoIdController.text.trim();
       await SupabaseService.table('profiles').update({
         'nickname': _nicknameController.text.trim(),
         'bio': _bioController.text.trim(),
-        'amino_id': _aminoIdController.text.trim(),
+        // amino_id tem UNIQUE constraint — enviar null se vazio para evitar violação
+        'amino_id': aminoId.isEmpty ? null : aminoId,
       }).eq('id', userId);
 
       if (mounted) {
@@ -70,7 +72,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao salvar. Tente novamente.')),
+          SnackBar(
+          content: Text('Erro ao salvar: ${e.toString().contains('duplicate') ? 'Esse Amino ID já está em uso.' : 'Tente novamente.'}'),
+          backgroundColor: AppTheme.errorColor,
+        ),
         );
       }
     } finally {

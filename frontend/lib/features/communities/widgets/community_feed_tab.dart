@@ -30,7 +30,10 @@ class CommunityFeedTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final r = context.r;
-    final feedAsync = ref.watch(communityFeedProvider(communityId));
+    // Destaque usa provider filtrado por is_featured; Recentes usa o feed geral
+    final feedAsync = isFeatured
+        ? ref.watch(communityFeaturedFeedProvider(communityId))
+        : ref.watch(communityFeedProvider(communityId));
 
     return feedAsync.when(
       loading: () => Center(

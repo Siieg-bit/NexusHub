@@ -44,6 +44,12 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
   late AnimationController _animController;
   bool _isOpen = false;
 
+  /// Largura da zona de borda esquerda que detecta swipe para abrir (px).
+  static const double _edgeDragWidth = 24.0;
+
+  /// Se o drag atual começou na borda esquerda.
+  bool _edgeDragActive = false;
+
   bool get isOpen => _isOpen;
 
   @override
@@ -77,6 +83,35 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
     } else {
       open();
     }
+  }
+
+  void _onHorizontalDragStart(DragStartDetails details) {
+    // Ativa edge-drag se o toque começou na faixa esquerda da tela
+    _edgeDragActive = !_isOpen && details.globalPosition.dx <= _edgeDragWidth;
+  }
+
+  void _onHorizontalDragUpdate(DragUpdateDetails details) {
+    final delta = details.primaryDelta ?? 0;
+    if (_isOpen || _edgeDragActive) {
+      _animController.value += delta / widget.maxSlide;
+    }
+  }
+
+  void _onHorizontalDragEnd(DragEndDetails details) {
+    if (_isOpen || _edgeDragActive) {
+      final velocity = details.primaryVelocity ?? 0;
+      // Swipe rápido para a direita → abrir; para a esquerda → fechar
+      if (velocity > 300) {
+        open();
+      } else if (velocity < -300) {
+        close();
+      } else if (_animController.value > 0.5) {
+        open();
+      } else {
+        close();
+      }
+    }
+    _edgeDragActive = false;
   }
 
   @override
@@ -121,17 +156,9 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
               alignment: Alignment.centerLeft,
               child: GestureDetector(
                 onTap: _isOpen ? close : null,
-                onHorizontalDragUpdate: (details) {
-                  final delta = details.primaryDelta ?? 0;
-                  _animController.value += delta / widget.maxSlide;
-                },
-                onHorizontalDragEnd: (details) {
-                  if (_animController.value > 0.5) {
-                    open();
-                  } else {
-                    close();
-                  }
-                },
+                onHorizontalDragStart: _onHorizontalDragStart,
+                onHorizontalDragUpdate: _onHorizontalDragUpdate,
+                onHorizontalDragEnd: _onHorizontalDragEnd,
                 child: AbsorbPointer(
                   absorbing: _isOpen,
                   child: ClipRRect(

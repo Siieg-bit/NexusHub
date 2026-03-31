@@ -36,7 +36,7 @@ final leaderboardProvider =
       await SupabaseService.rpc('get_community_leaderboard', params: {
     'p_community_id': params.communityId,
     'p_limit': 50,
-    'p_period': params.period,
+    // NOTA: A RPC não aceita p_period. O filtro de período é aplicado client-side.
   });
 
   if (result == null) return [];

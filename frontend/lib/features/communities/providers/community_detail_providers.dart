@@ -35,6 +35,27 @@ final communityFeedProvider =
   }).toList();
 });
 
+/// Provider para posts em Destaque (is_featured = true).
+final communityFeaturedFeedProvider =
+    FutureProvider.family<List<PostModel>, String>((ref, communityId) async {
+  final response = await SupabaseService.table('posts')
+      .select('*, profiles!posts_author_id_fkey(*)')
+      .eq('community_id', communityId)
+      .eq('status', 'ok')
+      .eq('is_featured', true)
+      .order('is_pinned', ascending: false)
+      .order('created_at', ascending: false)
+      .limit(30);
+
+  return (response as List? ?? []).map((e) {
+    final map = Map<String, dynamic>.from(e);
+    if (map['profiles'] != null) {
+      map['author'] = map['profiles'];
+    }
+    return PostModel.fromJson(map);
+  }).toList();
+});
+
 final communityMembersProvider =
     FutureProvider.family<List<Map<String, dynamic>>, String>(
         (ref, communityId) async {
