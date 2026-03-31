@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/models/user_model.dart';
@@ -358,7 +359,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               ),
 
               // ================================================================
-              // FOLLOWERS / FOLLOWING
+              // FOLLOWING / FOLLOWERS
               // ================================================================
               SliverToBoxAdapter(
                 child: Padding(
@@ -366,46 +367,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       horizontal: r.s(16), vertical: r.s(12)),
                   child: Row(
                     children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => context
-                              .push('/user/${widget.userId}/followers'),
-                          child: Container(
-                            padding:
-                                EdgeInsets.symmetric(vertical: r.s(14)),
-                            decoration: BoxDecoration(
-                              color:
-                                  Colors.white.withValues(alpha: 0.06),
-                              borderRadius:
-                                  BorderRadius.circular(r.s(12)),
-                              border: Border.all(
-                                color: Colors.white
-                                    .withValues(alpha: 0.08),
-                              ),
-                            ),
-                            child: Column(
-                              children: [
-                                Text(
-                                  _formatCount(user.followersCount),
-                                  style: TextStyle(
-                                    color: context.textPrimary,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: r.fs(20),
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  'Followers',
-                                  style: TextStyle(
-                                      color: Colors.grey[500],
-                                      fontSize: r.fs(12)),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: r.s(12)),
                       Expanded(
                         child: GestureDetector(
                           onTap: () => context
@@ -445,6 +406,46 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           ),
                         ),
                       ),
+                      SizedBox(width: r.s(12)),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => context
+                              .push('/user/${widget.userId}/followers'),
+                          child: Container(
+                            padding:
+                                EdgeInsets.symmetric(vertical: r.s(14)),
+                            decoration: BoxDecoration(
+                              color:
+                                  Colors.white.withValues(alpha: 0.06),
+                              borderRadius:
+                                  BorderRadius.circular(r.s(12)),
+                              border: Border.all(
+                                color: Colors.white
+                                    .withValues(alpha: 0.08),
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                Text(
+                                  _formatCount(user.followersCount),
+                                  style: TextStyle(
+                                    color: context.textPrimary,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: r.fs(20),
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Followers',
+                                  style: TextStyle(
+                                      color: Colors.grey[500],
+                                      fontSize: r.fs(12)),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -458,12 +459,33 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   padding: EdgeInsets.symmetric(
                       horizontal: r.s(16), vertical: r.s(4)),
                   child: user.bio.isNotEmpty
-                      ? Text(
-                          user.bio,
-                          style: TextStyle(
-                            color: Colors.grey[300],
-                            height: 1.5,
-                            fontSize: r.fs(14),
+                      ? MarkdownBody(
+                          data: user.bio,
+                          styleSheet: MarkdownStyleSheet(
+                            p: TextStyle(
+                              color: Colors.grey[300],
+                              height: 1.5,
+                              fontSize: r.fs(14),
+                            ),
+                            strong: TextStyle(
+                              color: Colors.grey[300],
+                              fontWeight: FontWeight.w700,
+                              fontSize: r.fs(14),
+                            ),
+                            em: TextStyle(
+                              color: Colors.grey[300],
+                              fontStyle: FontStyle.italic,
+                              fontSize: r.fs(14),
+                            ),
+                            del: TextStyle(
+                              color: Colors.grey[500],
+                              decoration: TextDecoration.lineThrough,
+                              fontSize: r.fs(14),
+                            ),
+                            a: const TextStyle(
+                              color: AppTheme.primaryColor,
+                              decoration: TextDecoration.underline,
+                            ),
                           ),
                         )
                       : isOwnProfile

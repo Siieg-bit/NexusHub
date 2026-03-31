@@ -71,11 +71,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         // Carregar perfil do usuário
         try {
           final profile = await SupabaseService.table('profiles')
-              .select('avatar_url, coins_count')
+              .select('icon_url, coins')
               .eq('id', userId)
               .single();
-          _avatarUrl = profile['avatar_url'] as String?;
-          _coins = profile['coins_count'] as int? ?? 0;
+          _avatarUrl = profile['icon_url'] as String?;
+          _coins = profile['coins'] as int? ?? 0;
         } catch (e) {
           debugPrint('[explore_screen] Erro: $e');
         }

@@ -114,14 +114,19 @@ final userPostsProvider =
 /// Provider para stories do usuário (tabela stories, NÃO posts).
 final userStoriesProvider =
     FutureProvider.family<List<Map<String, dynamic>>, String>((ref, userId) async {
-  final response = await SupabaseService.table('stories')
-      .select('*, profiles!author_id(id, nickname, icon_url)')
-      .eq('author_id', userId)
-      .eq('is_active', true)
-      .gte('expires_at', DateTime.now().toUtc().toIso8601String())
-      .order('created_at', ascending: false)
-      .limit(30);
-  return List<Map<String, dynamic>>.from(response as List? ?? []);
+  try {
+    final response = await SupabaseService.table('stories')
+        .select()
+        .eq('author_id', userId)
+        .eq('is_active', true)
+        .gte('expires_at', DateTime.now().toUtc().toIso8601String())
+        .order('created_at', ascending: false)
+        .limit(30);
+    return List<Map<String, dynamic>>.from(response as List? ?? []);
+  } catch (e) {
+    // Tabela stories pode não existir ainda em ambientes sem a migration 024
+    return [];
+  }
 });
 
 /// Provider para comunidades vinculadas (Linked Communities) de qualquer usuário.

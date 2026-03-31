@@ -95,8 +95,15 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
         _activeTabs = tabs;
         _tabController = newController;
       });
-      // Dispose do antigo APÓS o setState, fora do closure
-      oldController.dispose();
+      // Dispose do antigo no próximo frame para evitar uso após dispose
+      // durante o rebuild do widget tree
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        try {
+          oldController.dispose();
+        } catch (_) {
+          // Controller já foi disposed ou não está mais válido
+        }
+      });
     } catch (e) {
       debugPrint('[CommunityDetail] TabController rebuild error: $e');
     }

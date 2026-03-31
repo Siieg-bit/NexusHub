@@ -26,6 +26,24 @@ final postDetailProvider =
 
   final map = Map<String, dynamic>.from(response);
   if (map['profiles'] != null) map['author'] = map['profiles'];
+
+  // Verificar se o usuário atual curtiu este post
+  final userId = SupabaseService.currentUserId;
+  if (userId != null) {
+    try {
+      final likeCheck = await SupabaseService.table('likes')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('post_id', postId)
+          .maybeSingle();
+      map['is_liked'] = likeCheck != null;
+    } catch (_) {
+      map['is_liked'] = false;
+    }
+  } else {
+    map['is_liked'] = false;
+  }
+
   return PostModel.fromJson(map);
 });
 
@@ -1087,6 +1105,24 @@ class _CommentTileState extends State<_CommentTile> {
     super.initState();
     _isLiked = false;
     _likesCount = widget.comment.likesCount;
+    _checkIfLiked();
+  }
+
+  Future<void> _checkIfLiked() async {
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) return;
+    try {
+      final res = await SupabaseService.table('likes')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('comment_id', widget.comment.id)
+          .maybeSingle();
+      if (mounted && res != null) {
+        setState(() => _isLiked = true);
+      }
+    } catch (_) {
+      // Silencioso — manter estado padrão
+    }
   }
 
   Future<void> _toggleCommentLike() async {

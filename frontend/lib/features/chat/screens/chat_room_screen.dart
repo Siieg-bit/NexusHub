@@ -63,6 +63,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   bool _realtimeConnected = true;
   bool _isSending = false;
   bool _membershipConfirmed = false;
+  bool _isDisposed = false;
   Map<String, dynamic>? _threadInfo;
   MessageModel? _replyingTo;
   bool _showEmojiPicker = false;
@@ -142,6 +143,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   @override
   void dispose() {
+    _isDisposed = true;
     _messageController.dispose();
     _scrollController.dispose();
     RealtimeService.instance.unsubscribe('chat:${widget.threadId}');
@@ -387,6 +389,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             value: widget.threadId,
           ),
           callback: (payload) async {
+            if (_isDisposed) return;
             try {
               final newMessage = Map<String, dynamic>.from(payload.newRecord);
               if (_messages.any((m) => m.id == newMessage['id'])) return;
@@ -397,16 +400,15 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       .select('id, nickname, icon_url')
                       .eq('id', authorId)
                       .single();
-                  if (!mounted) return;
+                  if (_isDisposed || !mounted) return;
                   newMessage['sender'] = senderData;
                   newMessage['author'] = senderData;
                 }
               } catch (_) {}
+              if (_isDisposed || !mounted) return;
               final message = MessageModel.fromJson(newMessage);
-              if (mounted) {
-                setState(() => _messages.insert(0, message));
-                _scrollToBottom();
-              }
+              setState(() => _messages.insert(0, message));
+              _scrollToBottom();
             } catch (e) {
               debugPrint('Realtime message error: $e');
             }

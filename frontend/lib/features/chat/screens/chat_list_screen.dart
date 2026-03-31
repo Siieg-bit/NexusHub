@@ -79,13 +79,13 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
       final profile = await SupabaseService.table('profiles')
-          .select('avatar_url, coins_count')
+          .select('icon_url, coins')
           .eq('id', userId)
           .single();
       if (mounted) {
         setState(() {
-          _avatarUrl = profile['avatar_url'] as String?;
-          _coins = profile['coins_count'] as int? ?? 0;
+          _avatarUrl = profile['icon_url'] as String?;
+          _coins = profile['coins'] as int? ?? 0;
         });
       }
     } catch (e) {

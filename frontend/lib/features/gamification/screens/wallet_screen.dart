@@ -30,11 +30,11 @@ class _WalletScreenState extends State<WalletScreen> {
       if (userId == null) return;
 
       final profile = await SupabaseService.table('profiles')
-          .select('coins_count')
+          .select('coins')
           .eq('id', userId)
           .single();
 
-      _coins = profile['coins_count'] as int? ?? 0;
+      _coins = profile['coins'] as int? ?? 0;
 
       try {
         final txRes = await SupabaseService.table('coin_transactions')

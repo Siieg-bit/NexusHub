@@ -31,11 +31,11 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
       final userId = SupabaseService.currentUserId;
       if (userId != null) {
         final profile = await SupabaseService.table('profiles')
-            .select('coins_count')
+            .select('coins')
             .eq('id', userId)
             .single();
         if (!mounted) return;
-        _userCoins = profile['coins_count'] as int? ?? 0;
+        _userCoins = profile['coins'] as int? ?? 0;
       }
     } catch (e) {
       debugPrint('[coin_shop_screen] Erro: $e');

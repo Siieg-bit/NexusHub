@@ -159,7 +159,11 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
 
     return Scaffold(
       backgroundColor: context.scaffoldBg,
-      body: NestedScrollView(
+      body: RefreshIndicator(
+        color: AppTheme.primaryColor,
+        backgroundColor: context.surfaceColor,
+        onRefresh: _loadProfile,
+        child: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           // ==================================================================
           // HEADER — Banner + Avatar + Nome + Level + Tags + Editar
@@ -883,6 +887,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           ],
         ),
       ),
+      ), // RefreshIndicator
     );
   }
 

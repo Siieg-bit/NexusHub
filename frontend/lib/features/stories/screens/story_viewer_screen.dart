@@ -219,8 +219,8 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
     final textContent = story['text_content'] as String?;
     final bgColor = story['background_color'] as String? ?? '#000000';
     final username =
-        widget.authorProfile['username'] as String? ?? 'Anônimo';
-    final avatarUrl = widget.authorProfile['avatar_url'] as String?;
+        (widget.authorProfile['nickname'] ?? widget.authorProfile['username']) as String? ?? 'Anônimo';
+    final avatarUrl = (widget.authorProfile['icon_url'] ?? widget.authorProfile['avatar_url']) as String?;
     final createdAt = story['created_at'] as String?;
 
     return Scaffold(

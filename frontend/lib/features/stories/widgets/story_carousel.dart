@@ -32,7 +32,7 @@ class _StoryCarouselState extends State<StoryCarousel> {
     try {
       // Buscar stories ativas e não expiradas, agrupadas por autor
       final res = await SupabaseService.table('stories')
-          .select('*, profiles!author_id(id, username, avatar_url)')
+          .select('*, profiles!author_id(id, nickname, icon_url)')
           .eq('community_id', widget.communityId)
           .eq('is_active', true)
           .gte('expires_at', DateTime.now().toIso8601String())
@@ -169,8 +169,8 @@ class _StoryCarouselState extends State<StoryCarousel> {
 
       final r = context.r;
     final profile = group['profile'] as Map<String, dynamic>?;
-    final username = profile?['username'] as String? ?? '?';
-    final avatarUrl = profile?['avatar_url'] as String?;
+    final username = profile?['nickname'] as String? ?? '?';
+    final avatarUrl = profile?['icon_url'] as String?;
     final hasUnviewed = group['has_unviewed'] as bool? ?? false;
     final stories =
         group['stories'] as List<Map<String, dynamic>>;

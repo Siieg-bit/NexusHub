@@ -762,10 +762,13 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                                               color: Colors.amber, size: r.s(14)),
                                         ),
                                         SizedBox(width: r.s(10)),
-                                        Text('Ranking',
-                                            style: TextStyle(
-                                                color: Colors.white70,
-                                                fontSize: r.fs(13))),
+                                        Expanded(
+                                          child: Text('Ranking',
+                                              style: TextStyle(
+                                                  color: Colors.white70,
+                                                  fontSize: r.fs(13)),
+                                              overflow: TextOverflow.ellipsis),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -798,10 +801,13 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                                               color: Colors.blue, size: r.s(14)),
                                         ),
                                         SizedBox(width: r.s(10)),
-                                        Text('Buscar na Comunidade',
-                                            style: TextStyle(
-                                                color: Colors.white70,
-                                                fontSize: r.fs(13))),
+                                        Expanded(
+                                          child: Text('Buscar na Comunidade',
+                                              style: TextStyle(
+                                                  color: Colors.white70,
+                                                  fontSize: r.fs(13)),
+                                              overflow: TextOverflow.ellipsis),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -835,10 +841,13 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                                                 color: Colors.green, size: r.s(14)),
                                           ),
                                           SizedBox(width: r.s(10)),
-                                          Text('Gerenciar Links',
-                                              style: TextStyle(
-                                                  color: Colors.white70,
-                                                  fontSize: r.fs(13))),
+                                          Expanded(
+                                            child: Text('Gerenciar Links',
+                                                style: TextStyle(
+                                                    color: Colors.white70,
+                                                    fontSize: r.fs(13)),
+                                                overflow: TextOverflow.ellipsis),
+                                          ),
                                         ],
                                       ),
                                     ),

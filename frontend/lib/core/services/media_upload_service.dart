@@ -119,25 +119,37 @@ class MediaUploadService {
   }) async {
     final cropStyle = useCircleCrop ? CropStyle.circle : CropStyle.rectangle;
 
-    final cropped = await ImageCropper().cropImage(
-      sourcePath: file.path,
-      maxWidth: maxWidth,
-      maxHeight: maxHeight,
-      aspectRatio: aspectRatio,
-      uiSettings: [
-        AndroidUiSettings(
-          toolbarTitle: 'Recortar Imagem',
-          toolbarColor: const Color(0xFF6C63FF),
-          toolbarWidgetColor: Colors.white,
-          activeControlsWidgetColor: const Color(0xFF6C63FF),
-          initAspectRatio: CropAspectRatioPreset.original,
-          lockAspectRatio: aspectRatio != null,
-          cropStyle: cropStyle,
-        ),
-      ],
-    );
-    if (cropped == null) return null;
-    return File(cropped.path);
+    try {
+      final cropped = await ImageCropper().cropImage(
+        sourcePath: file.path,
+        maxWidth: maxWidth,
+        maxHeight: maxHeight,
+        aspectRatio: aspectRatio,
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Recortar Imagem',
+            toolbarColor: const Color(0xFF6C63FF),
+            toolbarWidgetColor: Colors.white,
+            activeControlsWidgetColor: const Color(0xFF6C63FF),
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: aspectRatio != null,
+            cropStyle: cropStyle,
+          ),
+          IOSUiSettings(
+            title: 'Recortar Imagem',
+            cancelButtonTitle: 'Cancelar',
+            doneButtonTitle: 'Pronto',
+            aspectRatioLockEnabled: aspectRatio != null,
+          ),
+        ],
+      );
+      if (cropped == null) return null;
+      return File(cropped.path);
+    } catch (e) {
+      debugPrint('MediaUploadService.cropImage error: $e');
+      // Fallback: retornar arquivo original sem crop
+      return file;
+    }
   }
 
   /// Upload de um único arquivo para Supabase Storage

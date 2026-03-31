@@ -43,10 +43,10 @@ class _StoreScreenState extends State<StoreScreen>
       final userId = SupabaseService.currentUserId;
       if (userId != null) {
         final profile = await SupabaseService.table('profiles')
-            .select('coins_count')
+            .select('coins')
             .eq('id', userId)
             .single();
-        _userCoins = profile['coins_count'] as int? ?? 0;
+        _userCoins = profile['coins'] as int? ?? 0;
       }
       final res = await SupabaseService.table('store_items')
           .select()
