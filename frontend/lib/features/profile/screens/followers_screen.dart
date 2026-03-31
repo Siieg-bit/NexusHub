@@ -30,10 +30,15 @@ class _FollowersScreenState extends State<FollowersScreen>
   @override
   void initState() {
     super.initState();
+    // Bug #9 fix: A ordem anterior era [Seguidores(0), Seguindo(1)] mas o
+    // profile_screen exibe os cards na ordem [Following | Followers]. Ao clicar
+    // em 'Following' (esquerda), a tela abria na tab direita (index=1), criando
+    // inconsistência visual. A correção inverte as tabs para [Seguindo(0), Seguidores(1)]
+    // e ajusta o initialIndex: showFollowers=true → index=1, false → index=0.
     _tabController = TabController(
       length: 2,
       vsync: this,
-      initialIndex: widget.showFollowers ? 0 : 1,
+      initialIndex: widget.showFollowers ? 1 : 0,
     );
     _loadData();
   }
@@ -91,8 +96,8 @@ class _FollowersScreenState extends State<FollowersScreen>
           indicatorColor: AppTheme.primaryColor,
           dividerColor: Colors.white.withValues(alpha: 0.05),
           tabs: [
-            Tab(text: 'Seguidores (${_followers.length})'),
             Tab(text: 'Seguindo (${_following.length})'),
+            Tab(text: 'Seguidores (${_followers.length})'),
           ],
         ),
       ),
@@ -105,8 +110,8 @@ class _FollowersScreenState extends State<FollowersScreen>
           : TabBarView(
               controller: _tabController,
               children: [
-                _buildList(_followers, 'follows_follower_id_fkey'),
                 _buildList(_following, 'follows_following_id_fkey'),
+                _buildList(_followers, 'follows_follower_id_fkey'),
               ],
             ),
     );

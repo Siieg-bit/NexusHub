@@ -194,6 +194,21 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     final layoutAsync =
         ref.watch(communityHomeLayoutProvider(widget.communityId));
 
+    // Bug #3 fix: O communityPresenceProvider só era watchado na página "Online"
+    // (~linha 735). O joinChannel só era chamado ao navegar para aquela aba.
+    // Assistir aqui no build principal garante que o canal de presença é
+    // criado e o track() é executado imediatamente ao entrar na tela.
+    // O ref.onDispose do provider cuida do leaveChannel automaticamente.
+    //
+    // Bug #6 fix: Usar select para não causar rebuild do build principal
+    // toda vez que o Set de usuários online muda (eventos de presença
+    // chegam com frequência). O watch aqui serve apenas para instanciar
+    // o provider e disparar o joinChannel — não para consumir o valor.
+    ref.watch(
+      communityPresenceProvider(widget.communityId)
+          .select((_) => null), // ignora o valor; apenas instancia o provider
+    );
+
     return communityAsync.when(
       loading: () => Scaffold(
         backgroundColor: context.scaffoldBg,

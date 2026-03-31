@@ -116,7 +116,7 @@ final userStoriesProvider =
     FutureProvider.family<List<Map<String, dynamic>>, String>((ref, userId) async {
   try {
     final response = await SupabaseService.table('stories')
-        .select()
+        .select('*, profiles!author_id(*)')
         .eq('author_id', userId)
         .eq('is_active', true)
         .gte('expires_at', DateTime.now().toUtc().toIso8601String())

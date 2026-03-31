@@ -146,8 +146,14 @@ class CheckinHeatmap extends StatelessWidget {
           SizedBox(height: r.s(16)),
 
           // ── Heatmap Grid ──
-          SizedBox(
-            height: 7 * (r.s(12) + 2), // 7 rows * (cell height + gap)
+          // Bug #2 fix: O SizedBox usava r.s(12)+2 para a célula mas os labels
+          // usavam r.s(14), causando overflow de ~1.4px em dispositivos com
+          // alta densidade. A correção alinha a altura do SizedBox com o
+          // tamanho real dos labels (r.s(14)) e envolve em ClipRect para
+          // conter qualquer arredondamento residual de subpixel.
+          ClipRect(
+            child: SizedBox(
+            height: 7 * r.s(14), // 7 rows * label height (alinhado com os labels)
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               reverse: true, // Scroll começa no final (semana atual)
@@ -188,6 +194,7 @@ class CheckinHeatmap extends StatelessWidget {
               ),
             ),
           ),
+          ), // ClipRect
 
           SizedBox(height: r.s(12)),
 

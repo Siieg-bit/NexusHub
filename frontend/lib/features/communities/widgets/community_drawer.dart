@@ -150,11 +150,23 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
     // Bug #7 fix: O Drawer não deve definir width próprio — o AminoDrawerController
     // já posiciona este widget em um slot de maxSlide (280px). Definir 85% da tela
     // causava overflow quando 85% > 280px.
-    return Container(
-      color: context.scaffoldBg,
-      child: SafeArea(
-        child: Row(
-          children: [
+    //
+    // Bug #1/#5 fix: O Row (56px sidebar + Expanded painel) pode ultrapassar
+    // a largura do slot em telas com alta densidade (devicePixelRatio > 1) porque
+    // r.s(56) arredonda para cima. Envolver em LayoutBuilder + ConstrainedBox
+    // garante que o Row nunca ultrapasse a largura disponibilizada pelo controller.
+    return LayoutBuilder(
+      builder: (context, outerConstraints) {
+        final availableWidth = outerConstraints.maxWidth.isFinite
+            ? outerConstraints.maxWidth
+            : MediaQuery.of(context).size.width * 0.85;
+        return ConstrainedBox(
+          constraints: BoxConstraints.tightFor(width: availableWidth),
+          child: Container(
+            color: context.scaffoldBg,
+            child: SafeArea(
+              child: Row(
+                children: [
             // ==============================================================
             // SIDEBAR ESQUERDA — Lista de comunidades do usuário (56px)
             // ==============================================================
@@ -979,9 +991,12 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
               ),
             ),
           ],
+            ),
+          ),
         ),
-      ),
-    );
+      );
+    },
+  );
   }
 }
 

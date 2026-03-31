@@ -25,6 +25,7 @@ import '../widgets/chat_media_sheet.dart';
 import '../widgets/chat_message_actions.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/utils/media_utils.dart';
+import 'chat_list_screen.dart' show chatListProvider, chatCommunitiesProvider;
 
 /// =============================================================================
 /// ChatRoomScreen — Tela principal de chat.
@@ -763,6 +764,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       }
       _membershipConfirmed = false;
       if (mounted) {
+        // Bug #4 fix: Invalidar chatListProvider após sair do chat para que
+        // a lista de chats reflita o estado real (sem o chat saído).
+        // chatListProvider e chatCommunitiesProvider são definidos localmente
+        // no chat_list_screen.dart, mas são acessíveis via ref.
+        try {
+          ref.invalidate(chatListProvider);
+          ref.invalidate(chatCommunitiesProvider);
+        } catch (_) {}
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Você saiu do chat.'),
@@ -1772,6 +1781,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       if (mounted) {
                         setState(() => _isSending = false);
                         if (_membershipConfirmed) {
+                          // Bug #4 fix: Invalidar chatListProvider após join
+                          // para que a lista de chats inclua este chat.
+                          try {
+                            ref.invalidate(chatListProvider);
+                            ref.invalidate(chatCommunitiesProvider);
+                          } catch (_) {}
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('Você entrou no chat!'),
@@ -1810,7 +1825,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               top: false,
               child: VoiceRecorder(
                 onRecordingComplete: (filePath, duration) async {
-                  if (!mounted) return;
+                  // Bug #7 fix: checar _isDisposed além de mounted para evitar
+                  // setState/callbacks em widget já descartado (lifecycle defunct).
+                  if (_isDisposed || !mounted) return;
                   setState(() => _isRecordingVoice = false);
                   try {
                     final file = File(filePath);
@@ -1819,7 +1836,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     await SupabaseService.client.storage
                         .from('media')
                         .upload(storagePath, file);
-                    if (!mounted) return;
+                    if (_isDisposed || !mounted) return;
                     final url = SupabaseService.client.storage
                         .from('media')
                         .getPublicUrl(storagePath);
@@ -1830,7 +1847,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       mediaDuration: duration,
                     );
                   } catch (e) {
-                    if (mounted) {
+                    if (!_isDisposed && mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text('Erro ao enviar áudio. Tente novamente.'),
@@ -1842,7 +1859,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   }
                 },
                 onCancel: () {
-                  if (!mounted) return;
+                  if (_isDisposed || !mounted) return;
                   setState(() => _isRecordingVoice = false);
                 },
               ),

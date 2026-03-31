@@ -52,10 +52,17 @@ class _PostCardState extends State<PostCard>
   void didUpdateWidget(covariant PostCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.post.id != widget.post.id) {
+      // Post diferente: sincronizar tudo
       _post = widget.post;
       _selectedPollOption = null;
       _selectedQuizOption = null;
       _quizAnswered = false;
+    } else if (oldWidget.post.isLiked != widget.post.isLiked ||
+               oldWidget.post.likesCount != widget.post.likesCount) {
+      // Bug #8 fix: Mesmo post, mas is_liked ou likesCount mudou no provider
+      // (ex: refresh do feed após navegar de volta). Sincronizar estado local
+      // sem resetar as seleções de poll/quiz.
+      _post = widget.post;
     }
   }
 
