@@ -138,10 +138,12 @@ jobs:
         run: flutter build apk --debug
 
       - name: Upload APK
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: nexushub-debug-apk
           path: frontend/build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: warn
 
   # ── Build Android (AAB para Play Store) ──
   build-release:
@@ -198,10 +200,12 @@ jobs:
         run: flutter build appbundle --release
 
       - name: Upload AAB
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: nexushub-release-aab
           path: frontend/build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: warn
 
   # ── Deploy Edge Functions ──
   deploy-functions:
