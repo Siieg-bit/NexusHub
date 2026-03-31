@@ -9,6 +9,7 @@ import '../../../core/models/user_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../providers/community_shared_providers.dart';
 import '../../../core/utils/responsive.dart'; // para checkInStatusProvider
+import '../../../core/widgets/amino_drawer.dart';
 
 /// Drawer estilo Amino Apps — réplica pixel-perfect.
 /// Estrutura: sidebar de comunidades (56px) + painel principal (flex).
@@ -215,11 +216,21 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                                 return GestureDetector(
                                   onTap: () {
                                     if (!isCurrentCommunity) {
-                                      Navigator.pop(context);
+                                      // Fechar o drawer primeiro
+                                      final drawerController =
+                                          AminoDrawerController.of(context);
+                                      if (drawerController != null &&
+                                          drawerController.isOpen) {
+                                        drawerController.close();
+                                      }
+                                      // Usar pushReplacement em vez de go
+                                      // para evitar tear-down completo da
+                                      // route stack que causa Duplicate
+                                      // GlobalKey<NavigatorState>.
                                       WidgetsBinding.instance
                                           .addPostFrameCallback((_) {
                                         if (context.mounted) {
-                                          context.go(
+                                          context.pushReplacement(
                                               '/community/${community.id}');
                                         }
                                       });

@@ -116,7 +116,7 @@ class _WalletScreenState extends State<WalletScreen> {
                                 ),
                               ),
                               TextButton(
-                                onPressed: () => context.push('/store/coins'),
+                                onPressed: () => context.push('/coin-shop'),
                                 child: Text(
                                   'Comprar',
                                   style: TextStyle(
@@ -260,7 +260,7 @@ class _WalletScreenState extends State<WalletScreen> {
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: r.s(16)),
                           child: GestureDetector(
-                            onTap: () => context.push('/store/coins'),
+                            onTap: () => context.push('/coin-shop'),
                             child: Container(
                               width: double.infinity,
                               padding: EdgeInsets.symmetric(vertical: r.s(14)),

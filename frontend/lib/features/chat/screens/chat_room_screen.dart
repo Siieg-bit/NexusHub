@@ -62,6 +62,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   bool _isLoading = true;
   bool _realtimeConnected = true;
   bool _isSending = false;
+  bool _membershipConfirmed = false;
   Map<String, dynamic>? _threadInfo;
   MessageModel? _replyingTo;
   bool _showEmojiPicker = false;
@@ -93,13 +94,36 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   Future<void> _ensureMembership() async {
     try {
       final userId = SupabaseService.currentUserId;
-      if (userId == null) return;
-      await SupabaseService.rpc('join_public_chat_with_reputation', params: {
+      if (userId == null) {
+        debugPrint('[ChatRoom] _ensureMembership: userId is null');
+        return;
+      }
+      final result = await SupabaseService.rpc('join_public_chat_with_reputation', params: {
         'p_thread_id': widget.threadId,
         'p_user_id': userId,
       });
+      // RPC retorna {joined: true} ou {joined: false, reason: 'already_member'}
+      // Ambos significam que o usuário é membro agora.
+      _membershipConfirmed = true;
+      debugPrint('[ChatRoom] Membership confirmed: $result');
     } catch (e) {
-      debugPrint('[ChatRoom] Membership check: $e');
+      debugPrint('[ChatRoom] Membership check FAILED: $e');
+      // Tentar verificar membership diretamente como fallback
+      try {
+        final userId = SupabaseService.currentUserId;
+        if (userId == null) return;
+        final check = await SupabaseService.table('chat_members')
+            .select('id')
+            .eq('thread_id', widget.threadId)
+            .eq('user_id', userId)
+            .maybeSingle();
+        if (check != null) {
+          _membershipConfirmed = true;
+          debugPrint('[ChatRoom] Membership confirmed via direct check');
+        }
+      } catch (e2) {
+        debugPrint('[ChatRoom] Fallback membership check also failed: $e2');
+      }
     }
   }
 
@@ -480,6 +504,22 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     _messageController.clear();
     setState(() => _isSending = true);
 
+    // Se membership não foi confirmada, tentar novamente antes de enviar
+    if (!_membershipConfirmed) {
+      await _ensureMembership();
+      if (!_membershipConfirmed && mounted) {
+        setState(() => _isSending = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Não foi possível confirmar sua participação neste chat.'),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+    }
+
     try {
       final mappedType = _mapMessageType(type);
 
@@ -520,10 +560,20 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         'p_reply_to': replyToId,
       });
     } catch (e) {
+      debugPrint('[ChatRoom] Send message error: $e');
       if (mounted) {
+        // Mostrar mensagem de erro mais específica
+        String errorMsg = 'Erro ao enviar. Tente novamente.';
+        final errorStr = e.toString();
+        if (errorStr.contains('not a member')) {
+          errorMsg = 'Você não é membro deste chat. Tente sair e entrar novamente.';
+          _membershipConfirmed = false; // Resetar para re-tentar join
+        } else if (errorStr.contains('null') || errorStr.contains('session')) {
+          errorMsg = 'Sessão expirada. Faça login novamente.';
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao enviar. Tente novamente.'),
+            content: Text(errorMsg),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),

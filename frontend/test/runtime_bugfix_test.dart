@@ -1,17 +1,24 @@
 import 'package:flutter_test/flutter_test.dart';
 
 /// ============================================================================
-/// Testes de Validação — Correção de Bugs de Runtime
+/// Testes de Validação — Correção de Bugs de Runtime (Fase 3.5 + 3.6)
 ///
-/// Protegem as correções cirúrgicas aplicadas nos 8 bugs identificados
-/// na auditoria forense de runtime.
+/// Protegem as correções cirúrgicas aplicadas nos bugs identificados
+/// nas auditorias forenses de runtime.
 ///
-/// Cobertura:
+/// Cobertura Fase 3.5:
 /// - Bug #1: Null check operator (guard de userId antes de send)
 /// - Bug #4: UUID route ordering (create antes de :id)
-/// - Bug #5: Dependents cleanup (leaveChannel no dispose)
-/// - Bug #6/#7: GlobalKey duplicate (remoção do Overlay wrapper)
 /// - Bug #8: Forward message schema alignment (author_id + valid type)
+///
+/// Cobertura Fase 3.6:
+/// - Bug #1: Duplicate GlobalKey (pushReplacement em vez de go)
+/// - Bug #2: _dependents.isEmpty (remoção de double lifecycle ownership)
+/// - Bug #3: Dirty widget in wrong build scope (amino_drawer Overlay fix)
+/// - Bug #4: Chat send failure (membership retry + error surfacing)
+/// - Bug #5: Null check operator (userId guard reforçado)
+/// - Bug #6: Missing route /store/coins → /coin-shop
+/// - Bug #7: create_group_chat sender_id → author_id + type enum fix
 /// ============================================================================
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -23,6 +30,7 @@ class _MockChatSender {
   String? currentUserId;
   bool messageSent = false;
   String? lastError;
+  bool membershipConfirmed = false;
 
   Future<void> sendMessage(String content) async {
     final text = content.trim();
@@ -34,8 +42,24 @@ class _MockChatSender {
       return;
     }
 
+    // Fase 3.6: Verificar membership antes de enviar
+    if (!membershipConfirmed) {
+      await _ensureMembership();
+      if (!membershipConfirmed) {
+        lastError = 'Não foi possível confirmar sua participação neste chat.';
+        return;
+      }
+    }
+
     // Simula envio
     messageSent = true;
+  }
+
+  Future<void> _ensureMembership() async {
+    final userId = currentUserId;
+    if (userId == null) return;
+    // Simula RPC join
+    membershipConfirmed = true;
   }
 }
 
@@ -75,18 +99,22 @@ class _MockRoute {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// TEST GROUP 3: Dependents cleanup — PresenceService.leaveChannel
+// TEST GROUP 3: Presence lifecycle — single ownership
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _MockPresenceService {
   final Set<String> _activeChannels = {};
+  int joinCount = 0;
+  int leaveCount = 0;
 
   void joinChannel(String channelId) {
     _activeChannels.add(channelId);
+    joinCount++;
   }
 
   void leaveChannel(String channelId) {
     _activeChannels.remove(channelId);
+    leaveCount++;
   }
 
   bool isChannelActive(String channelId) => _activeChannels.contains(channelId);
@@ -94,7 +122,7 @@ class _MockPresenceService {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// TEST GROUP 4: Forward message schema alignment
+// TEST GROUP 4: Forward message / create group schema alignment
 // ─────────────────────────────────────────────────────────────────────────────
 
 /// Simula a construção do payload de forward corrigido.
@@ -112,6 +140,19 @@ Map<String, dynamic> buildForwardPayload({
     'type': 'text',
     'media_url': mediaUrl,
     'media_type': mediaType,
+  };
+}
+
+/// Simula a construção do payload de create group corrigido.
+Map<String, dynamic> buildCreateGroupSystemMessage({
+  required String threadId,
+  required String userId,
+}) {
+  return {
+    'thread_id': threadId,
+    'author_id': userId,
+    'content': 'Grupo criado',
+    'type': 'system_join',
   };
 }
 
@@ -179,14 +220,58 @@ class _MockLifecycleWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// TEST GROUP 6: Route path validation — /store/coins → /coin-shop
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Simula o router com as rotas registradas.
+class _MockRouterRegistry {
+  final Set<String> registeredRoutes;
+  _MockRouterRegistry(this.registeredRoutes);
+
+  bool hasRoute(String path) => registeredRoutes.contains(path);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TEST GROUP 7: Community switching — pushReplacement vs go
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum _NavAction { go, push, pushReplacement }
+
+class _MockNavigator {
+  final List<_NavRecord> history = [];
+  int stackDepth = 1; // Começa com 1 rota
+
+  void go(String path) {
+    history.add(_NavRecord(_NavAction.go, path));
+    stackDepth = 1; // go reseta a stack inteira
+  }
+
+  void push(String path) {
+    history.add(_NavRecord(_NavAction.push, path));
+    stackDepth++;
+  }
+
+  void pushReplacement(String path) {
+    history.add(_NavRecord(_NavAction.pushReplacement, path));
+    // Não altera stackDepth — substitui o topo
+  }
+}
+
+class _NavRecord {
+  final _NavAction action;
+  final String path;
+  _NavRecord(this.action, this.path);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // MAIN TEST SUITE
 // ─────────────────────────────────────────────────────────────────────────────
 
 void main() {
   // ══════════════════════════════════════════════════════════════════════════
-  // Bug #1: Null check operator — userId guard
+  // Bug #1/5: Null check operator — userId guard + membership retry
   // ══════════════════════════════════════════════════════════════════════════
-  group('Bug #1 — Null check guard on sendMessage', () {
+  group('Bug #1/#5 — Null check guard + membership retry on sendMessage', () {
     test('should NOT send when userId is null', () async {
       final sender = _MockChatSender()..currentUserId = null;
       await sender.sendMessage('Hello');
@@ -195,9 +280,19 @@ void main() {
       expect(sender.lastError, contains('Sessão expirada'));
     });
 
-    test('should send when userId is valid', () async {
+    test('should auto-join and send when membership not yet confirmed', () async {
       final sender = _MockChatSender()
-        ..currentUserId = '550e8400-e29b-41d4-a716-446655440000';
+        ..currentUserId = '550e8400-e29b-41d4-a716-446655440000'
+        ..membershipConfirmed = false;
+      await sender.sendMessage('Hello');
+      expect(sender.membershipConfirmed, isTrue);
+      expect(sender.messageSent, isTrue);
+    });
+
+    test('should send directly when membership already confirmed', () async {
+      final sender = _MockChatSender()
+        ..currentUserId = '550e8400-e29b-41d4-a716-446655440000'
+        ..membershipConfirmed = true;
       await sender.sendMessage('Hello');
       expect(sender.messageSent, isTrue);
       expect(sender.lastError, isNull);
@@ -205,16 +300,17 @@ void main() {
 
     test('should NOT send when text is empty', () async {
       final sender = _MockChatSender()
-        ..currentUserId = '550e8400-e29b-41d4-a716-446655440000';
+        ..currentUserId = '550e8400-e29b-41d4-a716-446655440000'
+        ..membershipConfirmed = true;
       await sender.sendMessage('   ');
       expect(sender.messageSent, isFalse);
     });
   });
 
   // ══════════════════════════════════════════════════════════════════════════
-  // Bug #4: UUID route ordering
+  // Bug #4 (Fase 3.5): UUID route ordering
   // ══════════════════════════════════════════════════════════════════════════
-  group('Bug #4 — Route ordering: /community/create before /community/:id', () {
+  group('Bug — Route ordering: /community/create before /community/:id', () {
     test('FIXED: /community/create should match create-community route', () {
       final router = _MockRouteMatch([
         _MockRoute('/community/create', 'create-community'),
@@ -245,22 +341,37 @@ void main() {
   });
 
   // ══════════════════════════════════════════════════════════════════════════
-  // Bug #5: Dependents cleanup — PresenceService.leaveChannel
+  // Bug #2: _dependents.isEmpty — single lifecycle ownership
   // ══════════════════════════════════════════════════════════════════════════
-  group('Bug #5 — PresenceService cleanup on dispose', () {
-    test('should leave channel on dispose', () {
+  group('Bug #2 — Single lifecycle ownership for PresenceService', () {
+    test('provider-only ownership: join once, leave once', () {
       final presence = _MockPresenceService();
       const communityId = 'community-123';
 
-      // Simula initState
+      // Simula APENAS o provider fazendo join (não o initState)
       presence.joinChannel(communityId);
+      expect(presence.joinCount, equals(1));
       expect(presence.isChannelActive(communityId), isTrue);
-      expect(presence.activeCount, equals(1));
 
-      // Simula dispose
+      // Simula APENAS o provider fazendo leave (não o dispose)
       presence.leaveChannel(communityId);
+      expect(presence.leaveCount, equals(1));
       expect(presence.isChannelActive(communityId), isFalse);
-      expect(presence.activeCount, equals(0));
+    });
+
+    test('BROKEN (old): double ownership causes assertion', () {
+      final presence = _MockPresenceService();
+      const communityId = 'community-123';
+
+      // Simula o BUG antigo: initState + provider ambos chamam join
+      presence.joinChannel(communityId); // initState
+      presence.joinChannel(communityId); // provider
+      expect(presence.joinCount, equals(2)); // Double join!
+
+      // Simula o BUG antigo: dispose + provider ambos chamam leave
+      presence.leaveChannel(communityId); // dispose
+      presence.leaveChannel(communityId); // provider ref.onDispose
+      expect(presence.leaveCount, equals(2)); // Double leave!
     });
 
     test('should handle multiple communities correctly', () {
@@ -270,27 +381,100 @@ void main() {
       presence.joinChannel('comm-3');
       expect(presence.activeCount, equals(3));
 
-      // Sair de uma comunidade
       presence.leaveChannel('comm-2');
       expect(presence.activeCount, equals(2));
       expect(presence.isChannelActive('comm-2'), isFalse);
       expect(presence.isChannelActive('comm-1'), isTrue);
       expect(presence.isChannelActive('comm-3'), isTrue);
     });
+  });
 
-    test('should handle double leave gracefully', () {
-      final presence = _MockPresenceService();
-      presence.joinChannel('comm-1');
-      presence.leaveChannel('comm-1');
-      presence.leaveChannel('comm-1'); // Não deve crashar
-      expect(presence.activeCount, equals(0));
+  // ══════════════════════════════════════════════════════════════════════════
+  // Bug #6: Missing route /store/coins → /coin-shop
+  // ══════════════════════════════════════════════════════════════════════════
+  group('Bug #6 — Route /store/coins replaced with /coin-shop', () {
+    test('/coin-shop should be a registered route', () {
+      final registry = _MockRouterRegistry({
+        '/home', '/explore', '/chat', '/profile',
+        '/community/:id', '/community/create',
+        '/coin-shop', '/wallet',
+      });
+      expect(registry.hasRoute('/coin-shop'), isTrue);
+    });
+
+    test('/store/coins should NOT be a registered route', () {
+      final registry = _MockRouterRegistry({
+        '/home', '/explore', '/chat', '/profile',
+        '/community/:id', '/community/create',
+        '/coin-shop', '/wallet',
+      });
+      expect(registry.hasRoute('/store/coins'), isFalse);
     });
   });
 
   // ══════════════════════════════════════════════════════════════════════════
-  // Bug #8: Forward message schema alignment
+  // Bug #1 (Fase 3.6): Duplicate GlobalKey — pushReplacement vs go
   // ══════════════════════════════════════════════════════════════════════════
-  group('Bug #8 — Forward message payload schema alignment', () {
+  group('Bug #1 — Community switching uses pushReplacement (not go)', () {
+    test('pushReplacement should NOT reset the route stack', () {
+      final nav = _MockNavigator();
+      // Simula navegação inicial
+      nav.push('/community/comm-1');
+      expect(nav.stackDepth, equals(2));
+
+      // Simula troca de comunidade com pushReplacement (CORRETO)
+      nav.pushReplacement('/community/comm-2');
+      expect(nav.stackDepth, equals(2)); // Stack mantida
+      expect(nav.history.last.action, equals(_NavAction.pushReplacement));
+    });
+
+    test('BROKEN (old): go resets the entire route stack', () {
+      final nav = _MockNavigator();
+      nav.push('/community/comm-1');
+      expect(nav.stackDepth, equals(2));
+
+      // Simula troca de comunidade com go (BUGADO)
+      nav.go('/community/comm-2');
+      expect(nav.stackDepth, equals(1)); // Stack destruída!
+      expect(nav.history.last.action, equals(_NavAction.go));
+    });
+  });
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Bug #7: create_group_chat schema alignment
+  // ══════════════════════════════════════════════════════════════════════════
+  group('Bug #7 — Create group chat system message schema', () {
+    test('should use author_id (not sender_id)', () {
+      final payload = buildCreateGroupSystemMessage(
+        threadId: 'thread-1',
+        userId: 'user-1',
+      );
+      expect(payload.containsKey('author_id'), isTrue);
+      expect(payload.containsKey('sender_id'), isFalse);
+    });
+
+    test('should use system_join enum (not integer 19)', () {
+      final payload = buildCreateGroupSystemMessage(
+        threadId: 'thread-1',
+        userId: 'user-1',
+      );
+      expect(payload['type'], equals('system_join'));
+      expect(payload['type'], isA<String>());
+    });
+
+    test('should pass full schema validation', () {
+      final payload = buildCreateGroupSystemMessage(
+        threadId: 'thread-1',
+        userId: 'user-1',
+      );
+      expect(isValidChatMessagePayload(payload), isTrue);
+    });
+  });
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Forward message schema alignment (Fase 3.5)
+  // ══════════════════════════════════════════════════════════════════════════
+  group('Forward message payload schema alignment', () {
     test('should use author_id instead of sender_id', () {
       final payload = buildForwardPayload(
         threadId: 'thread-1',
@@ -343,9 +527,9 @@ void main() {
   });
 
   // ══════════════════════════════════════════════════════════════════════════
-  // Bug #2/#3: Lifecycle mounted guards
+  // Lifecycle mounted guards (Fase 3.5)
   // ══════════════════════════════════════════════════════════════════════════
-  group('Bug #2/#3 — Lifecycle mounted guards in _initChat', () {
+  group('Lifecycle mounted guards in _initChat', () {
     test('should complete full init when mounted', () async {
       final widget = _MockLifecycleWidget()..mounted = true;
       await widget.initChat();

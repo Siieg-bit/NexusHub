@@ -198,9 +198,9 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
       // Mensagem de sistema
       await SupabaseService.table('chat_messages').insert({
         'thread_id': threadId,
-        'sender_id': userId,
+        'author_id': userId,
         'content': 'Grupo criado',
-        'type': 19, // system message
+        'type': 'system_join', // Enum válido: system_join
       });
 
       if (mounted) {

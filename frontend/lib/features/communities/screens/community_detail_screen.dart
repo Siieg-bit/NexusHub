@@ -13,7 +13,6 @@ import '../../../core/widgets/amino_drawer.dart';
 import '../../../core/widgets/amino_bottom_nav.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/providers/presence_provider.dart';
-import '../../../core/services/presence_service.dart';
 
 // Extracted providers & widgets
 import '../providers/community_detail_providers.dart';
@@ -53,16 +52,18 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     _tabController = TabController(length: _activeTabs.length, vsync: this);
     _tabController.index = 1; // Featured como padrão
 
-    // Entrar no canal de presença da comunidade
-    PresenceService.instance.joinChannel(widget.communityId);
+    // Presença é gerenciada exclusivamente pelo communityPresenceProvider
+    // (joinChannel no build, leaveChannel no ref.onDispose).
+    // NÃO chamar PresenceService manualmente aqui — causa double-dispose
+    // e assertion '_dependents.isEmpty'.
   }
 
   @override
   void dispose() {
     _isDisposed = true;
     _tabController.dispose();
-    // Limpar canal de presença para evitar dependents leak
-    PresenceService.instance.leaveChannel(widget.communityId);
+    // Presença é limpa automaticamente pelo ref.onDispose do
+    // communityPresenceProvider — NÃO chamar leaveChannel aqui.
     super.dispose();
   }
 
