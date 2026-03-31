@@ -128,35 +128,47 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
   Widget _buildSearchBar(BuildContext context) {
     final r = context.r;
     return Expanded(
-      child: GestureDetector(
-        onTap: onSearchTap ?? () => context.push('/search'),
-        child: Container(
-          height: r.s(32),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(r.s(16)),
-          ),
-          padding: EdgeInsets.symmetric(horizontal: r.s(10)),
-          child: Row(
-            children: [
-              Icon(
-                Icons.search_rounded,
-                color: Colors.white.withValues(alpha: 0.40),
-                size: r.s(17),
-              ),
-              SizedBox(width: r.s(6)),
-              Expanded(
-                child: Text(
-                  'Search',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.35),
-                    fontSize: r.fs(13),
-                    fontWeight: FontWeight.w400,
-                  ),
+      child: Container(
+        height: r.s(32),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(r.s(16)),
+        ),
+        padding: EdgeInsets.symmetric(horizontal: r.s(10)),
+        child: Row(
+          children: [
+            // ── Parte clicavel para busca (lupa + placeholder) ──
+            Expanded(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: onSearchTap ?? () => context.push('/search'),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.search_rounded,
+                      color: Colors.white.withValues(alpha: 0.40),
+                      size: r.s(17),
+                    ),
+                    SizedBox(width: r.s(6)),
+                    Expanded(
+                      child: Text(
+                        'Search',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.35),
+                          fontSize: r.fs(13),
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              // Dropdown de idioma
-              Container(
+            ),
+            // ── Chip de idioma (separado, com seu próprio GestureDetector) ──
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => _showLanguagePopup(context),
+              child: Container(
                 padding: EdgeInsets.symmetric(horizontal: r.s(4), vertical: 2),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.06),
@@ -181,11 +193,55 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
+  }
+
+  /// Popup de seleção de idioma — exibe opções disponíveis.
+  void _showLanguagePopup(BuildContext context) {
+    final r = context.r;
+    final RenderBox box = context.findRenderObject() as RenderBox;
+    final offset = box.localToGlobal(Offset.zero);
+
+    showMenu<String>(
+      context: context,
+      position: RelativeRect.fromLTRB(
+        offset.dx + box.size.width - r.s(120),
+        offset.dy + box.size.height,
+        offset.dx + box.size.width,
+        0,
+      ),
+      color: const Color(0xFF1E2A3A),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(10))),
+      items: [
+        PopupMenuItem(
+          value: 'pt',
+          child: Text('Português (BR)',
+              style: TextStyle(color: Colors.white, fontSize: r.fs(13))),
+        ),
+        PopupMenuItem(
+          value: 'en',
+          child: Text('English',
+              style: TextStyle(color: Colors.white, fontSize: r.fs(13))),
+        ),
+      ],
+    ).then((value) {
+      if (value != null) {
+        debugPrint('[AminoTopBar] Language selected: $value');
+        // A troca real de locale será conectada ao localeProvider na Fase 4 (L10n).
+        // Por ora, registra a seleção e mostra feedback visual.
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(value == 'pt' ? 'Idioma: Português' : 'Language: English'),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 1),
+          ),
+        );
+      }
+    });
   }
 
   /// Pílula unificada de moedas + botão add — pixel-perfect do Amino.

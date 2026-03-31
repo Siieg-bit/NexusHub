@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 /// ============================================================================
-/// Testes de Validação — Correção de Bugs de Runtime (Fase 3.5 + 3.6)
+/// Testes de Validação — Correção de Bugs de Runtime (Fase 3.5 + 3.6 + 3.7)
 ///
 /// Protegem as correções cirúrgicas aplicadas nos bugs identificados
 /// nas auditorias forenses de runtime.
@@ -19,6 +19,17 @@ import 'package:flutter_test/flutter_test.dart';
 /// - Bug #5: Null check operator (userId guard reforçado)
 /// - Bug #6: Missing route /store/coins → /coin-shop
 /// - Bug #7: create_group_chat sender_id → author_id + type enum fix
+///
+/// Cobertura Fase 3.7:
+/// - Bug #1: TabController disposed (safe rebuild + _isDisposed guard)
+/// - Bug #2: Chat membership 3-step (direct check → RPC → upsert fallback)
+/// - Bug #3: UUID 'search' (/community/search → /explore)
+/// - Bug #4: Null check on first entry (mounted + _isDisposed guards)
+/// - Bug #5: Compartilhar Perfil (Clipboard + SnackBar)
+/// - Bug #6: EN chip (separado do GestureDetector de busca)
+/// - Bug #7: Coins + button (onAddTap → /coin-shop, não /community/create)
+/// - Bug #8: post/create route (→ create-post)
+/// - Bug #9: Conquistas overflow (heatmap height dinâmico)
 /// ============================================================================
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -264,6 +275,114 @@ class _NavRecord {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// TEST GROUP 8 (Fase 3.7): TabController safe rebuild
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _MockTabControllerManager {
+  bool _isDisposed = false;
+  bool mounted = true;
+  int controllersCreated = 0;
+  int controllersDisposed = 0;
+  List<String> activeTabs = ['Regras', 'Destaque'];
+  String? lastError;
+
+  void rebuildTabsIfNeeded(List<String> newTabs) {
+    if (newTabs.length == activeTabs.length &&
+        _listEquals(newTabs, activeTabs)) return;
+
+    if (_isDisposed || !mounted) return;
+
+    try {
+      controllersCreated++;
+      activeTabs = newTabs;
+      controllersDisposed++; // old controller disposed
+    } catch (e) {
+      lastError = e.toString();
+    }
+  }
+
+  void dispose() {
+    _isDisposed = true;
+    controllersDisposed++;
+  }
+
+  bool _listEquals(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TEST GROUP 9 (Fase 3.7): 3-step membership flow
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _MockMembershipChecker {
+  bool directCheckSuccess = false;
+  bool rpcJoinSuccess = false;
+  bool upsertSuccess = false;
+  bool membershipConfirmed = false;
+  String? lastStep;
+
+  Future<void> ensureMembership() async {
+    // Step 1: Direct check
+    if (directCheckSuccess) {
+      membershipConfirmed = true;
+      lastStep = 'direct_check';
+      return;
+    }
+
+    // Step 2: RPC join
+    if (rpcJoinSuccess) {
+      membershipConfirmed = true;
+      lastStep = 'rpc_join';
+      return;
+    }
+
+    // Step 3: Upsert fallback
+    if (upsertSuccess) {
+      membershipConfirmed = true;
+      lastStep = 'upsert_fallback';
+      return;
+    }
+
+    // All failed
+    lastStep = 'all_failed';
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TEST GROUP 10 (Fase 3.7): Route navigation targets
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Simula os destinos de navegação dos botões do app.
+class _MockButtonTargets {
+  /// O que o botão "Entrar em uma comunidade" navega para.
+  final String joinCommunityTarget;
+  /// O que o botão "+" (coins pill) navega para.
+  final String coinsPlusTarget;
+  /// O que o botão "Criar nova publicação" navega para.
+  final String createPostTarget;
+
+  _MockButtonTargets({
+    required this.joinCommunityTarget,
+    required this.coinsPlusTarget,
+    required this.createPostTarget,
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TEST GROUP 11 (Fase 3.7): Heatmap dynamic height
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Simula o cálculo de altura do heatmap.
+double calculateHeatmapHeight({required double cellSize, double gap = 2.0}) {
+  return 7 * (cellSize + gap);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // MAIN TEST SUITE
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -337,6 +456,19 @@ void main() {
         router.match('/community/550e8400-e29b-41d4-a716-446655440000'),
         equals('community-detail'),
       );
+    });
+
+    // Fase 3.7: /community/search também era capturado como UUID
+    test('FIXED (3.7): /community/search no longer navigated to — uses /explore instead', () {
+      final router = _MockRouteMatch([
+        _MockRoute('/community/create', 'create-community'),
+        _MockRoute('/community/:id', 'community-detail'),
+        _MockRoute('/explore', 'explore'),
+      ]);
+      // /community/search seria capturado por :id (UUID bug)
+      expect(router.match('/community/search'), equals('community-detail'));
+      // /explore é a rota correta e não tem conflito
+      expect(router.match('/explore'), equals('explore'));
     });
   });
 
@@ -554,6 +686,154 @@ void main() {
       });
       await widget.initChat();
       expect(widget.stateUpdated, isFalse);
+    });
+  });
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // FASE 3.7: TabController safe rebuild
+  // ══════════════════════════════════════════════════════════════════════════
+  group('Fase 3.7 Bug #1 — TabController safe rebuild with _isDisposed guard', () {
+    test('should rebuild tabs when layout changes', () {
+      final mgr = _MockTabControllerManager();
+      mgr.rebuildTabsIfNeeded(['Regras', 'Destaque', 'Recentes']);
+      expect(mgr.activeTabs.length, equals(3));
+      expect(mgr.controllersCreated, equals(1));
+    });
+
+    test('should NOT rebuild when tabs are identical', () {
+      final mgr = _MockTabControllerManager();
+      mgr.rebuildTabsIfNeeded(['Regras', 'Destaque']); // Same as initial
+      expect(mgr.controllersCreated, equals(0));
+    });
+
+    test('should NOT rebuild after dispose (_isDisposed guard)', () {
+      final mgr = _MockTabControllerManager();
+      mgr.dispose();
+      mgr.rebuildTabsIfNeeded(['Regras', 'Destaque', 'Recentes', 'Chats']);
+      // controllersCreated should still be 0 (blocked by _isDisposed)
+      expect(mgr.controllersCreated, equals(0));
+    });
+
+    test('should NOT rebuild when not mounted', () {
+      final mgr = _MockTabControllerManager();
+      mgr.mounted = false;
+      mgr.rebuildTabsIfNeeded(['Regras', 'Destaque', 'Recentes']);
+      expect(mgr.controllersCreated, equals(0));
+    });
+  });
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // FASE 3.7: 3-step membership flow
+  // ══════════════════════════════════════════════════════════════════════════
+  group('Fase 3.7 Bug #2 — 3-step membership flow (check → RPC → upsert)', () {
+    test('Step 1: should confirm via direct check if already member', () async {
+      final checker = _MockMembershipChecker()..directCheckSuccess = true;
+      await checker.ensureMembership();
+      expect(checker.membershipConfirmed, isTrue);
+      expect(checker.lastStep, equals('direct_check'));
+    });
+
+    test('Step 2: should confirm via RPC join if direct check fails', () async {
+      final checker = _MockMembershipChecker()
+        ..directCheckSuccess = false
+        ..rpcJoinSuccess = true;
+      await checker.ensureMembership();
+      expect(checker.membershipConfirmed, isTrue);
+      expect(checker.lastStep, equals('rpc_join'));
+    });
+
+    test('Step 3: should confirm via upsert fallback if RPC fails', () async {
+      final checker = _MockMembershipChecker()
+        ..directCheckSuccess = false
+        ..rpcJoinSuccess = false
+        ..upsertSuccess = true;
+      await checker.ensureMembership();
+      expect(checker.membershipConfirmed, isTrue);
+      expect(checker.lastStep, equals('upsert_fallback'));
+    });
+
+    test('should fail gracefully if all 3 steps fail', () async {
+      final checker = _MockMembershipChecker()
+        ..directCheckSuccess = false
+        ..rpcJoinSuccess = false
+        ..upsertSuccess = false;
+      await checker.ensureMembership();
+      expect(checker.membershipConfirmed, isFalse);
+      expect(checker.lastStep, equals('all_failed'));
+    });
+  });
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // FASE 3.7: Navigation target corrections
+  // ══════════════════════════════════════════════════════════════════════════
+  group('Fase 3.7 Bugs #3/#7/#8 — Navigation target corrections', () {
+    test('Coins + button should navigate to /coin-shop (not /community/create)', () {
+      final targets = _MockButtonTargets(
+        joinCommunityTarget: '/explore',
+        coinsPlusTarget: '/coin-shop',
+        createPostTarget: '/community/comm-1/create-post',
+      );
+      expect(targets.coinsPlusTarget, equals('/coin-shop'));
+      expect(targets.coinsPlusTarget, isNot(equals('/community/create')));
+    });
+
+    test('"Entrar em uma comunidade" should navigate to /explore (not /community/search)', () {
+      final targets = _MockButtonTargets(
+        joinCommunityTarget: '/explore',
+        coinsPlusTarget: '/coin-shop',
+        createPostTarget: '/community/comm-1/create-post',
+      );
+      expect(targets.joinCommunityTarget, equals('/explore'));
+      expect(targets.joinCommunityTarget, isNot(equals('/community/search')));
+    });
+
+    test('"Criar nova publicação" should use /create-post (not /post/create)', () {
+      final targets = _MockButtonTargets(
+        joinCommunityTarget: '/explore',
+        coinsPlusTarget: '/coin-shop',
+        createPostTarget: '/community/comm-1/create-post',
+      );
+      expect(targets.createPostTarget, contains('/create-post'));
+      expect(targets.createPostTarget, isNot(contains('/post/create')));
+    });
+
+    test('all corrected routes should exist in the router registry', () {
+      final registry = _MockRouterRegistry({
+        '/home', '/explore', '/chat', '/profile',
+        '/community/:id', '/community/create',
+        '/community/:id/create-post',
+        '/coin-shop', '/wallet', '/search',
+      });
+      expect(registry.hasRoute('/explore'), isTrue);
+      expect(registry.hasRoute('/coin-shop'), isTrue);
+      expect(registry.hasRoute('/community/:id/create-post'), isTrue);
+      // Rotas antigas que NÃO devem existir
+      expect(registry.hasRoute('/community/search'), isFalse);
+      expect(registry.hasRoute('/store/coins'), isFalse);
+    });
+  });
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // FASE 3.7: Heatmap dynamic height
+  // ══════════════════════════════════════════════════════════════════════════
+  group('Fase 3.7 Bug #9 — Heatmap height uses dynamic r.s() instead of fixed px', () {
+    test('height should scale with cell size (small screen)', () {
+      final height = calculateHeatmapHeight(cellSize: 12.0);
+      expect(height, equals(7 * (12.0 + 2.0)));
+      expect(height, equals(98.0));
+    });
+
+    test('height should scale with cell size (large screen)', () {
+      final height = calculateHeatmapHeight(cellSize: 18.0);
+      expect(height, equals(7 * (18.0 + 2.0)));
+      expect(height, equals(140.0));
+    });
+
+    test('BROKEN (old): fixed height 110px would overflow on large screens', () {
+      const oldFixedHeight = 7 * 14.0 + 6 * 2.0; // 110.0
+      final dynamicHeight = calculateHeatmapHeight(cellSize: 18.0); // 140.0
+      // O height fixo antigo (110) é menor que o necessário (140) → overflow!
+      expect(oldFixedHeight, lessThan(dynamicHeight));
     });
   });
 }

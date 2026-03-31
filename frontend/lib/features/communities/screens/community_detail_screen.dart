@@ -78,17 +78,27 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     if (visible['latest_feed'] != false) tabs.add('Recentes');
     if (visible['public_chats'] != false) tabs.add('Chats Públicos');
 
-    if (tabs.length != _activeTabs.length ||
-        !_listEquals(tabs, _activeTabs)) {
+    // Guard: se a lista de tabs não mudou, não recriar o controller
+    if (tabs.length == _activeTabs.length &&
+        _listEquals(tabs, _activeTabs)) return;
+
+    // Guard duplo: verificar mounted novamente antes de setState
+    if (_isDisposed || !mounted) return;
+
+    try {
+      final oldController = _tabController;
+      final newController = TabController(length: tabs.length, vsync: this);
+      if (tabs.contains('Destaque')) {
+        newController.index = tabs.indexOf('Destaque');
+      }
       setState(() {
         _activeTabs = tabs;
-        final oldController = _tabController;
-        _tabController = TabController(length: tabs.length, vsync: this);
-        if (tabs.contains('Destaque')) {
-          _tabController.index = tabs.indexOf('Destaque');
-        }
-        oldController.dispose();
+        _tabController = newController;
       });
+      // Dispose do antigo APÓS o setState, fora do closure
+      oldController.dispose();
+    } catch (e) {
+      debugPrint('[CommunityDetail] TabController rebuild error: $e');
     }
   }
 
@@ -176,7 +186,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
         if (_lastLayout != layout) {
           _lastLayout = layout;
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) return;
+            if (_isDisposed || !mounted) return;
             _rebuildTabsIfNeeded(layout);
           });
         }

@@ -147,7 +147,7 @@ class CheckinHeatmap extends StatelessWidget {
 
           // ── Heatmap Grid ──
           SizedBox(
-            height: 7 * 14.0 + 6 * 2.0, // 7 rows * (12+2 gap)
+            height: 7 * (r.s(12) + 2), // 7 rows * (cell height + gap)
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               reverse: true, // Scroll começa no final (semana atual)

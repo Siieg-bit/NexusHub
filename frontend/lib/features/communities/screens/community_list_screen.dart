@@ -69,7 +69,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
               coins: _coins,
               notificationCount: ref.watch(unreadNotificationCountProvider),
               onSearchTap: () => context.push('/search'),
-              onAddTap: () => context.push('/community/create'),
+              onAddTap: () => context.push('/coin-shop'),
             ),
             Expanded(
               child: communitiesAsync.when(
@@ -179,7 +179,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                   Padding(
                     padding: EdgeInsets.only(right: r.s(8)),
                     child: _JoinCommunityCard(
-                      onTap: () => context.push('/community/search'),
+                      onTap: () => context.push('/explore'),
                     ),
                   ),
                 ],

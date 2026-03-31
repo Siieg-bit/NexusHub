@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
@@ -895,7 +896,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
         // "Criar nova publicação" button
         if (_isOwnProfile)
           GestureDetector(
-            onTap: () => context.push('/community/${widget.communityId}/post/create'),
+            onTap: () => context.push('/community/${widget.communityId}/create-post'),
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(14)),
               decoration: BoxDecoration(
@@ -1403,6 +1404,17 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
             ],
             _optionTile(Icons.share_rounded, 'Compartilhar Perfil', () {
               Navigator.pop(ctx);
+              final link = 'https://nexushub.app/community/${widget.communityId}/profile/${widget.userId}';
+              Clipboard.setData(ClipboardData(text: link));
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Link do perfil copiado!'),
+                    backgroundColor: AppTheme.primaryColor,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
             }),
           ],
         ),

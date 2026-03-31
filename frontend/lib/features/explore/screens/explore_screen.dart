@@ -151,7 +151,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               coins: _coins,
               notificationCount: ref.watch(unreadNotificationCountProvider),
               onSearchTap: () => context.push('/search'),
-              onAddTap: () => context.push('/community/create'),
+              onAddTap: () => context.push('/coin-shop'),
             ),
 
             // ── Conteúdo scrollável ──

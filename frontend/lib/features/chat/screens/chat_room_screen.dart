@@ -92,38 +92,51 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   Future<void> _ensureMembership() async {
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) {
+      debugPrint('[ChatRoom] _ensureMembership: userId is null');
+      return;
+    }
+
+    // Passo 1: Verificar se já é membro (mais rápido, sem side-effects)
     try {
-      final userId = SupabaseService.currentUserId;
-      if (userId == null) {
-        debugPrint('[ChatRoom] _ensureMembership: userId is null');
+      final check = await SupabaseService.table('chat_members')
+          .select('id')
+          .eq('thread_id', widget.threadId)
+          .eq('user_id', userId)
+          .maybeSingle();
+      if (check != null) {
+        _membershipConfirmed = true;
+        debugPrint('[ChatRoom] Already a member (direct check)');
         return;
       }
+    } catch (e) {
+      debugPrint('[ChatRoom] Direct membership check failed: $e');
+    }
+
+    // Passo 2: Tentar join via RPC (para chats públicos com reputação)
+    try {
       final result = await SupabaseService.rpc('join_public_chat_with_reputation', params: {
         'p_thread_id': widget.threadId,
         'p_user_id': userId,
       });
-      // RPC retorna {joined: true} ou {joined: false, reason: 'already_member'}
-      // Ambos significam que o usuário é membro agora.
       _membershipConfirmed = true;
-      debugPrint('[ChatRoom] Membership confirmed: $result');
+      debugPrint('[ChatRoom] Membership confirmed via RPC: $result');
+      return;
     } catch (e) {
-      debugPrint('[ChatRoom] Membership check FAILED: $e');
-      // Tentar verificar membership diretamente como fallback
-      try {
-        final userId = SupabaseService.currentUserId;
-        if (userId == null) return;
-        final check = await SupabaseService.table('chat_members')
-            .select('id')
-            .eq('thread_id', widget.threadId)
-            .eq('user_id', userId)
-            .maybeSingle();
-        if (check != null) {
-          _membershipConfirmed = true;
-          debugPrint('[ChatRoom] Membership confirmed via direct check');
-        }
-      } catch (e2) {
-        debugPrint('[ChatRoom] Fallback membership check also failed: $e2');
-      }
+      debugPrint('[ChatRoom] RPC join failed: $e');
+    }
+
+    // Passo 3: Fallback — insert direto em chat_members (para DMs/grupos já criados)
+    try {
+      await SupabaseService.table('chat_members').upsert({
+        'thread_id': widget.threadId,
+        'user_id': userId,
+      }, onConflict: 'thread_id,user_id');
+      _membershipConfirmed = true;
+      debugPrint('[ChatRoom] Membership confirmed via direct upsert');
+    } catch (e3) {
+      debugPrint('[ChatRoom] All membership attempts failed: $e3');
     }
   }
 
