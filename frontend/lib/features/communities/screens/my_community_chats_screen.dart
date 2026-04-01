@@ -7,6 +7,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/models/chat_room_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/widgets/amino_bottom_nav.dart';
 import '../../chat/screens/chat_list_screen.dart' show chatListProvider;
 
 // =============================================================================
@@ -205,17 +206,12 @@ class _MyCommunityChatsScreenState
           ],
         ),
       ),
-      // FAB "+"
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.push('/create-public-chat', extra: {
-            'communityId': widget.communityId,
-            'communityName': widget.communityName,
-          });
-        },
-        backgroundColor: const Color(0xFF1A1A2E),
-        child: Icon(Icons.add_rounded,
-            color: context.textPrimary, size: r.s(26)),
+      // FAB "+" estilo cápsula (página interna)
+      floatingActionButton: AminoCommunityFab(
+        onTap: () => context.push('/create-public-chat', extra: {
+          'communityId': widget.communityId,
+          'communityName': widget.communityName,
+        }),
       ),
     );
   }

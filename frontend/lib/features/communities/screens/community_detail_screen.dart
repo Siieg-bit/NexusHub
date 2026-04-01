@@ -279,56 +279,84 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
           ),
           child: Scaffold(
             backgroundColor: context.scaffoldBg,
-          body: _bottomIndex == 0
-              ? _buildHomePage(
-                  community, themeColor, isMember, userRole, layout,
-                  visible, welcomeBanner)
-              : _bottomIndex == 1
-                  ? _buildOnlinePage(community)
-                  : _bottomIndex == 3
-                      ? _buildChatsPage(community)
-                      : _bottomIndex == 4
-                          ? _buildMePage(community)
-                          : _buildHomePage(
-                              community, themeColor, isMember, userRole,
-                              layout, visible, welcomeBanner),
-          bottomNavigationBar: isMember
-              ? AminoBottomNavBar(
-                  currentIndex: _bottomIndex,
-                  showOnline: showOnline,
-                  showCreate: showCreate,
-                  onlineCount: ref.watch(onlineCountProvider(widget.communityId)),
-                  avatarUrl: ref.watch(
-                    currentUserProfileProvider.select((a) => a.valueOrNull?.iconUrl),
-                  ),
-                  onMenuTap: () => AminoDrawerController.of(context)?.toggle(),
-                  onCreateTap: () => showCommunityCreateMenu(
-                    context,
-                    communityId: widget.communityId,
-                    communityName: community.name,
-                  ),
-                  onTap: (index) => setState(() => _bottomIndex = index),
-                )
-              : null,
-          floatingActionButton: !isMember
-              ? AminoAnimations.pulseGlow(
-                  glowColor: AppTheme.primaryColor,
-                  child: FloatingActionButton.extended(
-                    onPressed: _joinCommunity,
-                    backgroundColor: AppTheme.primaryColor,
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(r.s(16))),
-                    icon: Icon(Icons.group_add_rounded,
-                        color: Colors.white, size: r.s(20)),
-                    label: Text('Entrar',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: r.fs(14))),
-                  ),
-                )
-              : null,
+            // extendBody: true faz o conteúdo passar por baixo do nav flutuante
+            extendBody: true,
+            body: _bottomIndex == 0
+                ? _buildHomePage(
+                    community, themeColor, isMember, userRole, layout,
+                    visible, welcomeBanner)
+                : _bottomIndex == 1
+                    ? _buildOnlinePage(community)
+                    : _bottomIndex == 3
+                        ? _buildChatsPage(community)
+                        : _bottomIndex == 4
+                            ? _buildMePage(community)
+                            : _buildHomePage(
+                                community, themeColor, isMember, userRole,
+                                layout, visible, welcomeBanner),
+            // Floating capsule nav — só aparece nas páginas iniciais (membro)
+            bottomNavigationBar: isMember
+                ? AminoBottomNavBar(
+                    currentIndex: _bottomIndex,
+                    showOnline: showOnline,
+                    showCreate: showCreate,
+                    onlineCount: ref.watch(onlineCountProvider(widget.communityId)),
+                    // Avatares dos membros online (até 3)
+                    onlineAvatars: () {
+                      final membersAsync = ref.watch(
+                          communityMembersProvider(widget.communityId));
+                      final onlineIds = ref
+                          .watch(communityPresenceProvider(widget.communityId))
+                          .valueOrNull ?? {};
+                      final members =
+                          membersAsync.valueOrNull ?? [];
+                      return members
+                          .where((m) =>
+                              onlineIds.contains(m['user_id'] as String?))
+                          .take(3)
+                          .map((m) {
+                            final p = m['profiles']
+                                as Map<String, dynamic>? ?? {};
+                            return p['icon_url'] as String?;
+                          })
+                          .toList();
+                    }(),
+                    avatarUrl: ref.watch(
+                      currentUserProfileProvider
+                          .select((a) => a.valueOrNull?.iconUrl),
+                    ),
+                    onMenuTap: () =>
+                        AminoDrawerController.of(context)?.toggle(),
+                    onCreateTap: () => showCommunityCreateMenu(
+                      context,
+                      communityId: widget.communityId,
+                      communityName: community.name,
+                    ),
+                    onTap: (index) =>
+                        setState(() => _bottomIndex = index),
+                  )
+                : null,
+            // FAB "Entrar" para não-membros; nenhum FAB para membros
+            // (o FAB de criar post está no próprio nav capsule)
+            floatingActionButton: !isMember
+                ? AminoAnimations.pulseGlow(
+                    glowColor: AppTheme.primaryColor,
+                    child: FloatingActionButton.extended(
+                      onPressed: _joinCommunity,
+                      backgroundColor: AppTheme.primaryColor,
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(r.s(16))),
+                      icon: Icon(Icons.group_add_rounded,
+                          color: Colors.white, size: r.s(20)),
+                      label: Text('Entrar',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                              fontSize: r.fs(14))),
+                    ),
+                  )
+                : null,
           ),
         );
       },

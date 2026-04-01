@@ -10,6 +10,7 @@ import '../../../core/utils/helpers.dart';
 import '../../chat/widgets/chat_bubble.dart'; // AvatarWithFrame + AminoPlusBadge
 import '../../../core/widgets/amino_custom_title.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/widgets/amino_bottom_nav.dart';
 
 /// Perfil dentro de uma Comunidade — Layout 1:1 com Amino Apps.
 ///
@@ -187,11 +188,9 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       floatingActionButton: _isOwnProfile
-          ? FloatingActionButton(
-              onPressed: () =>
-                  context.push('/community/${widget.communityId}/create-post'),
-              backgroundColor: const Color(0xFF7B2FBE),
-              child: const Icon(Icons.add, color: Colors.white),
+          ? AminoCommunityFab(
+              onTap: () => context
+                  .push('/community/${widget.communityId}/create-post'),
             )
           : null,
       body: RefreshIndicator(
