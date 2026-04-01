@@ -16,9 +16,10 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/providers/dm_invite_provider.dart';
 import '../widgets/dm_invite_card.dart';
 
-/// Provider para lista de chats do usuário.
-/// Filtra chats com status='left' (usuário saiu intencionalmente) e
-/// ordena fixados no topo (is_pinned_by_user=true), depois por última mensagem.
+/// Provider para "Meus chats" — lista pessoal do usuário.
+/// Retorna apenas threads com membership ativo (status != 'left').
+/// NÃO mistura com "Chats públicos disponíveis" (descoberta/exploração).
+/// Ordena fixados no topo (is_pinned_by_user=true), depois por última mensagem.
 final chatListProvider = FutureProvider<List<ChatRoomModel>>((ref) async {
   final userId = SupabaseService.currentUserId;
   if (userId == null) return [];
@@ -26,7 +27,7 @@ final chatListProvider = FutureProvider<List<ChatRoomModel>>((ref) async {
   final response = await SupabaseService.table('chat_members')
       .select('thread_id, status, is_pinned_by_user, pinned_at, chat_threads(*)')
       .eq('user_id', userId)
-      .neq('status', 'left')          // Excluir chats que o usuário saiu
+      .neq('status', 'left')          // "Meus chats" = apenas membership ativo
       .order('joined_at', ascending: false);
 
   final chats = (response as List? ?? [])
@@ -34,10 +35,13 @@ final chatListProvider = FutureProvider<List<ChatRoomModel>>((ref) async {
       .map((e) {
         final threadMap = Map<String, dynamic>.from(
             e['chat_threads'] as Map<String, dynamic>);
-        // Injetar is_pinned_by_user do membership no modelo do thread
+        // Injetar campos de membership no modelo do thread:
+        // - isPinnedByUser: preferência pessoal, nunca global
+        // - membershipStatus: fonte de verdade para regras de acesso por tipo
         threadMap['is_pinned_by_user'] =
             e['is_pinned_by_user'] as bool? ?? false;
         threadMap['pinned_at'] = e['pinned_at'];
+        threadMap['membership_status'] = e['status'] as String? ?? 'active';
         return ChatRoomModel.fromJson(threadMap);
       })
       .toList();
@@ -853,7 +857,12 @@ class _AminoChatTile extends ConsumerWidget {
                 }
               },
             ),
-            // Opção: Apagar / Sair do chat
+            // Opção: Sair/Ocultar/Apagar — semântica diferenciada por tipo.
+            // public: "Sair do chat" — usuário pode re-entrar depois.
+            // group:  "Sair do grupo" — re-entrada por convite (Etapa 2+).
+            // dm:     "Apagar conversa" — oculta da lista pessoal, não apaga o thread global.
+            // Em todos os casos: marca status='left' via RPC leave_public_chat.
+            // NÃO deleta a linha de chat_members — isso quebraria a semântica de saída.
             ListTile(
               leading: Icon(
                 Icons.delete_outline_rounded,
@@ -861,16 +870,17 @@ class _AminoChatTile extends ConsumerWidget {
                 size: r.s(22),
               ),
               title: Text(
-                chatRoom.type == 'dm' ? 'Apagar conversa' : 'Sair do chat',
+                chatRoom.type == 'dm'
+                    ? 'Apagar conversa'
+                    : chatRoom.type == 'group'
+                        ? 'Sair do grupo'
+                        : 'Sair do chat',
                 style: TextStyle(
                     color: AppTheme.errorColor, fontSize: r.fs(14)),
               ),
               onTap: () async {
                 Navigator.of(ctx).pop();
-                // Guard: verificar context.mounted antes do showDialog
-                // (o BottomSheet já foi fechado pelo Navigator.of(ctx).pop() acima)
                 if (!context.mounted) return;
-                // Confirmação antes de sair
                 final confirm = await showDialog<bool>(
                   context: context,
                   builder: (dCtx) => AlertDialog(
@@ -878,7 +888,9 @@ class _AminoChatTile extends ConsumerWidget {
                     title: Text(
                       chatRoom.type == 'dm'
                           ? 'Apagar conversa?'
-                          : 'Sair do chat?',
+                          : chatRoom.type == 'group'
+                              ? 'Sair do grupo?'
+                              : 'Sair do chat?',
                       style: TextStyle(
                           color: context.textPrimary,
                           fontSize: r.fs(16),
@@ -887,7 +899,9 @@ class _AminoChatTile extends ConsumerWidget {
                     content: Text(
                       chatRoom.type == 'dm'
                           ? 'A conversa será removida da sua lista.'
-                          : 'Você poderá entrar novamente depois.',
+                          : chatRoom.type == 'group'
+                              ? 'Para voltar, você precisará de um novo convite.'
+                              : 'Você poderá entrar novamente depois.',
                       style: TextStyle(
                           color: context.textSecondary,
                           fontSize: r.fs(13)),
@@ -916,6 +930,8 @@ class _AminoChatTile extends ConsumerWidget {
                   ),
                 );
                 if (confirm != true) return;
+                // Fonte de verdade: leave_public_chat marca status='left'.
+                // NÃO deleta a linha — preserva semântica de saída intencional.
                 try {
                   await SupabaseService.rpc('leave_public_chat',
                       params: {
@@ -929,7 +945,9 @@ class _AminoChatTile extends ConsumerWidget {
                         content: Text(
                             chatRoom.type == 'dm'
                                 ? 'Conversa apagada.'
-                                : 'Você saiu do chat.'),
+                                : chatRoom.type == 'group'
+                                    ? 'Você saiu do grupo.'
+                                    : 'Você saiu do chat.'),
                         backgroundColor: AppTheme.primaryColor,
                         behavior: SnackBarBehavior.floating,
                       ),
@@ -939,8 +957,11 @@ class _AminoChatTile extends ConsumerWidget {
                   debugPrint('[ChatList] Leave from context menu error: $e');
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Erro ao sair do chat.'),
+                      SnackBar(
+                        content: Text(
+                            chatRoom.type == 'dm'
+                                ? 'Erro ao apagar conversa.'
+                                : 'Erro ao sair do chat.'),
                         backgroundColor: AppTheme.errorColor,
                         behavior: SnackBarBehavior.floating,
                       ),

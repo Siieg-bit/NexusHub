@@ -16,38 +16,12 @@ import '../models/message_model.dart';
 /// - Unread count
 /// ============================================================================
 
-// ── Chat Threads ──
-class ChatThreadsNotifier extends AsyncNotifier<List<Map<String, dynamic>>> {
-  @override
-  Future<List<Map<String, dynamic>>> build() async {
-    return _fetch();
-  }
-
-  Future<List<Map<String, dynamic>>> _fetch() async {
-    final userId = SupabaseService.currentUserId;
-    if (userId == null) return [];
-
-    final res = await SupabaseService.table('chat_members')
-        .select(
-            'thread_id, chat_threads!inner(*, chat_messages(content, created_at, author_id))')
-        .eq('user_id', userId)
-        .order('updated_at', referencedTable: 'chat_threads', ascending: false)
-        .limit(50);
-
-    return List<Map<String, dynamic>>.from(res as List? ?? []);
-  }
-
-  Future<void> refresh() async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(_fetch);
-  }
-}
-
-final chatThreadsProvider =
-    AsyncNotifierProvider<ChatThreadsNotifier, List<Map<String, dynamic>>>(
-        ChatThreadsNotifier.new);
-
 // ── Mapeamento de tipos de mensagem para o enum do banco ──
+// NOTA: chatThreadsProvider foi removido (Etapa 1 — dead code).
+// A lista de chats do usuário é gerenciada exclusivamente pelo chatListProvider
+// em chat_list_screen.dart, que é a fonte de verdade para "Meus chats".
+// Não confundir com "Chats públicos disponíveis" (descoberta), que é um
+// conceito separado a ser implementado em etapa futura.
 /// O enum `chat_message_type` no banco aceita apenas estes valores:
 /// text, strike, voice_note, sticker, video, share_url, share_user,
 /// system_deleted, system_join, system_leave, system_voice_start,

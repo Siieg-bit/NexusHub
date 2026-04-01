@@ -1,5 +1,10 @@
 /// Modelo de thread de chat (sala/grupo/DM).
 /// Baseado no schema v5 — tabela chat_threads (ChatThread.smali).
+///
+/// SEPARAÇÃO CONCEITUAL (Etapa 1):
+/// - "Meus chats" = threads com membershipStatus == 'active' (chatListProvider)
+/// - "Chats públicos disponíveis" = descoberta/exploração, tratada em tela separada
+///   (não misturar com a lista pessoal do usuário)
 class ChatRoomModel {
   final String id;
   final String? communityId;
@@ -24,11 +29,27 @@ class ChatRoomModel {
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  // Campos calculados (não na tabela)
+  // Campos calculados (não na tabela chat_threads — injetados pelo chatListProvider)
   final int unreadCount;
+
   /// Pin pessoal do usuário (vem de chat_members.is_pinned_by_user).
   /// Injetado pelo chatListProvider — não existe em chat_threads.
+  /// É SEMPRE uma preferência pessoal do usuário, nunca global.
+  /// Chats fixados aparecem no topo da lista pessoal do usuário.
   final bool isPinnedByUser;
+
+  /// Status de membership do usuário nesta thread (vem de chat_members.status).
+  /// Valores possíveis:
+  ///   'active'        — usuário é membro ativo
+  ///   'left'          — usuário saiu intencionalmente (chat oculto da lista)
+  ///   'invite_sent'   — convite enviado, aguardando aceite (Etapa 2+)
+  ///   'join_requested'— solicitação enviada, aguardando aprovação (Etapa 2+)
+  ///   'none'          — usuário nunca entrou (sem linha em chat_members)
+  ///
+  /// NOTA: Fluxos de convite/pendente (invite_sent, join_requested) serão
+  /// implementados em Etapa posterior. Esta Etapa 1 não congela regras para
+  /// esses fluxos — apenas registra o campo para uso futuro.
+  final String membershipStatus;
 
   ChatRoomModel({
     required this.id,
@@ -55,6 +76,7 @@ class ChatRoomModel {
     required this.updatedAt,
     this.unreadCount = 0,
     this.isPinnedByUser = false,
+    this.membershipStatus = 'none',
   });
 
   factory ChatRoomModel.fromJson(Map<String, dynamic> json) {
@@ -87,6 +109,7 @@ class ChatRoomModel {
           DateTime.now(),
       unreadCount: json['unread_count'] as int? ?? 0,
       isPinnedByUser: json['is_pinned_by_user'] as bool? ?? false,
+      membershipStatus: json['membership_status'] as String? ?? 'none',
     );
   }
 
