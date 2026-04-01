@@ -61,17 +61,15 @@ jobs:
       - name: Run tests
         run: flutter test --coverage || true
 
-      # Upload desativado temporariamente: quota de artefatos esgotada.
-      # Para reativar, remova o comentário abaixo após limpar os artefatos
-      # antigos em Settings → Actions → Artifacts ou via API.
-      # - name: Upload coverage
-      #   if: always()
-      #   continue-on-error: true
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: coverage-report
-      #     path: frontend/coverage/lcov.info
-      #     if-no-files-found: ignore
+      - name: Upload coverage
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: frontend/coverage/lcov.info
+          if-no-files-found: ignore
+          retention-days: 7
 
   # ── Build Android (APK) ──
   build-android:
@@ -140,28 +138,14 @@ jobs:
       - name: Build APK (debug)
         run: flutter build apk --debug
 
-      # Verificar que o APK foi gerado (substitui o upload enquanto a quota estiver esgotada)
-      - name: Verify APK exists
-        run: |
-          APK=build/app/outputs/flutter-apk/app-debug.apk
-          if [ -f "$APK" ]; then
-            SIZE=$(du -sh "$APK" | cut -f1)
-            echo "✓ APK gerado com sucesso: $APK ($SIZE)"
-          else
-            echo "✗ APK não encontrado em $APK"
-            exit 1
-          fi
-
-      # Upload desativado temporariamente: quota de artefatos esgotada.
-      # Para reativar, remova o comentário abaixo após limpar os artefatos
-      # antigos em Settings → Actions → Artifacts ou via API.
-      # - name: Upload APK
-      #   continue-on-error: true
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: nexushub-debug-apk
-      #     path: frontend/build/app/outputs/flutter-apk/app-debug.apk
-      #     if-no-files-found: warn
+      - name: Upload APK
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexushub-debug-apk
+          path: frontend/build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: warn
+          retention-days: 7
 
   # ── Build Android (AAB para Play Store) ──
   build-release:
@@ -217,14 +201,14 @@ jobs:
       - name: Build AAB
         run: flutter build appbundle --release
 
-      # Upload desativado temporariamente: quota de artefatos esgotada.
-      # - name: Upload AAB
-      #   continue-on-error: true
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: nexushub-release-aab
-      #     path: frontend/build/app/outputs/bundle/release/app-release.aab
-      #     if-no-files-found: warn
+      - name: Upload AAB
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexushub-release-aab
+          path: frontend/build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: warn
+          retention-days: 30
 
   # ── Deploy Edge Functions ──
   deploy-functions:
