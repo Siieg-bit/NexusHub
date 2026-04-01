@@ -22,6 +22,7 @@ import '../widgets/community_guidelines_tab.dart';
 import '../widgets/community_feed_tab.dart';
 import '../widgets/community_chat_tab.dart';
 import '../widgets/community_create_menu.dart';
+import 'my_community_chats_screen.dart';
 
 // =============================================================================
 // MAIN SCREEN — Estilo Amino Apps
@@ -907,47 +908,16 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
   }
 
   // ================================================================
-  // CHATS PAGE — Lista de chats da comunidade
+  // CHATS PAGE — Meus Chats na comunidade (layout estilo Amino)
   // ================================================================
   Widget _buildChatsPage(CommunityModel community) {
-    final r = context.r;
-    return Column(
-      children: [
-        SafeArea(
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
-            child: Row(
-              children: [
-                GestureDetector(
-                  onTap: () => setState(() => _bottomIndex = 0),
-                  child: Icon(Icons.arrow_back_rounded,
-                      color: context.textPrimary),
-                ),
-                SizedBox(width: r.s(12)),
-                Text('Chats',
-                    style: TextStyle(
-                        color: context.textPrimary,
-                        fontSize: r.fs(16),
-                        fontWeight: FontWeight.w700)),
-                const Spacer(),
-                GestureDetector(
-                  onTap: () {
-                    context.go('/chats');
-                  },
-                  child: Text('Ver Todos',
-                      style: TextStyle(
-                          color: AppTheme.primaryColor,
-                          fontSize: r.fs(12),
-                          fontWeight: FontWeight.w600)),
-                ),
-              ],
-            ),
-          ),
-        ),
-        Expanded(
-          child: CommunityChatTab(communityId: widget.communityId),
-        ),
-      ],
+    return MyCommunityChatsScreen(
+      communityId: widget.communityId,
+      communityName: community.name,
+      onBack: () {
+        if (_isDisposed || !mounted) return;
+        setState(() => _bottomIndex = 0);
+      },
     );
   }
 
