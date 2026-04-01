@@ -17,22 +17,38 @@ import '../../../core/providers/dm_invite_provider.dart';
 import '../widgets/dm_invite_card.dart';
 
 /// Provider para lista de chats do usuário.
+/// Filtra chats com status='left' (usuário saiu intencionalmente) e
+/// ordena fixados no topo (is_pinned_by_user=true), depois por última mensagem.
 final chatListProvider = FutureProvider<List<ChatRoomModel>>((ref) async {
   final userId = SupabaseService.currentUserId;
   if (userId == null) return [];
 
   final response = await SupabaseService.table('chat_members')
-      .select('thread_id, chat_threads(*)')
+      .select('thread_id, status, is_pinned_by_user, pinned_at, chat_threads(*)')
       .eq('user_id', userId)
+      .neq('status', 'left')          // Excluir chats que o usuário saiu
       .order('joined_at', ascending: false);
 
   final chats = (response as List? ?? [])
       .where((e) => e['chat_threads'] != null)
-      .map((e) =>
-          ChatRoomModel.fromJson(e['chat_threads'] as Map<String, dynamic>))
+      .map((e) {
+        final threadMap = Map<String, dynamic>.from(
+            e['chat_threads'] as Map<String, dynamic>);
+        // Injetar is_pinned_by_user do membership no modelo do thread
+        threadMap['is_pinned_by_user'] =
+            e['is_pinned_by_user'] as bool? ?? false;
+        threadMap['pinned_at'] = e['pinned_at'];
+        return ChatRoomModel.fromJson(threadMap);
+      })
       .toList();
-  chats.sort((a, b) => (b.lastMessageAt ?? b.createdAt)
-        .compareTo(a.lastMessageAt ?? a.createdAt));
+
+  // Ordenar: fixados no topo (por pinned_at desc), depois por última mensagem
+  chats.sort((a, b) {
+    if (a.isPinnedByUser && !b.isPinnedByUser) return -1;
+    if (!a.isPinnedByUser && b.isPinnedByUser) return 1;
+    return (b.lastMessageAt ?? b.createdAt)
+        .compareTo(a.lastMessageAt ?? a.createdAt);
+  });
   return chats;
 });
 
@@ -738,21 +754,227 @@ class _SidebarCommunityIcon extends StatelessWidget {
 // ============================================================================
 // CHAT TILE — Estilo Amino (avatar, nome, preview, timestamp, unread badge)
 // ============================================================================
-class _AminoChatTile extends StatelessWidget {
+class _AminoChatTile extends ConsumerWidget {
   final ChatRoomModel chatRoom;
 
   const _AminoChatTile({required this.chatRoom});
 
+  /// Exibe o menu contextual de long press.
+  Future<void> _showContextMenu(
+      BuildContext context, WidgetRef ref) async {
+    final r = context.r;
+    final isPinned = chatRoom.isPinnedByUser;
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) return;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: context.cardBg,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle
+            Container(
+              margin: EdgeInsets.only(top: r.s(10), bottom: r.s(4)),
+              width: r.s(36),
+              height: r.s(4),
+              decoration: BoxDecoration(
+                color: context.dividerClr,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            // Título do chat
+            Padding(
+              padding: EdgeInsets.symmetric(
+                  horizontal: r.s(16), vertical: r.s(8)),
+              child: Text(
+                chatRoom.title,
+                style: TextStyle(
+                  color: context.textPrimary,
+                  fontSize: r.fs(15),
+                  fontWeight: FontWeight.w700,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Divider(
+                color: context.dividerClr.withValues(alpha: 0.3),
+                height: 1),
+            // Opção: Fixar / Desafixar
+            ListTile(
+              leading: Icon(
+                isPinned
+                    ? Icons.push_pin_outlined
+                    : Icons.push_pin_rounded,
+                color: isPinned
+                    ? AppTheme.accentColor
+                    : context.textSecondary,
+                size: r.s(22),
+              ),
+              title: Text(
+                isPinned ? 'Desafixar do topo' : 'Fixar no topo',
+                style: TextStyle(
+                    color: context.textPrimary, fontSize: r.fs(14)),
+              ),
+              onTap: () async {
+                Navigator.of(ctx).pop();
+                try {
+                  if (isPinned) {
+                    await SupabaseService.rpc('unpin_chat_for_user',
+                        params: {
+                          'p_thread_id': chatRoom.id,
+                          'p_user_id': userId,
+                        });
+                  } else {
+                    await SupabaseService.rpc('pin_chat_for_user',
+                        params: {
+                          'p_thread_id': chatRoom.id,
+                          'p_user_id': userId,
+                        });
+                  }
+                  ref.invalidate(chatListProvider);
+                } catch (e) {
+                  debugPrint('[ChatList] Pin/unpin error: $e');
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                            'Erro ao ${isPinned ? 'desafixar' : 'fixar'} chat.'),
+                        backgroundColor: AppTheme.errorColor,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                }
+              },
+            ),
+            // Opção: Apagar / Sair do chat
+            ListTile(
+              leading: Icon(
+                Icons.delete_outline_rounded,
+                color: AppTheme.errorColor,
+                size: r.s(22),
+              ),
+              title: Text(
+                chatRoom.type == 'dm' ? 'Apagar conversa' : 'Sair do chat',
+                style: TextStyle(
+                    color: AppTheme.errorColor, fontSize: r.fs(14)),
+              ),
+              onTap: () async {
+                Navigator.of(ctx).pop();
+                // Confirmação antes de sair
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (dCtx) => AlertDialog(
+                    backgroundColor: context.cardBg,
+                    title: Text(
+                      chatRoom.type == 'dm'
+                          ? 'Apagar conversa?'
+                          : 'Sair do chat?',
+                      style: TextStyle(
+                          color: context.textPrimary,
+                          fontSize: r.fs(16),
+                          fontWeight: FontWeight.w700),
+                    ),
+                    content: Text(
+                      chatRoom.type == 'dm'
+                          ? 'A conversa será removida da sua lista.'
+                          : 'Você poderá entrar novamente depois.',
+                      style: TextStyle(
+                          color: context.textSecondary,
+                          fontSize: r.fs(13)),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () =>
+                            Navigator.of(dCtx).pop(false),
+                        child: Text('Cancelar',
+                            style: TextStyle(
+                                color: context.textSecondary,
+                                fontSize: r.fs(13))),
+                      ),
+                      TextButton(
+                        onPressed: () =>
+                            Navigator.of(dCtx).pop(true),
+                        child: Text(
+                          chatRoom.type == 'dm' ? 'Apagar' : 'Sair',
+                          style: TextStyle(
+                              color: AppTheme.errorColor,
+                              fontWeight: FontWeight.w700,
+                              fontSize: r.fs(13)),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirm != true) return;
+                try {
+                  await SupabaseService.rpc('leave_public_chat',
+                      params: {
+                        'p_thread_id': chatRoom.id,
+                        'p_user_id': userId,
+                      });
+                  ref.invalidate(chatListProvider);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                            chatRoom.type == 'dm'
+                                ? 'Conversa apagada.'
+                                : 'Você saiu do chat.'),
+                        backgroundColor: AppTheme.primaryColor,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  debugPrint('[ChatList] Leave from context menu error: $e');
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Erro ao sair do chat.'),
+                        backgroundColor: AppTheme.errorColor,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                }
+              },
+            ),
+            SizedBox(height: r.s(8)),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final r = context.r;
     final hasUnread = chatRoom.unreadCount > 0;
+    final isPinned = chatRoom.isPinnedByUser;
 
     return GestureDetector(
       onTap: () => context.push('/chat/${chatRoom.id}'),
+      onLongPress: () => _showContextMenu(context, ref),
       behavior: HitTestBehavior.opaque,
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(10)),
+        decoration: isPinned
+            ? BoxDecoration(
+                border: Border(
+                  left: BorderSide(
+                    color: AppTheme.accentColor.withValues(alpha: 0.6),
+                    width: 3,
+                  ),
+                ),
+              )
+            : null,
         child: Row(
           children: [
             // ── Avatar com frame cosmético ──
@@ -769,15 +991,30 @@ class _AminoChatTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    chatRoom.title,
-                    style: TextStyle(
-                      color: context.textPrimary,
-                      fontSize: r.fs(14),
-                      fontWeight: hasUnread ? FontWeight.w700 : FontWeight.w500,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  Row(
+                    children: [
+                      if (isPinned) ...[
+                        Icon(
+                          Icons.push_pin_rounded,
+                          size: r.s(12),
+                          color: AppTheme.accentColor,
+                        ),
+                        SizedBox(width: r.s(4)),
+                      ],
+                      Expanded(
+                        child: Text(
+                          chatRoom.title,
+                          style: TextStyle(
+                            color: context.textPrimary,
+                            fontSize: r.fs(14),
+                            fontWeight:
+                                hasUnread ? FontWeight.w700 : FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
                   SizedBox(height: r.s(3)),
                   Text(
@@ -787,7 +1024,8 @@ class _AminoChatTile extends StatelessWidget {
                           ? context.textSecondary
                           : context.textHint,
                       fontSize: r.fs(12),
-                      fontWeight: hasUnread ? FontWeight.w500 : FontWeight.w400,
+                      fontWeight:
+                          hasUnread ? FontWeight.w500 : FontWeight.w400,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -802,18 +1040,22 @@ class _AminoChatTile extends StatelessWidget {
               children: [
                 Text(
                   chatRoom.lastMessageAt != null
-                      ? timeago.format(chatRoom.lastMessageAt!, locale: 'pt_BR')
+                      ? timeago.format(chatRoom.lastMessageAt!,
+                          locale: 'pt_BR')
                       : '',
                   style: TextStyle(
-                    color: hasUnread ? AppTheme.accentColor : context.textHint,
+                    color:
+                        hasUnread ? AppTheme.accentColor : context.textHint,
                     fontSize: r.fs(10),
-                    fontWeight: hasUnread ? FontWeight.w600 : FontWeight.w400,
+                    fontWeight:
+                        hasUnread ? FontWeight.w600 : FontWeight.w400,
                   ),
                 ),
                 if (hasUnread) ...[
                   SizedBox(height: r.s(4)),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: r.s(6), vertical: 2),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: r.s(6), vertical: 2),
                     decoration: BoxDecoration(
                       color: AppTheme.accentColor,
                       borderRadius: BorderRadius.circular(r.s(10)),

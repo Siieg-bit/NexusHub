@@ -100,40 +100,63 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       return;
     }
 
-    // Passo 1: Verificar se já é membro (mais rápido, sem side-effects)
+    // Passo 1: Verificar membership existente e checar status.
+    // IMPORTANTE: Se status = 'left', o usuário saiu intencionalmente.
+    // Não reentrar automaticamente — mostrar CTA de entrar.
     try {
       final check = await SupabaseService.table('chat_members')
-          .select('id')
+          .select('id, status')
           .eq('thread_id', widget.threadId)
           .eq('user_id', userId)
           .maybeSingle();
       if (check != null) {
+        final memberStatus = check['status'] as String? ?? 'active';
+        if (memberStatus == 'left') {
+          // Usuário saiu intencionalmente — não fazer auto-join.
+          // _membershipConfirmed permanece false → CTA de entrar é exibido.
+          debugPrint('[ChatRoom] User previously left this chat — showing join CTA');
+          return;
+        }
         _membershipConfirmed = true;
-        debugPrint('[ChatRoom] Already a member (direct check)');
+        debugPrint('[ChatRoom] Already a member (status: $memberStatus)');
         return;
       }
     } catch (e) {
       debugPrint('[ChatRoom] Direct membership check failed: $e');
     }
 
-    // Passo 2: Tentar join via RPC (para chats públicos com reputação)
+    // Passo 2: Tentar join via RPC (para chats públicos com reputação).
+    // A RPC agora respeita status 'left' e retorna {joined: false, reason: 'left'}
+    // se o usuário já saiu intencionalmente.
     try {
       final result = await SupabaseService.rpc('join_public_chat_with_reputation', params: {
         'p_thread_id': widget.threadId,
         'p_user_id': userId,
       });
-      _membershipConfirmed = true;
-      debugPrint('[ChatRoom] Membership confirmed via RPC: $result');
-      return;
+      final resultMap = result as Map?;
+      final joined = resultMap?['joined'] as bool? ?? false;
+      final reason = resultMap?['reason'] as String? ?? '';
+      if (!joined && reason == 'left') {
+        // Usuário saiu intencionalmente — não confirmar membership.
+        debugPrint('[ChatRoom] RPC: user previously left this chat');
+        return;
+      }
+      if (joined) {
+        _membershipConfirmed = true;
+        debugPrint('[ChatRoom] Membership confirmed via RPC: $result');
+        return;
+      }
     } catch (e) {
       debugPrint('[ChatRoom] RPC join failed: $e');
     }
 
-    // Passo 3: Fallback — insert direto em chat_members (para DMs/grupos já criados)
+    // Passo 3: Fallback — insert direto em chat_members (para DMs/grupos já criados).
+    // Só executado se os passos anteriores falharam por erro de rede/RPC.
     try {
       await SupabaseService.table('chat_members').upsert({
         'thread_id': widget.threadId,
         'user_id': userId,
+        'status': 'active',
       }, onConflict: 'thread_id,user_id');
       _membershipConfirmed = true;
       debugPrint('[ChatRoom] Membership confirmed via direct upsert');
@@ -749,25 +772,16 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   Future<void> _leaveChat() async {
     final userId = SupabaseService.currentUserId;
     if (userId == null) return;
+    // Usar RPC leave_public_chat que marca status='left' em vez de deletar a linha.
+    // Isso impede que _ensureMembership() recrie o membership automaticamente
+    // e elimina o risco de _ElementLifecycle.defunct ao reabrir o chat.
     try {
-      await SupabaseService.table('chat_members')
-          .delete()
-          .eq('thread_id', widget.threadId)
-          .eq('user_id', userId);
-      // Decrementar members_count
-      try {
-        await SupabaseService.rpc('decrement_chat_member_count', params: {
-          'p_thread_id': widget.threadId,
-        });
-      } catch (_) {
-        // RPC pode não existir — não bloquear saída
-      }
+      await SupabaseService.rpc('leave_public_chat', params: {
+        'p_thread_id': widget.threadId,
+        'p_user_id': userId,
+      });
       _membershipConfirmed = false;
       if (mounted) {
-        // Bug #4 fix: Invalidar chatListProvider após sair do chat para que
-        // a lista de chats reflita o estado real (sem o chat saído).
-        // chatListProvider e chatCommunitiesProvider são definidos localmente
-        // no chat_list_screen.dart, mas são acessíveis via ref.
         try {
           ref.invalidate(chatListProvider);
           ref.invalidate(chatCommunitiesProvider);
@@ -782,15 +796,39 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         context.pop();
       }
     } catch (e) {
-      debugPrint('[ChatRoom] Leave chat error: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro ao sair do chat. Tente novamente.'),
-            backgroundColor: AppTheme.errorColor,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+      debugPrint('[ChatRoom] Leave chat RPC error: $e');
+      // Fallback: delete direto se a RPC não existir ainda no banco
+      try {
+        await SupabaseService.table('chat_members')
+            .delete()
+            .eq('thread_id', widget.threadId)
+            .eq('user_id', userId);
+        _membershipConfirmed = false;
+        if (mounted) {
+          try {
+            ref.invalidate(chatListProvider);
+            ref.invalidate(chatCommunitiesProvider);
+          } catch (_) {}
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Você saiu do chat.'),
+              backgroundColor: AppTheme.primaryColor,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          context.pop();
+        }
+      } catch (e2) {
+        debugPrint('[ChatRoom] Leave chat fallback error: $e2');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Erro ao sair do chat. Tente novamente.'),
+              backgroundColor: AppTheme.errorColor,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
       }
     }
   }
@@ -1777,12 +1815,18 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   ElevatedButton(
                     onPressed: _isSending ? null : () async {
                       setState(() => _isSending = true);
-                      await _ensureMembership();
-                      if (mounted) {
-                        setState(() => _isSending = false);
-                        if (_membershipConfirmed) {
-                          // Bug #4 fix: Invalidar chatListProvider após join
-                          // para que a lista de chats inclua este chat.
+                      // Usar rejoin_public_chat para re-entrar após ter saído
+                      // intencionalmente (status='left'). Atualiza status para 'active'.
+                      try {
+                        await SupabaseService.rpc('rejoin_public_chat', params: {
+                          'p_thread_id': widget.threadId,
+                          'p_user_id': SupabaseService.currentUserId,
+                        });
+                        if (mounted) {
+                          setState(() {
+                            _isSending = false;
+                            _membershipConfirmed = true;
+                          });
                           try {
                             ref.invalidate(chatListProvider);
                             ref.invalidate(chatCommunitiesProvider);
@@ -1794,6 +1838,25 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                               behavior: SnackBarBehavior.floating,
                             ),
                           );
+                        }
+                      } catch (_) {
+                        // Fallback: usar _ensureMembership se a RPC não existir
+                        await _ensureMembership();
+                        if (mounted) {
+                          setState(() => _isSending = false);
+                          if (_membershipConfirmed) {
+                            try {
+                              ref.invalidate(chatListProvider);
+                              ref.invalidate(chatCommunitiesProvider);
+                            } catch (_) {}
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Você entrou no chat!'),
+                                backgroundColor: AppTheme.primaryColor,
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
                         }
                       }
                     },

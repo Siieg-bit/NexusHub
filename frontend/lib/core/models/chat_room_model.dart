@@ -26,6 +26,9 @@ class ChatRoomModel {
 
   // Campos calculados (não na tabela)
   final int unreadCount;
+  /// Pin pessoal do usuário (vem de chat_members.is_pinned_by_user).
+  /// Injetado pelo chatListProvider — não existe em chat_threads.
+  final bool isPinnedByUser;
 
   ChatRoomModel({
     required this.id,
@@ -51,6 +54,7 @@ class ChatRoomModel {
     required this.createdAt,
     required this.updatedAt,
     this.unreadCount = 0,
+    this.isPinnedByUser = false,
   });
 
   factory ChatRoomModel.fromJson(Map<String, dynamic> json) {
@@ -82,6 +86,7 @@ class ChatRoomModel {
       updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '') ??
           DateTime.now(),
       unreadCount: json['unread_count'] as int? ?? 0,
+      isPinnedByUser: json['is_pinned_by_user'] as bool? ?? false,
     );
   }
 
