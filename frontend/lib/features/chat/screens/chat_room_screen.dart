@@ -87,9 +87,16 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     if (!mounted) return;
     await _ensureMembership();
     if (!mounted) return;
+    // Verificar mounted antes de cada operação fire-and-forget.
+    // _subscribeToRealtime() adiciona um listener — se chamado após dispose(),
+    // o listener fica pendurado e causa _ElementLifecycle.defunct.
+    if (!mounted || _isDisposed) return;
     _loadMessages();
+    if (!mounted || _isDisposed) return;
     _loadPinnedMessages();
+    if (!mounted || _isDisposed) return;
     _subscribeToRealtime();
+    if (!mounted || _isDisposed) return;
     _loadChatBackground();
   }
 
@@ -177,7 +184,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   void _onRealtimeStatusChanged() {
-    if (!mounted) return;
+    if (!mounted || _isDisposed) return;
     final status = RealtimeService.instance.connectionStatus.value;
     final connected = status == RealtimeConnectionStatus.connected;
     if (connected != _realtimeConnected) {
@@ -195,8 +202,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           .select()
           .eq('id', widget.threadId)
           .single();
-      if (!mounted) return;
-      if (mounted) setState(() => _threadInfo = res);
+      if (!mounted || _isDisposed) return;
+      setState(() => _threadInfo = res);
     } catch (_) {}
   }
 
@@ -208,7 +215,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           .order('created_at', ascending: false)
           .limit(100);
 
-      if (mounted) {
+      if (mounted && !_isDisposed) {
         setState(() {
           _messages.clear();
           _messages.addAll(
@@ -226,7 +233,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         _scrollToBottom();
       }
     } catch (e) {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted && !_isDisposed) setState(() => _isLoading = false);
       debugPrint('Error loading messages: $e');
     }
   }
@@ -237,18 +244,18 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           .select('pinned_message_id')
           .eq('id', widget.threadId)
           .single();
-      if (!mounted) return;
+      if (!mounted || _isDisposed) return;
       final pinnedId = threadData['pinned_message_id'] as String?;
       if (pinnedId == null) {
-        if (!mounted) return;
-        if (mounted) setState(() => _pinnedMessages = []);
+        if (!mounted || _isDisposed) return;
+        setState(() => _pinnedMessages = []);
         return;
       }
       final res = await SupabaseService.table('chat_messages')
           .select('*, profiles!chat_messages_author_id_fkey(id, nickname, icon_url)')
           .eq('id', pinnedId)
           .limit(1);
-      if (mounted) {
+      if (mounted && !_isDisposed) {
         setState(() {
           _pinnedMessages = List<Map<String, dynamic>>.from(res as List? ?? []);
         });
@@ -269,7 +276,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           .eq('thread_id', widget.threadId)
           .eq('user_id', userId)
           .maybeSingle();
-      if (res != null && mounted) {
+      if (res != null && mounted && !_isDisposed) {
         setState(() => _chatBackground = res['background_url'] as String?);
       }
     } catch (_) {}

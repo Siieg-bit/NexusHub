@@ -959,23 +959,27 @@ class _AminoChatTile extends ConsumerWidget {
     final hasUnread = chatRoom.unreadCount > 0;
     final isPinned = chatRoom.isPinnedByUser;
 
-    return GestureDetector(
-      onTap: () => context.push('/chat/${chatRoom.id}'),
-      onLongPress: () => _showContextMenu(context, ref),
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(10)),
-        decoration: isPinned
-            ? BoxDecoration(
-                border: Border(
-                  left: BorderSide(
-                    color: AppTheme.accentColor.withValues(alpha: 0.6),
-                    width: 3,
+    // Material+InkWell em vez de GestureDetector para evitar conflito de
+    // gestos com o ListView (AlwaysScrollableScrollPhysics interceptava o
+    // long press antes do GestureDetector processar).
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => context.push('/chat/${chatRoom.id}'),
+        onLongPress: () => _showContextMenu(context, ref),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(10)),
+          decoration: isPinned
+              ? BoxDecoration(
+                  border: Border(
+                    left: BorderSide(
+                      color: AppTheme.accentColor.withValues(alpha: 0.6),
+                      width: 3,
+                    ),
                   ),
-                ),
-              )
-            : null,
-        child: Row(
+                )
+              : null,
+          child: Row(
           children: [
             // ── Avatar com frame cosmético ──
             CosmeticAvatar(
@@ -1077,6 +1081,7 @@ class _AminoChatTile extends ConsumerWidget {
           ],
         ),
       ),
-    );
+    ),  // InkWell
+  );  // Material
   }
 }
