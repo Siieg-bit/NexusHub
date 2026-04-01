@@ -17,7 +17,7 @@ import '../../../core/providers/presence_provider.dart';
 // Extracted providers & widgets
 import '../providers/community_detail_providers.dart';
 import '../widgets/community_check_in_bar.dart';
-import '../widgets/community_live_chats.dart';
+import '../widgets/community_live_projections.dart';
 import '../widgets/community_guidelines_tab.dart';
 import '../widgets/community_feed_tab.dart';
 import '../widgets/community_chat_tab.dart';
@@ -683,12 +683,11 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             ),
           ),
 
-        // LIVE CHATROOMS
+        // LIVE PROJECTIONS (chats públicos com projeção de tela ativa)
         if (visible['live_chats'] != false)
           SliverToBoxAdapter(
-            child: CommunityLiveChats(
+            child: CommunityLiveProjections(
               communityId: widget.communityId,
-              community: community,
             ),
           ),
 
