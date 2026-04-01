@@ -71,14 +71,22 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
     }
   }
 
+  /// Team members (is_team_admin ou is_team_moderator no perfil global) têm
+  /// poderes de staff em TODAS as comunidades, independente do role local.
+  bool get _isTeamMember => widget.currentUser?.isTeamMember ?? false;
+
   bool get _isStaff =>
+      _isTeamMember ||
       widget.userRole == 'agent' ||
       widget.userRole == 'leader' ||
       widget.userRole == 'curator' ||
       widget.userRole == 'moderator' ||
       widget.userRole == 'admin';
 
-  bool get _isLeader => widget.userRole == 'agent' || widget.userRole == 'leader';
+  bool get _isLeader =>
+      _isTeamMember ||
+      widget.userRole == 'agent' ||
+      widget.userRole == 'leader';
 
   Future<void> _doCheckIn() async {
     if (_isCheckingIn) return;

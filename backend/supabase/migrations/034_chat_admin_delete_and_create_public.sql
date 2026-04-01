@@ -42,12 +42,22 @@ BEGIN
   END IF;
 
   -- Verificar se é membro da comunidade
+  -- (community_members não tem coluna status — apenas is_banned)
   SELECT EXISTS (
     SELECT 1 FROM public.community_members
     WHERE community_id = p_community_id
       AND user_id = v_user_id
-      AND status = 'active'
+      AND is_banned = FALSE
   ) INTO v_is_member;
+
+  -- Team members (is_team_admin ou is_team_moderator) podem criar em qualquer comunidade
+  IF NOT v_is_member THEN
+    SELECT EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE id = v_user_id
+        AND (is_team_admin = TRUE OR is_team_moderator = TRUE)
+    ) INTO v_is_member;
+  END IF;
 
   IF NOT v_is_member THEN
     RETURN json_build_object('success', false, 'error', 'not_a_member');

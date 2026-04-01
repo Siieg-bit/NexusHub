@@ -28,9 +28,9 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
   @override
   void dispose() {
     _titleController.dispose();
-    for (final b in _blocks) {
-      b.controller?.dispose();
-    }
+    // Não chamar b.controller?.dispose() aqui — o BlockEditor já gerencia
+    // o ciclo de vida dos seus próprios ContentBlocks. Chamar dispose() duas
+    // vezes causa o erro "TextEditingController used after being disposed".
     super.dispose();
   }
 
@@ -50,6 +50,8 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
       final userId = SupabaseService.currentUserId;
       if (userId == null) throw Exception('Não autenticado');
 
+      // Ler o texto dos blocos ANTES de qualquer await para evitar
+      // acesso a controllers já disposed após context.pop().
       final content = _blocks
           .where((b) =>
               b.type == BlockType.text || b.type == BlockType.heading)
