@@ -93,9 +93,19 @@ class _CreatePublicChatScreenState
     } catch (e) {
       debugPrint('[create_public_chat] Erro: $e');
       if (mounted) {
+        // Extrair mensagem legível do erro Supabase/PostgreSQL
+        final errStr = e.toString();
+        String userMsg = 'Erro ao criar chat. Tente novamente.';
+        if (errStr.contains('not_a_member')) {
+          userMsg = 'Você precisa ser membro da comunidade.';
+        } else if (errStr.contains('unauthenticated')) {
+          userMsg = 'Você precisa estar logado.';
+        } else if (errStr.contains('title_required')) {
+          userMsg = 'O nome do chat é obrigatório.';
+        }
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Erro ao criar chat. Tente novamente.'),
+          SnackBar(
+            content: Text(userMsg),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
           ),

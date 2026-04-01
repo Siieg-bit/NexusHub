@@ -86,17 +86,9 @@ BEGIN
   RETURNING id INTO v_thread_id;
 
   -- Adicionar o criador como membro ativo
-  INSERT INTO public.chat_members (
-    thread_id,
-    user_id,
-    status,
-    role
-  ) VALUES (
-    v_thread_id,
-    v_user_id,
-    'active',
-    'host'
-  );
+  -- (chat_members não tem coluna role)
+  INSERT INTO public.chat_members (thread_id, user_id, status)
+  VALUES (v_thread_id, v_user_id, 'active');
 
   RETURN json_build_object(
     'success', true,
