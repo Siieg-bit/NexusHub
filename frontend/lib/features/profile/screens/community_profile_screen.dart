@@ -7,14 +7,19 @@ import '../../../core/models/user_model.dart';
 import '../../../core/models/comment_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/helpers.dart';
-import '../../chat/widgets/chat_bubble.dart';
+import '../../chat/widgets/chat_bubble.dart'; // AvatarWithFrame + AminoPlusBadge
 import '../../../core/widgets/amino_custom_title.dart';
 import '../../../core/utils/responsive.dart';
 
-/// Perfil da Comunidade — Layout fiel ao Amino Apps.
-/// Banner + Avatar centralizado + Nome + Nível/Título + Tags + Editar
-/// Conquistas + Moedas + Stats (Reputação/Seguindo/Seguidores)
-/// Bio com "Membro desde..." + Tabs: Posts | Mural | Posts Salvos
+/// Perfil dentro de uma Comunidade — Layout 1:1 com Amino Apps.
+///
+/// Estrutura:
+///   SliverAppBar expandível (banner + avatar + nome + level + tags + botões
+///     + conquistas/moedas bar — tudo dentro do FlexibleSpaceBar)
+///   Stats 3 colunas: Reputação | Seguindo | Seguidores
+///   Bio com "Membro desde..." + seta para expandir
+///   Tabs: Posts | Mural | Posts Salvos
+///   FAB roxo para criar publicação (apenas próprio perfil)
 class CommunityProfileScreen extends StatefulWidget {
   final String userId;
   final String communityId;
@@ -37,7 +42,11 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
   Map<String, dynamic>? _membership;
   List<CommentModel> _wallComments = [];
   List<Map<String, dynamic>> _userPosts = [];
+  List<Map<String, dynamic>> _wikiEntries = [];
+  List<Map<String, dynamic>> _savedPosts = [];
   bool _isLoading = true;
+  bool _savedPostsLoaded = false;
+  bool _bioExpanded = false;
   final _wallController = TextEditingController();
   int _followersCount = 0;
   int _followingCount = 0;
@@ -53,6 +62,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
   }
 
   Future<void> _loadProfile() async {
+    if (mounted) setState(() => _isLoading = true);
     try {
       // Perfil global
       final userRes = await SupabaseService.table('profiles')
@@ -79,6 +89,20 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           .limit(20);
       _userPosts = List<Map<String, dynamic>>.from(postsRes as List? ?? []);
 
+      // Wiki entries do usuário na comunidade
+      try {
+        final wikiRes = await SupabaseService.table('wiki_entries')
+            .select('id, title, cover_image_url')
+            .eq('author_id', widget.userId)
+            .eq('community_id', widget.communityId)
+            .eq('status', 'ok')
+            .order('created_at', ascending: false)
+            .limit(10);
+        _wikiEntries = List<Map<String, dynamic>>.from(wikiRes as List? ?? []);
+      } catch (_) {
+        _wikiEntries = [];
+      }
+
       // Mural (wall comments)
       final wallRes = await SupabaseService.table('comments')
           .select('*, profiles(*)')
@@ -100,7 +124,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
       _followingCount = (followingRes as List?)?.length ?? 0;
 
       if (!mounted) return;
-      if (mounted) setState(() => _isLoading = false);
+      setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -127,10 +151,6 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
 
     final reputation = _membership?['local_reputation'] as int? ?? 0;
     final level = _membership?['local_level'] as int? ?? calculateLevel(reputation);
-    // ignore: unused_local_variable
-    final progress = levelProgress(reputation);
-    // ignore: unused_local_variable
-    final repToNext = reputationToNextLevel(reputation);
     final title = levelTitle(level);
     final role = _membership?['role'] as String? ?? 'member';
     final titles = (_membership?['custom_titles'] as List<dynamic>?) ?? [];
@@ -144,6 +164,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
         : null;
     final coins = _user?.coins ?? 0;
     final isOnline = _user?.isOnline ?? false;
+    final isPremium = _user?.isPremium ?? false;
     final displayName = localNickname ?? _user?.nickname ?? 'Usuário';
     final displayAvatar = localIconUrl ?? _user?.iconUrl;
     final displayBanner = localBannerUrl ?? _user?.bannerUrl;
@@ -157,737 +178,770 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
       roleTitle = 'Curador';
     }
 
+    // Altura do FlexibleSpaceBar: varia conforme conteúdo
+    // Base: 200 (banner) + avatar(96) + nome + level + tags + botões + conquistas
+    final double expandedHeight = 420 +
+        (titles.isNotEmpty ? r.s(40) : 0) +
+        (roleTitle != null ? r.s(28) : 0);
+
     return Scaffold(
       backgroundColor: context.scaffoldBg,
+      floatingActionButton: _isOwnProfile
+          ? FloatingActionButton(
+              onPressed: () =>
+                  context.push('/community/${widget.communityId}/create-post'),
+              backgroundColor: const Color(0xFF7B2FBE),
+              child: const Icon(Icons.add, color: Colors.white),
+            )
+          : null,
       body: RefreshIndicator(
         color: AppTheme.primaryColor,
         backgroundColor: context.surfaceColor,
         onRefresh: _loadProfile,
         child: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          // ==================================================================
-          // HEADER — Banner + Avatar + Nome + Level + Tags + Editar
-          // ==================================================================
-          SliverAppBar(
-            expandedHeight: 420,
-            pinned: true,
-            backgroundColor: context.scaffoldBg,
-            elevation: 0,
-            leading: IconButton(
-              icon: Icon(Icons.arrow_back_ios_rounded,
-                  color: Colors.white, size: r.s(20)),
-              onPressed: () => context.pop(),
-            ),
-            actions: [
-              // Online indicator
-              Padding(
-                padding: EdgeInsets.only(right: r.s(4)),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: r.s(8),
-                      height: r.s(8),
-                      decoration: BoxDecoration(
-                        color: isOnline ? Colors.green : Colors.grey[600],
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    SizedBox(width: r.s(4)),
-                    Text(
-                      isOnline ? 'Online' : 'Offline',
-                      style: TextStyle(
-                        color: isOnline ? Colors.white : Colors.grey[500],
-                        fontSize: r.fs(12),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
+          headerSliverBuilder: (context, innerBoxIsScrolled) => [
+            // ================================================================
+            // HEADER — Banner + Avatar + Nome + Level + Tags + Botões
+            //          + Conquistas/Moedas (tudo dentro do FlexibleSpaceBar)
+            // ================================================================
+            SliverAppBar(
+              expandedHeight: expandedHeight,
+              pinned: true,
+              backgroundColor: context.scaffoldBg,
+              elevation: 0,
+              leading: IconButton(
+                icon: Icon(Icons.arrow_back_ios_rounded,
+                    color: Colors.white, size: r.s(20)),
+                onPressed: () => context.pop(),
               ),
-              IconButton(
-                icon: Icon(Icons.more_horiz_rounded,
-                    color: Colors.white, size: r.s(22)),
-                onPressed: () => _showOptions(context),
-              ),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  // Banner background
-                  if (displayBanner != null)
-                    CachedNetworkImage(
-                      imageUrl: displayBanner,
-                      fit: BoxFit.cover,
-                      color: Colors.black.withValues(alpha: 0.3),
-                      colorBlendMode: BlendMode.darken,
-                      errorWidget: (_, __, ___) => _defaultBannerGradient(),
-                    )
-                  else
-                    _defaultBannerGradient(),
-
-                  // Gradient overlay (fade to scaffoldBg at bottom)
-                  Positioned(
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: r.s(180),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.transparent,
-                            context.scaffoldBg.withValues(alpha: 0.8),
-                            context.scaffoldBg,
-                          ],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
+              actions: [
+                // Online indicator — chip estilo Amino
+                Padding(
+                  padding: EdgeInsets.only(right: r.s(4)),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: r.s(10), vertical: r.s(4)),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.45),
+                      borderRadius: BorderRadius.circular(r.s(16)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: r.s(7),
+                          height: r.s(7),
+                          decoration: BoxDecoration(
+                            color: isOnline
+                                ? const Color(0xFF4CAF50)
+                                : Colors.grey[600],
+                            shape: BoxShape.circle,
+                          ),
                         ),
-                      ),
+                        SizedBox(width: r.s(5)),
+                        Text(
+                          isOnline ? 'Online' : 'Offline',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: r.fs(12),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.more_horiz_rounded,
+                      color: Colors.white, size: r.s(22)),
+                  onPressed: () => _showOptions(context),
+                ),
+              ],
+              flexibleSpace: FlexibleSpaceBar(
+                background: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // ── Banner background ──────────────────────────────────
+                    if (displayBanner != null)
+                      CachedNetworkImage(
+                        imageUrl: displayBanner,
+                        fit: BoxFit.cover,
+                        color: Colors.black.withValues(alpha: 0.25),
+                        colorBlendMode: BlendMode.darken,
+                        errorWidget: (_, __, ___) => _defaultBannerGradient(),
+                      )
+                    else
+                      _defaultBannerGradient(),
 
-                  // Profile content over banner
-                  Positioned(
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    child: Column(
-                      children: [
-                        // Avatar centralizado
-                        AvatarWithFrame(
-                          avatarUrl: displayAvatar,
-                          size: r.s(96),
-                          showAminoPlus: _user?.isPremium ?? false,
-                        ),
-                        SizedBox(height: r.s(10)),
-
-                        // Nome
-                        Text(
-                          displayName,
-                          style: TextStyle(
-                            color: context.textPrimary,
-                            fontSize: r.fs(22),
-                            fontWeight: FontWeight.w800,
+                    // ── Gradient overlay (fade para scaffoldBg na base) ────
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      height: r.s(200),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.transparent,
+                              context.scaffoldBg.withValues(alpha: 0.7),
+                              context.scaffoldBg,
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
                           ),
-                          textAlign: TextAlign.center,
                         ),
-                        SizedBox(height: r.s(6)),
+                      ),
+                    ),
 
-                        // Level badge + Level title (estilo Amino: Lv13 Best Wizzard)
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: r.s(4), vertical: r.s(3)),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.4),
-                            borderRadius: BorderRadius.circular(r.s(16)),
+                    // ── Conteúdo do perfil (sobre o banner) ────────────────
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Avatar centralizado
+                          AvatarWithFrame(
+                            avatarUrl: displayAvatar,
+                            size: r.s(96),
+                            showAminoPlus: isPremium,
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
+                          SizedBox(height: r.s(10)),
+
+                          // Nome + badge Amino+
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              // Level number badge
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: r.s(6), vertical: 2),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      AppTheme.getLevelColor(level),
-                                      AppTheme.getLevelColor(level)
-                                          .withValues(alpha: 0.7),
+                              Flexible(
+                                child: Text(
+                                  displayName,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: r.fs(22),
+                                    fontWeight: FontWeight.w800,
+                                    shadows: const [
+                                      Shadow(
+                                        color: Colors.black54,
+                                        blurRadius: 8,
+                                        offset: Offset(0, 1),
+                                      ),
                                     ],
                                   ),
-                                  borderRadius: BorderRadius.circular(r.s(12)),
+                                  textAlign: TextAlign.center,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (isPremium) ...[
+                                SizedBox(width: r.s(6)),
+                                const AminoPlusBadge(),
+                              ],
+                            ],
+                          ),
+                          SizedBox(height: r.s(6)),
+
+                          // Level badge + título (ex: Lv13 Best Wizzard)
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: r.s(4), vertical: r.s(3)),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.4),
+                              borderRadius: BorderRadius.circular(r.s(16)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Lv + número
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: r.s(6), vertical: r.s(2)),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        AppTheme.getLevelColor(level),
+                                        AppTheme.getLevelColor(level)
+                                            .withValues(alpha: 0.7),
+                                      ],
+                                    ),
+                                    borderRadius:
+                                        BorderRadius.circular(r.s(12)),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        'Lv',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: r.fs(8),
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      Text(
+                                        '$level',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: r.fs(12),
+                                          fontWeight: FontWeight.w900,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(width: r.s(6)),
+                                // Título do level
+                                Padding(
+                                  padding: EdgeInsets.only(right: r.s(8)),
+                                  child: Text(
+                                    title,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: r.fs(11),
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // Role badge (Líder/Curador) separado
+                          if (roleTitle != null) ...[
+                            SizedBox(height: r.s(4)),
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: r.s(10), vertical: r.s(4)),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(r.s(12)),
+                              ),
+                              child: Text(
+                                roleTitle,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: r.fs(11),
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                          SizedBox(height: r.s(8)),
+
+                          // Custom titles (tags/chips coloridas)
+                          if (titles.isNotEmpty)
+                            Padding(
+                              padding:
+                                  EdgeInsets.symmetric(horizontal: r.s(24)),
+                              child: AminoCustomTitleList(
+                                titles: titles,
+                                maxVisible: 6,
+                              ),
+                            ),
+                          SizedBox(height: r.s(10)),
+
+                          // Botão Editar (próprio) / Friends + Chat (outro)
+                          if (_isOwnProfile)
+                            GestureDetector(
+                              onTap: () => context.push(
+                                  '/community/${widget.communityId}/profile/edit'),
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: r.s(20), vertical: r.s(8)),
+                                decoration: BoxDecoration(
+                                  color:
+                                      Colors.white.withValues(alpha: 0.12),
+                                  borderRadius:
+                                      BorderRadius.circular(r.s(8)),
+                                  border: Border.all(
+                                    color: Colors.white
+                                        .withValues(alpha: 0.2),
+                                  ),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
+                                    Icon(Icons.edit_rounded,
+                                        size: r.s(14),
+                                        color: Colors.grey[300]),
+                                    SizedBox(width: r.s(6)),
                                     Text(
-                                      'Lv',
+                                      'Editar',
                                       style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: r.fs(8),
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    Text(
-                                      '$level',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: r.fs(12),
-                                        fontWeight: FontWeight.w900,
+                                        color: Colors.grey[200],
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: r.fs(13),
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                              SizedBox(width: r.s(6)),
-                              // Level title (ex: Explorador, Mestre)
-                              Padding(
-                                padding: EdgeInsets.only(right: r.s(8)),
-                                child: Text(
-                                  title,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: r.fs(11),
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        // Role badge (Líder/Curador) separado
-                        if (roleTitle != null) ...[                          
-                          SizedBox(height: r.s(4)),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: r.s(10), vertical: r.s(4)),
-                            decoration: BoxDecoration(
-                              color:
-                                  Colors.white.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(r.s(12)),
-                            ),
-                            child: Text(
-                              roleTitle,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: r.fs(11),
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ],
-                        SizedBox(height: r.s(8)),
-
-                        // Custom titles (tags/chips)
-                        if (titles.isNotEmpty)
-                          Padding(
-                            padding:
-                                EdgeInsets.symmetric(horizontal: r.s(24)),
-                            child: AminoCustomTitleList(
-                              titles: titles,
-                              maxVisible: 6,
-                            ),
-                          ),
-                        SizedBox(height: r.s(10)),
-
-                        // Botão Editar / Friends+Chat
-                        if (_isOwnProfile)
-                          GestureDetector(
-                            onTap: () => context.push(
-                                '/community/${widget.communityId}/profile/edit'),
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: r.s(20), vertical: r.s(8)),
-                              decoration: BoxDecoration(
-                                color:
-                                    Colors.white.withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(r.s(8)),
-                                border: Border.all(
-                                  color:
-                                      Colors.white.withValues(alpha: 0.2),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.edit_rounded,
-                                      size: r.s(14), color: Colors.grey[300]),
-                                  SizedBox(width: r.s(6)),
-                                  Text(
-                                    'Editar',
-                                    style: TextStyle(
-                                      color: Colors.grey[200],
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: r.fs(13),
+                            )
+                          else
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                // Botão Seguir/Amigos
+                                GestureDetector(
+                                  onTap: () => _toggleFollow(context),
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: r.s(16),
+                                        vertical: r.s(8)),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFF9800),
+                                      borderRadius:
+                                          BorderRadius.circular(r.s(20)),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text('😊',
+                                            style: TextStyle(
+                                                fontSize: r.fs(14))),
+                                        SizedBox(width: r.s(6)),
+                                        Text(
+                                          'Seguir',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: r.fs(13),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                ],
-                              ),
-                            ),
-                          )
-                        else
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              GestureDetector(
-                                onTap: () async {
-                                  // Toggle follow
-                                  try {
-                                    final currentUserId = SupabaseService.currentUserId;
-                                    if (currentUserId == null) return;
-                                    final existing = await SupabaseService.table('follows')
-                                        .select('id')
-                                        .eq('follower_id', currentUserId)
-                                        .eq('following_id', widget.userId)
-                                        .maybeSingle();
-                                    if (existing != null) {
-                                      await SupabaseService.table('follows')
-                                          .delete()
-                                          .eq('follower_id', currentUserId)
-                                          .eq('following_id', widget.userId);
-                                      if (mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text('Deixou de seguir')),
-                                        );
-                                      }
-                                    } else {
-                                      await SupabaseService.table('follows').insert({
-                                        'follower_id': currentUserId,
-                                        'following_id': widget.userId,
-                                      });
-                                      try {
-                                        await SupabaseService.rpc('add_reputation', params: {
-                                          'p_community_id': widget.communityId,
-                                          'p_user_id': currentUserId,
-                                          'p_action': 'follow',
-                                          'p_source_id': widget.userId,
-                                        });
-                                      } catch (e) {
-                                        debugPrint('[community_profile_screen] Erro: $e');
-                                      }
-                                      if (mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text('Seguindo!')),
-                                        );
-                                      }
-                                    }
-                                    _loadProfile();
-                                  } catch (e) {
-                                    if (mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
-                                      );
-                                    }
-                                  }
-                                },
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: r.s(16), vertical: r.s(8)),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFFF9800),
-                                    borderRadius: BorderRadius.circular(r.s(20)),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text('😊',
-                                          style: TextStyle(fontSize: r.fs(14))),
-                                      SizedBox(width: r.s(6)),
-                                      Text(
-                                        'Friends',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: r.fs(13),
-                                        ),
+                                ),
+                                SizedBox(width: r.s(10)),
+                                // Botão Chat
+                                GestureDetector(
+                                  onTap: () => _openDm(context),
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: r.s(16),
+                                        vertical: r.s(8)),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white
+                                          .withValues(alpha: 0.15),
+                                      borderRadius:
+                                          BorderRadius.circular(r.s(20)),
+                                      border: Border.all(
+                                        color: Colors.white
+                                            .withValues(alpha: 0.3),
                                       ),
-                                    ],
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.chat_bubble_rounded,
+                                            size: r.s(14),
+                                            color: Colors.grey[300]),
+                                        SizedBox(width: r.s(6)),
+                                        Text(
+                                          'Chat',
+                                          style: TextStyle(
+                                            color: Colors.grey[200],
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: r.fs(13),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                              SizedBox(width: r.s(10)),
-                              GestureDetector(
-                                onTap: () async {
-                                  // Criar ou abrir DM com o usuário
-                                  try {
-                                    final currentUserId = SupabaseService.currentUserId;
-                                    if (currentUserId == null) return;
-                                    // Verificar se já existe DM
-                                    final existing = await SupabaseService.table('chat_threads')
-                                        .select('id')
-                                        .eq('type', 'dm')
-                                        .eq('community_id', widget.communityId)
-                                        .or('created_by.eq.$currentUserId,created_by.eq.${widget.userId}')
-                                        .maybeSingle();
-                                    if (existing != null) {
-                                      if (!mounted) return;
-                                      if (mounted) context.push('/community/${widget.communityId}/chat/${existing['id']}');
-                                    } else {
-                                      // Criar novo DM
-                                      final newThread = await SupabaseService.table('chat_threads')
-                                          .insert({
-                                            'community_id': widget.communityId,
-                                            'type': 'dm',
-                                            'created_by': currentUserId,
-                                            'title': 'DM',
-                                          })
-                                          .select()
-                                          .single();
-                                      // Adicionar ambos como membros
-                                      await SupabaseService.table('chat_members').insert([
-                                        {'thread_id': newThread['id'], 'user_id': currentUserId},
-                                        {'thread_id': newThread['id'], 'user_id': widget.userId},
-                                      ]);
-                                      if (!mounted) return;
-                                      if (mounted) context.push('/community/${widget.communityId}/chat/${newThread['id']}');
-                                    }
-                                  } catch (e) {
-                                    if (mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text('Erro ao abrir chat. Tente novamente.')),
-                                      );
-                                    }
-                                  }
-                                },
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: r.s(16), vertical: r.s(8)),
-                                  decoration: BoxDecoration(
-                                    color:
-                                        Colors.white.withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(r.s(20)),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.chat_bubble_rounded,
-                                          size: r.s(14),
-                                          color: Colors.grey[300]),
-                                      SizedBox(width: r.s(6)),
-                                      Text(
-                                        'Chat',
-                                        style: TextStyle(
-                                          color: Colors.grey[200],
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: r.fs(13),
-                                        ),
+                              ],
+                            ),
+                          SizedBox(height: r.s(12)),
+
+                          // ── CONQUISTAS + MOEDAS BAR (dentro do banner) ──
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: r.s(16)),
+                            child: Row(
+                              children: [
+                                // Conquistas badge
+                                GestureDetector(
+                                  onTap: () =>
+                                      context.push('/achievements'),
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: r.s(12),
+                                        vertical: r.s(6)),
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [
+                                          Color(0xFFFF9800),
+                                          Color(0xFFFFB74D)
+                                        ],
                                       ),
-                                    ],
+                                      borderRadius:
+                                          BorderRadius.circular(r.s(16)),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text('🏆',
+                                            style: TextStyle(
+                                                fontSize: r.fs(12))),
+                                        SizedBox(width: r.s(4)),
+                                        Text(
+                                          streak > 0
+                                              ? '$streak Dias na Sequência'
+                                              : 'Conquistas',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: r.fs(11),
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        // Badge "!" vermelho (notificação)
+                                        if (streak > 0) ...[
+                                          SizedBox(width: r.s(4)),
+                                          Container(
+                                            width: r.s(14),
+                                            height: r.s(14),
+                                            decoration: const BoxDecoration(
+                                              color: Colors.red,
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                '!',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: r.fs(9),
+                                                  fontWeight:
+                                                      FontWeight.w900,
+                                                  height: 1.0,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        SizedBox(height: r.s(12)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // ==================================================================
-          // CONQUISTAS + MOEDAS BAR
-          // ==================================================================
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: r.s(16)),
-              child: Row(
-                children: [
-                  // Conquistas badge
-                  GestureDetector(
-                    onTap: () => context.push('/achievements'),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: r.s(12), vertical: r.s(6)),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFFF9800), Color(0xFFFFB74D)],
-                        ),
-                        borderRadius: BorderRadius.circular(r.s(16)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text('🏆',
-                              style: TextStyle(fontSize: r.fs(12))),
-                          SizedBox(width: r.s(4)),
-                          Text(
-                            'Conquistas',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: r.fs(11),
-                              fontWeight: FontWeight.w700,
+                                const Spacer(),
+                                // Moedas badge
+                                GestureDetector(
+                                  onTap: () => context.push('/wallet'),
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: r.s(10),
+                                        vertical: r.s(6)),
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [
+                                          Color(0xFF2196F3),
+                                          Color(0xFF42A5F5)
+                                        ],
+                                      ),
+                                      borderRadius:
+                                          BorderRadius.circular(r.s(16)),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Container(
+                                          width: r.s(16),
+                                          height: r.s(16),
+                                          decoration: const BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            gradient: LinearGradient(
+                                              colors: [
+                                                Color(0xFFFFD700),
+                                                Color(0xFFFFA500)
+                                              ],
+                                            ),
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              'A',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: r.fs(9),
+                                                fontWeight:
+                                                    FontWeight.w900,
+                                                height: 1.0,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(width: r.s(4)),
+                                        Text(
+                                          formatCount(coins),
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: r.fs(12),
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        SizedBox(width: r.s(4)),
+                                        Container(
+                                          width: r.s(16),
+                                          height: r.s(16),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white
+                                                .withValues(alpha: 0.3),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(Icons.add,
+                                              color: Colors.white,
+                                              size: r.s(11)),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          if (streak > 0) ...[
-                            SizedBox(width: r.s(4)),
-                            Text('❗',
-                                style: TextStyle(fontSize: r.fs(10))),
-                          ],
+                          SizedBox(height: r.s(12)),
                         ],
                       ),
                     ),
-                  ),
-                  const Spacer(),
-                  // Moedas badge
-                  GestureDetector(
-                    onTap: () => context.push('/wallet'),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: r.s(10), vertical: r.s(6)),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF2196F3), Color(0xFF42A5F5)],
-                        ),
-                        borderRadius: BorderRadius.circular(r.s(16)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: r.s(16),
-                            height: r.s(16),
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: LinearGradient(
-                                colors: [
-                                  Color(0xFFFFD700),
-                                  Color(0xFFFFA500)
-                                ],
-                              ),
-                            ),
-                            child: Center(
-                              child: Text('A',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: r.fs(9),
-                                      fontWeight: FontWeight.w900,
-                                      height: 1.0)),
-                            ),
-                          ),
-                          SizedBox(width: r.s(4)),
-                          Text(
-                            formatCount(coins),
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: r.fs(12),
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          SizedBox(width: r.s(4)),
-                          Container(
-                            width: r.s(16),
-                            height: r.s(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.3),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(Icons.add,
-                                color: Colors.white, size: r.s(11)),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // ==================================================================
-          // STATS — 3 colunas: Reputação | Seguindo | Seguidores
-          // ==================================================================
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(8)),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Text(
-                          formatCount(reputation),
-                          style: TextStyle(
-                            color: context.textPrimary,
-                            fontSize: r.fs(28),
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Reputação',
-                          style: TextStyle(
-                              color: Colors.grey[500],
-                              fontSize: r.fs(12),
-                              fontWeight: FontWeight.w500),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () =>
-                          context.push('/user/${widget.userId}/followers?tab=following'),
-                      child: Column(
-                        children: [
-                          Text(
-                            formatCount(_followingCount),
-                            style: TextStyle(
-                              color: context.textPrimary,
-                              fontSize: r.fs(28),
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Seguindo',
-                            style: TextStyle(
-                                color: Colors.grey[500],
-                                fontSize: r.fs(12),
-                                fontWeight: FontWeight.w500),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () =>
-                          context.push('/user/${widget.userId}/followers'),
-                      child: Column(
-                        children: [
-                          Text(
-                            formatCount(_followersCount),
-                            style: TextStyle(
-                              color: context.textPrimary,
-                              fontSize: r.fs(28),
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Seguidores',
-                            style: TextStyle(
-                                color: Colors.grey[500],
-                                fontSize: r.fs(12),
-                                fontWeight: FontWeight.w500),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // ==================================================================
-          // BIO SECTION — "Biografia" + "Membro desde..."
-          // ==================================================================
-          SliverToBoxAdapter(
-            child: Container(
-              margin: EdgeInsets.fromLTRB(0, r.s(8), 0, 0),
-              padding: EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(12)),
-              decoration: BoxDecoration(
-                color: context.surfaceColor,
-                border: Border(
-                  top: BorderSide(
-                      color: Colors.white.withValues(alpha: 0.05)),
+                  ],
                 ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // "Biografia" + "Membro desde..."
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
-                    children: [
-                      Text(
-                        'Biografia',
-                        style: TextStyle(
-                          color: context.textPrimary,
-                          fontSize: r.fs(18),
-                          fontWeight: FontWeight.w800,
+            ),
+
+            // ================================================================
+            // STATS — 3 colunas: Reputação | Seguindo | Seguidores
+            // ================================================================
+            SliverToBoxAdapter(
+              child: Container(
+                color: context.scaffoldBg,
+                padding: EdgeInsets.fromLTRB(
+                    r.s(16), r.s(16), r.s(16), r.s(8)),
+                child: Row(
+                  children: [
+                    // Reputação
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Text(
+                            formatCount(reputation),
+                            style: TextStyle(
+                              color: context.textPrimary,
+                              fontSize: r.fs(28),
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Reputação',
+                            style: TextStyle(
+                                color: Colors.grey[500],
+                                fontSize: r.fs(12),
+                                fontWeight: FontWeight.w500),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Seguindo
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => context.push(
+                            '/user/${widget.userId}/followers?tab=following'),
+                        child: Column(
+                          children: [
+                            Text(
+                              formatCount(_followingCount),
+                              style: TextStyle(
+                                color: context.textPrimary,
+                                fontSize: r.fs(28),
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Seguindo',
+                              style: TextStyle(
+                                  color: Colors.grey[500],
+                                  fontSize: r.fs(12),
+                                  fontWeight: FontWeight.w500),
+                            ),
+                          ],
                         ),
                       ),
-                      SizedBox(width: r.s(10)),
-                      if (joinedAt != null)
-                        Expanded(
-                          child: Text(
-                            _memberSinceText(joinedAt),
-                            style: TextStyle(
-                              color: Colors.grey[500],
-                              fontSize: r.fs(11),
+                    ),
+                    // Seguidores
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () =>
+                            context.push('/user/${widget.userId}/followers'),
+                        child: Column(
+                          children: [
+                            Text(
+                              formatCount(_followersCount),
+                              style: TextStyle(
+                                color: context.textPrimary,
+                                fontSize: r.fs(28),
+                                fontWeight: FontWeight.w900,
+                              ),
                             ),
-                            overflow: TextOverflow.ellipsis,
+                            const SizedBox(height: 2),
+                            Text(
+                              'Seguidores',
+                              style: TextStyle(
+                                  color: Colors.grey[500],
+                                  fontSize: r.fs(12),
+                                  fontWeight: FontWeight.w500),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // ================================================================
+            // BIO — "Biografia" + "Membro desde..." + texto + seta expandir
+            // ================================================================
+            SliverToBoxAdapter(
+              child: Container(
+                margin: EdgeInsets.fromLTRB(0, r.s(4), 0, 0),
+                padding: EdgeInsets.fromLTRB(
+                    r.s(16), r.s(16), r.s(16), r.s(12)),
+                decoration: BoxDecoration(
+                  color: context.surfaceColor,
+                  border: Border(
+                    top: BorderSide(
+                        color: Colors.white.withValues(alpha: 0.05)),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header: "Biografia" + "Membro desde..."
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Text(
+                          'Biografia',
+                          style: TextStyle(
+                            color: context.textPrimary,
+                            fontSize: r.fs(18),
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
-                    ],
-                  ),
-                  SizedBox(height: r.s(10)),
-                  // Bio text
-                  if (displayBio.isNotEmpty)
-                    Text(
-                      displayBio,
-                      style: TextStyle(
-                        color: Colors.grey[300],
-                        fontSize: r.fs(14),
-                        height: 1.5,
-                      ),
-                      maxLines: 5,
-                      overflow: TextOverflow.ellipsis,
-                    )
-                  else if (_isOwnProfile)
-                    GestureDetector(
-                      onTap: () => context.push(
-                          '/community/${widget.communityId}/profile/edit'),
-                      child: Text(
-                        'Clique aqui para adicionar sua biografia!',
-                        style: TextStyle(
-                          color: AppTheme.accentColor,
-                          fontSize: r.fs(13),
-                        ),
-                      ),
-                    )
-                  else
-                    Text(
-                      'Sem biografia',
-                      style: TextStyle(
-                          color: Colors.grey[600], fontSize: r.fs(13)),
+                        SizedBox(width: r.s(10)),
+                        if (joinedAt != null)
+                          Expanded(
+                            child: Text(
+                              _memberSinceText(joinedAt),
+                              style: TextStyle(
+                                color: Colors.grey[500],
+                                fontSize: r.fs(11),
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                      ],
                     ),
-                ],
+                    SizedBox(height: r.s(10)),
+                    // Bio text + seta para expandir
+                    if (displayBio.isNotEmpty)
+                      GestureDetector(
+                        onTap: () =>
+                            setState(() => _bioExpanded = !_bioExpanded),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                displayBio,
+                                style: TextStyle(
+                                  color: Colors.grey[300],
+                                  fontSize: r.fs(14),
+                                  height: 1.5,
+                                ),
+                                maxLines: _bioExpanded ? null : 3,
+                                overflow: _bioExpanded
+                                    ? TextOverflow.visible
+                                    : TextOverflow.ellipsis,
+                              ),
+                            ),
+                            SizedBox(width: r.s(8)),
+                            Icon(
+                              _bioExpanded
+                                  ? Icons.keyboard_arrow_up_rounded
+                                  : Icons.keyboard_arrow_right_rounded,
+                              color: Colors.grey[500],
+                              size: r.s(20),
+                            ),
+                          ],
+                        ),
+                      )
+                    else if (_isOwnProfile)
+                      GestureDetector(
+                        onTap: () => context.push(
+                            '/community/${widget.communityId}/profile/edit'),
+                        child: Text(
+                          'Clique aqui para adicionar sua biografia!',
+                          style: TextStyle(
+                            color: AppTheme.accentColor,
+                            fontSize: r.fs(13),
+                          ),
+                        ),
+                      )
+                    else
+                      Text(
+                        'Sem biografia',
+                        style: TextStyle(
+                            color: Colors.grey[600], fontSize: r.fs(13)),
+                      ),
+                  ],
+                ),
               ),
             ),
-          ),
 
-          // ==================================================================
-          // TABS — Posts | Mural | Posts Salvos
-          // ==================================================================
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: _TabBarDelegate(
-              TabBar(
-                controller: _tabController,
-                labelColor: AppTheme.primaryColor,
-                unselectedLabelColor: Colors.grey[500],
-                indicatorColor: AppTheme.primaryColor,
-                indicatorWeight: 3,
-                indicatorSize: TabBarIndicatorSize.tab,
-                labelStyle: TextStyle(
-                    fontWeight: FontWeight.w700, fontSize: r.fs(14)),
-                unselectedLabelStyle: TextStyle(
-                    fontWeight: FontWeight.w500, fontSize: r.fs(14)),
-                tabs: [
-                  Tab(
-                    child: Text(
-                        'Posts ${_userPosts.isNotEmpty ? _userPosts.length : ''}'),
-                  ),
-                  Tab(
-                    child: Text(
-                        'Mural ${_wallComments.isNotEmpty ? _wallComments.length : ''}'),
-                  ),
-                  const Tab(text: 'Posts Salvos'),
-                ],
+            // ================================================================
+            // TABS — Posts | Mural | Posts Salvos
+            // ================================================================
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _TabBarDelegate(
+                TabBar(
+                  controller: _tabController,
+                  labelColor: AppTheme.primaryColor,
+                  unselectedLabelColor: Colors.grey[500],
+                  indicatorColor: AppTheme.primaryColor,
+                  indicatorWeight: 3,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  labelStyle: TextStyle(
+                      fontWeight: FontWeight.w700, fontSize: r.fs(14)),
+                  unselectedLabelStyle: TextStyle(
+                      fontWeight: FontWeight.w500, fontSize: r.fs(14)),
+                  tabs: [
+                    Tab(
+                      child: Text(
+                          'Posts${_userPosts.isNotEmpty ? ' ${_userPosts.length}' : ''}'),
+                    ),
+                    Tab(
+                      child: Text(
+                          'Mural${_wallComments.isNotEmpty ? ' ${_wallComments.length}' : ''}'),
+                    ),
+                    const Tab(text: 'Posts Salvos'),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildPostsTab(),
-            _buildWallTab(),
-            _buildSavedPostsTab(),
           ],
+          body: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildPostsTab(),
+              _buildWallTab(),
+              _buildSavedPostsTab(),
+            ],
+          ),
         ),
       ),
-      ), // RefreshIndicator
     );
   }
 
@@ -895,15 +949,18 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
   // POSTS TAB
   // ============================================================================
   Widget _buildPostsTab() {
-      final r = context.r;
-    return Column(
+    final r = context.r;
+    return ListView(
+      padding: EdgeInsets.zero,
       children: [
         // "Criar nova publicação" button
         if (_isOwnProfile)
           GestureDetector(
-            onTap: () => context.push('/community/${widget.communityId}/create-post'),
+            onTap: () =>
+                context.push('/community/${widget.communityId}/create-post'),
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(14)),
+              padding: EdgeInsets.symmetric(
+                  horizontal: r.s(16), vertical: r.s(14)),
               decoration: BoxDecoration(
                 color: context.surfaceColor,
                 border: Border(
@@ -936,94 +993,196 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
               ),
             ),
           ),
-        // Posts list
-        Expanded(
-          child: _userPosts.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.article_outlined,
-                          size: r.s(48), color: Colors.grey[700]),
-                      SizedBox(height: r.s(12)),
-                      Text('Nenhum post nesta comunidade',
-                          style: TextStyle(
-                              color: Colors.grey[500],
-                              fontWeight: FontWeight.w600)),
-                    ],
+
+        // ── Minhas Entradas Wiki ──────────────────────────────────────────
+        if (_wikiEntries.isNotEmpty) ...[
+          Padding(
+            padding: EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(8)),
+            child: GestureDetector(
+              onTap: () => context
+                  .push('/community/${widget.communityId}/wiki'),
+              child: Row(
+                children: [
+                  Text(
+                    'Minhas Entradas Wiki',
+                    style: TextStyle(
+                      color: context.textPrimary,
+                      fontSize: r.fs(16),
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                )
-              : ListView.builder(
-                  padding: EdgeInsets.all(r.s(16)),
-                  itemCount: _userPosts.length,
-                  itemBuilder: (context, index) {
-                    final post = _userPosts[index];
-                    return GestureDetector(
-                      onTap: () => context.push('/post/${post['id']}'),
-                      child: Container(
-                        margin: EdgeInsets.only(bottom: r.s(12)),
-                        padding: EdgeInsets.all(r.s(16)),
-                        decoration: BoxDecoration(
-                          color: context.surfaceColor,
-                          borderRadius: BorderRadius.circular(r.s(12)),
-                          border: Border.all(
-                              color:
-                                  Colors.white.withValues(alpha: 0.05)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (post['title'] != null)
-                              Text(
-                                post['title'] as String? ?? '',
-                                style: TextStyle(
-                                    color: context.textPrimary,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: r.fs(15)),
-                              ),
-                            if (post['content'] != null) ...[
-                              SizedBox(height: r.s(4)),
-                              Text(
-                                post['content'] as String? ?? '',
-                                maxLines: 3,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                    color: Colors.grey[500],
-                                    fontSize: r.fs(13)),
-                              ),
-                            ],
-                            SizedBox(height: r.s(10)),
-                            Row(
-                              children: [
-                                Icon(Icons.favorite_rounded,
-                                    size: r.s(14), color: Colors.grey[600]),
-                                SizedBox(width: r.s(4)),
-                                Text(
-                                    '${post['likes_count'] ?? 0}',
-                                    style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: r.fs(12),
-                                        fontWeight: FontWeight.w600)),
-                                SizedBox(width: r.s(14)),
-                                Icon(Icons.comment_rounded,
-                                    size: r.s(14), color: Colors.grey[600]),
-                                SizedBox(width: r.s(4)),
-                                Text(
-                                    '${post['comments_count'] ?? 0}',
-                                    style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: r.fs(12),
-                                        fontWeight: FontWeight.w600)),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
+                  const Spacer(),
+                  Icon(Icons.chevron_right_rounded,
+                      color: Colors.grey[500], size: r.s(20)),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(
+            height: r.s(120),
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.symmetric(horizontal: r.s(12)),
+              itemCount: _wikiEntries.length,
+              itemBuilder: (context, index) {
+                final wiki = _wikiEntries[index];
+                final coverUrl = wiki['cover_image_url'] as String?;
+                final wikiTitle = wiki['title'] as String? ?? 'Wiki';
+                final wikiId = wiki['id'] as String?;
+                return GestureDetector(
+                  onTap: () {
+                    if (wikiId != null) context.push('/wiki/$wikiId');
                   },
+                  child: Container(
+                    width: r.s(90),
+                    margin: EdgeInsets.symmetric(horizontal: r.s(4)),
+                    decoration: BoxDecoration(
+                      color: context.surfaceColor,
+                      borderRadius: BorderRadius.circular(r.s(10)),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.08)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Thumbnail
+                        ClipRRect(
+                          borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(r.s(10))),
+                          child: coverUrl != null
+                              ? CachedNetworkImage(
+                                  imageUrl: coverUrl,
+                                  width: r.s(90),
+                                  height: r.s(70),
+                                  fit: BoxFit.cover,
+                                  errorWidget: (_, __, ___) =>
+                                      _wikiPlaceholder(r),
+                                )
+                              : _wikiPlaceholder(r),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(r.s(5)),
+                          child: Text(
+                            wikiTitle,
+                            style: TextStyle(
+                              color: context.textPrimary,
+                              fontSize: r.fs(10),
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          Divider(
+            color: Colors.white.withValues(alpha: 0.05),
+            height: r.s(16),
+          ),
+        ],
+
+        // ── Lista de posts ────────────────────────────────────────────────
+        if (_userPosts.isEmpty)
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: r.s(48)),
+            child: Center(
+              child: Column(
+                children: [
+                  Icon(Icons.article_outlined,
+                      size: r.s(48), color: Colors.grey[700]),
+                  SizedBox(height: r.s(12)),
+                  Text('Nenhum post nesta comunidade',
+                      style: TextStyle(
+                          color: Colors.grey[500],
+                          fontWeight: FontWeight.w600)),
+                ],
+              ),
+            ),
+          )
+        else
+          ...List.generate(_userPosts.length, (index) {
+            final post = _userPosts[index];
+            return GestureDetector(
+              onTap: () => context.push('/post/${post['id']}'),
+              child: Container(
+                margin: EdgeInsets.fromLTRB(
+                    r.s(16), r.s(6), r.s(16), r.s(6)),
+                padding: EdgeInsets.all(r.s(16)),
+                decoration: BoxDecoration(
+                  color: context.surfaceColor,
+                  borderRadius: BorderRadius.circular(r.s(12)),
+                  border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.05)),
                 ),
-        ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (post['title'] != null)
+                      Text(
+                        post['title'] as String? ?? '',
+                        style: TextStyle(
+                            color: context.textPrimary,
+                            fontWeight: FontWeight.w700,
+                            fontSize: r.fs(15)),
+                      ),
+                    if (post['content'] != null) ...[
+                      SizedBox(height: r.s(4)),
+                      Text(
+                        post['content'] as String? ?? '',
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            color: Colors.grey[500], fontSize: r.fs(13)),
+                      ),
+                    ],
+                    SizedBox(height: r.s(10)),
+                    Row(
+                      children: [
+                        Icon(Icons.favorite_rounded,
+                            size: r.s(14), color: Colors.grey[600]),
+                        SizedBox(width: r.s(4)),
+                        Text(
+                          '${post['likes_count'] ?? 0}',
+                          style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: r.fs(12),
+                              fontWeight: FontWeight.w600),
+                        ),
+                        SizedBox(width: r.s(14)),
+                        Icon(Icons.comment_rounded,
+                            size: r.s(14), color: Colors.grey[600]),
+                        SizedBox(width: r.s(4)),
+                        Text(
+                          '${post['comments_count'] ?? 0}',
+                          style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: r.fs(12),
+                              fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+        SizedBox(height: r.s(80)), // espaço para o FAB
       ],
+    );
+  }
+
+  Widget _wikiPlaceholder(Responsive r) {
+    return Container(
+      width: r.s(90),
+      height: r.s(70),
+      color: context.scaffoldBg,
+      child: Icon(Icons.menu_book_rounded,
+          size: r.s(28), color: Colors.grey[700]),
     );
   }
 
@@ -1031,7 +1190,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
   // WALL TAB
   // ============================================================================
   Widget _buildWallTab() {
-      final r = context.r;
+    final r = context.r;
     return Column(
       children: [
         // Input
@@ -1053,8 +1212,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                       color: context.textPrimary, fontSize: r.fs(14)),
                   decoration: InputDecoration(
                     hintText: 'Escreva no mural...',
-                    hintStyle:
-                        TextStyle(color: Colors.grey[600], fontSize: r.fs(14)),
+                    hintStyle: TextStyle(
+                        color: Colors.grey[600], fontSize: r.fs(14)),
                     filled: true,
                     fillColor: context.scaffoldBg,
                     border: OutlineInputBorder(
@@ -1108,20 +1267,25 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           GestureDetector(
-                            onTap: () => context.push(
-                                '/user/${comment.authorId}'),
+                            onTap: () => context
+                                .push('/user/${comment.authorId}'),
                             child: CircleAvatar(
                               radius: 18,
                               backgroundColor: context.scaffoldBg,
                               backgroundImage: () {
-                                final authorIcon = comment.author?.iconUrl;
-                                return authorIcon != null && authorIcon.isNotEmpty
-                                    ? CachedNetworkImageProvider(authorIcon)
+                                final authorIcon =
+                                    comment.author?.iconUrl;
+                                return authorIcon != null &&
+                                        authorIcon.isNotEmpty
+                                    ? CachedNetworkImageProvider(
+                                        authorIcon)
                                     : null;
                               }(),
                               child: () {
-                                final authorIcon = comment.author?.iconUrl;
-                                return authorIcon == null || authorIcon.isEmpty
+                                final authorIcon =
+                                    comment.author?.iconUrl;
+                                return authorIcon == null ||
+                                        authorIcon.isEmpty
                                     ? Icon(Icons.person_rounded,
                                         size: r.s(18),
                                         color: context.textPrimary)
@@ -1166,30 +1330,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
   // ============================================================================
   // SAVED POSTS TAB
   // ============================================================================
-  List<Map<String, dynamic>> _savedPosts = [];
-  bool _savedPostsLoaded = false;
-
-  Future<void> _loadSavedPosts() async {
-    if (_savedPostsLoaded) return;
-    try {
-      final res = await SupabaseService.table('bookmarks')
-          .select('*, posts!bookmarks_post_id_fkey(*, profiles!posts_author_id_fkey(nickname, icon_url))')
-          .eq('user_id', widget.userId)
-          .order('created_at', ascending: false)
-          .limit(50);
-      if (mounted) {
-        setState(() {
-          _savedPosts = List<Map<String, dynamic>>.from(res as List? ?? []);
-          _savedPostsLoaded = true;
-        });
-      }
-    } catch (e) {
-      if (mounted) setState(() => _savedPostsLoaded = true);
-    }
-  }
-
   Widget _buildSavedPostsTab() {
-      final r = context.r;
+    final r = context.r;
     if (!_savedPostsLoaded) {
       _loadSavedPosts();
       return const Center(
@@ -1202,10 +1344,13 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.lock_outline_rounded, size: r.s(48), color: Colors.grey[700]),
+            Icon(Icons.lock_outline_rounded,
+                size: r.s(48), color: Colors.grey[700]),
             SizedBox(height: r.s(12)),
             Text('Posts salvos são privados',
-                style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w600)),
+                style: TextStyle(
+                    color: Colors.grey[500],
+                    fontWeight: FontWeight.w600)),
           ],
         ),
       );
@@ -1216,13 +1361,19 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.bookmark_outline_rounded, size: r.s(48), color: Colors.grey[700]),
+            Icon(Icons.bookmark_outline_rounded,
+                size: r.s(48), color: Colors.grey[700]),
             SizedBox(height: r.s(12)),
             Text('Nenhum post salvo',
-                style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w600)),
+                style: TextStyle(
+                    color: Colors.grey[500],
+                    fontWeight: FontWeight.w600)),
             SizedBox(height: r.s(6)),
-            Text('Toque no ícone de bookmark nos posts para salvá-los',
-                style: TextStyle(color: Colors.grey[600], fontSize: r.fs(12))),
+            Text(
+              'Toque no ícone de bookmark nos posts para salvá-los',
+              style: TextStyle(
+                  color: Colors.grey[600], fontSize: r.fs(12)),
+            ),
           ],
         ),
       );
@@ -1234,8 +1385,10 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
       separatorBuilder: (_, __) => SizedBox(height: r.s(10)),
       itemBuilder: (context, index) {
         final bookmark = _savedPosts[index];
-        final post = bookmark['posts'] as Map<String, dynamic>? ?? {};
-        final author = post['profiles'] as Map<String, dynamic>?;
+        final post =
+            bookmark['posts'] as Map<String, dynamic>? ?? {};
+        final author =
+            post['profiles'] as Map<String, dynamic>?;
         final postId = post['id'] as String?;
 
         return GestureDetector(
@@ -1247,7 +1400,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
             decoration: BoxDecoration(
               color: context.surfaceColor,
               borderRadius: BorderRadius.circular(r.s(14)),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+              border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.05)),
             ),
             child: Row(
               children: [
@@ -1261,7 +1415,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                       fit: BoxFit.cover,
                     ),
                   ),
-                if (post['cover_image_url'] != null) SizedBox(width: r.s(12)),
+                if (post['cover_image_url'] != null)
+                  SizedBox(width: r.s(12)),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1279,7 +1434,9 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                       SizedBox(height: r.s(4)),
                       Text(
                         'por ${author?['nickname'] ?? 'Usuário'}',
-                        style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
+                        style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: r.fs(12)),
                       ),
                     ],
                   ),
@@ -1295,7 +1452,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                       if (!mounted) return;
                       setState(() => _savedPosts.removeAt(index));
                     } catch (e) {
-                      debugPrint('[community_profile_screen] Erro: $e');
+                      debugPrint(
+                          '[community_profile_screen] Erro: $e');
                     }
                   },
                 ),
@@ -1307,42 +1465,119 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
     );
   }
 
-  // ============================================================================
-  // HELPERS
-  // ============================================================================
-
-  Widget _defaultBannerGradient() {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppTheme.primaryColor.withValues(alpha: 0.6),
-            context.scaffoldBg,
-          ],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-      ),
-    );
-  }
-
-  String _memberSinceText(DateTime joinedAt) {
-    final months = [
-      'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
-      'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'
-    ];
-    final days = DateTime.now().difference(joinedAt).inDays;
-    return 'Membro desde ${months[joinedAt.month - 1]} ${joinedAt.year} ($days dias)';
-  }
-
-  // ignore: unused_element
-  Color _parseColor(String hex) {
+  Future<void> _loadSavedPosts() async {
+    if (_savedPostsLoaded) return;
     try {
-      hex = hex.replaceAll('#', '');
-      if (hex.length == 6) hex = 'FF$hex';
-      return Color(int.parse(hex, radix: 16));
-    } catch (_) {
-      return AppTheme.primaryColor.withValues(alpha: 0.3);
+      final res = await SupabaseService.table('bookmarks')
+          .select(
+              '*, posts!bookmarks_post_id_fkey(*, profiles!posts_author_id_fkey(nickname, icon_url))')
+          .eq('user_id', widget.userId)
+          .order('created_at', ascending: false)
+          .limit(50);
+      if (mounted) {
+        setState(() {
+          _savedPosts =
+              List<Map<String, dynamic>>.from(res as List? ?? []);
+          _savedPostsLoaded = true;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _savedPostsLoaded = true);
+    }
+  }
+
+  // ============================================================================
+  // ACTIONS
+  // ============================================================================
+
+  Future<void> _toggleFollow(BuildContext context) async {
+    try {
+      final currentUserId = SupabaseService.currentUserId;
+      if (currentUserId == null) return;
+      final existing = await SupabaseService.table('follows')
+          .select('id')
+          .eq('follower_id', currentUserId)
+          .eq('following_id', widget.userId)
+          .maybeSingle();
+      if (existing != null) {
+        await SupabaseService.table('follows')
+            .delete()
+            .eq('follower_id', currentUserId)
+            .eq('following_id', widget.userId);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Deixou de seguir')),
+          );
+        }
+      } else {
+        await SupabaseService.table('follows').insert({
+          'follower_id': currentUserId,
+          'following_id': widget.userId,
+        });
+        try {
+          await SupabaseService.rpc('add_reputation', params: {
+            'p_community_id': widget.communityId,
+            'p_user_id': currentUserId,
+            'p_action': 'follow',
+            'p_source_id': widget.userId,
+          });
+        } catch (_) {}
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Seguindo!')),
+          );
+        }
+      }
+      _loadProfile();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Ocorreu um erro. Tente novamente.')),
+        );
+      }
+    }
+  }
+
+  Future<void> _openDm(BuildContext context) async {
+    try {
+      final currentUserId = SupabaseService.currentUserId;
+      if (currentUserId == null) return;
+      final existing = await SupabaseService.table('chat_threads')
+          .select('id')
+          .eq('type', 'dm')
+          .eq('community_id', widget.communityId)
+          .or('created_by.eq.$currentUserId,created_by.eq.${widget.userId}')
+          .maybeSingle();
+      if (existing != null) {
+        if (!mounted) return;
+        context.push(
+            '/community/${widget.communityId}/chat/${existing['id']}');
+      } else {
+        final newThread = await SupabaseService.table('chat_threads')
+            .insert({
+              'community_id': widget.communityId,
+              'type': 'dm',
+              'created_by': currentUserId,
+              'title': 'DM',
+            })
+            .select()
+            .single();
+        await SupabaseService.table('chat_members').insert([
+          {'thread_id': newThread['id'], 'user_id': currentUserId},
+          {'thread_id': newThread['id'], 'user_id': widget.userId},
+        ]);
+        if (!mounted) return;
+        context.push(
+            '/community/${widget.communityId}/chat/${newThread['id']}');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Erro ao abrir chat. Tente novamente.')),
+        );
+      }
     }
   }
 
@@ -1370,15 +1605,18 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
+          const SnackBar(
+              content: Text('Ocorreu um erro. Tente novamente.')),
         );
       }
     }
   }
 
+  // ============================================================================
+  // OPTIONS BOTTOM SHEET
+  // ============================================================================
   void _showOptions(BuildContext context) {
-
-      final r = context.r;
+    final r = context.r;
     showModalBottomSheet(
       context: context,
       backgroundColor: context.surfaceColor,
@@ -1409,7 +1647,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
             ],
             _optionTile(Icons.share_rounded, 'Compartilhar Perfil', () {
               Navigator.pop(ctx);
-              final link = 'https://nexushub.app/community/${widget.communityId}/profile/${widget.userId}';
+              final link =
+                  'https://nexushub.app/community/${widget.communityId}/profile/${widget.userId}';
               Clipboard.setData(ClipboardData(text: link));
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -1429,9 +1668,9 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
 
   Widget _optionTile(IconData icon, String label, VoidCallback onTap,
       {bool isDestructive = false}) {
-
-      final r = context.r;
-    final color = isDestructive ? AppTheme.errorColor : Colors.grey[400];
+    final r = context.r;
+    final color =
+        isDestructive ? AppTheme.errorColor : Colors.grey[400];
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -1450,6 +1689,34 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
         ),
       ),
     );
+  }
+
+  // ============================================================================
+  // HELPERS
+  // ============================================================================
+
+  Widget _defaultBannerGradient() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppTheme.primaryColor.withValues(alpha: 0.6),
+            context.scaffoldBg,
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+    );
+  }
+
+  String _memberSinceText(DateTime joinedAt) {
+    const months = [
+      'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+      'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'
+    ];
+    final days = DateTime.now().difference(joinedAt).inDays;
+    return 'Membro desde ${months[joinedAt.month - 1]} ${joinedAt.year} ($days dias)';
   }
 }
 
