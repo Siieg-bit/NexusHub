@@ -178,8 +178,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                             ),
                           ),
                         ),
-                        // 5. Bottom bar fixa
-                        _buildBottomBar(r, themeColor),
+
                       ],
                     ),
                   ),
@@ -748,53 +747,6 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // BOTTOM BAR FIXA: All Members | Alerts | Compose
-  // ---------------------------------------------------------------------------
-  Widget _buildBottomBar(Responsive r, Color themeColor) {
-    return Container(
-      decoration: BoxDecoration(
-        color: context.scaffoldBg,
-        border: Border(
-          top: BorderSide(color: context.dividerClr, width: 1),
-        ),
-      ),
-      padding: EdgeInsets.symmetric(vertical: r.s(8)),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _BottomBarButton(
-            icon: Icons.people_rounded,
-            label: 'All Members',
-            onTap: () => _closeAndNavigate(() {
-              context.push('/community/${widget.community.id}/members');
-            }),
-          ),
-          _BottomBarButton(
-            icon: Icons.notifications_rounded,
-            label: 'Alerts',
-            onTap: () => _closeAndNavigate(() {
-              context.push('/notifications');
-            }),
-          ),
-          _BottomBarButton(
-            icon: Icons.edit_rounded,
-            label: 'Compose',
-            onTap: () {
-              Navigator.pop(context);
-              // Abre o menu de criação via callback de volta à tela principal
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (!mounted) return;
-                // Navegar para create-post como fallback
-                context.push(
-                    '/community/${widget.community.id}/create-post');
-              });
-            },
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 // =============================================================================
@@ -844,40 +796,3 @@ class _DrawerTile extends StatelessWidget {
   }
 }
 
-// =============================================================================
-// BOTTOM BAR BUTTON
-// =============================================================================
-class _BottomBarButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _BottomBarButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final r = context.r;
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: context.textPrimary, size: r.s(22)),
-          SizedBox(height: r.s(3)),
-          Text(
-            label,
-            style: TextStyle(
-              color: Colors.grey[500],
-              fontSize: r.fs(10),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
