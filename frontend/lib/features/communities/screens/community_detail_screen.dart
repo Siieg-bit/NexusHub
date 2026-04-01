@@ -21,6 +21,7 @@ import '../widgets/community_live_chats.dart';
 import '../widgets/community_guidelines_tab.dart';
 import '../widgets/community_feed_tab.dart';
 import '../widgets/community_chat_tab.dart';
+import '../widgets/community_create_menu.dart';
 
 // =============================================================================
 // MAIN SCREEN — Estilo Amino Apps
@@ -300,8 +301,11 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                     currentUserProfileProvider.select((a) => a.valueOrNull?.iconUrl),
                   ),
                   onMenuTap: () => AminoDrawerController.of(context)?.toggle(),
-                  onCreateTap: () => context.push(
-                      '/community/${widget.communityId}/create-post'),
+                  onCreateTap: () => showCommunityCreateMenu(
+                    context,
+                    communityId: widget.communityId,
+                    communityName: community.name,
+                  ),
                   onTap: (index) => setState(() => _bottomIndex = index),
                 )
               : null,

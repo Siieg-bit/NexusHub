@@ -17,14 +17,20 @@ import '../../../core/providers/draft_provider.dart';
 /// Link Externo (5), Quiz Interativo (6), Imagem (7), Post Externo (8).
 class CreatePostScreen extends ConsumerStatefulWidget {
   final String communityId;
-  const CreatePostScreen({super.key, required this.communityId});
+  /// Tipo de post pré-selecionado ao abrir (ex: 'image', 'poll', 'quiz', 'link', 'qa', 'normal').
+  final String? initialType;
+  const CreatePostScreen({
+    super.key,
+    required this.communityId,
+    this.initialType,
+  });
 
   @override
   ConsumerState<CreatePostScreen> createState() => _CreatePostScreenState();
 }
 
 class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
-  String _selectedType = 'normal';
+  late String _selectedType;
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
   final _linkController = TextEditingController();
@@ -73,6 +79,13 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     _PostTypeOption('repost', 'Repost', Icons.repeat_rounded),
     _PostTypeOption('external', 'Externo', Icons.open_in_new_rounded),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Usa o tipo inicial passado pelo menu de criação, ou 'normal' como padrão
+    _selectedType = widget.initialType ?? 'normal';
+  }
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();

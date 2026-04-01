@@ -18,6 +18,12 @@ import '../features/communities/screens/community_members_screen.dart';
 import '../features/communities/screens/acm_screen.dart';
 import '../features/explore/screens/explore_screen.dart';
 import '../features/feed/screens/create_post_screen.dart';
+import '../features/feed/screens/create_blog_screen.dart';
+import '../features/feed/screens/create_image_post_screen.dart';
+import '../features/feed/screens/create_link_post_screen.dart';
+import '../features/feed/screens/create_poll_screen.dart';
+import '../features/feed/screens/create_quiz_screen.dart';
+import '../features/feed/screens/create_question_screen.dart';
 import '../features/feed/screens/global_feed_screen.dart';
 import '../features/feed/screens/post_detail_screen.dart';
 import '../features/gamification/screens/check_in_screen.dart';
@@ -49,6 +55,7 @@ import '../features/store/screens/coin_shop_screen.dart';
 import '../features/gamification/screens/free_coins_screen.dart';
 import '../features/chat/screens/call_screen.dart';
 import '../features/chat/screens/create_group_chat_screen.dart';
+import '../features/chat/screens/create_public_chat_screen.dart';
 import '../core/services/call_service.dart';
 import '../features/wiki/screens/wiki_screen.dart';
 import '../features/wiki/screens/wiki_curator_review_screen.dart';
@@ -210,11 +217,58 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/community/:communityId/create-post',
         name: 'create-post',
-        builder: (context, state) => CreatePostScreen(
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return CreatePostScreen(
+            communityId: state.pathParameters['communityId']!,
+            initialType: extra['initialType'] as String?,
+          );
+        },
+      ),
+
+      // Rotas de criação dedicadas (menu + da comunidade)
+      GoRoute(
+        path: '/community/:communityId/create-blog',
+        name: 'create-blog',
+        builder: (context, state) => CreateBlogScreen(
           communityId: state.pathParameters['communityId']!,
         ),
       ),
-
+      GoRoute(
+        path: '/community/:communityId/create-image',
+        name: 'create-image',
+        builder: (context, state) => CreateImagePostScreen(
+          communityId: state.pathParameters['communityId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/community/:communityId/create-link',
+        name: 'create-link',
+        builder: (context, state) => CreateLinkPostScreen(
+          communityId: state.pathParameters['communityId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/community/:communityId/create-poll',
+        name: 'create-poll',
+        builder: (context, state) => CreatePollScreen(
+          communityId: state.pathParameters['communityId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/community/:communityId/create-quiz',
+        name: 'create-quiz',
+        builder: (context, state) => CreateQuizScreen(
+          communityId: state.pathParameters['communityId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/community/:communityId/create-question',
+        name: 'create-question',
+        builder: (context, state) => CreateQuestionScreen(
+          communityId: state.pathParameters['communityId']!,
+        ),
+      ),
       // ====================================================================
       // ROTAS DE CHAT
       // ====================================================================
@@ -229,6 +283,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/create-group-chat',
         name: 'create-group-chat',
         builder: (context, state) => const CreateGroupChatScreen(),
+      ),
+      GoRoute(
+        path: '/create-public-chat',
+        name: 'create-public-chat',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return CreatePublicChatScreen(
+            communityId: extra['communityId'] as String? ?? '',
+            communityName: extra['communityName'] as String? ?? '',
+          );
+        },
       ),
 
       // ====================================================================
