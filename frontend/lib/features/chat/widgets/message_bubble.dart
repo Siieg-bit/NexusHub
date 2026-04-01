@@ -280,11 +280,26 @@ class MessageBubble extends StatelessWidget {
     }
 
     // Sticker
+    // Guard de URL vazia: stickers emoji padrão não têm URL de imagem.
+    // URL vazia ou null em CachedNetworkImage causa:
+    //   Invalid argument(s): No host specified in URI
     if (type == 'sticker' || message.stickerUrl != null) {
-      final url = message.stickerUrl ?? message.mediaUrl;
-      return url != null
-          ? CachedNetworkImage(imageUrl: url, width: r.s(120), height: r.s(120))
-          : Text('\uD83C\uDFAD', style: TextStyle(fontSize: r.fs(48)));
+      final rawUrl = message.stickerUrl ?? message.mediaUrl;
+      final url = (rawUrl != null && rawUrl.isNotEmpty) ? rawUrl : null;
+      if (url != null) {
+        return CachedNetworkImage(
+          imageUrl: url,
+          width: r.s(120),
+          height: r.s(120),
+          errorWidget: (_, __, ___) =>
+              Text('\uD83C\uDFAD', style: TextStyle(fontSize: r.fs(48))),
+        );
+      }
+      // Sticker emoji padrão: renderizar o conteúdo textual da mensagem
+      final emoji = (message.content != null && message.content!.isNotEmpty)
+          ? message.content!
+          : '\uD83C\uDFAD';
+      return Text(emoji, style: TextStyle(fontSize: r.fs(48)));
     }
 
     // Voice note

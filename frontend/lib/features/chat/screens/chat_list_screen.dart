@@ -867,6 +867,9 @@ class _AminoChatTile extends ConsumerWidget {
               ),
               onTap: () async {
                 Navigator.of(ctx).pop();
+                // Guard: verificar context.mounted antes do showDialog
+                // (o BottomSheet já foi fechado pelo Navigator.of(ctx).pop() acima)
+                if (!context.mounted) return;
                 // Confirmação antes de sair
                 final confirm = await showDialog<bool>(
                   context: context,
@@ -959,15 +962,17 @@ class _AminoChatTile extends ConsumerWidget {
     final hasUnread = chatRoom.unreadCount > 0;
     final isPinned = chatRoom.isPinnedByUser;
 
-    // Material+InkWell em vez de GestureDetector para evitar conflito de
-    // gestos com o ListView (AlwaysScrollableScrollPhysics interceptava o
-    // long press antes do GestureDetector processar).
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => context.push('/chat/${chatRoom.id}'),
-        onLongPress: () => _showContextMenu(context, ref),
-        child: Container(
+    // GestureDetector com HitTestBehavior.translucent:
+    // - translucent permite que o ListView receba o scroll normalmente
+    // - onLongPress é processado pelo GestureDetector antes do scroll iniciar
+    // - Container com BoxDecoration não intercepta o gesto (translucent passa por ele)
+    // Nota: InkWell com Container(decoration) quebrava o long press porque
+    // o RenderDecoratedBox criado pelo BoxDecoration interceptava o hit test.
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: () => context.push('/chat/${chatRoom.id}'),
+      onLongPress: () => _showContextMenu(context, ref),
+      child: Container(
           padding: EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(10)),
           decoration: isPinned
               ? BoxDecoration(
@@ -1081,7 +1086,6 @@ class _AminoChatTile extends ConsumerWidget {
           ],
         ),
       ),
-    ),  // InkWell
-  );  // Material
+    );  // GestureDetector
   }
 }

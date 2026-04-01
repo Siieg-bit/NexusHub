@@ -159,12 +159,27 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
     // Passo 3: Fallback — insert direto em chat_members (para DMs/grupos já criados).
     // Só executado se os passos anteriores falharam por erro de rede/RPC.
+    // IMPORTANTE: verificar novamente se status='left' antes de inserir,
+    // para não sobrescrever a saída intencional do usuário.
     try {
+      // Re-verificar status antes do upsert para evitar sobrescrever 'left'
+      final recheck = await SupabaseService.table('chat_members')
+          .select('status')
+          .eq('thread_id', widget.threadId)
+          .eq('user_id', userId)
+          .maybeSingle();
+      if (!mounted || _isDisposed) return;
+      if (recheck != null && (recheck['status'] as String?) == 'left') {
+        // Usuário saiu intencionalmente — não sobrescrever com upsert.
+        debugPrint('[ChatRoom] Fallback: user has status=left, skipping upsert');
+        return;
+      }
       await SupabaseService.table('chat_members').upsert({
         'thread_id': widget.threadId,
         'user_id': userId,
         'status': 'active',
       }, onConflict: 'thread_id,user_id');
+      if (!mounted || _isDisposed) return;
       _membershipConfirmed = true;
       debugPrint('[ChatRoom] Membership confirmed via direct upsert');
     } catch (e3) {
@@ -590,7 +605,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       String? finalMediaUrl = mediaUrl;
       if (type == 'image' && mediaUrl != null) finalMediaUrl = mediaUrl;
       if (type == 'gif' && mediaUrl != null) finalMediaUrl = mediaUrl;
-      if (stickerUrl != null) finalMediaUrl = stickerUrl;
+      // Filtrar URL vazia de sticker (stickers emoji padrão retornam '' do StickerPicker).
+      // URL vazia passada ao CachedNetworkImage causa: No host specified in URI.
+      if (stickerUrl != null && stickerUrl.isNotEmpty) finalMediaUrl = stickerUrl;
 
       String? replyToId;
       if (_replyingTo != null) {
