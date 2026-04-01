@@ -215,41 +215,37 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                 onPressed: () => context.pop(),
               ),
               actions: [
-                // Online indicator — chip estilo Amino
-                Padding(
-                  padding: EdgeInsets.only(right: r.s(4)),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: r.s(10), vertical: r.s(4)),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.45),
-                      borderRadius: BorderRadius.circular(r.s(16)),
+                // Online indicator — texto direto estilo Amino (sem chip)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: r.s(8),
+                      height: r.s(8),
+                      decoration: BoxDecoration(
+                        color: isOnline
+                            ? const Color(0xFF4CAF50)
+                            : Colors.grey[500],
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: r.s(7),
-                          height: r.s(7),
-                          decoration: BoxDecoration(
-                            color: isOnline
-                                ? const Color(0xFF4CAF50)
-                                : Colors.grey[600],
-                            shape: BoxShape.circle,
+                    SizedBox(width: r.s(5)),
+                    Text(
+                      isOnline ? 'Online' : 'Offline',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: r.fs(13),
+                        fontWeight: FontWeight.w600,
+                        shadows: const [
+                          Shadow(
+                            color: Colors.black54,
+                            blurRadius: 4,
                           ),
-                        ),
-                        SizedBox(width: r.s(5)),
-                        Text(
-                          isOnline ? 'Online' : 'Offline',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: r.fs(12),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
+                    SizedBox(width: r.s(4)),
+                  ],
                 ),
                 IconButton(
                   icon: Icon(Icons.more_horiz_rounded,
@@ -341,69 +337,59 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                           ),
                           SizedBox(height: r.s(6)),
 
-                          // Level badge + título (ex: Lv13 Best Wizzard)
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: r.s(4), vertical: r.s(3)),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.4),
-                              borderRadius: BorderRadius.circular(r.s(16)),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // Lv + número
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: r.s(6), vertical: r.s(2)),
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        AppTheme.getLevelColor(level),
-                                        AppTheme.getLevelColor(level)
-                                            .withValues(alpha: 0.7),
-                                      ],
+                          // Level badge — dois containers separados: [lv13] [Best Wizzard]
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Badge roxo/azul com "lv" + número
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: r.s(8), vertical: r.s(4)),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.getLevelColor(level),
+                                  borderRadius: BorderRadius.circular(r.s(14)),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'lv',
+                                      style: TextStyle(
+                                        color: Colors.white.withValues(alpha: 0.85),
+                                        fontSize: r.fs(10),
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
-                                    borderRadius:
-                                        BorderRadius.circular(r.s(12)),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        'Lv',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: r.fs(8),
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                    Text(
+                                      '$level',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: r.fs(14),
+                                        fontWeight: FontWeight.w900,
                                       ),
-                                      Text(
-                                        '$level',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: r.fs(12),
-                                          fontWeight: FontWeight.w900,
-                                        ),
-                                      ),
-                                    ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(width: r.s(6)),
+                              // Badge cinza escuro com título do level
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: r.s(10), vertical: r.s(4)),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[800],
+                                  borderRadius: BorderRadius.circular(r.s(14)),
+                                ),
+                                child: Text(
+                                  title,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: r.fs(12),
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
-                                SizedBox(width: r.s(6)),
-                                // Título do level
-                                Padding(
-                                  padding: EdgeInsets.only(right: r.s(8)),
-                                  child: Text(
-                                    title,
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: r.fs(11),
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
 
                           // Role badge (Líder/Curador) separado
@@ -447,15 +433,13 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                   '/community/${widget.communityId}/profile/edit'),
                               child: Container(
                                 padding: EdgeInsets.symmetric(
-                                    horizontal: r.s(20), vertical: r.s(8)),
+                                    horizontal: r.s(28), vertical: r.s(9)),
                                 decoration: BoxDecoration(
-                                  color:
-                                      Colors.white.withValues(alpha: 0.12),
-                                  borderRadius:
-                                      BorderRadius.circular(r.s(8)),
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(r.s(6)),
                                   border: Border.all(
-                                    color: Colors.white
-                                        .withValues(alpha: 0.2),
+                                    color: Colors.white.withValues(alpha: 0.35),
+                                    width: 1.5,
                                   ),
                                 ),
                                 child: Row(
@@ -463,14 +447,14 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                   children: [
                                     Icon(Icons.edit_rounded,
                                         size: r.s(14),
-                                        color: Colors.grey[300]),
+                                        color: Colors.white),
                                     SizedBox(width: r.s(6)),
                                     Text(
                                       'Editar',
                                       style: TextStyle(
-                                        color: Colors.grey[200],
+                                        color: Colors.white,
                                         fontWeight: FontWeight.w700,
-                                        fontSize: r.fs(13),
+                                        fontSize: r.fs(14),
                                       ),
                                     ),
                                   ],
@@ -556,7 +540,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                           // ── CONQUISTAS + MOEDAS BAR (dentro do banner) ──
                           Padding(
                             padding: EdgeInsets.symmetric(
-                                horizontal: r.s(16)),
+                                horizontal: r.s(12)),
                             child: Row(
                               children: [
                                 // Conquistas badge
@@ -580,9 +564,9 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Text('🏆',
-                                            style: TextStyle(
-                                                fontSize: r.fs(12))),
+                                        Icon(Icons.emoji_events_rounded,
+                                            color: Colors.white,
+                                            size: r.s(14)),
                                         SizedBox(width: r.s(4)),
                                         Text(
                                           streak > 0
@@ -594,30 +578,27 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                             fontWeight: FontWeight.w700,
                                           ),
                                         ),
-                                        // Badge "!" vermelho (notificação)
-                                        if (streak > 0) ...[
-                                          SizedBox(width: r.s(4)),
-                                          Container(
-                                            width: r.s(14),
-                                            height: r.s(14),
-                                            decoration: const BoxDecoration(
-                                              color: Colors.red,
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: Center(
-                                              child: Text(
-                                                '!',
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: r.fs(9),
-                                                  fontWeight:
-                                                      FontWeight.w900,
-                                                  height: 1.0,
-                                                ),
+                                        // Badge "!" vermelho (notificação) — sempre visível
+                                        SizedBox(width: r.s(4)),
+                                        Container(
+                                          width: r.s(16),
+                                          height: r.s(16),
+                                          decoration: const BoxDecoration(
+                                            color: Colors.red,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              '!',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: r.fs(10),
+                                                fontWeight: FontWeight.w900,
+                                                height: 1.0,
                                               ),
                                             ),
                                           ),
-                                        ],
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -910,8 +891,12 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                   controller: _tabController,
                   labelColor: AppTheme.primaryColor,
                   unselectedLabelColor: Colors.grey[500],
-                  indicatorColor: AppTheme.primaryColor,
-                  indicatorWeight: 3,
+                  indicatorColor: Colors.transparent,
+                  dividerColor: Colors.transparent,
+                  indicator: BoxDecoration(
+                    color: Colors.grey[800],
+                    borderRadius: BorderRadius.circular(r.s(8)),
+                  ),
                   indicatorSize: TabBarIndicatorSize.tab,
                   labelStyle: TextStyle(
                       fontWeight: FontWeight.w700, fontSize: r.fs(14)),
@@ -958,44 +943,45 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           GestureDetector(
             onTap: () =>
                 context.push('/community/${widget.communityId}/create-post'),
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                  horizontal: r.s(16), vertical: r.s(14)),
-              decoration: BoxDecoration(
-                color: context.surfaceColor,
-                border: Border(
-                  bottom: BorderSide(
-                      color: Colors.white.withValues(alpha: 0.05)),
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                    horizontal: r.s(16), vertical: r.s(14)),
+                decoration: BoxDecoration(
+                  color: context.surfaceColor,
+                  border: Border(
+                    bottom: BorderSide(
+                        color: Colors.white.withValues(alpha: 0.05)),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: r.s(30),
+                      height: r.s(30),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.add,
+                          color: Colors.black87, size: r.s(20)),
+                    ),
+                    SizedBox(width: r.s(12)),
+                    Text(
+                      'Criar nova publicação',
+                      style: TextStyle(
+                        color: context.textPrimary,
+                        fontSize: r.fs(15),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              child: Row(
-                children: [
-                  Container(
-                    width: r.s(28),
-                    height: r.s(28),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF4CAF50),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(Icons.add,
-                        color: Colors.white, size: r.s(18)),
-                  ),
-                  SizedBox(width: r.s(12)),
-                  Text(
-                    'Criar nova publicação',
-                    style: TextStyle(
-                      color: Colors.grey[400],
-                      fontSize: r.fs(14),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ),
 
-        // ── Minhas Entradas Wiki ──────────────────────────────────────────
-        if (_wikiEntries.isNotEmpty) ...[
+        // ── Minhas Entradas Wiki — sempre visível (com botão + se próprio perfil) ──
+        if (_wikiEntries.isNotEmpty || _isOwnProfile) ...[
           Padding(
             padding: EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(8)),
             child: GestureDetector(
@@ -1019,13 +1005,42 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
             ),
           ),
           SizedBox(
-            height: r.s(120),
+            height: r.s(130),
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: EdgeInsets.symmetric(horizontal: r.s(12)),
-              itemCount: _wikiEntries.length,
+              // Se próprio perfil, adiciona slot "+" no início
+              itemCount: _wikiEntries.length + (_isOwnProfile ? 1 : 0),
               itemBuilder: (context, index) {
-                final wiki = _wikiEntries[index];
+                // Slot "+" para criar nova entrada wiki (índice 0 se próprio)
+                if (_isOwnProfile && index == 0) {
+                  return GestureDetector(
+                    onTap: () => context.push(
+                        '/community/${widget.communityId}/wiki/create'),
+                    child: Container(
+                      width: r.s(90),
+                      margin: EdgeInsets.symmetric(horizontal: r.s(4)),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(r.s(10)),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.25),
+                          width: 1.5,
+                          strokeAlign: BorderSide.strokeAlignInside,
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.add_rounded,
+                              color: Colors.white.withValues(alpha: 0.5),
+                              size: r.s(28)),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+                final wikiIndex = _isOwnProfile ? index - 1 : index;
+                final wiki = _wikiEntries[wikiIndex];
                 final coverUrl = wiki['cover_image_url'] as String?;
                 final wikiTitle = wiki['title'] as String? ?? 'Wiki';
                 final wikiId = wiki['id'] as String?;
@@ -1053,7 +1068,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                               ? CachedNetworkImage(
                                   imageUrl: coverUrl,
                                   width: r.s(90),
-                                  height: r.s(70),
+                                  height: r.s(100),
                                   fit: BoxFit.cover,
                                   errorWidget: (_, __, ___) =>
                                       _wikiPlaceholder(r),
@@ -1069,7 +1084,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                               fontSize: r.fs(10),
                               fontWeight: FontWeight.w600,
                             ),
-                            maxLines: 2,
+                            maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
