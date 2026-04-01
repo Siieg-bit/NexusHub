@@ -12,6 +12,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/models/message_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/services/call_service.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../../../core/services/realtime_service.dart';
 import 'call_screen.dart';
 import '../widgets/giphy_picker.dart';
@@ -723,13 +724,39 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 context.push('/settings');
               }),
             SizedBox(height: r.s(8)),
+            // Excluir chat — visível apenas para host e team_admin/moderator
+            Builder(builder: (_) {
+              final userId = SupabaseService.currentUserId;
+              final hostId = _threadInfo?['host_id'] as String?;
+              final currentUser = ref.read(currentUserProvider);
+              final canDelete = (userId != null && userId == hostId) ||
+                  (currentUser?.isTeamMember ?? false);
+              if (!canDelete) return const SizedBox.shrink();
+              return Column(mainAxisSize: MainAxisSize.min, children: [
+                Divider(
+                    color: Colors.white.withValues(alpha: 0.07),
+                    height: r.s(16)),
+                _settingsTile(
+                  r,
+                  Icons.delete_rounded,
+                  'Excluir Chat',
+                  () {
+                    Navigator.pop(ctx);
+                    _deleteChatConfirm();
+                  },
+                  isDestructive: true,
+                ),
+              ]);
+            }),
           ],
         ),
       ),
     );
   }
 
-  Widget _settingsTile(Responsive r, IconData icon, String label, VoidCallback onTap) {
+  Widget _settingsTile(Responsive r, IconData icon, String label, VoidCallback onTap,
+      {bool isDestructive = false}) {
+    final color = isDestructive ? AppTheme.errorColor : Colors.grey[400]!;
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -740,11 +767,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         ),
         child: Row(
           children: [
-            Icon(icon, color: Colors.grey[400], size: r.s(20)),
+            Icon(icon, color: color, size: r.s(20)),
             SizedBox(width: r.s(12)),
             Expanded(
               child: Text(label,
-                  style: TextStyle(color: context.textPrimary, fontSize: r.fs(14))),
+                  style: TextStyle(
+                      color: isDestructive ? AppTheme.errorColor : context.textPrimary,
+                      fontSize: r.fs(14))),
             ),
             Icon(Icons.chevron_right_rounded, color: Colors.grey[600], size: r.s(18)),
           ],
@@ -789,12 +818,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   Future<void> _leaveChat() async {
     final userId = SupabaseService.currentUserId;
     if (userId == null) return;
-    // Fonte de verdade: leave_public_chat marca status='left' em chat_members.
-    // NÃO deletar a linha — isso quebraria a semântica de saída intencional
-    // e permitiria que _ensureMembership() recriasse o membership automaticamente.
-    // NÃO há fallback de DELETE — se a RPC falhar, exibir erro ao usuário.
     try {
-      await SupabaseService.rpc('leave_public_chat', params: {
+      final result = await SupabaseService.rpc('leave_public_chat', params: {
         'p_thread_id': widget.threadId,
         'p_user_id': userId,
       });
@@ -804,9 +829,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           ref.invalidate(chatListProvider);
           ref.invalidate(chatCommunitiesProvider);
         } catch (_) {}
+        // Se a RPC deletou o chat (único membro ou host saindo), mensagem diferente
+        final wasDeleted =
+            (result as Map<String, dynamic>?)?['deleted'] == true;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Você saiu do chat.'),
+          SnackBar(
+            content: Text(wasDeleted ? 'Chat excluído.' : 'Você saiu do chat.'),
             backgroundColor: AppTheme.primaryColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -825,6 +853,74 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         );
       }
     }
+  }
+
+  // Deletar o chat (host ou team_admin)
+  Future<void> _deleteChat() async {
+    try {
+      await SupabaseService.rpc('delete_public_chat', params: {
+        'p_thread_id': widget.threadId,
+      });
+      if (mounted) {
+        try {
+          ref.invalidate(chatListProvider);
+          ref.invalidate(chatCommunitiesProvider);
+        } catch (_) {}
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Chat excluído.'),
+            backgroundColor: AppTheme.primaryColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        context.pop();
+      }
+    } catch (e) {
+      debugPrint('[ChatRoom] delete_public_chat RPC error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Erro ao excluir o chat. Tente novamente.'),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  void _deleteChatConfirm() {
+    final r = context.r;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: context.surfaceColor,
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(16))),
+        title: Text('Excluir Chat',
+            style: TextStyle(
+                color: context.textPrimary, fontWeight: FontWeight.w700)),
+        content: Text(
+            'Tem certeza que deseja excluir este chat? Esta ação não pode ser desfeita.',
+            style: TextStyle(color: Colors.grey[400], fontSize: r.fs(14))),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await _deleteChat();
+            },
+            child: Text('Excluir',
+                style: TextStyle(
+                    color: AppTheme.errorColor,
+                    fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
   }
 
   // ==========================================================================

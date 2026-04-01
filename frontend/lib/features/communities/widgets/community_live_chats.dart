@@ -11,7 +11,7 @@ import '../../../core/utils/responsive.dart';
 // =============================================================================
 // LIVE CHATROOMS SECTION — Estilo Amino (horizontal scroll cards)
 // Exibe apenas chats do tipo 'public' da comunidade.
-// O botão de criação fica no menu "+" da barra inferior.
+// Long press abre menu contextual: Fixar / Apagar.
 // =============================================================================
 
 class CommunityLiveChats extends StatefulWidget {
@@ -40,13 +40,13 @@ class _CommunityLiveChatsState extends State<CommunityLiveChats> {
 
   Future<void> _loadChats() async {
     try {
-      // Filtra apenas chats do tipo 'public' — DMs e grupos privados não aparecem aqui
       final response = await SupabaseService.table('chat_threads')
           .select()
           .eq('community_id', widget.communityId)
           .eq('type', 'public')
+          .order('is_pinned', ascending: false)
           .order('last_message_at', ascending: false)
-          .limit(10);
+          .limit(20);
       if (mounted) {
         setState(() {
           _chats = List<Map<String, dynamic>>.from(response as List? ?? []);
@@ -59,11 +59,227 @@ class _CommunityLiveChatsState extends State<CommunityLiveChats> {
     }
   }
 
+  // Verifica se o usuário atual é o host do chat
+  bool _isHost(Map<String, dynamic> chat) {
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) return false;
+    return userId == (chat['host_id'] as String?);
+  }
+
+  Future<void> _togglePin(Map<String, dynamic> chat) async {
+    final isPinned = chat['is_pinned'] as bool? ?? false;
+    try {
+      await SupabaseService.table('chat_threads')
+          .update({'is_pinned': !isPinned})
+          .eq('id', chat['id'] as String);
+      await _loadChats();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(isPinned ? 'Chat desafixado.' : 'Chat fixado.'),
+            backgroundColor: AppTheme.primaryColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('[community_live_chats] Erro ao fixar: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Erro ao alterar fixação. Tente novamente.'),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _leaveOrDeleteChat(Map<String, dynamic> chat) async {
+    try {
+      final result = await SupabaseService.rpc('leave_public_chat', params: {
+        'p_thread_id': chat['id'] as String,
+        'p_user_id': SupabaseService.currentUserId,
+      });
+      final wasDeleted =
+          (result as Map<String, dynamic>?)?['deleted'] == true;
+      if (mounted) {
+        setState(() => _chats.removeWhere((c) => c['id'] == chat['id']));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(wasDeleted ? 'Chat excluído.' : 'Você saiu do chat.'),
+            backgroundColor: AppTheme.primaryColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('[community_live_chats] Erro ao apagar/sair: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Erro ao executar ação. Tente novamente.'),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showContextMenu(BuildContext context, Map<String, dynamic> chat) {
+    final r = context.r;
+    final isPinned = chat['is_pinned'] as bool? ?? false;
+    final isHost = _isHost(chat);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: context.surfaceColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+              horizontal: r.s(16), vertical: r.s(12)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle
+              Container(
+                width: r.s(36),
+                height: r.s(4),
+                margin: EdgeInsets.only(bottom: r.s(16)),
+                decoration: BoxDecoration(
+                  color: Colors.grey[700],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              // Título do chat
+              Text(
+                chat['title'] as String? ?? 'Chat',
+                style: TextStyle(
+                  color: context.textPrimary,
+                  fontWeight: FontWeight.w700,
+                  fontSize: r.fs(15),
+                ),
+              ),
+              SizedBox(height: r.s(16)),
+              // Fixar / Desafixar (apenas para host)
+              if (isHost)
+                _menuTile(
+                  r,
+                  isPinned
+                      ? Icons.push_pin_outlined
+                      : Icons.push_pin_rounded,
+                  isPinned ? 'Desafixar Chat' : 'Fixar Chat',
+                  () {
+                    Navigator.pop(ctx);
+                    _togglePin(chat);
+                  },
+                ),
+              // Apagar (host) ou Sair (membro comum)
+              _menuTile(
+                r,
+                isHost
+                    ? Icons.delete_rounded
+                    : Icons.exit_to_app_rounded,
+                isHost ? 'Apagar Chat' : 'Sair do Chat',
+                () {
+                  Navigator.pop(ctx);
+                  _confirmAction(context, chat, isHost);
+                },
+                isDestructive: true,
+              ),
+              SizedBox(height: r.s(8)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _confirmAction(
+      BuildContext context, Map<String, dynamic> chat, bool isDelete) {
+    final r = context.r;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: context.surfaceColor,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(r.s(16))),
+        title: Text(
+          isDelete ? 'Apagar Chat' : 'Sair do Chat',
+          style: TextStyle(
+              color: context.textPrimary, fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          isDelete
+              ? 'Tem certeza que deseja apagar este chat? Esta ação não pode ser desfeita.'
+              : 'Tem certeza que deseja sair deste chat?',
+          style: TextStyle(color: Colors.grey[400], fontSize: r.fs(14)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child:
+                Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await _leaveOrDeleteChat(chat);
+            },
+            child: Text(
+              isDelete ? 'Apagar' : 'Sair',
+              style: TextStyle(
+                  color: AppTheme.errorColor, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _menuTile(
+      Responsive r, IconData icon, String label, VoidCallback onTap,
+      {bool isDestructive = false}) {
+    final color = isDestructive ? AppTheme.errorColor : Colors.grey[400]!;
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: r.s(12)),
+        decoration: BoxDecoration(
+          border: Border(
+              bottom: BorderSide(
+                  color: Colors.white.withValues(alpha: 0.05))),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: r.s(20)),
+            SizedBox(width: r.s(12)),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                    color: isDestructive
+                        ? AppTheme.errorColor
+                        : context.textPrimary,
+                    fontSize: r.fs(14)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final r = context.r;
 
-    // Enquanto carrega ou sem chats, não ocupa espaço
     if (_loading || _chats.isEmpty) return const SizedBox.shrink();
 
     return Padding(
@@ -91,7 +307,6 @@ class _CommunityLiveChatsState extends State<CommunityLiveChats> {
               ],
             ),
           ),
-
           // ── Lista horizontal de cards ───────────────────────────────────
           SizedBox(
             height: r.s(130),
@@ -101,90 +316,120 @@ class _CommunityLiveChatsState extends State<CommunityLiveChats> {
               itemBuilder: (context, index) {
                 final chat = _chats[index];
                 final membersCount = chat['members_count'] as int? ?? 0;
+                final isPinned = chat['is_pinned'] as bool? ?? false;
 
-                return AminoAnimations.cardPress(
-                  onTap: () => context.push('/chat/${chat['id']}'),
-                  child: Container(
-                    width: r.s(150),
-                    margin: EdgeInsets.only(right: r.s(8)),
-                    decoration: BoxDecoration(
-                      color: context.cardBg,
-                      borderRadius: BorderRadius.circular(r.s(12)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Cover
-                        Expanded(
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(r.s(12))),
-                                child: chat['icon_url'] != null
-                                    ? CachedNetworkImage(
-                                        imageUrl: chat['icon_url'] as String,
-                                        fit: BoxFit.cover,
-                                      )
-                                    : Container(
-                                        color: AppTheme.primaryColor
-                                            .withValues(alpha: 0.2),
-                                        child: Icon(
-                                            Icons.chat_bubble_rounded,
-                                            color: AppTheme.primaryColor
-                                                .withValues(alpha: 0.5),
-                                            size: r.s(28)),
-                                      ),
-                              ),
-                              // Badge de membros
-                              Positioned(
-                                top: r.s(6),
-                                right: r.s(6),
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: r.s(6), vertical: r.s(2)),
-                                  decoration: BoxDecoration(
-                                    color:
-                                        Colors.black.withValues(alpha: 0.6),
-                                    borderRadius:
-                                        BorderRadius.circular(r.s(10)),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.people_rounded,
-                                          color: Colors.white,
-                                          size: r.s(10)),
-                                      SizedBox(width: r.s(3)),
-                                      Text(
-                                        '$membersCount',
-                                        style: TextStyle(
+                return GestureDetector(
+                  onLongPress: () => _showContextMenu(context, chat),
+                  child: AminoAnimations.cardPress(
+                    onTap: () => context.push('/chat/${chat['id']}'),
+                    child: Container(
+                      width: r.s(150),
+                      margin: EdgeInsets.only(right: r.s(8)),
+                      decoration: BoxDecoration(
+                        color: context.cardBg,
+                        borderRadius: BorderRadius.circular(r.s(12)),
+                        border: isPinned
+                            ? Border.all(
+                                color: AppTheme.primaryColor
+                                    .withValues(alpha: 0.6),
+                                width: 1.5)
+                            : null,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Cover
+                          Expanded(
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(r.s(12))),
+                                  child: chat['icon_url'] != null
+                                      ? CachedNetworkImage(
+                                          imageUrl:
+                                              chat['icon_url'] as String,
+                                          fit: BoxFit.cover,
+                                        )
+                                      : Container(
+                                          color: AppTheme.primaryColor
+                                              .withValues(alpha: 0.2),
+                                          child: Icon(
+                                              Icons.chat_bubble_rounded,
+                                              color: AppTheme.primaryColor
+                                                  .withValues(alpha: 0.5),
+                                              size: r.s(28)),
+                                        ),
+                                ),
+                                // Badge de membros
+                                Positioned(
+                                  top: r.s(6),
+                                  right: r.s(6),
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: r.s(6),
+                                        vertical: r.s(2)),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black
+                                          .withValues(alpha: 0.6),
+                                      borderRadius:
+                                          BorderRadius.circular(r.s(10)),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.people_rounded,
                                             color: Colors.white,
-                                            fontSize: r.fs(9),
-                                            fontWeight: FontWeight.w600),
-                                      ),
-                                    ],
+                                            size: r.s(10)),
+                                        SizedBox(width: r.s(3)),
+                                        Text(
+                                          '$membersCount',
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: r.fs(9),
+                                              fontWeight: FontWeight.w600),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                                // Ícone de fixado
+                                if (isPinned)
+                                  Positioned(
+                                    top: r.s(6),
+                                    left: r.s(6),
+                                    child: Container(
+                                      padding: EdgeInsets.all(r.s(3)),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.primaryColor
+                                            .withValues(alpha: 0.85),
+                                        borderRadius:
+                                            BorderRadius.circular(r.s(6)),
+                                      ),
+                                      child: Icon(Icons.push_pin_rounded,
+                                          color: Colors.white,
+                                          size: r.s(10)),
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ),
-                        ),
-                        // Título
-                        Padding(
-                          padding: EdgeInsets.all(r.s(8)),
-                          child: Text(
-                            chat['title'] as String? ?? 'Chat',
-                            style: TextStyle(
-                                color: context.textPrimary,
-                                fontSize: r.fs(11),
-                                fontWeight: FontWeight.w600),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          // Título
+                          Padding(
+                            padding: EdgeInsets.all(r.s(8)),
+                            child: Text(
+                              chat['title'] as String? ?? 'Chat',
+                              style: TextStyle(
+                                  color: context.textPrimary,
+                                  fontSize: r.fs(11),
+                                  fontWeight: FontWeight.w600),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 );
