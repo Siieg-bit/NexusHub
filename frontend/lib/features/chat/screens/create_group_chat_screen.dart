@@ -162,46 +162,42 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
             .getPublicUrl(fileName);
       }
 
-      // Criar o chat thread
-      final threadRes =
-          await SupabaseService.table('chat_threads').insert({
-        'community_id': _selectedCommunityId,
-        'title': _nameController.text.trim(),
-        'description': _descriptionController.text.trim().isNotEmpty
+      // Usar RPC create_group_chat que:
+      // 1. Valida membership na comunidade
+      // 2. Usa 'group' em vez de 'private' (enum válido)
+      // 3. Usa host_id em vez de created_by (coluna correta)
+      // 4. Não insere 'role' em chat_members (coluna não existe)
+      // 5. Cria mensagem de sistema automaticamente
+      final result = await SupabaseService.rpc('create_group_chat', params: {
+        'p_community_id': _selectedCommunityId,
+        'p_title': _nameController.text.trim(),
+        'p_description': _descriptionController.text.trim().isNotEmpty
             ? _descriptionController.text.trim()
             : null,
-        'type': _isPublic ? 'public' : 'private',
-        'created_by': userId,
-        'icon_url': coverUrl,
-        'members_count': _selectedMemberIds.length + 1,
-      }).select().single();
-
-      final threadId = threadRes['id'] as String?;
-
-      // Adicionar o criador como membro (host)
-      await SupabaseService.table('chat_members').insert({
-        'thread_id': threadId,
-        'user_id': userId,
-        'role': 'host',
+        'p_icon_url': coverUrl,
+        'p_is_public': _isPublic,
+        'p_member_ids': _selectedMemberIds.toList(),
       });
 
-      // Adicionar membros selecionados
-      if (_selectedMemberIds.isNotEmpty) {
-        final memberInserts = _selectedMemberIds.map((memberId) => {
-              'thread_id': threadId,
-              'user_id': memberId,
-              'role': 'member',
-            }).toList();
-        await SupabaseService.table('chat_members').insert(memberInserts);
+      final resultMap = result is Map ? result : {};
+      final success = resultMap['success'] as bool? ?? false;
+      final threadId = resultMap['thread_id'] as String?;
+      final error = resultMap['error'] as String?;
+
+      if (!success || threadId == null) {
+        final errorMsg = switch (error) {
+          'unauthenticated' => 'Você precisa estar logado.',
+          'title_required' => 'Digite um nome para o grupo.',
+          'not_a_member' => 'Você não é membro desta comunidade.',
+          _ => 'Erro ao criar grupo. Tente novamente.',
+        };
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(errorMsg)),
+          );
+        }
+        return;
       }
-
-      // Mensagem de sistema
-      await SupabaseService.table('chat_messages').insert({
-        'thread_id': threadId,
-        'author_id': userId,
-        'content': 'Grupo criado',
-        'type': 'system_join', // Enum válido: system_join
-      });
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

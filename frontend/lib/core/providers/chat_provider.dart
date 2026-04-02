@@ -12,21 +12,21 @@ import '../models/message_model.dart';
 /// - Lista de threads do usuário
 /// - Mensagens de uma thread (paginadas)
 /// - Envio de mensagens
-/// - Realtime subscription
+/// - Realtime subscription (INSERT, UPDATE, DELETE)
 /// - Unread count
+/// - Mark as read
 /// ============================================================================
 
 // ── Mapeamento de tipos de mensagem para o enum do banco ──
 // NOTA: chatThreadsProvider foi removido (Etapa 1 — dead code).
 // A lista de chats do usuário é gerenciada exclusivamente pelo chatListProvider
 // em chat_list_screen.dart, que é a fonte de verdade para "Meus chats".
-// Não confundir com "Chats públicos disponíveis" (descoberta), que é um
-// conceito separado a ser implementado em etapa futura.
-/// O enum `chat_message_type` no banco aceita apenas estes valores:
+/// O enum `chat_message_type` no banco aceita estes valores:
 /// text, strike, voice_note, sticker, video, share_url, share_user,
 /// system_deleted, system_join, system_leave, system_voice_start,
 /// system_voice_end, system_screen_start, system_screen_end,
-/// system_tip, system_pin, system_unpin, system_removed, system_admin_delete
+/// system_tip, system_pin, system_unpin, system_removed, system_admin_delete,
+/// image, gif, file, audio, poll, forward
 String _mapMessageType(String type) {
   const validTypes = {
     'text', 'strike', 'voice_note', 'sticker', 'video',
@@ -34,15 +34,11 @@ String _mapMessageType(String type) {
     'system_leave', 'system_voice_start', 'system_voice_end',
     'system_screen_start', 'system_screen_end', 'system_tip',
     'system_pin', 'system_unpin', 'system_removed', 'system_admin_delete',
+    // Novos tipos adicionados ao enum:
+    'image', 'gif', 'file', 'audio', 'poll', 'forward',
   };
   if (validTypes.contains(type)) return type;
   switch (type) {
-    case 'image':
-      return 'text';
-    case 'gif':
-      return 'text';
-    case 'audio':
-      return 'voice_note';
     case 'reply':
       return 'text';
     case 'voice_chat':
@@ -51,16 +47,12 @@ String _mapMessageType(String type) {
       return 'system_voice_start';
     case 'screening_room':
       return 'system_screen_start';
-    case 'poll':
-      return 'text';
     case 'link':
       return 'share_url';
     case 'tip':
       return 'system_tip';
-    case 'forward':
-      return 'text';
-    case 'file':
-      return 'text';
+    case 'quiz':
+      return 'poll'; // quiz → poll (mais próximo)
     default:
       return 'text';
   }
@@ -78,8 +70,11 @@ class ThreadMessagesNotifier
     _page = 0;
     _hasMore = true;
 
-    // Inscrever no Realtime
+    // Inscrever no Realtime (INSERT, UPDATE, DELETE)
     _subscribeRealtime(threadId);
+
+    // Marcar chat como lido ao abrir
+    _markAsRead(threadId);
 
     // Cleanup quando o provider é descartado
     ref.onDispose(() {
@@ -116,6 +111,7 @@ class ThreadMessagesNotifier
     RealtimeService.instance.subscribeWithRetry(
       channelName: 'messages:$threadId',
       configure: (channel) {
+        // ── INSERT: nova mensagem ──
         channel.onPostgresChanges(
           event: PostgresChangeEvent.insert,
           schema: 'public',
@@ -150,10 +146,87 @@ class ThreadMessagesNotifier
             if (current.any((m) => m.id == message.id)) return;
 
             state = AsyncData([...current, message]);
+
+            // Marcar como lido automaticamente (o usuário está na tela)
+            _markAsRead(threadId);
+          },
+        );
+
+        // ── UPDATE: mensagem editada ou soft-deleted ──
+        channel.onPostgresChanges(
+          event: PostgresChangeEvent.update,
+          schema: 'public',
+          table: 'chat_messages',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'thread_id',
+            value: threadId,
+          ),
+          callback: (payload) async {
+            final updatedMsg = Map<String, dynamic>.from(payload.newRecord);
+            final messageId = updatedMsg['id'] as String?;
+            if (messageId == null) return;
+
+            // Buscar perfil do autor
+            try {
+              final authorId = updatedMsg['author_id'] as String?;
+              if (authorId != null) {
+                final profile = await SupabaseService.table('profiles')
+                    .select('id, nickname, icon_url')
+                    .eq('id', authorId)
+                    .single();
+                updatedMsg['sender'] = profile;
+                updatedMsg['author'] = profile;
+              }
+            } catch (_) {}
+
+            final message = MessageModel.fromJson(updatedMsg);
+            final current = state.valueOrNull ?? [];
+            final index = current.indexWhere((m) => m.id == messageId);
+
+            if (index >= 0) {
+              final updated = [...current];
+              updated[index] = message;
+              state = AsyncData(updated);
+            }
+          },
+        );
+
+        // ── DELETE: mensagem hard-deleted ──
+        channel.onPostgresChanges(
+          event: PostgresChangeEvent.delete,
+          schema: 'public',
+          table: 'chat_messages',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'thread_id',
+            value: threadId,
+          ),
+          callback: (payload) {
+            final oldRecord = payload.oldRecord;
+            final messageId = oldRecord['id'] as String?;
+            if (messageId == null) return;
+
+            final current = state.valueOrNull ?? [];
+            final updated = current.where((m) => m.id != messageId).toList();
+            if (updated.length != current.length) {
+              state = AsyncData(updated);
+            }
           },
         );
       },
     );
+  }
+
+  /// Marcar chat como lido via RPC
+  Future<void> _markAsRead(String threadId) async {
+    try {
+      await SupabaseService.rpc('mark_chat_read', params: {
+        'p_thread_id': threadId,
+      });
+    } catch (_) {
+      // Silencioso — não é crítico
+    }
   }
 
   Future<void> loadOlder() async {
@@ -189,9 +262,9 @@ class ThreadMessagesNotifier
       String? finalMediaUrl = mediaUrl ?? stickerUrl;
 
       // Usar RPC SECURITY DEFINER que:
-      // 1. Verifica membership
+      // 1. Verifica membership (status='active')
       // 2. Insere a mensagem
-      // 3. Atualiza last_message_at do thread (sem precisar de permissão de host)
+      // 3. O trigger handle_chat_message atualiza last_message_at, preview, unread
       // 4. Adiciona reputação automaticamente
       await SupabaseService.rpc('send_chat_message_with_reputation', params: {
         'p_thread_id': arg,
@@ -293,19 +366,23 @@ final threadMessagesProvider = AsyncNotifierProvider.family<
     String>(ThreadMessagesNotifier.new);
 
 // ── Unread Count ──
+// Usa chat_members.unread_count (fonte de verdade) em vez de notifications
 final unreadCountProvider = FutureProvider<int>((ref) async {
   final userId = SupabaseService.currentUserId;
   if (userId == null) return 0;
 
   try {
-    final res = await SupabaseService.table('notifications')
-        .select()
+    final res = await SupabaseService.table('chat_members')
+        .select('unread_count')
         .eq('user_id', userId)
-        .eq('is_read', false)
-        .eq('notification_type', 'chat')
-        .count(CountOption.exact);
+        .eq('status', 'active');
 
-    return res.count;
+    final list = res as List? ?? [];
+    int total = 0;
+    for (final row in list) {
+      total += (row['unread_count'] as int? ?? 0);
+    }
+    return total;
   } catch (_) {
     return 0;
   }
