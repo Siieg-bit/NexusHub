@@ -234,31 +234,23 @@ class _FollowButtonState extends State<_FollowButton> {
       final currentUserId = SupabaseService.currentUserId;
       if (currentUserId == null) return;
 
-      if (_isFollowing) {
-        await SupabaseService.table('follows')
-            .delete()
-            .eq('follower_id', currentUserId)
-            .eq('following_id', widget.targetUserId);
-      } else {
-        await SupabaseService.table('follows').insert({
-          'follower_id': currentUserId,
-          'following_id': widget.targetUserId,
-        });
-        // Adicionar reputação por seguir alguém (best-effort)
-        try {
-          await SupabaseService.rpc('add_reputation', params: {
-            'p_user_id': currentUserId,
-            'p_community_id': null,
-            'p_action_type': 'follow_user',
-            'p_raw_amount': 1,
-            'p_reference_id': widget.targetUserId,
-          });
-        } catch (e) {
-          debugPrint('[followers_screen] Erro: $e');
-        }
+      // RPC atômica: toggle follow + reputação + contadores
+      // Nota: followers_screen não tem communityId, usamos UUID nulo
+      // A RPC toggle_follow_with_reputation aceita p_community_id
+      final result = await SupabaseService.rpc(
+        'toggle_follow_with_reputation',
+        params: {
+          'p_community_id': '00000000-0000-0000-0000-000000000000',
+          'p_follower_id': currentUserId,
+          'p_following_id': widget.targetUserId,
+        },
+      );
+      if (mounted) {
+        final isNowFollowing = result is Map
+            ? (result['following'] == true)
+            : !_isFollowing;
+        setState(() => _isFollowing = isNowFollowing);
       }
-
-      if (mounted) setState(() => _isFollowing = !_isFollowing);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

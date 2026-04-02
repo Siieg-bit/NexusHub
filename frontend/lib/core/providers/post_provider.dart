@@ -104,10 +104,21 @@ class CommunityFeedNotifier
       final userId = SupabaseService.currentUserId;
       if (userId == null) return false;
 
-      await SupabaseService.table('posts').insert({
-        ...postData,
-        'community_id': arg,
-        'author_id': userId,
+      // Usa RPC server-side para validação, reputação e atomicidade
+      await SupabaseService.rpc('create_post_with_reputation', params: {
+        'p_community_id': arg,
+        'p_title': postData['title'] ?? '',
+        'p_content': postData['content'],
+        'p_type': postData['type'] ?? 'normal',
+        'p_media_list': postData['media_list'] ?? [],
+        'p_cover_image_url': postData['cover_image_url'],
+        'p_background_url': postData['background_url'],
+        'p_external_url': postData['external_url'],
+        'p_gif_url': postData['gif_url'],
+        'p_music_url': postData['music_url'],
+        'p_music_title': postData['music_title'],
+        'p_visibility': postData['visibility'] ?? 'public',
+        'p_comments_blocked': postData['comments_blocked'] ?? false,
       });
 
       await refresh();

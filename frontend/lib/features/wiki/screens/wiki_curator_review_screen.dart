@@ -88,15 +88,14 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
           debugPrint('[wiki_curator_review_screen] Erro: $e');
         }
 
-        // Log de moderação
+        // Log de moderação via RPC server-side
         try {
-          await SupabaseService.table('moderation_logs').insert({
-            'community_id': widget.communityId,
-            'moderator_id': userId,
-            'action': action == 'approve' ? 'wiki_approve' : 'wiki_reject',
-            'target_wiki_id': entryId,
-            'target_user_id': entry['author_id'],
-            'reason': action == 'approve'
+          await SupabaseService.rpc('log_moderation_action', params: {
+            'p_community_id': widget.communityId,
+            'p_action': action == 'approve' ? 'wiki_approve' : 'wiki_reject',
+            'p_target_wiki_id': entryId,
+            'p_target_user_id': entry['author_id'],
+            'p_reason': action == 'approve'
                 ? 'Wiki aprovada'
                 : rejectReason ?? 'Rejeitada',
           });

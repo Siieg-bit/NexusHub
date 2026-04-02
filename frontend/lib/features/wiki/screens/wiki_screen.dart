@@ -472,38 +472,28 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
     final userId = SupabaseService.currentUserId;
     if (userId == null) return;
     try {
-      if (_isPinnedToProfile) {
-        await SupabaseService.table('bookmarks')
-            .delete()
-            .eq('user_id', userId)
-            .eq('wiki_id', widget.wikiId);
-        if (mounted) {
-          setState(() => _isPinnedToProfile = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Wiki removida do perfil'),
-              backgroundColor: context.surfaceColor,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(12))),
-            ),
-          );
-        }
-      } else {
-        await SupabaseService.table('bookmarks').insert({
-          'user_id': userId,
-          'wiki_id': widget.wikiId,
-        });
-        if (mounted) {
-          setState(() => _isPinnedToProfile = true);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Wiki fixada no seu perfil!'),
-              backgroundColor: AppTheme.primaryColor,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(12))),
-            ),
-          );
-        }
+      // RPC atômica: toggle bookmark (wiki)
+      final result = await SupabaseService.rpc('toggle_bookmark', params: {
+        'p_user_id': userId,
+        'p_wiki_id': widget.wikiId,
+      });
+      final isNowBookmarked = result is Map
+          ? (result['bookmarked'] == true)
+          : !_isPinnedToProfile;
+      if (mounted) {
+        setState(() => _isPinnedToProfile = isNowBookmarked);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(isNowBookmarked
+                ? 'Wiki fixada no seu perfil!'
+                : 'Wiki removida do perfil'),
+            backgroundColor: isNowBookmarked
+                ? AppTheme.primaryColor
+                : context.surfaceColor,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(12))),
+          ),
+        );
       }
     } catch (e) {
       debugPrint('[wiki_screen] Erro: $e');
@@ -934,19 +924,16 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
         }
       }
 
-      await SupabaseService.table('wiki_entries').insert({
-        'community_id': widget.communityId,
-        'author_id': userId,
-        'title': _titleController.text.trim(),
-        'content': _contentController.text.trim(),
-        // TODO: Refatorar para usar dropdown de wiki_categories (uuid)
-        // Por enquanto, category_id fica null para evitar crash
-        // 'category_id': null,
-        'cover_image_url': _coverUrlController.text.trim().isNotEmpty
+      // RPC atômica: cria wiki + reputação + validação de membro
+      await SupabaseService.rpc('submit_wiki_entry', params: {
+        'p_community_id': widget.communityId,
+        'p_title': _titleController.text.trim(),
+        'p_content': _contentController.text.trim(),
+        'p_category_id': _selectedCategoryId,
+        'p_cover_image_url': _coverUrlController.text.trim().isNotEmpty
             ? _coverUrlController.text.trim()
             : null,
-        'infobox': infobox.isNotEmpty ? infobox : null,
-        'status': 'pending',
+        'p_infobox': infobox.isNotEmpty ? infobox : null,
       });
 
       if (mounted) {

@@ -187,141 +187,104 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       final userId = SupabaseService.currentUserId;
       if (userId == null) throw Exception('Não autenticado');
 
-      final postData = {
-        'community_id': widget.communityId,
-        'author_id': userId,
-        'type': _selectedType,
-        'title': _titleController.text.trim().isNotEmpty
-            ? _titleController.text.trim()
-            : null,
-        'content': _useBlogEditor
-            ? _contentBlocks
-                .where((b) => b.type == BlockType.text || b.type == BlockType.heading)
-                .map((b) => b.controller?.text ?? b.text)
-                .where((t) => t.isNotEmpty)
-                .join('\n\n')
-            : _contentController.text.trim(),
-        'media_list': _mediaUrls.isNotEmpty
-            ? _mediaUrls.map((url) => {'url': url, 'type': 'image'}).toList()
-            : [],
-        'cover_image_url': _coverImageUrl,
-        'external_url': _linkController.text.trim().isNotEmpty
-            ? _linkController.text.trim()
-            : null,
-        'background_url': _backgroundUrlController.text.trim().isNotEmpty
-            ? _backgroundUrlController.text.trim()
-            : null,
-        'visibility': _postVisibility,
-        'comments_blocked': _commentsBlocked,
-        if (_gifUrl != null) 'gif_url': _gifUrl,
-        if (_musicUrl != null) 'music_url': _musicUrl,
-        if (_musicTitle != null) 'music_title': _musicTitle,
-        if (_selectedType == 'crosspost' && _crosspostCommunity != null) ...{
-          'original_community_id': _crosspostCommunity!['id'],
-        },
-      };
+      final contentText = _useBlogEditor
+          ? _contentBlocks
+              .where((b) => b.type == BlockType.text || b.type == BlockType.heading)
+              .map((b) => b.controller?.text ?? b.text)
+              .where((t) => t.isNotEmpty)
+              .join('\n\n')
+          : _contentController.text.trim();
 
-      // Criar post e ganhar reputação
-      final result = await SupabaseService.table('posts')
-          .insert(postData)
-          .select()
-          .single();
+      final mediaList = _mediaUrls.isNotEmpty
+          ? _mediaUrls.map((url) => {'url': url, 'type': 'image'}).toList()
+          : <Map<String, dynamic>>[];
 
-      // Adicionar reputação por criar post
-      try {
-        final repType = (_selectedType == 'poll' || _selectedType == 'quiz')
-            ? 'poll_create'
-            : 'post_create';
-        await SupabaseService.rpc('add_reputation', params: {
-          'p_user_id': userId,
-          'p_community_id': widget.communityId,
-          'p_action_type': repType,
-          'p_raw_amount': 15,
-          'p_reference_id': result['id'],
-        });
-      } catch (_) {
-        // Reputação é best-effort, não bloqueia criação do post
-      }
+      final titleText = _titleController.text.trim().isNotEmpty
+          ? _titleController.text.trim()
+          : null;
 
-      final postId = result['id'] as String?;
+      String? postId;
 
-      // Crosspost: criar post-espelho na comunidade destino
-      if (_selectedType == 'crosspost' && _crosspostCommunity != null) {
-        try {
-          await SupabaseService.table('posts').insert({
-            'community_id': _crosspostCommunity!['id'],
-            'author_id': userId,
-            'type': 'crosspost',
-            'title': _titleController.text.trim().isNotEmpty
-                ? _titleController.text.trim()
-                : null,
-            'content': _useBlogEditor
-                ? _contentBlocks
-                    .where((b) => b.type == BlockType.text || b.type == BlockType.heading)
-                    .map((b) => b.controller?.text ?? b.text)
-                    .where((t) => t.isNotEmpty)
-                    .join('\n\n')
-                : _contentController.text.trim(),
-            'media_list': _mediaUrls.isNotEmpty
-                ? _mediaUrls.map((url) => {'url': url, 'type': 'image'}).toList()
-                : [],
-            'cover_image_url': _coverImageUrl,
-            'original_post_id': postId,
-            'original_community_id': widget.communityId,
-          });
-        } catch (_) {
-          // Crosspost espelho é best-effort
-        }
-      }
-
-      // Criar opções de enquete
-      if (_selectedType == 'poll') {
-        final options = _pollOptions
-            .where((c) => c.text.trim().isNotEmpty)
+      // ── Quiz: usa RPC dedicada create_quiz_with_questions ──
+      if (_selectedType == 'quiz') {
+        final questions = _quizQuestions
+            .where((q) => q.questionController.text.trim().isNotEmpty)
             .toList()
             .asMap()
             .entries
             .map((e) => {
-                  'post_id': postId,
-                  'text': e.value.text.trim(),
-                  'sort_order': e.key,
+                  'question_text': e.value.questionController.text.trim(),
+                  'correct_option_index': e.value.correctIndex,
+                  'options': e.value.options
+                      .where((o) => o.text.trim().isNotEmpty)
+                      .map((o) => {'text': o.text.trim()})
+                      .toList(),
                 })
             .toList();
-        if (options.isNotEmpty) {
-          await SupabaseService.table('poll_options').insert(options);
+
+        postId = await SupabaseService.rpc(
+          'create_quiz_with_questions',
+          params: {
+            'p_community_id': widget.communityId,
+            'p_title': titleText ?? '',
+            'p_content': contentText,
+            'p_media_urls': mediaList,
+            'p_questions': questions,
+            'p_allow_comments': !_commentsBlocked,
+          },
+        ) as String?;
+      }
+      // ── Todos os outros tipos: usa RPC create_post_with_reputation ──
+      else {
+        // Montar poll_options se for enquete
+        List<Map<String, dynamic>>? pollOpts;
+        if (_selectedType == 'poll') {
+          pollOpts = _pollOptions
+              .where((c) => c.text.trim().isNotEmpty)
+              .map((c) => {'text': c.text.trim()})
+              .toList();
         }
+
+        postId = await SupabaseService.rpc(
+          'create_post_with_reputation',
+          params: {
+            'p_community_id': widget.communityId,
+            'p_title': titleText ?? '',
+            'p_content': contentText,
+            'p_type': _selectedType,
+            'p_media_list': mediaList,
+            'p_tags': <String>[],
+            'p_cover_image_url': _coverImageUrl,
+            'p_background_url': _backgroundUrlController.text.trim().isNotEmpty
+                ? _backgroundUrlController.text.trim()
+                : null,
+            'p_external_url': _linkController.text.trim().isNotEmpty
+                ? _linkController.text.trim()
+                : null,
+            'p_gif_url': _gifUrl,
+            'p_music_url': _musicUrl,
+            'p_music_title': _musicTitle,
+            'p_visibility': _postVisibility,
+            'p_comments_blocked': _commentsBlocked,
+            if (pollOpts != null) 'p_poll_options': pollOpts,
+          },
+        ) as String?;
       }
 
-      // Criar perguntas de quiz
-      if (_selectedType == 'quiz') {
-        for (int i = 0; i < _quizQuestions.length; i++) {
-          final q = _quizQuestions[i];
-          if (q.questionController.text.trim().isEmpty) continue;
-
-          final qResult = await SupabaseService.table('quiz_questions')
-              .insert({
-                'post_id': postId,
-                'question_text': q.questionController.text.trim(),
-                'sort_order': i,
-              })
-              .select()
-              .single();
-
-          final qId = qResult['id'] as String?;
-          final opts = q.options
-              .asMap()
-              .entries
-              .where((e) => e.value.text.trim().isNotEmpty)
-              .map((e) => {
-                    'question_id': qId,
-                    'text': e.value.text.trim(),
-                    'is_correct': e.key == q.correctIndex,
-                    'sort_order': e.key,
-                  })
-              .toList();
-          if (opts.isNotEmpty) {
-            await SupabaseService.table('quiz_options').insert(opts);
-          }
+      // ── Crosspost espelho (best-effort) ──
+      if (_selectedType == 'crosspost' && _crosspostCommunity != null && postId != null) {
+        try {
+          await SupabaseService.rpc('create_crosspost', params: {
+            'p_target_community_id': _crosspostCommunity!['id'],
+            'p_original_post_id': postId,
+            'p_original_community_id': widget.communityId,
+            'p_title': titleText,
+            'p_content': contentText,
+            'p_media_list': mediaList,
+            'p_cover_image_url': _coverImageUrl,
+          });
+        } catch (_) {
+          // Crosspost espelho é best-effort
         }
       }
 

@@ -175,18 +175,18 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
       final userId = SupabaseService.currentUserId;
       if (userId == null) throw Exception('Não autenticado');
 
-      await SupabaseService.table('stories').insert({
-        'community_id': widget.communityId,
-        'author_id': userId,
-        'type': _type,
-        'media_url': _mediaUrl,
-        'text_content': _textController.text.trim().isNotEmpty
+      // RPC atômica: cria story + reputação + validação de membro
+      await SupabaseService.rpc('create_story', params: {
+        'p_community_id': widget.communityId,
+        'p_media_url': _mediaUrl ?? '',
+        'p_media_type': _type,
+        'p_caption': _textController.text.trim().isNotEmpty
             ? _textController.text.trim()
             : null,
-        'background_color': _type == 'text'
+        'p_background_color': _type == 'text'
             ? _bgHexCodes[_selectedBgIndex]
             : '#000000',
-        'duration': _type == 'text' ? 5 : 7,
+        'p_duration_seconds': _type == 'text' ? 5 : 7,
       });
 
       if (mounted) {

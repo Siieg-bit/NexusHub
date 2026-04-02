@@ -117,18 +117,17 @@ class _ReportDialogState extends State<ReportDialog> {
     setState(() => _isSubmitting = true);
 
     try {
-      await SupabaseService.table('flags').insert({
-        'community_id': widget.communityId,
-        'reporter_id': SupabaseService.currentUserId,
-        'flag_type': _selectedType,
-        'reason': _reasonController.text.trim().isNotEmpty
+      // RPC server-side: valida duplicatas e usa auth.uid()
+      await SupabaseService.rpc('submit_flag', params: {
+        'p_community_id': widget.communityId,
+        'p_flag_type': _selectedType,
+        'p_reason': _reasonController.text.trim().isNotEmpty
             ? _reasonController.text.trim()
             : null,
-        'target_post_id': widget.targetPostId,
-        'target_comment_id': widget.targetCommentId,
-        'target_chat_message_id': widget.targetMessageId,
-        'target_user_id': widget.targetUserId,
-        'status': 'pending',
+        'p_target_post_id': widget.targetPostId,
+        'p_target_comment_id': widget.targetCommentId,
+        'p_target_chat_message_id': widget.targetMessageId,
+        'p_target_user_id': widget.targetUserId,
       });
 
       if (mounted) {

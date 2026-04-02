@@ -677,17 +677,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
   Future<void> _toggleFollow(WidgetRef ref, UserModel user) async {
     try {
-      if (user.isFollowing == true) {
-        await SupabaseService.table('follows')
-            .delete()
-            .eq('follower_id', SupabaseService.currentUserId ?? '')
-            .eq('following_id', widget.userId);
-      } else {
-        await SupabaseService.table('follows').insert({
-          'follower_id': SupabaseService.currentUserId,
-          'following_id': widget.userId,
-        });
-      }
+      // RPC atômica: toggle follow + reputação + contadores
+      await SupabaseService.rpc(
+        'toggle_follow_with_reputation',
+        params: {
+          'p_community_id': '00000000-0000-0000-0000-000000000000',
+          'p_follower_id': SupabaseService.currentUserId ?? '',
+          'p_following_id': widget.userId,
+        },
+      );
       ref.invalidate(userProfileProvider(widget.userId));
     } catch (e) {
       // Silenciar

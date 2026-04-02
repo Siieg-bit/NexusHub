@@ -876,18 +876,20 @@ class _FollowButtonState extends State<_FollowButton> {
     if (currentUserId == null || _loading) return;
     setState(() => _loading = true);
     try {
-      if (_following) {
-        await SupabaseService.table('follows')
-            .delete()
-            .eq('follower_id', currentUserId)
-            .eq('following_id', widget.targetUserId);
-        if (mounted) setState(() => _following = false);
-      } else {
-        await SupabaseService.table('follows').insert({
-          'follower_id': currentUserId,
-          'following_id': widget.targetUserId,
-        });
-        if (mounted) setState(() => _following = true);
+      // RPC atômica: toggle follow + reputação + contadores
+      final result = await SupabaseService.rpc(
+        'toggle_follow_with_reputation',
+        params: {
+          'p_community_id': widget.communityId,
+          'p_follower_id': currentUserId,
+          'p_following_id': widget.targetUserId,
+        },
+      );
+      if (mounted) {
+        final isNowFollowing = result is Map
+            ? (result['following'] == true)
+            : !_following;
+        setState(() => _following = isNowFollowing);
       }
     } catch (_) {
     } finally {

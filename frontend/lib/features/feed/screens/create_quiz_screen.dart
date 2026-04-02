@@ -100,58 +100,25 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
       final userId = SupabaseService.currentUserId;
       if (userId == null) throw Exception('Não autenticado');
 
-      final result = await SupabaseService.table('posts')
-          .insert({
-            'community_id': widget.communityId,
-            'author_id': userId,
-            'type': 'quiz',
-            'title': title,
-            'content': _descriptionController.text.trim(),
-            'media_list': [],
-            'visibility': _visibility,
-            'comments_blocked': false,
-          })
-          .select()
-          .single();
+      // Montar perguntas com opções como JSON para a RPC
+      final questions = validQuestions.map((q) => {
+            'question_text': q.questionController.text.trim(),
+            'correct_option_index': q.correctIndex,
+            'options': q.options
+                .where((o) => o.controller.text.trim().isNotEmpty)
+                .map((o) => {'text': o.controller.text.trim()})
+                .toList(),
+          }).toList();
 
-      final postId = result['id'] as String;
-
-      for (int i = 0; i < validQuestions.length; i++) {
-        final q = validQuestions[i];
-        final qResult = await SupabaseService.table('quiz_questions')
-            .insert({
-              'post_id': postId,
-              'question_text': q.questionController.text.trim(),
-              'sort_order': i,
-            })
-            .select()
-            .single();
-        final qId = qResult['id'] as String;
-        final opts = q.options
-            .asMap()
-            .entries
-            .where((e) => e.value.controller.text.trim().isNotEmpty)
-            .map((e) => {
-                  'question_id': qId,
-                  'text': e.value.controller.text.trim(),
-                  'is_correct': e.key == q.correctIndex,
-                  'sort_order': e.key,
-                })
-            .toList();
-        if (opts.isNotEmpty) {
-          await SupabaseService.table('quiz_options').insert(opts);
-        }
-      }
-
-      try {
-        await SupabaseService.rpc('add_reputation', params: {
-          'p_user_id': userId,
-          'p_community_id': widget.communityId,
-          'p_action_type': 'quiz_create',
-          'p_raw_amount': 15,
-          'p_reference_id': postId,
-        });
-      } catch (_) {}
+      // RPC atômica: cria post + questions + options + reputação
+      await SupabaseService.rpc('create_quiz_with_questions', params: {
+        'p_community_id': widget.communityId,
+        'p_title': title,
+        'p_content': _descriptionController.text.trim(),
+        'p_media_urls': <dynamic>[],
+        'p_questions': questions,
+        'p_allow_comments': true,
+      });
 
       if (mounted) {
         context.pop();

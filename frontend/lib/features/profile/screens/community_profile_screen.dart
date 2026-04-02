@@ -1525,40 +1525,22 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
     try {
       final currentUserId = SupabaseService.currentUserId;
       if (currentUserId == null) return;
-      final existing = await SupabaseService.table('follows')
-          .select('id')
-          .eq('follower_id', currentUserId)
-          .eq('following_id', widget.userId)
-          .maybeSingle();
-      if (existing != null) {
-        await SupabaseService.table('follows')
-            .delete()
-            .eq('follower_id', currentUserId)
-            .eq('following_id', widget.userId);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Deixou de seguir')),
-          );
-        }
-      } else {
-        await SupabaseService.table('follows').insert({
-          'follower_id': currentUserId,
-          'following_id': widget.userId,
-        });
-        try {
-          await SupabaseService.rpc('add_reputation', params: {
-            'p_user_id': currentUserId,
-            'p_community_id': widget.communityId,
-            'p_action_type': 'follow',
-            'p_raw_amount': 5,
-            'p_reference_id': widget.userId,
-          });
-        } catch (_) {}
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Seguindo!')),
-          );
-        }
+      // RPC atômica: toggle follow + reputação + contadores
+      final result = await SupabaseService.rpc(
+        'toggle_follow_with_reputation',
+        params: {
+          'p_community_id': widget.communityId,
+          'p_follower_id': currentUserId,
+          'p_following_id': widget.userId,
+        },
+      );
+      final isNowFollowing = result is Map
+          ? (result['following'] == true)
+          : true;
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(isNowFollowing ? 'Seguindo!' : 'Deixou de seguir')),
+        );
       }
       _loadProfile();
     } catch (e) {
@@ -1617,10 +1599,11 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
     final text = _wallController.text.trim();
     if (text.isEmpty) return;
     try {
-      await SupabaseService.table('comments').insert({
-        'author_id': SupabaseService.currentUserId,
-        'profile_wall_id': widget.userId,
-        'content': text,
+      // RPC server-side: validação + auth.uid()
+      await SupabaseService.rpc('post_wall_comment', params: {
+        'p_profile_user_id': widget.userId,
+        'p_community_id': widget.communityId,
+        'p_content': text,
       });
       _wallController.clear();
       final wallRes = await SupabaseService.table('comments')

@@ -150,17 +150,14 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
     }
 
     try {
-      // Registrar ação no log de moderação
-      await SupabaseService.table('moderation_logs').insert({
-        'community_id': widget.communityId,
-        'moderator_id': SupabaseService.currentUserId,
-        'target_user_id': widget.targetUserId,
-        'target_post_id': widget.targetPostId,
-        'action': _selectedAction,
-        'reason': _reasonController.text.trim(),
-        'metadata': {
-          if (_selectedAction == 'ban') 'duration_hours': _banDurationHours,
-        },
+      // RPC server-side: log de moderação com auth.uid()
+      await SupabaseService.rpc('log_moderation_action', params: {
+        'p_community_id': widget.communityId,
+        'p_action': _selectedAction,
+        'p_target_user_id': widget.targetUserId,
+        'p_target_post_id': widget.targetPostId,
+        'p_reason': _reasonController.text.trim(),
+        'p_duration_hours': _selectedAction == 'ban' ? _banDurationHours : null,
       });
 
       // Executar ação específica

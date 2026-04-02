@@ -78,42 +78,20 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
       final userId = SupabaseService.currentUserId;
       if (userId == null) throw Exception('Não autenticado');
 
-      final result = await SupabaseService.table('posts')
-          .insert({
-            'community_id': widget.communityId,
-            'author_id': userId,
-            'type': 'poll',
-            'title': title,
-            'content': _descriptionController.text.trim(),
-            'media_list': [],
-            'visibility': _visibility,
-            'comments_blocked': false,
-          })
-          .select()
-          .single();
-
-      final postId = result['id'] as String;
-
-      final options = validOptions
-          .asMap()
-          .entries
-          .map((e) => {
-                'post_id': postId,
-                'text': e.value.text.trim(),
-                'sort_order': e.key,
-              })
+      // Montar opções da enquete como JSON
+      final pollOpts = validOptions
+          .map((c) => {'text': c.text.trim()})
           .toList();
-      await SupabaseService.table('poll_options').insert(options);
 
-      try {
-        await SupabaseService.rpc('add_reputation', params: {
-          'p_user_id': userId,
-          'p_community_id': widget.communityId,
-          'p_action_type': 'poll_create',
-          'p_raw_amount': 15,
-          'p_reference_id': postId,
-        });
-      } catch (_) {}
+      // RPC atômica: cria post + poll_options + reputação
+      await SupabaseService.rpc('create_post_with_reputation', params: {
+        'p_community_id': widget.communityId,
+        'p_title': title,
+        'p_content': _descriptionController.text.trim(),
+        'p_type': 'poll',
+        'p_visibility': _visibility,
+        'p_poll_options': pollOpts,
+      });
 
       if (mounted) {
         context.pop();
