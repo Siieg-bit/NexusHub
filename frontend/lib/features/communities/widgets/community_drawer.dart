@@ -8,7 +8,6 @@ import '../../../core/models/community_model.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../providers/community_shared_providers.dart';
-import '../providers/community_detail_providers.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/amino_drawer.dart';
 
@@ -130,8 +129,6 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
     final hasCheckedIn = myStatus?['has_checkin_today'] as bool? ?? false;
     final streak = myStatus?['consecutive_checkin_days'] as int? ?? 0;
     final userCommunitiesAsync = ref.watch(userCommunitiesProvider);
-    final membersAsync =
-        ref.watch(communityMembersProvider(widget.community.id));
 
     return LayoutBuilder(
       builder: (context, outerConstraints) {
@@ -167,8 +164,8 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                                     streak),
                                 // 2. Menu principal
                                 _buildMainMenu(r, themeColor),
-                                // 3. Seção de membros
-                                _buildMembersSection(r, membersAsync),
+                                // 3. Botão de membros
+                                _buildMembersSection(r, const AsyncData([])),
                                 // 4. Options
                                 _buildOptionsSection(r),
                                 // Staff
@@ -460,19 +457,19 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
   }
 
   // ---------------------------------------------------------------------------
-  // MENU PRINCIPAL: Home, My Chats, Let's Chat!, Shared Folder
+  // MENU PRINCIPAL
   // ---------------------------------------------------------------------------
   Widget _buildMainMenu(Responsive r, Color themeColor) {
     return Column(
       children: [
         _DrawerTile(
           icon: Icons.home_rounded,
-          label: 'Home',
+          label: 'Início',
           onTap: () => _closeAndNavigate(() {}),
         ),
         _DrawerTile(
           icon: Icons.chat_bubble_rounded,
-          label: 'My Chats',
+          label: 'Meus Chats',
           onTap: () {
             Navigator.pop(context);
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -483,7 +480,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         ),
         _DrawerTile(
           icon: Icons.forum_rounded,
-          label: "Let's Chat!",
+          label: 'Vamos Conversar!',
           onTap: () => _closeAndNavigate(() {
             context.push('/create-public-chat', extra: {
               'communityId': widget.community.id,
@@ -493,7 +490,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         ),
         _DrawerTile(
           icon: Icons.folder_shared_rounded,
-          label: 'Shared Folder',
+          label: 'Pasta Compartilhada',
           onTap: () => _closeAndNavigate(() {
             context.push(
                 '/community/${widget.community.id}/shared-folder');
@@ -510,140 +507,37 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
   }
 
   // ---------------------------------------------------------------------------
-  // SEÇÃO DE MEMBROS
+  // BOTÃO DE MEMBROS
   // ---------------------------------------------------------------------------
   Widget _buildMembersSection(
       Responsive r, AsyncValue<List<Map<String, dynamic>>> membersAsync) {
-    return membersAsync.when(
-      loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
-      data: (members) {
-        if (members.isEmpty) return const SizedBox.shrink();
-        // Mostrar até 8 membros
-        final displayed = members.take(8).toList();
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: EdgeInsets.fromLTRB(r.s(16), r.s(12), r.s(16), r.s(4)),
-              child: Text(
-                widget.community.name,
-                style: TextStyle(
-                  color: context.textPrimary,
-                  fontSize: r.fs(13),
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            ...displayed.map((m) {
-              final profile =
-                  m['profiles'] as Map<String, dynamic>? ?? {};
-              final nickname =
-                  profile['nickname'] as String? ?? 'Membro';
-              final iconUrl = profile['icon_url'] as String?;
-              final level = profile['level'] as int? ?? 1;
-              final role = m['role'] as String? ?? 'member';
-              final roleLabel = _roleLabel(role);
-
-              return GestureDetector(
-                onTap: () => _closeAndNavigate(() {
-                  final userId = profile['id'] as String?;
-                  if (userId != null) {
-                    context.push('/profile/$userId');
-                  }
-                }),
-                behavior: HitTestBehavior.opaque,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: r.s(16), vertical: r.s(8)),
-                  child: Row(
-                    children: [
-                      // Avatar quadrado com bordas arredondadas
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(r.s(6)),
-                        child: Container(
-                          width: r.s(44),
-                          height: r.s(44),
-                          color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                          child: iconUrl != null
-                              ? CachedNetworkImage(
-                                  imageUrl: iconUrl,
-                                  fit: BoxFit.cover,
-                                )
-                              : Icon(Icons.person_rounded,
-                                  color: Colors.white, size: r.s(22)),
-                        ),
-                      ),
-                      SizedBox(width: r.s(12)),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              nickname,
-                              style: TextStyle(
-                                color: context.textPrimary,
-                                fontSize: r.fs(13),
-                                fontWeight: FontWeight.w600,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            Text(
-                              roleLabel.isNotEmpty
-                                  ? roleLabel
-                                  : 'Nível $level',
-                              style: TextStyle(
-                                color: Colors.grey[500],
-                                fontSize: r.fs(11),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }),
-            // Ver todos os membros
-            GestureDetector(
-              onTap: () => _closeAndNavigate(() {
-                context
-                    .push('/community/${widget.community.id}/members');
-              }),
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                    horizontal: r.s(16), vertical: r.s(8)),
-                child: Text(
-                  'Ver todos os membros →',
-                  style: TextStyle(
-                    color: Colors.grey[500],
-                    fontSize: r.fs(12),
-                  ),
-                ),
-              ),
-            ),
-            Divider(
-              color: context.dividerClr,
-              height: r.s(1),
-              indent: r.s(16),
-              endIndent: r.s(16),
-            ),
-          ],
-        );
-      },
+    return Column(
+      children: [
+        _DrawerTile(
+          icon: Icons.group_rounded,
+          label: 'Ver Membros',
+          onTap: () => _closeAndNavigate(() {
+            context.push('/community/${widget.community.id}/members');
+          }),
+        ),
+        Divider(
+          color: context.dividerClr,
+          height: r.s(1),
+          indent: r.s(16),
+          endIndent: r.s(16),
+        ),
+      ],
     );
   }
 
   String _roleLabel(String role) {
     switch (role) {
       case 'agent':
-        return 'Agent';
+        return 'Agente';
       case 'leader':
-        return 'Leader';
+        return 'Líder';
       case 'curator':
-        return 'Curator';
+        return 'Curador';
       case 'moderator':
         return 'Moderador';
       default:
@@ -661,7 +555,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         Padding(
           padding: EdgeInsets.fromLTRB(r.s(16), r.s(12), r.s(16), r.s(4)),
           child: Text(
-            'Options',
+            'OPÇÕES',
             style: TextStyle(
               color: Colors.grey[500],
               fontSize: r.fs(12),
@@ -672,7 +566,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         ),
         _DrawerTile(
           icon: Icons.bookmark_rounded,
-          label: 'My Saved Posts',
+          label: 'Posts Salvos',
           onTap: () => _closeAndNavigate(() {
             context.push('/profile/${SupabaseService.currentUserId}');
           }),

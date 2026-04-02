@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
-/// AminoDrawer — Drawer customizado com animação push/scale estilo Amino.
+/// AminoDrawer — Drawer customizado com animação de sobreposição (overlay).
 ///
-/// No Amino original, abrir a sidebar não apenas sobrepõe o conteúdo:
-/// ela empurra e escala o conteúdo principal para a direita, criando
-/// um efeito 3D de profundidade. O conteúdo principal fica com cantos
-/// arredondados e levemente reduzido (scale ~0.85).
+/// O drawer desliza da esquerda e sobrepõe o conteúdo principal sem
+/// empurrá-lo ou redimensioná-lo. Um overlay escuro semitransparente
+/// cobre o conteúdo ao fundo quando o drawer está aberto.
 ///
 /// Uso:
 /// ```dart
@@ -18,16 +17,12 @@ class AminoDrawerController extends StatefulWidget {
   final Widget drawer;
   final Widget child;
   final double maxSlide;
-  final double minScale;
-  final double cornerRadius;
 
   const AminoDrawerController({
     super.key,
     required this.drawer,
     required this.child,
-    this.maxSlide = 280,
-    this.minScale = 0.82,
-    this.cornerRadius = 24,
+    this.maxSlide = 300,
   });
 
   /// Abre/fecha o drawer a partir de qualquer descendente
@@ -42,12 +37,11 @@ class AminoDrawerController extends StatefulWidget {
 class AminoDrawerControllerState extends State<AminoDrawerController>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
+  late Animation<Offset> _slideAnimation;
   bool _isOpen = false;
 
   /// Largura da zona de borda esquerda que detecta swipe para abrir (px).
   static const double _edgeDragWidth = 24.0;
-
-  /// Se o drag atual começou na borda esquerda.
   bool _edgeDragActive = false;
 
   bool get isOpen => _isOpen;
@@ -57,8 +51,15 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
     super.initState();
     _animController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 280),
     );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(-1.0, 0),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOutCubic,
+    ));
   }
 
   @override
@@ -86,15 +87,13 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
   }
 
   void _onHorizontalDragStart(DragStartDetails details) {
-    // Ativa edge-drag se o toque começou na faixa esquerda da tela
-    _edgeDragActive = !_isOpen && details.globalPosition.dx <= _edgeDragWidth;
+    _edgeDragActive =
+        !_isOpen && details.globalPosition.dx <= _edgeDragWidth;
   }
 
   void _onHorizontalDragUpdate(DragUpdateDetails details) {
     final delta = details.primaryDelta ?? 0;
     if (_isOpen || _edgeDragActive) {
-      // Usa effectiveMaxSlide calculado no build para normalizar o drag.
-      // Como não temos acesso ao context aqui, usamos widget.maxSlide como fallback.
       _animController.value += delta / widget.maxSlide;
     }
   }
@@ -102,7 +101,6 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
   void _onHorizontalDragEnd(DragEndDetails details) {
     if (_isOpen || _edgeDragActive) {
       final velocity = details.primaryVelocity ?? 0;
-      // Swipe rápido para a direita → abrir; para a esquerda → fechar
       if (velocity > 300) {
         open();
       } else if (velocity < -300) {
@@ -118,95 +116,47 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
 
   @override
   Widget build(BuildContext context) {
-    // Adaptar maxSlide à largura da tela para evitar overflow em telas estreitas.
-    // Usa no máximo 75% da largura da tela, limitado pelo maxSlide configurado.
     final screenWidth = MediaQuery.of(context).size.width;
-    final effectiveMaxSlide = widget.maxSlide.clamp(0.0, screenWidth * 0.75);
+    final effectiveMaxSlide =
+        widget.maxSlide.clamp(0.0, screenWidth * 0.82);
 
-    return AnimatedBuilder(
-      animation: _animController,
-      builder: (context, _) {
-        final slide = effectiveMaxSlide * _animController.value;
-        final scale = 1 - ((1 - widget.minScale) * _animController.value);
-        final radius = widget.cornerRadius * _animController.value;
+    return GestureDetector(
+      onHorizontalDragStart: _onHorizontalDragStart,
+      onHorizontalDragUpdate: _onHorizontalDragUpdate,
+      onHorizontalDragEnd: _onHorizontalDragEnd,
+      child: Stack(
+        children: [
+          // ── Conteúdo principal (não se move) ──────────────────────────────
+          widget.child,
 
-        return Stack(
-          children: [
-            // ── Drawer (fundo) ──
-            // Animação: começa deslocado à esquerda e desliza para a posição
-            Positioned(
-              top: 0,
-              bottom: 0,
-              left: 0,
-              width: effectiveMaxSlide,
-              child: FadeTransition(
-                opacity: _animController,
-                child: SlideTransition(
-                  position: Tween<Offset>(
-                    begin: const Offset(-0.3, 0),
-                    end: Offset.zero,
-                  ).animate(CurvedAnimation(
-                    parent: _animController,
-                    curve: Curves.easeOutCubic,
-                  )),
-                  child: widget.drawer,
+          // ── Overlay escuro sobre o conteúdo quando aberto ─────────────────
+          AnimatedBuilder(
+            animation: _animController,
+            builder: (context, _) {
+              if (_animController.value == 0) return const SizedBox.shrink();
+              return GestureDetector(
+                onTap: close,
+                child: Container(
+                  color: Colors.black
+                      .withValues(alpha: 0.45 * _animController.value),
                 ),
-              ),
-            ),
+              );
+            },
+          ),
 
-            // ── Conteúdo principal (frente) ──
-            // Animação: escala + desloca para a direita + cantos arredondados
-            Transform(
-              transform: Matrix4.identity()
-                ..setTranslationRaw(slide, 0, 0)
-                ..scale(scale, scale, 1.0),
+          // ── Drawer (sobrepõe tudo, desliza da esquerda) ───────────────────
+          SlideTransition(
+            position: _slideAnimation,
+            child: Align(
               alignment: Alignment.centerLeft,
-              child: GestureDetector(
-                onTap: _isOpen ? close : null,
-                onHorizontalDragStart: _onHorizontalDragStart,
-                onHorizontalDragUpdate: _onHorizontalDragUpdate,
-                onHorizontalDragEnd: _onHorizontalDragEnd,
-                child: AbsorbPointer(
-                  absorbing: _isOpen,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(radius),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        boxShadow: _isOpen
-                            ? [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.3),
-                                  blurRadius: 20,
-                                  offset: const Offset(-5, 0),
-                                ),
-                              ]
-                            : null,
-                      ),
-                      child: widget.child,
-                    ),
-                  ),
-                ),
+              child: SizedBox(
+                width: effectiveMaxSlide,
+                child: widget.drawer,
               ),
             ),
-
-            // ── Overlay escuro sobre o conteúdo quando aberto ──
-            if (_isOpen)
-              Positioned(
-                left: slide,
-                top: 0,
-                bottom: 0,
-                right: 0,
-                child: GestureDetector(
-                  onTap: close,
-                  child: Container(
-                    color: Colors.black
-                        .withValues(alpha: 0.15 * _animController.value),
-                  ),
-                ),
-              ),
-          ],
-        );
-      },
+          ),
+        ],
+      ),
     );
   }
 }
