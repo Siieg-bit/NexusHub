@@ -9,6 +9,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/amino_bottom_nav.dart';
 import '../../chat/screens/chat_list_screen.dart' show chatListProvider;
+import '../widgets/community_create_menu.dart';
 
 // =============================================================================
 // Provider: chats do usuário filtrados por comunidade
@@ -208,10 +209,11 @@ class _MyCommunityChatsScreenState
       ),
       // FAB "+" estilo cápsula (página interna)
       floatingActionButton: AminoCommunityFab(
-        onTap: () => context.push('/create-public-chat', extra: {
-          'communityId': widget.communityId,
-          'communityName': widget.communityName,
-        }),
+        onTap: () => showCommunityCreateMenu(
+          context,
+          communityId: widget.communityId,
+          communityName: widget.communityName,
+        ),
       ),
     );
   }

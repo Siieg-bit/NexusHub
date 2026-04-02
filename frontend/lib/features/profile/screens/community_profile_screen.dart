@@ -11,6 +11,7 @@ import '../../chat/widgets/chat_bubble.dart'; // AvatarWithFrame + AminoPlusBadg
 import '../../../core/widgets/amino_custom_title.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/amino_bottom_nav.dart';
+import '../../communities/widgets/community_create_menu.dart';
 
 /// Perfil dentro de uma Comunidade — Layout 1:1 com Amino Apps.
 ///
@@ -51,6 +52,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
   final _wallController = TextEditingController();
   int _followersCount = 0;
   int _followingCount = 0;
+  String _communityName = '';
 
   bool get _isOwnProfile =>
       widget.userId == SupabaseService.currentUserId;
@@ -71,6 +73,15 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           .eq('id', widget.userId)
           .single();
       _user = UserModel.fromJson(userRes);
+
+      // Nome da comunidade
+      try {
+        final communityRes = await SupabaseService.table('communities')
+            .select('name')
+            .eq('id', widget.communityId)
+            .single();
+        _communityName = communityRes['name'] as String? ?? '';
+      } catch (_) {}
 
       // Membership na comunidade
       final memberRes = await SupabaseService.table('community_members')
@@ -189,8 +200,11 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
       backgroundColor: context.scaffoldBg,
       floatingActionButton: _isOwnProfile
           ? AminoCommunityFab(
-              onTap: () => context
-                  .push('/community/${widget.communityId}/create-post'),
+              onTap: () => showCommunityCreateMenu(
+                context,
+                communityId: widget.communityId,
+                communityName: _communityName,
+              ),
             )
           : null,
       body: RefreshIndicator(
@@ -940,8 +954,11 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
         // "Criar nova publicação" button
         if (_isOwnProfile)
           GestureDetector(
-            onTap: () =>
-                context.push('/community/${widget.communityId}/create-post'),
+            onTap: () => showCommunityCreateMenu(
+              context,
+              communityId: widget.communityId,
+              communityName: _communityName,
+            ),
               child: Container(
                 padding: EdgeInsets.symmetric(
                     horizontal: r.s(16), vertical: r.s(14)),
