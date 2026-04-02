@@ -9,8 +9,10 @@ import '../../../config/app_theme.dart';
 import '../../../core/providers/notification_provider.dart';
 import '../../../core/utils/responsive.dart';
 
-/// Tela de notificações — usa o provider compartilhado com realtime,
-/// paginação, contagem de não lidas e join de perfis.
+// =============================================================================
+// TELA DE ALERTAS — Estilo Amino Apps
+// =============================================================================
+
 class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
 
@@ -40,11 +42,90 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     if (!_scrollController.hasClients) return;
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 300) {
-      // Debounce de 100ms para evitar chamadas duplicadas
       if (_scrollDebounce?.isActive ?? false) return;
       _scrollDebounce = Timer(const Duration(milliseconds: 100), () {
         ref.read(notificationProvider.notifier).loadMore();
       });
+    }
+  }
+
+  Future<void> _confirmClearAll() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: context.surfaceColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Limpar todos os alertas?',
+          style: TextStyle(
+            color: context.textPrimary,
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+          ),
+        ),
+        content: Text(
+          'Esta ação não pode ser desfeita.',
+          style: TextStyle(color: context.textSecondary, fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancelar',
+                style: TextStyle(color: context.textSecondary)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Limpar',
+                style: TextStyle(
+                    color: AppTheme.errorColor, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await ref.read(notificationProvider.notifier).markAllAsRead();
+    }
+  }
+
+  void _handleTap(Map<String, dynamic> notification) {
+    final notifId = notification['id'] as String?;
+    final isRead = notification['is_read'] as bool? ?? false;
+    if (!isRead && notifId != null) {
+      ref.read(notificationProvider.notifier).markAsRead(notifId);
+    }
+
+    final type = notification['notification_type'] as String? ?? '';
+    final targetId = notification['target_id'] as String?;
+    if (targetId == null) return;
+
+    switch (type) {
+      case 'like':
+      case 'comment':
+      case 'mention':
+        context.push('/post/$targetId');
+        break;
+      case 'follow':
+        context.push('/user/$targetId');
+        break;
+      case 'community_invite':
+        context.push('/community/$targetId');
+        break;
+      case 'chat_message':
+      case 'chat_mention':
+        context.push('/chat/$targetId');
+        break;
+      case 'dm_invite':
+        context.push('/chats');
+        break;
+      case 'level_up':
+      case 'achievement':
+        context.push('/profile');
+        break;
+      case 'wall_post':
+        context.push('/user/$targetId');
+        break;
+      default:
+        break;
     }
   }
 
@@ -55,40 +136,39 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
     return Scaffold(
       backgroundColor: context.scaffoldBg,
+      // ── AppBar estilo Amino: título centralizado + "Limpar Tudo" vermelho ──
       appBar: AppBar(
         backgroundColor: context.scaffoldBg,
         elevation: 0,
+        centerTitle: true,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_rounded,
               color: context.textPrimary, size: r.s(20)),
           onPressed: () => context.pop(),
         ),
         title: Text(
-          'Notificações',
+          'Alertas',
           style: TextStyle(
             color: context.textPrimary,
             fontWeight: FontWeight.w800,
+            fontSize: r.fs(18),
           ),
         ),
         actions: [
           GestureDetector(
-            onTap: () =>
-                ref.read(notificationProvider.notifier).markAllAsRead(),
+            onTap: _confirmClearAll,
             child: Container(
-              padding:
-                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
-              margin: EdgeInsets.only(right: r.s(16)),
+              margin: EdgeInsets.only(right: r.s(12)),
+              padding: EdgeInsets.symmetric(
+                  horizontal: r.s(14), vertical: r.s(7)),
               decoration: BoxDecoration(
-                color: context.surfaceColor,
+                color: AppTheme.errorColor,
                 borderRadius: BorderRadius.circular(r.s(20)),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.05),
-                ),
               ),
               child: Text(
-                'Marcar todas',
+                'Limpar Tudo',
                 style: TextStyle(
-                  color: AppTheme.primaryColor,
+                  color: Colors.white,
                   fontSize: r.fs(12),
                   fontWeight: FontWeight.w700,
                 ),
@@ -111,12 +191,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               Text(
                 'Erro ao carregar notificações',
                 style: TextStyle(
-                  color: Colors.grey[400],
-                  fontSize: r.fs(15),
-                  fontWeight: FontWeight.w600,
-                ),
+                    color: context.textSecondary,
+                    fontSize: r.fs(15),
+                    fontWeight: FontWeight.w600),
               ),
-              SizedBox(height: r.s(8)),
+              SizedBox(height: r.s(12)),
               GestureDetector(
                 onTap: () =>
                     ref.read(notificationProvider.notifier).refresh(),
@@ -130,10 +209,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                   child: Text(
                     'Tentar novamente',
                     style: TextStyle(
-                      color: Colors.white,
-                      fontSize: r.fs(13),
-                      fontWeight: FontWeight.w700,
-                    ),
+                        color: Colors.white,
+                        fontSize: r.fs(13),
+                        fontWeight: FontWeight.w700),
                   ),
                 ),
               ),
@@ -143,190 +221,143 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         data: (notifState) {
           final notifications = notifState.notifications;
 
-          if (notifications.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.notifications_off_rounded,
-                    size: r.s(64),
-                    color: Colors.grey[600],
-                  ),
-                  SizedBox(height: r.s(16)),
-                  Text(
-                    'Nenhuma notificação',
-                    style: TextStyle(
-                      color: Colors.grey[500],
-                      fontSize: r.fs(16),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  SizedBox(height: r.s(6)),
-                  Text(
-                    'Quando alguém interagir com você, aparecerá aqui',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: r.fs(12),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-
           return RefreshIndicator(
             color: AppTheme.primaryColor,
             onRefresh: () async {
               await ref.read(notificationProvider.notifier).refresh();
-              if (!mounted) return;
             },
-            child: ListView.separated(
+            child: CustomScrollView(
               controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.all(r.s(16)),
-              itemCount: notifications.length +
-                  (notifState.loadMoreError != null
-                      ? 1
-                      : notifState.hasMore
-                          ? 1
-                          : 0),
-              separatorBuilder: (context, index) => SizedBox(height: r.s(12)),
-              itemBuilder: (context, index) {
-                // Trailing widget: retry banner ou loading spinner
-                if (index >= notifications.length) {
-                  // Erro em página intermediária → retry inline
-                  if (notifState.loadMoreError != null) {
-                    return Padding(
-                      padding: EdgeInsets.symmetric(vertical: r.s(8)),
-                      child: Container(
-                        padding: EdgeInsets.all(r.s(12)),
-                        decoration: BoxDecoration(
-                          color: Colors.red.withValues(alpha: 0.08),
-                          borderRadius: BorderRadius.circular(r.s(10)),
-                          border: Border.all(
-                              color: Colors.red.withValues(alpha: 0.2)),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.error_outline_rounded,
-                                color: Colors.red[300], size: r.s(20)),
-                            SizedBox(width: r.s(10)),
-                            Expanded(
-                              child: Text(
-                                'Erro ao carregar mais notificações',
-                                style: TextStyle(
-                                  color: Colors.red[300],
-                                  fontSize: r.fs(13),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () => ref
-                                  .read(notificationProvider.notifier)
-                                  .retryLoadMore(),
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: r.s(12), vertical: r.s(6)),
-                                decoration: BoxDecoration(
-                                  color: Colors.red.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(r.s(8)),
-                                ),
-                                child: Text(
-                                  'Tentar novamente',
-                                  style: TextStyle(
-                                    color: Colors.red[300],
-                                    fontSize: r.fs(12),
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
+              slivers: [
+                // ── Link para configurações de push ──────────────────────
+                SliverToBoxAdapter(
+                  child: InkWell(
+                    onTap: () =>
+                        context.push('/settings/notifications'),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: r.s(16), vertical: r.s(14)),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: context.dividerClr
+                                .withValues(alpha: 0.15),
+                            width: 0.5,
+                          ),
                         ),
                       ),
-                    );
-                  }
-                  // Loading spinner
-                  return Padding(
-                    padding: EdgeInsets.symmetric(vertical: r.s(16)),
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        color: AppTheme.primaryColor,
-                        strokeWidth: 2,
+                      child: Row(
+                        children: [
+                          Icon(Icons.settings_rounded,
+                              color: context.textSecondary,
+                              size: r.s(18)),
+                          SizedBox(width: r.s(10)),
+                          Text(
+                            'Configurações de Notificação Push',
+                            style: TextStyle(
+                              color: context.textSecondary,
+                              fontSize: r.fs(13),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const Spacer(),
+                          Icon(Icons.chevron_right_rounded,
+                              color: context.textSecondary,
+                              size: r.s(18)),
+                        ],
                       ),
                     ),
-                  );
-                }
+                  ),
+                ),
 
-                return _NotificationTile(
-                  data: notifications[index],
-                  onTap: () => _handleNotificationTap(notifications[index]),
-                );
-              },
+                // ── Lista vazia ──────────────────────────────────────────
+                if (notifications.isEmpty)
+                  SliverFillRemaining(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.notifications_off_rounded,
+                              size: r.s(64), color: Colors.grey[600]),
+                          SizedBox(height: r.s(16)),
+                          Text(
+                            'Nenhum alerta',
+                            style: TextStyle(
+                              color: Colors.grey[500],
+                              fontSize: r.fs(16),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          SizedBox(height: r.s(6)),
+                          Text(
+                            'Quando alguém interagir com você,\naparecerá aqui',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: r.fs(12),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                else ...[
+                  // ── Tiles de notificação ─────────────────────────────
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        return _NotificationTile(
+                          data: notifications[index],
+                          onTap: () => _handleTap(notifications[index]),
+                        );
+                      },
+                      childCount: notifications.length,
+                    ),
+                  ),
+
+                  // ── Footer: loading / retry ──────────────────────────
+                  SliverToBoxAdapter(
+                    child: notifState.loadMoreError != null
+                        ? _RetryBanner(
+                            onRetry: () => ref
+                                .read(notificationProvider.notifier)
+                                .retryLoadMore(),
+                          )
+                        : notifState.hasMore
+                            ? Padding(
+                                padding:
+                                    EdgeInsets.symmetric(vertical: r.s(20)),
+                                child: const Center(
+                                  child: CircularProgressIndicator(
+                                    color: AppTheme.primaryColor,
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              )
+                            : SizedBox(height: r.s(40)),
+                  ),
+                ],
+              ],
             ),
           );
         },
       ),
     );
   }
-
-  /// Navega para o destino correto baseado no tipo de notificação.
-  void _handleNotificationTap(Map<String, dynamic> notification) {
-    final notifId = notification['id'] as String?;
-    final isRead = notification['is_read'] as bool? ?? false;
-
-    // Marcar como lida
-    if (!isRead && notifId != null) {
-      ref.read(notificationProvider.notifier).markAsRead(notifId);
-    }
-
-    final type = notification['notification_type'] as String? ?? '';
-    final targetId = notification['target_id'] as String?;
-
-    if (targetId == null) return;
-
-    switch (type) {
-      case 'like':
-      case 'comment':
-      case 'mention':
-        context.push('/post/$targetId');
-        break;
-      case 'follow':
-        context.push('/user/$targetId');
-        break;
-      case 'community_invite':
-        context.push('/community/$targetId');
-        break;
-      case 'chat_message':
-      case 'chat_mention':
-        context.push('/chat/$targetId');
-        break;
-      case 'dm_invite':
-        // DM invites navegam para a lista de chats onde os convites aparecem
-        context.push('/chats');
-        break;
-      case 'level_up':
-      case 'achievement':
-        context.push('/profile');
-        break;
-      case 'wall_post':
-        context.push('/user/$targetId');
-        break;
-      default:
-        break;
-    }
-  }
 }
 
-/// Tile individual de notificação — estilo Amino.
+// =============================================================================
+// TILE DE NOTIFICAÇÃO — Estilo Amino (simples e limpo)
+// =============================================================================
+
 class _NotificationTile extends StatelessWidget {
   final Map<String, dynamic> data;
   final VoidCallback? onTap;
 
   const _NotificationTile({required this.data, this.onTap});
 
+  // Ícone pequeno sobreposto ao avatar (canto inferior direito)
   IconData _getIcon(String type) {
     switch (type) {
       case 'like':
@@ -359,7 +390,7 @@ class _NotificationTile extends StatelessWidget {
     }
   }
 
-  Color _getColor(String type) {
+  Color _getIconColor(String type) {
     switch (type) {
       case 'like':
         return AppTheme.errorColor;
@@ -385,7 +416,7 @@ class _NotificationTile extends StatelessWidget {
       case 'ban':
         return AppTheme.errorColor;
       default:
-        return (Colors.grey[500] ?? Colors.grey);
+        return Colors.grey;
     }
   }
 
@@ -395,183 +426,213 @@ class _NotificationTile extends StatelessWidget {
     final type = data['notification_type'] as String? ?? 'general';
     final isRead = data['is_read'] as bool? ?? false;
     final actor = data['profiles'] as Map<String, dynamic>?;
-    final createdAt = DateTime.tryParse(data['created_at'] as String? ?? '') ??
-        DateTime.now();
+    final content = data['content'] as String? ?? 'Notificação';
+    final createdAt =
+        DateTime.tryParse(data['created_at'] as String? ?? '') ??
+            DateTime.now();
 
-    final iconColor = _getColor(type);
+    final iconColor = _getIconColor(type);
+    final avatarUrl = actor?['icon_url'] as String?;
+    final nickname = actor?['nickname'] as String? ?? '';
 
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.all(r.s(16)),
+        padding: EdgeInsets.symmetric(
+            horizontal: r.s(16), vertical: r.s(12)),
         decoration: BoxDecoration(
-          color: context.surfaceColor,
-          borderRadius: BorderRadius.circular(r.s(16)),
-          border: Border.all(
-            color: isRead
-                ? Colors.white.withValues(alpha: 0.05)
-                : AppTheme.primaryColor.withValues(alpha: 0.3),
+          // Fundo levemente destacado para não lidas
+          color: isRead
+              ? Colors.transparent
+              : AppTheme.primaryColor.withValues(alpha: 0.05),
+          border: Border(
+            bottom: BorderSide(
+              color: context.dividerClr.withValues(alpha: 0.12),
+              width: 0.5,
+            ),
           ),
-          boxShadow: isRead
-              ? null
-              : [
-                  BoxShadow(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                    blurRadius: 8,
-                    spreadRadius: 1,
-                  ),
-                ],
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Avatar do ator com ícone de tipo sobreposto
+            // ── Avatar com ícone de tipo sobreposto ──────────────────
             Stack(
+              clipBehavior: Clip.none,
               children: [
+                // Avatar do ator
                 Container(
-                  width: r.s(48),
-                  height: r.s(48),
+                  width: r.s(46),
+                  height: r.s(46),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: iconColor.withValues(alpha: 0.15),
-                    image: actor?['icon_url'] != null
-                        ? DecorationImage(
-                            image: CachedNetworkImageProvider(
-                                actor!['icon_url'] as String? ?? ''),
-                            fit: BoxFit.cover,
-                          )
-                        : null,
                   ),
-                  child: actor?['icon_url'] == null
-                      ? Icon(_getIcon(type), color: iconColor, size: r.s(24))
-                      : null,
+                  child: ClipOval(
+                    child: avatarUrl != null
+                        ? CachedNetworkImage(
+                            imageUrl: avatarUrl,
+                            fit: BoxFit.cover,
+                            errorWidget: (_, __, ___) => Icon(
+                              _getIcon(type),
+                              color: iconColor,
+                              size: r.s(22),
+                            ),
+                          )
+                        : Icon(
+                            _getIcon(type),
+                            color: iconColor,
+                            size: r.s(22),
+                          ),
+                  ),
                 ),
+                // Ícone de tipo no canto inferior direito
                 Positioned(
-                  bottom: 0,
-                  right: 0,
+                  bottom: -2,
+                  right: -2,
                   child: Container(
-                    padding: EdgeInsets.all(r.s(4)),
+                    width: r.s(18),
+                    height: r.s(18),
                     decoration: BoxDecoration(
-                      color: context.surfaceColor,
+                      color: iconColor,
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: context.surfaceColor,
-                        width: 2,
-                      ),
+                          color: context.scaffoldBg, width: 1.5),
                     ),
-                    child:
-                        Icon(_getIcon(type), color: iconColor, size: r.s(12)),
+                    child: Icon(
+                      _getIcon(type),
+                      color: Colors.white,
+                      size: r.s(10),
+                    ),
                   ),
                 ),
               ],
             ),
-            SizedBox(width: r.s(16)),
-            // Conteúdo da notificação
+
+            SizedBox(width: r.s(12)),
+
+            // ── Conteúdo ─────────────────────────────────────────────
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    data['content'] as String? ?? 'Notificação',
-                    style: TextStyle(
-                      color: context.textPrimary,
-                      fontSize: r.fs(14),
-                      fontWeight: isRead ? FontWeight.w500 : FontWeight.w700,
-                    ),
+                  // Nome em negrito + conteúdo inline (estilo Amino)
+                  RichText(
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
+                    text: TextSpan(
+                      style: TextStyle(
+                        color: context.textPrimary,
+                        fontSize: r.fs(14),
+                        height: 1.35,
+                      ),
+                      children: [
+                        if (nickname.isNotEmpty)
+                          TextSpan(
+                            text: '$nickname ',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w700),
+                          ),
+                        TextSpan(
+                          text: content,
+                          style: TextStyle(
+                            fontWeight: isRead
+                                ? FontWeight.w400
+                                : FontWeight.w500,
+                            color: isRead
+                                ? context.textSecondary
+                                : context.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  SizedBox(height: r.s(6)),
-                  Row(
-                    children: [
-                      Icon(
-                        _getIcon(type),
-                        size: r.s(11),
-                        color: iconColor.withValues(alpha: 0.6),
-                      ),
-                      SizedBox(width: r.s(4)),
-                      Text(
-                        _getTypeLabel(type),
-                        style: TextStyle(
-                          color: iconColor.withValues(alpha: 0.7),
-                          fontSize: r.fs(11),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      SizedBox(width: r.s(8)),
-                      Text(
-                        timeago.format(createdAt, locale: 'pt_BR'),
-                        style: TextStyle(
-                          color: Colors.grey[500],
-                          fontSize: r.fs(11),
-                        ),
-                      ),
-                    ],
+                  SizedBox(height: r.s(3)),
+                  // Timestamp
+                  Text(
+                    timeago.format(createdAt, locale: 'pt_BR'),
+                    style: TextStyle(
+                      color: Colors.grey[500],
+                      fontSize: r.fs(11),
+                    ),
                   ),
                 ],
               ),
             ),
-            // Indicador de não lida
-            if (!isRead) ...[
-              SizedBox(width: r.s(12)),
+
+            SizedBox(width: r.s(8)),
+
+            // ── Indicador de não lida (ponto verde) ──────────────────
+            if (!isRead)
               Container(
-                width: r.s(10),
-                height: r.s(10),
-                margin: EdgeInsets.only(top: r.s(6)),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppTheme.primaryColor, AppTheme.accentColor],
-                  ),
+                width: r.s(8),
+                height: r.s(8),
+                decoration: const BoxDecoration(
+                  color: AppTheme.primaryColor,
                   shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                      blurRadius: 4,
-                      spreadRadius: 1,
-                    ),
-                  ],
                 ),
-              ),
-            ],
+              )
+            else
+              SizedBox(width: r.s(8)),
           ],
         ),
       ),
     );
   }
+}
 
-  /// Label legível para cada tipo de notificação.
-  String _getTypeLabel(String type) {
-    switch (type) {
-      case 'like':
-        return 'Curtida';
-      case 'comment':
-        return 'Comentário';
-      case 'follow':
-        return 'Seguiu';
-      case 'mention':
-        return 'Menção';
-      case 'chat_mention':
-        return 'Menção no chat';
-      case 'community_invite':
-        return 'Convite';
-      case 'level_up':
-        return 'Level Up';
-      case 'achievement':
-        return 'Conquista';
-      case 'chat_message':
-        return 'Mensagem';
-      case 'dm_invite':
-        return 'Convite DM';
-      case 'wall_post':
-        return 'Mural';
-      case 'moderation':
-        return 'Moderação';
-      case 'strike':
-        return 'Strike';
-      case 'ban':
-        return 'Ban';
-      default:
-        return 'Notificação';
-    }
+// =============================================================================
+// BANNER DE RETRY (erro ao carregar mais)
+// =============================================================================
+
+class _RetryBanner extends StatelessWidget {
+  final VoidCallback onRetry;
+  const _RetryBanner({required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    return Container(
+      margin: EdgeInsets.all(r.s(16)),
+      padding: EdgeInsets.all(r.s(12)),
+      decoration: BoxDecoration(
+        color: Colors.red.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(r.s(10)),
+        border: Border.all(color: Colors.red.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.error_outline_rounded,
+              color: Colors.red[300], size: r.s(20)),
+          SizedBox(width: r.s(10)),
+          Expanded(
+            child: Text(
+              'Erro ao carregar mais notificações',
+              style: TextStyle(
+                  color: Colors.red[300],
+                  fontSize: r.fs(13),
+                  fontWeight: FontWeight.w500),
+            ),
+          ),
+          GestureDetector(
+            onTap: onRetry,
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                  horizontal: r.s(12), vertical: r.s(6)),
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(r.s(8)),
+              ),
+              child: Text(
+                'Tentar novamente',
+                style: TextStyle(
+                    color: Colors.red[300],
+                    fontSize: r.fs(12),
+                    fontWeight: FontWeight.w700),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
