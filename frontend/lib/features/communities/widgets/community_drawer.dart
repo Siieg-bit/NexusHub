@@ -11,21 +11,20 @@ import '../providers/community_shared_providers.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/amino_drawer.dart';
 
-/// Drawer estilo Amino — layout fiel aos prints de referência.
+/// Drawer estilo Amino — layout fiel ao app de referência.
 ///
 /// Estrutura:
 ///   [Sidebar esquerda 56px] | [Painel principal]
 ///
 /// Painel principal:
-///   1. Header: banner da comunidade + avatar do usuário + nome + Check In
-///   2. Menu principal: Home, My Chats, Let's Chat!, Shared Folder
-///   3. Seção de membros: lista com avatar, nome e subtítulo
-///   4. Seção Options: My Saved Posts
-///   5. Bottom bar fixa: All Members | Alerts | Compose
+///   1. Header: banner (~45% da tela) + avatar + nome + Check In / streak
+///   2. Menu principal: lista limpa sem separadores, ícones coloridos
+///   3. Seções secundárias: Membros, Opções, Staff
 class CommunityDrawer extends ConsumerStatefulWidget {
   final CommunityModel community;
   final UserModel? currentUser;
   final String? userRole;
+
   const CommunityDrawer({
     super.key,
     required this.community,
@@ -106,7 +105,12 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
   }
 
   void _closeAndNavigate(VoidCallback action) {
-    Navigator.pop(context);
+    final ctrl = AminoDrawerController.of(context);
+    if (ctrl != null && ctrl.isOpen) {
+      ctrl.close();
+    } else {
+      Navigator.maybePop(context);
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) action();
     });
@@ -144,32 +148,23 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                   // PAINEL PRINCIPAL
                   // ============================================================
                   Expanded(
-                    child: Column(
-                      children: [
-                        // Conteúdo scrollável
-                        Expanded(
-                          child: SingleChildScrollView(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                // 1. Header: banner + avatar + nome + check-in
-                                _buildHeader(r, themeColor, hasCheckedIn,
-                                    streak),
-                                // 2. Menu principal
-                                _buildMainMenu(r, themeColor),
-                                // 3. Botão de membros
-                                _buildMembersSection(r, const AsyncData([])),
-                                // 4. Options
-                                _buildOptionsSection(r),
-                                // Staff
-                                if (_isStaff) _buildStaffSection(r),
-                                SizedBox(height: r.s(80)),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                      ],
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // 1. Header: banner + avatar + nome + check-in
+                          _buildHeader(r, themeColor, hasCheckedIn, streak),
+                          // 2. Menu principal (sem separadores)
+                          _buildMainMenu(r),
+                          // 3. Membros
+                          _buildMembersSection(r),
+                          // 4. Opções
+                          _buildOptionsSection(r),
+                          // 5. Staff (apenas para moderadores/líderes)
+                          if (_isStaff) _buildStaffSection(r),
+                          SizedBox(height: r.s(40)),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -203,7 +198,8 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
           // Botão sair
           GestureDetector(
             onTap: () {
-              Navigator.pop(context);
+              final ctrl = AminoDrawerController.of(context);
+              if (ctrl != null && ctrl.isOpen) ctrl.close();
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (context.mounted) context.go('/communities');
               });
@@ -213,11 +209,14 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                 Icon(Icons.logout_rounded,
                     color: Colors.grey[600], size: r.s(18)),
                 const SizedBox(height: 2),
-                Text('Sair',
-                    style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: r.fs(8),
-                        fontWeight: FontWeight.w500)),
+                Text(
+                  'Sair',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: r.fs(8),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ],
             ),
           ),
@@ -254,7 +253,6 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
-                            // Indicador de comunidade atual
                             if (isCurrent)
                               Positioned(
                                 left: 0,
@@ -271,11 +269,9 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                               width: r.s(36),
                               height: r.s(36),
                               decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: isCurrent
-                                    ? Border.all(
-                                        color: AppTheme.primaryColor, width: 2)
-                                    : null,
+                                borderRadius: BorderRadius.circular(
+                                    isCurrent ? r.s(10) : r.s(18)),
+                                color: Colors.grey[800],
                                 image: community.iconUrl != null
                                     ? DecorationImage(
                                         image: CachedNetworkImageProvider(
@@ -283,13 +279,10 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                                         fit: BoxFit.cover,
                                       )
                                     : null,
-                                color: community.iconUrl == null
-                                    ? AppTheme.primaryColor.withValues(alpha: 0.3)
-                                    : null,
                               ),
                               child: community.iconUrl == null
                                   ? Icon(Icons.people_rounded,
-                                      color: Colors.white, size: r.s(16))
+                                      color: Colors.grey[400], size: r.s(18))
                                   : null,
                             ),
                           ],
@@ -307,150 +300,156 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
   }
 
   // ---------------------------------------------------------------------------
-  // HEADER: banner + avatar + nome + check-in
+  // HEADER — ocupa ~45% da altura da tela (igual ao Amino)
   // ---------------------------------------------------------------------------
   Widget _buildHeader(
       Responsive r, Color themeColor, bool hasCheckedIn, int streak) {
     final user = widget.currentUser;
-    return Stack(
-      children: [
-        // Banner da comunidade (fundo personalizável pelos líderes)
-        Container(
-          height: r.s(220),
-          decoration: BoxDecoration(
-            color: themeColor.withValues(alpha: 0.9),
-            image: widget.community.bannerUrl != null
-                ? DecorationImage(
-                    image: CachedNetworkImageProvider(
-                        widget.community.bannerUrl!),
-                    fit: BoxFit.cover,
-                    colorFilter: ColorFilter.mode(
-                        Colors.black.withValues(alpha: 0.35), BlendMode.darken),
-                  )
-                : null,
+    final screenHeight = MediaQuery.of(context).size.height;
+    // Header ocupa ~45% da tela, mínimo 260px, máximo 380px
+    final headerHeight = (screenHeight * 0.45).clamp(260.0, 380.0);
+
+    return SizedBox(
+      height: headerHeight,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // ── Banner da comunidade (fundo personalizável) ──────────────────
+          Container(
+            decoration: BoxDecoration(
+              color: themeColor.withValues(alpha: 0.9),
+              image: widget.community.bannerUrl != null
+                  ? DecorationImage(
+                      image: CachedNetworkImageProvider(
+                          widget.community.bannerUrl!),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
+            ),
           ),
-        ),
-        // Gradiente inferior suave
-        Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: Container(
-            height: r.s(100),
+          // ── Gradiente escuro de baixo para cima ──────────────────────────
+          Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
+                stops: const [0.0, 0.45, 1.0],
                 colors: [
-                  Colors.transparent,
-                  Colors.black.withValues(alpha: 0.75),
+                  Colors.black.withValues(alpha: 0.15),
+                  Colors.black.withValues(alpha: 0.55),
+                  Colors.black.withValues(alpha: 0.88),
                 ],
               ),
             ),
           ),
-        ),
-        // Avatar + nome + streak + check-in
-        Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: r.s(20)),
-            child: Column(
-              children: [
-                // Avatar circular do usuário
-                Container(
-                  width: r.s(80),
-                  height: r.s(80),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.3), width: 3),
-                    color: themeColor.withValues(alpha: 0.5),
-                    image: user?.iconUrl != null
-                        ? DecorationImage(
-                            image: CachedNetworkImageProvider(user!.iconUrl!),
-                            fit: BoxFit.cover,
-                          )
+          // ── Avatar + nome + check-in (ancorado na parte inferior) ────────
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(r.s(20), 0, r.s(20), r.s(20)),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Avatar circular grande
+                  Container(
+                    width: r.s(88),
+                    height: r.s(88),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.35),
+                          width: 3),
+                      color: themeColor.withValues(alpha: 0.5),
+                      image: user?.iconUrl != null
+                          ? DecorationImage(
+                              image:
+                                  CachedNetworkImageProvider(user!.iconUrl!),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
+                    ),
+                    child: user?.iconUrl == null
+                        ? Icon(Icons.person_rounded,
+                            color: Colors.white, size: r.s(44))
                         : null,
                   ),
-                  child: user?.iconUrl == null
-                      ? Icon(Icons.person_rounded,
-                          color: Colors.white, size: r.s(40))
-                      : null,
-                ),
-                SizedBox(height: r.s(8)),
-                // Nome do usuário
-                Text(
-                  user?.nickname ?? 'Visitante',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: r.fs(16),
-                    fontWeight: FontWeight.w700,
-                    shadows: const [
-                      Shadow(color: Colors.black54, blurRadius: 4)
-                    ],
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: r.s(12)),
-                // Botão Check In OU barra de streak
-                if (!hasCheckedIn)
-                  GestureDetector(
-                    onTap: _isCheckingIn ? null : _doCheckIn,
-                    child: Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.symmetric(vertical: r.s(12)),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF4CAF50),
-                        borderRadius: BorderRadius.circular(r.s(10)),
-                      ),
-                      child: Center(
-                        child: _isCheckingIn
-                            ? SizedBox(
-                                width: r.s(18),
-                                height: r.s(18),
-                                child: const CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : Text(
-                                'Check In',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: r.fs(15),
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                      ),
+                  SizedBox(height: r.s(10)),
+                  // Nome do usuário
+                  Text(
+                    user?.nickname ?? 'Visitante',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: r.fs(18),
+                      fontWeight: FontWeight.w800,
+                      shadows: const [
+                        Shadow(color: Colors.black54, blurRadius: 6)
+                      ],
                     ),
-                  )
-                else
-                  _buildStreakBar(r, streak),
-                SizedBox(height: r.s(16)),
-              ],
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: r.s(14)),
+                  // Botão Check In OU barra de streak
+                  if (!hasCheckedIn)
+                    GestureDetector(
+                      onTap: _isCheckingIn ? null : _doCheckIn,
+                      child: Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.symmetric(vertical: r.s(14)),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF4CAF50),
+                          borderRadius: BorderRadius.circular(r.s(30)),
+                        ),
+                        child: Center(
+                          child: _isCheckingIn
+                              ? SizedBox(
+                                  width: r.s(18),
+                                  height: r.s(18),
+                                  child: const CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : Text(
+                                  'Check In',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: r.fs(16),
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    )
+                  else
+                    _buildStreakBar(r, streak),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   // ---------------------------------------------------------------------------
-  // MENU PRINCIPAL
+  // MENU PRINCIPAL — lista limpa sem separadores, ícones coloridos
   // ---------------------------------------------------------------------------
-  Widget _buildMainMenu(Responsive r, Color themeColor) {
+  Widget _buildMainMenu(Responsive r) {
     return Column(
       children: [
+        SizedBox(height: r.s(8)),
         _DrawerTile(
           icon: Icons.home_rounded,
+          iconColor: const Color(0xFF42A5F5), // azul
           label: 'Início',
           onTap: () => _closeAndNavigate(() {}),
         ),
         _DrawerTile(
           icon: Icons.chat_bubble_rounded,
+          iconColor: const Color(0xFF66BB6A), // verde
           label: 'Meus Chats',
           onTap: () => _closeAndNavigate(() {
             context.push(
@@ -461,6 +460,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         ),
         _DrawerTile(
           icon: Icons.forum_rounded,
+          iconColor: const Color(0xFFAB47BC), // roxo
           label: 'Vamos Conversar!',
           onTap: () => _closeAndNavigate(() {
             context.push('/create-public-chat', extra: {
@@ -471,67 +471,57 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         ),
         _DrawerTile(
           icon: Icons.folder_shared_rounded,
+          iconColor: const Color(0xFFFFA726), // laranja
           label: 'Pasta Compartilhada',
           onTap: () => _closeAndNavigate(() {
-            context.push(
-                '/community/${widget.community.id}/shared-folder');
+            context
+                .push('/community/${widget.community.id}/shared-folder');
           }),
-        ),
-        Divider(
-          color: context.dividerClr,
-          height: r.s(1),
-          indent: r.s(16),
-          endIndent: r.s(16),
         ),
       ],
     );
   }
 
   // ---------------------------------------------------------------------------
-  // BOTÃO DE MEMBROS
+  // MEMBROS
   // ---------------------------------------------------------------------------
-  Widget _buildMembersSection(
-      Responsive r, AsyncValue<List<Map<String, dynamic>>> membersAsync) {
+  Widget _buildMembersSection(Responsive r) {
     return Column(
       children: [
         _DrawerTile(
           icon: Icons.group_rounded,
+          iconColor: const Color(0xFF26C6DA), // ciano
           label: 'Ver Membros',
           onTap: () => _closeAndNavigate(() {
             context.push('/community/${widget.community.id}/members');
           }),
         ),
-        Divider(
-          color: context.dividerClr,
-          height: r.s(1),
-          indent: r.s(16),
-          endIndent: r.s(16),
-        ),
       ],
     );
   }
 
   // ---------------------------------------------------------------------------
-  // OPTIONS
+  // OPÇÕES
   // ---------------------------------------------------------------------------
   Widget _buildOptionsSection(Responsive r) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.fromLTRB(r.s(16), r.s(12), r.s(16), r.s(4)),
+          padding: EdgeInsets.fromLTRB(r.s(20), r.s(16), r.s(20), r.s(4)),
           child: Text(
             'OPÇÕES',
             style: TextStyle(
               color: Colors.grey[500],
-              fontSize: r.fs(12),
+              fontSize: r.fs(11),
               fontWeight: FontWeight.w700,
-              letterSpacing: 0.5,
+              letterSpacing: 1.2,
             ),
           ),
         ),
         _DrawerTile(
           icon: Icons.bookmark_rounded,
+          iconColor: const Color(0xFFEF5350), // vermelho
           label: 'Posts Salvos',
           onTap: () => _closeAndNavigate(() {
             context.push('/profile/${SupabaseService.currentUserId}');
@@ -539,6 +529,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         ),
         _DrawerTile(
           icon: Icons.auto_stories_rounded,
+          iconColor: const Color(0xFF8D6E63), // marrom
           label: 'Wiki',
           onTap: () => _closeAndNavigate(() {
             context.push('/community/${widget.community.id}/wiki');
@@ -546,16 +537,11 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         ),
         _DrawerTile(
           icon: Icons.leaderboard_rounded,
+          iconColor: const Color(0xFFFFCA28), // amarelo
           label: 'Ranking',
           onTap: () => _closeAndNavigate(() {
             context.push('/community/${widget.community.id}/leaderboard');
           }),
-        ),
-        Divider(
-          color: context.dividerClr,
-          height: r.s(1),
-          indent: r.s(16),
-          endIndent: r.s(16),
         ),
       ],
     );
@@ -569,20 +555,21 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.fromLTRB(r.s(16), r.s(12), r.s(16), r.s(4)),
+          padding: EdgeInsets.fromLTRB(r.s(20), r.s(16), r.s(20), r.s(4)),
           child: Text(
             'GERENCIAMENTO',
             style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: r.fs(10),
+              color: Colors.grey[500],
+              fontSize: r.fs(11),
               fontWeight: FontWeight.w700,
-              letterSpacing: 1,
+              letterSpacing: 1.2,
             ),
           ),
         ),
         if (_isLeader)
           _DrawerTile(
             icon: Icons.settings_rounded,
+            iconColor: const Color(0xFF78909C), // cinza azulado
             label: 'Editar Comunidade',
             onTap: () => _closeAndNavigate(() {
               context.push('/community/${widget.community.id}/acm');
@@ -590,14 +577,15 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
           ),
         _DrawerTile(
           icon: Icons.flag_rounded,
+          iconColor: AppTheme.errorColor,
           label: 'Central de Denúncias',
-          isDestructive: true,
           onTap: () => _closeAndNavigate(() {
             context.push('/community/${widget.community.id}/flags');
           }),
         ),
         _DrawerTile(
           icon: Icons.analytics_rounded,
+          iconColor: const Color(0xFF26A69A), // teal
           label: 'Estatísticas',
           onTap: () => _closeAndNavigate(() {
             context.push('/community/${widget.community.id}/acm');
@@ -608,19 +596,18 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
   }
 
   // ---------------------------------------------------------------------------
-  // BARRA DE STREAK — exibida após o check-in no lugar do botão
+  // BARRA DE STREAK
   // ---------------------------------------------------------------------------
   Widget _buildStreakBar(Responsive r, int streak) {
     const totalDots = 7;
     final doneDots = streak.clamp(0, totalDots);
     return Column(
       children: [
-        // LayoutBuilder garante que as bolinhas nunca excedam a largura disponível
         LayoutBuilder(
           builder: (context, constraints) {
-            // Calcula o tamanho máximo de cada bolinha para caber todas na largura
-            final maxDotSize = ((constraints.maxWidth - r.s(6) * totalDots * 2) / totalDots)
-                .clamp(r.s(18), r.s(28));
+            final maxDotSize =
+                ((constraints.maxWidth - r.s(6) * totalDots * 2) / totalDots)
+                    .clamp(r.s(18), r.s(28));
             return Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(totalDots, (i) {
@@ -652,20 +639,20 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
             );
           },
         ),
-        SizedBox(height: r.s(5)),
+        SizedBox(height: r.s(6)),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.local_fire_department_rounded,
-                color: AppTheme.warningColor, size: r.s(13)),
-            SizedBox(width: r.s(3)),
+                color: AppTheme.warningColor, size: r.s(14)),
+            SizedBox(width: r.s(4)),
             Flexible(
               child: Text(
                 '$streak dia${streak != 1 ? 's' : ''} de sequência',
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.85),
-                  fontSize: r.fs(11),
+                  fontSize: r.fs(12),
                   fontWeight: FontWeight.w500,
                 ),
                 overflow: TextOverflow.ellipsis,
@@ -677,58 +664,55 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
       ],
     );
   }
-
 }
 
 // =============================================================================
-// DRAWER TILE — Item de menu com ícone circular estilo Amino
+// DRAWER TILE — Item de menu estilo Amino com ícone circular colorido
 // =============================================================================
 class _DrawerTile extends StatelessWidget {
   final IconData icon;
+  final Color iconColor;
   final String label;
   final VoidCallback onTap;
-  final bool isDestructive;
 
   const _DrawerTile({
     required this.icon,
+    required this.iconColor,
     required this.label,
     required this.onTap,
-    this.isDestructive = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final r = context.r;
-    final color = isDestructive ? AppTheme.errorColor : context.textPrimary;
-    final iconBg = isDestructive
-        ? AppTheme.errorColor.withValues(alpha: 0.15)
-        : Colors.white.withValues(alpha: 0.08);
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Padding(
         padding: EdgeInsets.symmetric(
-            horizontal: r.s(16), vertical: r.s(13)),
+          horizontal: r.s(16),
+          vertical: r.s(10),
+        ),
         child: Row(
           children: [
-            // Ícone dentro de círculo escuro
+            // Ícone dentro de círculo colorido (estilo Amino)
             Container(
-              width: r.s(42),
-              height: r.s(42),
+              width: r.s(46),
+              height: r.s(46),
               decoration: BoxDecoration(
-                color: iconBg,
+                color: iconColor,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: color, size: r.s(20)),
+              child: Icon(icon, color: Colors.white, size: r.s(22)),
             ),
-            SizedBox(width: r.s(14)),
+            SizedBox(width: r.s(16)),
             Expanded(
               child: Text(
                 label,
                 style: TextStyle(
-                  color: color,
-                  fontSize: r.fs(16),
-                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                  fontSize: r.fs(17),
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -738,4 +722,3 @@ class _DrawerTile extends StatelessWidget {
     );
   }
 }
-
