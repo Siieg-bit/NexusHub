@@ -20,6 +20,7 @@ import '../widgets/community_check_in_bar.dart';
 import '../widgets/community_live_projections.dart';
 import '../widgets/community_guidelines_tab.dart';
 import '../widgets/community_feed_tab.dart';
+import '../widgets/community_online_tab.dart';
 import '../widgets/community_chat_tab.dart';
 import '../widgets/community_create_menu.dart';
 
@@ -265,7 +266,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                     community, themeColor, isMember, userRole, layout,
                     visible, welcomeBanner)
                 : _bottomIndex == 1
-                    ? _buildOnlinePage(community)
+                    ? CommunityOnlineTab(community: community)
                     : _buildHomePage(
                         community, themeColor, isMember, userRole,
                         layout, visible, welcomeBanner),
@@ -765,172 +766,6 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
 
   // ================================================================
   // ONLINE PAGE — Membros online
-  // ================================================================
-  Widget _buildOnlinePage(CommunityModel community) {
-    final r = context.r;
-    final membersAsync = ref.watch(communityMembersProvider(widget.communityId));
-    final presenceAsync = ref.watch(communityPresenceProvider(widget.communityId));
-    final onlineUserIds = presenceAsync.valueOrNull ?? {};
-
-    return Column(
-      children: [
-        SafeArea(
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
-            child: Row(
-              children: [
-                GestureDetector(
-                  onTap: () => setState(() => _bottomIndex = 0),
-                  child: Icon(Icons.arrow_back_rounded,
-                      color: context.textPrimary),
-                ),
-                SizedBox(width: r.s(12)),
-                Expanded(
-                  child: Text(
-                    'Membros Online (${onlineUserIds.length})',
-                    style: TextStyle(
-                        color: context.textPrimary,
-                        fontSize: r.fs(16),
-                        fontWeight: FontWeight.w700),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        Expanded(
-          child: membersAsync.when(
-            loading: () => Center(
-              child: CircularProgressIndicator(
-                  color: AppTheme.primaryColor, strokeWidth: 2.5),
-            ),
-            error: (e, _) => Center(
-                child: Text('Ocorreu um erro. Tente novamente.',
-                    style: TextStyle(color: context.textSecondary))),
-            data: (members) {
-              final onlineMembers = members.where((m) {
-                final userId = m['user_id'] as String?;
-                return userId != null && onlineUserIds.contains(userId);
-              }).toList();
-
-              if (onlineMembers.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.wifi_off_rounded,
-                          size: r.s(48), color: Colors.grey[600]),
-                      SizedBox(height: r.s(12)),
-                      Text('Nenhum membro online',
-                          style: TextStyle(
-                              color: Colors.grey[600], fontSize: r.fs(13))),
-                    ],
-                  ),
-                );
-              }
-
-              return ListView.builder(
-                padding: EdgeInsets.all(r.s(12)),
-                itemCount: onlineMembers.length,
-                itemBuilder: (context, index) {
-                  final m = onlineMembers[index];
-                  final p = m['profiles'] as Map<String, dynamic>? ?? {};
-                  final nickname = p['nickname'] as String? ?? 'Usuário';
-                  final avatarUrl = p['icon_url'] as String?;
-                  final userId = p['id'] as String? ?? m['user_id'] as String?;
-                  final reputation = m['local_reputation'] as int? ?? 0;
-                  final level = m['local_level'] as int? ?? calculateLevel(reputation);
-
-                  return AminoAnimations.staggerItem(
-                    index: index,
-                    child: AminoAnimations.cardPress(
-                      onTap: () {
-                        if (userId != null) {
-                          context.push(
-                              '/community/${widget.communityId}/profile/$userId');
-                        }
-                      },
-                      child: Container(
-                        padding: EdgeInsets.symmetric(vertical: r.s(8)),
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color:
-                                  context.dividerClr.withValues(alpha: 0.15),
-                              width: 0.5,
-                            ),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Stack(
-                              children: [
-                                CircleAvatar(
-                                  radius: 22,
-                                  backgroundColor: AppTheme.primaryColor
-                                      .withValues(alpha: 0.2),
-                                  backgroundImage: avatarUrl != null
-                                      ? CachedNetworkImageProvider(avatarUrl)
-                                      : null,
-                                  child: avatarUrl == null
-                                      ? Text(nickname[0].toUpperCase(),
-                                          style: const TextStyle(
-                                              color: AppTheme.primaryColor,
-                                              fontWeight: FontWeight.w700))
-                                      : null,
-                                ),
-                                Positioned(
-                                  bottom: 0,
-                                  right: 0,
-                                  child: Container(
-                                    width: r.s(12),
-                                    height: r.s(12),
-                                    decoration: BoxDecoration(
-                                      color: AppTheme.onlineColor,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                          color: context.scaffoldBg, width: 2),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(width: r.s(12)),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(nickname,
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: r.fs(14),
-                                          color: context.textPrimary)),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                      'Lv.$level ${levelTitle(level)}',
-                                      style: TextStyle(
-                                          color:
-                                              AppTheme.getLevelColor(level),
-                                          fontSize: r.fs(11))),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
   // ================================================================
 }
 
