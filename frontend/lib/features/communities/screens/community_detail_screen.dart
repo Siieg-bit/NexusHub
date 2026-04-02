@@ -594,11 +594,15 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                               SizedBox(height: r.s(4)),
                               Row(
                                 children: [
-                                  Text(
-                                    '${formatCount(community.membersCount)} Membros',
-                                    style: TextStyle(
-                                      color: Colors.grey[300],
-                                      fontSize: r.fs(11),
+                                  Flexible(
+                                    child: Text(
+                                      '${formatCount(community.membersCount)} Membros',
+                                      style: TextStyle(
+                                        color: Colors.grey[300],
+                                        fontSize: r.fs(11),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                   SizedBox(width: r.s(8)),
@@ -781,11 +785,17 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                       color: context.textPrimary),
                 ),
                 SizedBox(width: r.s(12)),
-                Text('Membros Online (${onlineUserIds.length})',
+                Expanded(
+                  child: Text(
+                    'Membros Online (${onlineUserIds.length})',
                     style: TextStyle(
                         color: context.textPrimary,
                         fontSize: r.fs(16),
-                        fontWeight: FontWeight.w700)),
+                        fontWeight: FontWeight.w700),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ],
             ),
           ),

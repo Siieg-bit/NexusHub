@@ -45,12 +45,16 @@ class CommunityGuidelinesTab extends ConsumerWidget {
                   Icon(Icons.public_rounded,
                       color: Color(0xFFFF9800), size: r.s(18)),
                   SizedBox(width: r.s(8)),
-                  Text(
-                    'Community Guidelines',
-                    style: TextStyle(
-                      color: context.textPrimary,
-                      fontSize: r.fs(16),
-                      fontWeight: FontWeight.w700,
+                  Expanded(
+                    child: Text(
+                      'Diretrizes da Comunidade',
+                      style: TextStyle(
+                        color: context.textPrimary,
+                        fontSize: r.fs(16),
+                        fontWeight: FontWeight.w700,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],

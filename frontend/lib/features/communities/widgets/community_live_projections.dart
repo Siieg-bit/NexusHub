@@ -108,12 +108,16 @@ class _CommunityLiveProjectionsState extends State<CommunityLiveProjections> {
                   ),
                 ),
                 SizedBox(width: r.s(8)),
-                Text(
-                  'Projeções em Andamento',
-                  style: TextStyle(
-                    color: context.textPrimary,
-                    fontSize: r.fs(13),
-                    fontWeight: FontWeight.w700,
+                Expanded(
+                  child: Text(
+                    'Projeções em Andamento',
+                    style: TextStyle(
+                      color: context.textPrimary,
+                      fontSize: r.fs(13),
+                      fontWeight: FontWeight.w700,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
