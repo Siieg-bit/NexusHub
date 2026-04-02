@@ -89,13 +89,11 @@ final favoriteMembersProvider =
 class MyCommunityChatsScreen extends ConsumerStatefulWidget {
   final String communityId;
   final String communityName;
-  final VoidCallback? onBack;
 
   const MyCommunityChatsScreen({
     super.key,
     required this.communityId,
     required this.communityName,
-    this.onBack,
   });
 
   @override

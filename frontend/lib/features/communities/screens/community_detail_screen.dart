@@ -255,29 +255,6 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             community: community,
             currentUser: ref.watch(currentUserProfileProvider).valueOrNull,
             userRole: userRole,
-            onChatsTap: () {
-              if (_isDisposed || !mounted) return;
-              context.push(
-                '/community/${widget.communityId}/my-chats',
-                extra: {'communityName': community.name},
-              );
-            },
-            onGuidelinesTap: () {
-              if (_isDisposed || !mounted) return;
-              setState(() {
-                _bottomIndex = 0;
-                final idx = _activeTabs.indexOf('Regras');
-                if (idx >= 0) _tabController.animateTo(idx);
-              });
-            },
-            onRecentFeedTap: () {
-              if (_isDisposed || !mounted) return;
-              setState(() {
-                _bottomIndex = 0;
-                final idx = _activeTabs.indexOf('Recentes');
-                if (idx >= 0) _tabController.animateTo(idx);
-              });
-            },
           ),
           child: Scaffold(
             backgroundColor: context.scaffoldBg,

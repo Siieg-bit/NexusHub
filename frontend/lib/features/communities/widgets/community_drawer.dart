@@ -26,18 +26,11 @@ class CommunityDrawer extends ConsumerStatefulWidget {
   final CommunityModel community;
   final UserModel? currentUser;
   final String? userRole;
-  final VoidCallback? onChatsTap;
-  final VoidCallback? onGuidelinesTap;
-  final VoidCallback? onRecentFeedTap;
-
   const CommunityDrawer({
     super.key,
     required this.community,
     this.currentUser,
     this.userRole,
-    this.onChatsTap,
-    this.onGuidelinesTap,
-    this.onRecentFeedTap,
   });
 
   @override
@@ -459,13 +452,12 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         _DrawerTile(
           icon: Icons.chat_bubble_rounded,
           label: 'Meus Chats',
-          onTap: () {
-            Navigator.pop(context);
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (!mounted) return;
-              widget.onChatsTap?.call();
-            });
-          },
+          onTap: () => _closeAndNavigate(() {
+            context.push(
+              '/community/${widget.community.id}/my-chats',
+              extra: {'communityName': widget.community.name},
+            );
+          }),
         ),
         _DrawerTile(
           icon: Icons.forum_rounded,
@@ -517,21 +509,6 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         ),
       ],
     );
-  }
-
-  String _roleLabel(String role) {
-    switch (role) {
-      case 'agent':
-        return 'Agente';
-      case 'leader':
-        return 'Líder';
-      case 'curator':
-        return 'Curador';
-      case 'moderator':
-        return 'Moderador';
-      default:
-        return '';
-    }
   }
 
   // ---------------------------------------------------------------------------
