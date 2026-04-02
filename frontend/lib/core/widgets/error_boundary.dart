@@ -4,21 +4,15 @@ import '../../config/app_theme.dart';
 /// Error Boundary global — captura erros de widgets filhos e exibe
 /// uma tela de fallback amigável em vez de crashar o app.
 ///
+/// **Política de erros:**
+/// - Erros de layout (`RenderFlex overflow`) são **silenciados em produção**
+///   e apenas logados em debug — nunca travam a tela.
+/// - Erros reais (exceções não tratadas, null pointer, etc.) exibem o
+///   fallback de erro com botão "Tentar novamente".
+///
 /// Este widget deve ficar DENTRO do [MaterialApp] (via `builder`) para
 /// herdar automaticamente [Directionality], [Theme], [MediaQuery] e
 /// demais InheritedWidgets. Nunca o coloque acima do [MaterialApp].
-///
-/// Uso (em MaterialApp.router):
-/// ```dart
-/// MaterialApp.router(
-///   // ...
-///   builder: (context, child) {
-///     return ErrorBoundary(
-///       child: child ?? const SizedBox.shrink(),
-///     );
-///   },
-/// )
-/// ```
 class ErrorBoundary extends StatefulWidget {
   final Widget child;
   final Widget? fallback;
@@ -40,14 +34,47 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
   // Guarda o handler original para restaurar ao desmontar
   void Function(FlutterErrorDetails)? _previousErrorHandler;
 
+  /// Retorna true se o erro é apenas um overflow de layout (RenderFlex).
+  /// Esses erros NÃO devem travar a tela — são avisos de layout.
+  static bool _isLayoutOverflow(FlutterErrorDetails details) {
+    final summary = details.exceptionAsString();
+    return summary.contains('RenderFlex overflowed') ||
+        summary.contains('A RenderFlex') ||
+        summary.contains('overflowed by') ||
+        (details.exception is FlutterError &&
+            (details.exception as FlutterError)
+                .message
+                .contains('overflowed'));
+  }
+
   @override
   void initState() {
     super.initState();
     _previousErrorHandler = FlutterError.onError;
 
-    // Capturar erros de Flutter que não são capturados por try/catch
     FlutterError.onError = (FlutterErrorDetails details) {
-      // Sempre reportar para o log (chama o handler anterior se existir)
+      // ── Overflow de layout: nunca travar a tela ──────────────────────────
+      if (_isLayoutOverflow(details)) {
+        // Em debug: loga de forma clara para facilitar o diagnóstico
+        assert(() {
+          debugPrint(
+            '\n╔══════════════════════════════════════════════════════════╗\n'
+            '║  ⚠️  OVERFLOW DE LAYOUT DETECTADO                         ║\n'
+            '╠══════════════════════════════════════════════════════════╣\n'
+            '║  ${details.exceptionAsString().split('\n').first.padRight(56)}║\n'
+            '║                                                          ║\n'
+            '║  Corrija adicionando Expanded, Flexible ou overflow:     ║\n'
+            '║  TextOverflow.ellipsis no widget de texto responsável.   ║\n'
+            '╚══════════════════════════════════════════════════════════╝\n',
+          );
+          return true;
+        }());
+        // Em produção: silencioso — o usuário não vê nada, o app continua
+        return;
+      }
+
+      // ── Erro real: reportar e exibir fallback ────────────────────────────
+      // Chama o handler anterior (ex: Firebase Crashlytics) se existir
       if (_previousErrorHandler != null) {
         _previousErrorHandler!(details);
       } else {
@@ -55,8 +82,6 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
       }
 
       if (mounted) {
-        // Adiar o setState para depois do frame atual terminar,
-        // evitando o erro "setState() called during build".
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
             setState(() {
@@ -71,7 +96,6 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
 
   @override
   void dispose() {
-    // Restaurar o handler original ao desmontar para não vazar
     FlutterError.onError = _previousErrorHandler;
     super.dispose();
   }
@@ -98,10 +122,6 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
 }
 
 /// Tela de fallback padrão exibida quando ocorre um erro não tratado.
-///
-/// Como o [ErrorBoundary] agora vive dentro do [MaterialApp], este widget
-/// herda automaticamente [Directionality], [Theme] e [MediaQuery],
-/// podendo usar [Scaffold], [Text], [Icon] etc. sem problemas.
 class _DefaultErrorFallback extends StatelessWidget {
   final Object error;
   final StackTrace? stackTrace;

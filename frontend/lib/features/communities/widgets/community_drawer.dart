@@ -615,48 +615,61 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
     final doneDots = streak.clamp(0, totalDots);
     return Column(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(totalDots, (i) {
-            final done = i < doneDots;
-            return Padding(
-              padding: EdgeInsets.symmetric(horizontal: r.s(3)),
-              child: Container(
-                width: r.s(28),
-                height: r.s(28),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: done
-                      ? const Color(0xFF4CAF50)
-                      : Colors.white.withValues(alpha: 0.15),
-                  border: Border.all(
-                    color: done
-                        ? const Color(0xFF4CAF50)
-                        : Colors.white.withValues(alpha: 0.25),
-                    width: 1.5,
+        // LayoutBuilder garante que as bolinhas nunca excedam a largura disponível
+        LayoutBuilder(
+          builder: (context, constraints) {
+            // Calcula o tamanho máximo de cada bolinha para caber todas na largura
+            final maxDotSize = ((constraints.maxWidth - r.s(6) * totalDots * 2) / totalDots)
+                .clamp(r.s(18), r.s(28));
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(totalDots, (i) {
+                final done = i < doneDots;
+                return Padding(
+                  padding: EdgeInsets.symmetric(horizontal: r.s(3)),
+                  child: Container(
+                    width: maxDotSize,
+                    height: maxDotSize,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: done
+                          ? const Color(0xFF4CAF50)
+                          : Colors.white.withValues(alpha: 0.15),
+                      border: Border.all(
+                        color: done
+                            ? const Color(0xFF4CAF50)
+                            : Colors.white.withValues(alpha: 0.25),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: done
+                        ? Icon(Icons.check_rounded,
+                            color: Colors.white, size: maxDotSize * 0.55)
+                        : null,
                   ),
-                ),
-                child: done
-                    ? Icon(Icons.check_rounded,
-                        color: Colors.white, size: r.s(15))
-                    : null,
-              ),
+                );
+              }),
             );
-          }),
+          },
         ),
         SizedBox(height: r.s(5)),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.local_fire_department_rounded,
                 color: AppTheme.warningColor, size: r.s(13)),
             SizedBox(width: r.s(3)),
-            Text(
-              '$streak dia${streak != 1 ? 's' : ''} de sequência',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.85),
-                fontSize: r.fs(11),
-                fontWeight: FontWeight.w500,
+            Flexible(
+              child: Text(
+                '$streak dia${streak != 1 ? 's' : ''} de sequência',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.85),
+                  fontSize: r.fs(11),
+                  fontWeight: FontWeight.w500,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ),
           ],
