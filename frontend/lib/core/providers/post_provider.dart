@@ -62,7 +62,7 @@ class CommunityFeedNotifier
 
   Future<List<PostModel>> _fetchPage(String communityId, int page) async {
     final res = await SupabaseService.table('posts')
-        .select('*, profiles!posts_author_id_fkey(nickname, icon_url)')
+        .select('*, profiles!posts_author_id_fkey(id, nickname, icon_url)')
         .eq('community_id', communityId)
         .order('is_pinned', ascending: false)
         .order('created_at', ascending: false)
@@ -161,7 +161,7 @@ final communityFeedProvider = AsyncNotifierProvider.family<
 final postDetailProvider = FutureProvider.family<PostModel?, String>(
   (ref, postId) async {
     final res = await SupabaseService.table('posts')
-        .select('*, profiles!posts_author_id_fkey(nickname, icon_url)')
+        .select('*, profiles!posts_author_id_fkey(id, nickname, icon_url)')
         .eq('id', postId)
         .maybeSingle();
 
@@ -178,7 +178,7 @@ final postDetailProvider = FutureProvider.family<PostModel?, String>(
 final pinnedPostsProvider = FutureProvider.family<List<PostModel>, String>(
   (ref, communityId) async {
     final res = await SupabaseService.table('posts')
-        .select('*, profiles!posts_author_id_fkey(nickname, icon_url)')
+        .select('*, profiles!posts_author_id_fkey(id, nickname, icon_url)')
         .eq('community_id', communityId)
         .eq('is_pinned', true)
         .eq('status', 'ok')
@@ -203,7 +203,7 @@ final activeFeaturedPostsProvider =
     // Busca posts com is_featured=true onde featured_until é NULL (sem expiração)
     // OU featured_until > agora (ainda dentro do prazo)
     final res = await SupabaseService.table('posts')
-        .select('*, profiles!posts_author_id_fkey(nickname, icon_url)')
+        .select('*, profiles!posts_author_id_fkey(id, nickname, icon_url)')
         .eq('community_id', communityId)
         .eq('is_featured', true)
         .eq('status', 'ok')
@@ -227,7 +227,7 @@ final activeFeaturedPostsProvider =
 final latestPostsProvider = FutureProvider.family<List<PostModel>, String>(
   (ref, communityId) async {
     final res = await SupabaseService.table('posts')
-        .select('*, profiles!posts_author_id_fkey(nickname, icon_url)')
+        .select('*, profiles!posts_author_id_fkey(id, nickname, icon_url)')
         .eq('community_id', communityId)
         .eq('status', 'ok')
         .eq('is_pinned', false)

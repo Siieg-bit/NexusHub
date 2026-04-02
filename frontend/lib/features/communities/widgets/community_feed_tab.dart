@@ -104,13 +104,7 @@ class _FeaturedTab extends ConsumerWidget {
         slivers: [
           // ── Seção 1: Posts Fixados ──────────────────────────────────────
           if (pinnedPosts.isNotEmpty) ...[
-            SliverToBoxAdapter(
-              child: _SectionHeader(
-                icon: Icons.push_pin_rounded,
-                label: 'Fixados',
-                accent: accent,
-              ),
-            ),
+            SliverToBoxAdapter(child: SizedBox(height: 4)),
             SliverList(
               delegate: SliverChildBuilderDelegate(
                 (ctx, i) => _PinnedPostRow(
@@ -365,8 +359,6 @@ class _PinnedPostRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final r = context.r;
-    final thumb = post.coverImageUrl ?? post.mediaUrl;
-
     return AminoAnimations.staggerItem(
       index: index,
       child: AminoAnimations.cardPress(
@@ -401,20 +393,7 @@ class _PinnedPostRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              // Thumbnail opcional
-              if (thumb != null) ...[
-                SizedBox(width: r.s(8)),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(r.s(6)),
-                  child: CachedNetworkImage(
-                    imageUrl: thumb,
-                    width: r.s(44),
-                    height: r.s(44),
-                    fit: BoxFit.cover,
-                    errorWidget: (_, __, ___) => const SizedBox.shrink(),
-                  ),
-                ),
-              ],
+
             ],
           ),
         ),

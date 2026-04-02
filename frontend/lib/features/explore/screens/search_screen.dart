@@ -63,7 +63,7 @@ class _SearchScreenState extends State<SearchScreen>
 
       // Buscar posts
       final postRes = await SupabaseService.table('posts')
-          .select('*, profiles!posts_author_id_fkey(nickname, icon_url)')
+          .select('*, profiles!posts_author_id_fkey(id, nickname, icon_url)')
           .ilike('title', pattern)
           .order('created_at', ascending: false)
           .limit(20);
