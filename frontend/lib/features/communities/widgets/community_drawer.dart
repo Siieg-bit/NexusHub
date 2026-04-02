@@ -321,135 +321,124 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
     final user = widget.currentUser;
     return Stack(
       children: [
-        // Banner da comunidade
+        // Banner da comunidade (fundo personalizável pelos líderes)
         Container(
-          height: r.s(160),
+          height: r.s(220),
           decoration: BoxDecoration(
-            color: themeColor.withValues(alpha: 0.8),
+            color: themeColor.withValues(alpha: 0.9),
             image: widget.community.bannerUrl != null
                 ? DecorationImage(
                     image: CachedNetworkImageProvider(
                         widget.community.bannerUrl!),
                     fit: BoxFit.cover,
                     colorFilter: ColorFilter.mode(
-                        Colors.black.withValues(alpha: 0.4), BlendMode.darken),
+                        Colors.black.withValues(alpha: 0.35), BlendMode.darken),
                   )
                 : null,
           ),
         ),
-        // Gradiente inferior
+        // Gradiente inferior suave
         Positioned(
           bottom: 0,
           left: 0,
           right: 0,
           child: Container(
-            height: r.s(80),
+            height: r.s(100),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
                   Colors.transparent,
-                  context.scaffoldBg,
+                  Colors.black.withValues(alpha: 0.75),
                 ],
               ),
             ),
           ),
         ),
-        // Avatar + nome + check-in
+        // Avatar + nome + streak + check-in
         Positioned(
           bottom: 0,
           left: 0,
           right: 0,
-          child: Column(
-            children: [
-              // Avatar circular do usuário
-              Container(
-                width: r.s(64),
-                height: r.s(64),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: context.scaffoldBg, width: 3),
-                  color: themeColor.withValues(alpha: 0.5),
-                  image: user?.iconUrl != null
-                      ? DecorationImage(
-                          image: CachedNetworkImageProvider(user!.iconUrl!),
-                          fit: BoxFit.cover,
-                        )
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: r.s(20)),
+            child: Column(
+              children: [
+                // Avatar circular do usuário
+                Container(
+                  width: r.s(80),
+                  height: r.s(80),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3), width: 3),
+                    color: themeColor.withValues(alpha: 0.5),
+                    image: user?.iconUrl != null
+                        ? DecorationImage(
+                            image: CachedNetworkImageProvider(user!.iconUrl!),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                  child: user?.iconUrl == null
+                      ? Icon(Icons.person_rounded,
+                          color: Colors.white, size: r.s(40))
                       : null,
                 ),
-                child: user?.iconUrl == null
-                    ? Icon(Icons.person_rounded,
-                        color: Colors.white, size: r.s(32))
-                    : null,
-              ),
-              SizedBox(height: r.s(6)),
-              // Nome do usuário
-              Text(
-                user?.nickname ?? 'Visitante',
-                style: TextStyle(
-                  color: context.textPrimary,
-                  fontSize: r.fs(14),
-                  fontWeight: FontWeight.w700,
+                SizedBox(height: r.s(8)),
+                // Nome do usuário
+                Text(
+                  user?.nickname ?? 'Visitante',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: r.fs(16),
+                    fontWeight: FontWeight.w700,
+                    shadows: const [
+                      Shadow(color: Colors.black54, blurRadius: 4)
+                    ],
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              if (streak > 0) ...[
-                SizedBox(height: r.s(2)),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.local_fire_department_rounded,
-                        color: AppTheme.warningColor, size: r.s(12)),
-                    SizedBox(width: r.s(3)),
-                    Text(
-                      '$streak dias',
-                      style: TextStyle(
-                        color: AppTheme.warningColor,
-                        fontSize: r.fs(11),
-                        fontWeight: FontWeight.w600,
+                SizedBox(height: r.s(12)),
+                // Botão Check In OU barra de streak
+                if (!hasCheckedIn)
+                  GestureDetector(
+                    onTap: _isCheckingIn ? null : _doCheckIn,
+                    child: Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.symmetric(vertical: r.s(12)),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4CAF50),
+                        borderRadius: BorderRadius.circular(r.s(10)),
+                      ),
+                      child: Center(
+                        child: _isCheckingIn
+                            ? SizedBox(
+                                width: r.s(18),
+                                height: r.s(18),
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Text(
+                                'Check In',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: r.fs(15),
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
                       ),
                     ),
-                  ],
-                ),
+                  )
+                else
+                  _buildStreakBar(r, streak),
+                SizedBox(height: r.s(16)),
               ],
-              SizedBox(height: r.s(10)),
-              // Botão Check In
-              GestureDetector(
-                onTap: hasCheckedIn ? null : _doCheckIn,
-                child: Container(
-                  margin: EdgeInsets.symmetric(horizontal: r.s(24)),
-                  padding: EdgeInsets.symmetric(vertical: r.s(10)),
-                  decoration: BoxDecoration(
-                    color: hasCheckedIn
-                        ? Colors.grey[700]
-                        : const Color(0xFF4CAF50),
-                    borderRadius: BorderRadius.circular(r.s(8)),
-                  ),
-                  child: Center(
-                    child: _isCheckingIn
-                        ? SizedBox(
-                            width: r.s(16),
-                            height: r.s(16),
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : Text(
-                            hasCheckedIn ? 'Check-in feito ✓' : 'Check In',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: r.fs(14),
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                  ),
-                ),
-              ),
-              SizedBox(height: r.s(12)),
-            ],
+            ),
           ),
         ),
       ],
@@ -641,10 +630,68 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
     );
   }
 
+  // ---------------------------------------------------------------------------
+  // BARRA DE STREAK — exibida após o check-in no lugar do botão
+  // ---------------------------------------------------------------------------
+  Widget _buildStreakBar(Responsive r, int streak) {
+    const totalDots = 7;
+    final doneDots = streak.clamp(0, totalDots);
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(totalDots, (i) {
+            final done = i < doneDots;
+            return Padding(
+              padding: EdgeInsets.symmetric(horizontal: r.s(3)),
+              child: Container(
+                width: r.s(28),
+                height: r.s(28),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: done
+                      ? const Color(0xFF4CAF50)
+                      : Colors.white.withValues(alpha: 0.15),
+                  border: Border.all(
+                    color: done
+                        ? const Color(0xFF4CAF50)
+                        : Colors.white.withValues(alpha: 0.25),
+                    width: 1.5,
+                  ),
+                ),
+                child: done
+                    ? Icon(Icons.check_rounded,
+                        color: Colors.white, size: r.s(15))
+                    : null,
+              ),
+            );
+          }),
+        ),
+        SizedBox(height: r.s(5)),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.local_fire_department_rounded,
+                color: AppTheme.warningColor, size: r.s(13)),
+            SizedBox(width: r.s(3)),
+            Text(
+              '$streak dia${streak != 1 ? 's' : ''} de sequência',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.85),
+                fontSize: r.fs(11),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
 }
 
 // =============================================================================
-// DRAWER TILE — Item de menu com ícone e label
+// DRAWER TILE — Item de menu com ícone circular estilo Amino
 // =============================================================================
 class _DrawerTile extends StatelessWidget {
   final IconData icon;
@@ -663,22 +710,34 @@ class _DrawerTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final r = context.r;
     final color = isDestructive ? AppTheme.errorColor : context.textPrimary;
+    final iconBg = isDestructive
+        ? AppTheme.errorColor.withValues(alpha: 0.15)
+        : Colors.white.withValues(alpha: 0.08);
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Padding(
         padding: EdgeInsets.symmetric(
-            horizontal: r.s(16), vertical: r.s(12)),
+            horizontal: r.s(16), vertical: r.s(13)),
         child: Row(
           children: [
-            Icon(icon, color: color, size: r.s(22)),
-            SizedBox(width: r.s(16)),
+            // Ícone dentro de círculo escuro
+            Container(
+              width: r.s(42),
+              height: r.s(42),
+              decoration: BoxDecoration(
+                color: iconBg,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: r.s(20)),
+            ),
+            SizedBox(width: r.s(14)),
             Expanded(
               child: Text(
                 label,
                 style: TextStyle(
                   color: color,
-                  fontSize: r.fs(15),
+                  fontSize: r.fs(16),
                   fontWeight: FontWeight.w500,
                 ),
               ),
