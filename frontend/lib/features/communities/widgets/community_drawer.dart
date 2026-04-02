@@ -12,15 +12,37 @@ import '../providers/community_shared_providers.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/amino_drawer.dart';
 
-/// Drawer estilo Amino — fiel ao app original.
-///
-/// Estrutura:
-///   [Sidebar esquerda 56px] | [Painel principal flex-1 (resto da tela)]
-///
-/// Painel principal:
-///   1. Header: banner retangular da comunidade no topo + fundo = imagem da comunidade
-///      + avatar do usuário centralizado + nome + badge de nível + barra de reputação + streak
-///   2. Menu principal: lista com fundo semi-transparente, ícones coloridos
+// =============================================================================
+// COMMUNITY DRAWER — Réplica fiel do painel lateral do Amino Apps
+//
+// Layout (análise forense do print original):
+//
+//   ┌──────┬────────────────────────────────────────────┐
+//   │ Exit │  [Banner retangular da comunidade]    🔍  │
+//   │      │                                           │
+//   │  ●   │         ┌──────────┐                      │
+//   │  ●   │         │  Avatar  │                      │
+//   │  ●   │         └──────────┘                      │
+//   │  ●   │           Cole19                          │
+//   │  ●   │      Lv2  Anti Newbie ████░░░             │
+//   │  ●   │      ● ○ ○ ○ ○ ○ ○  (streak dots)       │
+//   │  ●   │  Check-in streak lost. Tap here to fix it!│
+//   │      ├───────────────────────────────────────────│
+//   │      │  🏠 Home                                  │
+//   │      │  💬 My Chats                         6    │
+//   │      │  🗣️ Public Chatrooms                      │
+//   │      │  🏆 Leaderboards                          │
+//   │      │  📖 Wiki                                  │
+//   │      │  📁 Shared Folder                         │
+//   │      │  📱 Stories                               │
+//   │      │                                           │
+//   │      │  See More...                          >   │
+//   └──────┴───────────────────────────────────────────┘
+//
+// Sidebar esquerda: ~52-56px, fundo preto puro, ícones ~42px com badges
+// Painel principal: flex-1, imagem de fundo da comunidade no header
+// =============================================================================
+
 class CommunityDrawer extends ConsumerStatefulWidget {
   final CommunityModel community;
   final UserModel? currentUser;
@@ -39,6 +61,8 @@ class CommunityDrawer extends ConsumerStatefulWidget {
 
 class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
   bool _isCheckingIn = false;
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
 
   Color _parseColor(String hex) {
     try {
@@ -62,6 +86,8 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
       _isTeamMember ||
       widget.userRole == 'agent' ||
       widget.userRole == 'leader';
+
+  // ── Check-in ──────────────────────────────────────────────────────────────
 
   Future<void> _doCheckIn() async {
     if (_isCheckingIn) return;
@@ -105,6 +131,8 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
     }
   }
 
+  // ── Navegação ─────────────────────────────────────────────────────────────
+
   void _closeAndNavigate(VoidCallback action) {
     final ctrl = AminoDrawerController.of(context);
     if (ctrl != null && ctrl.isOpen) {
@@ -116,6 +144,10 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
       if (mounted) action();
     });
   }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // BUILD
+  // ═══════════════════════════════════════════════════════════════════════════
 
   @override
   Widget build(BuildContext context) {
@@ -129,40 +161,30 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
     final userCommunitiesAsync = ref.watch(userCommunitiesProvider);
 
     return Container(
-      color: context.scaffoldBg,
+      // Fundo escuro base (igual ao Amino: preto/quase preto)
+      color: const Color(0xFF000000),
       child: SafeArea(
         child: Row(
           children: [
-            // ============================================================
-            // SIDEBAR ESQUERDA — Lista de comunidades do usuário (56px)
-            // ============================================================
+            // ══════════════════════════════════════════════════════════════
+            // SIDEBAR ESQUERDA — Comunidades do usuário (~52px)
+            // No Amino: fundo preto puro, ícones ~42px, badges vermelhos
+            // ══════════════════════════════════════════════════════════════
             _buildLeftSidebar(r, userCommunitiesAsync),
 
-            // ============================================================
-            // PAINEL PRINCIPAL — ocupa todo o espaço restante
-            // ============================================================
+            // ══════════════════════════════════════════════════════════════
+            // PAINEL PRINCIPAL — Ocupa todo o espaço restante
+            // No Amino: imagem de fundo da comunidade no header,
+            // menu com fundo escuro semi-transparente
+            // ══════════════════════════════════════════════════════════════
             Expanded(
               child: Column(
                 children: [
-                  // 1. Header: banner + avatar + nome + nível + streak
+                  // Header: imagem de fundo + avatar + nome + nível + streak
                   _buildHeader(r, themeColor, hasCheckedIn, streak),
-                  // 2. Menu principal (scrollável)
+                  // Menu principal (scrollável)
                   Expanded(
-                    child: Container(
-                      color: context.scaffoldBg.withValues(alpha: 0.92),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            SizedBox(height: r.s(4)),
-                            _buildMainMenu(r),
-                            _buildSeeMore(r),
-                            if (_isStaff) _buildStaffSection(r),
-                            SizedBox(height: r.s(40)),
-                          ],
-                        ),
-                      ),
-                    ),
+                    child: _buildMenuArea(r),
                   ),
                 ],
               ),
@@ -173,26 +195,26 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
     );
   }
 
-  // ---------------------------------------------------------------------------
+  // ═══════════════════════════════════════════════════════════════════════════
   // SIDEBAR ESQUERDA
-  // ---------------------------------------------------------------------------
+  //
+  // Amino original:
+  // - Fundo: preto puro (#000000)
+  // - Topo: ícone de porta + "Exit" em cinza
+  // - Ícones: ~42px, borderRadius ~12px
+  // - Badges: círculos vermelhos (#FF0000) com número branco, ~16px
+  // - Sem borda direita visível
+  // ═══════════════════════════════════════════════════════════════════════════
+
   Widget _buildLeftSidebar(
       Responsive r, AsyncValue<List<CommunityModel>> userCommunitiesAsync) {
     return Container(
-      width: r.s(56),
-      decoration: BoxDecoration(
-        color: const Color(0xFF060D18),
-        border: Border(
-          right: BorderSide(
-            color: Colors.white.withValues(alpha: 0.05),
-            width: 1,
-          ),
-        ),
-      ),
+      width: r.s(52),
+      color: const Color(0xFF000000),
       child: Column(
         children: [
-          SizedBox(height: r.s(10)),
-          // Botão sair
+          SizedBox(height: r.s(6)),
+          // ── Botão Exit (estilo Amino: ícone + "Exit") ──────────────────
           GestureDetector(
             onTap: () {
               final ctrl = AminoDrawerController.of(context);
@@ -201,29 +223,27 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                 if (context.mounted) context.go('/communities');
               });
             },
-            child: Column(
-              children: [
-                Icon(Icons.logout_rounded,
-                    color: Colors.grey[600], size: r.s(18)),
-                const SizedBox(height: 2),
-                Text(
-                  'Sair',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: r.fs(8),
-                    fontWeight: FontWeight.w500,
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: r.s(4)),
+              child: Column(
+                children: [
+                  Icon(Icons.door_front_door_outlined,
+                      color: Colors.grey[500], size: r.s(18)),
+                  SizedBox(height: r.s(1)),
+                  Text(
+                    'Exit',
+                    style: TextStyle(
+                      color: Colors.grey[500],
+                      fontSize: r.fs(8),
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-          SizedBox(height: r.s(8)),
-          Container(
-            width: r.s(32),
-            height: 1,
-            color: Colors.white.withValues(alpha: 0.1),
-          ),
-          SizedBox(height: r.s(8)),
+          SizedBox(height: r.s(6)),
+          // ── Lista de comunidades ───────────────────────────────────────
           Expanded(
             child: userCommunitiesAsync.when(
               loading: () => const SizedBox.shrink(),
@@ -232,55 +252,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                 child: Column(
                   children: communities.map((community) {
                     final isCurrent = community.id == widget.community.id;
-                    return GestureDetector(
-                      onTap: () {
-                        if (!isCurrent) {
-                          final ctrl = AminoDrawerController.of(context);
-                          if (ctrl != null && ctrl.isOpen) ctrl.close();
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            if (context.mounted) {
-                              context
-                                  .pushReplacement('/community/${community.id}');
-                            }
-                          });
-                        }
-                      },
-                      child: Container(
-                        margin: EdgeInsets.only(bottom: r.s(6)),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            if (isCurrent)
-                              Positioned(
-                                left: 0,
-                                child: Container(
-                                  width: 3,
-                                  height: r.s(36),
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.primaryColor,
-                                    borderRadius: BorderRadius.circular(2),
-                                  ),
-                                ),
-                              ),
-                            Container(
-                              width: r.s(40),
-                              height: r.s(40),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(r.s(10)),
-                                color: Colors.grey[800],
-                                image: community.iconUrl != null
-                                    ? DecorationImage(
-                                        image: CachedNetworkImageProvider(
-                                            community.iconUrl!),
-                                        fit: BoxFit.cover,
-                                      )
-                                    : null,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
+                    return _buildSidebarCommunityIcon(r, community, isCurrent);
                   }).toList(),
                 ),
               ),
@@ -291,23 +263,102 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // HEADER — banner da comunidade + avatar + nome + nível + streak
-  // Fiel ao Amino: imagem de fundo, avatar centralizado, nome, badge, streak
-  // ---------------------------------------------------------------------------
+  /// Ícone individual de comunidade na sidebar com badge de notificação
+  Widget _buildSidebarCommunityIcon(
+      Responsive r, CommunityModel community, bool isCurrent) {
+    // TODO: Integrar com provider de unread count por comunidade quando disponível
+    // Por enquanto, não mostramos badge (como no Amino quando não há notificações)
+    return GestureDetector(
+      onTap: () {
+        if (!isCurrent) {
+          final ctrl = AminoDrawerController.of(context);
+          if (ctrl != null && ctrl.isOpen) ctrl.close();
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (context.mounted) {
+              context.pushReplacement('/community/${community.id}');
+            }
+          });
+        }
+      },
+      child: Container(
+        margin: EdgeInsets.only(bottom: r.s(4)),
+        padding: EdgeInsets.symmetric(horizontal: r.s(4)),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // Ícone da comunidade (42px, borderRadius 12px — como no Amino)
+            Container(
+              width: r.s(42),
+              height: r.s(42),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(r.s(12)),
+                color: Colors.grey[850],
+                image: community.iconUrl != null
+                    ? DecorationImage(
+                        image:
+                            CachedNetworkImageProvider(community.iconUrl!),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+                // No Amino, a comunidade ativa tem uma borda branca sutil
+                border: isCurrent
+                    ? Border.all(
+                        color: Colors.white.withValues(alpha: 0.6),
+                        width: 2,
+                      )
+                    : null,
+              ),
+              child: community.iconUrl == null
+                  ? Center(
+                      child: Text(
+                        community.name.isNotEmpty
+                            ? community.name[0].toUpperCase()
+                            : '?',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: r.fs(16),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    )
+                  : null,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // HEADER — Fundo com imagem da comunidade
+  //
+  // Amino original:
+  // - Imagem de fundo: bannerUrl/iconUrl da comunidade, cover, toda a área
+  // - Gradiente: de transparente (topo) a preto (base)
+  // - Banner retangular: capa da comunidade no topo (~55px altura)
+  // - Ícone de busca: canto superior direito, círculo escuro semi-transparente
+  // - Avatar: ~75px, borda branca fina (~2px), centralizado
+  // - Nome: branco, bold, ~16px, sombra
+  // - Badge de nível: círculo verde "Lv2" + pill escura "Anti Newbie" + barra
+  // - Streak dots: 7 dots, ~14px, verde = feito, cinza = pendente
+  // - Mensagem: TEXTO VERDE (não container vermelho!)
+  //   "Check-in streak lost. Tap here to fix it!"
+  // - Header ocupa ~42-45% da tela
+  // ═══════════════════════════════════════════════════════════════════════════
+
   Widget _buildHeader(
       Responsive r, Color themeColor, bool hasCheckedIn, int streak) {
     final user = widget.currentUser;
     final screenHeight = MediaQuery.of(context).size.height;
-    // Header ocupa ~38% da tela (como no Amino original)
-    final headerHeight = (screenHeight * 0.38).clamp(260.0, 380.0);
+    // Header ocupa ~43% da tela (fiel ao Amino)
+    final headerHeight = (screenHeight * 0.43).clamp(280.0, 400.0);
 
     return SizedBox(
       height: headerHeight,
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // ── Fundo: imagem da comunidade (bannerUrl) cobrindo toda a área ──
+          // ── Fundo: imagem da comunidade cobrindo toda a área ────────────
           Container(
             decoration: BoxDecoration(
               color: themeColor.withValues(alpha: 0.9),
@@ -317,201 +368,239 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                           widget.community.bannerUrl!),
                       fit: BoxFit.cover,
                     )
-                  : null,
+                  : widget.community.iconUrl != null
+                      ? DecorationImage(
+                          image: CachedNetworkImageProvider(
+                              widget.community.iconUrl!),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
             ),
           ),
-          // ── Gradiente escuro para legibilidade ──────────────────────────
+
+          // ── Gradiente escuro (Amino: mais transparente no topo, preto na base)
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                stops: const [0.0, 0.5, 1.0],
+                stops: const [0.0, 0.35, 0.7, 1.0],
                 colors: [
-                  Colors.black.withValues(alpha: 0.15),
-                  Colors.black.withValues(alpha: 0.45),
-                  Colors.black.withValues(alpha: 0.75),
+                  Colors.black.withValues(alpha: 0.10),
+                  Colors.black.withValues(alpha: 0.25),
+                  Colors.black.withValues(alpha: 0.55),
+                  Colors.black.withValues(alpha: 0.80),
                 ],
               ),
             ),
           ),
-          // ── Ícone de busca no topo direito (como no Amino) ─────────────
+
+          // ── Ícone de busca no topo direito (Amino: círculo escuro + lupa) ──
           Positioned(
-            top: r.s(8),
-            right: r.s(12),
+            top: r.s(6),
+            right: r.s(8),
             child: GestureDetector(
               onTap: () => _closeAndNavigate(() {
                 context.push('/community/${widget.community.id}/search');
               }),
               child: Container(
-                width: r.s(36),
-                height: r.s(36),
+                width: r.s(32),
+                height: r.s(32),
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.35),
+                  color: Colors.black.withValues(alpha: 0.40),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(Icons.search_rounded,
-                    color: Colors.white, size: r.s(20)),
+                    color: Colors.white, size: r.s(18)),
               ),
             ),
           ),
-          // ── Conteúdo do header ──────────────────────────────────────────
-          Column(
-            children: [
-              // Banner retangular pequeno da comunidade no topo
-              if (widget.community.iconUrl != null)
-                Container(
-                  height: r.s(60),
-                  margin: EdgeInsets.fromLTRB(r.s(16), r.s(10), r.s(16), 0),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(r.s(8)),
-                    color: Colors.white.withValues(alpha: 0.1),
-                    image: widget.community.iconUrl != null
-                        ? DecorationImage(
-                            image: CachedNetworkImageProvider(
-                                widget.community.iconUrl!),
-                            fit: BoxFit.cover,
-                          )
-                        : null,
-                  ),
-                ),
-              SizedBox(height: r.s(12)),
-              // Avatar do usuário centralizado (grande, como no Amino)
-              Container(
-                width: r.s(80),
-                height: r.s(80),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.4), width: 3),
-                  color: themeColor.withValues(alpha: 0.5),
-                  image: user?.iconUrl != null
-                      ? DecorationImage(
-                          image: CachedNetworkImageProvider(user!.iconUrl!),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                ),
-                child: user?.iconUrl == null
-                    ? Icon(Icons.person_rounded,
-                        color: Colors.white, size: r.s(40))
-                    : null,
-              ),
-              SizedBox(height: r.s(8)),
-              // Nome do usuário
-              Text(
-                user?.nickname ?? 'Visitante',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: r.fs(17),
-                  fontWeight: FontWeight.w800,
-                  shadows: const [Shadow(color: Colors.black54, blurRadius: 6)],
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              SizedBox(height: r.s(6)),
-              // Badge de nível + barra de reputação
-              if (user != null) _buildLevelBadge(r, user),
-              SizedBox(height: r.s(10)),
-              // Dots de streak (7 dias como no Amino)
-              _buildStreakDots(r, streak, hasCheckedIn),
-              if (!hasCheckedIn) ...[
+
+          // ── Conteúdo do header ─────────────────────────────────────────
+          Positioned.fill(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                // Banner retangular da comunidade no topo (como no Amino)
+                _buildCommunityBanner(r),
+                const Spacer(flex: 1),
+                // Avatar do usuário centralizado
+                _buildUserAvatar(r, user, themeColor),
                 SizedBox(height: r.s(6)),
-                GestureDetector(
-                  onTap: _isCheckingIn ? null : _doCheckIn,
-                  child: Container(
-                    margin: EdgeInsets.symmetric(horizontal: r.s(16)),
-                    padding: EdgeInsets.symmetric(vertical: r.s(6)),
-                    decoration: BoxDecoration(
-                      color: AppTheme.errorColor.withValues(alpha: 0.85),
-                      borderRadius: BorderRadius.circular(r.s(20)),
-                    ),
-                    child: Center(
-                      child: Text(
-                        _isCheckingIn
-                            ? 'Fazendo check-in...'
-                            : '⚠️ Check-in perdido. Toque para recuperar!',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: r.fs(10),
-                          fontWeight: FontWeight.w600,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
+                // Nome do usuário
+                Text(
+                  user?.nickname ?? 'Visitante',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: r.fs(16),
+                    fontWeight: FontWeight.w800,
+                    shadows: const [
+                      Shadow(color: Colors.black87, blurRadius: 8),
+                    ],
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
+                SizedBox(height: r.s(4)),
+                // Badge de nível + barra de reputação
+                if (user != null) _buildLevelBadge(r, user),
+                SizedBox(height: r.s(8)),
+                // Streak dots (7 dias)
+                _buildStreakDots(r, streak, hasCheckedIn),
+                SizedBox(height: r.s(4)),
+                // Mensagem de check-in (TEXTO VERDE — como no Amino!)
+                _buildCheckInMessage(r, hasCheckedIn),
+                SizedBox(height: r.s(8)),
               ],
-            ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // BADGE DE NÍVEL + BARRA DE REPUTAÇÃO (estilo Amino)
-  // ---------------------------------------------------------------------------
+  /// Banner retangular da comunidade no topo do header (como no Amino)
+  Widget _buildCommunityBanner(Responsive r) {
+    if (widget.community.iconUrl == null &&
+        widget.community.bannerUrl == null) {
+      return SizedBox(height: r.s(10));
+    }
+    return Container(
+      height: r.s(55),
+      margin: EdgeInsets.fromLTRB(r.s(12), r.s(6), r.s(12), 0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(r.s(8)),
+        color: Colors.white.withValues(alpha: 0.08),
+        image: (widget.community.bannerUrl ?? widget.community.iconUrl) != null
+            ? DecorationImage(
+                image: CachedNetworkImageProvider(
+                    widget.community.bannerUrl ?? widget.community.iconUrl!),
+                fit: BoxFit.cover,
+              )
+            : null,
+      ),
+    );
+  }
+
+  /// Avatar do usuário (Amino: ~75px, borda branca fina 2px)
+  Widget _buildUserAvatar(Responsive r, UserModel? user, Color themeColor) {
+    return Container(
+      width: r.s(75),
+      height: r.s(75),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.35),
+          width: 2,
+        ),
+        color: themeColor.withValues(alpha: 0.4),
+        image: user?.iconUrl != null
+            ? DecorationImage(
+                image: CachedNetworkImageProvider(user!.iconUrl!),
+                fit: BoxFit.cover,
+              )
+            : null,
+      ),
+      child: user?.iconUrl == null
+          ? Icon(Icons.person_rounded, color: Colors.white, size: r.s(36))
+          : null,
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // BADGE DE NÍVEL + BARRA DE REPUTAÇÃO
+  //
+  // Amino original:
+  // - Círculo verde com "Lv" + número (ex: "Lv2")
+  //   Tamanho: ~26px, fonte ~9px
+  // - Pill escura: nome do nível (ex: "Anti Newbie") + barra de progresso
+  //   Altura: ~22px, borderRadius: pill
+  //   Barra: azul/verde brilhante sobre fundo cinza escuro
+  // ═══════════════════════════════════════════════════════════════════════════
+
   Widget _buildLevelBadge(Responsive r, UserModel user) {
     final level = user.level;
     final reputation = user.reputation;
     final levelColor = AppTheme.getLevelColor(level);
     final levelName = levelTitle(level);
-    // Reputação necessária para o próximo nível (exemplo: 100 * level)
     final repForNextLevel = 100 * (level + 1);
     final repProgress = (reputation % repForNextLevel) / repForNextLevel;
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: r.s(24)),
+      padding: EdgeInsets.symmetric(horizontal: r.s(30)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Badge circular com nível
+          // Círculo com "Lv" + número (estilo Amino)
           Container(
-            width: r.s(30),
-            height: r.s(30),
+            width: r.s(28),
+            height: r.s(28),
             decoration: BoxDecoration(
               color: levelColor,
               shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.3),
+                width: 1,
+              ),
             ),
             child: Center(
-              child: Text(
-                '$level',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: r.fs(12),
-                  fontWeight: FontWeight.w900,
+              child: RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: 'Lv',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: r.fs(7),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    TextSpan(
+                      text: '$level',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: r.fs(10),
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
-          SizedBox(width: r.s(8)),
+          SizedBox(width: r.s(4)),
           // Pill com nome do nível + barra de progresso
-          Expanded(
+          Flexible(
             child: Container(
-              height: r.s(26),
+              height: r.s(22),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.4),
-                borderRadius: BorderRadius.circular(r.s(13)),
+                color: Colors.black.withValues(alpha: 0.50),
+                borderRadius: BorderRadius.circular(r.s(11)),
               ),
-              padding: EdgeInsets.symmetric(horizontal: r.s(10)),
+              padding: EdgeInsets.symmetric(horizontal: r.s(8)),
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    levelName,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: r.fs(10),
-                      fontWeight: FontWeight.w700,
+                  Flexible(
+                    flex: 0,
+                    child: Text(
+                      levelName,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: r.fs(9),
+                        fontWeight: FontWeight.w600,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                   ),
                   SizedBox(width: r.s(6)),
                   Expanded(
                     child: Container(
-                      height: 4,
+                      height: 3,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
+                        color: Colors.white.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(2),
                       ),
                       child: FractionallySizedBox(
@@ -535,63 +624,167 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // DOTS DE STREAK (7 dias) — idêntico ao Amino original
-  // ---------------------------------------------------------------------------
+  // ═══════════════════════════════════════════════════════════════════════════
+  // STREAK DOTS (7 dias)
+  //
+  // Amino original:
+  // - 7 dots em linha horizontal
+  // - Tamanho: ~14px cada
+  // - Feito: verde (#4CAF50) com check branco
+  // - Pendente: cinza transparente com borda cinza
+  // - O primeiro dot pode ter um badge vermelho "1"
+  // - Espaçamento: ~4px entre dots
+  // - Conectados por uma linha cinza horizontal fina
+  // ═══════════════════════════════════════════════════════════════════════════
+
   Widget _buildStreakDots(Responsive r, int streak, bool hasCheckedIn) {
     const totalDots = 7;
     final doneDots = streak.clamp(0, totalDots);
+
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: r.s(20)),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: List.generate(totalDots, (i) {
-          final done = i < doneDots;
-          return Padding(
-            padding: EdgeInsets.symmetric(horizontal: r.s(3)),
-            child: Container(
-              width: r.s(18),
-              height: r.s(18),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: done
-                    ? const Color(0xFF4CAF50)
-                    : Colors.white.withValues(alpha: 0.15),
-                border: Border.all(
-                  color: done
-                      ? const Color(0xFF4CAF50)
-                      : Colors.white.withValues(alpha: 0.25),
-                  width: 1.5,
-                ),
+      padding: EdgeInsets.symmetric(horizontal: r.s(24)),
+      child: SizedBox(
+        height: r.s(18),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Linha horizontal conectando os dots (como no Amino)
+            Positioned(
+              left: r.s(8),
+              right: r.s(8),
+              child: Container(
+                height: 1.5,
+                color: Colors.white.withValues(alpha: 0.15),
               ),
-              child: done
-                  ? Icon(Icons.check_rounded,
-                      color: Colors.white, size: r.s(11))
-                  : null,
             ),
-          );
-        }),
+            // Dots
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(totalDots, (i) {
+                final done = i < doneDots;
+                return Padding(
+                  padding: EdgeInsets.symmetric(horizontal: r.s(3)),
+                  child: Container(
+                    width: r.s(14),
+                    height: r.s(14),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: done
+                          ? const Color(0xFF4CAF50)
+                          : Colors.grey.withValues(alpha: 0.25),
+                      border: Border.all(
+                        color: done
+                            ? const Color(0xFF4CAF50)
+                            : Colors.white.withValues(alpha: 0.20),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: done
+                        ? Icon(Icons.check_rounded,
+                            color: Colors.white, size: r.s(9))
+                        : null,
+                  ),
+                );
+              }),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // MENU PRINCIPAL — Fiel ao Amino original (Home, My Chats, Public Chatrooms,
-  // Leaderboards, Wiki, Shared Folder, Stories)
-  // ---------------------------------------------------------------------------
+  // ═══════════════════════════════════════════════════════════════════════════
+  // MENSAGEM DE CHECK-IN
+  //
+  // Amino original:
+  // - TEXTO VERDE brilhante (NÃO container vermelho!)
+  // - "Check-in streak lost. Tap here to fix it!"
+  // - Fonte ~11px, verde (#4CAF50), sem fundo/container
+  // - Clicável para fazer check-in
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  Widget _buildCheckInMessage(Responsive r, bool hasCheckedIn) {
+    if (hasCheckedIn) return const SizedBox.shrink();
+
+    return GestureDetector(
+      onTap: _isCheckingIn ? null : _doCheckIn,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: r.s(16)),
+        child: Text(
+          _isCheckingIn
+              ? 'Fazendo check-in...'
+              : 'Check-in streak lost. Tap here to fix it!',
+          style: TextStyle(
+            color: const Color(0xFF4CAF50),
+            fontSize: r.fs(11),
+            fontWeight: FontWeight.w600,
+            shadows: const [
+              Shadow(color: Colors.black54, blurRadius: 4),
+            ],
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ÁREA DO MENU
+  //
+  // Amino original:
+  // - Fundo: escuro semi-transparente (a imagem da comunidade NÃO continua
+  //   aqui — é um fundo sólido escuro, mas levemente transparente)
+  // - Sem separadores entre os itens do menu principal
+  // - "See More..." com seta no final
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  Widget _buildMenuArea(Responsive r) {
+    return Container(
+      // Fundo escuro do menu (Amino: quase opaco, mas com leve transparência)
+      color: const Color(0xFF0A0A0A),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(height: r.s(2)),
+            _buildMainMenu(r),
+            _buildSeeMore(r),
+            if (_isStaff) _buildStaffSection(r),
+            SizedBox(height: r.s(40)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // MENU PRINCIPAL
+  //
+  // Amino original (ordem exata do print):
+  //   1. Home — ícone azul (#42A5F5), casa preenchida
+  //   2. My Chats — ícone verde (#66BB6A), balão de chat
+  //   3. Public Chatrooms — ícone verde (#66BB6A), fórum
+  //   4. Leaderboards — ícone roxo escuro (#7B1FA2), troféu/ranking
+  //   5. Wiki — ícone roxo (#9C27B0), livro
+  //   6. Shared Folder — ícone azul (#42A5F5), pasta
+  //   7. Stories — ícone roxo escuro (#7B1FA2), stories
+  //
+  // Cada item: ícone circular ~42px, texto branco bold ~16px
+  // ═══════════════════════════════════════════════════════════════════════════
+
   Widget _buildMainMenu(Responsive r) {
     return Column(
       children: [
-        _DrawerTile(
+        _AminoDrawerTile(
           icon: Icons.home_rounded,
-          iconColor: const Color(0xFF42A5F5), // azul
-          label: 'Início',
+          iconColor: const Color(0xFF42A5F5),
+          label: 'Home',
           onTap: () => _closeAndNavigate(() {}),
         ),
-        _DrawerTile(
+        _AminoDrawerTile(
           icon: Icons.chat_bubble_rounded,
-          iconColor: const Color(0xFF66BB6A), // verde
-          label: 'Meus Chats',
+          iconColor: const Color(0xFF66BB6A),
+          label: 'My Chats',
           onTap: () => _closeAndNavigate(() {
             context.push(
               '/community/${widget.community.id}/my-chats',
@@ -599,10 +792,10 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
             );
           }),
         ),
-        _DrawerTile(
+        _AminoDrawerTile(
           icon: Icons.forum_rounded,
-          iconColor: const Color(0xFF66BB6A), // verde (como no Amino)
-          label: 'Salas de Chat Públicas',
+          iconColor: const Color(0xFF66BB6A),
+          label: 'Public Chatrooms',
           onTap: () => _closeAndNavigate(() {
             context.push('/create-public-chat', extra: {
               'communityId': widget.community.id,
@@ -610,37 +803,35 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
             });
           }),
         ),
-        _DrawerTile(
+        _AminoDrawerTile(
           icon: Icons.leaderboard_rounded,
-          iconColor: const Color(0xFFAB47BC), // roxo
-          label: 'Ranking',
+          iconColor: const Color(0xFF7B1FA2),
+          label: 'Leaderboards',
           onTap: () => _closeAndNavigate(() {
             context.push('/community/${widget.community.id}/leaderboard');
           }),
         ),
-        _DrawerTile(
+        _AminoDrawerTile(
           icon: Icons.auto_stories_rounded,
-          iconColor: const Color(0xFFAB47BC), // roxo
+          iconColor: const Color(0xFF9C27B0),
           label: 'Wiki',
           onTap: () => _closeAndNavigate(() {
             context.push('/community/${widget.community.id}/wiki');
           }),
         ),
-        _DrawerTile(
+        _AminoDrawerTile(
           icon: Icons.folder_shared_rounded,
-          iconColor: const Color(0xFF42A5F5), // azul
-          label: 'Pasta Compartilhada',
+          iconColor: const Color(0xFF42A5F5),
+          label: 'Shared Folder',
           onTap: () => _closeAndNavigate(() {
-            context
-                .push('/community/${widget.community.id}/shared-folder');
+            context.push('/community/${widget.community.id}/shared-folder');
           }),
         ),
-        _DrawerTile(
+        _AminoDrawerTile(
           icon: Icons.amp_stories_rounded,
-          iconColor: const Color(0xFFAB47BC), // roxo
+          iconColor: const Color(0xFF7B1FA2),
           label: 'Stories',
           onTap: () => _closeAndNavigate(() {
-            // Stories — navega para o perfil onde stories ficam
             context.push('/profile/${SupabaseService.currentUserId}');
           }),
         ),
@@ -648,12 +839,19 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // SEE MORE + OPÇÕES EXTRAS
-  // ---------------------------------------------------------------------------
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SEE MORE...
+  //
+  // Amino original:
+  // - "See More..." em cinza claro (~14px) com seta ">" à direita
+  // - Sem divider acima
+  // - Abaixo: itens extras (membros, posts salvos, etc.)
+  // ═══════════════════════════════════════════════════════════════════════════
+
   Widget _buildSeeMore(Responsive r) {
     return Column(
       children: [
+        // "See More..." com seta
         GestureDetector(
           onTap: () => _closeAndNavigate(() {
             context.push('/community/${widget.community.id}/info');
@@ -668,7 +866,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
               children: [
                 Expanded(
                   child: Text(
-                    'Ver Mais...',
+                    'See More...',
                     style: TextStyle(
                       color: Colors.grey[400],
                       fontSize: r.fs(14),
@@ -677,7 +875,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                   ),
                 ),
                 Icon(Icons.chevron_right_rounded,
-                    color: Colors.grey[600], size: r.s(20)),
+                    color: Colors.grey[500], size: r.s(22)),
               ],
             ),
           ),
@@ -685,24 +883,24 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         // Divider sutil
         Container(
           margin: EdgeInsets.symmetric(horizontal: r.s(16)),
-          height: 1,
-          color: Colors.white.withValues(alpha: 0.05),
+          height: 0.5,
+          color: Colors.white.withValues(alpha: 0.06),
         ),
         SizedBox(height: r.s(4)),
         // Membros
-        _DrawerTile(
+        _AminoDrawerTile(
           icon: Icons.group_rounded,
-          iconColor: const Color(0xFF26C6DA), // ciano
-          label: 'Ver Membros',
+          iconColor: const Color(0xFF26C6DA),
+          label: 'Members',
           onTap: () => _closeAndNavigate(() {
             context.push('/community/${widget.community.id}/members');
           }),
         ),
         // Posts Salvos
-        _DrawerTile(
+        _AminoDrawerTile(
           icon: Icons.bookmark_rounded,
-          iconColor: const Color(0xFFEF5350), // vermelho
-          label: 'Posts Salvos',
+          iconColor: const Color(0xFFEF5350),
+          label: 'Saved Posts',
           onTap: () => _closeAndNavigate(() {
             context.push('/profile/${SupabaseService.currentUserId}');
           }),
@@ -711,52 +909,52 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // STAFF
-  // ---------------------------------------------------------------------------
+  // ═══════════════════════════════════════════════════════════════════════════
+  // STAFF / GERENCIAMENTO
+  // ═══════════════════════════════════════════════════════════════════════════
+
   Widget _buildStaffSection(Responsive r) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Divider
         Container(
           margin: EdgeInsets.symmetric(horizontal: r.s(16)),
-          height: 1,
-          color: Colors.white.withValues(alpha: 0.05),
+          height: 0.5,
+          color: Colors.white.withValues(alpha: 0.06),
         ),
         Padding(
-          padding: EdgeInsets.fromLTRB(r.s(20), r.s(16), r.s(20), r.s(4)),
+          padding: EdgeInsets.fromLTRB(r.s(20), r.s(14), r.s(20), r.s(4)),
           child: Text(
-            'GERENCIAMENTO',
+            'MANAGEMENT',
             style: TextStyle(
-              color: Colors.grey[500],
-              fontSize: r.fs(11),
+              color: Colors.grey[600],
+              fontSize: r.fs(10),
               fontWeight: FontWeight.w700,
               letterSpacing: 1.2,
             ),
           ),
         ),
         if (_isLeader)
-          _DrawerTile(
+          _AminoDrawerTile(
             icon: Icons.settings_rounded,
-            iconColor: const Color(0xFF78909C), // cinza azulado
-            label: 'Editar Comunidade',
+            iconColor: const Color(0xFF78909C),
+            label: 'Edit Community',
             onTap: () => _closeAndNavigate(() {
               context.push('/community/${widget.community.id}/acm');
             }),
           ),
-        _DrawerTile(
+        _AminoDrawerTile(
           icon: Icons.flag_rounded,
           iconColor: AppTheme.errorColor,
-          label: 'Central de Denúncias',
+          label: 'Flag Center',
           onTap: () => _closeAndNavigate(() {
             context.push('/community/${widget.community.id}/flags');
           }),
         ),
-        _DrawerTile(
+        _AminoDrawerTile(
           icon: Icons.analytics_rounded,
-          iconColor: const Color(0xFF26A69A), // teal
-          label: 'Estatísticas',
+          iconColor: const Color(0xFF26A69A),
+          label: 'Statistics',
           onTap: () => _closeAndNavigate(() {
             context.push('/community/${widget.community.id}/acm');
           }),
@@ -767,20 +965,30 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
 }
 
 // =============================================================================
-// DRAWER TILE — Item de menu estilo Amino com ícone circular colorido
-// Tamanhos maiores para combinar com o painel mais largo
+// _AminoDrawerTile — Item de menu estilo Amino
+//
+// Amino original:
+// - Ícone circular colorido: ~42px diâmetro
+// - Ícone branco dentro: ~20px
+// - Texto: branco, semibold/bold, ~16px
+// - Espaçamento ícone→texto: ~14px
+// - Padding vertical: ~10px
+// - Padding horizontal: ~14px
 // =============================================================================
-class _DrawerTile extends StatelessWidget {
+
+class _AminoDrawerTile extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
   final String label;
   final VoidCallback onTap;
+  final int? badgeCount;
 
-  const _DrawerTile({
+  const _AminoDrawerTile({
     required this.icon,
     required this.iconColor,
     required this.label,
     required this.onTap,
+    this.badgeCount,
   });
 
   @override
@@ -791,32 +999,53 @@ class _DrawerTile extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       child: Padding(
         padding: EdgeInsets.symmetric(
-          horizontal: r.s(16),
-          vertical: r.s(10),
+          horizontal: r.s(14),
+          vertical: r.s(9),
         ),
         child: Row(
           children: [
-            // Ícone dentro de círculo colorido (estilo Amino — tamanho grande)
+            // Ícone circular colorido (42px — fiel ao Amino)
             Container(
-              width: r.s(46),
-              height: r.s(46),
+              width: r.s(42),
+              height: r.s(42),
               decoration: BoxDecoration(
                 color: iconColor,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: Colors.white, size: r.s(22)),
+              child: Icon(icon, color: Colors.white, size: r.s(20)),
             ),
-            SizedBox(width: r.s(16)),
+            SizedBox(width: r.s(14)),
+            // Label
             Expanded(
               child: Text(
                 label,
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: r.fs(17),
-                  fontWeight: FontWeight.w700,
+                  fontSize: r.fs(16),
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
+            // Badge de notificação (se houver)
+            if (badgeCount != null && badgeCount! > 0)
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: r.s(6),
+                  vertical: r.s(2),
+                ),
+                decoration: BoxDecoration(
+                  color: iconColor,
+                  borderRadius: BorderRadius.circular(r.s(10)),
+                ),
+                child: Text(
+                  '$badgeCount',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: r.fs(11),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
           ],
         ),
       ),
