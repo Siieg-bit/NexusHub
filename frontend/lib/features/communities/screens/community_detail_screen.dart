@@ -22,7 +22,6 @@ import '../widgets/community_guidelines_tab.dart';
 import '../widgets/community_feed_tab.dart';
 import '../widgets/community_chat_tab.dart';
 import '../widgets/community_create_menu.dart';
-import 'my_community_chats_screen.dart';
 
 // =============================================================================
 // MAIN SCREEN — Estilo Amino Apps
@@ -258,7 +257,10 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             userRole: userRole,
             onChatsTap: () {
               if (_isDisposed || !mounted) return;
-              setState(() => _bottomIndex = 3);
+              context.push(
+                '/community/${widget.communityId}/my-chats',
+                extra: {'communityName': community.name},
+              );
             },
             onGuidelinesTap: () {
               if (_isDisposed || !mounted) return;
@@ -287,13 +289,9 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                     visible, welcomeBanner)
                 : _bottomIndex == 1
                     ? _buildOnlinePage(community)
-                    : _bottomIndex == 3
-                        ? _buildChatsPage(community)
-                        : _bottomIndex == 4
-                            ? _buildMePage(community)
-                            : _buildHomePage(
-                                community, themeColor, isMember, userRole,
-                                layout, visible, welcomeBanner),
+                    : _buildHomePage(
+                        community, themeColor, isMember, userRole,
+                        layout, visible, welcomeBanner),
             // Floating capsule nav — só aparece nas páginas iniciais (membro)
             bottomNavigationBar: isMember
                 ? AminoBottomNavBar(
@@ -332,8 +330,19 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                       communityId: widget.communityId,
                       communityName: community.name,
                     ),
-                    onTap: (index) =>
-                        setState(() => _bottomIndex = index),
+                    onTap: (index) {
+                      if (index == 3) {
+                        context.push(
+                          '/community/${widget.communityId}/my-chats',
+                          extra: {'communityName': community.name},
+                        );
+                      } else if (index == 4) {
+                        context.push(
+                            '/community/${widget.communityId}/my-profile');
+                      } else {
+                        setState(() => _bottomIndex = index);
+                      }
+                    },
                   )
                 : null,
             // FAB "Entrar" para não-membros; nenhum FAB para membros
@@ -936,88 +945,6 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
   }
 
   // ================================================================
-  // CHATS PAGE — Meus Chats na comunidade (layout estilo Amino)
-  // ================================================================
-  Widget _buildChatsPage(CommunityModel community) {
-    return MyCommunityChatsScreen(
-      communityId: widget.communityId,
-      communityName: community.name,
-      onBack: () {
-        if (_isDisposed || !mounted) return;
-        setState(() => _bottomIndex = 0);
-      },
-    );
-  }
-
-  // ================================================================
-  // ME PAGE — Perfil do usuário na comunidade
-  // ================================================================
-  Widget _buildMePage(CommunityModel community) {
-    final r = context.r;
-    final userId = SupabaseService.currentUserId;
-    if (userId == null) {
-      return Center(
-          child: Text('Faça login para ver seu perfil',
-              style: TextStyle(color: context.textSecondary)));
-    }
-
-    return Column(
-      children: [
-        SafeArea(
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
-            child: Row(
-              children: [
-                GestureDetector(
-                  onTap: () => setState(() => _bottomIndex = 0),
-                  child: Icon(Icons.arrow_back_rounded,
-                      color: context.textPrimary),
-                ),
-                SizedBox(width: r.s(12)),
-                Text('Meu Perfil',
-                    style: TextStyle(
-                        color: context.textPrimary,
-                        fontSize: r.fs(16),
-                        fontWeight: FontWeight.w700)),
-                const Spacer(),
-                GestureDetector(
-                  onTap: () => context.push('/profile'),
-                  child: Text('Perfil Global',
-                      style: TextStyle(
-                          color: AppTheme.primaryColor,
-                          fontSize: r.fs(12),
-                          fontWeight: FontWeight.w600)),
-                ),
-              ],
-            ),
-          ),
-        ),
-        Expanded(
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.person_rounded,
-                    size: r.s(48), color: context.textHint),
-                SizedBox(height: r.s(12)),
-                ElevatedButton(
-                  onPressed: () => context.push(
-                      '/community/${widget.communityId}/profile/$userId'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryColor,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(r.s(12))),
-                  ),
-                  child: const Text('Ver Meu Perfil na Comunidade'),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 }
 
 // =============================================================================

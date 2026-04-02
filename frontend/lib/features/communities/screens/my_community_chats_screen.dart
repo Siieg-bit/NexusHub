@@ -229,7 +229,7 @@ class _MyCommunityChatsScreenState
         children: [
           // Botão voltar
           GestureDetector(
-            onTap: widget.onBack,
+            onTap: () => context.pop(),
             behavior: HitTestBehavior.opaque,
             child: Icon(Icons.arrow_back_rounded,
                 color: context.textPrimary, size: r.s(24)),

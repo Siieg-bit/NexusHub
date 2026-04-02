@@ -11,6 +11,7 @@ import '../features/auth/screens/interest_wizard_screen.dart';
 import '../features/chat/screens/chat_list_screen.dart';
 import '../features/chat/screens/chat_room_screen.dart';
 import '../features/communities/screens/community_detail_screen.dart';
+import '../features/communities/screens/my_community_chats_screen.dart';
 import '../features/communities/screens/community_info_screen.dart';
 import '../features/communities/screens/community_list_screen.dart';
 import '../features/communities/screens/create_community_screen.dart';
@@ -201,6 +202,25 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'community-info',
         builder: (context, state) => CommunityInfoScreen(
           communityId: state.pathParameters['communityId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/community/:communityId/my-chats',
+        name: 'community-my-chats',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return MyCommunityChatsScreen(
+            communityId: state.pathParameters['communityId']!,
+            communityName: extra['communityName'] as String? ?? '',
+          );
+        },
+      ),
+      GoRoute(
+        path: '/community/:communityId/my-profile',
+        name: 'community-my-profile',
+        builder: (context, state) => CommunityProfileScreen(
+          communityId: state.pathParameters['communityId']!,
+          userId: SupabaseService.currentUserId ?? '',
         ),
       ),
 
