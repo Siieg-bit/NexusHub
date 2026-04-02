@@ -251,7 +251,9 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
         final welcomeBanner =
             layout['welcome_banner'] as Map<String, dynamic>? ?? {};
 
+        final screenWidth = MediaQuery.of(context).size.width;
         return AminoDrawerController(
+          maxSlide: screenWidth * 0.90,
           drawer: CommunityDrawer(
             community: community,
             currentUser: ref.watch(currentUserProfileProvider).valueOrNull,
