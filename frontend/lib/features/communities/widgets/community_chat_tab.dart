@@ -100,7 +100,6 @@ class _CommunityChatTabState extends State<CommunityChatTab> {
     try {
       final result = await SupabaseService.rpc('leave_public_chat', params: {
         'p_thread_id': chat['id'] as String,
-        'p_user_id': SupabaseService.currentUserId,
       });
       final wasDeleted =
           (result as Map<String, dynamic>?)?['deleted'] == true;

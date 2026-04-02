@@ -4,6 +4,7 @@ import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'supabase_service.dart';
+import 'realtime_service.dart';
 
 /// ============================================================================
 /// CallService — Gerencia chamadas de voz, vídeo e screening room.
@@ -11,17 +12,21 @@ import 'supabase_service.dart';
 /// Integração completa com Agora.io RTC SDK para áudio/vídeo real.
 ///
 /// Fluxo:
-/// 1. Criador chama `createCall()` → insere em `call_sessions` + join Agora
+/// 1. Criador chama `createCall()` → RPC `create_call_session` + join Agora
 /// 2. Participantes recebem convite via Realtime (chat message)
-/// 3. Participante chama `joinCall()` → insere em `call_participants` + join Agora
+/// 3. Participante chama `joinCall()` → RPC `join_call_session` + join Agora
 /// 4. A UI de chamada é exibida (CallScreen) com vídeo real
-/// 5. Quando a chamada termina → `endCall()` atualiza status + leave Agora
+/// 5. Quando a chamada termina → RPC `leave_call_session`/`end_call_session`
 ///
 /// CONFIGURAÇÃO:
 /// 1. Crie uma conta em https://console.agora.io
 /// 2. Crie um projeto e copie o App ID
 /// 3. Substitua `_agoraAppId` abaixo pelo seu App ID
 /// 4. Para produção, gere tokens temporários via Edge Function
+///
+/// AUDITORIA 4: Migrado de inserts diretos para RPCs server-side.
+/// AUDITORIA 4: Migrado de SupabaseService.client.channel() para
+///              RealtimeService.instance.subscribeWithRetry() (retry automático).
 /// ============================================================================
 
 enum CallType { voice, video, screeningRoom }
@@ -48,9 +53,13 @@ class CallSession {
       id: json['id'] as String? ?? '',
       threadId: json['thread_id'] as String? ?? '',
       type: _parseType(json['type'] as String? ?? 'voice'),
-      creatorId: json['creator_id'] as String? ?? '',
+      // Suporta tanto creator_id quanto host_id (banco tem ambos)
+      creatorId: json['creator_id'] as String? ??
+          json['host_id'] as String? ??
+          '',
       status: json['status'] as String? ?? 'active',
-      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ??
+      createdAt: DateTime.tryParse(
+              json['created_at'] as String? ?? json['started_at'] as String? ?? '') ??
           DateTime.now(),
     );
   }
@@ -79,15 +88,11 @@ class CallSession {
 }
 
 /// ============================================================================
-/// CallService com Agora.io RTC integrado
+/// CallService com Agora.io RTC integrado + RPCs + RealtimeService
 /// ============================================================================
 class CallService {
   // ── Agora Configuration ──
-  // SUBSTITUA pelo seu App ID do Agora Console (https://console.agora.io)
   static const String _agoraAppId = 'dc3fc8b039374782af029efa33f17198';
-
-  // Para produção, gere tokens temporários via Supabase Edge Function.
-  // Em modo de teste, deixe vazio (o Agora permite sem token em modo dev).
   static String? _agoraToken;
 
   // ── Agora Engine ──
@@ -95,7 +100,7 @@ class CallService {
   static bool _isEngineInitialized = false;
 
   // ── State ──
-  static RealtimeChannel? _callChannel;
+  static String? _callChannelName;
   static CallSession? activeCall;
   static final _participantsController =
       StreamController<List<Map<String, dynamic>>>.broadcast();
@@ -132,7 +137,6 @@ class CallService {
       channelProfile: ChannelProfileType.channelProfileCommunication,
     ));
 
-    // Registrar event handlers
     _engine!.registerEventHandler(RtcEngineEventHandler(
       onJoinChannelSuccess: (connection, elapsed) {
         debugPrint(
@@ -161,7 +165,6 @@ class CallService {
       },
     ));
 
-    // Habilitar detecção de volume de áudio
     await _engine!.enableAudioVolumeIndication(
       interval: 250,
       smooth: 3,
@@ -182,7 +185,15 @@ class CallService {
     return statuses.values.every((s) => s.isGranted);
   }
 
-  /// Cria uma nova sessão de chamada e entra no canal Agora
+  /// =========================================================================
+  /// createCall — Usa RPC `create_call_session` ao invés de INSERT direto.
+  ///
+  /// A RPC valida:
+  /// - Autenticação (auth.uid())
+  /// - Membership no chat (status = 'active')
+  /// - Não duplica sessões ativas no mesmo thread
+  /// - Cria sessão + participante atomicamente
+  /// =========================================================================
   static Future<CallSession?> createCall({
     required String threadId,
     required CallType type,
@@ -198,35 +209,39 @@ class CallService {
         return null;
       }
 
-      // Criar sessão no Supabase
+      // Criar sessão via RPC (validação server-side)
+      final typeStr = type == CallType.voice
+          ? 'voice'
+          : type == CallType.video
+              ? 'video'
+              : 'screening_room';
+
+      final rpcResult = await SupabaseService.rpc('create_call_session', params: {
+        'p_thread_id': threadId,
+        'p_type': typeStr,
+      });
+
+      final result = rpcResult as Map<String, dynamic>? ?? {};
+      if (result['success'] != true) {
+        debugPrint('CallService.createCall RPC error: ${result['error']}');
+        return null;
+      }
+
+      final sessionId = result['session_id'] as String;
+
+      // Buscar a sessão completa
       final res = await SupabaseService.table('call_sessions')
-          .insert({
-            'thread_id': threadId,
-            'type': type == CallType.voice
-                ? 'voice'
-                : type == CallType.video
-                    ? 'video'
-                    : 'screening_room',
-            'creator_id': userId,
-            'status': 'active',
-          })
           .select()
+          .eq('id', sessionId)
           .single();
 
       final session = CallSession.fromJson(res);
       activeCall = session;
 
-      // Adicionar criador como participante
-      await SupabaseService.table('call_participants').insert({
-        'call_session_id': session.id,
-        'user_id': userId,
-        'status': 'connected',
-      });
-
       // Inicializar Agora e entrar no canal
       await _joinAgoraChannel(session);
 
-      // Inscrever no Realtime do Supabase para atualizações de participantes
+      // Inscrever no Realtime via RealtimeService (com retry automático)
       _subscribeToCall(session.id);
 
       return session;
@@ -236,17 +251,35 @@ class CallService {
     }
   }
 
-  /// Entrar em uma chamada existente
+  /// =========================================================================
+  /// joinCall — Usa RPC `join_call_session` ao invés de INSERT direto.
+  ///
+  /// A RPC valida:
+  /// - Autenticação
+  /// - Sessão existe e está ativa
+  /// - Membership no chat
+  /// - Upsert (suporta reconexão sem duplicar)
+  /// =========================================================================
   static Future<bool> joinCall(String callSessionId) async {
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return false;
 
-      // Buscar sessão
+      // Join via RPC (validação server-side)
+      final rpcResult = await SupabaseService.rpc('join_call_session', params: {
+        'p_session_id': callSessionId,
+      });
+
+      final result = rpcResult as Map<String, dynamic>? ?? {};
+      if (result['success'] != true) {
+        debugPrint('CallService.joinCall RPC error: ${result['error']}');
+        return false;
+      }
+
+      // Buscar sessão completa
       final res = await SupabaseService.table('call_sessions')
           .select()
           .eq('id', callSessionId)
-          .eq('status', 'active')
           .single();
 
       final session = CallSession.fromJson(res);
@@ -256,17 +289,10 @@ class CallService {
       final granted = await _requestPermissions(session.type);
       if (!granted) return false;
 
-      // Registrar participante no Supabase
-      await SupabaseService.table('call_participants').insert({
-        'call_session_id': callSessionId,
-        'user_id': userId,
-        'status': 'connected',
-      });
-
       // Inicializar Agora e entrar no canal
       await _joinAgoraChannel(session);
 
-      // Inscrever no Realtime
+      // Inscrever no Realtime via RealtimeService
       _subscribeToCall(callSessionId);
 
       return true;
@@ -282,7 +308,6 @@ class CallService {
   }
 
   /// Busca token Agora via Supabase Edge Function.
-  /// Retorna null se falhar (fallback para modo sem token).
   static Future<String?> _fetchAgoraToken(String channelName) async {
     try {
       final res = await SupabaseService.edgeFunction(
@@ -321,16 +346,12 @@ class CallService {
     await _engine!.enableAudio();
     _isMuted = false;
 
-    // Configurar speaker
     await _engine!.setEnableSpeakerphone(_isSpeakerOn);
 
     final channelName = _channelName(session);
 
-    // Buscar token via Edge Function (produção)
-    // Se falhar, usa string vazia (modo dev sem token)
     _agoraToken = await _fetchAgoraToken(channelName);
 
-    // uid = 0 → Agora atribui automaticamente
     await _engine!.joinChannel(
       token: _agoraToken ?? '',
       channelId: channelName,
@@ -374,31 +395,27 @@ class CallService {
     await _engine?.switchCamera();
   }
 
-  /// Sair da chamada
+  /// =========================================================================
+  /// leaveCall — Usa RPC `leave_call_session`.
+  ///
+  /// A RPC:
+  /// - Marca participante como disconnected
+  /// - Se é o criador, encerra a chamada
+  /// - Se ninguém mais está conectado, encerra automaticamente
+  /// =========================================================================
   static Future<void> leaveCall() async {
     if (activeCall == null) return;
     try {
-      final userId = SupabaseService.currentUserId;
-
       // Sair do canal Agora
       await _engine?.leaveChannel();
       await _engine?.stopPreview();
 
-      // Atualizar status no Supabase
+      // Leave via RPC (validação server-side)
       final currentCall = activeCall;
-      if (userId != null && currentCall != null) {
-        await SupabaseService.table('call_participants')
-            .update({
-              'status': 'disconnected',
-              'left_at': DateTime.now().toIso8601String(),
-            })
-            .eq('call_session_id', currentCall.id)
-            .eq('user_id', userId);
-      }
-
-      // Se o criador saiu, encerrar a chamada
-      if (currentCall != null && currentCall.creatorId == userId) {
-        await endCall();
+      if (currentCall != null) {
+        await SupabaseService.rpc('leave_call_session', params: {
+          'p_session_id': currentCall.id,
+        });
       }
     } catch (e) {
       debugPrint('CallService.leaveCall error: $e');
@@ -406,16 +423,22 @@ class CallService {
     _cleanup();
   }
 
-  /// Encerrar a chamada (apenas criador)
+  /// =========================================================================
+  /// endCall — Usa RPC `end_call_session`.
+  ///
+  /// A RPC:
+  /// - Verifica se é o criador ou admin
+  /// - Encerra sessão e desconecta todos os participantes
+  /// =========================================================================
   static Future<void> endCall() async {
     final call = activeCall;
     if (call == null) return;
     try {
       await _engine?.leaveChannel();
-      await SupabaseService.table('call_sessions').update({
-        'status': 'ended',
-        'ended_at': DateTime.now().toIso8601String(),
-      }).eq('id', call.id);
+
+      await SupabaseService.rpc('end_call_session', params: {
+        'p_session_id': call.id,
+      });
     } catch (e) {
       debugPrint('[call_service] Erro: $e');
     }
@@ -437,12 +460,20 @@ class CallService {
     }
   }
 
-  /// Inscreve no Realtime do Supabase para atualizações de participantes
+  /// =========================================================================
+  /// _subscribeToCall — Usa RealtimeService com retry automático.
+  ///
+  /// Antes: usava SupabaseService.client.channel() diretamente (sem retry).
+  /// Agora: usa RealtimeService.instance.subscribeWithRetry() que tem
+  /// backoff exponencial e reconexão automática.
+  /// =========================================================================
   static void _subscribeToCall(String callSessionId) {
-    _callChannel?.unsubscribe();
-    _callChannel = SupabaseService.client
-        .channel('call:$callSessionId')
-        .onPostgresChanges(
+    _callChannelName = 'call:$callSessionId';
+
+    RealtimeService.instance.subscribeWithRetry(
+      channelName: _callChannelName!,
+      configure: (channel) {
+        channel.onPostgresChanges(
           event: PostgresChangeEvent.all,
           schema: 'public',
           table: 'call_participants',
@@ -453,15 +484,21 @@ class CallService {
           ),
           callback: (_) async {
             final participants = await getParticipants();
-            _participantsController.add(participants);
+            if (!_participantsController.isClosed) {
+              _participantsController.add(participants);
+            }
           },
-        )
-        .subscribe();
+        );
+      },
+    );
   }
 
   static void _cleanup() {
-    _callChannel?.unsubscribe();
-    _callChannel = null;
+    // Desinscrever via RealtimeService (ao invés de channel.unsubscribe() direto)
+    if (_callChannelName != null) {
+      RealtimeService.instance.unsubscribe(_callChannelName!);
+      _callChannelName = null;
+    }
     activeCall = null;
     _remoteUsers.clear();
     _audioLevels.clear();

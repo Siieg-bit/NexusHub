@@ -157,7 +157,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     try {
       final result = await SupabaseService.rpc('join_public_chat_with_reputation', params: {
         'p_thread_id': widget.threadId,
-        'p_user_id': userId,
       });
       if (!mounted || _isDisposed) return;
       final resultMap = result as Map?;
@@ -820,7 +819,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     try {
       final result = await SupabaseService.rpc('leave_public_chat', params: {
         'p_thread_id': widget.threadId,
-        'p_user_id': userId,
       });
       _membershipConfirmed = false;
       if (mounted) {
@@ -1921,7 +1919,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                           try {
                             await SupabaseService.rpc('rejoin_public_chat', params: {
                               'p_thread_id': widget.threadId,
-                              'p_user_id': SupabaseService.currentUserId,
                             });
                             if (mounted) {
                               setState(() {

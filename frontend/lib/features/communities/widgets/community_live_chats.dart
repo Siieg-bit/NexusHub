@@ -69,9 +69,14 @@ class _CommunityLiveChatsState extends State<CommunityLiveChats> {
   Future<void> _togglePin(Map<String, dynamic> chat) async {
     final isPinned = chat['is_pinned'] as bool? ?? false;
     try {
-      await SupabaseService.table('chat_threads')
-          .update({'is_pinned': !isPinned})
-          .eq('id', chat['id'] as String);
+      // Usa RPC com validação de permissão (host/admin)
+      final result = await SupabaseService.rpc('toggle_chat_pin', params: {
+        'p_thread_id': chat['id'] as String,
+      });
+      final res = result as Map<String, dynamic>? ?? {};
+      if (res['success'] != true) {
+        throw Exception(res['error'] ?? 'not_authorized');
+      }
       await _loadChats();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -98,9 +103,9 @@ class _CommunityLiveChatsState extends State<CommunityLiveChats> {
 
   Future<void> _leaveOrDeleteChat(Map<String, dynamic> chat) async {
     try {
+      // RPC usa auth.uid() internamente — não precisa passar p_user_id
       final result = await SupabaseService.rpc('leave_public_chat', params: {
         'p_thread_id': chat['id'] as String,
-        'p_user_id': SupabaseService.currentUserId,
       });
       final wasDeleted =
           (result as Map<String, dynamic>?)?['deleted'] == true;

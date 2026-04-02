@@ -834,13 +834,11 @@ class _AminoChatTile extends ConsumerWidget {
                     await SupabaseService.rpc('unpin_chat_for_user',
                         params: {
                           'p_thread_id': chatRoom.id,
-                          'p_user_id': userId,
                         });
                   } else {
                     await SupabaseService.rpc('pin_chat_for_user',
                         params: {
                           'p_thread_id': chatRoom.id,
-                          'p_user_id': userId,
                         });
                   }
                   ref.invalidate(chatListProvider);
@@ -938,7 +936,6 @@ class _AminoChatTile extends ConsumerWidget {
                   await SupabaseService.rpc('leave_public_chat',
                       params: {
                         'p_thread_id': chatRoom.id,
-                        'p_user_id': userId,
                       });
                   ref.invalidate(chatListProvider);
                   if (context.mounted) {

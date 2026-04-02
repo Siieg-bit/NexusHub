@@ -30,7 +30,7 @@ class _LiveScreenState extends State<LiveScreen> {
   Future<void> _loadActiveSessions() async {
     try {
       final query = SupabaseService.table('call_sessions')
-          .select('*, call_participants(count), profiles!creator_id(username, avatar_url)')
+          .select('*, call_participants(count), profiles!call_sessions_creator_id_fkey(username, avatar_url)')
           .eq('status', 'active')
           .order('created_at', ascending: false);
 
@@ -114,10 +114,17 @@ class _LiveScreenState extends State<LiveScreen> {
             'community_id': widget.communityId,
             'type': 'screening_room',
             'title': result['title'] ?? 'Screening Room',
-            'creator_id': SupabaseService.currentUserId,
+            'host_id': SupabaseService.currentUserId,
           })
           .select()
           .single();
+
+      // Adicionar criador como membro do chat
+      await SupabaseService.table('chat_members').insert({
+        'thread_id': thread['id'] as String,
+        'user_id': SupabaseService.currentUserId,
+        'status': 'active',
+      });
 
       if (mounted) {
         Navigator.of(context).push(MaterialPageRoute(
