@@ -70,7 +70,7 @@ final favoriteMembersProvider =
   if (userId == null) return [];
   // Buscar quem o usuário segue
   final follows = await SupabaseService.table('follows')
-      .select('following_id, profiles!following_id(id, nickname, icon_url)')
+      .select('following_id, profiles!follows_following_id_fkey(id, nickname, icon_url)')
       .eq('follower_id', userId)
       .limit(30);
   return List<Map<String, dynamic>>.from(follows as List? ?? []);

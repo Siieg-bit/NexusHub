@@ -37,7 +37,7 @@ class _CommunityChatTabState extends State<CommunityChatTab> {
     try {
       // Buscar chats públicos com join no perfil do host
       final response = await SupabaseService.table('chat_threads')
-          .select('*, host:profiles!host_id(id, nickname, icon_url)')
+          .select('*, host:profiles!chat_threads_host_id_fkey(id, nickname, icon_url)')
           .eq('community_id', widget.communityId)
           .eq('type', 'public')
           .order('is_pinned', ascending: false)
