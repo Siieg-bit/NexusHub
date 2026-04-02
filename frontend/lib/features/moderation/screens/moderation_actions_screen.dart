@@ -30,6 +30,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
   final _reasonController = TextEditingController();
   String _selectedAction = 'warn';
   int _banDurationHours = 24;
+  int _featuredDurationDays = 1; // 1, 3, 7 ou 0 (permanente)
 
   static const _actions = [
     {
@@ -244,8 +245,17 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
 
         case 'feature_post':
           if (widget.targetPostId != null) {
+            final now = DateTime.now().toUtc();
+            final featuredUntil = _featuredDurationDays > 0
+                ? now.add(Duration(days: _featuredDurationDays)).toIso8601String()
+                : null; // null = permanente
             await SupabaseService.table('posts')
-                .update({'is_featured': true, 'featured_at': DateTime.now().toUtc().toIso8601String()})
+                .update({
+                  'is_featured': true,
+                  'featured_at': now.toIso8601String(),
+                  'featured_by': SupabaseService.currentUserId,
+                  'featured_until': featuredUntil,
+                })
                 .eq('id', widget.targetPostId!);
           }
           break;
@@ -437,6 +447,46 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                       ),
                     );
                   }),
+
+                  // Duração do destaque (para feature_post)
+                  if (_selectedAction == 'feature_post') ...[  
+                    SizedBox(height: r.s(16)),
+                    Text('Duração do Destaque',
+                        style: TextStyle(
+                            color: context.textPrimary,
+                            fontWeight: FontWeight.w800, fontSize: r.fs(16))),
+                    SizedBox(height: r.s(8)),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _DurationChip(
+                          label: '1 dia',
+                          hours: 24,
+                          selected: _featuredDurationDays * 24,
+                          onTap: () => setState(() => _featuredDurationDays = 1),
+                        ),
+                        _DurationChip(
+                          label: '3 dias',
+                          hours: 72,
+                          selected: _featuredDurationDays * 24,
+                          onTap: () => setState(() => _featuredDurationDays = 3),
+                        ),
+                        _DurationChip(
+                          label: '7 dias',
+                          hours: 168,
+                          selected: _featuredDurationDays * 24,
+                          onTap: () => setState(() => _featuredDurationDays = 7),
+                        ),
+                        _DurationChip(
+                          label: 'Permanente',
+                          hours: 0,
+                          selected: _featuredDurationDays * 24,
+                          onTap: () => setState(() => _featuredDurationDays = 0),
+                        ),
+                      ],
+                    ),
+                  ],
 
                   // Duração (para ban/mute)
                   if (_selectedAction == 'ban' ||

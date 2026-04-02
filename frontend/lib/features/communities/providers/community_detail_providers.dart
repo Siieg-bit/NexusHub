@@ -41,29 +41,78 @@ final communityFeedProvider =
   return maps.map((map) => PostModel.fromJson(map)).toList();
 });
 
-/// Provider para posts em Destaque (is_featured = true).
+/// Provider para posts em Destaque (is_featured = true) — legado, redireciona para activeFeaturedFeedProvider.
 final communityFeaturedFeedProvider =
+    FutureProvider.family<List<PostModel>, String>((ref, communityId) async {
+  return ref.watch(activeFeaturedFeedProvider(communityId).future);
+});
+
+/// Posts FIXADOS (is_pinned = true) — seção 1 da aba Destaque.
+final pinnedFeedProvider =
     FutureProvider.family<List<PostModel>, String>((ref, communityId) async {
   final response = await SupabaseService.table('posts')
       .select('*, profiles!posts_author_id_fkey(*)')
       .eq('community_id', communityId)
       .eq('status', 'ok')
-      .eq('is_featured', true)
-      .order('is_pinned', ascending: false)
+      .eq('is_pinned', true)
       .order('created_at', ascending: false)
-      .limit(30);
+      .limit(5);
 
   final maps = (response as List? ?? []).map((e) {
     final map = Map<String, dynamic>.from(e);
-    if (map['profiles'] != null) {
-      map['author'] = map['profiles'];
-    }
+    if (map['profiles'] != null) map['author'] = map['profiles'];
     return map;
   }).toList();
 
-  // Injetar is_liked para o usuário atual
+  await _injectIsLikedCommunity(maps);
+  return maps.map((map) => PostModel.fromJson(map)).toList();
+});
+
+/// Posts em DESTAQUE ATIVOS (is_featured=true e não expirados) — seção 2 da aba Destaque.
+final activeFeaturedFeedProvider =
+    FutureProvider.family<List<PostModel>, String>((ref, communityId) async {
+  final now = DateTime.now().toUtc().toIso8601String();
+
+  final response = await SupabaseService.table('posts')
+      .select('*, profiles!posts_author_id_fkey(*)')
+      .eq('community_id', communityId)
+      .eq('status', 'ok')
+      .eq('is_featured', true)
+      .or('featured_until.is.null,featured_until.gt.$now')
+      .order('featured_at', ascending: false)
+      .limit(12);
+
+  final maps = (response as List? ?? []).map((e) {
+    final map = Map<String, dynamic>.from(e);
+    if (map['profiles'] != null) map['author'] = map['profiles'];
+    return map;
+  }).toList();
+
   await _injectIsLikedCommunity(maps);
 
+  // Filtro extra no cliente para garantir expiração correta
+  final posts = maps.map((map) => PostModel.fromJson(map)).toList();
+  return posts.where((p) => p.isFeaturedActive).toList();
+});
+
+/// Posts RECENTES (excluindo fixados) — seção 3 da aba Destaque.
+final latestFeedProvider =
+    FutureProvider.family<List<PostModel>, String>((ref, communityId) async {
+  final response = await SupabaseService.table('posts')
+      .select('*, profiles!posts_author_id_fkey(*)')
+      .eq('community_id', communityId)
+      .eq('status', 'ok')
+      .eq('is_pinned', false)
+      .order('created_at', ascending: false)
+      .limit(20);
+
+  final maps = (response as List? ?? []).map((e) {
+    final map = Map<String, dynamic>.from(e);
+    if (map['profiles'] != null) map['author'] = map['profiles'];
+    return map;
+  }).toList();
+
+  await _injectIsLikedCommunity(maps);
   return maps.map((map) => PostModel.fromJson(map)).toList();
 });
 

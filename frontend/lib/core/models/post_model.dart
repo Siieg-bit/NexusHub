@@ -34,6 +34,7 @@ class PostModel {
   final bool isPinned;
   final String? featuredBy;
   final DateTime? featuredAt;
+  final DateTime? featuredUntil;
   final DateTime createdAt;
   final DateTime updatedAt;
   final UserModel? author;
@@ -68,6 +69,7 @@ class PostModel {
     this.isPinned = false,
     this.featuredBy,
     this.featuredAt,
+    this.featuredUntil,
     required this.createdAt,
     required this.updatedAt,
     this.author,
@@ -112,6 +114,9 @@ class PostModel {
       featuredAt: json['featured_at'] != null
           ? DateTime.tryParse(json['featured_at'] as String)
           : null,
+      featuredUntil: json['featured_until'] != null
+          ? DateTime.tryParse(json['featured_until'] as String)
+          : null,
       createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ??
           DateTime.now(),
       updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '') ??
@@ -149,6 +154,7 @@ class PostModel {
     bool? isLiked,
     bool? isFeatured,
     bool? isPinned,
+    DateTime? featuredUntil,
   }) {
     return PostModel(
       id: id,
@@ -178,6 +184,7 @@ class PostModel {
       isPinned: isPinned ?? this.isPinned,
       featuredBy: featuredBy,
       featuredAt: featuredAt,
+      featuredUntil: featuredUntil ?? this.featuredUntil,
       createdAt: createdAt,
       updatedAt: updatedAt,
       author: author,
@@ -188,6 +195,13 @@ class PostModel {
 
   /// Verifica se o post tem conteúdo em blocos (editor rico)
   bool get hasBlockContent => contentBlocks != null && contentBlocks!.isNotEmpty;
+
+  /// Retorna true se o post está em destaque e ainda não expirou
+  bool get isFeaturedActive {
+    if (!isFeatured) return false;
+    if (featuredUntil == null) return true; // sem expiração
+    return featuredUntil!.isAfter(DateTime.now());
+  }
 
   /// Extrai lista de URLs de mídia dos blocos e da mediaList
   List<String> get mediaUrls {

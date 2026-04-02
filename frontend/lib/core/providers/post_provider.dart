@@ -11,9 +11,10 @@ import 'package:flutter/foundation.dart';
 /// - Detalhes de um post
 /// - Criar, editar, deletar post
 /// - Like/Unlike
-/// - Featured posts
+/// - Pinned posts (is_pinned = true)
+/// - Featured posts ativos (is_featured = true AND featured_until > now())
 ///
-/// IMPORTANTE: Todos os providers agora injetam `is_liked` consultando a
+/// IMPORTANTE: Todos os providers injetam `is_liked` consultando a
 /// tabela `likes` para o usuário atual, garantindo persistência visual.
 /// ============================================================================
 
@@ -173,23 +174,76 @@ final postDetailProvider = FutureProvider.family<PostModel?, String>(
   },
 );
 
-// ── Featured Posts ──
-final featuredPostsProvider = FutureProvider.family<List<PostModel>, String>(
+// ── Pinned Posts (posts fixados no topo da aba Destaque) ──
+final pinnedPostsProvider = FutureProvider.family<List<PostModel>, String>(
   (ref, communityId) async {
     final res = await SupabaseService.table('posts')
         .select('*, profiles!posts_author_id_fkey(nickname, icon_url)')
         .eq('community_id', communityId)
-        .eq('is_featured', true)
+        .eq('is_pinned', true)
+        .eq('status', 'ok')
         .order('created_at', ascending: false)
-        .limit(10);
+        .limit(5);
 
     final list = (res as List)
         .map((e) => Map<String, dynamic>.from(e as Map))
         .toList();
 
-    // Injetar is_liked para o usuário atual
     await _injectIsLiked(list);
-
     return list.map((e) => PostModel.fromJson(e)).toList();
   },
+);
+
+// ── Featured Posts ativos (is_featured=true e não expirados) ──
+final activeFeaturedPostsProvider =
+    FutureProvider.family<List<PostModel>, String>(
+  (ref, communityId) async {
+    final now = DateTime.now().toUtc().toIso8601String();
+
+    // Busca posts com is_featured=true onde featured_until é NULL (sem expiração)
+    // OU featured_until > agora (ainda dentro do prazo)
+    final res = await SupabaseService.table('posts')
+        .select('*, profiles!posts_author_id_fkey(nickname, icon_url)')
+        .eq('community_id', communityId)
+        .eq('is_featured', true)
+        .eq('status', 'ok')
+        .or('featured_until.is.null,featured_until.gt.$now')
+        .order('featured_at', ascending: false)
+        .limit(12);
+
+    final list = (res as List)
+        .map((e) => Map<String, dynamic>.from(e as Map))
+        .toList();
+
+    await _injectIsLiked(list);
+
+    // Filtro extra no cliente para garantir (caso o Supabase não suporte o .or corretamente)
+    final posts = list.map((e) => PostModel.fromJson(e)).toList();
+    return posts.where((p) => p.isFeaturedActive).toList();
+  },
+);
+
+// ── Latest Posts (posts recentes, excluindo fixados e destaques) ──
+final latestPostsProvider = FutureProvider.family<List<PostModel>, String>(
+  (ref, communityId) async {
+    final res = await SupabaseService.table('posts')
+        .select('*, profiles!posts_author_id_fkey(nickname, icon_url)')
+        .eq('community_id', communityId)
+        .eq('status', 'ok')
+        .eq('is_pinned', false)
+        .order('created_at', ascending: false)
+        .limit(20);
+
+    final list = (res as List)
+        .map((e) => Map<String, dynamic>.from(e as Map))
+        .toList();
+
+    await _injectIsLiked(list);
+    return list.map((e) => PostModel.fromJson(e)).toList();
+  },
+);
+
+// ── Featured Posts (legado — mantido para compatibilidade) ──
+final featuredPostsProvider = FutureProvider.family<List<PostModel>, String>(
+  (ref, communityId) => ref.watch(activeFeaturedPostsProvider(communityId).future),
 );
