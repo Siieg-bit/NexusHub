@@ -21,8 +21,8 @@ class WikiListScreen extends StatefulWidget {
 
 class _WikiListScreenState extends State<WikiListScreen> {
   List<Map<String, dynamic>> _entries = [];
-  List<String> _categories = [];
-  String? _selectedCategory;
+  List<Map<String, dynamic>> _categoryList = []; // {id, name}
+  String? _selectedCategoryId;
   bool _isLoading = true;
   final _searchController = TextEditingController();
 
@@ -34,20 +34,21 @@ class _WikiListScreenState extends State<WikiListScreen> {
 
   Future<void> _loadEntries() async {
     try {
+      // Carregar categorias do banco
+      final catRes = await SupabaseService.table('wiki_categories')
+          .select('id, name')
+          .eq('community_id', widget.communityId)
+          .order('sort_order', ascending: true);
+      _categoryList = List<Map<String, dynamic>>.from(catRes as List? ?? []);
+
+      // Carregar entries com join na categoria
       final res = await SupabaseService.table('wiki_entries')
-          .select('*, profiles(*)')
+          .select('*, profiles(*), wiki_categories(id, name)')
           .eq('community_id', widget.communityId)
           .eq('status', 'approved')
           .order('created_at', ascending: false);
       if (!mounted) return;
       _entries = List<Map<String, dynamic>>.from(res as List? ?? []);
-
-      final cats = <String>{};
-      for (final e in _entries) {
-        final cat = e['category'] as String?;
-        if (cat != null && cat.isNotEmpty) cats.add(cat);
-      }
-      _categories = cats.toList()..sort();
 
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
@@ -57,8 +58,8 @@ class _WikiListScreenState extends State<WikiListScreen> {
 
   List<Map<String, dynamic>> get _filteredEntries {
     var list = _entries;
-    if (_selectedCategory != null) {
-      list = list.where((e) => e['category'] == _selectedCategory).toList();
+    if (_selectedCategoryId != null) {
+      list = list.where((e) => e['category_id'] == _selectedCategoryId).toList();
     }
     final search = _searchController.text.trim().toLowerCase();
     if (search.isNotEmpty) {
@@ -169,7 +170,7 @@ class _WikiListScreenState extends State<WikiListScreen> {
                     ),
                   ),
                 ),
-                if (_categories.isNotEmpty)
+                if (_categoryList.isNotEmpty)
                   SizedBox(
                     height: r.s(40),
                     child: ListView(
@@ -178,15 +179,14 @@ class _WikiListScreenState extends State<WikiListScreen> {
                       children: [
                         _CategoryChip(
                           label: 'Todos',
-                          isSelected: _selectedCategory == null,
-                          onTap: () => setState(() => _selectedCategory = null),
+                          isSelected: _selectedCategoryId == null,
+                          onTap: () => setState(() => _selectedCategoryId = null),
                         ),
-                        ..._categories.map((cat) => _CategoryChip(
-                              label: cat,
-                              isSelected: _selectedCategory == cat,
+                        ..._categoryList.map((cat) => _CategoryChip(
+                              label: cat['name'] as String? ?? '',
+                              isSelected: _selectedCategoryId == cat['id'],
                               onTap: () =>
-
-                                  setState(() => _selectedCategory = cat),
+                                  setState(() => _selectedCategoryId = cat['id'] as String?),
                             )),
                       ],
                     ),
@@ -296,7 +296,9 @@ class _WikiEntryCard extends StatelessWidget {
     final r = context.r;
     final title = entry['title'] as String? ?? 'Sem título';
     final imageUrl = entry['cover_image_url'] as String?;
-    final category = entry['category'] as String?;
+    // Categoria vem do join wiki_categories(id, name)
+    final catData = entry['wiki_categories'] as Map<String, dynamic>?;
+    final category = catData?['name'] as String?;
 
     return GestureDetector(
       onTap: onTap,
@@ -409,7 +411,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
   Future<void> _loadEntry() async {
     try {
       final res = await SupabaseService.table('wiki_entries')
-          .select('*, profiles(*)')
+          .select('*, profiles(*), wiki_categories(id, name)')
           .eq('id', widget.wikiId)
           .single();
       _entry = res;
@@ -566,7 +568,9 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
     final title = _entry!['title'] as String? ?? 'Sem título';
     final content = _entry!['content'] as String? ?? '';
     final coverUrl = _entry!['cover_image_url'] as String?;
-    final category = _entry!['category'] as String?;
+    // Categoria vem do join wiki_categories(id, name)
+    final catData = _entry!['wiki_categories'] as Map<String, dynamic>?;
+    final category = catData?['name'] as String?;
     final author = _entry!['profiles'] as Map<String, dynamic>?;
     final infoboxData = _entry!['infobox'] as Map<String, dynamic>?;
 
@@ -896,10 +900,36 @@ class CreateWikiScreen extends StatefulWidget {
 class _CreateWikiScreenState extends State<CreateWikiScreen> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
-  final _categoryController = TextEditingController();
   final _coverUrlController = TextEditingController();
   final List<_InfoboxField> _infoboxFields = [];
   bool _isSubmitting = false;
+
+  // Categorias carregadas do banco
+  List<Map<String, dynamic>> _categories = [];
+  String? _selectedCategoryId;
+  bool _loadingCategories = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    try {
+      final res = await SupabaseService.table('wiki_categories')
+          .select('id, name, icon_url')
+          .eq('community_id', widget.communityId)
+          .order('sort_order', ascending: true);
+      if (!mounted) return;
+      setState(() {
+        _categories = List<Map<String, dynamic>>.from(res as List? ?? []);
+        _loadingCategories = false;
+      });
+    } catch (e) {
+      if (mounted) setState(() => _loadingCategories = false);
+    }
+  }
 
   Future<void> _submit() async {
 
@@ -962,7 +992,6 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
   void dispose() {
     _titleController.dispose();
     _contentController.dispose();
-    _categoryController.dispose();
     _coverUrlController.dispose();
     for (final f in _infoboxFields) {
       f.dispose();
@@ -1055,24 +1084,51 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
               ),
             ),
             SizedBox(height: r.s(16)),
-            TextField(
-              controller: _categoryController,
-              style: TextStyle(color: context.textPrimary),
-              decoration: InputDecoration(
-                hintText: 'Categoria (ex: Personagens, Itens...)',
-                hintStyle: TextStyle(color: context.textSecondary),
-                prefixIcon: Icon(Icons.category_rounded,
-                    size: r.s(20), color: context.textSecondary),
-                filled: true,
-                fillColor: context.surfaceColor,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(r.s(16)),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
-              ),
-            ),
+            // Dropdown de categorias carregadas do banco (wiki_categories)
+            _loadingCategories
+                ? Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: r.s(12)),
+                      child: SizedBox(
+                        width: r.s(20),
+                        height: r.s(20),
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: context.textSecondary),
+                      ),
+                    ),
+                  )
+                : Container(
+                    padding: EdgeInsets.symmetric(horizontal: r.s(16)),
+                    decoration: BoxDecoration(
+                      color: context.surfaceColor,
+                      borderRadius: BorderRadius.circular(r.s(16)),
+                    ),
+                    child: DropdownButtonFormField<String>(
+                      value: _selectedCategoryId,
+                      dropdownColor: context.surfaceColor,
+                      style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+                      decoration: InputDecoration(
+                        hintText: _categories.isEmpty
+                            ? 'Nenhuma categoria dispon\u00edvel'
+                            : 'Selecione a categoria',
+                        hintStyle: TextStyle(color: context.textSecondary),
+                        prefixIcon: Icon(Icons.category_rounded,
+                            size: r.s(20), color: context.textSecondary),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(vertical: r.s(12)),
+                      ),
+                      items: _categories.map((cat) {
+                        return DropdownMenuItem<String>(
+                          value: cat['id'] as String,
+                          child: Text(
+                            cat['name'] as String? ?? '',
+                            style: TextStyle(color: context.textPrimary),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (val) => setState(() => _selectedCategoryId = val),
+                    ),
+                  ),
             SizedBox(height: r.s(16)),
             TextField(
               controller: _titleController,
