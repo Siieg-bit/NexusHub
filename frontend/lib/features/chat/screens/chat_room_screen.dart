@@ -611,7 +611,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
       await SupabaseService.rpc('send_chat_message_with_reputation', params: {
         'p_thread_id': widget.threadId,
-        'p_author_id': userId,
         'p_content': content,
         'p_type': mappedType,
         'p_media_url': finalMediaUrl,
@@ -998,40 +997,36 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   Future<void> _addReaction(String messageId, String emoji) async {
     try {
-      final userId = SupabaseService.currentUserId;
-      if (userId == null) return;
-      final msg = await SupabaseService.table('chat_messages')
-          .select('reactions')
-          .eq('id', messageId)
-          .single();
-      final reactions = Map<String, dynamic>.from(
-          (msg['reactions'] as Map<String, dynamic>?) ?? {});
-      final users = List<String>.from(reactions[emoji] ?? []);
-      if (users.contains(userId)) {
-        users.remove(userId);
-      } else {
-        users.add(userId);
-      }
-      if (users.isEmpty) {
-        reactions.remove(emoji);
-      } else {
-        reactions[emoji] = users;
-      }
-      await SupabaseService.table('chat_messages')
-          .update({'reactions': reactions}).eq('id', messageId);
+      await SupabaseService.rpc('toggle_reaction', params: {
+        'p_message_id': messageId,
+        'p_emoji': emoji,
+      });
       await _loadMessages();
     } catch (e) {
-      debugPrint('[chat_room_screen] Erro: $e');
+      debugPrint('[chat_room_screen] Erro ao reagir: $e');
     }
   }
 
   Future<void> _pinMessage(String messageId) async {
     try {
-      await SupabaseService.table('chat_threads')
-          .update({'pinned_message_id': messageId}).eq('id', widget.threadId);
+      await SupabaseService.rpc('pin_message', params: {
+        'p_thread_id': widget.threadId,
+        'p_message_id': messageId,
+      });
       await _loadPinnedMessages();
+      await _loadMessages();
     } catch (e) {
-      debugPrint('[chat_room_screen] Erro: $e');
+      debugPrint('[chat_room_screen] Erro ao fixar: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().contains('host')
+                ? 'Apenas o host pode fixar mensagens'
+                : 'Erro ao fixar mensagem'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
@@ -1465,6 +1460,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       context,
       message: message,
       onReaction: (emoji) => _addReaction(message.id, emoji),
+      hostId: _threadInfo?['host_id'] as String?,
+      coHostIds: (_threadInfo?['co_hosts'] as List<dynamic>?)
+          ?.map((e) => e.toString())
+          .toList() ?? [],
     );
 
     if (!mounted || action == null) return;

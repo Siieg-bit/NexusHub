@@ -268,11 +268,11 @@ class ThreadMessagesNotifier
       // 4. Adiciona reputação automaticamente
       await SupabaseService.rpc('send_chat_message_with_reputation', params: {
         'p_thread_id': arg,
-        'p_author_id': userId,
         'p_content': content.isNotEmpty ? content : '',
         'p_type': mappedType,
         'p_media_url': finalMediaUrl,
         'p_reply_to': replyToId,
+        if (stickerUrl != null) 'p_sticker_url': stickerUrl,
       });
 
       return true;

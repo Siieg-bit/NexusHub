@@ -302,6 +302,35 @@ class MessageBubble extends StatelessWidget {
       return Text(emoji, style: TextStyle(fontSize: r.fs(48)));
     }
 
+    // Audio (tipo nativo do enum)
+    if (type == 'audio') {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.audiotrack_rounded, color: textColor, size: r.s(32)),
+          SizedBox(width: r.s(8)),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Audio', style: TextStyle(color: textColor, fontSize: r.fs(13), fontWeight: FontWeight.w600)),
+              if (message.mediaDuration != null)
+                Text('${message.mediaDuration}s',
+                    style: TextStyle(color: textColor.withValues(alpha: 0.6), fontSize: r.fs(11))),
+              Container(
+                width: r.s(120),
+                height: r.s(4),
+                margin: EdgeInsets.only(top: r.s(4)),
+                decoration: BoxDecoration(
+                  color: textColor.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    }
+
     // Voice note
     if (type == 'voice_note') {
       return Row(
@@ -505,6 +534,79 @@ class MessageBubble extends StatelessWidget {
           SizedBox(height: r.s(4)),
           Text(message.content ?? '',
               style: TextStyle(color: textColor, fontSize: r.fs(14))),
+        ],
+      );
+    }
+
+    // File attachment
+    if (type == 'file') {
+      final fileName = message.content ?? 'Arquivo';
+      return Container(
+        padding: EdgeInsets.all(r.s(10)),
+        decoration: BoxDecoration(
+          color: textColor.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(r.s(8)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.attach_file_rounded, color: textColor, size: r.s(20)),
+            SizedBox(width: r.s(8)),
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(fileName,
+                      style: TextStyle(
+                          color: textColor,
+                          fontSize: r.fs(13),
+                          fontWeight: FontWeight.w600),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis),
+                  if (message.mediaUrl != null)
+                    Text('Toque para baixar',
+                        style: TextStyle(
+                            color: textColor.withValues(alpha: 0.6),
+                            fontSize: r.fs(11))),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Forward (mensagem encaminhada)
+    if (type == 'forward') {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.forward_rounded,
+                  color: textColor.withValues(alpha: 0.5), size: r.s(14)),
+              SizedBox(width: r.s(4)),
+              Text('Encaminhada',
+                  style: TextStyle(
+                      color: textColor.withValues(alpha: 0.5),
+                      fontSize: r.fs(11),
+                      fontStyle: FontStyle.italic)),
+            ],
+          ),
+          SizedBox(height: r.s(4)),
+          if (message.mediaUrl != null && message.mediaType == 'image')
+            ClipRRect(
+              borderRadius: BorderRadius.circular(r.s(8)),
+              child: CachedNetworkImage(
+                imageUrl: message.mediaUrl!,
+                width: r.s(200),
+                fit: BoxFit.cover,
+              ),
+            )
+          else
+            Text(message.content ?? '',
+                style: TextStyle(color: textColor, fontSize: r.fs(14))),
         ],
       );
     }

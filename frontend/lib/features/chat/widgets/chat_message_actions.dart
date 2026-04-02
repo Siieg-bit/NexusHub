@@ -27,11 +27,15 @@ enum ChatMessageAction {
 class ChatMessageActionsSheet extends StatelessWidget {
   final MessageModel message;
   final void Function(String emoji) onReaction;
+  final String? hostId;
+  final List<String> coHostIds;
 
   const ChatMessageActionsSheet({
     super.key,
     required this.message,
     required this.onReaction,
+    this.hostId,
+    this.coHostIds = const [],
   });
 
   @override
@@ -95,10 +99,11 @@ class ChatMessageActionsSheet extends StatelessWidget {
           _actionTile(context, r, Icons.forward_rounded, 'Encaminhar', () {
             Navigator.pop(context, ChatMessageAction.forward);
           }),
-          // Fixar
-          _actionTile(context, r, Icons.push_pin_rounded, 'Fixar Mensagem', () {
-            Navigator.pop(context, ChatMessageAction.pin);
-          }),
+          // Fixar (apenas host, co-hosts ou team)
+          if (_canPin())
+            _actionTile(context, r, Icons.push_pin_rounded, 'Fixar Mensagem', () {
+              Navigator.pop(context, ChatMessageAction.pin);
+            }),
           // Apagar para mim
           _actionTile(context, r, Icons.visibility_off_rounded, 'Apagar para mim', () {
             Navigator.pop(context, ChatMessageAction.deleteForMe);
@@ -140,11 +145,19 @@ class ChatMessageActionsSheet extends StatelessWidget {
     );
   }
 
+  bool _canPin() {
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) return false;
+    return userId == hostId || coHostIds.contains(userId);
+  }
+
   /// Mostra o bottom sheet de ações e retorna a ação selecionada.
   static Future<ChatMessageAction?> show(
     BuildContext context, {
     required MessageModel message,
     required void Function(String emoji) onReaction,
+    String? hostId,
+    List<String> coHostIds = const [],
   }) {
     return showModalBottomSheet<ChatMessageAction>(
       context: context,
@@ -155,6 +168,8 @@ class ChatMessageActionsSheet extends StatelessWidget {
       builder: (_) => ChatMessageActionsSheet(
         message: message,
         onReaction: onReaction,
+        hostId: hostId,
+        coHostIds: coHostIds,
       ),
     );
   }

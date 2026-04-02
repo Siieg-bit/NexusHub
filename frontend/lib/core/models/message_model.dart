@@ -143,13 +143,14 @@ class MessageModel {
   bool get isVoiceNote => type == 'voice_note';
   bool get isGif => mediaType == 'gif';
   bool get isVideo => type == 'video';
-  bool get isFile => false; // Não há tipo 'file' no enum do banco
+  bool get isFile => type == 'file';
   bool get isLink => type == 'share_url' || sharedUrl != null;
   bool get isPoll => content != null && content!.startsWith('{"question"');
   bool get isQuiz => false; // Quiz não implementado no banco
   bool get isTip => type == 'system_tip' || tipAmount != null;
   bool get isReply => replyToId != null;
-  bool get isForward => false; // Forward não implementado no banco
+  bool get isForward => type == 'forward';
+  bool get isAudio => type == 'audio';
   bool get isEdited => editedAt != null;
 
   /// Cria uma cópia do modelo com campos alterados.

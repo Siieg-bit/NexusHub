@@ -53,7 +53,7 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
       final rows = await SupabaseService.table('chat_members')
           .select('thread_id, chat_threads(*)')
           .eq('user_id', userId)
-          .eq('status', 'accepted');
+          .eq('status', 'active');
       if (!mounted) return;
       final chats = (rows as List? ?? [])
           .where((e) => e['chat_threads'] != null)
@@ -90,14 +90,16 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
       for (final threadId in _selected) {
-        await SupabaseService.table('chat_messages').insert({
-          'thread_id': threadId,
-          'author_id': userId,
-          'content': widget.messageContent,
-          'type': 'text',
-          'media_url': widget.mediaUrl,
-          'media_type': widget.mediaType,
-        });
+        await SupabaseService.rpc(
+          'send_chat_message_with_reputation',
+          params: {
+            'p_thread_id': threadId,
+            'p_content': widget.messageContent,
+            'p_type': 'forward',
+            if (widget.mediaUrl != null) 'p_media_url': widget.mediaUrl,
+            if (widget.mediaType != null) 'p_media_type': widget.mediaType,
+          },
+        );
       }
       if (mounted) {
         Navigator.pop(context);
