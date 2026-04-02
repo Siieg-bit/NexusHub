@@ -55,9 +55,9 @@ class SystemAccountService {
         final newChat = await SupabaseService.table('chat_threads')
             .insert({
               'community_id': communityId,
-              'name': 'Anúncios',
+              'title': 'Anúncios',
               'type': 'announcements',
-              'created_by': globalSystemId,
+              'host_id': globalSystemId,
             })
             .select('id')
             .single();
@@ -85,10 +85,10 @@ class SystemAccountService {
       final notifications = (members as List? ?? [])
           .map((m) => {
                 'user_id': m['user_id'],
-                'notification_type': 'broadcast',
-                'content': title,
-                'reference_id': communityId,
-                'reference_type': 'community',
+                'type': 'broadcast',
+                'title': 'Broadcast',
+                'body': title,
+                'community_id': communityId,
               })
           .toList();
 
@@ -116,11 +116,11 @@ class SystemAccountService {
     try {
       await SupabaseService.table('notifications').insert({
         'user_id': userId,
-        'notification_type': 'welcome',
-        'content': 'Bem-vindo(a) à comunidade $communityName! 🎉 '
+        'type': 'welcome',
+        'title': 'Bem-vindo(a)!',
+        'body': 'Bem-vindo(a) à comunidade $communityName! 🎉 '
             'Explore os posts, participe dos chats e faça check-in diário para ganhar moedas.',
-        'reference_id': communityId,
-        'reference_type': 'community',
+        'community_id': communityId,
       });
     } catch (e) {
       debugPrint('[system_account_service] Erro: $e');
@@ -162,9 +162,9 @@ class SystemAccountService {
 
       await SupabaseService.table('notifications').insert({
         'user_id': userId,
-        'notification_type': 'moderation',
-        'content': content,
-        'reference_type': 'moderation',
+        'type': 'moderation',
+        'title': 'Ação de moderação',
+        'body': content,
       });
     } catch (e) {
       debugPrint('[system_account_service] Erro: $e');

@@ -94,8 +94,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       ref.read(notificationProvider.notifier).markAsRead(notifId);
     }
 
-    final type = notification['notification_type'] as String? ?? '';
-    final targetId = notification['target_id'] as String?;
+    final type = notification['type'] as String? ?? '';
+    final targetId = notification['post_id'] as String? ?? notification['community_id'] as String?;
     if (targetId == null) return;
 
     switch (type) {
@@ -423,10 +423,10 @@ class _NotificationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final r = context.r;
-    final type = data['notification_type'] as String? ?? 'general';
+    final type = data['type'] as String? ?? 'general';
     final isRead = data['is_read'] as bool? ?? false;
     final actor = data['profiles'] as Map<String, dynamic>?;
-    final content = data['content'] as String? ?? 'Notificação';
+    final content = data['body'] as String? ?? data['title'] as String? ?? 'Notificação';
     final createdAt =
         DateTime.tryParse(data['created_at'] as String? ?? '') ??
             DateTime.now();

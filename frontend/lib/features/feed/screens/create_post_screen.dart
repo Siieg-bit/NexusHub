@@ -233,10 +233,11 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             ? 'poll_create'
             : 'post_create';
         await SupabaseService.rpc('add_reputation', params: {
-          'p_community_id': widget.communityId,
           'p_user_id': userId,
-          'p_action': repType,
-          'p_source_id': result['id'],
+          'p_community_id': widget.communityId,
+          'p_action_type': repType,
+          'p_raw_amount': 15,
+          'p_reference_id': result['id'],
         });
       } catch (_) {
         // Reputação é best-effort, não bloqueia criação do post
@@ -282,8 +283,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             .entries
             .map((e) => {
                   'post_id': postId,
-                  'option_text': e.value.text.trim(),
-                  'position': e.key,
+                  'text': e.value.text.trim(),
+                  'sort_order': e.key,
                 })
             .toList();
         if (options.isNotEmpty) {
@@ -301,7 +302,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               .insert({
                 'post_id': postId,
                 'question_text': q.questionController.text.trim(),
-                'position': i,
+                'sort_order': i,
               })
               .select()
               .single();
@@ -313,9 +314,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               .where((e) => e.value.text.trim().isNotEmpty)
               .map((e) => {
                     'question_id': qId,
-                    'option_text': e.value.text.trim(),
+                    'text': e.value.text.trim(),
                     'is_correct': e.key == q.correctIndex,
-                    'position': e.key,
+                    'sort_order': e.key,
                   })
               .toList();
           if (opts.isNotEmpty) {

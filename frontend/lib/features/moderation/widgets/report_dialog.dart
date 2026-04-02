@@ -120,13 +120,13 @@ class _ReportDialogState extends State<ReportDialog> {
       await SupabaseService.table('flags').insert({
         'community_id': widget.communityId,
         'reporter_id': SupabaseService.currentUserId,
-        'type': _selectedType,
+        'flag_type': _selectedType,
         'reason': _reasonController.text.trim().isNotEmpty
             ? _reasonController.text.trim()
             : null,
         'target_post_id': widget.targetPostId,
         'target_comment_id': widget.targetCommentId,
-        'target_message_id': widget.targetMessageId,
+        'target_chat_message_id': widget.targetMessageId,
         'target_user_id': widget.targetUserId,
         'status': 'pending',
       });

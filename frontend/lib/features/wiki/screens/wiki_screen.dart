@@ -939,9 +939,9 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
         'author_id': userId,
         'title': _titleController.text.trim(),
         'content': _contentController.text.trim(),
-        'category': _categoryController.text.trim().isNotEmpty
-            ? _categoryController.text.trim()
-            : null,
+        // TODO: Refatorar para usar dropdown de wiki_categories (uuid)
+        // Por enquanto, category_id fica null para evitar crash
+        // 'category_id': null,
         'cover_image_url': _coverUrlController.text.trim().isNotEmpty
             ? _coverUrlController.text.trim()
             : null,

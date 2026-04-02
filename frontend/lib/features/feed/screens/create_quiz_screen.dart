@@ -122,7 +122,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
             .insert({
               'post_id': postId,
               'question_text': q.questionController.text.trim(),
-              'position': i,
+              'sort_order': i,
             })
             .select()
             .single();
@@ -133,9 +133,9 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
             .where((e) => e.value.controller.text.trim().isNotEmpty)
             .map((e) => {
                   'question_id': qId,
-                  'option_text': e.value.controller.text.trim(),
+                  'text': e.value.controller.text.trim(),
                   'is_correct': e.key == q.correctIndex,
-                  'position': e.key,
+                  'sort_order': e.key,
                 })
             .toList();
         if (opts.isNotEmpty) {
@@ -145,10 +145,11 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
 
       try {
         await SupabaseService.rpc('add_reputation', params: {
-          'p_community_id': widget.communityId,
           'p_user_id': userId,
-          'p_action': 'poll_create',
-          'p_source_id': postId,
+          'p_community_id': widget.communityId,
+          'p_action_type': 'quiz_create',
+          'p_raw_amount': 15,
+          'p_reference_id': postId,
         });
       } catch (_) {}
 

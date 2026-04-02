@@ -1547,10 +1547,11 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
         });
         try {
           await SupabaseService.rpc('add_reputation', params: {
-            'p_community_id': widget.communityId,
             'p_user_id': currentUserId,
-            'p_action': 'follow',
-            'p_source_id': widget.userId,
+            'p_community_id': widget.communityId,
+            'p_action_type': 'follow',
+            'p_raw_amount': 5,
+            'p_reference_id': widget.userId,
           });
         } catch (_) {}
         if (mounted) {
@@ -1578,7 +1579,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           .select('id')
           .eq('type', 'dm')
           .eq('community_id', widget.communityId)
-          .or('created_by.eq.$currentUserId,created_by.eq.${widget.userId}')
+          .or('host_id.eq.$currentUserId,host_id.eq.${widget.userId}')
           .maybeSingle();
       if (existing != null) {
         if (!mounted) return;
@@ -1589,7 +1590,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
             .insert({
               'community_id': widget.communityId,
               'type': 'dm',
-              'created_by': currentUserId,
+              'host_id': currentUserId,
               'title': 'DM',
             })
             .select()

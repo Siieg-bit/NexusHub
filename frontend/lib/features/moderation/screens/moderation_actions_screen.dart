@@ -171,7 +171,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
           await SupabaseService.table('community_members')
               .update({
                 'is_banned': true,
-                'banned_until': DateTime.now()
+                'ban_expires_at': DateTime.now()
                     .add(Duration(hours: _banDurationHours))
                     .toUtc()
                     .toIso8601String(),
@@ -185,7 +185,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
           await SupabaseService.table('community_members')
               .update({
                 'is_banned': false,
-                'banned_until': null,
+                'ban_expires_at': null,
               })
               .eq('community_id', widget.communityId)
               .eq('user_id', targetUid);
@@ -196,7 +196,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
           await SupabaseService.table('community_members')
               .update({
                 'is_muted': true,
-                'muted_until': DateTime.now()
+                'mute_expires_at': DateTime.now()
                     .add(Duration(hours: _banDurationHours))
                     .toUtc()
                     .toIso8601String(),
@@ -224,7 +224,6 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
           // Usar RPC moderate_user para incrementar strikes
           await SupabaseService.rpc('moderate_user', params: {
             'p_community_id': widget.communityId,
-            'p_moderator_id': SupabaseService.currentUserId,
             'p_target_user_id': widget.targetUserId,
             'p_action': 'strike',
             'p_reason': _reasonController.text.trim(),
@@ -236,10 +235,11 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
           await SupabaseService.table('notifications').insert({
             'user_id': widget.targetUserId,
             'actor_id': SupabaseService.currentUserId,
-            'notification_type': 'moderation',
-            'content':
+            'type': 'moderation',
+            'title': 'Aviso da moderação',
+            'body':
                 'Você recebeu um aviso: ${_reasonController.text.trim()}',
-            'target_id': widget.communityId,
+            'community_id': widget.communityId,
           });
           break;
 
@@ -294,9 +294,10 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
             await SupabaseService.table('notifications').insert({
               'user_id': widget.targetUserId,
               'actor_id': SupabaseService.currentUserId,
-              'notification_type': 'moderation',
-              'content': 'Você foi removido da comunidade: ${_reasonController.text.trim()}',
-              'target_id': widget.communityId,
+              'type': 'moderation',
+              'title': 'Ação da moderação',
+              'body': 'Você foi removido da comunidade: ${_reasonController.text.trim()}',
+              'community_id': widget.communityId,
             });
           }
           break;

@@ -277,7 +277,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
               if (msgCtrl.text.trim().isEmpty) return;
               try {
                 await SupabaseService.client.rpc('send_broadcast', params: {
-                  'p_message': msgCtrl.text.trim(),
+                  'p_community_id': '', // TODO: selecionar comunidade alvo
+                  'p_title': 'Broadcast',
+                  'p_content': msgCtrl.text.trim(),
                 });
                 if (ctx.mounted) Navigator.pop(ctx);
                 if (context.mounted) {

@@ -63,7 +63,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
           .insert({
             'community_id': widget.communityId,
             'author_id': userId,
-            'type': 'normal',
+            'type': 'blog',
             'title': title,
             'content': content,
             'media_list': [],
@@ -75,10 +75,11 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
 
       try {
         await SupabaseService.rpc('add_reputation', params: {
-          'p_community_id': widget.communityId,
           'p_user_id': userId,
-          'p_action': 'post_create',
-          'p_source_id': result['id'],
+          'p_community_id': widget.communityId,
+          'p_action_type': 'post_create',
+          'p_raw_amount': 15,
+          'p_reference_id': result['id'],
         });
       } catch (_) {}
 

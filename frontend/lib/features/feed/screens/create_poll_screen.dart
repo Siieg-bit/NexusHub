@@ -99,18 +99,19 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
           .entries
           .map((e) => {
                 'post_id': postId,
-                'option_text': e.value.text.trim(),
-                'position': e.key,
+                'text': e.value.text.trim(),
+                'sort_order': e.key,
               })
           .toList();
       await SupabaseService.table('poll_options').insert(options);
 
       try {
         await SupabaseService.rpc('add_reputation', params: {
-          'p_community_id': widget.communityId,
           'p_user_id': userId,
-          'p_action': 'poll_create',
-          'p_source_id': postId,
+          'p_community_id': widget.communityId,
+          'p_action_type': 'poll_create',
+          'p_raw_amount': 15,
+          'p_reference_id': postId,
         });
       } catch (_) {}
 

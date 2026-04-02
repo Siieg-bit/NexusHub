@@ -1251,7 +1251,7 @@ class _MemberBottomSheet extends StatelessWidget {
           .select('id')
           .eq('type', 'dm')
           .eq('community_id', communityId)
-          .or('created_by.eq.$currentUserId,created_by.eq.$targetId')
+          .or('host_id.eq.$currentUserId,host_id.eq.$targetId')
           .maybeSingle();
 
       if (existing != null) {
@@ -1262,7 +1262,7 @@ class _MemberBottomSheet extends StatelessWidget {
             .insert({
               'community_id': communityId,
               'type': 'dm',
-              'created_by': currentUserId,
+              'host_id': currentUserId,
               'title': 'DM',
             })
             .select()
