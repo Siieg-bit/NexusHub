@@ -69,12 +69,14 @@ class _ProfilePinnedWikisState extends State<ProfilePinnedWikis> {
                   size: r.s(14), color: AppTheme.primaryColor),
               SizedBox(width: r.s(6)),
               Text(
-                'Pinned Wikis',
+                'Wikis Fixadas',
                 style: TextStyle(
                   color: Colors.grey[500],
                   fontSize: r.fs(13),
                   fontWeight: FontWeight.w600,
                 ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ],
           ),

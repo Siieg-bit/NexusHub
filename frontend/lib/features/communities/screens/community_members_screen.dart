@@ -265,13 +265,17 @@ class _SectionHeader extends StatelessWidget {
             ),
           ),
           SizedBox(width: r.s(8)),
-          Text(
-            '$title ($count)',
-            style: TextStyle(
-              color: color,
-              fontSize: r.fs(11),
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1,
+          Flexible(
+            child: Text(
+              '$title ($count)',
+              style: TextStyle(
+                color: color,
+                fontSize: r.fs(11),
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
             ),
           ),
         ],

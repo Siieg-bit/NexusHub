@@ -395,13 +395,17 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
                         : null,
                   ),
                   SizedBox(width: r.s(8)),
-                  Text(
-                    username,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: r.fs(14),
-                      shadows: [Shadow(blurRadius: 4, color: Colors.black)],
+                  Flexible(
+                    child: Text(
+                      username,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: r.fs(14),
+                        shadows: [Shadow(blurRadius: 4, color: Colors.black)],
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                   ),
                   SizedBox(width: r.s(8)),

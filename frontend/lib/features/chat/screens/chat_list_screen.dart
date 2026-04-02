@@ -402,6 +402,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                           fontSize: r.fs(13),
                           fontWeight: FontWeight.w700,
                         ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ],
                   ),
