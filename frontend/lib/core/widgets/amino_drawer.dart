@@ -145,13 +145,19 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
           ),
 
           // ── Drawer (sobrepõe tudo, desliza da esquerda) ───────────────────
+          // O Material garante que o drawer herde corretamente o Theme,
+          // DefaultTextStyle e tipografia do app — sem isso os textos
+          // ficam com fonte monospace e sublinhado amarelo (estilo raw Flutter).
           SlideTransition(
             position: _slideAnimation,
             child: Align(
               alignment: Alignment.centerLeft,
               child: SizedBox(
                 width: effectiveMaxSlide,
-                child: widget.drawer,
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: widget.drawer,
+                ),
               ),
             ),
           ),
