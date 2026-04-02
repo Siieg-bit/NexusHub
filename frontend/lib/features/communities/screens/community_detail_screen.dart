@@ -253,7 +253,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
 
         final screenWidth = MediaQuery.of(context).size.width;
         return AminoDrawerController(
-          maxSlide: screenWidth * 0.90,
+          maxSlide: screenWidth * 0.92,
           drawer: CommunityDrawer(
             community: community,
             currentUser: ref.watch(currentUserProfileProvider).valueOrNull,

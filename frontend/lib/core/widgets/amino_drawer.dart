@@ -118,7 +118,7 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final effectiveMaxSlide =
-        widget.maxSlide.clamp(0.0, screenWidth * 0.82);
+        widget.maxSlide.clamp(0.0, screenWidth * 0.92);
 
     return GestureDetector(
       onHorizontalDragStart: _onHorizontalDragStart,
