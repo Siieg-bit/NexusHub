@@ -26,17 +26,17 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
 
   static const _interestCategories = [
     _InterestItem(
-        'Anime & Mangá', Icons.movie_filter_rounded, Color(0xFFE91E63)),
-    _InterestItem('K-Pop', Icons.music_note_rounded, Color(0xFF9C27B0)),
-    _InterestItem('Jogos', Icons.sports_esports_rounded, Color(0xFF4CAF50)),
-    _InterestItem('Arte & Design', Icons.palette_rounded, Color(0xFFFF9800)),
-    _InterestItem('Moda', Icons.checkroom_rounded, Color(0xFFE040FB)),
+        'Anime & Mangá', Icons.movie_filter_rounded, AppTheme.fabPink),
+    _InterestItem('K-Pop', Icons.music_note_rounded, AppTheme.badgeAge),
+    _InterestItem('Jogos', Icons.sports_esports_rounded, AppTheme.primaryColor),
+    _InterestItem('Arte & Design', Icons.palette_rounded, AppTheme.aminoOrange),
+    _InterestItem('Moda', Icons.checkroom_rounded, AppTheme.aminoMagenta),
     _InterestItem(
         'Livros & Escrita', Icons.menu_book_rounded, Color(0xFF795548)),
     _InterestItem('Filmes & Séries', Icons.theaters_rounded, Color(0xFFF44336)),
-    _InterestItem('Música', Icons.headphones_rounded, Color(0xFF2196F3)),
+    _InterestItem('Música', Icons.headphones_rounded, AppTheme.infoColor),
     _InterestItem('Fotografia', Icons.camera_alt_rounded, Color(0xFF607D8B)),
-    _InterestItem('Ciência', Icons.science_rounded, Color(0xFF00BCD4)),
+    _InterestItem('Ciência', Icons.science_rounded, AppTheme.accentColor),
     _InterestItem('Esportes', Icons.fitness_center_rounded, Color(0xFFFF5722)),
     _InterestItem('Tecnologia', Icons.computer_rounded, Color(0xFF3F51B5)),
     _InterestItem(
@@ -54,7 +54,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
     _InterestItem('Faça Você Mesmo', Icons.handyman_rounded, Color(0xFFCDDC39)),
     _InterestItem('Quadrinhos', Icons.auto_stories_rounded, Color(0xFFFF6F00)),
     _InterestItem('Dança', Icons.nightlife_rounded, Color(0xFFD500F9)),
-    _InterestItem('Natureza', Icons.park_rounded, Color(0xFF4CAF50)),
+    _InterestItem('Natureza', Icons.park_rounded, AppTheme.primaryColor),
   ];
 
   void _nextStep() {

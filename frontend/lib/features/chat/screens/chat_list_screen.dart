@@ -15,6 +15,8 @@ import '../../../core/providers/notification_provider.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/providers/dm_invite_provider.dart';
 import '../widgets/dm_invite_card.dart';
+import 'package:nexus_hub/core/l10n/locale_provider.dart';
+// TODO: Add 'final s = ref.watch(stringsProvider);' in build() methods
 
 /// Provider para "Meus chats" — lista pessoal do usuário.
 /// Retorna apenas threads com membership ativo (status != 'left').
@@ -318,7 +320,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                             Icon(Icons.error_outline_rounded,
                                 size: r.s(48), color: context.textHint),
                             SizedBox(height: r.s(12)),
-                            Text('Erro ao carregar chats',
+                            Text(s.loadChatsError,
                                 style: TextStyle(
                                     color: context.textSecondary, fontSize: r.fs(14))),
                           ],
@@ -910,7 +912,7 @@ class _AminoChatTile extends ConsumerWidget {
                       TextButton(
                         onPressed: () =>
                             Navigator.of(dCtx).pop(false),
-                        child: Text('Cancelar',
+                        child: Text(s.cancel,
                             style: TextStyle(
                                 color: context.textSecondary,
                                 fontSize: r.fs(13))),

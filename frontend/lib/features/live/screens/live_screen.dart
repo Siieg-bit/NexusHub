@@ -175,11 +175,11 @@ class _LiveScreenState extends State<LiveScreen> {
   Color _typeColor(String type) {
     switch (type) {
       case 'screening_room':
-        return const Color(0xFFE91E63);
+        return const AppTheme.fabPink;
       case 'voice':
-        return const Color(0xFF4CAF50);
+        return const AppTheme.primaryColor;
       case 'video':
-        return const Color(0xFF2196F3);
+        return const AppTheme.infoColor;
       default:
         return AppTheme.primaryColor;
     }

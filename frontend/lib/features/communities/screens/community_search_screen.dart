@@ -922,7 +922,7 @@ class _PostTypeBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final (icon, color) = switch (type) {
       'image' => (Icons.image_rounded, Colors.blue),
-      'poll' => (Icons.poll_rounded, Colors.orange),
+      'poll' => (Icons.poll_rounded, AppTheme.aminoOrange),
       'quiz' => (Icons.quiz_rounded, Colors.purple),
       _ => (Icons.article_rounded, Colors.grey),
     };

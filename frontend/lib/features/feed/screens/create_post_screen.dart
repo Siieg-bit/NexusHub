@@ -10,6 +10,8 @@ import '../widgets/crosspost_picker.dart';
 import '../../../core/utils/responsive.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/draft_provider.dart';
+import 'package:nexus_hub/core/l10n/locale_provider.dart';
+// TODO: Add 'final s = ref.watch(stringsProvider);' in build() methods
 
 /// Editor rico de criação de posts — estilo Amino Apps.
 /// Suporta os 9 tipos exatos do Amino:
@@ -114,7 +116,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro no upload. Tente novamente.'),
+            content: Text(s.uploadError),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -149,7 +151,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro no upload. Tente novamente.'),
+            content: Text(s.uploadError),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -301,7 +303,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ocorreu um erro. Tente novamente.'),
+            content: Text(s.genericError),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -412,7 +414,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Erro ao salvar. Tente novamente.')),
+                    SnackBar(content: Text(s.saveError)),
                   );
                 }
               }
@@ -548,7 +550,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                                 Icon(Icons.add_photo_alternate_rounded,
                                     color: Colors.grey[600], size: r.s(28)),
                                 SizedBox(height: r.s(4)),
-                                Text('Adicionar Capa',
+                                Text(s.addCover,
                                     style: TextStyle(
                                         color: Colors.grey[600],
                                         fontSize: r.fs(11))),
@@ -667,7 +669,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                         .copyWith(dividerColor: Colors.transparent),
                     child: ExpansionTile(
                       tilePadding: EdgeInsets.zero,
-                      title: Text('Opções Avançadas',
+                      title: Text(s.advancedOptions,
                           style: TextStyle(
                               fontSize: r.fs(13),
                               color: Colors.grey[500],
@@ -696,7 +698,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                                 children: [
                                   Icon(Icons.lock_outline_rounded, size: r.s(16), color: Colors.grey[600]),
                                   SizedBox(width: r.s(8)),
-                                  Text('Visibilidade', style: TextStyle(fontSize: r.fs(13), color: Colors.grey[400], fontWeight: FontWeight.w600)),
+                                  Text(s.visibility, style: TextStyle(fontSize: r.fs(13), color: Colors.grey[400], fontWeight: FontWeight.w600)),
                                 ],
                               ),
                               SizedBox(height: r.s(8)),
@@ -892,7 +894,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 Icon(Icons.add_rounded,
                     size: r.s(16), color: AppTheme.primaryColor),
                 SizedBox(width: r.s(6)),
-                Text('Adicionar Opção',
+                Text(s.addOption,
                     style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontSize: r.fs(13),
@@ -1042,7 +1044,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 Icon(Icons.add_rounded,
                     size: r.s(16), color: AppTheme.primaryColor),
                 SizedBox(width: r.s(6)),
-                Text('Adicionar Pergunta',
+                Text(s.addQuestion,
                     style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontSize: r.fs(13),
@@ -1227,7 +1229,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Adicionar Música',
+            Text(s.addMusic,
                 style: TextStyle(fontSize: r.fs(18), fontWeight: FontWeight.w800, color: context.textPrimary)),
             SizedBox(height: r.s(16)),
             TextField(
@@ -1278,7 +1280,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                   }
                 },
                 style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryColor),
-                child: const Text('Confirmar'),
+                child: const Text(s.confirm),
               ),
             ),
           ],

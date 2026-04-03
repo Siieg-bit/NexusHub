@@ -227,4 +227,166 @@ class AppStringsEn implements AppStrings {
   @override String get permissionDenied => 'Permission denied.';
   @override String get notFound => 'Not found.';
   @override String get serverError => 'Server error. Please try again later.';
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // STRINGS ADICIONAIS (migração i18n)
+  // ══════════════════════════════════════════════════════════════════════════
+  @override
+  String get accept => 'Accept';
+  @override
+  String get acceptTerms => 'Accept the terms of use to continue';
+  @override
+  String get actionError => 'Error executing action. Please try again.';
+  @override
+  String get actionSuccess => 'Action executed successfully';
+  @override
+  String get active => 'Active';
+  @override
+  String get addAtLeastOneImage => 'Add at least one image';
+  @override
+  String get addAtLeastOneQuestion => 'Add at least one question';
+  @override
+  String get addAtLeastTwoOptions => 'Add at least 2 options';
+  @override
+  String get addCover => 'Add Cover';
+  @override
+  String get addMusic => 'Add Music';
+  @override
+  String get addOption => 'Add Option';
+  @override
+  String get addQuestion => 'Add Question';
+  @override
+  String get addVideo => 'Add Video';
+  @override
+  String get advancedOptions => 'Advanced Options';
+  @override
+  String get allSessionsRevoked => 'All other sessions have been revoked';
+  @override
+  String get alreadyCheckedIn => 'You already checked in today in this community!';
+  @override
+  String get appPermissions => 'App Permissions';
+  @override
+  String get appearance => 'Appearance';
+  @override
+  String get apply => 'Apply';
+  @override
+  String get audio => 'Audio';
+  @override
+  String get change => 'Change';
+  @override
+  String get changeEmail => 'Change Email';
+  @override
+  String get checkInError => 'Check-in error. Please try again.';
+  @override
+  String get coins => 'coins';
+  @override
+  String get confirmPassword => 'Confirm Password';
+  @override
+  String get current => 'Current';
+  @override
+  String get dailyReward => 'Daily reward';
+  @override
+  String get deleteChat => 'Delete Chat';
+  @override
+  String get deleteChatError => 'Error deleting chat. Please try again.';
+  @override
+  String get deleteDraft => 'Delete draft?';
+  @override
+  String get deleteError => 'Error deleting. Please try again.';
+  @override
+  String get deletePermanently => 'Delete Permanently';
+  @override
+  String get enableBanner => 'Enable Banner';
+  @override
+  String get enterGroupName => 'Enter a group name';
+  @override
+  String get fileSentSuccess => 'File sent successfully!';
+  @override
+  String get genericError => 'An error occurred. Please try again.';
+  @override
+  String get insertLink => 'Insert Link';
+  @override
+  String get insufficientBalance => 'Insufficient balance';
+  @override
+  String get joinedChat => 'You joined the chat!';
+  @override
+  String get leaveChat => 'Leave Chat';
+  @override
+  String get leaveChatConfirm => 'Are you sure you want to leave this chat?';
+  @override
+  String get leaveChatError => 'Error leaving chat. Please try again.';
+  @override
+  String get leaveCommunityError => 'Error leaving community. Please try again.';
+  @override
+  String get linkCopied => 'Link copied!';
+  @override
+  String get loadChatsError => 'Error loading chats';
+  @override
+  String get loginRequired => 'You need to be logged in to comment.';
+  @override
+  String get messageForwarded => 'Message forwarded!';
+  @override
+  String get moderationAction => 'Moderation Action';
+  @override
+  String get nameLink => 'Name link';
+  @override
+  String get newWikiEntry => 'New Wiki Entry';
+  @override
+  String get noCommunityFound => 'No community found';
+  @override
+  String get noMemberFound => 'No member found';
+  @override
+  String get noWallComments => 'No wall comments';
+  @override
+  String get openSettings => 'Open Settings';
+  @override
+  String get or => 'or';
+  @override
+  String get permissionDeniedTitle => 'Permission denied';
+  @override
+  String get pinChatError => 'Error pinning/unpinning chat.';
+  @override
+  String get pollQuestionRequired => 'Poll question is required';
+  @override
+  String get private => 'Private';
+  @override
+  String get profileLinkCopied => 'Profile link copied!';
+  @override
+  String get public => 'Public';
+  @override
+  String get publishError => 'Error publishing. Please try again.';
+  @override
+  String get questionRequired => 'Question is required';
+  @override
+  String get rejectionReason => 'Rejection reason';
+  @override
+  String get reorderCommunities => 'Hold and drag the cards to reorder your communities.';
+  @override
+  String get reportBug => 'Report Bug';
+  @override
+  String get revokeAllOthers => 'Revoke All Others';
+  @override
+  String get revokeDevice => 'Revoke Device';
+  @override
+  String get saveError => 'Error saving. Please try again.';
+  @override
+  String get sendError => 'Error sending. Please try again.';
+  @override
+  String get settingsSaved => 'Settings saved!';
+  @override
+  String get showOnlineCount => 'Show online count in bottom bar';
+  @override
+  String get startConversationWith => 'Start conversation with a user';
+  @override
+  String get titleRequired => 'Title is required';
+  @override
+  String get uploadError => 'Upload error. Please try again.';
+  @override
+  String get visibility => 'Visibility';
+  @override
+  String get waitingParticipants => 'Waiting for participants...';
+  @override
+  String get welcomeBanner => 'Welcome Banner';
+  @override
+  String get writeOnWall => 'Write on the wall...';
 }

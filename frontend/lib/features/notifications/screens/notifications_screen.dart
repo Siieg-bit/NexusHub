@@ -540,11 +540,11 @@ class _NotificationTile extends StatelessWidget {
       case 'achievement':
         return AppTheme.warningColor;
       case 'chat_message':
-        return const Color(0xFF4CAF50);
+        return const AppTheme.primaryColor;
       case 'dm_invite':
-        return const Color(0xFF9C27B0);
+        return const AppTheme.badgeAge;
       case 'wall_post':
-        return const Color(0xFF2196F3);
+        return const AppTheme.infoColor;
       case 'moderation':
       case 'strike':
       case 'ban':
@@ -780,9 +780,9 @@ class _RetryBanner extends StatelessWidget {
       margin: EdgeInsets.all(r.s(16)),
       padding: EdgeInsets.all(r.s(12)),
       decoration: BoxDecoration(
-        color: Colors.red.withValues(alpha: 0.08),
+        color: AppTheme.errorColor.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(r.s(10)),
-        border: Border.all(color: Colors.red.withValues(alpha: 0.2)),
+        border: Border.all(color: AppTheme.errorColor.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -804,7 +804,7 @@ class _RetryBanner extends StatelessWidget {
               padding: EdgeInsets.symmetric(
                   horizontal: r.s(12), vertical: r.s(6)),
               decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.15),
+                color: AppTheme.errorColor.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(r.s(8)),
               ),
               child: Text(

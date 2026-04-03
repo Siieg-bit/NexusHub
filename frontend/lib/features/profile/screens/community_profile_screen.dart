@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
@@ -82,7 +83,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
             .eq('id', widget.communityId)
             .single();
         _communityName = communityRes['name'] as String? ?? '';
-      } catch (_) {}
+      } catch (e) { debugPrint('[community_profile_screen.dart] $e'); }
 
       // Membership na comunidade
       final memberRes = await SupabaseService.table('community_members')
@@ -238,7 +239,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                       height: r.s(8),
                       decoration: BoxDecoration(
                         color: isOnline
-                            ? const Color(0xFF4CAF50)
+                            ? const AppTheme.primaryColor
                             : Colors.grey[500],
                         shape: BoxShape.circle,
                       ),
@@ -487,7 +488,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                         horizontal: r.s(16),
                                         vertical: r.s(8)),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFFF9800),
+                                      color: const AppTheme.aminoOrange,
                                       borderRadius:
                                           BorderRadius.circular(r.s(20)),
                                     ),
@@ -568,7 +569,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                     decoration: BoxDecoration(
                                       gradient: const LinearGradient(
                                         colors: [
-                                          Color(0xFFFF9800),
+                                          AppTheme.aminoOrange,
                                           Color(0xFFFFB74D)
                                         ],
                                       ),
@@ -598,7 +599,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                           width: r.s(16),
                                           height: r.s(16),
                                           decoration: const BoxDecoration(
-                                            color: Colors.red,
+                                            color: AppTheme.errorColor,
                                             shape: BoxShape.circle,
                                           ),
                                           child: Center(
@@ -628,7 +629,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                     decoration: BoxDecoration(
                                       gradient: const LinearGradient(
                                         colors: [
-                                          Color(0xFF2196F3),
+                                          AppTheme.infoColor,
                                           Color(0xFF42A5F5)
                                         ],
                                       ),
@@ -645,7 +646,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                             shape: BoxShape.circle,
                                             gradient: LinearGradient(
                                               colors: [
-                                                Color(0xFFFFD700),
+                                                AppTheme.coinGold,
                                                 Color(0xFFFFA500)
                                               ],
                                             ),

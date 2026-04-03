@@ -588,7 +588,7 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Você já fez check-in hoje nesta comunidade!'),
-              backgroundColor: Colors.orange,
+              backgroundColor: AppTheme.aminoOrange,
               behavior: SnackBarBehavior.floating,
               duration: Duration(seconds: 2),
             ),
@@ -969,7 +969,7 @@ class _CommunityPreviewSheetState
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Você já fez check-in hoje nesta comunidade!'),
-              backgroundColor: Colors.orange,
+              backgroundColor: AppTheme.aminoOrange,
               behavior: SnackBarBehavior.floating,
               duration: Duration(seconds: 2),
             ),

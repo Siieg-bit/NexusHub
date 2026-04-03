@@ -52,13 +52,14 @@ class _NotificationSettingsScreenState
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
 
-      final res = await SupabaseService.table('user_settings')
+      final res = await SupabaseService.table('notification_settings')
           .select()
           .eq('user_id', userId)
           .maybeSingle();
 
       if (res != null) {
         if (!mounted) return;
+        final onlyFriends = res['only_friends'] as bool? ?? false;
         setState(() {
           _pushEnabled = res['push_enabled'] as bool? ?? true;
           _pushLikes = res['push_likes'] as bool? ?? true;
@@ -71,15 +72,9 @@ class _NotificationSettingsScreenState
           _pushAchievements = res['push_achievements'] as bool? ?? true;
           _pushLevelUp = res['push_level_up'] as bool? ?? true;
           _pushModeration = res['push_moderation'] as bool? ?? true;
-          _inAppSounds = res['in_app_sounds'] as bool? ?? true;
-          _inAppVibration = res['in_app_vibration'] as bool? ?? true;
-          _onlyFriendsLikes = res['only_friends_likes'] as bool? ?? false;
-          _onlyFriendsComments = res['only_friends_comments'] as bool? ?? false;
-          _onlyFriendsMessages = res['only_friends_messages'] as bool? ?? false;
-          _pauseAllUntil = res['pause_all_until'] != null;
-          if (res['pause_all_until'] != null) {
-            _pauseUntilDate = DateTime.tryParse(res['pause_all_until'] as String? ?? '');
-          }
+          _onlyFriendsLikes = onlyFriends;
+          _onlyFriendsComments = onlyFriends;
+          _onlyFriendsMessages = onlyFriends;
         });
       }
 
@@ -94,26 +89,19 @@ class _NotificationSettingsScreenState
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
 
-      await SupabaseService.table('user_settings').upsert({
-        'user_id': userId,
-        'push_enabled': _pushEnabled,
-        'push_likes': _pushLikes,
-        'push_comments': _pushComments,
-        'push_follows': _pushFollows,
-        'push_mentions': _pushMentions,
-        'push_chat_messages': _pushChatMessages,
-        'push_community_invites': _pushCommunityInvites,
-        'push_achievements': _pushAchievements,
-        'push_level_up': _pushLevelUp,
-        'push_moderation': _pushModeration,
-        'in_app_sounds': _inAppSounds,
-        'in_app_vibration': _inAppVibration,
-        'only_friends_likes': _onlyFriendsLikes,
-        'only_friends_comments': _onlyFriendsComments,
-        'only_friends_messages': _onlyFriendsMessages,
-        'pause_all_until': _pauseAllUntil && _pauseUntilDate != null
-            ? _pauseUntilDate!.toIso8601String()
-            : null,
+      // Usar a RPC upsert_notification_settings que já existe no backend
+      await SupabaseService.rpc('upsert_notification_settings', params: {
+        'p_push_enabled': _pushEnabled,
+        'p_only_friends': _onlyFriendsLikes || _onlyFriendsComments || _onlyFriendsMessages,
+        'p_push_likes': _pushLikes,
+        'p_push_comments': _pushComments,
+        'p_push_follows': _pushFollows,
+        'p_push_mentions': _pushMentions,
+        'p_push_chat_messages': _pushChatMessages,
+        'p_push_community_invites': _pushCommunityInvites,
+        'p_push_achievements': _pushAchievements,
+        'p_push_level_up': _pushLevelUp,
+        'p_push_moderation': _pushModeration,
       });
 
       if (mounted) {
@@ -268,7 +256,7 @@ class _NotificationSettingsScreenState
                         ? 'Apenas de amigos'
                         : 'Quando alguém curte seu post',
                     value: _pushLikes,
-                    color: const Color(0xFFE91E63),
+                    color: const AppTheme.fabPink,
                     onChanged: (v) => setState(() => _pushLikes = v),
                     filterWidget: _pushLikes
                         ? _FriendsOnlyChip(
@@ -308,7 +296,7 @@ class _NotificationSettingsScreenState
                     title: 'Menções',
                     subtitle: 'Quando alguém menciona você',
                     value: _pushMentions,
-                    color: const Color(0xFF00BCD4),
+                    color: const AppTheme.accentColor,
                     onChanged: (v) => setState(() => _pushMentions = v),
                   ),
                   SizedBox(height: r.s(24)),
@@ -353,7 +341,7 @@ class _NotificationSettingsScreenState
                     title: 'Subiu de Nível',
                     subtitle: 'Quando sobe de nível',
                     value: _pushLevelUp,
-                    color: const Color(0xFF9C27B0),
+                    color: const AppTheme.badgeAge,
                     onChanged: (v) => setState(() => _pushLevelUp = v),
                   ),
                   SizedBox(height: r.s(24)),

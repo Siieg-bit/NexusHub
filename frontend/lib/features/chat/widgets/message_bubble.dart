@@ -403,7 +403,7 @@ class MessageBubble extends StatelessWidget {
       final icon = isVoice ? Icons.headset_mic_rounded : Icons.live_tv_rounded;
       final label = isVoice ? 'Voice Chat' : 'Screening Room';
       final accentColor = isVoice
-          ? const Color(0xFF4CAF50)
+          ? const AppTheme.primaryColor
           : const Color(0xFFFF5722);
       return Container(
         padding: EdgeInsets.all(r.s(12)),

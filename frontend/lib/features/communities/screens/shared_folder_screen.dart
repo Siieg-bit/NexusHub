@@ -153,25 +153,25 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
             _UploadOption(
               icon: Icons.photo_library_rounded,
               label: 'Imagem da Galeria',
-              color: const Color(0xFF4CAF50),
+              color: const AppTheme.primaryColor,
               onTap: () => Navigator.pop(ctx, 'gallery_image'),
             ),
             _UploadOption(
               icon: Icons.camera_alt_rounded,
               label: 'Tirar Foto',
-              color: const Color(0xFF2196F3),
+              color: const AppTheme.infoColor,
               onTap: () => Navigator.pop(ctx, 'camera'),
             ),
             _UploadOption(
               icon: Icons.videocam_rounded,
               label: 'Vídeo da Galeria',
-              color: const Color(0xFFE91E63),
+              color: const AppTheme.fabPink,
               onTap: () => Navigator.pop(ctx, 'gallery_video'),
             ),
             _UploadOption(
               icon: Icons.attach_file_rounded,
               label: 'Arquivo',
-              color: const Color(0xFFFF9800),
+              color: const AppTheme.aminoOrange,
               onTap: () => Navigator.pop(ctx, 'file'),
             ),
             SizedBox(height: r.s(8)),
@@ -729,10 +729,10 @@ class _FileTile extends StatelessWidget {
 
   Color _colorForType(String? mimeType) {
     if (mimeType == null) return Colors.grey;
-    if (mimeType.startsWith('video/')) return const Color(0xFFE91E63);
-    if (mimeType.startsWith('audio/')) return const Color(0xFF9C27B0);
+    if (mimeType.startsWith('video/')) return const AppTheme.fabPink;
+    if (mimeType.startsWith('audio/')) return const AppTheme.badgeAge;
     if (mimeType.contains('pdf')) return const Color(0xFFFF5722);
-    return const Color(0xFF2196F3);
+    return const AppTheme.infoColor;
   }
 
   @override

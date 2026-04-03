@@ -256,7 +256,7 @@ class _MyCommunityChatsScreenState
               padding: EdgeInsets.symmetric(
                   horizontal: r.s(14), vertical: r.s(7)),
               decoration: BoxDecoration(
-                color: const Color(0xFF4CAF50),
+                color: const AppTheme.primaryColor,
                 borderRadius: BorderRadius.circular(r.s(20)),
               ),
               child: Row(
@@ -365,7 +365,7 @@ class _MyCommunityChatsScreenState
               width: r.s(32),
               height: r.s(32),
               decoration: BoxDecoration(
-                color: const Color(0xFF2196F3),
+                color: const AppTheme.infoColor,
                 shape: BoxShape.circle,
               ),
               child: Icon(Icons.person_rounded,

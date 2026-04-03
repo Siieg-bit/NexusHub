@@ -8,6 +8,8 @@ import 'dart:io';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import 'package:nexus_hub/core/l10n/locale_provider.dart';
+// TODO: Add 'final s = ref.watch(stringsProvider);' in build() methods
 
 // =============================================================================
 // CREATE GROUP CHAT SCREEN — Estilo Amino Apps
@@ -137,7 +139,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
   Future<void> _createGroupChat() async {
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Digite um nome para o grupo')),
+        const SnackBar(content: Text(s.enterGroupName)),
       );
       return;
     }
@@ -379,7 +381,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
           children: [
             Icon(Icons.groups_rounded, size: r.s(48), color: Colors.grey[600]),
             SizedBox(height: r.s(12)),
-            Text('Nenhuma comunidade encontrada',
+            Text(s.noCommunityFound,
                 style: TextStyle(color: Colors.grey[500])),
             SizedBox(height: r.s(8)),
             Text('Entre em uma comunidade primeiro',
@@ -581,7 +583,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
             children: [
               Icon(
                 _isPublic ? Icons.public_rounded : Icons.lock_rounded,
-                color: _isPublic ? AppTheme.primaryColor : Colors.orange,
+                color: _isPublic ? AppTheme.primaryColor : AppTheme.aminoOrange,
                 size: r.s(22),
               ),
               SizedBox(width: r.s(12)),
@@ -639,7 +641,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
               const Spacer(),
               GestureDetector(
                 onTap: () => setState(() => _currentStep = 0),
-                child: Text('Alterar',
+                child: Text(s.change,
                     style: TextStyle(
                         color: AppTheme.accentColor,
                         fontSize: r.fs(12),
@@ -655,7 +657,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
           onTap: () {
             if (_nameController.text.trim().isEmpty) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Digite um nome para o grupo')),
+                const SnackBar(content: Text(s.enterGroupName)),
               );
               return;
             }
@@ -748,7 +750,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                 const Spacer(),
                 GestureDetector(
                   onTap: () => setState(() => _selectedMemberIds.clear()),
-                  child: Text('Limpar',
+                  child: Text(s.clearCache,
                       style: TextStyle(
                           color: Colors.grey[500],
                           fontSize: r.fs(12),
@@ -767,7 +769,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                 )
               : _filteredMembers.isEmpty
                   ? Center(
-                      child: Text('Nenhum membro encontrado',
+                      child: Text(s.noMemberFound,
                           style: TextStyle(color: Colors.grey[500])),
                     )
                   : ListView.builder(

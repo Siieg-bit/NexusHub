@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -15,6 +16,8 @@ import '../widgets/poll_quiz_widget.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../moderation/widgets/report_dialog.dart';
 import '../../../core/utils/responsive.dart';
+import 'package:nexus_hub/core/l10n/locale_provider.dart';
+// TODO: Add 'final s = ref.watch(stringsProvider);' in build() methods
 
 /// Provider para comentários de um post.
 final postCommentsProvider =
@@ -75,7 +78,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     if (userId == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Você precisa estar logado para comentar.')),
+          const SnackBar(content: Text(s.loginRequired)),
         );
       }
       return;
@@ -93,7 +96,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               .eq('id', widget.postId)
               .maybeSingle();
           communityId = row?['community_id'] as String?;
-        } catch (_) {}
+        } catch (e) { debugPrint('[post_detail_screen.dart] $e'); }
       }
 
       await SupabaseService.rpc('create_comment_with_reputation', params: {
@@ -128,7 +131,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         'p_post_id': widget.postId,
       });
       ref.invalidate(postDetailProvider(widget.postId));
-    } catch (_) {}
+    } catch (e) { debugPrint('[post_detail_screen.dart] $e'); }
   }
 
   Future<void> _toggleBookmark() async {
@@ -151,7 +154,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
+          SnackBar(content: Text(s.genericError)),
         );
       }
     }
@@ -162,7 +165,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     Clipboard.setData(ClipboardData(text: link));
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Link copiado!'),
+        content: Text(s.linkCopied),
         behavior: SnackBarBehavior.floating,
         duration: Duration(seconds: 2),
       ),
@@ -227,11 +230,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(ctx, false),
-                          child: Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
+                          child: Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
                         ),
                         TextButton(
                           onPressed: () => Navigator.pop(ctx, true),
-                          child: const Text('Deletar',
+                          child: const Text(s.delete,
                               style: TextStyle(color: AppTheme.errorColor, fontWeight: FontWeight.w700)),
                         ),
                       ],
@@ -254,7 +257,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     } catch (e) {
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
+                          SnackBar(content: Text(s.genericError)),
                         );
                       }
                     }
@@ -282,7 +285,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       ));
                     }
                   } catch (e) {
-                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Ocorreu um erro. Tente novamente.')));
+                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(s.genericError)));
                   }
                   break;
                 case 'hide':
@@ -304,7 +307,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       }
                     }
                   } catch (e) {
-                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Ocorreu um erro. Tente novamente.')));
+                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(s.genericError)));
                   }
                   break;
               }
@@ -324,7 +327,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 PopupMenuItem(
                   value: 'report',
                   child: Row(children: [
-                    Icon(Icons.flag_rounded, size: r.s(18), color: Colors.orange),
+                    Icon(Icons.flag_rounded, size: r.s(18), color: AppTheme.aminoOrange),
                     SizedBox(width: r.s(10)),
                     Text('Reportar', style: TextStyle(color: context.textPrimary)),
                   ]),
@@ -335,7 +338,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     child: Row(children: [
                       Icon(Icons.edit_rounded, size: r.s(18), color: AppTheme.primaryColor),
                       SizedBox(width: r.s(10)),
-                      Text('Editar', style: TextStyle(color: context.textPrimary)),
+                      Text(s.edit, style: TextStyle(color: context.textPrimary)),
                     ]),
                   ),
                 if (isAuthor)
@@ -369,7 +372,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     child: Row(children: [
                       Icon(Icons.delete_rounded, size: r.s(18), color: AppTheme.errorColor),
                       SizedBox(width: r.s(10)),
-                      Text('Deletar', style: TextStyle(color: AppTheme.errorColor)),
+                      Text(s.delete, style: TextStyle(color: AppTheme.errorColor)),
                     ]),
                   ),
               ];
@@ -1188,7 +1191,7 @@ class _CommentTileState extends State<_CommentTile> {
           .eq('comment_id', widget.comment.id)
           .maybeSingle();
       if (mounted && res != null) setState(() => _isLiked = true);
-    } catch (_) {}
+    } catch (e) { debugPrint('[post_detail_screen.dart] $e'); }
   }
 
   Future<void> _toggleCommentLike() async {

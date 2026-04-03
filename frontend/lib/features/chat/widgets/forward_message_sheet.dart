@@ -89,8 +89,9 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
-      for (final threadId in _selected) {
-        await SupabaseService.rpc(
+      // Enviar para todos os threads em paralelo (evita N+1 sequencial)
+      await Future.wait(
+        _selected.map((threadId) => SupabaseService.rpc(
           'send_chat_message_with_reputation',
           params: {
             'p_thread_id': threadId,
@@ -99,8 +100,8 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
             if (widget.mediaUrl != null) 'p_media_url': widget.mediaUrl,
             if (widget.mediaType != null) 'p_media_type': widget.mediaType,
           },
-        );
-      }
+        )),
+      );
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(

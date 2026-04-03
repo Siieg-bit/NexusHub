@@ -42,7 +42,7 @@ class ChatBubble extends StatelessWidget {
       case 'leader':
         return AppTheme.primaryColor; // Verde Amino para Leader
       case 'curator':
-        return const Color(0xFFE040FB); // Rosa/Magenta para Curator
+        return const AppTheme.aminoMagenta; // Rosa/Magenta para Curator
       default:
         return isMine
             ? AppTheme.primaryColor

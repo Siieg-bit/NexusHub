@@ -198,9 +198,9 @@ class _StoryCarouselState extends State<StoryCarousel> {
                 gradient: hasUnviewed
                     ? const LinearGradient(
                         colors: [
-                          Color(0xFFE91E63),
+                          AppTheme.fabPink,
                           Color(0xFFFF5722),
-                          Color(0xFFFF9800),
+                          AppTheme.aminoOrange,
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,

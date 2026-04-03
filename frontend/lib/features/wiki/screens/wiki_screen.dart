@@ -5,6 +5,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
+import 'package:nexus_hub/core/l10n/locale_provider.dart';
 
 // ============================================================================
 // WIKI LIST SCREEN
@@ -980,7 +981,7 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
+          SnackBar(content: Text(s.genericError)),
         );
       }
     } finally {
@@ -1008,7 +1009,7 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
         backgroundColor: context.scaffoldBg,
         elevation: 0,
         iconTheme: IconThemeData(color: context.textPrimary),
-        title: Text('Nova Entrada Wiki',
+        title: Text(s.newWikiEntry,
             style: TextStyle(
                 fontWeight: FontWeight.w800,
                 color: context.textPrimary,
@@ -1051,7 +1052,7 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: context.textPrimary),
                     )
-                  : Text('Publicar',
+                  : Text(s.publish,
                       style: TextStyle(
                           color: context.textPrimary,
                           fontWeight: FontWeight.w700,

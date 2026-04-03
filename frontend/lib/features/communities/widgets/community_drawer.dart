@@ -113,7 +113,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
       } else if (data != null && data['error'] == 'already_checked_in') {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Você já fez check-in hoje nesta comunidade!'),
-          backgroundColor: Colors.orange,
+          backgroundColor: AppTheme.aminoOrange,
           behavior: SnackBarBehavior.floating,
           duration: Duration(seconds: 2),
         ));
@@ -670,11 +670,11 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: done
-                          ? const Color(0xFF4CAF50)
+                          ? const AppTheme.primaryColor
                           : Colors.grey.withValues(alpha: 0.25),
                       border: Border.all(
                         color: done
-                            ? const Color(0xFF4CAF50)
+                            ? const AppTheme.primaryColor
                             : Colors.white.withValues(alpha: 0.20),
                         width: 1.5,
                       ),
@@ -715,7 +715,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
               ? 'Fazendo check-in...'
               : 'Check-in streak lost. Tap here to fix it!',
           style: TextStyle(
-            color: const Color(0xFF4CAF50),
+            color: const AppTheme.primaryColor,
             fontSize: r.fs(11),
             fontWeight: FontWeight.w600,
             shadows: const [
@@ -813,7 +813,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         ),
         _AminoDrawerTile(
           icon: Icons.auto_stories_rounded,
-          iconColor: const Color(0xFF9C27B0),
+          iconColor: const AppTheme.badgeAge,
           label: 'Wiki',
           onTap: () => _closeAndNavigate(() {
             context.push('/community/${widget.community.id}/wiki');

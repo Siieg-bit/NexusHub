@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -90,7 +91,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
           'p_raw_amount': 15,
           'p_reference_id': result['id'],
         });
-      } catch (_) {}
+      } catch (e) { debugPrint('[create_link_post_screen.dart] $e'); }
 
       if (mounted) {
         context.pop();

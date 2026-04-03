@@ -3,6 +3,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/models/community_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import 'package:nexus_hub/core/l10n/locale_provider.dart';
 
 /// ACM — Amino Community Manager.
 /// Gerenciamento de módulos (JSONB), Join Types, customização visual,
@@ -180,7 +181,7 @@ class _AcmScreenState extends State<AcmScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Configurações salvas!'),
+            content: const Text(s.settingsSaved),
             backgroundColor: AppTheme.primaryColor,
             behavior: SnackBarBehavior.floating,
             shape:
@@ -191,7 +192,7 @@ class _AcmScreenState extends State<AcmScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
+          SnackBar(content: Text(s.genericError)),
         );
       }
     }
@@ -240,7 +241,7 @@ class _AcmScreenState extends State<AcmScreen>
                   ),
                 ],
               ),
-              child: const Text('Salvar',
+              child: const Text(s.save,
                   style: TextStyle(
                       fontWeight: FontWeight.w800, color: Colors.white)),
             ),
@@ -360,7 +361,7 @@ class _AcmScreenState extends State<AcmScreen>
           onTap: () => setState(() => _joinType = 'invite'),
         ),
         SizedBox(height: r.s(32)),
-        Text('Visibilidade', style: Theme.of(context).textTheme.titleLarge),
+        Text(s.visibility, style: Theme.of(context).textTheme.titleLarge),
         SizedBox(height: r.s(12)),
         _AccessOption(
           icon: Icons.visibility_rounded,
@@ -715,7 +716,7 @@ class _AcmScreenState extends State<AcmScreen>
         SizedBox(height: r.s(24)),
 
         // ---- WELCOME BANNER ----
-        Text('Banner de Boas-Vindas',
+        Text(s.welcomeBanner,
             style: Theme.of(context).textTheme.titleLarge),
         SizedBox(height: r.s(6)),
         Text('Um banner customizado exibido no topo da home.',
@@ -733,7 +734,7 @@ class _AcmScreenState extends State<AcmScreen>
             children: [
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Ativar Banner',
+                title: const Text(s.enableBanner,
                     style: TextStyle(fontWeight: FontWeight.w500)),
                 value: welcomeBanner['enabled'] as bool? ?? false,
                 activeColor: AppTheme.primaryColor,
@@ -837,7 +838,7 @@ class _AcmScreenState extends State<AcmScreen>
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Mostrar Membros Online',
                     style: TextStyle(fontWeight: FontWeight.w500)),
-                subtitle: Text('Exibe contagem de online na bottom bar',
+                subtitle: Text(s.showOnlineCount,
                     style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
                 value: bottomBar['show_online_count'] as bool? ?? true,
                 activeColor: AppTheme.primaryColor,
@@ -1006,7 +1007,7 @@ class _AcmScreenState extends State<AcmScreen>
             icon: Icons.chat_rounded,
             label: 'Chats',
             value: _totalChats.toString(),
-            color: const Color(0xFF00BCD4),
+            color: const AppTheme.accentColor,
           ),
           SizedBox(height: r.s(24)),
           Text('Moderação', style: Theme.of(context).textTheme.titleMedium),

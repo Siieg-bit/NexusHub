@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -164,7 +165,7 @@ class _HappeningSection extends ConsumerWidget {
               child: Row(
                 children: [
                   Icon(Icons.flash_on_rounded,
-                      color: const Color(0xFFFFD700), size: r.s(18)),
+                      color: const AppTheme.coinGold, size: r.s(18)),
                   SizedBox(width: r.s(6)),
                   Text(
                     'What\'s happening now!',
@@ -787,7 +788,7 @@ class _MemberRow extends StatelessWidget {
                               horizontal: r.s(5), vertical: r.s(1)),
                           decoration: BoxDecoration(
                             color: role == 'leader'
-                                ? const Color(0xFFFFD700)
+                                ? const AppTheme.coinGold
                                     .withValues(alpha: 0.2)
                                 : AppTheme.primaryColor
                                     .withValues(alpha: 0.2),
@@ -798,7 +799,7 @@ class _MemberRow extends StatelessWidget {
                             role == 'leader' ? 'L' : 'C',
                             style: TextStyle(
                               color: role == 'leader'
-                                  ? const Color(0xFFFFD700)
+                                  ? const AppTheme.coinGold
                                   : AppTheme.primaryColor,
                               fontSize: r.fs(9),
                               fontWeight: FontWeight.w800,
@@ -869,7 +870,7 @@ class _FollowButtonState extends State<_FollowButton> {
           .eq('following_id', widget.targetUserId)
           .maybeSingle();
       if (mounted) setState(() => _following = res != null);
-    } catch (_) {}
+    } catch (e) { debugPrint('[community_online_tab.dart] $e'); }
   }
 
   Future<void> _toggle() async {
@@ -892,7 +893,8 @@ class _FollowButtonState extends State<_FollowButton> {
             : !_following;
         setState(() => _following = isNowFollowing);
       }
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[community_online_tab.dart] $e');
     } finally {
       if (mounted) setState(() => _loading = false);
     }

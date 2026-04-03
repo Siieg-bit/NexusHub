@@ -6,6 +6,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../core/utils/responsive.dart';
+import 'package:nexus_hub/core/l10n/locale_provider.dart';
+// TODO: Add 'final s = ref.watch(stringsProvider);' in build() methods
 
 /// Tela de check-in diário com gamificação — Estilo Amino Apps.
 class CheckInScreen extends ConsumerStatefulWidget {
@@ -143,7 +145,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ocorreu um erro. Tente novamente.'),
+            content: Text(s.genericError),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -195,7 +197,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ocorreu um erro. Tente novamente.'),
+            content: Text(s.genericError),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -369,14 +371,14 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [
-                        Color(0xFFFF9800),
+                        AppTheme.aminoOrange,
                         Color(0xFFFF5722),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(r.s(16)),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFFF9800).withValues(alpha: 0.3),
+                        color: const AppTheme.aminoOrange.withValues(alpha: 0.3),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -475,7 +477,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
         gradient: LinearGradient(
           colors: completed
               ? [AppTheme.primaryColor, AppTheme.accentColor]
-              : [const Color(0xFFFF9800), const Color(0xFFFF5722)],
+              : [const AppTheme.aminoOrange, const Color(0xFFFF5722)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -483,7 +485,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
           BoxShadow(
             color: (completed
                     ? AppTheme.primaryColor
-                    : const Color(0xFFFF9800))
+                    : const AppTheme.aminoOrange)
                 .withValues(alpha: 0.4),
             blurRadius: 24,
             spreadRadius: 4,
@@ -550,13 +552,13 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                     EdgeInsets.symmetric(horizontal: r.s(24), vertical: r.s(10)),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+                    colors: [AppTheme.coinGold, Color(0xFFFFA500)],
                   ),
                   borderRadius: BorderRadius.circular(r.s(12)),
                   boxShadow: [
                     BoxShadow(
                       color:
-                          const Color(0xFFFFD700).withValues(alpha: 0.3),
+                          const AppTheme.coinGold.withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -689,11 +691,11 @@ class _DayCircle extends StatelessWidget {
         color: active
             ? null
             : isToday
-                ? const Color(0xFFFF9800).withValues(alpha: 0.2)
+                ? const AppTheme.aminoOrange.withValues(alpha: 0.2)
                 : context.surfaceColor,
         border: isToday && !active
             ? Border.all(
-                color: const Color(0xFFFF9800).withValues(alpha: 0.5),
+                color: const AppTheme.aminoOrange.withValues(alpha: 0.5),
                 width: 2)
             : null,
         boxShadow: active
@@ -711,7 +713,7 @@ class _DayCircle extends StatelessWidget {
             : Text(day,
                 style: TextStyle(
                     color: isToday
-                        ? const Color(0xFFFF9800)
+                        ? const AppTheme.aminoOrange
                         : Colors.grey[600],
                     fontWeight: FontWeight.w700,
                     fontSize: r.fs(12))),

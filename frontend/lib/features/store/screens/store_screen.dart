@@ -183,7 +183,7 @@ class _StoreScreenState extends State<StoreScreen>
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(Icons.monetization_on_rounded,
-                                    color: Color(0xFFFFD700), size: r.s(18)),
+                                    color: AppTheme.coinGold, size: r.s(18)),
                                 SizedBox(width: r.s(4)),
                                 Text(
                                   formatCount(_userCoins),
@@ -215,7 +215,7 @@ class _StoreScreenState extends State<StoreScreen>
                               boxShadow: [
                                 BoxShadow(
                                   color:
-                                      const Color(0xFFFFD700).withValues(alpha: 0.4),
+                                      const AppTheme.coinGold.withValues(alpha: 0.4),
                                   blurRadius: 30,
                                   spreadRadius: 5,
                                 ),
@@ -230,7 +230,7 @@ class _StoreScreenState extends State<StoreScreen>
                               shape: BoxShape.circle,
                               gradient: const LinearGradient(
                                 colors: [
-                                  Color(0xFFFFD700),
+                                  AppTheme.coinGold,
                                   Color(0xFFFFA500),
                                   Color(0xFFFF8C00),
                                 ],
@@ -239,7 +239,7 @@ class _StoreScreenState extends State<StoreScreen>
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFFFFD700)
+                                  color: const AppTheme.coinGold
                                       .withValues(alpha: 0.5),
                                   blurRadius: 16,
                                   offset: const Offset(0, 4),

@@ -113,7 +113,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Desvincular',
-                style: TextStyle(color: Colors.red)),
+                style: TextStyle(color: AppTheme.errorColor)),
           ),
         ],
       ),
@@ -266,7 +266,7 @@ class _ProviderTile extends StatelessWidget {
                 Text(
                   isLinked ? 'Vinculado' : 'Não vinculado',
                   style: TextStyle(
-                    color: isLinked ? Colors.green : Colors.grey[500],
+                    color: isLinked ? AppTheme.primaryColor : Colors.grey[500],
                     fontSize: r.fs(12),
                   ),
                 ),
@@ -285,7 +285,7 @@ class _ProviderTile extends StatelessWidget {
               child: Text(
                 isLinked ? 'Desvincular' : 'Vincular',
                 style: TextStyle(
-                  color: isLinked ? Colors.red : AppTheme.primaryColor,
+                  color: isLinked ? AppTheme.errorColor : AppTheme.primaryColor,
                   fontSize: r.fs(14),
                 ),
               ),

@@ -60,7 +60,7 @@ class _CommunityCreateMenuSheet extends StatelessWidget {
       _CreateItem(
         label: 'Story',
         icon: Icons.auto_awesome_rounded,
-        color: const Color(0xFF7C3AED),
+        color: const AppTheme.aminoPurple,
         onTap: (ctx) {
           Navigator.pop(ctx);
           ctx.push('/community/$communityId/create-story');

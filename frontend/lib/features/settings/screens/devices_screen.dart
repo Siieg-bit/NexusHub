@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import 'package:nexus_hub/core/l10n/locale_provider.dart';
 
 /// Tela de Dispositivos Conectados — lista sessões ativas e permite revogar.
 /// Baseado na tabela device_fingerprints do schema v5.
@@ -52,13 +53,13 @@ class _DevicesScreenState extends State<DevicesScreen> {
           borderRadius: BorderRadius.circular(r.s(16)),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
-        title: Text('Revogar Dispositivo', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
+        title: Text(s.revokeDevice, style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
         content: Text('Isso encerrará a sessão neste dispositivo. '
             'O usuário precisará fazer login novamente.', style: TextStyle(color: Colors.grey[500])),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: Text('Cancelar', style: TextStyle(color: Colors.grey[500]))),
+              child: Text(s.cancel, style: TextStyle(color: Colors.grey[500]))),
           GestureDetector(
             onTap: () => Navigator.pop(ctx, true),
             child: Container(
@@ -105,7 +106,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ocorreu um erro. Tente novamente.', style: const TextStyle(color: Colors.white)),
+            content: Text(s.genericError, style: const TextStyle(color: Colors.white)),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(12))),
@@ -126,13 +127,13 @@ class _DevicesScreenState extends State<DevicesScreen> {
           borderRadius: BorderRadius.circular(r.s(16)),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
-        title: Text('Revogar Todos os Outros', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
+        title: Text(s.revokeAllOthers, style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
         content: Text('Isso encerrará todas as sessões exceto a atual. '
             'Todos os outros dispositivos precisarão fazer login novamente.', style: TextStyle(color: Colors.grey[500])),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: Text('Cancelar', style: TextStyle(color: Colors.grey[500]))),
+              child: Text(s.cancel, style: TextStyle(color: Colors.grey[500]))),
           GestureDetector(
             onTap: () => Navigator.pop(ctx, true),
             child: Container(
@@ -164,7 +165,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Todas as outras sessões foram encerradas', style: TextStyle(color: context.textPrimary)),
+            content: Text(s.allSessionsRevoked, style: TextStyle(color: context.textPrimary)),
             backgroundColor: context.surfaceColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(12)), side: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
@@ -175,7 +176,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ocorreu um erro. Tente novamente.', style: const TextStyle(color: Colors.white)),
+            content: Text(s.genericError, style: const TextStyle(color: Colors.white)),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(12))),
@@ -378,7 +379,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                                           borderRadius:
                                               BorderRadius.circular(r.s(20)),
                                         ),
-                                        child: Text('Atual',
+                                        child: Text(s.current,
                                             style: TextStyle(
                                                 color: Colors.white,
                                                 fontSize: r.fs(10),

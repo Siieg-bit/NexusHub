@@ -319,7 +319,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                                 rank: 1,
                                 data: members[0],
                                 podiumHeight: r.s(110),
-                                color: const Color(0xFFFFD700),
+                                color: const AppTheme.coinGold,
                                 medal: '🥇',
                                 isFirst: true,
                               ),
@@ -538,7 +538,7 @@ class _LeaderboardTile extends StatelessWidget {
   const _LeaderboardTile({required this.data, required this.rank});
 
   Color _rankColor(int rank) {
-    if (rank == 1) return const Color(0xFFFFD700);
+    if (rank == 1) return const AppTheme.coinGold;
     if (rank == 2) return const Color(0xFFC0C0C0);
     if (rank == 3) return const Color(0xFFCD7F32);
     return Colors.grey.shade600;

@@ -613,7 +613,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
             margin: EdgeInsets.only(right: r.s(2)),
             decoration: BoxDecoration(
               color: filled
-                  ? Color.lerp(Colors.green, Colors.orange, i / barCount)
+                  ? Color.lerp(AppTheme.primaryColor, AppTheme.aminoOrange, i / barCount)
                   : Colors.grey[800],
               borderRadius: BorderRadius.circular(r.s(2)),
             ),

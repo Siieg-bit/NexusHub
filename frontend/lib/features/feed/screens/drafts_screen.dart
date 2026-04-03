@@ -258,11 +258,11 @@ class _DraftCard extends ConsumerWidget {
         break;
       case 'poll':
         icon = Icons.poll_rounded;
-        color = Colors.orange;
+        color = AppTheme.aminoOrange;
         break;
       case 'quiz':
         icon = Icons.quiz_rounded;
-        color = Colors.teal;
+        color = AppTheme.accentColor;
         break;
       case 'link':
         icon = Icons.link_rounded;

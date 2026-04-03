@@ -151,18 +151,23 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
 
   Future<void> _loadStickerPacks() async {
     try {
-      final res = await SupabaseService.table('store_items')
-          .select()
-          .eq('type', 'sticker')
+      // Carregar packs reais da tabela sticker_packs com seus stickers
+      final packsRes = await SupabaseService.table('sticker_packs')
+          .select('*, stickers(*)')
           .eq('is_active', true)
-          .order('name');
-      final items = List<Map<String, dynamic>>.from(res as List? ?? []);
+          .order('sort_order', ascending: true);
+      final packsList = List<Map<String, dynamic>>.from(packsRes as List? ?? []);
 
       final packs = <String, List<Map<String, dynamic>>>{};
-      for (final item in items) {
-        final pack = item['category'] as String? ?? 'Geral';
-        packs.putIfAbsent(pack, () => []);
-        packs[pack]!.add(item);
+      for (final pack in packsList) {
+        final packName = pack['name'] as String? ?? 'Sem nome';
+        final stickers = List<Map<String, dynamic>>.from(
+            pack['stickers'] as List? ?? []);
+        // Ordenar stickers por sort_order
+        stickers.sort((a, b) =>
+            ((a['sort_order'] as int?) ?? 0).compareTo(
+                (b['sort_order'] as int?) ?? 0));
+        packs[packName] = stickers;
       }
 
       _packs = packs.keys
@@ -170,7 +175,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
           .toList();
       _stickersByPack = packs;
     } catch (e) {
-      debugPrint('[sticker_picker] Erro: $e');
+      debugPrint('[sticker_picker] Erro ao carregar packs: $e');
     }
 
     // Aba Emojis padrão

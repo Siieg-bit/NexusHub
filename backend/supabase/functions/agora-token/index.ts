@@ -18,9 +18,12 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-// ── Agora Credentials ──
-const APP_ID = "SEU_AGORA_APP_ID_AQUI";
-const APP_CERTIFICATE = "SEU_AGORA_APP_CERTIFICATE_AQUI";
+// ── Agora Credentials (via env vars) ──
+const APP_ID = Deno.env.get("AGORA_APP_ID") ?? "";
+const APP_CERTIFICATE = Deno.env.get("AGORA_APP_CERTIFICATE") ?? "";
+
+const RATE_LIMIT_MAX = 10;
+const RATE_LIMIT_WINDOW_SECONDS = 60;
 
 // ── Token Builder (inline, Agora RtcTokenBuilder logic) ──
 // Based on https://github.com/AgoraIO/Tools/tree/master/DynamicKey/AgoraDynamicKey
@@ -223,6 +226,40 @@ serve(async (req: Request) => {
         }
       );
     }
+
+    // ====================================================================
+    // RATE LIMITING via rate_limit_log
+    // ====================================================================
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    const windowStart = new Date(
+      Date.now() - RATE_LIMIT_WINDOW_SECONDS * 1000
+    ).toISOString();
+
+    const { count } = await supabaseAdmin
+      .from("rate_limit_log")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("action", "agora_token")
+      .gte("created_at", windowStart);
+
+    if ((count ?? 0) >= RATE_LIMIT_MAX) {
+      return new Response(
+        JSON.stringify({
+          error: "Rate limit excedido. Tente novamente em 1 minuto.",
+          retry_after_seconds: RATE_LIMIT_WINDOW_SECONDS,
+        }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    await supabaseAdmin.from("rate_limit_log").insert({
+      user_id: user.id,
+      action: "agora_token",
+    });
 
     // Parse body
     const body = await req.json();

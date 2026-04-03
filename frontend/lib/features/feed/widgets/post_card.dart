@@ -748,7 +748,7 @@ class _PostCardState extends State<PostCard>
     final isRepost = _post.type == 'repost';
     final label = isRepost ? 'Repost' : 'Crosspost';
     final icon = isRepost ? Icons.repeat_rounded : Icons.share_rounded;
-    final color = isRepost ? const Color(0xFF607D8B) : const Color(0xFF9C27B0);
+    final color = isRepost ? const Color(0xFF607D8B) : const AppTheme.badgeAge;
     final originId = _post.originalCommunityId;
 
     return Padding(
@@ -958,7 +958,7 @@ class _PostCardState extends State<PostCard>
   Color get _typeColor {
     switch (_post.type) {
       case 'poll':
-        return const Color(0xFF00BCD4);
+        return const AppTheme.accentColor;
       case 'quiz':
         return AppTheme.accentColor;
       case 'qa':
@@ -967,7 +967,7 @@ class _PostCardState extends State<PostCard>
       case 'external':
         return AppTheme.primaryColor;
       case 'crosspost':
-        return const Color(0xFF9C27B0);
+        return const AppTheme.badgeAge;
       case 'repost':
         return const Color(0xFF607D8B);
       default:

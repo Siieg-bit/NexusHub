@@ -237,11 +237,11 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
             _StatData('Total', _totalUsers.toString(), Icons.people_rounded,
                 AppTheme.primaryColor),
             _StatData('Hoje', _newUsersToday.toString(),
-                Icons.person_add_rounded, Colors.green),
+                Icons.person_add_rounded, AppTheme.primaryColor),
             _StatData('Últimos 7 dias', _newUsersWeek.toString(),
-                Icons.trending_up_rounded, Colors.orange),
+                Icons.trending_up_rounded, AppTheme.aminoOrange),
             _StatData('Banidos', _bannedUsers.toString(),
-                Icons.block_rounded, Colors.red),
+                Icons.block_rounded, AppTheme.errorColor),
           ], r),
           SizedBox(height: r.s(20)),
           _sectionTitle('Conteúdo', r),
@@ -249,7 +249,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
             _StatData('Posts totais', _totalPosts.toString(),
                 Icons.article_rounded, AppTheme.accentColor),
             _StatData('Posts hoje', _postsToday.toString(),
-                Icons.post_add_rounded, Colors.teal),
+                Icons.post_add_rounded, AppTheme.accentColor),
             _StatData('Mensagens totais', _totalMessages.toString(),
                 Icons.chat_rounded, Colors.purple),
             _StatData('Mensagens hoje', _messagesToday.toString(),
@@ -261,7 +261,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
             _StatData('Total', _totalCommunities.toString(),
                 Icons.groups_rounded, Colors.amber),
             _StatData('Ativas', _activeCommunities.toString(),
-                Icons.check_circle_rounded, Colors.green),
+                Icons.check_circle_rounded, AppTheme.primaryColor),
           ], r),
         ],
       ),
@@ -277,11 +277,11 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
           _sectionTitle('Denúncias', r),
           _statsGrid([
             _StatData('Total', _totalFlags.toString(),
-                Icons.flag_rounded, Colors.orange),
+                Icons.flag_rounded, AppTheme.aminoOrange),
             _StatData('Pendentes', _pendingFlags.toString(),
-                Icons.pending_rounded, Colors.red),
+                Icons.pending_rounded, AppTheme.errorColor),
             _StatData('Resolvidas', _resolvedFlags.toString(),
-                Icons.check_circle_rounded, Colors.green),
+                Icons.check_circle_rounded, AppTheme.primaryColor),
             _StatData('Usuários banidos', _bannedUsers.toString(),
                 Icons.block_rounded, Colors.red[900]!),
           ], r),
@@ -316,7 +316,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
             _StatData('Assinantes Amino+', _aminoPlusUsers.toString(),
                 Icons.star_rounded, AppTheme.primaryColor),
             _StatData('Check-ins totais', _totalCheckIns.toString(),
-                Icons.calendar_today_rounded, Colors.teal),
+                Icons.calendar_today_rounded, AppTheme.accentColor),
           ], r),
           SizedBox(height: r.s(20)),
           _sectionTitle('Taxa de Monetização', r),
@@ -365,9 +365,9 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
         ? DateTime.tryParse(createdAt)?.toLocal()
         : null;
     final statusColor = status == 'pending'
-        ? Colors.orange
+        ? AppTheme.aminoOrange
         : status == 'resolved'
-            ? Colors.green
+            ? AppTheme.primaryColor
             : Colors.grey;
 
     return Container(

@@ -84,7 +84,7 @@ class _CreatePublicChatScreenState
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(message),
-              backgroundColor: Colors.red.shade700,
+              backgroundColor: AppTheme.errorColor.shade700,
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -106,7 +106,7 @@ class _CreatePublicChatScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(userMsg),
-            backgroundColor: Colors.red,
+            backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
         );

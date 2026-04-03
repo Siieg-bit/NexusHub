@@ -1,4 +1,6 @@
+// TODO: Add 'final s = ref.watch(stringsProvider);' in build() methods
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -55,7 +57,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onTap: () => Navigator.pop(ctx),
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
-              child: Text('Cancelar', style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w700)),
+              child: Text(s.cancel, style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w700)),
             ),
           ),
           GestureDetector(
@@ -73,7 +75,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
+                    SnackBar(content: Text(s.genericError)),
                   );
                 }
               }
@@ -129,7 +131,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onTap: () => Navigator.pop(ctx, false),
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
-              child: Text('Cancelar', style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w700)),
+              child: Text(s.cancel, style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w700)),
             ),
           ),
           GestureDetector(
@@ -198,7 +200,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onTap: () => Navigator.pop(ctx, false),
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
-              child: Text('Cancelar', style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w700)),
+              child: Text(s.cancel, style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w700)),
             ),
           ),
           GestureDetector(
@@ -220,7 +222,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ],
               ),
-              child: const Text('Excluir Permanentemente',
+              child: const Text(s.deletePermanently,
                   style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
             ),
           ),
@@ -276,7 +278,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             child: Container(
               padding: EdgeInsets.symmetric(
                   horizontal: r.s(16), vertical: r.s(8)),
-              child: Text('Cancelar',
+              child: Text(s.cancel,
                   style: TextStyle(
                       color: Colors.grey[500], fontWeight: FontWeight.w700)),
             ),
@@ -294,7 +296,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 color: AppTheme.errorColor,
                 borderRadius: BorderRadius.circular(r.s(12)),
               ),
-              child: const Text('Confirmar',
+              child: const Text(s.confirm,
                   style: TextStyle(
                       color: Colors.white, fontWeight: FontWeight.w800)),
             ),
@@ -468,7 +470,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           );
                           return AlertDialog(
                             backgroundColor: context.surfaceColor,
-                            title: Text('Alterar Email',
+                            title: Text(s.changeEmail,
                                 style: TextStyle(color: context.textPrimary)),
                             content: TextField(
                               controller: emailCtrl,
@@ -487,7 +489,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(ctx),
-                                child: const Text('Cancelar'),
+                                child: const Text(s.cancel),
                               ),
                               ElevatedButton(
                                 onPressed: () async {
@@ -509,7 +511,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     if (context.mounted) {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
-                                          content: Text('Ocorreu um erro. Tente novamente.'),
+                                          content: Text(s.genericError),
                                           behavior: SnackBarBehavior.floating,
                                         ),
                                       );
@@ -519,7 +521,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppTheme.primaryColor,
                                 ),
-                                child: const Text('Salvar'),
+                                child: const Text(s.save),
                               ),
                             ],
                           );
@@ -634,7 +636,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               onTap: () => Navigator.pop(ctx, false),
                               child: Container(
                                 padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
-                                child: Text('Cancelar', style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w700)),
+                                child: Text(s.cancel, style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w700)),
                               ),
                             ),
                             GestureDetector(
@@ -647,7 +649,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   ),
                                   borderRadius: BorderRadius.circular(r.s(12)),
                                 ),
-                                child: const Text('Limpar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+                                child: const Text(s.clearCache, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
                               ),
                             ),
                           ],
@@ -738,7 +740,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(ctx),
-                              child: const Text('Fechar'),
+                              child: const Text(s.close),
                             ),
                           ],
                         ),
@@ -755,7 +757,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           final bugCtrl = TextEditingController();
                           return AlertDialog(
                             backgroundColor: context.surfaceColor,
-                            title: Text('Reportar Bug',
+                            title: Text(s.reportBug,
                                 style: TextStyle(color: context.textPrimary)),
                             content: TextField(
                               controller: bugCtrl,
@@ -775,11 +777,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(ctx),
-                                child: const Text('Cancelar'),
+                                child: const Text(s.cancel),
                               ),
                               ElevatedButton(
-                                onPressed: () {
+                                onPressed: () async {
+                                  final text = bugCtrl.text.trim();
+                                  if (text.isEmpty) return;
                                   Navigator.pop(ctx);
+                                  try {
+                                    await SupabaseService.table('flags').insert({
+                                      'reporter_id': SupabaseService.currentUserId,
+                                      'community_id': '00000000-0000-0000-0000-000000000000',
+                                      'flag_type': 'other',
+                                      'reason': '[BUG REPORT] $text',
+                                      'status': 'pending',
+                                    });
+                                  } catch (e) { debugPrint('[settings_screen.dart] $e'); }
+                                  if (!context.mounted) return;
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text('Bug reportado! Obrigado pelo feedback.'),
@@ -790,7 +804,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppTheme.primaryColor,
                                 ),
-                                child: const Text('Enviar'),
+                                child: const Text(s.sendMessage),
                               ),
                             ],
                           );
@@ -856,7 +870,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           borderRadius: BorderRadius.circular(r.s(16)),
                           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
                         ),
-                        title: Text('Sair', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
+                        title: Text(s.logout, style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
                         content: Text(
                             'Tem certeza que deseja sair da sua conta?',
                             style: TextStyle(color: Colors.grey[500])),
@@ -865,7 +879,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             onTap: () => Navigator.pop(ctx, false),
                             child: Container(
                               padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
-                              child: Text('Cancelar', style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w700)),
+                              child: Text(s.cancel, style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w700)),
                             ),
                           ),
                           GestureDetector(
@@ -883,7 +897,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   ),
                                 ],
                               ),
-                              child: const Text('Sair', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+                              child: const Text(s.logout, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
                             ),
                           ),
                         ],
@@ -1027,7 +1041,7 @@ class _ThemeSelectorItem extends StatelessWidget {
         color: AppTheme.primaryColor,
         size: r.s(22),
       ),
-      title: Text('Aparência',
+      title: Text(s.appearance,
           style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w700, fontSize: r.fs(14))),
       subtitle: Text(
         labels[currentMode]!,
@@ -1046,7 +1060,7 @@ class _ThemeSelectorItem extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('Aparência',
+                Text(s.appearance,
                     style: TextStyle(
                         color: context.textPrimary,
                         fontSize: r.fs(18),

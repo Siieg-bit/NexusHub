@@ -356,13 +356,13 @@ class _AchievementTile extends StatelessWidget {
     Color rarityColor;
     switch (rarity) {
       case 'legendary':
-        rarityColor = const Color(0xFFFFD700);
+        rarityColor = const AppTheme.coinGold;
         break;
       case 'epic':
-        rarityColor = const Color(0xFF9C27B0);
+        rarityColor = const AppTheme.badgeAge;
         break;
       case 'rare':
-        rarityColor = const Color(0xFF2196F3);
+        rarityColor = const AppTheme.infoColor;
         break;
       default:
         rarityColor = (Colors.grey[500] ?? Colors.grey);

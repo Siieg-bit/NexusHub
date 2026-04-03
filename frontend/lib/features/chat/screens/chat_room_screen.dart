@@ -1,6 +1,7 @@
 
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -24,9 +25,12 @@ import '../widgets/chat_reply_preview.dart';
 import '../widgets/chat_input_bar.dart';
 import '../widgets/chat_media_sheet.dart';
 import '../widgets/chat_message_actions.dart';
+import '../../moderation/widgets/report_dialog.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/utils/media_utils.dart';
 import 'chat_list_screen.dart' show chatListProvider, chatCommunitiesProvider;
+import 'package:nexus_hub/core/l10n/locale_provider.dart';
+// TODO: Add 'final s = ref.watch(stringsProvider);' in build() methods
 
 /// =============================================================================
 /// ChatRoomScreen — Tela principal de chat.
@@ -212,7 +216,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           .single();
       if (!mounted || _isDisposed) return;
       setState(() => _threadInfo = res);
-    } catch (_) {}
+    } catch (e) { debugPrint('[chat_room_screen.dart] $e'); }
   }
 
   Future<void> _loadMessages() async {
@@ -268,7 +272,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           _pinnedMessages = List<Map<String, dynamic>>.from(res as List? ?? []);
         });
       }
-    } catch (_) {}
+    } catch (e) { debugPrint('[chat_room_screen.dart] $e'); }
   }
 
   // ==========================================================================
@@ -287,7 +291,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       if (res != null && mounted && !_isDisposed) {
         setState(() => _chatBackground = res['background_url'] as String?);
       }
-    } catch (_) {}
+    } catch (e) { debugPrint('[chat_room_screen.dart] $e'); }
   }
 
   void _showBackgroundPicker() {
@@ -383,7 +387,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     await _saveChatBackground(url);
                     if (ctx.mounted) Navigator.pop(ctx);
                   },
-                  child: Text('Aplicar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: r.fs(14))),
+                  child: Text(s.apply, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: r.fs(14))),
                 ),
               ),
             ],
@@ -443,7 +447,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   newMessage['sender'] = senderData;
                   newMessage['author'] = senderData;
                 }
-              } catch (_) {}
+              } catch (e) { debugPrint('[chat_room_screen.dart] $e'); }
               if (_isDisposed || !mounted) return;
               final message = MessageModel.fromJson(newMessage);
               setState(() => _messages.insert(0, message));
@@ -791,21 +795,21 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(16))),
-        title: Text('Sair do Chat',
+        title: Text(s.leaveChat,
             style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w700)),
-        content: Text('Tem certeza que deseja sair deste chat?',
+        content: Text(s.leaveChatConfirm,
             style: TextStyle(color: Colors.grey[400], fontSize: r.fs(14))),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
+            child: Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
           ),
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
               await _leaveChat();
             },
-            child: Text('Sair',
+            child: Text(s.logout,
                 style: TextStyle(color: AppTheme.errorColor, fontWeight: FontWeight.w700)),
           ),
         ],
@@ -825,7 +829,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         try {
           ref.invalidate(chatListProvider);
           ref.invalidate(chatCommunitiesProvider);
-        } catch (_) {}
+        } catch (e) { debugPrint('[chat_room_screen.dart] $e'); }
         // Se a RPC deletou o chat (único membro ou host saindo), mensagem diferente
         final wasDeleted =
             (result as Map<String, dynamic>?)?['deleted'] == true;
@@ -843,7 +847,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Erro ao sair do chat. Tente novamente.'),
+            content: Text(s.leaveChatError),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -862,7 +866,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         try {
           ref.invalidate(chatListProvider);
           ref.invalidate(chatCommunitiesProvider);
-        } catch (_) {}
+        } catch (e) { debugPrint('[chat_room_screen.dart] $e'); }
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Chat excluído.'),
@@ -877,7 +881,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Erro ao excluir o chat. Tente novamente.'),
+            content: Text(s.deleteChatError),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -894,7 +898,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         backgroundColor: context.surfaceColor,
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(16))),
-        title: Text('Excluir Chat',
+        title: Text(s.deleteChat,
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w700)),
         content: Text(
@@ -903,14 +907,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
+            child: Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
           ),
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
               await _deleteChat();
             },
-            child: Text('Excluir',
+            child: Text(s.delete,
                 style: TextStyle(
                     color: AppTheme.errorColor,
                     fontWeight: FontWeight.w700)),
@@ -942,7 +946,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro no upload. Tente novamente.'),
+            content: Text(s.uploadError),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -1204,7 +1208,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         'p_receiver_id': _threadInfo?['host_id'] ?? '',
         'p_amount': result,
       });
-    } catch (_) {}
+    } catch (e) { debugPrint('[chat_room_screen.dart] $e'); }
 
     await _sendMessage(type: 'tip', tipAmount: result);
   }
@@ -1246,7 +1250,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         Icon(Icons.add_rounded,
                             size: r.s(16), color: AppTheme.primaryColor),
                         SizedBox(width: r.s(4)),
-                        Text('Adicionar Opção',
+                        Text(s.addOption,
                             style: TextStyle(
                                 color: AppTheme.primaryColor,
                                 fontSize: r.fs(13),
@@ -1261,7 +1265,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           actions: [
             TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: Text('Cancelar',
+                child: Text(s.cancel,
                     style: TextStyle(color: Colors.grey[500]))),
             ElevatedButton(
               onPressed: () {
@@ -1284,7 +1288,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(r.s(10))),
               ),
-              child: const Text('Enviar',
+              child: const Text(s.sendMessage,
                   style: TextStyle(
                       color: Colors.white, fontWeight: FontWeight.w700)),
             ),
@@ -1312,7 +1316,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: Text('Cancelar',
+              child: Text(s.cancel,
                   style: TextStyle(color: Colors.grey[500]))),
           ElevatedButton(
             onPressed: () {
@@ -1326,7 +1330,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(r.s(10))),
             ),
-            child: const Text('Enviar',
+            child: const Text(s.sendMessage,
                 style: TextStyle(
                     color: Colors.white, fontWeight: FontWeight.w700)),
           ),
@@ -1398,7 +1402,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               Navigator.pop(ctx);
               editController.dispose();
             },
-            child: Text('Cancelar',
+            child: Text(s.cancel,
                 style: TextStyle(color: Colors.grey[500])),
           ),
           ElevatedButton(
@@ -1440,7 +1444,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(r.s(10))),
             ),
-            child: const Text('Salvar',
+            child: const Text(s.save,
                 style: TextStyle(
                     color: Colors.white, fontWeight: FontWeight.w700)),
           ),
@@ -1506,7 +1510,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Erro ao apagar. Tente novamente.'),
+                content: Text(s.deleteError),
                 backgroundColor: AppTheme.errorColor,
               ),
             );
@@ -1534,7 +1538,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Erro ao apagar. Tente novamente.'),
+                content: Text(s.deleteError),
                 backgroundColor: AppTheme.errorColor,
               ),
             );
@@ -1542,12 +1546,18 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         }
         break;
       case ChatMessageAction.report:
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Denúncia enviada. Obrigado!'),
-            backgroundColor: AppTheme.primaryColor,
-          ),
-        );
+        final communityId = _threadInfo?['community_id'] as String? ?? '';
+        if (communityId.isNotEmpty) {
+          ReportDialog.show(
+            context,
+            communityId: communityId,
+            targetMessageId: message.id,
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Não foi possível identificar a comunidade.')),
+          );
+        }
         break;
     }
   }
@@ -1928,10 +1938,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                               try {
                                 ref.invalidate(chatListProvider);
                                 ref.invalidate(chatCommunitiesProvider);
-                              } catch (_) {}
+                              } catch (e) { debugPrint('[chat_room_screen.dart] $e'); }
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('Você entrou no chat!'),
+                                  content: Text(s.joinedChat),
                                   backgroundColor: AppTheme.primaryColor,
                                   behavior: SnackBarBehavior.floating,
                                 ),
@@ -2120,7 +2130,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           context: context,
           builder: (ctx) => AlertDialog(
             backgroundColor: context.surfaceColor,
-            title: Text('Nomear link',
+            title: Text(s.nameLink,
                 style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w700)),
             content: Column(
               mainAxisSize: MainAxisSize.min,
@@ -2143,7 +2153,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
+                child: Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
               ),
               TextButton(
                 onPressed: () {
@@ -2158,7 +2168,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   );
                   Navigator.pop(ctx);
                 },
-                child: const Text('Confirmar',
+                child: const Text(s.confirm,
                     style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.w700)),
               ),
             ],
@@ -2320,7 +2330,7 @@ class _ChatMembersSheetState extends State<_ChatMembersSheet> {
                       color: AppTheme.primaryColor, strokeWidth: 2))
               : _members.isEmpty
                   ? Center(
-                      child: Text('Nenhum membro encontrado',
+                      child: Text(s.noMemberFound,
                           style: TextStyle(color: Colors.grey[500], fontSize: r.fs(13))),
                     )
                   : ListView.builder(

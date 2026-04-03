@@ -180,7 +180,7 @@ class ProceduralBubbleFrame extends StatelessWidget {
     required this.child,
     required this.isMine,
     this.style = 'gradient',
-    this.primaryColor = const Color(0xFFE91E63),
+    this.primaryColor = const AppTheme.fabPink,
     this.secondaryColor = const Color(0xFFFF5252),
     this.maxWidth = 280,
   });

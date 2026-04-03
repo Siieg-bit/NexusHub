@@ -141,7 +141,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     padding: EdgeInsets.symmetric(horizontal: r.s(10)),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFFFF9800), Color(0xFFFFB74D)],
+                        colors: [AppTheme.aminoOrange, Color(0xFFFFB74D)],
                       ),
                       borderRadius: BorderRadius.circular(r.s(14)),
                     ),
@@ -154,7 +154,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           decoration: const BoxDecoration(
                             shape: BoxShape.circle,
                             gradient: LinearGradient(
-                              colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+                              colors: [AppTheme.coinGold, Color(0xFFFFA500)],
                             ),
                           ),
                           child: Center(
@@ -528,7 +528,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                             padding: EdgeInsets.symmetric(
                                 horizontal: r.s(8), vertical: r.s(4)),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFFD700),
+                              color: const AppTheme.coinGold,
                               borderRadius:
                                   BorderRadius.circular(r.s(6)),
                             ),

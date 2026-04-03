@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -7,6 +8,8 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/media_utils.dart';
 import '../../../core/utils/responsive.dart';
+import 'package:nexus_hub/core/l10n/locale_provider.dart';
+// TODO: Add 'final s = ref.watch(stringsProvider);' in build() methods
 
 // =============================================================================
 // CREATE IMAGE POST SCREEN — Post com galeria de imagens
@@ -45,24 +48,28 @@ class _CreateImagePostScreenState
     setState(() => _isUploading = true);
     try {
       final userId = SupabaseService.currentUserId ?? 'unknown';
-      for (final image in images) {
+      // Upload em paralelo para melhor performance
+      final uploadFutures = images.asMap().entries.map((entry) async {
+        final idx = entry.key;
+        final image = entry.value;
         final rawBytes = await image.readAsBytes();
         final bytes = await MediaUtils.compressImage(rawBytes);
         final path =
-            'posts/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
+            'posts/$userId/${DateTime.now().millisecondsSinceEpoch}_${idx}_${image.name}';
         await SupabaseService.storage
             .from('post_media')
             .uploadBinary(path, bytes);
-        final url = SupabaseService.storage
+        return SupabaseService.storage
             .from('post_media')
             .getPublicUrl(path);
-        if (mounted) setState(() => _mediaUrls.add(url));
-      }
+      });
+      final urls = await Future.wait(uploadFutures);
+      if (mounted) setState(() => _mediaUrls.addAll(urls));
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Erro no upload. Tente novamente.'),
+            content: Text(s.uploadError),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -76,7 +83,7 @@ class _CreateImagePostScreenState
     if (_mediaUrls.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Adicione pelo menos uma imagem'),
+          content: Text(s.addAtLeastOneImage),
           backgroundColor: AppTheme.errorColor,
         ),
       );
@@ -114,7 +121,7 @@ class _CreateImagePostScreenState
           'p_raw_amount': 15,
           'p_reference_id': result['id'],
         });
-      } catch (_) {}
+      } catch (e) { debugPrint('[create_image_post_screen.dart] $e'); }
 
       if (mounted) {
         context.pop();
@@ -130,7 +137,7 @@ class _CreateImagePostScreenState
         setState(() => _isSubmitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao publicar. Tente novamente.'),
+            content: Text(s.publishError),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -173,15 +180,15 @@ class _CreateImagePostScreenState
             itemBuilder: (_) => [
               PopupMenuItem(
                   value: 'public',
-                  child: Text('Público',
+                  child: Text(s.public,
                       style: TextStyle(color: context.textPrimary))),
               PopupMenuItem(
                   value: 'followers',
-                  child: Text('Seguidores',
+                  child: Text(s.followers,
                       style: TextStyle(color: context.textPrimary))),
               PopupMenuItem(
                   value: 'private',
-                  child: Text('Privado',
+                  child: Text(s.private,
                       style: TextStyle(color: context.textPrimary))),
             ],
           ),

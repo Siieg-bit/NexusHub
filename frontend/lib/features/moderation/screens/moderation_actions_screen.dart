@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import 'package:nexus_hub/core/l10n/locale_provider.dart';
 
 /// Ações de Moderação — Tela para aplicar ações em um usuário/conteúdo.
 /// Suporta: Ban, Mute, Warn, Hide Post, Delete Post, Strike, Transfer Leader.
@@ -302,14 +303,14 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ação executada com sucesso')),
+          const SnackBar(content: Text(s.actionSuccess)),
         );
         context.pop();
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
+          SnackBar(content: Text(s.genericError)),
         );
       }
     }
@@ -329,7 +330,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text('Ação de Moderação',
+        title: Text(s.moderationAction,
             style: TextStyle(fontWeight: FontWeight.w800, color: context.textPrimary)),
         iconTheme: IconThemeData(color: context.textPrimary),
       ),

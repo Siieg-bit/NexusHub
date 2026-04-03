@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -178,7 +179,7 @@ class ThreadMessagesNotifier
                 updatedMsg['sender'] = profile;
                 updatedMsg['author'] = profile;
               }
-            } catch (_) {}
+            } catch (e) { debugPrint('[chat_provider.dart] $e'); }
 
             final message = MessageModel.fromJson(updatedMsg);
             final current = state.valueOrNull ?? [];

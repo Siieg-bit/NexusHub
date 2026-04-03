@@ -4,6 +4,7 @@ import '../../../core/services/ad_service.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../core/utils/responsive.dart';
+import 'package:nexus_hub/config/app_theme.dart';
 
 /// Tela de Compra de Moedas — Estilo Amino original.
 /// Header azul celeste com moeda dourada, corpo claro com pacotes de moedas.
@@ -114,7 +115,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
           content: Text(msg, style: const TextStyle(color: Colors.white)),
-          backgroundColor: const Color(0xFFE53935)),
+          backgroundColor: const AppTheme.errorColor),
     );
   }
 
@@ -123,7 +124,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
           content: Text(msg, style: const TextStyle(color: Colors.white)),
-          backgroundColor: const Color(0xFF4CAF50)),
+          backgroundColor: const AppTheme.primaryColor),
     );
   }
 
@@ -204,13 +205,13 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                                   shape: BoxShape.circle,
                                   gradient: const LinearGradient(
                                     colors: [
-                                      Color(0xFFFFD700),
+                                      AppTheme.coinGold,
                                       Color(0xFFFFA500),
                                     ],
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const Color(0xFFFFD700)
+                                      color: const AppTheme.coinGold
                                           .withValues(alpha: 0.4),
                                       blurRadius: 12,
                                     ),
@@ -309,11 +310,11 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
           Container(
             padding: EdgeInsets.all(r.s(10)),
             decoration: BoxDecoration(
-              color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
+              color: const AppTheme.primaryColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(r.s(10)),
             ),
             child: Icon(Icons.play_circle_filled_rounded,
-                color: Color(0xFF4CAF50), size: r.s(28)),
+                color: AppTheme.primaryColor, size: r.s(28)),
           ),
           SizedBox(width: r.s(14)),
           Expanded(
@@ -346,7 +347,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
               decoration: BoxDecoration(
                 color: _isWatchingAd || !AdService.canWatchAd
                     ? Colors.grey[300]
-                    : const Color(0xFF4CAF50),
+                    : const AppTheme.primaryColor,
                 borderRadius: BorderRadius.circular(r.s(20)),
               ),
               child: _isWatchingAd
@@ -381,7 +382,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(r.s(12)),
         border: isPopular
-            ? Border.all(color: const Color(0xFFFF9800), width: 2)
+            ? Border.all(color: const AppTheme.aminoOrange, width: 2)
             : null,
         boxShadow: [
           BoxShadow(
@@ -400,7 +401,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: const LinearGradient(
-                colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+                colors: [AppTheme.coinGold, Color(0xFFFFA500)],
               ),
             ),
             child: Center(
@@ -432,7 +433,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                         padding: EdgeInsets.symmetric(
                             horizontal: r.s(6), vertical: 2),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFF9800),
+                          color: const AppTheme.aminoOrange,
                           borderRadius: BorderRadius.circular(r.s(8)),
                         ),
                         child: Text(
@@ -452,7 +453,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                   Text(
                     'Melhor custo-benefício!',
                     style: TextStyle(
-                      color: Color(0xFFFF9800),
+                      color: AppTheme.aminoOrange,
                       fontSize: r.fs(11),
                       fontWeight: FontWeight.w600,
                     ),
@@ -468,7 +469,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                   horizontal: r.s(14), vertical: r.s(8)),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFFFF9800), Color(0xFFFFB74D)],
+                  colors: [AppTheme.aminoOrange, Color(0xFFFFB74D)],
                 ),
                 borderRadius: BorderRadius.circular(r.s(20)),
               ),

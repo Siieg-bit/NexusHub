@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import 'package:nexus_hub/core/l10n/locale_provider.dart';
 
 /// Painel de Administração Global — Team Amino.
 /// Visão geral de todas as comunidades, usuários e ações de moderação.
@@ -340,7 +341,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Cancelar'),
+                  child: const Text(s.cancel),
                 ),
                 ElevatedButton(
                   onPressed: () async {
@@ -380,7 +381,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content:
-                                Text('Ocorreu um erro. Tente novamente.'),
+                                Text(s.genericError),
                             behavior: SnackBarBehavior.floating,
                           ),
                         );
@@ -390,7 +391,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryColor,
                   ),
-                  child: const Text('Enviar'),
+                  child: const Text(s.sendMessage),
                 ),
               ],
             ),
