@@ -10,10 +10,11 @@ class AppConfig {
   /// URL do projeto Supabase
   static const String supabaseUrl = 'https://ylvzqqvcanzzswjkqeya.supabase.co';
 
-  /// Chave anônima (JWT) do Supabase — segura para uso no client.
-  /// NÃO confundir com a publishable key do dashboard.
+  /// Publishable API Key do Supabase — substitui a antiga anon key (JWT).
+  /// Segura para uso no client-side com RLS habilitado.
+  /// Ref: https://supabase.com/dashboard > Settings > API Keys
   static const String supabaseAnonKey =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsdnpxcXZjYW56enN3amtxZXlhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NTk3MDYsImV4cCI6MjA5MDEzNTcwNn0.eoHEl-w8bac2Q-jxjBvmXr118ZzuGC0uwmsCES7r7hA';
+      'sb_publishable_HYsYzaF8DuBgXpqJAICJ1Q_b73GLUeb';
 
   // ============================================================================
   // APP
