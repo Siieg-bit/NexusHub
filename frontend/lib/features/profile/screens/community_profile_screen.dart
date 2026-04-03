@@ -7,6 +7,7 @@ import '../../../core/models/user_model.dart';
 import '../../../core/models/comment_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/helpers.dart';
+import '../../../core/providers/dm_invite_provider.dart';
 import '../../chat/widgets/chat_bubble.dart'; // AvatarWithFrame + AminoPlusBadge
 import '../../../core/widgets/amino_custom_title.dart';
 import '../../../core/utils/responsive.dart';
@@ -1555,41 +1556,30 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
 
   Future<void> _openDm(BuildContext context) async {
     try {
-      final currentUserId = SupabaseService.currentUserId;
-      if (currentUserId == null) return;
-      final existing = await SupabaseService.table('chat_threads')
-          .select('id')
-          .eq('type', 'dm')
-          .eq('community_id', widget.communityId)
-          .or('host_id.eq.$currentUserId,host_id.eq.${widget.userId}')
-          .maybeSingle();
-      if (existing != null) {
-        if (!mounted) return;
-        context.push(
-            '/community/${widget.communityId}/chat/${existing['id']}');
-      } else {
-        final newThread = await SupabaseService.table('chat_threads')
-            .insert({
-              'community_id': widget.communityId,
-              'type': 'dm',
-              'host_id': currentUserId,
-              'title': 'DM',
-            })
-            .select()
-            .single();
-        await SupabaseService.table('chat_members').insert([
-          {'thread_id': newThread['id'], 'user_id': currentUserId},
-          {'thread_id': newThread['id'], 'user_id': widget.userId},
-        ]);
-        if (!mounted) return;
-        context.push(
-            '/community/${widget.communityId}/chat/${newThread['id']}');
+      final threadId = await DmInviteService().sendInvite(widget.userId);
+      if (threadId == null || threadId.isEmpty) {
+        throw Exception('thread_id_not_returned');
       }
+
+      if (!mounted) return;
+      context.push('/chat/$threadId');
     } catch (e) {
       if (mounted) {
+        final err = e.toString();
+        String message = 'Erro ao abrir chat. Tente novamente.';
+
+        if (err.contains('Não é possível enviar DM para si mesmo')) {
+          message = 'Você não pode abrir um chat consigo mesmo.';
+        } else if (err.contains('não aceita mensagens diretas')) {
+          message = 'Este usuário não aceita mensagens diretas.';
+        } else if (err.contains('só aceita DMs')) {
+          message = 'Este usuário só aceita mensagens de perfis permitidos.';
+        } else if (err.contains('Não é possível enviar mensagem para este usuário')) {
+          message = 'Não foi possível iniciar conversa com este usuário.';
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Erro ao abrir chat. Tente novamente.')),
+          SnackBar(content: Text(message)),
         );
       }
     }

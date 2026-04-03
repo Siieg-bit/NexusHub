@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +8,7 @@ import 'package:timeago/timeago.dart' as timeago;
 
 import '../../../config/app_theme.dart';
 import '../../../core/providers/notification_provider.dart';
+import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 
 // =============================================================================
@@ -24,6 +26,7 @@ class NotificationsScreen extends ConsumerStatefulWidget {
 class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   final _scrollController = ScrollController();
   Timer? _scrollDebounce;
+  final Set<String> _acceptingInviteIds = <String>{};
 
   @override
   void initState() {
@@ -87,7 +90,112 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     }
   }
 
-  void _handleTap(Map<String, dynamic> notification) {
+  Map<String, dynamic> _notificationData(Map<String, dynamic> notification) {
+    final payload = notification['data'];
+    if (payload is Map) {
+      return Map<String, dynamic>.from(payload);
+    }
+    return <String, dynamic>{};
+  }
+
+  String? _inviteCodeFromNotification(Map<String, dynamic> notification) {
+    final payload = _notificationData(notification);
+    final inviteCode = payload['invite_code'] as String?;
+    if (inviteCode == null || inviteCode.trim().isEmpty) return null;
+    return inviteCode.trim();
+  }
+
+  String? _communityIdFromNotification(Map<String, dynamic> notification) {
+    final payload = _notificationData(notification);
+    return notification['community_id'] as String? ?? payload['community_id'] as String?;
+  }
+
+  Future<void> _acceptCommunityInvite(Map<String, dynamic> notification) async {
+    final notificationId = notification['id'] as String?;
+    final inviteCode = _inviteCodeFromNotification(notification);
+    final fallbackCommunityId = _communityIdFromNotification(notification);
+
+    if (inviteCode == null) {
+      if (fallbackCommunityId != null) {
+        context.push('/community/$fallbackCommunityId');
+      }
+      return;
+    }
+
+    if (notificationId != null && _acceptingInviteIds.contains(notificationId)) {
+      return;
+    }
+
+    if (notificationId != null && mounted) {
+      setState(() => _acceptingInviteIds.add(notificationId));
+    }
+
+    try {
+      final response = await SupabaseService.rpc('accept_invite', params: {
+        'p_invite_code': inviteCode,
+      });
+      final result = response is Map
+          ? Map<String, dynamic>.from(response)
+          : <String, dynamic>{};
+      final error = result['error'] as String?;
+      final communityId = result['community_id'] as String? ?? fallbackCommunityId;
+
+      if (error == null || error == 'already_member') {
+        if (notificationId != null) {
+          await ref.read(notificationProvider.notifier).markAsRead(notificationId);
+        }
+        await ref.read(notificationProvider.notifier).refresh();
+
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              error == 'already_member'
+                  ? 'Você já faz parte desta comunidade.'
+                  : 'Convite aceito com sucesso!',
+            ),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+
+        if (communityId != null) {
+          context.push('/community/$communityId');
+        }
+        return;
+      }
+
+      String message;
+      if (error == 'invalid_invite_code') {
+        message = 'Este convite é inválido ou expirou.';
+      } else if (error == 'not_authenticated') {
+        message = 'Faça login para aceitar o convite.';
+      } else {
+        message = 'Não foi possível aceitar o convite agora.';
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Não foi possível aceitar o convite agora.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (notificationId != null && mounted) {
+        setState(() => _acceptingInviteIds.remove(notificationId));
+      }
+    }
+  }
+
+  Future<void> _handleTap(Map<String, dynamic> notification) async {
     final notifId = notification['id'] as String?;
     final isRead = notification['is_read'] as bool? ?? false;
     if (!isRead && notifId != null) {
@@ -96,23 +204,27 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
     final type = notification['type'] as String? ?? '';
     final targetId = notification['post_id'] as String? ?? notification['community_id'] as String?;
-    if (targetId == null) return;
 
     switch (type) {
       case 'like':
       case 'comment':
       case 'mention':
-        context.push('/post/$targetId');
+        if (targetId != null) context.push('/post/$targetId');
         break;
       case 'follow':
-        context.push('/user/$targetId');
+        if (targetId != null) context.push('/user/$targetId');
         break;
       case 'community_invite':
-        context.push('/community/$targetId');
+        final communityId = _communityIdFromNotification(notification);
+        if (communityId != null) {
+          context.push('/community/$communityId');
+        } else {
+          await _acceptCommunityInvite(notification);
+        }
         break;
       case 'chat_message':
       case 'chat_mention':
-        context.push('/chat/$targetId');
+        if (targetId != null) context.push('/chat/$targetId');
         break;
       case 'dm_invite':
         context.push('/chats');
@@ -122,7 +234,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         context.push('/profile');
         break;
       case 'wall_post':
-        context.push('/user/$targetId');
+        if (targetId != null) context.push('/user/$targetId');
         break;
       default:
         break;
@@ -307,9 +419,24 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                   SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
+                        final notification = notifications[index];
+                        final notificationId = notification['id'] as String?;
+                        final hasInviteAction =
+                            notification['type'] == 'community_invite' &&
+                            _inviteCodeFromNotification(notification) != null;
+
                         return _NotificationTile(
-                          data: notifications[index],
-                          onTap: () => _handleTap(notifications[index]),
+                          data: notification,
+                          onTap: () {
+                            _handleTap(notification);
+                          },
+                          onPrimaryAction: hasInviteAction
+                              ? () {
+                                  _acceptCommunityInvite(notification);
+                                }
+                              : null,
+                          isActionLoading: notificationId != null &&
+                              _acceptingInviteIds.contains(notificationId),
                         );
                       },
                       childCount: notifications.length,
@@ -354,8 +481,15 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 class _NotificationTile extends StatelessWidget {
   final Map<String, dynamic> data;
   final VoidCallback? onTap;
+  final VoidCallback? onPrimaryAction;
+  final bool isActionLoading;
 
-  const _NotificationTile({required this.data, this.onTap});
+  const _NotificationTile({
+    required this.data,
+    this.onTap,
+    this.onPrimaryAction,
+    this.isActionLoading = false,
+  });
 
   // Ícone pequeno sobreposto ao avatar (canto inferior direito)
   IconData _getIcon(String type) {
@@ -434,6 +568,7 @@ class _NotificationTile extends StatelessWidget {
     final iconColor = _getIconColor(type);
     final avatarUrl = actor?['icon_url'] as String?;
     final nickname = actor?['nickname'] as String? ?? '';
+    final hasPrimaryAction = type == 'community_invite' && onPrimaryAction != null;
 
     return InkWell(
       onTap: onTap,
@@ -555,6 +690,56 @@ class _NotificationTile extends StatelessWidget {
                       fontSize: r.fs(11),
                     ),
                   ),
+                  if (hasPrimaryAction) ...[
+                    SizedBox(height: r.s(8)),
+                    GestureDetector(
+                      onTap: isActionLoading ? null : onPrimaryAction,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: r.s(12),
+                          vertical: r.s(8),
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(r.s(10)),
+                          border: Border.all(
+                            color: AppTheme.primaryColor.withValues(alpha: 0.28),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (isActionLoading)
+                              SizedBox(
+                                width: r.s(14),
+                                height: r.s(14),
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppTheme.primaryColor,
+                                ),
+                              )
+                            else
+                              Icon(
+                                Icons.check_circle_rounded,
+                                color: AppTheme.primaryColor,
+                                size: r.s(16),
+                              ),
+                            SizedBox(width: r.s(6)),
+                            Text(
+                              isActionLoading
+                                  ? 'Aceitando...'
+                                  : 'Aceitar convite',
+                              style: TextStyle(
+                                color: AppTheme.primaryColor,
+                                fontSize: r.fs(12),
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

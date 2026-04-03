@@ -18,6 +18,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
   List<Map<String, dynamic>> _allAchievements = [];
   Set<String> _unlockedIds = {};
   Map<String, int> _progressMap = {};
+  List<Map<String, dynamic>> _newlyUnlocked = [];
 
   // Dados do heatmap de check-in
   Map<String, int> _checkinData = {};
@@ -34,7 +35,23 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
   Future<void> _load() async {
     try {
       final userId = widget.userId ?? SupabaseService.currentUserId;
+      final currentUserId = SupabaseService.currentUserId;
       if (userId == null) return;
+
+      // Validar e desbloquear conquistas automaticamente apenas
+      // quando o usuário estiver visualizando o próprio perfil.
+      if (currentUserId != null && userId == currentUserId) {
+        try {
+          final rpcRes = await SupabaseService.rpc('check_achievements', params: {
+            'p_user_id': userId,
+          });
+          _newlyUnlocked = List<Map<String, dynamic>>.from(rpcRes as List? ?? []);
+        } catch (_) {
+          _newlyUnlocked = [];
+        }
+      } else {
+        _newlyUnlocked = [];
+      }
 
       // Carregar todas as conquistas disponíveis
       final allRes = await SupabaseService.table('achievements')
@@ -49,17 +66,20 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
       final unlocked = List<Map<String, dynamic>>.from(unlockedRes as List? ?? []);
 
       _unlockedIds = unlocked
-          .map((u) => (u['achievement_id'] as String?) ?? '').toSet();
+          .map((u) => (u['achievement_id'] as String?) ?? '')
+          .where((id) => id.isNotEmpty)
+          .toSet();
       _progressMap = {
         for (final u in unlocked)
-          u['achievement_id'] as String: 100,
+          if ((u['achievement_id'] as String?)?.isNotEmpty == true)
+            u['achievement_id'] as String: 100,
       };
 
       // Carregar dados de check-in para o heatmap
       await _loadCheckinHeatmap(userId);
 
       if (!mounted) return;
-      if (mounted) setState(() => _isLoading = false);
+      setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -164,6 +184,61 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                         longestStreak: _longestStreak,
                       ),
                       SizedBox(height: r.s(24)),
+
+                      if (_newlyUnlocked.isNotEmpty) ...[
+                        Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.all(r.s(16)),
+                          decoration: BoxDecoration(
+                            color: AppTheme.successColor.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(r.s(16)),
+                            border: Border.all(
+                              color: AppTheme.successColor.withValues(alpha: 0.35),
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.emoji_events_rounded,
+                                    color: AppTheme.successColor,
+                                    size: r.s(22),
+                                  ),
+                                  SizedBox(width: r.s(10)),
+                                  Expanded(
+                                    child: Text(
+                                      'Novas conquistas desbloqueadas',
+                                      style: TextStyle(
+                                        color: context.textPrimary,
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: r.fs(15),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: r.s(10)),
+                              ..._newlyUnlocked.map(
+                                (achievement) => Padding(
+                                  padding: EdgeInsets.only(bottom: r.s(6)),
+                                  child: Text(
+                                    '• ${achievement['achievement_name'] ?? 'Conquista'}'
+                                    '${((achievement['reward_coins'] as int?) ?? 0) > 0 ? ' · +${achievement['reward_coins']} moedas' : ''}',
+                                    style: TextStyle(
+                                      color: context.textSecondary,
+                                      fontSize: r.fs(13),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: r.s(24)),
+                      ],
 
                       // Stats
                       Container(

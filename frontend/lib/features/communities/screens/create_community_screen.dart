@@ -51,35 +51,40 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final userId = SupabaseService.currentUserId;
-      if (userId == null) return;
-      final response = await SupabaseService.table('communities')
-          .insert({
-            'name': _nameController.text.trim(),
-            'tagline': _taglineController.text.trim().isEmpty
-                ? null
-                : _taglineController.text.trim(),
-            'description': _descriptionController.text.trim().isEmpty
-                ? null
-                : _descriptionController.text.trim(),
-            'agent_id': userId,
-            'theme_color': _selectedColor,
-            'primary_language': _selectedLanguage,
-          })
-          .select()
-          .single();
+      final result = await SupabaseService.rpc(
+        'create_community',
+        params: {
+          'p_name': _nameController.text.trim(),
+          'p_tagline': _taglineController.text.trim(),
+          'p_description': _descriptionController.text.trim(),
+          'p_category': 'general',
+          'p_join_type': 'open',
+          'p_theme_color': _selectedColor,
+          'p_primary_language': _selectedLanguage,
+        },
+      );
 
-      // Entrar na comunidade como leader
-      await SupabaseService.table('community_members').insert({
-        'user_id': userId,
-        'community_id': response['id'],
-        'role': 'agent',
-      });
+      final response = Map<String, dynamic>.from(result as Map);
+      final communityId = response['community_id'] as String?;
+      final success = response['success'] == true && communityId != null;
 
-      if (mounted) {
-        context.pop();
-        context.push('/community/${response['id']}');
+      if (!mounted) return;
+
+      if (!success) {
+        final error = response['error'] as String? ?? 'unknown';
+        final message = switch (error) {
+          'unauthenticated' => 'Você precisa estar logado para criar uma comunidade.',
+          'name_required' => 'O nome da comunidade é obrigatório.',
+          _ => 'Erro ao criar comunidade. Tente novamente.',
+        };
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+        return;
       }
+
+      context.pop();
+      context.push('/community/$communityId');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -86,35 +86,91 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
 
   Future<void> _vote(int index) async {
     if (_hasVoted || _selectedOption != null) return;
+    if (index >= _options.length || _options[index]['id'] == null) return;
+
+    final previousSelectedOption = _selectedOption;
+    final previousHasVoted = _hasVoted;
+    final previousTotalVotes = _totalVotes;
+    final previousOptions = _options
+        .map((option) => Map<String, dynamic>.from(option))
+        .toList();
 
     setState(() {
       _selectedOption = index;
       _hasVoted = true;
       _totalVotes++;
-      if (index < _options.length) {
-        final current = (_options[index]['votes_count'] as int?) ??
-            (_options[index]['votes'] as int?) ??
-            0;
-        _options[index]['votes_count'] = current + 1;
-      }
+      final current = (_options[index]['votes_count'] as int?) ??
+          (_options[index]['votes'] as int?) ??
+          0;
+      _options[index]['votes_count'] = current + 1;
     });
 
     try {
-      if (_options.isNotEmpty && _options[index]['id'] != null) {
-        await SupabaseService.table('poll_votes').insert({
-          'option_id': _options[index]['id'],
-          'user_id': SupabaseService.currentUserId,
+      final result = await SupabaseService.rpc(
+        'vote_on_poll',
+        params: {
+          'p_option_id': _options[index]['id'],
+        },
+      );
+
+      final response = Map<String, dynamic>.from(result as Map);
+      final success = response['success'] == true;
+      final error = response['error'] as String?;
+      final serverOptionId = response['option_id'] as String?;
+      final serverTotalVotes = response['total_votes'] as int?;
+      final serverOptionVotes = response['option_votes'] as int?;
+
+      if (!mounted) return;
+
+      if (success) {
+        setState(() {
+          if (serverTotalVotes != null) {
+            _totalVotes = serverTotalVotes;
+          }
+          if (serverOptionVotes != null) {
+            _options[index]['votes_count'] = serverOptionVotes;
+          }
         });
-        // Incrementar contador na opção
-        await SupabaseService.table('poll_options')
-            .update({
-              'votes_count': (_options[index]['votes_count'] as int?) ?? 1,
-            })
-            .eq('id', _options[index]['id']);
+        widget.onVoted?.call();
+        return;
       }
-      widget.onVoted?.call();
+
+      if (error == 'already_voted') {
+        final selectedIndex = serverOptionId == null
+            ? index
+            : _options.indexWhere((option) => option['id'] == serverOptionId);
+        setState(() {
+          _hasVoted = true;
+          _selectedOption = selectedIndex >= 0 ? selectedIndex : index;
+          _options = previousOptions;
+          if (_selectedOption != null && _selectedOption! < _options.length) {
+            final current = (_options[_selectedOption!]['votes_count'] as int?) ??
+                (_options[_selectedOption!]['votes'] as int?) ??
+                0;
+            _options[_selectedOption!]['votes_count'] = current;
+          }
+          if (serverTotalVotes != null) {
+            _totalVotes = serverTotalVotes;
+          }
+        });
+        widget.onVoted?.call();
+        return;
+      }
+
+      setState(() {
+        _selectedOption = previousSelectedOption;
+        _hasVoted = previousHasVoted;
+        _totalVotes = previousTotalVotes;
+        _options = previousOptions;
+      });
     } catch (e) {
-      // Silenciar — voto já registrado visualmente
+      if (!mounted) return;
+      setState(() {
+        _selectedOption = previousSelectedOption;
+        _hasVoted = previousHasVoted;
+        _totalVotes = previousTotalVotes;
+        _options = previousOptions;
+      });
     }
   }
 

@@ -1056,26 +1056,35 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 ),
                 onPressed: () async {
                   try {
-                    await SupabaseService.table('posts').update({
-                      'title': titleCtrl.text.trim().isNotEmpty
-                          ? titleCtrl.text.trim()
-                          : null,
-                      'content': contentCtrl.text.trim(),
-                      'edited_at': DateTime.now().toIso8601String(),
-                    }).eq('id', widget.postId);
+                    final trimmedTitle = titleCtrl.text.trim();
+                    final trimmedContent = contentCtrl.text.trim();
+
+                    await SupabaseService.rpc('edit_post', params: {
+                      'p_post_id': widget.postId,
+                      'p_title': trimmedTitle.isNotEmpty ? trimmedTitle : null,
+                      'p_content': trimmedContent,
+                    });
+
                     if (ctx.mounted) Navigator.pop(ctx);
                     ref.invalidate(postDetailProvider(widget.postId));
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                            content: Text('Post atualizado!'),
-                            behavior: SnackBarBehavior.floating),
+                          content: Text('Post atualizado!'),
+                          behavior: SnackBarBehavior.floating,
+                        ),
                       );
                     }
                   } catch (e) {
                     if (ctx.mounted) {
                       ScaffoldMessenger.of(ctx).showSnackBar(
-                        SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
+                        SnackBar(
+                          content: Text(
+                            e.toString().contains('Post não encontrado ou sem permissão')
+                                ? 'Você não tem permissão para editar este post.'
+                                : 'Ocorreu um erro. Tente novamente.',
+                          ),
+                        ),
                       );
                     }
                   }
