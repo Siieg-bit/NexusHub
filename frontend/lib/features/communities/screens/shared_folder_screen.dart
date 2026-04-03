@@ -233,10 +233,10 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
       final storagePath =
           'shared-files/${widget.communityId}/${DateTime.now().millisecondsSinceEpoch}_$fileName';
       await SupabaseService.client.storage
-          .from('media')
+          .from('post_media')
           .upload(storagePath, file);
       final url = SupabaseService.client.storage
-          .from('media')
+          .from('post_media')
           .getPublicUrl(storagePath);
 
       final fileSize = await file.length();

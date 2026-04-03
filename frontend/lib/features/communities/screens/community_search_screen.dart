@@ -176,7 +176,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
       // Buscar wiki
       final wikiRes = await SupabaseService.table('wiki_entries')
           .select(
-              'id, title, content, author_id, created_at, profiles!wiki_articles_author_id_fkey(nickname, icon_url)')
+              'id, title, content, author_id, created_at, profiles!wiki_entries_author_id_fkey(nickname, icon_url)')
           .eq('community_id', widget.communityId)
           .eq('status', 'approved')
           .ilike('title', pattern)

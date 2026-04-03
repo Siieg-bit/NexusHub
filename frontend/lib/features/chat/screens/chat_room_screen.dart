@@ -2118,11 +2118,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       final storagePath =
                           'chat_media/${widget.threadId}/$fileName';
                       await SupabaseService.client.storage
-                          .from('media')
+                          .from('chat_media')
                           .upload(storagePath, file);
                       if (_isDisposed || !mounted) return;
                       final url = SupabaseService.client.storage
-                          .from('media')
+                          .from('chat_media')
                           .getPublicUrl(storagePath);
                       _sendMessage(
                         type: 'audio',

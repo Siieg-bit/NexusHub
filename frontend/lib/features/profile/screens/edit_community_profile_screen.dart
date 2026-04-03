@@ -81,10 +81,10 @@ class _EditCommunityProfileScreenState
           'community_profiles/${widget.communityId}/$userId/$folder/${DateTime.now().millisecondsSinceEpoch}.$ext';
 
       await SupabaseService.client.storage
-          .from('media')
+          .from('avatars')
           .uploadBinary(path, bytes);
 
-      return SupabaseService.client.storage.from('media').getPublicUrl(path);
+      return SupabaseService.client.storage.from('avatars').getPublicUrl(path);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

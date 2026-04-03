@@ -234,79 +234,162 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     );
   }
 
-  void _showBroadcastDialog(BuildContext context) {
+  void _showBroadcastDialog(BuildContext context) async {
     final r = context.r;
     final msgCtrl = TextEditingController();
+    final titleCtrl = TextEditingController(text: 'Broadcast');
+
+    // Carregar comunidades onde o admin é agent/leader
+    final userId = SupabaseService.currentUserId;
+    List<Map<String, dynamic>> communities = [];
+    String? selectedCommunityId;
+    try {
+      final res = await SupabaseService.table('community_members')
+          .select('community_id, communities(id, title)')
+          .eq('user_id', userId ?? '')
+          .inFilter('role', ['agent', 'leader']);
+      communities = (res as List).cast<Map<String, dynamic>>();
+    } catch (_) {}
+
+    if (!context.mounted) return;
+
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: context.surfaceColor,
-        title: Text('Enviar Broadcast',
-            style: TextStyle(color: context.textPrimary)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Esta mensagem ser\u00e1 enviada para todos os usu\u00e1rios.',
-                style: TextStyle(color: Colors.grey[400], fontSize: r.fs(13))),
-            SizedBox(height: r.s(16)),
-            TextField(
-              controller: msgCtrl,
-              maxLines: 4,
-              style: TextStyle(color: context.textPrimary),
-              decoration: InputDecoration(
-                hintText: 'Digite a mensagem...',
-                hintStyle: TextStyle(color: Colors.grey[600]),
-                filled: true,
-                fillColor: context.scaffoldBg,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(r.s(12)),
-                  borderSide: BorderSide.none,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          backgroundColor: context.surfaceColor,
+          title: Text('Enviar Broadcast',
+              style: TextStyle(color: context.textPrimary)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                  'Esta mensagem será enviada para todos os membros da comunidade.',
+                  style:
+                      TextStyle(color: Colors.grey[400], fontSize: r.fs(13))),
+              SizedBox(height: r.s(12)),
+              // Seletor de comunidade
+              DropdownButtonFormField<String>(
+                value: selectedCommunityId,
+                dropdownColor: context.surfaceColor,
+                style: TextStyle(color: context.textPrimary),
+                decoration: InputDecoration(
+                  labelText: 'Comunidade',
+                  labelStyle: TextStyle(color: Colors.grey[500]),
+                  filled: true,
+                  fillColor: context.scaffoldBg,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(r.s(12)),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+                items: communities.map((c) {
+                  final comm = c['communities'] as Map<String, dynamic>?;
+                  return DropdownMenuItem<String>(
+                    value: comm?['id'] as String? ?? '',
+                    child: Text(comm?['title'] as String? ?? 'Sem nome',
+                        overflow: TextOverflow.ellipsis),
+                  );
+                }).toList(),
+                onChanged: (v) => setDialogState(() => selectedCommunityId = v),
+              ),
+              SizedBox(height: r.s(12)),
+              // Título
+              TextField(
+                controller: titleCtrl,
+                style: TextStyle(color: context.textPrimary),
+                decoration: InputDecoration(
+                  labelText: 'Título',
+                  labelStyle: TextStyle(color: Colors.grey[500]),
+                  filled: true,
+                  fillColor: context.scaffoldBg,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(r.s(12)),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
+              SizedBox(height: r.s(12)),
+              // Mensagem
+              TextField(
+                controller: msgCtrl,
+                maxLines: 4,
+                style: TextStyle(color: context.textPrimary),
+                decoration: InputDecoration(
+                  hintText: 'Digite a mensagem...',
+                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  filled: true,
+                  fillColor: context.scaffoldBg,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(r.s(12)),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                titleCtrl.dispose();
+                msgCtrl.dispose();
+                Navigator.pop(ctx);
+              },
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (msgCtrl.text.trim().isEmpty) return;
+                if (selectedCommunityId == null ||
+                    selectedCommunityId!.isEmpty) {
+                  ScaffoldMessenger.of(ctx).showSnackBar(
+                    const SnackBar(
+                      content: Text('Selecione uma comunidade'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                  return;
+                }
+                try {
+                  await SupabaseService.client.rpc('send_broadcast', params: {
+                    'p_community_id': selectedCommunityId,
+                    'p_title': titleCtrl.text.trim().isEmpty
+                        ? 'Broadcast'
+                        : titleCtrl.text.trim(),
+                    'p_content': msgCtrl.text.trim(),
+                  });
+                  titleCtrl.dispose();
+                  msgCtrl.dispose();
+                  if (ctx.mounted) Navigator.pop(ctx);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Broadcast enviado!'),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  titleCtrl.dispose();
+                  msgCtrl.dispose();
+                  if (ctx.mounted) Navigator.pop(ctx);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Ocorreu um erro. Tente novamente.'),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryColor,
+              ),
+              child: const Text('Enviar'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (msgCtrl.text.trim().isEmpty) return;
-              try {
-                await SupabaseService.client.rpc('send_broadcast', params: {
-                  'p_community_id': '', // TODO: selecionar comunidade alvo
-                  'p_title': 'Broadcast',
-                  'p_content': msgCtrl.text.trim(),
-                });
-                if (ctx.mounted) Navigator.pop(ctx);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Broadcast enviado!'),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                }
-              } catch (e) {
-                if (ctx.mounted) Navigator.pop(ctx);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Ocorreu um erro. Tente novamente.'),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
-            ),
-            child: const Text('Enviar'),
-          ),
-        ],
       ),
     ).then((_) {
       msgCtrl.dispose();

@@ -39,10 +39,19 @@ class AuthState {
 /// Listenable que notifica o GoRouter quando o estado de auth muda.
 /// Isso faz o router re-avaliar o redirect sempre que o auth muda.
 class AuthChangeNotifier extends ChangeNotifier {
+  StreamSubscription? _subscription;
+
   AuthChangeNotifier() {
-    SupabaseService.auth.onAuthStateChange.listen((_) {
+    _subscription = SupabaseService.auth.onAuthStateChange.listen((_) {
       notifyListeners();
     });
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    _subscription = null;
+    super.dispose();
   }
 }
 
@@ -51,8 +60,17 @@ final authChangeNotifier = AuthChangeNotifier();
 
 /// Provider principal de autenticação.
 class AuthNotifier extends StateNotifier<AuthState> {
+  StreamSubscription? _authSubscription;
+
   AuthNotifier() : super(const AuthState()) {
     _init();
+  }
+
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    _authSubscription = null;
+    super.dispose();
   }
 
   void _init() {
@@ -74,7 +92,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
 
     // Escutar mudanças de auth
-    SupabaseService.auth.onAuthStateChange.listen((data) {
+    _authSubscription?.cancel();
+    _authSubscription = SupabaseService.auth.onAuthStateChange.listen((data) {
       if (data.event == AuthChangeEvent.signedIn) {
         state = state.copyWith(isAuthenticated: true);
         _loadUserProfile();

@@ -53,7 +53,7 @@ final userCosmeticsProvider =
   try {
     // Buscar itens equipados do inventário do usuário
     final equipped = await SupabaseService.table('user_purchases')
-        .select('*, store_items!user_inventory_item_id_fkey(*)')
+        .select('*, store_items!user_purchases_item_id_fkey(*)')
         .eq('user_id', userId)
         .eq('is_equipped', true);
 
@@ -115,7 +115,7 @@ final batchCosmeticsProvider =
   try {
     // Buscar todos os itens equipados de todos os usuários de uma vez
     final equipped = await SupabaseService.table('user_purchases')
-        .select('*, store_items!user_inventory_item_id_fkey(*)')
+        .select('*, store_items!user_purchases_item_id_fkey(*)')
         .inFilter('user_id', userIds)
         .eq('is_equipped', true);
 

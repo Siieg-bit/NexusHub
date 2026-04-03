@@ -468,11 +468,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/admin',
         name: 'admin-panel',
+        redirect: (context, state) {
+          final user = ref.read(currentUserProvider);
+          if (user == null || !user.isTeamMember) return '/explore';
+          return null;
+        },
         builder: (context, state) => const AdminPanelScreen(),
       ),
       GoRoute(
         path: '/admin/reports',
         name: 'admin-reports',
+        redirect: (context, state) {
+          final user = ref.read(currentUserProvider);
+          if (user == null || !user.isTeamMember) return '/explore';
+          return null;
+        },
         builder: (context, state) => const AdminReportsScreen(),
       ),
 

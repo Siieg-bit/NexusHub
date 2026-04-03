@@ -154,10 +154,10 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
         final fileName =
             'chat_covers/${DateTime.now().millisecondsSinceEpoch}.jpg';
         await SupabaseService.client.storage
-            .from('uploads')
+            .from('chat_media')
             .uploadBinary(fileName, bytes);
         coverUrl = SupabaseService.client.storage
-            .from('uploads')
+            .from('chat_media')
             .getPublicUrl(fileName);
       }
 
