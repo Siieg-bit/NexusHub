@@ -84,7 +84,7 @@ class _CreatePublicChatScreenState
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(message),
-              backgroundColor: AppTheme.errorColor.shade700,
+              backgroundColor: Colors.red.shade700,
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -106,7 +106,7 @@ class _CreatePublicChatScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(userMsg),
-            backgroundColor: AppTheme.errorColor,
+            backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -228,8 +228,8 @@ class _CreatePublicChatScreenState
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(r.s(12)),
-                  borderSide: BorderSide(
-                      color: AppTheme.primaryColor, width: 1.5),
+                  borderSide:
+                      BorderSide(color: AppTheme.primaryColor, width: 1.5),
                 ),
               ),
               validator: (value) {
@@ -270,8 +270,8 @@ class _CreatePublicChatScreenState
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(r.s(12)),
-                  borderSide: BorderSide(
-                      color: AppTheme.primaryColor, width: 1.5),
+                  borderSide:
+                      BorderSide(color: AppTheme.primaryColor, width: 1.5),
                 ),
               ),
             ),

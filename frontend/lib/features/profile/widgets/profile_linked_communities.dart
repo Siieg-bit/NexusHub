@@ -54,8 +54,7 @@ class ProfileLinkedCommunities extends ConsumerWidget {
                 runSpacing: 12,
                 children: communities.map((community) {
                   return GestureDetector(
-                    onTap: () =>
-                        context.push('/community/${community.id}'),
+                    onTap: () => context.push('/community/${community.id}'),
                     child: SizedBox(
                       width: (MediaQuery.of(context).size.width - 48) / 2,
                       child: Row(
@@ -116,8 +115,7 @@ class ProfileLinkedCommunities extends ConsumerWidget {
     );
   }
 
-  Widget _communityPlaceholder(
-      BuildContext context, CommunityModel community) {
+  Widget _communityPlaceholder(BuildContext context, CommunityModel community) {
     final r = context.r;
     return Container(
       width: r.s(32),

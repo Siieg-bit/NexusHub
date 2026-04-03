@@ -186,7 +186,8 @@ class MusicEmbedWidget extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(_platformIcon, color: Colors.white, size: r.s(14)),
+                          Icon(_platformIcon,
+                              color: Colors.white, size: r.s(14)),
                           SizedBox(width: r.s(4)),
                           Text(
                             _platformName,

@@ -83,7 +83,8 @@ class CacheService {
       final data = box.get(communityId);
       if (data == null) return null;
       return List<Map<String, dynamic>>.from(
-        (jsonDecode(data) as List? ?? []).map((e) => Map<String, dynamic>.from(e)),
+        (jsonDecode(data) as List? ?? [])
+            .map((e) => Map<String, dynamic>.from(e)),
       );
     } catch (e) {
       debugPrint('CacheService: Erro ao ler posts do cache: $e');
@@ -138,7 +139,8 @@ class CacheService {
       final data = box.get('my_communities');
       if (data == null) return null;
       return List<Map<String, dynamic>>.from(
-        (jsonDecode(data) as List? ?? []).map((e) => Map<String, dynamic>.from(e)),
+        (jsonDecode(data) as List? ?? [])
+            .map((e) => Map<String, dynamic>.from(e)),
       );
     } catch (e) {
       debugPrint('CacheService: Erro ao ler comunidades do cache: $e');
@@ -193,7 +195,8 @@ class CacheService {
       final data = box.get(threadId);
       if (data == null) return null;
       return List<Map<String, dynamic>>.from(
-        (jsonDecode(data) as List? ?? []).map((e) => Map<String, dynamic>.from(e)),
+        (jsonDecode(data) as List? ?? [])
+            .map((e) => Map<String, dynamic>.from(e)),
       );
     } catch (e) {
       debugPrint('CacheService: Erro ao ler mensagens do cache: $e');
@@ -250,8 +253,7 @@ class CacheService {
   // ══════════════════════════════════════════════════════════════════════════
 
   /// Salva o feed global no cache.
-  static Future<void> cacheGlobalFeed(
-      List<Map<String, dynamic>> posts) async {
+  static Future<void> cacheGlobalFeed(List<Map<String, dynamic>> posts) async {
     try {
       final box = Hive.box<String>(_feedBox);
       await box.put('global_feed', jsonEncode(posts));
@@ -268,7 +270,8 @@ class CacheService {
       final data = box.get('global_feed');
       if (data == null) return null;
       return List<Map<String, dynamic>>.from(
-        (jsonDecode(data) as List? ?? []).map((e) => Map<String, dynamic>.from(e)),
+        (jsonDecode(data) as List? ?? [])
+            .map((e) => Map<String, dynamic>.from(e)),
       );
     } catch (e) {
       debugPrint('CacheService: Erro ao ler feed global do cache: $e');
@@ -277,8 +280,7 @@ class CacheService {
   }
 
   /// Salva o feed "For You" no cache.
-  static Future<void> cacheForYouFeed(
-      List<Map<String, dynamic>> posts) async {
+  static Future<void> cacheForYouFeed(List<Map<String, dynamic>> posts) async {
     try {
       final box = Hive.box<String>(_feedBox);
       await box.put('for_you_feed', jsonEncode(posts));
@@ -295,7 +297,8 @@ class CacheService {
       final data = box.get('for_you_feed');
       if (data == null) return null;
       return List<Map<String, dynamic>>.from(
-        (jsonDecode(data) as List? ?? []).map((e) => Map<String, dynamic>.from(e)),
+        (jsonDecode(data) as List? ?? [])
+            .map((e) => Map<String, dynamic>.from(e)),
       );
     } catch (e) {
       debugPrint('CacheService: Erro ao ler feed For You do cache: $e');
@@ -326,7 +329,8 @@ class CacheService {
       final data = box.get('notifications');
       if (data == null) return null;
       return List<Map<String, dynamic>>.from(
-        (jsonDecode(data) as List? ?? []).map((e) => Map<String, dynamic>.from(e)),
+        (jsonDecode(data) as List? ?? [])
+            .map((e) => Map<String, dynamic>.from(e)),
       );
     } catch (e) {
       debugPrint('CacheService: Erro ao ler notificações do cache: $e');
@@ -351,14 +355,14 @@ class CacheService {
   }
 
   /// Recupera entradas wiki de uma comunidade do cache.
-  static List<Map<String, dynamic>>? getCachedWikiEntries(
-      String communityId) {
+  static List<Map<String, dynamic>>? getCachedWikiEntries(String communityId) {
     try {
       final box = Hive.box<String>(_wikiBox);
       final data = box.get(communityId);
       if (data == null) return null;
       return List<Map<String, dynamic>>.from(
-        (jsonDecode(data) as List? ?? []).map((e) => Map<String, dynamic>.from(e)),
+        (jsonDecode(data) as List? ?? [])
+            .map((e) => Map<String, dynamic>.from(e)),
       );
     } catch (e) {
       debugPrint('CacheService: Erro ao ler wiki do cache: $e');

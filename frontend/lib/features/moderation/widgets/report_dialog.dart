@@ -200,8 +200,8 @@ class _ReportDialogState extends State<ReportDialog> {
               onTap: () => setState(() => _selectedType = id),
               child: Container(
                 margin: EdgeInsets.only(bottom: r.s(6)),
-                padding:
-                    EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(12)),
+                padding: EdgeInsets.symmetric(
+                    horizontal: r.s(14), vertical: r.s(12)),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? Color(type['color'] as int? ?? 0).withValues(alpha: 0.1)
@@ -216,7 +216,8 @@ class _ReportDialogState extends State<ReportDialog> {
                 child: Row(
                   children: [
                     Icon(type['icon'] as IconData,
-                        color: Color(type['color'] as int? ?? 0), size: r.s(20)),
+                        color: Color(type['color'] as int? ?? 0),
+                        size: r.s(20)),
                     SizedBox(width: r.s(12)),
                     Text(
                       type['label'] as String? ?? '',
@@ -225,7 +226,8 @@ class _ReportDialogState extends State<ReportDialog> {
                     const Spacer(),
                     if (isSelected)
                       Icon(Icons.check_circle_rounded,
-                          color: Color(type['color'] as int? ?? 0), size: r.s(20)),
+                          color: Color(type['color'] as int? ?? 0),
+                          size: r.s(20)),
                   ],
                 ),
               ),
@@ -270,8 +272,8 @@ class _ReportDialogState extends State<ReportDialog> {
                           strokeWidth: 2, color: Colors.white),
                     )
                   : Text('Enviar Denúncia',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: r.fs(15))),
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: r.fs(15))),
             ),
           ),
           SizedBox(height: r.s(16)),

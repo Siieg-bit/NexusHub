@@ -73,7 +73,8 @@ class AdService {
         onAdFailedToLoad: (error) {
           _rewardedAd = null;
           _adLoading = false;
-          debugPrint('[AdService] Falha ao carregar rewarded: ${error.message}');
+          debugPrint(
+              '[AdService] Falha ao carregar rewarded: ${error.message}');
         },
       ),
     );

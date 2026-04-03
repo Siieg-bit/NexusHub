@@ -97,8 +97,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           .select()
           .order('members_count', ascending: false)
           .limit(20);
-      _recommendedCommunities =
-          (recRes as List? ?? []).map((e) => CommunityModel.fromJson(e)).toList();
+      _recommendedCommunities = (recRes as List? ?? [])
+          .map((e) => CommunityModel.fromJson(e))
+          .toList();
 
       // New Communities — mais recentes
       try {
@@ -106,8 +107,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             .select()
             .order('created_at', ascending: false)
             .limit(10);
-        _newCommunities =
-            (newRes as List? ?? []).map((e) => CommunityModel.fromJson(e)).toList();
+        _newCommunities = (newRes as List? ?? [])
+            .map((e) => CommunityModel.fromJson(e))
+            .toList();
       } catch (e) {
         debugPrint('[explore_screen] Erro: $e');
       }
@@ -115,12 +117,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       // For You — posts populares recentes de comunidades do usuario
       try {
         final forYouRes = await SupabaseService.table('posts')
-            .select('*, profiles!posts_author_id_fkey(id, nickname, icon_url), communities!posts_community_id_fkey(id, name, icon_url)')
+            .select(
+                '*, profiles!posts_author_id_fkey(id, nickname, icon_url), communities!posts_community_id_fkey(id, name, icon_url)')
             .eq('status', 'ok')
             .order('likes_count', ascending: false)
             .limit(15);
         if (!mounted) return;
-        _forYouPosts = List<Map<String, dynamic>>.from(forYouRes as List? ?? []);
+        _forYouPosts =
+            List<Map<String, dynamic>>.from(forYouRes as List? ?? []);
       } catch (e) {
         debugPrint('[explore_screen] Erro: $e');
       }
@@ -137,7 +141,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     super.dispose();
   }
 
-  void _showCommunityContextMenu(BuildContext context, CommunityModel community) {
+  void _showCommunityContextMenu(
+      BuildContext context, CommunityModel community) {
     showModalBottomSheet(
       context: context,
       backgroundColor: context.surfaceColor,
@@ -164,7 +169,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 ),
                 // Header
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: r.s(16), vertical: r.s(8)),
                   child: Row(
                     children: [
                       Container(
@@ -175,12 +181,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           color: ctx.cardBg,
                         ),
                         clipBehavior: Clip.antiAlias,
-                        child: community.iconUrl != null && community.iconUrl!.isNotEmpty
+                        child: community.iconUrl != null &&
+                                community.iconUrl!.isNotEmpty
                             ? CachedNetworkImage(
                                 imageUrl: community.iconUrl!,
                                 fit: BoxFit.cover,
                               )
-                            : Icon(Icons.groups_rounded, color: ctx.textHint, size: r.s(20)),
+                            : Icon(Icons.groups_rounded,
+                                color: ctx.textHint, size: r.s(20)),
                       ),
                       SizedBox(width: r.s(12)),
                       Expanded(
@@ -201,10 +209,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 Divider(color: Colors.grey[800], height: 1),
                 // 1. Ver detalhes
                 ListTile(
-                  leading: Icon(Icons.info_outline_rounded, color: AppTheme.accentColor, size: r.s(22)),
+                  leading: Icon(Icons.info_outline_rounded,
+                      color: AppTheme.accentColor, size: r.s(22)),
                   title: Text(
                     'Ver detalhes da comunidade',
-                    style: TextStyle(color: ctx.textPrimary, fontSize: r.fs(14), fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                        color: ctx.textPrimary,
+                        fontSize: r.fs(14),
+                        fontWeight: FontWeight.w600),
                   ),
                   onTap: () {
                     Navigator.pop(ctx);
@@ -213,16 +225,21 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 ),
                 // 2. Reordenar
                 ListTile(
-                  leading: Icon(Icons.swap_vert_rounded, color: AppTheme.aminoPurple, size: r.s(22)),
+                  leading: Icon(Icons.swap_vert_rounded,
+                      color: AppTheme.aminoPurple, size: r.s(22)),
                   title: Text(
                     'Reordenar comunidades',
-                    style: TextStyle(color: ctx.textPrimary, fontSize: r.fs(14), fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                        color: ctx.textPrimary,
+                        fontSize: r.fs(14),
+                        fontWeight: FontWeight.w600),
                   ),
                   onTap: () {
                     Navigator.pop(ctx);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: const Text('Segure e arraste os cards para reordenar suas comunidades.'),
+                        content: const Text(
+                            'Segure e arraste os cards para reordenar suas comunidades.'),
                         backgroundColor: AppTheme.accentColor,
                         behavior: SnackBarBehavior.floating,
                         duration: const Duration(seconds: 3),
@@ -232,10 +249,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 ),
                 // 3. Sair
                 ListTile(
-                  leading: Icon(Icons.exit_to_app_rounded, color: AppTheme.errorColor, size: r.s(22)),
+                  leading: Icon(Icons.exit_to_app_rounded,
+                      color: AppTheme.errorColor, size: r.s(22)),
                   title: Text(
                     'Sair da comunidade',
-                    style: TextStyle(color: AppTheme.errorColor, fontSize: r.fs(14), fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                        color: AppTheme.errorColor,
+                        fontSize: r.fs(14),
+                        fontWeight: FontWeight.w600),
                   ),
                   onTap: () {
                     Navigator.pop(ctx);
@@ -250,17 +271,20 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
-  Future<void> _confirmLeaveCommunity(BuildContext context, CommunityModel community) async {
+  Future<void> _confirmLeaveCommunity(
+      BuildContext context, CommunityModel community) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) {
         final r = ctx.r;
         return AlertDialog(
           backgroundColor: ctx.surfaceColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(16))),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(r.s(16))),
           title: Text(
             'Sair da comunidade',
-            style: TextStyle(color: ctx.textPrimary, fontWeight: FontWeight.w800),
+            style:
+                TextStyle(color: ctx.textPrimary, fontWeight: FontWeight.w800),
           ),
           content: Text(
             'Tem certeza que deseja sair de "${community.name}"? Voc\u00ea poder\u00e1 entrar novamente depois.',
@@ -269,11 +293,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: Text('Cancelar', style: TextStyle(color: ctx.textSecondary)),
+              child:
+                  Text('Cancelar', style: TextStyle(color: ctx.textSecondary)),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: Text('Sair', style: TextStyle(color: AppTheme.errorColor, fontWeight: FontWeight.w700)),
+              child: Text('Sair',
+                  style: TextStyle(
+                      color: AppTheme.errorColor, fontWeight: FontWeight.w700)),
             ),
           ],
         );
@@ -305,7 +332,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Erro ao sair da comunidade. Tente novamente.'),
+              content:
+                  const Text('Erro ao sair da comunidade. Tente novamente.'),
               backgroundColor: AppTheme.errorColor,
               behavior: SnackBarBehavior.floating,
             ),
@@ -359,13 +387,15 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                               height: r.s(180),
                               child: ListView.builder(
                                 scrollDirection: Axis.horizontal,
-                                padding: EdgeInsets.symmetric(horizontal: r.s(16)),
+                                padding:
+                                    EdgeInsets.symmetric(horizontal: r.s(16)),
                                 itemCount: _myCommunities.length,
                                 itemBuilder: (context, index) =>
                                     _MyCommunityCard(
-                                      community: _myCommunities[index],
-                                      onLongPress: (c) => _showCommunityContextMenu(context, c),
-                                    ),
+                                  community: _myCommunities[index],
+                                  onLongPress: (c) =>
+                                      _showCommunityContextMenu(context, c),
+                                ),
                               ),
                             ),
                           ],
@@ -377,10 +407,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                               height: r.s(120),
                               child: ListView.builder(
                                 scrollDirection: Axis.horizontal,
-                                padding: EdgeInsets.symmetric(horizontal: r.s(16)),
+                                padding:
+                                    EdgeInsets.symmetric(horizontal: r.s(16)),
                                 itemCount: _newCommunities.length,
                                 itemBuilder: (context, index) =>
-                                    _NewCommunityCard(community: _newCommunities[index]),
+                                    _NewCommunityCard(
+                                        community: _newCommunities[index]),
                               ),
                             ),
                           ],
@@ -415,7 +447,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   // BANNER CAROUSEL — Estilo Amino (banner grande + dots)
   // ==========================================================================
   Widget _buildBannerCarousel() {
-      final r = context.r;
+    final r = context.r;
     // Banners de exemplo (serão substituídos por dados reais)
     final bannerItems = _recommendedCommunities.take(5).toList();
     if (bannerItems.isEmpty) return const SizedBox.shrink();
@@ -444,7 +476,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     fit: StackFit.expand,
                     children: [
                       // Imagem de fundo
-                      if (community.bannerUrl != null && community.bannerUrl!.isNotEmpty)
+                      if (community.bannerUrl != null &&
+                          community.bannerUrl!.isNotEmpty)
                         CachedNetworkImage(
                           imageUrl: community.bannerUrl ?? '',
                           fit: BoxFit.cover,
@@ -456,7 +489,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                               gradient: LinearGradient(
                                 colors: [
                                   _parseColor(community.themeColor),
-                                  _parseColor(community.themeColor).withValues(alpha: 0.5),
+                                  _parseColor(community.themeColor)
+                                      .withValues(alpha: 0.5),
                                 ],
                               ),
                             ),
@@ -468,7 +502,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                             gradient: LinearGradient(
                               colors: [
                                 _parseColor(community.themeColor),
-                                _parseColor(community.themeColor).withValues(alpha: 0.5),
+                                _parseColor(community.themeColor)
+                                    .withValues(alpha: 0.5),
                               ],
                             ),
                           ),
@@ -508,7 +543,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                 color: context.cardBg,
                               ),
                               clipBehavior: Clip.antiAlias,
-                              child: community.iconUrl != null && community.iconUrl!.isNotEmpty
+                              child: community.iconUrl != null &&
+                                      community.iconUrl!.isNotEmpty
                                   ? CachedNetworkImage(
                                       imageUrl: community.iconUrl ?? '',
                                       fit: BoxFit.cover,
@@ -535,7 +571,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                   Text(
                                     '${formatCount(community.membersCount)} membros',
                                     style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.7),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.7),
                                       fontSize: r.fs(11),
                                     ),
                                   ),
@@ -598,7 +635,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   // SECTION HEADER — Estilo Amino
   // ==========================================================================
   Widget _buildSectionHeader(String title, {VoidCallback? onSeeAll}) {
-      final r = context.r;
+    final r = context.r;
     return Padding(
       padding: EdgeInsets.fromLTRB(r.s(16), r.s(20), r.s(16), r.s(12)),
       child: Row(
@@ -754,13 +791,14 @@ class _MyCommunityCard extends StatelessWidget {
                     ),
                   ),
                   clipBehavior: Clip.antiAlias,
-                  child: community.iconUrl != null && community.iconUrl!.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: community.iconUrl ?? '',
-                          fit: BoxFit.cover,
-                        )
-                      : Icon(Icons.groups_rounded,
-                          color: context.textHint, size: r.s(22)),
+                  child:
+                      community.iconUrl != null && community.iconUrl!.isNotEmpty
+                          ? CachedNetworkImage(
+                              imageUrl: community.iconUrl ?? '',
+                              fit: BoxFit.cover,
+                            )
+                          : Icon(Icons.groups_rounded,
+                              color: context.textHint, size: r.s(22)),
                 ),
               ),
             ),
@@ -884,7 +922,8 @@ class _NewCommunityCard extends StatelessWidget {
               top: 8,
               left: 8,
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: r.s(8), vertical: r.s(3)),
+                padding:
+                    EdgeInsets.symmetric(horizontal: r.s(8), vertical: r.s(3)),
                 decoration: BoxDecoration(
                   color: AppTheme.successColor,
                   borderRadius: BorderRadius.circular(r.s(6)),
@@ -915,7 +954,8 @@ class _NewCommunityCard extends StatelessWidget {
                       color: context.cardBg,
                     ),
                     clipBehavior: Clip.antiAlias,
-                    child: community.iconUrl != null && community.iconUrl!.isNotEmpty
+                    child: community.iconUrl != null &&
+                            community.iconUrl!.isNotEmpty
                         ? CachedNetworkImage(
                             imageUrl: community.iconUrl ?? '',
                             fit: BoxFit.cover,
@@ -1184,7 +1224,8 @@ class _RecommendedCommunityTile extends StatelessWidget {
             ),
             // Botão Entrar
             Container(
-              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(7)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(7)),
               decoration: BoxDecoration(
                 color: AppTheme.primaryColor,
                 borderRadius: BorderRadius.circular(r.s(20)),
@@ -1203,4 +1244,3 @@ class _RecommendedCommunityTile extends StatelessWidget {
     );
   }
 }
-

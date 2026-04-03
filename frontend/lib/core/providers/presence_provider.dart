@@ -11,12 +11,13 @@ import '../services/presence_service.dart';
 /// final count = onlineUsers.length;
 /// final isOnline = onlineUsers.contains(userId);
 /// ```
-final communityPresenceProvider =
-    StreamNotifierProvider.family<CommunityPresenceNotifier, Set<String>, String>(
+final communityPresenceProvider = StreamNotifierProvider.family<
+    CommunityPresenceNotifier, Set<String>, String>(
   CommunityPresenceNotifier.new,
 );
 
-class CommunityPresenceNotifier extends FamilyStreamNotifier<Set<String>, String> {
+class CommunityPresenceNotifier
+    extends FamilyStreamNotifier<Set<String>, String> {
   @override
   Stream<Set<String>> build(String arg) {
     final communityId = arg;

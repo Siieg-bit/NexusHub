@@ -10,8 +10,6 @@ import '../widgets/crosspost_picker.dart';
 import '../../../core/utils/responsive.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/draft_provider.dart';
-import 'package:nexus_hub/core/l10n/locale_provider.dart';
-// TODO: Add 'final s = ref.watch(stringsProvider);' in build() methods
 
 /// Editor rico de criação de posts — estilo Amino Apps.
 /// Suporta os 9 tipos exatos do Amino:
@@ -19,6 +17,7 @@ import 'package:nexus_hub/core/l10n/locale_provider.dart';
 /// Link Externo (5), Quiz Interativo (6), Imagem (7), Post Externo (8).
 class CreatePostScreen extends ConsumerStatefulWidget {
   final String communityId;
+
   /// Tipo de post pré-selecionado ao abrir (ex: 'image', 'poll', 'quiz', 'link', 'qa', 'normal').
   final String? initialType;
   const CreatePostScreen({
@@ -96,8 +95,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
     try {
       final userId = SupabaseService.currentUserId ?? 'unknown';
-      final path =
-          'posts/$userId/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final path = 'posts/$userId/${DateTime.now().millisecondsSinceEpoch}.jpg';
       final rawBytes = await image.readAsBytes();
       // Comprimir imagem antes do upload
       final bytes = await MediaUtils.compressImage(rawBytes);
@@ -107,8 +105,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           .uploadBinary(path, bytes);
       if (!mounted) return;
 
-      final url =
-          SupabaseService.storage.from('post_media').getPublicUrl(path);
+      final url = SupabaseService.storage.from('post_media').getPublicUrl(path);
 
       if (!mounted) return;
       setState(() => _mediaUrls.add(url));
@@ -116,7 +113,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(s.uploadError),
+            content: Text('Erro no upload. Tente novamente.'),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -142,8 +139,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           .uploadBinary(path, bytes);
       if (!mounted) return;
 
-      final url =
-          SupabaseService.storage.from('post_media').getPublicUrl(path);
+      final url = SupabaseService.storage.from('post_media').getPublicUrl(path);
 
       if (!mounted) return;
       setState(() => _coverImageUrl = url);
@@ -151,7 +147,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(s.uploadError),
+            content: Text('Erro no upload. Tente novamente.'),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -191,7 +187,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
       final contentText = _useBlogEditor
           ? _contentBlocks
-              .where((b) => b.type == BlockType.text || b.type == BlockType.heading)
+              .where((b) =>
+                  b.type == BlockType.text || b.type == BlockType.heading)
               .map((b) => b.controller?.text ?? b.text)
               .where((t) => t.isNotEmpty)
               .join('\n\n')
@@ -274,7 +271,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       }
 
       // ── Crosspost espelho (best-effort) ──
-      if (_selectedType == 'crosspost' && _crosspostCommunity != null && postId != null) {
+      if (_selectedType == 'crosspost' &&
+          _crosspostCommunity != null &&
+          postId != null) {
         try {
           await SupabaseService.rpc('create_crosspost', params: {
             'p_target_community_id': _crosspostCommunity!['id'],
@@ -303,7 +302,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(s.genericError),
+            content: Text('Ocorreu um erro. Tente novamente.'),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -318,7 +317,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     final sel = _contentController.selection;
     if (sel.isValid && sel.start != sel.end) {
       final selected = text.substring(sel.start, sel.end);
-      final newText = text.replaceRange(sel.start, sel.end, '$prefix$selected$suffix');
+      final newText =
+          text.replaceRange(sel.start, sel.end, '$prefix$selected$suffix');
       _contentController.value = TextEditingValue(
         text: newText,
         selection: TextSelection.collapsed(
@@ -328,7 +328,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     } else {
       // Sem seleção: insere placeholder
       final pos = sel.isValid ? sel.start : text.length;
-      final newText = '${text.substring(0, pos)}${prefix}texto${suffix}${text.substring(pos)}';
+      final newText =
+          '${text.substring(0, pos)}${prefix}texto${suffix}${text.substring(pos)}';
       _contentController.value = TextEditingValue(
         text: newText,
         selection: TextSelection(
@@ -379,13 +380,15 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         actions: [
           // Botão de rascunhos
           IconButton(
-            icon: Icon(Icons.drafts_rounded, color: context.textSecondary, size: r.s(22)),
+            icon: Icon(Icons.drafts_rounded,
+                color: context.textSecondary, size: r.s(22)),
             tooltip: 'Rascunhos',
             onPressed: () => context.push('/drafts'),
           ),
           // Botão de salvar como rascunho
           IconButton(
-            icon: Icon(Icons.save_outlined, color: context.textSecondary, size: r.s(22)),
+            icon: Icon(Icons.save_outlined,
+                color: context.textSecondary, size: r.s(22)),
             tooltip: 'Salvar rascunho',
             onPressed: () async {
               final title = _titleController.text.trim();
@@ -398,11 +401,11 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               }
               try {
                 await ref.read(postDraftsProvider.notifier).createDraft(
-                  communityId: widget.communityId,
-                  title: title.isNotEmpty ? title : null,
-                  content: content.isNotEmpty ? content : null,
-                  postType: _selectedType,
-                );
+                      communityId: widget.communityId,
+                      title: title.isNotEmpty ? title : null,
+                      content: content.isNotEmpty ? content : null,
+                      postType: _selectedType,
+                    );
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -414,7 +417,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(s.saveError)),
+                    SnackBar(content: Text('Erro ao salvar. Tente novamente.')),
                   );
                 }
               }
@@ -460,8 +463,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             height: r.s(48),
             decoration: BoxDecoration(
               border: Border(
-                bottom: BorderSide(
-                    color: Colors.white.withValues(alpha: 0.05)),
+                bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
               ),
             ),
             child: ListView.builder(
@@ -505,9 +507,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                                 ? AppTheme.primaryColor
                                 : Colors.grey[600],
                             fontSize: r.fs(12),
-                            fontWeight: isSelected
-                                ? FontWeight.w700
-                                : FontWeight.w500,
+                            fontWeight:
+                                isSelected ? FontWeight.w700 : FontWeight.w500,
                           ),
                         ),
                       ],
@@ -550,7 +551,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                                 Icon(Icons.add_photo_alternate_rounded,
                                     color: Colors.grey[600], size: r.s(28)),
                                 SizedBox(height: r.s(4)),
-                                Text(s.addCover,
+                                Text('Adicionar Capa',
                                     style: TextStyle(
                                         color: Colors.grey[600],
                                         fontSize: r.fs(11))),
@@ -573,8 +574,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                       hintText: 'Título...',
                       border: InputBorder.none,
                       hintStyle: TextStyle(
-                          color: Colors.grey[700],
-                          fontWeight: FontWeight.w700),
+                          color: Colors.grey[700], fontWeight: FontWeight.w700),
                       contentPadding: EdgeInsets.zero,
                     ),
                     maxLines: 1,
@@ -585,16 +585,20 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                     Padding(
                       padding: EdgeInsets.only(bottom: r.s(8)),
                       child: GestureDetector(
-                        onTap: () => setState(() => _useBlogEditor = !_useBlogEditor),
+                        onTap: () =>
+                            setState(() => _useBlogEditor = !_useBlogEditor),
                         child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(6)),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: r.s(12), vertical: r.s(6)),
                           decoration: BoxDecoration(
                             color: _useBlogEditor
                                 ? AppTheme.accentColor.withValues(alpha: 0.15)
                                 : context.cardBg,
                             borderRadius: BorderRadius.circular(r.s(20)),
                             border: _useBlogEditor
-                                ? Border.all(color: AppTheme.accentColor.withValues(alpha: 0.4))
+                                ? Border.all(
+                                    color: AppTheme.accentColor
+                                        .withValues(alpha: 0.4))
                                 : null,
                           ),
                           child: Row(
@@ -603,7 +607,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                               Icon(
                                 Icons.dashboard_customize_rounded,
                                 size: r.s(14),
-                                color: _useBlogEditor ? AppTheme.accentColor : Colors.grey[600],
+                                color: _useBlogEditor
+                                    ? AppTheme.accentColor
+                                    : Colors.grey[600],
                               ),
                               SizedBox(width: r.s(6)),
                               Text(
@@ -611,7 +617,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                                 style: TextStyle(
                                   fontSize: r.fs(12),
                                   fontWeight: FontWeight.w600,
-                                  color: _useBlogEditor ? AppTheme.accentColor : Colors.grey[600],
+                                  color: _useBlogEditor
+                                      ? AppTheme.accentColor
+                                      : Colors.grey[600],
                                 ),
                               ),
                             ],
@@ -669,7 +677,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                         .copyWith(dividerColor: Colors.transparent),
                     child: ExpansionTile(
                       tilePadding: EdgeInsets.zero,
-                      title: Text(s.advancedOptions,
+                      title: Text('Opções Avançadas',
                           style: TextStyle(
                               fontSize: r.fs(13),
                               color: Colors.grey[500],
@@ -689,25 +697,34 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                           decoration: BoxDecoration(
                             color: context.cardBg,
                             borderRadius: BorderRadius.circular(r.s(10)),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                            border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.05)),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
                                 children: [
-                                  Icon(Icons.lock_outline_rounded, size: r.s(16), color: Colors.grey[600]),
+                                  Icon(Icons.lock_outline_rounded,
+                                      size: r.s(16), color: Colors.grey[600]),
                                   SizedBox(width: r.s(8)),
-                                  Text(s.visibility, style: TextStyle(fontSize: r.fs(13), color: Colors.grey[400], fontWeight: FontWeight.w600)),
+                                  Text('Visibilidade',
+                                      style: TextStyle(
+                                          fontSize: r.fs(13),
+                                          color: Colors.grey[400],
+                                          fontWeight: FontWeight.w600)),
                                 ],
                               ),
                               SizedBox(height: r.s(8)),
                               Wrap(
                                 spacing: r.s(8),
                                 children: [
-                                  _visibilityChip('public', 'Público', Icons.public_rounded),
-                                  _visibilityChip('followers', 'Seguidores', Icons.people_rounded),
-                                  _visibilityChip('private', 'Privado', Icons.lock_rounded),
+                                  _visibilityChip('public', 'Público',
+                                      Icons.public_rounded),
+                                  _visibilityChip('followers', 'Seguidores',
+                                      Icons.people_rounded),
+                                  _visibilityChip(
+                                      'private', 'Privado', Icons.lock_rounded),
                                 ],
                               ),
                             ],
@@ -716,9 +733,11 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                         SizedBox(height: r.s(8)),
                         // Bloquear comentários
                         GestureDetector(
-                          onTap: () => setState(() => _commentsBlocked = !_commentsBlocked),
+                          onTap: () => setState(
+                              () => _commentsBlocked = !_commentsBlocked),
                           child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(10)),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: r.s(12), vertical: r.s(10)),
                             decoration: BoxDecoration(
                               color: _commentsBlocked
                                   ? AppTheme.errorColor.withValues(alpha: 0.1)
@@ -733,25 +752,35 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                             child: Row(
                               children: [
                                 Icon(
-                                  _commentsBlocked ? Icons.comments_disabled_rounded : Icons.comment_rounded,
+                                  _commentsBlocked
+                                      ? Icons.comments_disabled_rounded
+                                      : Icons.comment_rounded,
                                   size: r.s(16),
-                                  color: _commentsBlocked ? AppTheme.errorColor : Colors.grey[600],
+                                  color: _commentsBlocked
+                                      ? AppTheme.errorColor
+                                      : Colors.grey[600],
                                 ),
                                 SizedBox(width: r.s(8)),
                                 Text(
-                                  _commentsBlocked ? 'Comentários bloqueados' : 'Permitir comentários',
+                                  _commentsBlocked
+                                      ? 'Comentários bloqueados'
+                                      : 'Permitir comentários',
                                   style: TextStyle(
                                     fontSize: r.fs(13),
-                                    color: _commentsBlocked ? AppTheme.errorColor : Colors.grey[400],
+                                    color: _commentsBlocked
+                                        ? AppTheme.errorColor
+                                        : Colors.grey[400],
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 const Spacer(),
                                 Switch(
                                   value: !_commentsBlocked,
-                                  onChanged: (v) => setState(() => _commentsBlocked = !v),
+                                  onChanged: (v) =>
+                                      setState(() => _commentsBlocked = !v),
                                   activeColor: AppTheme.primaryColor,
-                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  materialTapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
                                 ),
                               ],
                             ),
@@ -784,18 +813,30 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(6)),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primaryColor.withValues(alpha: 0.15) : Colors.transparent,
+          color: isSelected
+              ? AppTheme.primaryColor.withValues(alpha: 0.15)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(r.s(20)),
           border: Border.all(
-            color: isSelected ? AppTheme.primaryColor.withValues(alpha: 0.5) : Colors.grey.withValues(alpha: 0.2),
+            color: isSelected
+                ? AppTheme.primaryColor.withValues(alpha: 0.5)
+                : Colors.grey.withValues(alpha: 0.2),
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: r.s(13), color: isSelected ? AppTheme.primaryColor : Colors.grey[500]),
+            Icon(icon,
+                size: r.s(13),
+                color: isSelected ? AppTheme.primaryColor : Colors.grey[500]),
             SizedBox(width: r.s(4)),
-            Text(label, style: TextStyle(fontSize: r.fs(12), color: isSelected ? AppTheme.primaryColor : Colors.grey[500], fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500)),
+            Text(label,
+                style: TextStyle(
+                    fontSize: r.fs(12),
+                    color:
+                        isSelected ? AppTheme.primaryColor : Colors.grey[500],
+                    fontWeight:
+                        isSelected ? FontWeight.w700 : FontWeight.w500)),
           ],
         ),
       ),
@@ -811,7 +852,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     IconData? icon,
     TextInputType? keyboardType,
   }) {
-      final r = context.r;
+    final r = context.r;
     return Container(
       decoration: BoxDecoration(
         color: context.cardBg,
@@ -825,8 +866,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: TextStyle(color: Colors.grey[700], fontSize: r.fs(13)),
-          prefixIcon:
-              icon != null ? Icon(icon, size: r.s(18), color: Colors.grey[600]) : null,
+          prefixIcon: icon != null
+              ? Icon(icon, size: r.s(18), color: Colors.grey[600])
+              : null,
           border: InputBorder.none,
           contentPadding:
               EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(12)),
@@ -839,7 +881,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   // POLL EDITOR
   // ========================================================================
   Widget _buildPollEditor() {
-      final r = context.r;
+    final r = context.r;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -894,7 +936,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 Icon(Icons.add_rounded,
                     size: r.s(16), color: AppTheme.primaryColor),
                 SizedBox(width: r.s(6)),
-                Text(s.addOption,
+                Text('Adicionar Opção',
                     style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontSize: r.fs(13),
@@ -911,7 +953,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   // QUIZ EDITOR
   // ========================================================================
   Widget _buildQuizEditor() {
-      final r = context.r;
+    final r = context.r;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -965,11 +1007,12 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 SizedBox(height: r.s(8)),
                 TextField(
                   controller: q.questionController,
-                  style: TextStyle(
-                      fontSize: r.fs(13), color: context.textPrimary),
+                  style:
+                      TextStyle(fontSize: r.fs(13), color: context.textPrimary),
                   decoration: InputDecoration(
                     hintText: 'Type the question...',
-                    hintStyle: TextStyle(color: Colors.grey[700], fontSize: r.fs(13)),
+                    hintStyle:
+                        TextStyle(color: Colors.grey[700], fontSize: r.fs(13)),
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.zero,
                   ),
@@ -1011,8 +1054,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                   );
                 }),
                 GestureDetector(
-                  onTap: () => setState(
-                      () => q.options.add(TextEditingController())),
+                  onTap: () =>
+                      setState(() => q.options.add(TextEditingController())),
                   child: Padding(
                     padding: EdgeInsets.only(top: r.s(4)),
                     child: Row(
@@ -1044,7 +1087,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 Icon(Icons.add_rounded,
                     size: r.s(16), color: AppTheme.primaryColor),
                 SizedBox(width: r.s(6)),
-                Text(s.addQuestion,
+                Text('Adicionar Pergunta',
                     style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontSize: r.fs(13),
@@ -1061,7 +1104,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   // LINK EDITOR
   // ========================================================================
   Widget _buildLinkEditor() {
-      final r = context.r;
+    final r = context.r;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1092,7 +1135,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   // IMAGE EDITOR
   // ========================================================================
   Widget _buildImageEditor() {
-      final r = context.r;
+    final r = context.r;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1169,7 +1212,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   // BOTTOM TOOLBAR — Estilo Amino (flutuante, escuro)
   // ========================================================================
   Widget _buildToolbar() {
-      final r = context.r;
+    final r = context.r;
     return Container(
       padding: EdgeInsets.symmetric(vertical: r.s(8), horizontal: r.s(16)),
       decoration: BoxDecoration(
@@ -1189,18 +1232,19 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               if (url != null && mounted) {
                 setState(() => _gifUrl = url);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('GIF adicionado ao post!'), behavior: SnackBarBehavior.floating),
+                  const SnackBar(
+                      content: Text('GIF adicionado ao post!'),
+                      behavior: SnackBarBehavior.floating),
                 );
               }
             }),
-            _ToolbarButton(
-                Icons.music_note_rounded, 'Music', () {
+            _ToolbarButton(Icons.music_note_rounded, 'Music', () {
               _showMusicPicker();
             }),
-            _ToolbarButton(
-                Icons.format_bold_rounded, 'Bold', () => _wrapSelection('**', '**')),
-            _ToolbarButton(
-                Icons.format_italic_rounded, 'Italic', () => _wrapSelection('_', '_')),
+            _ToolbarButton(Icons.format_bold_rounded, 'Bold',
+                () => _wrapSelection('**', '**')),
+            _ToolbarButton(Icons.format_italic_rounded, 'Italic',
+                () => _wrapSelection('_', '_')),
             _ToolbarButton(Icons.format_strikethrough_rounded, 'Strike',
                 () => _wrapSelection('~~', '~~')),
           ],
@@ -1222,15 +1266,20 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       ),
       builder: (ctx) => Padding(
         padding: EdgeInsets.only(
-          left: r.s(20), right: r.s(20), top: r.s(20),
+          left: r.s(20),
+          right: r.s(20),
+          top: r.s(20),
           bottom: MediaQuery.of(ctx).viewInsets.bottom + r.s(24),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(s.addMusic,
-                style: TextStyle(fontSize: r.fs(18), fontWeight: FontWeight.w800, color: context.textPrimary)),
+            Text('Adicionar Música',
+                style: TextStyle(
+                    fontSize: r.fs(18),
+                    fontWeight: FontWeight.w800,
+                    color: context.textPrimary)),
             SizedBox(height: r.s(16)),
             TextField(
               controller: titleCtrl,
@@ -1244,7 +1293,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                   borderRadius: BorderRadius.circular(r.s(10)),
                   borderSide: BorderSide.none,
                 ),
-                prefixIcon: Icon(Icons.music_note_rounded, color: AppTheme.primaryColor, size: r.s(18)),
+                prefixIcon: Icon(Icons.music_note_rounded,
+                    color: AppTheme.primaryColor, size: r.s(18)),
               ),
             ),
             SizedBox(height: r.s(12)),
@@ -1260,7 +1310,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                   borderRadius: BorderRadius.circular(r.s(10)),
                   borderSide: BorderSide.none,
                 ),
-                prefixIcon: Icon(Icons.link_rounded, color: Colors.grey[600], size: r.s(18)),
+                prefixIcon: Icon(Icons.link_rounded,
+                    color: Colors.grey[600], size: r.s(18)),
               ),
             ),
             SizedBox(height: r.s(16)),
@@ -1269,18 +1320,25 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               child: ElevatedButton(
                 onPressed: () {
                   setState(() {
-                    _musicUrl = urlCtrl.text.trim().isNotEmpty ? urlCtrl.text.trim() : null;
-                    _musicTitle = titleCtrl.text.trim().isNotEmpty ? titleCtrl.text.trim() : null;
+                    _musicUrl = urlCtrl.text.trim().isNotEmpty
+                        ? urlCtrl.text.trim()
+                        : null;
+                    _musicTitle = titleCtrl.text.trim().isNotEmpty
+                        ? titleCtrl.text.trim()
+                        : null;
                   });
                   Navigator.pop(ctx);
                   if (_musicUrl != null) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Música adicionada ao post!'), behavior: SnackBarBehavior.floating),
+                      const SnackBar(
+                          content: Text('Música adicionada ao post!'),
+                          behavior: SnackBarBehavior.floating),
                     );
                   }
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryColor),
-                child: const Text(s.confirm),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryColor),
+                child: const Text('Confirmar'),
               ),
             ),
           ],

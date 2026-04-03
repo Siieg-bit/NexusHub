@@ -26,25 +26,24 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
 
   static const _interestCategories = [
     _InterestItem(
-        'Anime & Mangá', Icons.movie_filter_rounded, AppTheme.fabPink),
-    _InterestItem('K-Pop', Icons.music_note_rounded, AppTheme.badgeAge),
-    _InterestItem('Jogos', Icons.sports_esports_rounded, AppTheme.primaryColor),
-    _InterestItem('Arte & Design', Icons.palette_rounded, AppTheme.aminoOrange),
-    _InterestItem('Moda', Icons.checkroom_rounded, AppTheme.aminoMagenta),
+        'Anime & Mangá', Icons.movie_filter_rounded, Color(0xFFE91E63)),
+    _InterestItem('K-Pop', Icons.music_note_rounded, Color(0xFF9C27B0)),
+    _InterestItem('Jogos', Icons.sports_esports_rounded, Color(0xFF4CAF50)),
+    _InterestItem('Arte & Design', Icons.palette_rounded, Color(0xFFFF9800)),
+    _InterestItem('Moda', Icons.checkroom_rounded, Color(0xFFE040FB)),
     _InterestItem(
         'Livros & Escrita', Icons.menu_book_rounded, Color(0xFF795548)),
     _InterestItem('Filmes & Séries', Icons.theaters_rounded, Color(0xFFF44336)),
-    _InterestItem('Música', Icons.headphones_rounded, AppTheme.infoColor),
+    _InterestItem('Música', Icons.headphones_rounded, Color(0xFF2196F3)),
     _InterestItem('Fotografia', Icons.camera_alt_rounded, Color(0xFF607D8B)),
-    _InterestItem('Ciência', Icons.science_rounded, AppTheme.accentColor),
+    _InterestItem('Ciência', Icons.science_rounded, Color(0xFF00BCD4)),
     _InterestItem('Esportes', Icons.fitness_center_rounded, Color(0xFFFF5722)),
     _InterestItem('Tecnologia', Icons.computer_rounded, Color(0xFF3F51B5)),
     _InterestItem(
         'Cosplay', Icons.face_retouching_natural_rounded, Color(0xFFFF4081)),
     _InterestItem(
         'Espiritualidade', Icons.self_improvement_rounded, Color(0xFF8BC34A)),
-    _InterestItem(
-        'Culinária', Icons.restaurant_rounded, Color(0xFFFFEB3B)),
+    _InterestItem('Culinária', Icons.restaurant_rounded, Color(0xFFFFEB3B)),
     _InterestItem('Pets & Animais', Icons.pets_rounded, Color(0xFF009688)),
     _InterestItem('Viagem', Icons.flight_rounded, Color(0xFF03A9F4)),
     _InterestItem('Terror', Icons.dark_mode_rounded, Color(0xFF424242)),
@@ -54,7 +53,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
     _InterestItem('Faça Você Mesmo', Icons.handyman_rounded, Color(0xFFCDDC39)),
     _InterestItem('Quadrinhos', Icons.auto_stories_rounded, Color(0xFFFF6F00)),
     _InterestItem('Dança', Icons.nightlife_rounded, Color(0xFFD500F9)),
-    _InterestItem('Natureza', Icons.park_rounded, AppTheme.primaryColor),
+    _InterestItem('Natureza', Icons.park_rounded, Color(0xFF4CAF50)),
   ];
 
   void _nextStep() {
@@ -159,7 +158,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
   }
 
   Widget _buildHeader() {
-      final r = context.r;
+    final r = context.r;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: r.s(20), vertical: r.s(12)),
       child: Column(
@@ -170,7 +169,8 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
               if (_currentStep > 0)
                 GestureDetector(
                   onTap: _prevStep,
-                  child: Icon(Icons.arrow_back_ios_rounded, size: r.s(20), color: context.textPrimary),
+                  child: Icon(Icons.arrow_back_ios_rounded,
+                      size: r.s(20), color: context.textPrimary),
                 )
               else
                 SizedBox(width: r.s(20)),
@@ -186,7 +186,10 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
                 onTap: () => context.go('/'),
                 child: Text(
                   'Pular',
-                  style: TextStyle(color: AppTheme.primaryColor, fontSize: r.fs(14), fontWeight: FontWeight.w700),
+                  style: TextStyle(
+                      color: AppTheme.primaryColor,
+                      fontSize: r.fs(14),
+                      fontWeight: FontWeight.w700),
                 ),
               ),
             ],
@@ -208,7 +211,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
   }
 
   Widget _buildWelcomeStep() {
-      final r = context.r;
+    final r = context.r;
     return SingleChildScrollView(
       padding: EdgeInsets.all(r.s(24)),
       child: Column(
@@ -279,11 +282,13 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
               fillColor: context.surfaceColor,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(r.s(16)),
-                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+                borderSide:
+                    BorderSide(color: Colors.white.withValues(alpha: 0.05)),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(r.s(16)),
-                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+                borderSide:
+                    BorderSide(color: Colors.white.withValues(alpha: 0.05)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(r.s(16)),
@@ -302,7 +307,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
   }
 
   Widget _buildAminoIdStep() {
-      final r = context.r;
+    final r = context.r;
     return SingleChildScrollView(
       padding: EdgeInsets.all(r.s(24)),
       child: Column(
@@ -354,17 +359,20 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
             decoration: InputDecoration(
               hintText: 'ex: gamer_pro_2026',
               hintStyle: TextStyle(color: Colors.grey[600]),
-              prefixIcon: const Icon(Icons.alternate_email_rounded, color: AppTheme.primaryColor),
+              prefixIcon: const Icon(Icons.alternate_email_rounded,
+                  color: AppTheme.primaryColor),
               counterStyle: TextStyle(color: Colors.grey[600]),
               filled: true,
               fillColor: context.surfaceColor,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(r.s(16)),
-                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+                borderSide:
+                    BorderSide(color: Colors.white.withValues(alpha: 0.05)),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(r.s(16)),
-                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+                borderSide:
+                    BorderSide(color: Colors.white.withValues(alpha: 0.05)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(r.s(16)),
@@ -393,7 +401,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
   }
 
   Widget _buildInterestsStep() {
-      final r = context.r;
+    final r = context.r;
     return Column(
       children: [
         SizedBox(height: r.s(16)),
@@ -461,24 +469,27 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
                           : context.surfaceColor,
                       borderRadius: BorderRadius.circular(r.s(16)),
                       border: Border.all(
-                        color: isSelected ? item.color : Colors.white.withValues(alpha: 0.05),
+                        color: isSelected
+                            ? item.color
+                            : Colors.white.withValues(alpha: 0.05),
                         width: isSelected ? 2 : 1,
                       ),
-                      boxShadow: isSelected ? [
-                        BoxShadow(
-                          color: item.color.withValues(alpha: 0.2),
-                          blurRadius: 8,
-                          spreadRadius: 1,
-                        )
-                      ] : null,
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: item.color.withValues(alpha: 0.2),
+                                blurRadius: 8,
+                                spreadRadius: 1,
+                              )
+                            ]
+                          : null,
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
                           item.icon,
-                          color:
-                              isSelected ? item.color : Colors.grey[500],
+                          color: isSelected ? item.color : Colors.grey[500],
                           size: r.s(32),
                         ),
                         SizedBox(height: r.s(8)),
@@ -522,7 +533,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
   }
 
   Widget _buildSuggestedCommunitiesStep() {
-      final r = context.r;
+    final r = context.r;
     return SingleChildScrollView(
       padding: EdgeInsets.all(r.s(24)),
       child: Column(
@@ -579,7 +590,8 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
                     interest, Icons.star_rounded, AppTheme.primaryColor),
               );
               return Container(
-                padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
+                padding:
+                    EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
                 decoration: BoxDecoration(
                   color: item.color.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(r.s(20)),
@@ -631,7 +643,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
     required VoidCallback? onTap,
     bool isLoading = false,
   }) {
-      final r = context.r;
+    final r = context.r;
     final isEnabled = onTap != null;
     return GestureDetector(
       onTap: isEnabled ? onTap : null,

@@ -33,9 +33,6 @@ class PushNotificationService {
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
 
   static StreamController<Map<String, dynamic>>? _notificationStreamController;
-  static StreamSubscription<String>? _tokenRefreshSubscription;
-  static StreamSubscription<RemoteMessage>? _foregroundSubscription;
-  static StreamSubscription<RemoteMessage>? _messageOpenSubscription;
 
   /// Stream de notificações para a UI reagir
   static Stream<Map<String, dynamic>> get notificationStream {
@@ -77,16 +74,13 @@ class PushNotificationService {
       await _registerToken();
 
       // Listener para refresh do token
-      _tokenRefreshSubscription?.cancel();
-      _tokenRefreshSubscription = _messaging.onTokenRefresh.listen(_saveToken);
+      _messaging.onTokenRefresh.listen(_saveToken);
 
       // Listener para mensagens em foreground
-      _foregroundSubscription?.cancel();
-      _foregroundSubscription = FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+      FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
 
       // Listener para quando o usuário toca na notificação
-      _messageOpenSubscription?.cancel();
-      _messageOpenSubscription = FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
+      FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
 
       // Verificar se o app foi aberto por uma notificação
       final initialMessage = await _messaging.getInitialMessage();
@@ -293,12 +287,6 @@ class PushNotificationService {
 
   /// Libera recursos
   static void dispose() {
-    _tokenRefreshSubscription?.cancel();
-    _tokenRefreshSubscription = null;
-    _foregroundSubscription?.cancel();
-    _foregroundSubscription = null;
-    _messageOpenSubscription?.cancel();
-    _messageOpenSubscription = null;
     _notificationStreamController?.close();
     _notificationStreamController = null;
   }

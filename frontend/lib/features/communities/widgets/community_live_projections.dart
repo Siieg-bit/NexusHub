@@ -80,7 +80,7 @@ class _CommunityLiveProjectionsState extends State<CommunityLiveProjections> {
                   padding: EdgeInsets.symmetric(
                       horizontal: r.s(6), vertical: r.s(2)),
                   decoration: BoxDecoration(
-                    color: AppTheme.errorColor.withValues(alpha: 0.15),
+                    color: Colors.red.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(r.s(6)),
                   ),
                   child: Row(
@@ -90,7 +90,7 @@ class _CommunityLiveProjectionsState extends State<CommunityLiveProjections> {
                         width: r.s(6),
                         height: r.s(6),
                         decoration: const BoxDecoration(
-                          color: AppTheme.errorColor,
+                          color: Colors.red,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -98,7 +98,7 @@ class _CommunityLiveProjectionsState extends State<CommunityLiveProjections> {
                       Text(
                         'AO VIVO',
                         style: TextStyle(
-                          color: AppTheme.errorColor,
+                          color: Colors.red,
                           fontSize: r.fs(9),
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0.5,
@@ -142,7 +142,7 @@ class _CommunityLiveProjectionsState extends State<CommunityLiveProjections> {
                       color: context.cardBg,
                       borderRadius: BorderRadius.circular(r.s(12)),
                       border: Border.all(
-                        color: AppTheme.errorColor.withValues(alpha: 0.4),
+                        color: Colors.red.withValues(alpha: 0.4),
                         width: 1.5,
                       ),
                     ),
@@ -170,11 +170,10 @@ class _CommunityLiveProjectionsState extends State<CommunityLiveProjections> {
                                             fit: BoxFit.cover,
                                           )
                                         : Container(
-                                            color: AppTheme.errorColor
+                                            color: Colors.red
                                                 .withValues(alpha: 0.15),
-                                            child: Icon(
-                                                Icons.cast_rounded,
-                                                color: AppTheme.errorColor
+                                            child: Icon(Icons.cast_rounded,
+                                                color: Colors.red
                                                     .withValues(alpha: 0.6),
                                                 size: r.s(28)),
                                           ),
@@ -202,9 +201,8 @@ class _CommunityLiveProjectionsState extends State<CommunityLiveProjections> {
                                   padding: EdgeInsets.symmetric(
                                       horizontal: r.s(5), vertical: r.s(2)),
                                   decoration: BoxDecoration(
-                                    color: AppTheme.errorColor,
-                                    borderRadius:
-                                        BorderRadius.circular(r.s(4)),
+                                    color: Colors.red,
+                                    borderRadius: BorderRadius.circular(r.s(4)),
                                   ),
                                   child: Text(
                                     'AO VIVO',
@@ -224,8 +222,7 @@ class _CommunityLiveProjectionsState extends State<CommunityLiveProjections> {
                                   padding: EdgeInsets.symmetric(
                                       horizontal: r.s(5), vertical: r.s(2)),
                                   decoration: BoxDecoration(
-                                    color:
-                                        Colors.black.withValues(alpha: 0.6),
+                                    color: Colors.black.withValues(alpha: 0.6),
                                     borderRadius:
                                         BorderRadius.circular(r.s(10)),
                                   ),
@@ -233,8 +230,7 @@ class _CommunityLiveProjectionsState extends State<CommunityLiveProjections> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Icon(Icons.people_rounded,
-                                          color: Colors.white,
-                                          size: r.s(10)),
+                                          color: Colors.white, size: r.s(10)),
                                       SizedBox(width: r.s(3)),
                                       Text(
                                         '$membersCount',

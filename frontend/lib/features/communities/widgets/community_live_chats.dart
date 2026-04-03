@@ -107,8 +107,7 @@ class _CommunityLiveChatsState extends State<CommunityLiveChats> {
       final result = await SupabaseService.rpc('leave_public_chat', params: {
         'p_thread_id': chat['id'] as String,
       });
-      final wasDeleted =
-          (result as Map<String, dynamic>?)?['deleted'] == true;
+      final wasDeleted = (result as Map<String, dynamic>?)?['deleted'] == true;
       if (mounted) {
         setState(() => _chats.removeWhere((c) => c['id'] == chat['id']));
         ScaffoldMessenger.of(context).showSnackBar(
@@ -146,8 +145,7 @@ class _CommunityLiveChatsState extends State<CommunityLiveChats> {
       ),
       builder: (ctx) => SafeArea(
         child: Padding(
-          padding: EdgeInsets.symmetric(
-              horizontal: r.s(16), vertical: r.s(12)),
+          padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -175,9 +173,7 @@ class _CommunityLiveChatsState extends State<CommunityLiveChats> {
               if (isHost)
                 _menuTile(
                   r,
-                  isPinned
-                      ? Icons.push_pin_outlined
-                      : Icons.push_pin_rounded,
+                  isPinned ? Icons.push_pin_outlined : Icons.push_pin_rounded,
                   isPinned ? 'Desafixar Chat' : 'Fixar Chat',
                   () {
                     Navigator.pop(ctx);
@@ -187,9 +183,7 @@ class _CommunityLiveChatsState extends State<CommunityLiveChats> {
               // Apagar (host) ou Sair (membro comum)
               _menuTile(
                 r,
-                isHost
-                    ? Icons.delete_rounded
-                    : Icons.exit_to_app_rounded,
+                isHost ? Icons.delete_rounded : Icons.exit_to_app_rounded,
                 isHost ? 'Apagar Chat' : 'Sair do Chat',
                 () {
                   Navigator.pop(ctx);
@@ -228,8 +222,7 @@ class _CommunityLiveChatsState extends State<CommunityLiveChats> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child:
-                Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
+            child: Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
           ),
           TextButton(
             onPressed: () async {
@@ -258,8 +251,7 @@ class _CommunityLiveChatsState extends State<CommunityLiveChats> {
         padding: EdgeInsets.symmetric(vertical: r.s(12)),
         decoration: BoxDecoration(
           border: Border(
-              bottom: BorderSide(
-                  color: Colors.white.withValues(alpha: 0.05))),
+              bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
         ),
         child: Row(
           children: [
@@ -353,15 +345,13 @@ class _CommunityLiveChatsState extends State<CommunityLiveChats> {
                                       top: Radius.circular(r.s(12))),
                                   child: chat['icon_url'] != null
                                       ? CachedNetworkImage(
-                                          imageUrl:
-                                              chat['icon_url'] as String,
+                                          imageUrl: chat['icon_url'] as String,
                                           fit: BoxFit.cover,
                                         )
                                       : Container(
                                           color: AppTheme.primaryColor
                                               .withValues(alpha: 0.2),
-                                          child: Icon(
-                                              Icons.chat_bubble_rounded,
+                                          child: Icon(Icons.chat_bubble_rounded,
                                               color: AppTheme.primaryColor
                                                   .withValues(alpha: 0.5),
                                               size: r.s(28)),
@@ -373,11 +363,10 @@ class _CommunityLiveChatsState extends State<CommunityLiveChats> {
                                   right: r.s(6),
                                   child: Container(
                                     padding: EdgeInsets.symmetric(
-                                        horizontal: r.s(6),
-                                        vertical: r.s(2)),
+                                        horizontal: r.s(6), vertical: r.s(2)),
                                     decoration: BoxDecoration(
-                                      color: Colors.black
-                                          .withValues(alpha: 0.6),
+                                      color:
+                                          Colors.black.withValues(alpha: 0.6),
                                       borderRadius:
                                           BorderRadius.circular(r.s(10)),
                                     ),
@@ -385,8 +374,7 @@ class _CommunityLiveChatsState extends State<CommunityLiveChats> {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Icon(Icons.people_rounded,
-                                            color: Colors.white,
-                                            size: r.s(10)),
+                                            color: Colors.white, size: r.s(10)),
                                         SizedBox(width: r.s(3)),
                                         Text(
                                           '$membersCount',
@@ -413,8 +401,7 @@ class _CommunityLiveChatsState extends State<CommunityLiveChats> {
                                             BorderRadius.circular(r.s(6)),
                                       ),
                                       child: Icon(Icons.push_pin_rounded,
-                                          color: Colors.white,
-                                          size: r.s(10)),
+                                          color: Colors.white, size: r.s(10)),
                                     ),
                                   ),
                               ],

@@ -321,8 +321,7 @@ class _CapsuleNavItem extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          margin: EdgeInsets.symmetric(
-              horizontal: r.s(3), vertical: r.s(6)),
+          margin: EdgeInsets.symmetric(horizontal: r.s(3), vertical: r.s(6)),
           decoration: BoxDecoration(
             color: isSelected
                 ? Colors.white.withValues(alpha: 0.1)
@@ -358,21 +357,18 @@ class _NavContent extends StatelessWidget {
       children: [
         Icon(
           icon,
-          color: isSelected
-              ? Colors.white
-              : Colors.white.withValues(alpha: 0.5),
+          color:
+              isSelected ? Colors.white : Colors.white.withValues(alpha: 0.5),
           size: r.s(22),
         ),
         SizedBox(height: r.s(2)),
         Text(
           label,
           style: TextStyle(
-            color: isSelected
-                ? Colors.white
-                : Colors.white.withValues(alpha: 0.5),
+            color:
+                isSelected ? Colors.white : Colors.white.withValues(alpha: 0.5),
             fontSize: r.fs(10),
-            fontWeight:
-                isSelected ? FontWeight.w700 : FontWeight.w400,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
           ),
         ),
       ],
@@ -404,9 +400,7 @@ class _OnlineAvatarStack extends StatelessWidget {
     if (visible.isEmpty) {
       return Icon(
         Icons.flash_on_rounded,
-        color: isSelected
-            ? Colors.white
-            : Colors.white.withValues(alpha: 0.5),
+        color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.5),
         size: size,
       );
     }

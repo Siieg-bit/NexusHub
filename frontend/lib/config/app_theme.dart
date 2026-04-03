@@ -18,7 +18,8 @@ class AppTheme {
   static const Color primaryDark = Color(0xFF1E9B4A);
 
   /// Ciano/Teal — cor de destaque principal (nav ativa, links, destaques)
-  static const Color accentColor = Color(0xFF00BCD4); // amino-cyan (destaque principal)
+  static const Color accentColor =
+      Color(0xFF00BCD4); // amino-cyan (destaque principal)
   static const Color accentLight = Color(0xFF4DD0E1);
 
   /// Rosa/Pink — cor do FAB de criação dentro de comunidades
@@ -44,11 +45,14 @@ class AppTheme {
   // ============================================================================
 
   static const Color scaffoldBg = Color(0xFF0D1B2A); // azul-marinho profundo
-  static const Color surfaceColor = Color(0xFF1B2838); // card/surface azul escuro
+  static const Color surfaceColor =
+      Color(0xFF1B2838); // card/surface azul escuro
   static const Color cardColor = Color(0xFF213040); // card azul-marinho médio
   static const Color cardColorLight = Color(0xFF2A3A4E); // hover/elevated card
-  static const Color bottomNavBg = Color(0xFF0A1628); // nav bar azul-marinho mais escuro
-  static const Color dividerColor = Color(0xFF2A3A50); // borda azul-marinho sutil
+  static const Color bottomNavBg =
+      Color(0xFF0A1628); // nav bar azul-marinho mais escuro
+  static const Color dividerColor =
+      Color(0xFF2A3A50); // borda azul-marinho sutil
 
   // ============================================================================
   // CORES DE FUNDO — LIGHT THEME
@@ -67,7 +71,8 @@ class AppTheme {
   // ============================================================================
 
   static const Color textPrimary = Color(0xFFF2F2F2); // branco suave
-  static const Color textSecondary = Color(0xFF8899AA); // cinza-azulado (não arroxeado)
+  static const Color textSecondary =
+      Color(0xFF8899AA); // cinza-azulado (não arroxeado)
   static const Color textHint = Color(0xFF5A6A7A); // hint cinza-azulado
 
   // ============================================================================
@@ -136,9 +141,11 @@ class AppTheme {
   // CORES ESPECIAIS — WALLET / STORE (Amino original)
   // ============================================================================
 
-  static const Color walletHeaderBg = Color(0xFF4FC3F7); // azul celeste da carteira
+  static const Color walletHeaderBg =
+      Color(0xFF4FC3F7); // azul celeste da carteira
   static const Color walletHeaderDark = Color(0xFF29B6F6);
-  static const Color aminoPlusBannerStart = Color(0xFFFF9800); // gradiente laranja
+  static const Color aminoPlusBannerStart =
+      Color(0xFFFF9800); // gradiente laranja
   static const Color aminoPlusBannerEnd = Color(0xFFFFB74D);
   static const Color coinGold = Color(0xFFFFD700); // moeda dourada
 
@@ -206,32 +213,34 @@ class AppTheme {
         onError: Colors.white,
       ),
       textTheme: const TextTheme(
-          displayLarge: TextStyle(
-              fontFamily: 'PlusJakartaSans',
-              color: textPrimary, fontSize: 32, fontWeight: FontWeight.bold),
-          displayMedium: TextStyle(
-              color: textPrimary, fontSize: 28, fontWeight: FontWeight.bold),
-          displaySmall: TextStyle(
-              color: textPrimary, fontSize: 24, fontWeight: FontWeight.bold),
-          headlineLarge: TextStyle(
-              color: textPrimary, fontSize: 22, fontWeight: FontWeight.w600),
-          headlineMedium: TextStyle(
-              color: textPrimary, fontSize: 20, fontWeight: FontWeight.w600),
-          headlineSmall: TextStyle(
-              color: textPrimary, fontSize: 18, fontWeight: FontWeight.w600),
-          titleLarge: TextStyle(
-              color: textPrimary, fontSize: 16, fontWeight: FontWeight.w600),
-          titleMedium: TextStyle(
-              color: textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
-          titleSmall: TextStyle(
-              color: textSecondary, fontSize: 12, fontWeight: FontWeight.w500),
-          bodyLarge: TextStyle(color: textPrimary, fontSize: 16),
-          bodyMedium: TextStyle(color: textPrimary, fontSize: 14),
-          bodySmall: TextStyle(color: textSecondary, fontSize: 12),
-          labelLarge: TextStyle(
-              color: textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
-          labelMedium: TextStyle(color: textSecondary, fontSize: 12),
-          labelSmall: TextStyle(color: textHint, fontSize: 10),
+        displayLarge: TextStyle(
+            fontFamily: 'PlusJakartaSans',
+            color: textPrimary,
+            fontSize: 32,
+            fontWeight: FontWeight.bold),
+        displayMedium: TextStyle(
+            color: textPrimary, fontSize: 28, fontWeight: FontWeight.bold),
+        displaySmall: TextStyle(
+            color: textPrimary, fontSize: 24, fontWeight: FontWeight.bold),
+        headlineLarge: TextStyle(
+            color: textPrimary, fontSize: 22, fontWeight: FontWeight.w600),
+        headlineMedium: TextStyle(
+            color: textPrimary, fontSize: 20, fontWeight: FontWeight.w600),
+        headlineSmall: TextStyle(
+            color: textPrimary, fontSize: 18, fontWeight: FontWeight.w600),
+        titleLarge: TextStyle(
+            color: textPrimary, fontSize: 16, fontWeight: FontWeight.w600),
+        titleMedium: TextStyle(
+            color: textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
+        titleSmall: TextStyle(
+            color: textSecondary, fontSize: 12, fontWeight: FontWeight.w500),
+        bodyLarge: TextStyle(color: textPrimary, fontSize: 16),
+        bodyMedium: TextStyle(color: textPrimary, fontSize: 14),
+        bodySmall: TextStyle(color: textSecondary, fontSize: 12),
+        labelLarge: TextStyle(
+            color: textPrimary, fontSize: 14, fontWeight: FontWeight.w600),
+        labelMedium: TextStyle(color: textSecondary, fontSize: 12),
+        labelSmall: TextStyle(color: textHint, fontSize: 10),
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: scaffoldBg,
@@ -350,52 +359,36 @@ class AppTheme {
         onError: Colors.white,
       ),
       textTheme: const TextTheme(
-          displayLarge: TextStyle(
-              fontFamily: 'PlusJakartaSans',
-              color: textPrimaryLight,
-              fontSize: 32,
-              fontWeight: FontWeight.bold),
-          displayMedium: TextStyle(
-              color: textPrimaryLight,
-              fontSize: 28,
-              fontWeight: FontWeight.bold),
-          displaySmall: TextStyle(
-              color: textPrimaryLight,
-              fontSize: 24,
-              fontWeight: FontWeight.bold),
-          headlineLarge: TextStyle(
-              color: textPrimaryLight,
-              fontSize: 22,
-              fontWeight: FontWeight.w600),
-          headlineMedium: TextStyle(
-              color: textPrimaryLight,
-              fontSize: 20,
-              fontWeight: FontWeight.w600),
-          headlineSmall: TextStyle(
-              color: textPrimaryLight,
-              fontSize: 18,
-              fontWeight: FontWeight.w600),
-          titleLarge: TextStyle(
-              color: textPrimaryLight,
-              fontSize: 16,
-              fontWeight: FontWeight.w600),
-          titleMedium: TextStyle(
-              color: textPrimaryLight,
-              fontSize: 14,
-              fontWeight: FontWeight.w500),
-          titleSmall: TextStyle(
-              color: textSecondaryLight,
-              fontSize: 12,
-              fontWeight: FontWeight.w500),
-          bodyLarge: TextStyle(color: textPrimaryLight, fontSize: 16),
-          bodyMedium: TextStyle(color: textPrimaryLight, fontSize: 14),
-          bodySmall: TextStyle(color: textSecondaryLight, fontSize: 12),
-          labelLarge: TextStyle(
-              color: textPrimaryLight,
-              fontSize: 14,
-              fontWeight: FontWeight.w600),
-          labelMedium: TextStyle(color: textSecondaryLight, fontSize: 12),
-          labelSmall: TextStyle(color: textHintLight, fontSize: 10),
+        displayLarge: TextStyle(
+            fontFamily: 'PlusJakartaSans',
+            color: textPrimaryLight,
+            fontSize: 32,
+            fontWeight: FontWeight.bold),
+        displayMedium: TextStyle(
+            color: textPrimaryLight, fontSize: 28, fontWeight: FontWeight.bold),
+        displaySmall: TextStyle(
+            color: textPrimaryLight, fontSize: 24, fontWeight: FontWeight.bold),
+        headlineLarge: TextStyle(
+            color: textPrimaryLight, fontSize: 22, fontWeight: FontWeight.w600),
+        headlineMedium: TextStyle(
+            color: textPrimaryLight, fontSize: 20, fontWeight: FontWeight.w600),
+        headlineSmall: TextStyle(
+            color: textPrimaryLight, fontSize: 18, fontWeight: FontWeight.w600),
+        titleLarge: TextStyle(
+            color: textPrimaryLight, fontSize: 16, fontWeight: FontWeight.w600),
+        titleMedium: TextStyle(
+            color: textPrimaryLight, fontSize: 14, fontWeight: FontWeight.w500),
+        titleSmall: TextStyle(
+            color: textSecondaryLight,
+            fontSize: 12,
+            fontWeight: FontWeight.w500),
+        bodyLarge: TextStyle(color: textPrimaryLight, fontSize: 16),
+        bodyMedium: TextStyle(color: textPrimaryLight, fontSize: 14),
+        bodySmall: TextStyle(color: textSecondaryLight, fontSize: 12),
+        labelLarge: TextStyle(
+            color: textPrimaryLight, fontSize: 14, fontWeight: FontWeight.w600),
+        labelMedium: TextStyle(color: textSecondaryLight, fontSize: 12),
+        labelSmall: TextStyle(color: textHintLight, fontSize: 10),
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: surfaceColorLight,
@@ -512,15 +505,22 @@ extension NexusColors on BuildContext {
   bool get _isDark => Theme.of(this).brightness == Brightness.dark;
 
   // ── Fundos ──
-  Color get scaffoldBg => _isDark ? AppTheme.scaffoldBg : AppTheme.scaffoldBgLight;
-  Color get surfaceColor => _isDark ? AppTheme.surfaceColor : AppTheme.surfaceColorLight;
+  Color get scaffoldBg =>
+      _isDark ? AppTheme.scaffoldBg : AppTheme.scaffoldBgLight;
+  Color get surfaceColor =>
+      _isDark ? AppTheme.surfaceColor : AppTheme.surfaceColorLight;
   Color get cardBg => _isDark ? AppTheme.cardColor : AppTheme.cardColorLt;
-  Color get cardBgAlt => _isDark ? AppTheme.cardColorLight : AppTheme.cardColorLtAlt;
-  Color get bottomNavBg => _isDark ? AppTheme.bottomNavBg : AppTheme.bottomNavBgLight;
-  Color get dividerClr => _isDark ? AppTheme.dividerColor : AppTheme.dividerColorLight;
+  Color get cardBgAlt =>
+      _isDark ? AppTheme.cardColorLight : AppTheme.cardColorLtAlt;
+  Color get bottomNavBg =>
+      _isDark ? AppTheme.bottomNavBg : AppTheme.bottomNavBgLight;
+  Color get dividerClr =>
+      _isDark ? AppTheme.dividerColor : AppTheme.dividerColorLight;
 
   // ── Textos ──
-  Color get textPrimary => _isDark ? AppTheme.textPrimary : AppTheme.textPrimaryLight;
-  Color get textSecondary => _isDark ? AppTheme.textSecondary : AppTheme.textSecondaryLight;
+  Color get textPrimary =>
+      _isDark ? AppTheme.textPrimary : AppTheme.textPrimaryLight;
+  Color get textSecondary =>
+      _isDark ? AppTheme.textSecondary : AppTheme.textSecondaryLight;
   Color get textHint => _isDark ? AppTheme.textHint : AppTheme.textHintLight;
 }

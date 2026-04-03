@@ -72,8 +72,7 @@ class _StoreScreenState extends State<StoreScreen>
   }
 
   Future<void> _purchaseItem(Map<String, dynamic> item) async {
-
-      final r = context.r;
+    final r = context.r;
     final price = item['price'] as int? ?? 0;
     if (_userCoins < price) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -81,7 +80,8 @@ class _StoreScreenState extends State<StoreScreen>
           content: const Text('Moedas insuficientes!'),
           backgroundColor: AppTheme.errorColor,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(10))),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(r.s(10))),
         ),
       );
       return;
@@ -98,8 +98,8 @@ class _StoreScreenState extends State<StoreScreen>
             content: Text('${item['name']} comprado!'),
             backgroundColor: AppTheme.primaryColor,
             behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(10))),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(r.s(10))),
           ),
         );
       }
@@ -110,8 +110,8 @@ class _StoreScreenState extends State<StoreScreen>
             content: Text('Erro na compra: $e'),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(10))),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(r.s(10))),
           ),
         );
       }
@@ -183,7 +183,7 @@ class _StoreScreenState extends State<StoreScreen>
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(Icons.monetization_on_rounded,
-                                    color: AppTheme.coinGold, size: r.s(18)),
+                                    color: Color(0xFFFFD700), size: r.s(18)),
                                 SizedBox(width: r.s(4)),
                                 Text(
                                   formatCount(_userCoins),
@@ -214,8 +214,8 @@ class _StoreScreenState extends State<StoreScreen>
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color:
-                                      const AppTheme.coinGold.withValues(alpha: 0.4),
+                                  color: const Color(0xFFFFD700)
+                                      .withValues(alpha: 0.4),
                                   blurRadius: 30,
                                   spreadRadius: 5,
                                 ),
@@ -230,7 +230,7 @@ class _StoreScreenState extends State<StoreScreen>
                               shape: BoxShape.circle,
                               gradient: const LinearGradient(
                                 colors: [
-                                  AppTheme.coinGold,
+                                  Color(0xFFFFD700),
                                   Color(0xFFFFA500),
                                   Color(0xFFFF8C00),
                                 ],
@@ -239,7 +239,7 @@ class _StoreScreenState extends State<StoreScreen>
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const AppTheme.coinGold
+                                  color: const Color(0xFFFFD700)
                                       .withValues(alpha: 0.5),
                                   blurRadius: 16,
                                   offset: const Offset(0, 4),
@@ -416,13 +416,14 @@ class _StoreScreenState extends State<StoreScreen>
   }
 
   Widget _buildItemGrid(List<Map<String, dynamic>> items) {
-      final r = context.r;
+    final r = context.r;
     if (items.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.storefront_outlined, size: r.s(48), color: Colors.grey[700]),
+            Icon(Icons.storefront_outlined,
+                size: r.s(48), color: Colors.grey[700]),
             SizedBox(height: r.s(12)),
             Text('Nenhum item dispon\u00edvel',
                 style: TextStyle(
@@ -442,20 +443,20 @@ class _StoreScreenState extends State<StoreScreen>
       child: GridView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.all(r.s(16)),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 0.72,
-      ),
-      itemCount: items.length,
-      itemBuilder: (context, index) {
-        final item = items[index];
-        return _StoreItemCard(
-          item: item,
-          onPurchase: () => _purchaseItem(item),
-        );
-      },
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          childAspectRatio: 0.72,
+        ),
+        itemCount: items.length,
+        itemBuilder: (context, index) {
+          final item = items[index];
+          return _StoreItemCard(
+            item: item,
+            onPurchase: () => _purchaseItem(item),
+          );
+        },
       ),
     );
   }
@@ -652,8 +653,8 @@ class _StoreItemCardState extends State<_StoreItemCard>
                   top: 8,
                   left: 8,
                   child: Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: r.s(6), vertical: r.s(3)),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: r.s(6), vertical: r.s(3)),
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.4),
                       borderRadius: BorderRadius.circular(r.s(6)),

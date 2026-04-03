@@ -98,13 +98,13 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
     switch (tabIndex) {
       case 1: // Imagens
         return _allFiles
-            .where((f) =>
-                (f['file_type'] as String? ?? '').startsWith('image/'))
+            .where(
+                (f) => (f['file_type'] as String? ?? '').startsWith('image/'))
             .toList();
       case 2: // Vídeos
         return _allFiles
-            .where((f) =>
-                (f['file_type'] as String? ?? '').startsWith('video/'))
+            .where(
+                (f) => (f['file_type'] as String? ?? '').startsWith('video/'))
             .toList();
       case 3: // Arquivos
         return _allFiles
@@ -118,8 +118,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
   }
 
   Future<void> _uploadFile() async {
-
-      final r = context.r;
+    final r = context.r;
     final choice = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: Colors.transparent,
@@ -153,25 +152,25 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
             _UploadOption(
               icon: Icons.photo_library_rounded,
               label: 'Imagem da Galeria',
-              color: const AppTheme.primaryColor,
+              color: const Color(0xFF4CAF50),
               onTap: () => Navigator.pop(ctx, 'gallery_image'),
             ),
             _UploadOption(
               icon: Icons.camera_alt_rounded,
               label: 'Tirar Foto',
-              color: const AppTheme.infoColor,
+              color: const Color(0xFF2196F3),
               onTap: () => Navigator.pop(ctx, 'camera'),
             ),
             _UploadOption(
               icon: Icons.videocam_rounded,
               label: 'Vídeo da Galeria',
-              color: const AppTheme.fabPink,
+              color: const Color(0xFFE91E63),
               onTap: () => Navigator.pop(ctx, 'gallery_video'),
             ),
             _UploadOption(
               icon: Icons.attach_file_rounded,
               label: 'Arquivo',
-              color: const AppTheme.aminoOrange,
+              color: const Color(0xFFFF9800),
               onTap: () => Navigator.pop(ctx, 'file'),
             ),
             SizedBox(height: r.s(8)),
@@ -234,10 +233,10 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
       final storagePath =
           'shared-files/${widget.communityId}/${DateTime.now().millisecondsSinceEpoch}_$fileName';
       await SupabaseService.client.storage
-          .from('post_media')
+          .from('media')
           .upload(storagePath, file);
       final url = SupabaseService.client.storage
-          .from('post_media')
+          .from('media')
           .getPublicUrl(storagePath);
 
       final fileSize = await file.length();
@@ -279,13 +278,13 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
   }
 
   Future<void> _deleteFile(String fileId) async {
-
-      final r = context.r;
+    final r = context.r;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: context.surfaceColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(16))),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(r.s(16))),
         title: Text('Excluir arquivo',
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w700)),
@@ -373,8 +372,8 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
           indicatorWeight: 3,
           labelColor: AppTheme.accentColor,
           unselectedLabelColor: Colors.grey[600],
-          labelStyle: TextStyle(
-              fontWeight: FontWeight.w700, fontSize: r.fs(13)),
+          labelStyle:
+              TextStyle(fontWeight: FontWeight.w700, fontSize: r.fs(13)),
           tabs: _tabs.map((t) => Tab(text: t)).toList(),
         ),
       ),
@@ -427,8 +426,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
                 final isImageTab = tabIndex == 1;
                 final hasImages = tabIndex == 0 &&
                     files.any((f) =>
-                        (f['file_type'] as String? ?? '')
-                            .startsWith('image/'));
+                        (f['file_type'] as String? ?? '').startsWith('image/'));
 
                 if (isImageTab || (tabIndex == 0 && hasImages)) {
                   return _buildMixedView(files);
@@ -440,14 +438,12 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
   }
 
   Widget _buildMixedView(List<Map<String, dynamic>> files) {
-      final r = context.r;
+    final r = context.r;
     final images = files
-        .where(
-            (f) => (f['file_type'] as String? ?? '').startsWith('image/'))
+        .where((f) => (f['file_type'] as String? ?? '').startsWith('image/'))
         .toList();
     final others = files
-        .where(
-            (f) => !(f['file_type'] as String? ?? '').startsWith('image/'))
+        .where((f) => !(f['file_type'] as String? ?? '').startsWith('image/'))
         .toList();
 
     return RefreshIndicator(
@@ -459,48 +455,47 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
-        // Grid de imagens
-        if (images.isNotEmpty) ...[
-          SliverPadding(
-            padding: EdgeInsets.all(r.s(8)),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                crossAxisSpacing: 4,
-                mainAxisSpacing: 4,
-              ),
-              delegate: SliverChildBuilderDelegate(
-                (ctx, i) => _ImageTile(
-                  file: images[i],
-                  onDelete: () =>
-                      _deleteFile(images[i]['id'] as String? ?? ''),
+          // Grid de imagens
+          if (images.isNotEmpty) ...[
+            SliverPadding(
+              padding: EdgeInsets.all(r.s(8)),
+              sliver: SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 4,
+                  mainAxisSpacing: 4,
                 ),
-                childCount: images.length,
+                delegate: SliverChildBuilderDelegate(
+                  (ctx, i) => _ImageTile(
+                    file: images[i],
+                    onDelete: () =>
+                        _deleteFile(images[i]['id'] as String? ?? ''),
+                  ),
+                  childCount: images.length,
+                ),
               ),
             ),
-          ),
+          ],
+          // Lista de outros arquivos
+          if (others.isNotEmpty)
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (ctx, i) => _FileTile(
+                  file: others[i],
+                  formatSize: _formatFileSize,
+                  timeAgo: _timeAgo,
+                  onDelete: () => _deleteFile(others[i]['id'] as String? ?? ''),
+                ),
+                childCount: others.length,
+              ),
+            ),
         ],
-        // Lista de outros arquivos
-        if (others.isNotEmpty)
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (ctx, i) => _FileTile(
-                file: others[i],
-                formatSize: _formatFileSize,
-                timeAgo: _timeAgo,
-                onDelete: () =>
-                    _deleteFile(others[i]['id'] as String? ?? ''),
-              ),
-              childCount: others.length,
-            ),
-          ),
-      ],
       ),
     );
   }
 
   Widget _buildListView(List<Map<String, dynamic>> files) {
-      final r = context.r;
+    final r = context.r;
     return RefreshIndicator(
       color: AppTheme.primaryColor,
       onRefresh: () async {
@@ -690,8 +685,7 @@ class _ImageTile extends StatelessWidget {
                 },
               ),
             ListTile(
-              leading:
-                  Icon(Icons.close_rounded, color: Colors.grey[500]),
+              leading: Icon(Icons.close_rounded, color: Colors.grey[500]),
               title:
                   Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
               onTap: () => Navigator.pop(ctx),
@@ -729,10 +723,10 @@ class _FileTile extends StatelessWidget {
 
   Color _colorForType(String? mimeType) {
     if (mimeType == null) return Colors.grey;
-    if (mimeType.startsWith('video/')) return const AppTheme.fabPink;
-    if (mimeType.startsWith('audio/')) return const AppTheme.badgeAge;
+    if (mimeType.startsWith('video/')) return const Color(0xFFE91E63);
+    if (mimeType.startsWith('audio/')) return const Color(0xFF9C27B0);
     if (mimeType.contains('pdf')) return const Color(0xFFFF5722);
-    return const AppTheme.infoColor;
+    return const Color(0xFF2196F3);
   }
 
   @override

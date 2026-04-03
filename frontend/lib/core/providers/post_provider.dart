@@ -68,9 +68,8 @@ class CommunityFeedNotifier
         .order('created_at', ascending: false)
         .range(page * _pageSize, (page + 1) * _pageSize - 1);
 
-    final list = (res as List)
-        .map((e) => Map<String, dynamic>.from(e as Map))
-        .toList();
+    final list =
+        (res as List).map((e) => Map<String, dynamic>.from(e as Map)).toList();
 
     // Injetar is_liked para o usuário atual
     await _injectIsLiked(list);
@@ -196,9 +195,8 @@ final pinnedPostsProvider = FutureProvider.family<List<PostModel>, String>(
         .order('created_at', ascending: false)
         .limit(5);
 
-    final list = (res as List)
-        .map((e) => Map<String, dynamic>.from(e as Map))
-        .toList();
+    final list =
+        (res as List).map((e) => Map<String, dynamic>.from(e as Map)).toList();
 
     await _injectIsLiked(list);
     return list.map((e) => PostModel.fromJson(e)).toList();
@@ -222,9 +220,8 @@ final activeFeaturedPostsProvider =
         .order('featured_at', ascending: false)
         .limit(12);
 
-    final list = (res as List)
-        .map((e) => Map<String, dynamic>.from(e as Map))
-        .toList();
+    final list =
+        (res as List).map((e) => Map<String, dynamic>.from(e as Map)).toList();
 
     await _injectIsLiked(list);
 
@@ -245,9 +242,8 @@ final latestPostsProvider = FutureProvider.family<List<PostModel>, String>(
         .order('created_at', ascending: false)
         .limit(20);
 
-    final list = (res as List)
-        .map((e) => Map<String, dynamic>.from(e as Map))
-        .toList();
+    final list =
+        (res as List).map((e) => Map<String, dynamic>.from(e as Map)).toList();
 
     await _injectIsLiked(list);
     return list.map((e) => PostModel.fromJson(e)).toList();
@@ -256,5 +252,6 @@ final latestPostsProvider = FutureProvider.family<List<PostModel>, String>(
 
 // ── Featured Posts (legado — mantido para compatibilidade) ──
 final featuredPostsProvider = FutureProvider.family<List<PostModel>, String>(
-  (ref, communityId) => ref.watch(activeFeaturedPostsProvider(communityId).future),
+  (ref, communityId) =>
+      ref.watch(activeFeaturedPostsProvider(communityId).future),
 );

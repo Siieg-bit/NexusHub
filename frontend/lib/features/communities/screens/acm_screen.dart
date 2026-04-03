@@ -3,7 +3,6 @@ import '../../../config/app_theme.dart';
 import '../../../core/models/community_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
-import 'package:nexus_hub/core/l10n/locale_provider.dart';
 
 /// ACM — Amino Community Manager.
 /// Gerenciamento de módulos (JSONB), Join Types, customização visual,
@@ -161,8 +160,7 @@ class _AcmScreenState extends State<AcmScreen>
       };
 
   Future<void> _saveConfig() async {
-
-      final r = context.r;
+    final r = context.r;
     try {
       final updates = <String, dynamic>{
         'configuration': _config,
@@ -181,18 +179,18 @@ class _AcmScreenState extends State<AcmScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text(s.settingsSaved),
+            content: const Text('Configurações salvas!'),
             backgroundColor: AppTheme.primaryColor,
             behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(10))),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(r.s(10))),
           ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(s.genericError)),
+          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
         );
       }
     }
@@ -226,8 +224,10 @@ class _AcmScreenState extends State<AcmScreen>
           GestureDetector(
             onTap: _saveConfig,
             child: Container(
-              margin: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(10)),
-              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(6)),
+              margin:
+                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(10)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(6)),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [AppTheme.primaryColor, AppTheme.accentColor],
@@ -241,7 +241,7 @@ class _AcmScreenState extends State<AcmScreen>
                   ),
                 ],
               ),
-              child: const Text(s.save,
+              child: const Text('Salvar',
                   style: TextStyle(
                       fontWeight: FontWeight.w800, color: Colors.white)),
             ),
@@ -276,7 +276,7 @@ class _AcmScreenState extends State<AcmScreen>
   // TAB: Módulos
   // ========================================================================
   Widget _buildModulesTab() {
-      final r = context.r;
+    final r = context.r;
     final modules = [
       _ModuleItem(
           'post', 'Posts', Icons.article_rounded, 'Permitir criação de posts'),
@@ -333,7 +333,7 @@ class _AcmScreenState extends State<AcmScreen>
   // TAB: Acesso
   // ========================================================================
   Widget _buildAccessTab() {
-      final r = context.r;
+    final r = context.r;
     return ListView(
       padding: EdgeInsets.all(r.s(16)),
       children: [
@@ -361,7 +361,7 @@ class _AcmScreenState extends State<AcmScreen>
           onTap: () => setState(() => _joinType = 'invite'),
         ),
         SizedBox(height: r.s(32)),
-        Text(s.visibility, style: Theme.of(context).textTheme.titleLarge),
+        Text('Visibilidade', style: Theme.of(context).textTheme.titleLarge),
         SizedBox(height: r.s(12)),
         _AccessOption(
           icon: Icons.visibility_rounded,
@@ -410,7 +410,7 @@ class _AcmScreenState extends State<AcmScreen>
   // TAB: Visual
   // ========================================================================
   Widget _buildVisualTab() {
-      final r = context.r;
+    final r = context.r;
     final currentColor = _parseColor(_themeColor);
 
     return ListView(
@@ -653,15 +653,14 @@ class _AcmScreenState extends State<AcmScreen>
   // TAB: Home Layout — Customização da página inicial
   // ========================================================================
   Widget _buildHomeLayoutTab() {
-      final r = context.r;
+    final r = context.r;
     final visible = Map<String, dynamic>.from(
         _homeLayout['sections_visible'] as Map<String, dynamic>? ?? {});
     final bottomBar = Map<String, dynamic>.from(
         _homeLayout['bottom_bar'] as Map<String, dynamic>? ?? {});
     final welcomeBanner = Map<String, dynamic>.from(
         _homeLayout['welcome_banner'] as Map<String, dynamic>? ?? {});
-    final featuredType =
-        _homeLayout['featured_type'] as String? ?? 'list';
+    final featuredType = _homeLayout['featured_type'] as String? ?? 'list';
 
     return ListView(
       padding: EdgeInsets.all(r.s(16)),
@@ -716,7 +715,7 @@ class _AcmScreenState extends State<AcmScreen>
         SizedBox(height: r.s(24)),
 
         // ---- WELCOME BANNER ----
-        Text(s.welcomeBanner,
+        Text('Banner de Boas-Vindas',
             style: Theme.of(context).textTheme.titleLarge),
         SizedBox(height: r.s(6)),
         Text('Um banner customizado exibido no topo da home.',
@@ -734,7 +733,7 @@ class _AcmScreenState extends State<AcmScreen>
             children: [
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text(s.enableBanner,
+                title: const Text('Ativar Banner',
                     style: TextStyle(fontWeight: FontWeight.w500)),
                 value: welcomeBanner['enabled'] as bool? ?? false,
                 activeColor: AppTheme.primaryColor,
@@ -756,8 +755,7 @@ class _AcmScreenState extends State<AcmScreen>
                   },
                   decoration: InputDecoration(
                     hintText: 'Texto do banner (ex: Bem-vindo!)',
-                    prefixIcon:
-                        Icon(Icons.text_fields_rounded, size: r.s(18)),
+                    prefixIcon: Icon(Icons.text_fields_rounded, size: r.s(18)),
                     filled: true,
                     fillColor: context.scaffoldBg,
                     border: OutlineInputBorder(
@@ -818,8 +816,7 @@ class _AcmScreenState extends State<AcmScreen>
         SizedBox(height: r.s(24)),
 
         // ---- BOTTOM BAR ----
-        Text('Barra Inferior',
-            style: Theme.of(context).textTheme.titleLarge),
+        Text('Barra Inferior', style: Theme.of(context).textTheme.titleLarge),
         SizedBox(height: r.s(6)),
         Text('Configure a barra de navegação inferior da comunidade.',
             style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
@@ -838,8 +835,9 @@ class _AcmScreenState extends State<AcmScreen>
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Mostrar Membros Online',
                     style: TextStyle(fontWeight: FontWeight.w500)),
-                subtitle: Text(s.showOnlineCount,
-                    style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
+                subtitle: Text('Exibe contagem de online na bottom bar',
+                    style:
+                        TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
                 value: bottomBar['show_online_count'] as bool? ?? true,
                 activeColor: AppTheme.primaryColor,
                 onChanged: (val) {
@@ -854,7 +852,8 @@ class _AcmScreenState extends State<AcmScreen>
                 title: const Text('Mostrar Botão Criar (+)',
                     style: TextStyle(fontWeight: FontWeight.w500)),
                 subtitle: Text('Botão central para criar posts',
-                    style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
+                    style:
+                        TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
                 value: bottomBar['show_create_button'] as bool? ?? true,
                 activeColor: AppTheme.primaryColor,
                 onChanged: (val) {
@@ -898,8 +897,7 @@ class _AcmScreenState extends State<AcmScreen>
   }
 
   List<Widget> _buildSectionToggles(Map<String, dynamic> visible) {
-
-      final r = context.r;
+    final r = context.r;
     final sections = [
       _SectionToggle(
         key: 'check_in',
@@ -972,7 +970,7 @@ class _AcmScreenState extends State<AcmScreen>
   // TAB: Stats
   // ========================================================================
   Widget _buildStatsTab() {
-      final r = context.r;
+    final r = context.r;
     return RefreshIndicator(
       onRefresh: () async {
         await _loadStats();
@@ -1007,7 +1005,7 @@ class _AcmScreenState extends State<AcmScreen>
             icon: Icons.chat_rounded,
             label: 'Chats',
             value: _totalChats.toString(),
-            color: const AppTheme.accentColor,
+            color: const Color(0xFF00BCD4),
           ),
           SizedBox(height: r.s(24)),
           Text('Moderação', style: Theme.of(context).textTheme.titleMedium),
@@ -1116,9 +1114,7 @@ class _FeaturedStyleOption extends StatelessWidget {
           child: Column(
             children: [
               Icon(icon,
-                  color: isSelected
-                      ? AppTheme.primaryColor
-                      : Colors.grey[600],
+                  color: isSelected ? AppTheme.primaryColor : Colors.grey[600],
                   size: r.s(24)),
               SizedBox(height: r.s(6)),
               Text(label,
@@ -1127,8 +1123,7 @@ class _FeaturedStyleOption extends StatelessWidget {
                         ? AppTheme.primaryColor
                         : context.textSecondary,
                     fontSize: r.fs(11),
-                    fontWeight:
-                        isSelected ? FontWeight.w700 : FontWeight.w500,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                   )),
             ],
           ),
@@ -1194,8 +1189,8 @@ class _AccessOption extends StatelessWidget {
                       style: const TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 2),
                   Text(description,
-                      style:
-                          TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
+                      style: TextStyle(
+                          color: Colors.grey[500], fontSize: r.fs(12))),
                 ],
               ),
             ),

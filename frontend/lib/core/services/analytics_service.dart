@@ -36,7 +36,8 @@ class AnalyticsService {
     await _analytics.setUserId(id: userId);
     await _crashlytics.setUserIdentifier(userId);
     if (displayName != null) {
-      await _analytics.setUserProperty(name: 'display_name', value: displayName);
+      await _analytics.setUserProperty(
+          name: 'display_name', value: displayName);
     }
   }
 

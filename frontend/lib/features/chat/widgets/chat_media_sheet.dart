@@ -72,7 +72,7 @@ class ChatMediaSheet extends StatelessWidget {
               MediaOptionItem(
                 icon: Icons.gif_rounded,
                 label: 'GIF',
-                color: const AppTheme.badgeAge,
+                color: const Color(0xFF9C27B0),
                 onTap: () {
                   Navigator.pop(context);
                   onGif();
@@ -81,7 +81,7 @@ class ChatMediaSheet extends StatelessWidget {
               MediaOptionItem(
                 icon: Icons.emoji_emotions_rounded,
                 label: 'Sticker',
-                color: const AppTheme.aminoOrange,
+                color: const Color(0xFFFF9800),
                 onTap: () {
                   Navigator.pop(context);
                   onSticker();
@@ -90,7 +90,7 @@ class ChatMediaSheet extends StatelessWidget {
               MediaOptionItem(
                 icon: Icons.mic_rounded,
                 label: 'Audio',
-                color: const AppTheme.fabPink,
+                color: const Color(0xFFE91E63),
                 onTap: () {
                   Navigator.pop(context);
                   onAudio();
@@ -99,7 +99,7 @@ class ChatMediaSheet extends StatelessWidget {
               MediaOptionItem(
                 icon: Icons.poll_rounded,
                 label: 'Poll',
-                color: const AppTheme.accentColor,
+                color: const Color(0xFF00BCD4),
                 onTap: () {
                   Navigator.pop(context);
                   onPoll();
@@ -117,7 +117,7 @@ class ChatMediaSheet extends StatelessWidget {
               MediaOptionItem(
                 icon: Icons.headset_mic_rounded,
                 label: 'Voice',
-                color: const AppTheme.primaryColor,
+                color: const Color(0xFF4CAF50),
                 onTap: () {
                   Navigator.pop(context);
                   onVoiceCall();
@@ -126,7 +126,7 @@ class ChatMediaSheet extends StatelessWidget {
               MediaOptionItem(
                 icon: Icons.video_call_rounded,
                 label: 'Video',
-                color: const AppTheme.infoColor,
+                color: const Color(0xFF2196F3),
                 onTap: () {
                   Navigator.pop(context);
                   onVideoCall();

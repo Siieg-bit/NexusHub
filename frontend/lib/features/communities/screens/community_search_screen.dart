@@ -137,7 +137,8 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
 
       // Buscar posts com filtros
       dynamic postQuery = SupabaseService.table('posts')
-          .select('*, profiles!posts_author_id_fkey(id, nickname, icon_url, level)')
+          .select(
+              '*, profiles!posts_author_id_fkey(id, nickname, icon_url, level)')
           .eq('community_id', widget.communityId)
           .ilike('title', pattern);
 
@@ -161,7 +162,8 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
 
       // Buscar membros
       final memberRes = await SupabaseService.table('community_members')
-          .select('*, profiles!community_members_user_id_fkey(id, nickname, icon_url, level, reputation)')
+          .select(
+              '*, profiles!community_members_user_id_fkey(id, nickname, icon_url, level, reputation)')
           .eq('community_id', widget.communityId)
           .eq('is_banned', false)
           .ilike('profiles.nickname', pattern)
@@ -173,7 +175,8 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
 
       // Buscar wiki
       final wikiRes = await SupabaseService.table('wiki_entries')
-          .select('id, title, content, author_id, created_at, profiles!wiki_articles_author_id_fkey(nickname, icon_url)')
+          .select(
+              'id, title, content, author_id, created_at, profiles!wiki_articles_author_id_fkey(nickname, icon_url)')
           .eq('community_id', widget.communityId)
           .eq('status', 'approved')
           .ilike('title', pattern)
@@ -212,7 +215,8 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
           indicatorColor: AppTheme.primaryColor,
           labelColor: AppTheme.primaryColor,
           unselectedLabelColor: context.textSecondary,
-          labelStyle: TextStyle(fontSize: r.fs(13), fontWeight: FontWeight.w700),
+          labelStyle:
+              TextStyle(fontSize: r.fs(13), fontWeight: FontWeight.w700),
           tabs: const [
             Tab(text: 'Posts'),
             Tab(text: 'Membros'),
@@ -231,7 +235,8 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
             ],
           ),
           // Overlay de sugestões
-          if (_showSuggestions && (_suggestions.isNotEmpty || _recentSearches.isNotEmpty))
+          if (_showSuggestions &&
+              (_suggestions.isNotEmpty || _recentSearches.isNotEmpty))
             _buildSuggestionsOverlay(r),
         ],
       ),
@@ -253,10 +258,12 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
         decoration: InputDecoration(
           hintText: 'Buscar em ${widget.communityName}...',
           hintStyle: TextStyle(color: context.textHint, fontSize: r.fs(14)),
-          prefixIcon: Icon(Icons.search_rounded, color: context.textHint, size: r.s(18)),
+          prefixIcon: Icon(Icons.search_rounded,
+              color: context.textHint, size: r.s(18)),
           suffixIcon: _query.isNotEmpty
               ? IconButton(
-                  icon: Icon(Icons.close_rounded, color: context.textHint, size: r.s(16)),
+                  icon: Icon(Icons.close_rounded,
+                      color: context.textHint, size: r.s(16)),
                   onPressed: () {
                     _searchController.clear();
                     _onSearchChanged('');
@@ -276,7 +283,8 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
 
   Widget _buildSuggestionsOverlay(Responsive r) {
     final items = [
-      if (_query.isEmpty && _recentSearches.isNotEmpty) ..._recentSearches.take(5),
+      if (_query.isEmpty && _recentSearches.isNotEmpty)
+        ..._recentSearches.take(5),
       ..._suggestions,
     ];
     return Positioned(
@@ -304,7 +312,8 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
               ),
               title: Text(
                 items[index],
-                style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+                style:
+                    TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
               ),
               onTap: () => _selectSuggestion(items[index]),
             );
@@ -326,7 +335,9 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
           child: _query.isEmpty
               ? _buildEmptySearch(r, 'Busque posts nesta comunidade')
               : _isSearching
-                  ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                          color: AppTheme.primaryColor))
                   : _posts.isEmpty
                       ? _buildNoResults(r, 'Nenhum post encontrado')
                       : ListView.builder(
@@ -668,10 +679,12 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
     final title = wiki['title'] as String? ?? '';
     final author = wiki['profiles'] as Map<String, dynamic>?;
     final content = wiki['content'] as String? ?? '';
-    final preview = content.length > 80 ? '${content.substring(0, 80)}...' : content;
+    final preview =
+        content.length > 80 ? '${content.substring(0, 80)}...' : content;
 
     return InkWell(
-      onTap: () => context.push('/community/${widget.communityId}/wiki/${wiki['id']}'),
+      onTap: () =>
+          context.push('/community/${widget.communityId}/wiki/${wiki['id']}'),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
         decoration: BoxDecoration(
@@ -801,7 +814,8 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.search_off_rounded, color: context.textHint, size: r.s(48)),
+          Icon(Icons.search_off_rounded,
+              color: context.textHint, size: r.s(48)),
           SizedBox(height: r.s(12)),
           Text(
             message,
@@ -905,7 +919,8 @@ class _SortOption extends StatelessWidget {
         ),
       ),
       trailing: selected
-          ? Icon(Icons.check_rounded, color: AppTheme.primaryColor, size: r.s(18))
+          ? Icon(Icons.check_rounded,
+              color: AppTheme.primaryColor, size: r.s(18))
           : null,
       onTap: onTap,
     );
@@ -922,7 +937,7 @@ class _PostTypeBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final (icon, color) = switch (type) {
       'image' => (Icons.image_rounded, Colors.blue),
-      'poll' => (Icons.poll_rounded, AppTheme.aminoOrange),
+      'poll' => (Icons.poll_rounded, Colors.orange),
       'quiz' => (Icons.quiz_rounded, Colors.purple),
       _ => (Icons.article_rounded, Colors.grey),
     };

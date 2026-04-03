@@ -54,12 +54,12 @@ class CallSession {
       threadId: json['thread_id'] as String? ?? '',
       type: _parseType(json['type'] as String? ?? 'voice'),
       // Suporta tanto creator_id quanto host_id (banco tem ambos)
-      creatorId: json['creator_id'] as String? ??
-          json['host_id'] as String? ??
-          '',
+      creatorId:
+          json['creator_id'] as String? ?? json['host_id'] as String? ?? '',
       status: json['status'] as String? ?? 'active',
-      createdAt: DateTime.tryParse(
-              json['created_at'] as String? ?? json['started_at'] as String? ?? '') ??
+      createdAt: DateTime.tryParse(json['created_at'] as String? ??
+              json['started_at'] as String? ??
+              '') ??
           DateTime.now(),
     );
   }
@@ -216,7 +216,8 @@ class CallService {
               ? 'video'
               : 'screening_room';
 
-      final rpcResult = await SupabaseService.rpc('create_call_session', params: {
+      final rpcResult =
+          await SupabaseService.rpc('create_call_session', params: {
         'p_thread_id': threadId,
         'p_type': typeStr,
       });

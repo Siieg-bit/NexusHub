@@ -140,7 +140,8 @@ class Responsive {
   }
 
   /// Número de colunas para grid layouts.
-  int get gridColumns => value(compact: 2, medium: 2, expanded: 3, tablet: 4, desktop: 6);
+  int get gridColumns =>
+      value(compact: 2, medium: 2, expanded: 3, tablet: 4, desktop: 6);
 
   /// Largura máxima de conteúdo (para centralizar em telas grandes).
   double get maxContentWidth => value<double>(

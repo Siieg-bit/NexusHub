@@ -136,7 +136,8 @@ Future<void> _injectIsLikedCommunity(List<Map<String, dynamic>> posts) async {
       post['is_liked'] = likedPostIds.contains(post['id']);
     }
   } catch (e) {
-    debugPrint('[community_detail_providers] _injectIsLikedCommunity error: $e');
+    debugPrint(
+        '[community_detail_providers] _injectIsLikedCommunity error: $e');
   }
 }
 

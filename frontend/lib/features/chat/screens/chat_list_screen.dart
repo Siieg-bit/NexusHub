@@ -15,8 +15,6 @@ import '../../../core/providers/notification_provider.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/providers/dm_invite_provider.dart';
 import '../widgets/dm_invite_card.dart';
-import 'package:nexus_hub/core/l10n/locale_provider.dart';
-// TODO: Add 'final s = ref.watch(stringsProvider);' in build() methods
 
 /// Provider para "Meus chats" — lista pessoal do usuário.
 /// Retorna apenas threads com membership ativo (status != 'left').
@@ -27,26 +25,25 @@ final chatListProvider = FutureProvider<List<ChatRoomModel>>((ref) async {
   if (userId == null) return [];
 
   final response = await SupabaseService.table('chat_members')
-      .select('thread_id, status, is_pinned_by_user, pinned_at, chat_threads(*)')
+      .select(
+          'thread_id, status, is_pinned_by_user, pinned_at, chat_threads(*)')
       .eq('user_id', userId)
-      .neq('status', 'left')          // "Meus chats" = apenas membership ativo
+      .neq('status', 'left') // "Meus chats" = apenas membership ativo
       .order('joined_at', ascending: false);
 
   final chats = (response as List? ?? [])
       .where((e) => e['chat_threads'] != null)
       .map((e) {
-        final threadMap = Map<String, dynamic>.from(
-            e['chat_threads'] as Map<String, dynamic>);
-        // Injetar campos de membership no modelo do thread:
-        // - isPinnedByUser: preferência pessoal, nunca global
-        // - membershipStatus: fonte de verdade para regras de acesso por tipo
-        threadMap['is_pinned_by_user'] =
-            e['is_pinned_by_user'] as bool? ?? false;
-        threadMap['pinned_at'] = e['pinned_at'];
-        threadMap['membership_status'] = e['status'] as String? ?? 'active';
-        return ChatRoomModel.fromJson(threadMap);
-      })
-      .toList();
+    final threadMap =
+        Map<String, dynamic>.from(e['chat_threads'] as Map<String, dynamic>);
+    // Injetar campos de membership no modelo do thread:
+    // - isPinnedByUser: preferência pessoal, nunca global
+    // - membershipStatus: fonte de verdade para regras de acesso por tipo
+    threadMap['is_pinned_by_user'] = e['is_pinned_by_user'] as bool? ?? false;
+    threadMap['pinned_at'] = e['pinned_at'];
+    threadMap['membership_status'] = e['status'] as String? ?? 'active';
+    return ChatRoomModel.fromJson(threadMap);
+  }).toList();
 
   // Ordenar: fixados no topo (por pinned_at desc), depois por última mensagem
   chats.sort((a, b) {
@@ -137,7 +134,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                   context: context,
                   backgroundColor: context.surfaceColor,
                   shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20)),
                   ),
                   builder: (ctx) => Padding(
                     padding: EdgeInsets.all(r.s(24)),
@@ -155,7 +153,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                             width: r.s(44),
                             height: r.s(44),
                             decoration: BoxDecoration(
-                              color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                              color:
+                                  AppTheme.primaryColor.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(r.s(12)),
                             ),
                             child: const Icon(Icons.person_add_rounded,
@@ -166,7 +165,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                                   color: context.textPrimary,
                                   fontWeight: FontWeight.w600)),
                           subtitle: Text('Iniciar conversa com um usu\u00e1rio',
-                              style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
+                              style: TextStyle(
+                                  color: Colors.grey[500], fontSize: r.fs(12))),
                           onTap: () {
                             Navigator.pop(ctx);
                             context.push('/search');
@@ -177,7 +177,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                             width: r.s(44),
                             height: r.s(44),
                             decoration: BoxDecoration(
-                              color: AppTheme.accentColor.withValues(alpha: 0.2),
+                              color:
+                                  AppTheme.accentColor.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(r.s(12)),
                             ),
                             child: const Icon(Icons.group_add_rounded,
@@ -187,8 +188,10 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                               style: TextStyle(
                                   color: context.textPrimary,
                                   fontWeight: FontWeight.w600)),
-                          subtitle: Text('Criar um grupo com v\u00e1rios membros',
-                              style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
+                          subtitle: Text(
+                              'Criar um grupo com v\u00e1rios membros',
+                              style: TextStyle(
+                                  color: Colors.grey[500], fontSize: r.fs(12))),
                           onTap: () {
                             Navigator.pop(ctx);
                             // Navegar para criar grupo
@@ -228,7 +231,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                         _SidebarIcon(
                           icon: Icons.access_time_rounded,
                           isSelected: _selectedSidebarIndex == 0,
-                          onTap: () => setState(() => _selectedSidebarIndex = 0),
+                          onTap: () =>
+                              setState(() => _selectedSidebarIndex = 0),
                           tooltip: 'Recente',
                         ),
 
@@ -238,7 +242,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                         _SidebarIcon(
                           icon: Icons.public_rounded,
                           isSelected: _selectedSidebarIndex == 1,
-                          onTap: () => setState(() => _selectedSidebarIndex = 1),
+                          onTap: () =>
+                              setState(() => _selectedSidebarIndex = 1),
                           tooltip: 'Global',
                           badgeCount: 0,
                         ),
@@ -268,9 +273,10 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                                   padding: EdgeInsets.only(bottom: r.s(8)),
                                   child: _SidebarCommunityIcon(
                                     community: community,
-                                    isSelected: _selectedSidebarIndex == index + 2,
-                                    onTap: () => setState(
-                                        () => _selectedSidebarIndex = index + 2),
+                                    isSelected:
+                                        _selectedSidebarIndex == index + 2,
+                                    onTap: () => setState(() =>
+                                        _selectedSidebarIndex = index + 2),
                                   ),
                                 );
                               },
@@ -290,7 +296,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                                 color: context.cardBg,
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: context.dividerClr.withValues(alpha: 0.4),
+                                  color:
+                                      context.dividerClr.withValues(alpha: 0.4),
                                 ),
                               ),
                               child: Icon(Icons.add,
@@ -320,9 +327,10 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                             Icon(Icons.error_outline_rounded,
                                 size: r.s(48), color: context.textHint),
                             SizedBox(height: r.s(12)),
-                            Text(s.loadChatsError,
+                            Text('Erro ao carregar chats',
                                 style: TextStyle(
-                                    color: context.textSecondary, fontSize: r.fs(14))),
+                                    color: context.textSecondary,
+                                    fontSize: r.fs(14))),
                           ],
                         ),
                       ),
@@ -335,15 +343,17 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                         // Filtrar por comunidade selecionada na sidebar
                         final filtered = _selectedSidebarIndex >= 2
                             ? communitiesAsync.whenOrNull(
-                                data: (communities) {
-                                  final idx = _selectedSidebarIndex - 2;
-                                  if (idx >= communities.length) return chatRooms;
-                                  final cid = communities[idx].id;
-                                  return chatRooms
-                                      .where((c) => c.communityId == cid)
-                                      .toList();
-                                },
-                              ) ?? chatRooms
+                                  data: (communities) {
+                                    final idx = _selectedSidebarIndex - 2;
+                                    if (idx >= communities.length)
+                                      return chatRooms;
+                                    final cid = communities[idx].id;
+                                    return chatRooms
+                                        .where((c) => c.communityId == cid)
+                                        .toList();
+                                  },
+                                ) ??
+                                chatRooms
                             : chatRooms;
 
                         if (filtered.isEmpty) {
@@ -366,8 +376,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   // LISTA DE CHATS — Estilo Amino
   // ==========================================================================
   Widget _buildChatList(List<ChatRoomModel> chatRooms) {
-      final r = context.r;
-      final pendingInvites = ref.watch(pendingDmInvitesProvider);
+    final r = context.r;
+    final pendingInvites = ref.watch(pendingDmInvitesProvider);
     return RefreshIndicator(
       color: AppTheme.primaryColor,
       onRefresh: () async {
@@ -392,10 +402,12 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
               if (invites.isEmpty) return <Widget>[];
               return <Widget>[
                 Padding(
-                  padding: EdgeInsets.fromLTRB(r.s(16), r.s(4), r.s(16), r.s(8)),
+                  padding:
+                      EdgeInsets.fromLTRB(r.s(16), r.s(4), r.s(16), r.s(8)),
                   child: Row(
                     children: [
-                      Icon(Icons.mail_rounded, color: AppTheme.accentColor, size: r.s(16)),
+                      Icon(Icons.mail_rounded,
+                          color: AppTheme.accentColor, size: r.s(16)),
                       SizedBox(width: r.s(6)),
                       Text(
                         'Convites pendentes',
@@ -431,7 +443,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   // RECOMENDADOS — Estilo Amino (cards grandes com imagem de fundo)
   // ==========================================================================
   Widget _buildRecommendedChats() {
-      final r = context.r;
+    final r = context.r;
     return ListView(
       padding: EdgeInsets.only(
         top: r.s(8),
@@ -507,7 +519,13 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                           borderRadius: BorderRadius.circular(r.s(8)),
                         ),
                         child: Text(
-                          ['Anime', 'K-Pop', 'Gaming', 'Art', 'Music'][index % 5],
+                          [
+                            'Anime',
+                            'K-Pop',
+                            'Gaming',
+                            'Art',
+                            'Music'
+                          ][index % 5],
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: r.fs(10),
@@ -560,7 +578,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   // ESTADO VAZIO — Estilo Amino
   // ==========================================================================
   Widget _buildEmptyChats() {
-      final r = context.r;
+    final r = context.r;
     return Center(
       child: Padding(
         padding: EdgeInsets.all(r.s(32)),
@@ -585,13 +603,15 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                     fontWeight: FontWeight.w600)),
             SizedBox(height: r.s(8)),
             Text('Entre em uma comunidade e comece a conversar!',
-                style: TextStyle(color: context.textSecondary, fontSize: r.fs(13)),
+                style:
+                    TextStyle(color: context.textSecondary, fontSize: r.fs(13)),
                 textAlign: TextAlign.center),
             SizedBox(height: r.s(24)),
             GestureDetector(
               onTap: () => context.go('/explore'),
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: r.s(20), vertical: r.s(10)),
+                padding: EdgeInsets.symmetric(
+                    horizontal: r.s(20), vertical: r.s(10)),
                 decoration: BoxDecoration(
                   color: AppTheme.accentColor,
                   borderRadius: BorderRadius.circular(r.s(20)),
@@ -729,8 +749,7 @@ class _SidebarCommunityIcon extends StatelessWidget {
             border: isSelected
                 ? Border.all(color: AppTheme.accentColor, width: 2)
                 : Border.all(
-                    color: context.dividerClr.withValues(alpha: 0.3),
-                    width: 1),
+                    color: context.dividerClr.withValues(alpha: 0.3), width: 1),
           ),
           clipBehavior: Clip.antiAlias,
           child: community.iconUrl != null && community.iconUrl!.isNotEmpty
@@ -768,8 +787,7 @@ class _AminoChatTile extends ConsumerWidget {
   const _AminoChatTile({required this.chatRoom});
 
   /// Exibe o menu contextual de long press.
-  Future<void> _showContextMenu(
-      BuildContext context, WidgetRef ref) async {
+  Future<void> _showContextMenu(BuildContext context, WidgetRef ref) async {
     final r = context.r;
     final isPinned = chatRoom.isPinnedByUser;
     final userId = SupabaseService.currentUserId;
@@ -797,8 +815,8 @@ class _AminoChatTile extends ConsumerWidget {
             ),
             // Título do chat
             Padding(
-              padding: EdgeInsets.symmetric(
-                  horizontal: r.s(16), vertical: r.s(8)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               child: Text(
                 chatRoom.title,
                 style: TextStyle(
@@ -811,37 +829,30 @@ class _AminoChatTile extends ConsumerWidget {
               ),
             ),
             Divider(
-                color: context.dividerClr.withValues(alpha: 0.3),
-                height: 1),
+                color: context.dividerClr.withValues(alpha: 0.3), height: 1),
             // Opção: Fixar / Desafixar
             ListTile(
               leading: Icon(
-                isPinned
-                    ? Icons.push_pin_outlined
-                    : Icons.push_pin_rounded,
-                color: isPinned
-                    ? AppTheme.accentColor
-                    : context.textSecondary,
+                isPinned ? Icons.push_pin_outlined : Icons.push_pin_rounded,
+                color: isPinned ? AppTheme.accentColor : context.textSecondary,
                 size: r.s(22),
               ),
               title: Text(
                 isPinned ? 'Desafixar do topo' : 'Fixar no topo',
-                style: TextStyle(
-                    color: context.textPrimary, fontSize: r.fs(14)),
+                style:
+                    TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
               ),
               onTap: () async {
                 Navigator.of(ctx).pop();
                 try {
                   if (isPinned) {
-                    await SupabaseService.rpc('unpin_chat_for_user',
-                        params: {
-                          'p_thread_id': chatRoom.id,
-                        });
+                    await SupabaseService.rpc('unpin_chat_for_user', params: {
+                      'p_thread_id': chatRoom.id,
+                    });
                   } else {
-                    await SupabaseService.rpc('pin_chat_for_user',
-                        params: {
-                          'p_thread_id': chatRoom.id,
-                        });
+                    await SupabaseService.rpc('pin_chat_for_user', params: {
+                      'p_thread_id': chatRoom.id,
+                    });
                   }
                   ref.invalidate(chatListProvider);
                 } catch (e) {
@@ -877,8 +888,8 @@ class _AminoChatTile extends ConsumerWidget {
                     : chatRoom.type == 'group'
                         ? 'Sair do grupo'
                         : 'Sair do chat',
-                style: TextStyle(
-                    color: AppTheme.errorColor, fontSize: r.fs(14)),
+                style:
+                    TextStyle(color: AppTheme.errorColor, fontSize: r.fs(14)),
               ),
               onTap: () async {
                 Navigator.of(ctx).pop();
@@ -905,21 +916,18 @@ class _AminoChatTile extends ConsumerWidget {
                               ? 'Para voltar, você precisará de um novo convite.'
                               : 'Você poderá entrar novamente depois.',
                       style: TextStyle(
-                          color: context.textSecondary,
-                          fontSize: r.fs(13)),
+                          color: context.textSecondary, fontSize: r.fs(13)),
                     ),
                     actions: [
                       TextButton(
-                        onPressed: () =>
-                            Navigator.of(dCtx).pop(false),
-                        child: Text(s.cancel,
+                        onPressed: () => Navigator.of(dCtx).pop(false),
+                        child: Text('Cancelar',
                             style: TextStyle(
                                 color: context.textSecondary,
                                 fontSize: r.fs(13))),
                       ),
                       TextButton(
-                        onPressed: () =>
-                            Navigator.of(dCtx).pop(true),
+                        onPressed: () => Navigator.of(dCtx).pop(true),
                         child: Text(
                           chatRoom.type == 'dm' ? 'Apagar' : 'Sair',
                           style: TextStyle(
@@ -935,20 +943,18 @@ class _AminoChatTile extends ConsumerWidget {
                 // Fonte de verdade: leave_public_chat marca status='left'.
                 // NÃO deleta a linha — preserva semântica de saída intencional.
                 try {
-                  await SupabaseService.rpc('leave_public_chat',
-                      params: {
-                        'p_thread_id': chatRoom.id,
-                      });
+                  await SupabaseService.rpc('leave_public_chat', params: {
+                    'p_thread_id': chatRoom.id,
+                  });
                   ref.invalidate(chatListProvider);
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(
-                            chatRoom.type == 'dm'
-                                ? 'Conversa apagada.'
-                                : chatRoom.type == 'group'
-                                    ? 'Você saiu do grupo.'
-                                    : 'Você saiu do chat.'),
+                        content: Text(chatRoom.type == 'dm'
+                            ? 'Conversa apagada.'
+                            : chatRoom.type == 'group'
+                                ? 'Você saiu do grupo.'
+                                : 'Você saiu do chat.'),
                         backgroundColor: AppTheme.primaryColor,
                         behavior: SnackBarBehavior.floating,
                       ),
@@ -959,10 +965,9 @@ class _AminoChatTile extends ConsumerWidget {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(
-                            chatRoom.type == 'dm'
-                                ? 'Erro ao apagar conversa.'
-                                : 'Erro ao sair do chat.'),
+                        content: Text(chatRoom.type == 'dm'
+                            ? 'Erro ao apagar conversa.'
+                            : 'Erro ao sair do chat.'),
                         backgroundColor: AppTheme.errorColor,
                         behavior: SnackBarBehavior.floating,
                       ),
@@ -995,18 +1000,18 @@ class _AminoChatTile extends ConsumerWidget {
       onTap: () => context.push('/chat/${chatRoom.id}'),
       onLongPress: () => _showContextMenu(context, ref),
       child: Container(
-          padding: EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(10)),
-          decoration: isPinned
-              ? BoxDecoration(
-                  border: Border(
-                    left: BorderSide(
-                      color: AppTheme.accentColor.withValues(alpha: 0.6),
-                      width: 3,
-                    ),
+        padding: EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(10)),
+        decoration: isPinned
+            ? BoxDecoration(
+                border: Border(
+                  left: BorderSide(
+                    color: AppTheme.accentColor.withValues(alpha: 0.6),
+                    width: 3,
                   ),
-                )
-              : null,
-          child: Row(
+                ),
+              )
+            : null,
+        child: Row(
           children: [
             // ── Avatar com frame cosmético ──
             CosmeticAvatar(
@@ -1051,12 +1056,10 @@ class _AminoChatTile extends ConsumerWidget {
                   Text(
                     chatRoom.lastMessagePreview ?? 'Sem mensagens',
                     style: TextStyle(
-                      color: hasUnread
-                          ? context.textSecondary
-                          : context.textHint,
+                      color:
+                          hasUnread ? context.textSecondary : context.textHint,
                       fontSize: r.fs(12),
-                      fontWeight:
-                          hasUnread ? FontWeight.w500 : FontWeight.w400,
+                      fontWeight: hasUnread ? FontWeight.w500 : FontWeight.w400,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -1071,22 +1074,19 @@ class _AminoChatTile extends ConsumerWidget {
               children: [
                 Text(
                   chatRoom.lastMessageAt != null
-                      ? timeago.format(chatRoom.lastMessageAt!,
-                          locale: 'pt_BR')
+                      ? timeago.format(chatRoom.lastMessageAt!, locale: 'pt_BR')
                       : '',
                   style: TextStyle(
-                    color:
-                        hasUnread ? AppTheme.accentColor : context.textHint,
+                    color: hasUnread ? AppTheme.accentColor : context.textHint,
                     fontSize: r.fs(10),
-                    fontWeight:
-                        hasUnread ? FontWeight.w600 : FontWeight.w400,
+                    fontWeight: hasUnread ? FontWeight.w600 : FontWeight.w400,
                   ),
                 ),
                 if (hasUnread) ...[
                   SizedBox(height: r.s(4)),
                   Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: r.s(6), vertical: 2),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: r.s(6), vertical: 2),
                     decoration: BoxDecoration(
                       color: AppTheme.accentColor,
                       borderRadius: BorderRadius.circular(r.s(10)),
@@ -1108,6 +1108,6 @@ class _AminoChatTile extends ConsumerWidget {
           ],
         ),
       ),
-    );  // GestureDetector
+    ); // GestureDetector
   }
 }

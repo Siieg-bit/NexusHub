@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -72,7 +71,9 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
           'p_raw_amount': 15,
           'p_reference_id': result['id'],
         });
-      } catch (e) { debugPrint('[create_question_screen.dart] $e'); }
+      } catch (e) {
+        debugPrint('[create_question_screen.dart] $e');
+      }
 
       if (mounted) {
         context.pop();
@@ -185,8 +186,8 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
             Center(
               child: Text(
                 'Pergunte à comunidade',
-                style: TextStyle(
-                    color: context.textSecondary, fontSize: r.fs(13)),
+                style:
+                    TextStyle(color: context.textSecondary, fontSize: r.fs(13)),
               ),
             ),
             SizedBox(height: r.s(24)),
@@ -219,13 +220,11 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
               maxLines: 8,
               minLines: 3,
               textCapitalization: TextCapitalization.sentences,
-              style: TextStyle(
-                  color: context.textPrimary, fontSize: r.fs(15)),
+              style: TextStyle(color: context.textPrimary, fontSize: r.fs(15)),
               decoration: InputDecoration(
-                hintText:
-                    'Adicione contexto ou detalhes (opcional)...',
-                hintStyle: TextStyle(
-                    color: context.textSecondary, fontSize: r.fs(15)),
+                hintText: 'Adicione contexto ou detalhes (opcional)...',
+                hintStyle:
+                    TextStyle(color: context.textSecondary, fontSize: r.fs(15)),
                 border: InputBorder.none,
                 counterText: '',
               ),
@@ -238,8 +237,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
                 color: const Color(0xFFEA580C).withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(r.s(12)),
                 border: Border.all(
-                    color:
-                        const Color(0xFFEA580C).withValues(alpha: 0.2)),
+                    color: const Color(0xFFEA580C).withValues(alpha: 0.2)),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -252,8 +250,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
                       'Perguntas claras e específicas recebem mais respostas. '
                       'Inclua detalhes relevantes no contexto.',
                       style: TextStyle(
-                          color: context.textPrimary
-                              .withValues(alpha: 0.7),
+                          color: context.textPrimary.withValues(alpha: 0.7),
                           fontSize: r.fs(12),
                           height: 1.4),
                     ),

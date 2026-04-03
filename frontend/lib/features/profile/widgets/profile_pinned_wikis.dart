@@ -38,9 +38,8 @@ class _ProfilePinnedWikisState extends State<ProfilePinnedWikis> {
           .order('created_at', ascending: false)
           .limit(10);
       if (!mounted) return;
-      final list = (res as List? ?? [])
-          .where((e) => e['wiki_entries'] != null)
-          .toList();
+      final list =
+          (res as List? ?? []).where((e) => e['wiki_entries'] != null).toList();
       if (mounted) {
         setState(() {
           _pinnedWikis = List<Map<String, dynamic>>.from(list);
@@ -89,8 +88,7 @@ class _ProfilePinnedWikisState extends State<ProfilePinnedWikis> {
               separatorBuilder: (_, __) => SizedBox(width: r.s(12)),
               itemBuilder: (context, index) {
                 final bookmark = _pinnedWikis[index];
-                final wiki =
-                    bookmark['wiki_entries'] as Map<String, dynamic>;
+                final wiki = bookmark['wiki_entries'] as Map<String, dynamic>;
                 final title = wiki['title'] as String? ?? 'Wiki';
                 final coverUrl = wiki['cover_image_url'] as String?;
                 final category = wiki['category'] as String?;
@@ -120,7 +118,8 @@ class _ProfilePinnedWikisState extends State<ProfilePinnedWikis> {
                                   height: r.s(50),
                                   width: r.s(140),
                                   fit: BoxFit.cover,
-                                  errorWidget: (_, __, ___) => _coverPlaceholder(r),
+                                  errorWidget: (_, __, ___) =>
+                                      _coverPlaceholder(r),
                                 )
                               : _coverPlaceholder(r),
                         ),

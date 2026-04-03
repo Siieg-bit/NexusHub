@@ -30,9 +30,8 @@ class AminoCustomTitle extends StatelessWidget {
     // Calcular cor da borda (mais clara que o fundo)
     final borderColor = Color.lerp(color, Colors.white, 0.3)!;
     // Calcular se o texto deve ser branco ou preto
-    final textColor = color.computeLuminance() > 0.5
-        ? Colors.black87
-        : Colors.white;
+    final textColor =
+        color.computeLuminance() > 0.5 ? Colors.black87 : Colors.white;
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(3)),
@@ -101,8 +100,7 @@ class AminoCustomTitleList extends StatelessWidget {
       alignment: WrapAlignment.center,
       children: [
         ...titles.take(maxVisible).map((t) {
-          final titleText =
-              t is Map ? (t['title'] ?? '') : t.toString();
+          final titleText = t is Map ? (t['title'] ?? '') : t.toString();
           final titleColor = t is Map && t['color'] != null
               ? _parseColor(t['color'] as String? ?? '')
               : AppTheme.primaryColor.withValues(alpha: 0.3);

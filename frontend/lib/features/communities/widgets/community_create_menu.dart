@@ -60,7 +60,7 @@ class _CommunityCreateMenuSheet extends StatelessWidget {
       _CreateItem(
         label: 'Story',
         icon: Icons.auto_awesome_rounded,
-        color: const AppTheme.aminoPurple,
+        color: const Color(0xFF7C3AED),
         onTap: (ctx) {
           Navigator.pop(ctx);
           ctx.push('/community/$communityId/create-story');
@@ -178,8 +178,8 @@ class _CommunityCreateMenuSheet extends StatelessWidget {
           ),
           // Título
           Padding(
-            padding: EdgeInsets.symmetric(
-                horizontal: r.s(20), vertical: r.s(8)),
+            padding:
+                EdgeInsets.symmetric(horizontal: r.s(20), vertical: r.s(8)),
             child: Row(
               children: [
                 Text(
@@ -202,8 +202,7 @@ class _CommunityCreateMenuSheet extends StatelessWidget {
           ),
           // Grid de itens
           Padding(
-            padding: EdgeInsets.fromLTRB(
-                r.s(16), r.s(4), r.s(16), r.s(24)),
+            padding: EdgeInsets.fromLTRB(r.s(16), r.s(4), r.s(16), r.s(24)),
             child: GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -231,6 +230,7 @@ class _CommunityCreateMenuSheet extends StatelessWidget {
 // ─── Tile individual ─────────────────────────────────────────────────────────
 class _CreateItemTile extends StatelessWidget {
   final _CreateItem item;
+
   /// Contexto do sheet (necessário para Navigator.pop e context.push)
   final BuildContext sheetContext;
 

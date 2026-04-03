@@ -399,11 +399,11 @@ extension AminoAnimateExtension on Widget {
   Widget aminoPulse({Duration? duration}) {
     return animate(onPlay: (controller) => controller.repeat(reverse: true))
         .scale(
-          begin: const Offset(1, 1),
-          end: const Offset(1.05, 1.05),
-          duration: duration ?? const Duration(milliseconds: 1500),
-          curve: Curves.easeInOut,
-        );
+      begin: const Offset(1, 1),
+      end: const Offset(1.05, 1.05),
+      duration: duration ?? const Duration(milliseconds: 1500),
+      curve: Curves.easeInOut,
+    );
   }
 }
 
@@ -508,18 +508,17 @@ class AminoShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.05)
+            : Colors.black.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(borderRadius),
       ),
-    )
-        .animate(onPlay: (controller) => controller.repeat())
-        .shimmer(
+    ).animate(onPlay: (controller) => controller.repeat()).shimmer(
           duration: const Duration(milliseconds: 1500),
           color: isDark ? Colors.white10 : Colors.black12,
         );
@@ -592,7 +591,9 @@ class CustomTransitionPage<T> extends Page<T> {
   final Widget child;
   final Duration transitionDuration;
   final Duration reverseTransitionDuration;
-  final Widget Function(BuildContext, Animation<double>, Animation<double>, Widget) transitionsBuilder;
+  final Widget Function(
+          BuildContext, Animation<double>, Animation<double>, Widget)
+      transitionsBuilder;
 
   const CustomTransitionPage({
     super.key,

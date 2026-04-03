@@ -39,18 +39,10 @@ class AuthState {
 /// Listenable que notifica o GoRouter quando o estado de auth muda.
 /// Isso faz o router re-avaliar o redirect sempre que o auth muda.
 class AuthChangeNotifier extends ChangeNotifier {
-  StreamSubscription<AuthState>? _subscription;
-
   AuthChangeNotifier() {
-    _subscription = SupabaseService.auth.onAuthStateChange.listen((_) {
+    SupabaseService.auth.onAuthStateChange.listen((_) {
       notifyListeners();
     });
-  }
-
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
   }
 }
 
@@ -59,16 +51,8 @@ final authChangeNotifier = AuthChangeNotifier();
 
 /// Provider principal de autenticação.
 class AuthNotifier extends StateNotifier<AuthState> {
-  StreamSubscription<AuthState>? _authSubscription;
-
   AuthNotifier() : super(const AuthState()) {
     _init();
-  }
-
-  @override
-  void dispose() {
-    _authSubscription?.cancel();
-    super.dispose();
   }
 
   void _init() {
@@ -90,8 +74,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
 
     // Escutar mudanças de auth
-    _authSubscription?.cancel();
-    _authSubscription = SupabaseService.auth.onAuthStateChange.listen((data) {
+    SupabaseService.auth.onAuthStateChange.listen((data) {
       if (data.event == AuthChangeEvent.signedIn) {
         state = state.copyWith(isAuthenticated: true);
         _loadUserProfile();
@@ -128,7 +111,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       }
     } catch (e) {
       // Mesmo se o perfil falhar, a sessão é válida
-      state = state.copyWith(isLoading: false, error: 'Erro ao carregar perfil. Tente novamente.');
+      state = state.copyWith(
+          isLoading: false, error: 'Erro ao carregar perfil. Tente novamente.');
     }
   }
 
@@ -147,7 +131,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(isLoading: false, error: e.message);
       return false;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: 'Ocorreu um erro inesperado. Tente novamente.');
+      state = state.copyWith(
+          isLoading: false,
+          error: 'Ocorreu um erro inesperado. Tente novamente.');
       return false;
     }
   }
@@ -168,7 +154,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(isLoading: false, error: e.message);
       return false;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: 'Ocorreu um erro inesperado. Tente novamente.');
+      state = state.copyWith(
+          isLoading: false,
+          error: 'Ocorreu um erro inesperado. Tente novamente.');
       return false;
     }
   }
@@ -181,7 +169,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       return true;
     } catch (e) {
       state = state.copyWith(
-          isLoading: false, error: 'Erro no login com Google. Tente novamente.');
+          isLoading: false,
+          error: 'Erro no login com Google. Tente novamente.');
       return false;
     }
   }

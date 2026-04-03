@@ -30,7 +30,8 @@ class _LiveScreenState extends State<LiveScreen> {
   Future<void> _loadActiveSessions() async {
     try {
       final query = SupabaseService.table('call_sessions')
-          .select('*, call_participants(count), profiles!call_sessions_creator_id_fkey(username, avatar_url)')
+          .select(
+              '*, call_participants(count), profiles!call_sessions_creator_id_fkey(username, avatar_url)')
           .eq('status', 'active')
           .order('created_at', ascending: false);
 
@@ -45,8 +46,7 @@ class _LiveScreenState extends State<LiveScreen> {
   }
 
   Future<void> _createScreeningRoom() async {
-
-      final r = context.r;
+    final r = context.r;
     // Precisa de um thread_id — criar um chat thread temporário ou usar existente
     final threadIdController = TextEditingController();
     final titleController = TextEditingController(text: 'Screening Room');
@@ -55,7 +55,8 @@ class _LiveScreenState extends State<LiveScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: context.surfaceColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(16))),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(r.s(16))),
         title: Text('Criar Screening Room',
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w800)),
@@ -175,11 +176,11 @@ class _LiveScreenState extends State<LiveScreen> {
   Color _typeColor(String type) {
     switch (type) {
       case 'screening_room':
-        return const AppTheme.fabPink;
+        return const Color(0xFFE91E63);
       case 'voice':
-        return const AppTheme.primaryColor;
+        return const Color(0xFF4CAF50);
       case 'video':
-        return const AppTheme.infoColor;
+        return const Color(0xFF2196F3);
       default:
         return AppTheme.primaryColor;
     }
@@ -217,8 +218,7 @@ class _LiveScreenState extends State<LiveScreen> {
         backgroundColor: AppTheme.aminoPink,
         icon: const Icon(Icons.live_tv_rounded, color: Colors.white),
         label: const Text('Screening Room',
-            style: TextStyle(
-                color: Colors.white, fontWeight: FontWeight.w700)),
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
       ),
       body: _isLoading
           ? const Center(
@@ -239,7 +239,7 @@ class _LiveScreenState extends State<LiveScreen> {
   }
 
   Widget _buildEmptyState() {
-      final r = context.r;
+    final r = context.r;
     return ListView(
       children: [
         SizedBox(height: MediaQuery.of(context).size.height * 0.2),
@@ -280,7 +280,7 @@ class _LiveScreenState extends State<LiveScreen> {
   }
 
   Widget _buildSessionCard(Map<String, dynamic> session) {
-      final r = context.r;
+    final r = context.r;
     final type = session['type'] as String? ?? 'voice';
     final color = _typeColor(type);
     final creatorProfile = session['profiles'] as Map<String, dynamic>?;
@@ -353,13 +353,13 @@ class _LiveScreenState extends State<LiveScreen> {
                       SizedBox(width: r.s(6)),
                       Text(
                         creatorName,
-                        style:
-                            TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
+                        style: TextStyle(
+                            color: Colors.grey[500], fontSize: r.fs(12)),
                       ),
                       Text(
                         '  •  ${_timeAgo(createdAt)}',
-                        style:
-                            TextStyle(color: Colors.grey[600], fontSize: r.fs(12)),
+                        style: TextStyle(
+                            color: Colors.grey[600], fontSize: r.fs(12)),
                       ),
                     ],
                   ),
@@ -370,8 +370,8 @@ class _LiveScreenState extends State<LiveScreen> {
             Column(
               children: [
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(6)),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: r.s(10), vertical: r.s(6)),
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(r.s(20)),

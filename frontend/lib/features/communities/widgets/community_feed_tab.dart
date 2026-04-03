@@ -64,7 +64,8 @@ class _FeaturedTab extends ConsumerWidget {
   const _FeaturedTab({required this.communityId, required this.onRefresh});
 
   Color _accentColor(WidgetRef ref) {
-    final community = ref.watch(communityDetailProvider(communityId)).valueOrNull;
+    final community =
+        ref.watch(communityDetailProvider(communityId)).valueOrNull;
     if (community == null) return AppTheme.primaryColor;
     try {
       return Color(int.parse(community.themeColor.replaceFirst('#', '0xFF')));
@@ -364,8 +365,7 @@ class _PinnedPostRow extends StatelessWidget {
       child: AminoAnimations.cardPress(
         onTap: () => context.push('/post/${post.id}'),
         child: Container(
-          padding: EdgeInsets.symmetric(
-              horizontal: r.s(16), vertical: r.s(10)),
+          padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(10)),
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
@@ -393,7 +393,6 @@ class _PinnedPostRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-
             ],
           ),
         ),
@@ -441,16 +440,16 @@ class _FeaturedPostCard extends StatelessWidget {
             children: [
               // Cover image
               ClipRRect(
-                borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(r.s(12))),
+                borderRadius:
+                    BorderRadius.vertical(top: Radius.circular(r.s(12))),
                 child: AspectRatio(
                   aspectRatio: 16 / 9,
                   child: hasImage
                       ? CachedNetworkImage(
                           imageUrl: thumb,
                           fit: BoxFit.cover,
-                          errorWidget: (_, __, ___) => _PlaceholderCover(
-                              accent: accent),
+                          errorWidget: (_, __, ___) =>
+                              _PlaceholderCover(accent: accent),
                         )
                       : _PlaceholderCover(accent: accent),
                 ),
@@ -518,25 +517,21 @@ class _FeaturedPostCard extends StatelessWidget {
                       Row(
                         children: [
                           Icon(Icons.favorite_rounded,
-                              size: r.s(11),
-                              color: context.textHint),
+                              size: r.s(11), color: context.textHint),
                           SizedBox(width: r.s(2)),
                           Text(
                             '${post.likesCount}',
                             style: TextStyle(
-                                color: context.textHint,
-                                fontSize: r.fs(10)),
+                                color: context.textHint, fontSize: r.fs(10)),
                           ),
                           SizedBox(width: r.s(8)),
                           Icon(Icons.chat_bubble_outline_rounded,
-                              size: r.s(11),
-                              color: context.textHint),
+                              size: r.s(11), color: context.textHint),
                           SizedBox(width: r.s(2)),
                           Text(
                             '${post.commentsCount}',
                             style: TextStyle(
-                                color: context.textHint,
-                                fontSize: r.fs(10)),
+                                color: context.textHint, fontSize: r.fs(10)),
                           ),
                         ],
                       ),

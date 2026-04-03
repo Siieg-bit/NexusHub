@@ -4,7 +4,6 @@ import '../../../core/services/ad_service.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../core/utils/responsive.dart';
-import 'package:nexus_hub/config/app_theme.dart';
 
 /// Tela de Compra de Moedas — Estilo Amino original.
 /// Header azul celeste com moeda dourada, corpo claro com pacotes de moedas.
@@ -115,7 +114,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
           content: Text(msg, style: const TextStyle(color: Colors.white)),
-          backgroundColor: const AppTheme.errorColor),
+          backgroundColor: const Color(0xFFE53935)),
     );
   }
 
@@ -124,7 +123,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
           content: Text(msg, style: const TextStyle(color: Colors.white)),
-          backgroundColor: const AppTheme.primaryColor),
+          backgroundColor: const Color(0xFF4CAF50)),
     );
   }
 
@@ -161,10 +160,8 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                           child: Row(
                             children: [
                               IconButton(
-                                icon: Icon(
-                                    Icons.arrow_back_ios_rounded,
-                                    color: Colors.white,
-                                    size: r.s(20)),
+                                icon: Icon(Icons.arrow_back_ios_rounded,
+                                    color: Colors.white, size: r.s(20)),
                                 onPressed: () => Navigator.pop(context),
                               ),
                               Expanded(
@@ -205,13 +202,13 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                                   shape: BoxShape.circle,
                                   gradient: const LinearGradient(
                                     colors: [
-                                      AppTheme.coinGold,
+                                      Color(0xFFFFD700),
                                       Color(0xFFFFA500),
                                     ],
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const AppTheme.coinGold
+                                      color: const Color(0xFFFFD700)
                                           .withValues(alpha: 0.4),
                                       blurRadius: 12,
                                     ),
@@ -290,7 +287,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
   }
 
   Widget _buildAdRewardCard() {
-      final r = context.r;
+    final r = context.r;
     final remaining = AdService.remainingAdsToday;
     return Container(
       padding: EdgeInsets.all(r.s(14)),
@@ -310,11 +307,11 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
           Container(
             padding: EdgeInsets.all(r.s(10)),
             decoration: BoxDecoration(
-              color: const AppTheme.primaryColor.withValues(alpha: 0.1),
+              color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(r.s(10)),
             ),
             child: Icon(Icons.play_circle_filled_rounded,
-                color: AppTheme.primaryColor, size: r.s(28)),
+                color: Color(0xFF4CAF50), size: r.s(28)),
           ),
           SizedBox(width: r.s(14)),
           Expanded(
@@ -342,12 +339,12 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                 ? null
                 : _watchAdForCoins,
             child: Container(
-              padding: EdgeInsets.symmetric(
-                  horizontal: r.s(14), vertical: r.s(8)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(8)),
               decoration: BoxDecoration(
                 color: _isWatchingAd || !AdService.canWatchAd
                     ? Colors.grey[300]
-                    : const AppTheme.primaryColor,
+                    : const Color(0xFF4CAF50),
                 borderRadius: BorderRadius.circular(r.s(20)),
               ),
               child: _isWatchingAd
@@ -373,7 +370,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
   }
 
   Widget _buildCoinPackageCard(CoinPackage pkg) {
-      final r = context.r;
+    final r = context.r;
     final isPopular = pkg.coins == 1200;
     return Container(
       margin: EdgeInsets.only(bottom: r.s(10)),
@@ -382,7 +379,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(r.s(12)),
         border: isPopular
-            ? Border.all(color: const AppTheme.aminoOrange, width: 2)
+            ? Border.all(color: const Color(0xFFFF9800), width: 2)
             : null,
         boxShadow: [
           BoxShadow(
@@ -401,7 +398,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: const LinearGradient(
-                colors: [AppTheme.coinGold, Color(0xFFFFA500)],
+                colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
               ),
             ),
             child: Center(
@@ -433,7 +430,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                         padding: EdgeInsets.symmetric(
                             horizontal: r.s(6), vertical: 2),
                         decoration: BoxDecoration(
-                          color: const AppTheme.aminoOrange,
+                          color: const Color(0xFFFF9800),
                           borderRadius: BorderRadius.circular(r.s(8)),
                         ),
                         child: Text(
@@ -453,7 +450,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                   Text(
                     'Melhor custo-benefício!',
                     style: TextStyle(
-                      color: AppTheme.aminoOrange,
+                      color: Color(0xFFFF9800),
                       fontSize: r.fs(11),
                       fontWeight: FontWeight.w600,
                     ),
@@ -465,11 +462,11 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
           GestureDetector(
             onTap: _isPurchasing ? null : () => _purchaseCoins(pkg),
             child: Container(
-              padding: EdgeInsets.symmetric(
-                  horizontal: r.s(14), vertical: r.s(8)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(8)),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [AppTheme.aminoOrange, Color(0xFFFFB74D)],
+                  colors: [Color(0xFFFF9800), Color(0xFFFFB74D)],
                 ),
                 borderRadius: BorderRadius.circular(r.s(20)),
               ),
@@ -496,7 +493,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
   }
 
   Widget _buildAminoPlusCard() {
-      final r = context.r;
+    final r = context.r;
     return Container(
       padding: EdgeInsets.all(r.s(20)),
       decoration: BoxDecoration(
@@ -566,24 +563,29 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
           SizedBox(height: r.s(16)),
           if (!IAPService.isAminoPlus)
             GestureDetector(
-              onTap: _isPurchasing ? null : () async {
-                setState(() => _isPurchasing = true);
-                try {
-                  final success = await IAPService.subscribeAminoPlus();
-                  if (mounted) {
-                    if (success) {
-                      _showSuccess('Amino+ ativado! Bem-vindo ao clube premium!');
-                      setState(() {});
-                    } else {
-                      _showError('Não foi possível processar a assinatura.');
-                    }
-                  }
-                } catch (e) {
-                  if (mounted) _showError('Ocorreu um erro. Tente novamente.');
-                } finally {
-                  if (mounted) setState(() => _isPurchasing = false);
-                }
-              },
+              onTap: _isPurchasing
+                  ? null
+                  : () async {
+                      setState(() => _isPurchasing = true);
+                      try {
+                        final success = await IAPService.subscribeAminoPlus();
+                        if (mounted) {
+                          if (success) {
+                            _showSuccess(
+                                'Amino+ ativado! Bem-vindo ao clube premium!');
+                            setState(() {});
+                          } else {
+                            _showError(
+                                'Não foi possível processar a assinatura.');
+                          }
+                        }
+                      } catch (e) {
+                        if (mounted)
+                          _showError('Ocorreu um erro. Tente novamente.');
+                      } finally {
+                        if (mounted) setState(() => _isPurchasing = false);
+                      }
+                    },
               child: Container(
                 width: double.infinity,
                 padding: EdgeInsets.symmetric(vertical: r.s(14)),
@@ -608,8 +610,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
   }
 
   Widget _aminoPlusBenefit(String text) {
-
-      final r = context.r;
+    final r = context.r;
     return Padding(
       padding: EdgeInsets.only(bottom: r.s(4)),
       child: Row(

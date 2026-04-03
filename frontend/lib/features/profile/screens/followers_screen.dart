@@ -118,7 +118,7 @@ class _FollowersScreenState extends State<FollowersScreen>
   }
 
   Widget _buildList(List<Map<String, dynamic>> list, String profileKey) {
-      final r = context.r;
+    final r = context.r;
     if (list.isEmpty) {
       return Center(
         child: Text(
@@ -138,52 +138,53 @@ class _FollowersScreenState extends State<FollowersScreen>
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.all(r.s(16)),
         itemCount: list.length,
-      separatorBuilder: (context, index) => SizedBox(height: r.s(12)),
-      itemBuilder: (context, index) {
-        final item = list[index];
-        final profile = item['profiles'] as Map<String, dynamic>? ?? item;
-        final userId = profile['id'] as String?;
-        final nickname = profile['nickname'] as String? ?? 'Usuário';
-        final avatarUrl = profile['icon_url'] as String?;
-        final level = profile['level'] as int? ?? 1;
+        separatorBuilder: (context, index) => SizedBox(height: r.s(12)),
+        itemBuilder: (context, index) {
+          final item = list[index];
+          final profile = item['profiles'] as Map<String, dynamic>? ?? item;
+          final userId = profile['id'] as String?;
+          final nickname = profile['nickname'] as String? ?? 'Usuário';
+          final avatarUrl = profile['icon_url'] as String?;
+          final level = profile['level'] as int? ?? 1;
 
-        return Container(
-          decoration: BoxDecoration(
-            color: context.surfaceColor,
-            borderRadius: BorderRadius.circular(r.s(16)),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.05),
-            ),
-          ),
-          child: ListTile(
-            contentPadding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
-            onTap: () {
-              if (!mounted) return;
-              if (userId != null) context.push('/user/$userId');
-            },
-            leading: CosmeticAvatar(
-              userId: userId,
-              avatarUrl: avatarUrl,
-              size: r.s(48),
-            ),
-            title: Text(
-              nickname,
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                color: context.textPrimary,
+          return Container(
+            decoration: BoxDecoration(
+              color: context.surfaceColor,
+              borderRadius: BorderRadius.circular(r.s(16)),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.05),
               ),
             ),
-            subtitle: Text(
-              'Nível $level',
-              style: TextStyle(
-                color: Colors.grey[500],
-                fontSize: r.fs(12),
+            child: ListTile(
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+              onTap: () {
+                if (!mounted) return;
+                if (userId != null) context.push('/user/$userId');
+              },
+              leading: CosmeticAvatar(
+                userId: userId,
+                avatarUrl: avatarUrl,
+                size: r.s(48),
               ),
+              title: Text(
+                nickname,
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: context.textPrimary,
+                ),
+              ),
+              subtitle: Text(
+                'Nível $level',
+                style: TextStyle(
+                  color: Colors.grey[500],
+                  fontSize: r.fs(12),
+                ),
+              ),
+              trailing: _FollowButton(targetUserId: userId ?? ''),
             ),
-            trailing: _FollowButton(targetUserId: userId ?? ''),
-          ),
-        );
-      },
+          );
+        },
       ),
     );
   }
@@ -246,16 +247,16 @@ class _FollowButtonState extends State<_FollowButton> {
         },
       );
       if (mounted) {
-        final isNowFollowing = result is Map
-            ? (result['following'] == true)
-            : !_isFollowing;
+        final isNowFollowing =
+            result is Map ? (result['following'] == true) : !_isFollowing;
         setState(() => _isFollowing = isNowFollowing);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ocorreu um erro. Tente novamente.', style: TextStyle(color: context.textPrimary)),
+            content: Text('Ocorreu um erro. Tente novamente.',
+                style: TextStyle(color: context.textPrimary)),
             backgroundColor: AppTheme.errorColor,
           ),
         );

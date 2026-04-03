@@ -101,14 +101,16 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
       if (userId == null) throw Exception('Não autenticado');
 
       // Montar perguntas com opções como JSON para a RPC
-      final questions = validQuestions.map((q) => {
-            'question_text': q.questionController.text.trim(),
-            'correct_option_index': q.correctIndex,
-            'options': q.options
-                .where((o) => o.controller.text.trim().isNotEmpty)
-                .map((o) => {'text': o.controller.text.trim()})
-                .toList(),
-          }).toList();
+      final questions = validQuestions
+          .map((q) => {
+                'question_text': q.questionController.text.trim(),
+                'correct_option_index': q.correctIndex,
+                'options': q.options
+                    .where((o) => o.controller.text.trim().isNotEmpty)
+                    .map((o) => {'text': o.controller.text.trim()})
+                    .toList(),
+              })
+          .toList();
 
       // RPC atômica: cria post + questions + options + reputação
       await SupabaseService.rpc('create_quiz_with_questions', params: {
@@ -297,8 +299,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
       decoration: BoxDecoration(
         color: context.cardBg,
         borderRadius: BorderRadius.circular(r.s(14)),
-        border: Border.all(
-            color: context.dividerClr.withValues(alpha: 0.3)),
+        border: Border.all(color: context.dividerClr.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -306,8 +307,8 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
           Row(
             children: [
               Container(
-                padding: EdgeInsets.symmetric(
-                    horizontal: r.s(10), vertical: r.s(4)),
+                padding:
+                    EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(4)),
                 decoration: BoxDecoration(
                   color: const Color(0xFFDB2777).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(r.s(20)),
@@ -334,12 +335,11 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
             controller: q.questionController,
             maxLength: 200,
             textCapitalization: TextCapitalization.sentences,
-            style: TextStyle(
-                color: context.textPrimary, fontSize: r.fs(14)),
+            style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
             decoration: InputDecoration(
               hintText: 'Digite a pergunta...',
-              hintStyle: TextStyle(
-                  color: context.textSecondary, fontSize: r.fs(14)),
+              hintStyle:
+                  TextStyle(color: context.textSecondary, fontSize: r.fs(14)),
               filled: true,
               fillColor: context.scaffoldBg,
               border: OutlineInputBorder(
@@ -348,12 +348,12 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(r.s(10)),
-                borderSide: BorderSide(
-                    color: const Color(0xFFDB2777), width: 1.5),
+                borderSide:
+                    BorderSide(color: const Color(0xFFDB2777), width: 1.5),
               ),
               counterText: '',
-              contentPadding: EdgeInsets.symmetric(
-                  horizontal: r.s(12), vertical: r.s(10)),
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(10)),
             ),
           ),
           SizedBox(height: r.s(10)),
@@ -372,8 +372,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
               child: Row(
                 children: [
                   GestureDetector(
-                    onTap: () =>
-                        setState(() => q.correctIndex = oi),
+                    onTap: () => setState(() => q.correctIndex = oi),
                     child: Container(
                       width: r.s(22),
                       height: r.s(22),
@@ -402,23 +401,19 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                       maxLength: 100,
                       textCapitalization: TextCapitalization.sentences,
                       style: TextStyle(
-                          color: context.textPrimary,
-                          fontSize: r.fs(13)),
+                          color: context.textPrimary, fontSize: r.fs(13)),
                       decoration: InputDecoration(
                         hintText: 'Opção ${oi + 1}',
                         hintStyle: TextStyle(
-                            color: context.textSecondary,
-                            fontSize: r.fs(13)),
+                            color: context.textSecondary, fontSize: r.fs(13)),
                         filled: true,
                         fillColor: context.scaffoldBg,
                         border: OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius.circular(r.s(8)),
+                          borderRadius: BorderRadius.circular(r.s(8)),
                           borderSide: BorderSide.none,
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius.circular(r.s(8)),
+                          borderRadius: BorderRadius.circular(r.s(8)),
                           borderSide: BorderSide(
                               color: isCorrect
                                   ? AppTheme.primaryColor
@@ -473,12 +468,11 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(r.s(12)),
-            borderSide: BorderSide(
-                color: const Color(0xFFDB2777), width: 1.5),
+            borderSide: BorderSide(color: const Color(0xFFDB2777), width: 1.5),
           ),
           counterText: '',
-          contentPadding: EdgeInsets.symmetric(
-              horizontal: r.s(14), vertical: r.s(12)),
+          contentPadding:
+              EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(12)),
         ),
       );
 }

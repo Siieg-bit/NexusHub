@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -77,8 +76,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     // Evitar múltiplos rebuilds agendados no mesmo frame
     if (_pendingTabRebuild) return;
 
-    final visible =
-        layout['sections_visible'] as Map<String, dynamic>? ?? {};
+    final visible = layout['sections_visible'] as Map<String, dynamic>? ?? {};
     final tabs = <String>[];
     if (visible['guidelines'] != false) tabs.add('Regras');
     if (visible['featured_posts'] != false) tabs.add('Destaque');
@@ -86,8 +84,8 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     if (visible['public_chats'] != false) tabs.add('Chats Públicos');
 
     // Guard: se a lista de tabs não mudou, não recriar o controller
-    if (tabs.length == _activeTabs.length &&
-        _listEquals(tabs, _activeTabs)) return;
+    if (tabs.length == _activeTabs.length && _listEquals(tabs, _activeTabs))
+      return;
 
     _pendingTabRebuild = true;
 
@@ -111,7 +109,9 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
       WidgetsBinding.instance.addPostFrameCallback((_) {
         try {
           oldController.dispose();
-        } catch (e) { debugPrint('[community_detail_screen.dart] $e'); }
+        } catch (e) {
+          debugPrint('[community_detail_screen.dart] $e');
+        }
       });
     });
   }
@@ -173,8 +173,8 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             content: const Text('Você entrou na comunidade!'),
             backgroundColor: AppTheme.primaryColor,
             behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(10))),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(r.s(10))),
           ),
         );
       }
@@ -245,8 +245,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
 
         final visible =
             layout['sections_visible'] as Map<String, dynamic>? ?? {};
-        final bottomBar =
-            layout['bottom_bar'] as Map<String, dynamic>? ?? {};
+        final bottomBar = layout['bottom_bar'] as Map<String, dynamic>? ?? {};
         final showOnline = bottomBar['show_online_count'] != false;
         final showCreate = bottomBar['show_create_button'] != false;
         final welcomeBanner =
@@ -265,13 +264,11 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             // extendBody: true faz o conteúdo passar por baixo do nav flutuante
             extendBody: true,
             body: _bottomIndex == 0
-                ? _buildHomePage(
-                    community, themeColor, isMember, userRole, layout,
-                    visible, welcomeBanner)
+                ? _buildHomePage(community, themeColor, isMember, userRole,
+                    layout, visible, welcomeBanner)
                 : _bottomIndex == 1
                     ? CommunityOnlineTab(community: community)
-                    : _buildHomePage(
-                        community, themeColor, isMember, userRole,
+                    : _buildHomePage(community, themeColor, isMember, userRole,
                         layout, visible, welcomeBanner),
             // Floating capsule nav — só aparece nas páginas iniciais (membro)
             bottomNavigationBar: isMember
@@ -279,26 +276,26 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                     currentIndex: _bottomIndex,
                     showOnline: showOnline,
                     showCreate: showCreate,
-                    onlineCount: ref.watch(onlineCountProvider(widget.communityId)),
+                    onlineCount:
+                        ref.watch(onlineCountProvider(widget.communityId)),
                     // Avatares dos membros online (até 3)
                     onlineAvatars: () {
-                      final membersAsync = ref.watch(
-                          communityMembersProvider(widget.communityId));
+                      final membersAsync = ref
+                          .watch(communityMembersProvider(widget.communityId));
                       final onlineIds = ref
-                          .watch(communityPresenceProvider(widget.communityId))
-                          .valueOrNull ?? {};
-                      final members =
-                          membersAsync.valueOrNull ?? [];
+                              .watch(
+                                  communityPresenceProvider(widget.communityId))
+                              .valueOrNull ??
+                          {};
+                      final members = membersAsync.valueOrNull ?? [];
                       return members
                           .where((m) =>
                               onlineIds.contains(m['user_id'] as String?))
                           .take(3)
                           .map((m) {
-                            final p = m['profiles']
-                                as Map<String, dynamic>? ?? {};
-                            return p['icon_url'] as String?;
-                          })
-                          .toList();
+                        final p = m['profiles'] as Map<String, dynamic>? ?? {};
+                        return p['icon_url'] as String?;
+                      }).toList();
                     }(),
                     avatarUrl: ref.watch(
                       currentUserProfileProvider
@@ -398,7 +395,8 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                   context: context,
                   backgroundColor: context.surfaceColor,
                   shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20)),
                   ),
                   builder: (ctx) => Padding(
                     padding: EdgeInsets.all(r.s(24)),
@@ -411,8 +409,10 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                                 fontSize: r.fs(18),
                                 fontWeight: FontWeight.w800)),
                         SizedBox(height: r.s(16)),
-                        Text('Fa\u00e7a check-in para ganhar reputa\u00e7\u00e3o e moedas!',
-                            style: TextStyle(color: Colors.grey[400], fontSize: r.fs(14))),
+                        Text(
+                            'Fa\u00e7a check-in para ganhar reputa\u00e7\u00e3o e moedas!',
+                            style: TextStyle(
+                                color: Colors.grey[400], fontSize: r.fs(14))),
                         SizedBox(height: r.s(20)),
                         ElevatedButton(
                           onPressed: () => Navigator.pop(ctx),
@@ -514,10 +514,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [
-                          themeColor,
-                          themeColor.withValues(alpha: 0.3)
-                        ],
+                        colors: [themeColor, themeColor.withValues(alpha: 0.3)],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                       ),
@@ -656,13 +653,13 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                 }
               },
               child: Container(
-                margin: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(6)),
+                margin:
+                    EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(6)),
                 padding: EdgeInsets.all(r.s(12)),
                 decoration: BoxDecoration(
                   color: themeColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(r.s(12)),
-                  border: Border.all(
-                      color: themeColor.withValues(alpha: 0.3)),
+                  border: Border.all(color: themeColor.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
@@ -728,10 +725,10 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                 indicatorColor: Colors.white,
                 indicatorWeight: 2,
                 indicatorSize: TabBarIndicatorSize.label,
-                labelStyle: TextStyle(
-                    fontWeight: FontWeight.w600, fontSize: r.fs(12)),
-                unselectedLabelStyle: TextStyle(
-                    fontWeight: FontWeight.w500, fontSize: r.fs(12)),
+                labelStyle:
+                    TextStyle(fontWeight: FontWeight.w600, fontSize: r.fs(12)),
+                unselectedLabelStyle:
+                    TextStyle(fontWeight: FontWeight.w500, fontSize: r.fs(12)),
                 dividerColor: Colors.transparent,
                 tabs: _activeTabs.map((t) => Tab(text: t)).toList(),
               ),
@@ -747,12 +744,10 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                     return CommunityGuidelinesTab(community: community);
                   case 'Destaque':
                     return CommunityFeedTab(
-                        communityId: widget.communityId,
-                        isFeatured: true);
+                        communityId: widget.communityId, isFeatured: true);
                   case 'Recentes':
                     return CommunityFeedTab(
-                        communityId: widget.communityId,
-                        isFeatured: false);
+                        communityId: widget.communityId, isFeatured: false);
                   case 'Chats':
                     return CommunityChatTab(communityId: widget.communityId);
                   default:

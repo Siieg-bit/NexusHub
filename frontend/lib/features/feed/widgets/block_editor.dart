@@ -163,9 +163,12 @@ class _BlockEditorState extends State<BlockEditor> {
       final bytes = await image.readAsBytes();
       final path =
           'posts/${widget.communityId}/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
-      await SupabaseService.client.storage.from('post_media').uploadBinary(path, bytes);
+      await SupabaseService.client.storage
+          .from('media')
+          .uploadBinary(path, bytes);
       if (!mounted) return;
-      final url = SupabaseService.client.storage.from('post_media').getPublicUrl(path);
+      final url =
+          SupabaseService.client.storage.from('media').getPublicUrl(path);
 
       if (!mounted) return;
       setState(() {
@@ -216,9 +219,12 @@ class _BlockEditorState extends State<BlockEditor> {
       final bytes = await image.readAsBytes();
       final path =
           'posts/${widget.communityId}/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
-      await SupabaseService.client.storage.from('post_media').uploadBinary(path, bytes);
+      await SupabaseService.client.storage
+          .from('media')
+          .uploadBinary(path, bytes);
       if (!mounted) return;
-      final url = SupabaseService.client.storage.from('post_media').getPublicUrl(path);
+      final url =
+          SupabaseService.client.storage.from('media').getPublicUrl(path);
 
       setState(() {
         _blocks[index].imageUrl = url;
@@ -378,7 +384,7 @@ class _BlockWidget extends StatelessWidget {
   }
 
   Widget _buildContent(BuildContext context) {
-      final r = context.r;
+    final r = context.r;
     switch (block.type) {
       case BlockType.text:
         return Padding(
@@ -564,25 +570,25 @@ class _AddBlockBar extends StatelessWidget {
           _AddBlockButton(
             icon: Icons.text_fields_rounded,
             label: 'Texto',
-            color: const AppTheme.primaryColor,
+            color: const Color(0xFF4CAF50),
             onTap: onAddText,
           ),
           _AddBlockButton(
             icon: Icons.image_rounded,
             label: 'Imagem',
-            color: const AppTheme.infoColor,
+            color: const Color(0xFF2196F3),
             onTap: onAddImage,
           ),
           _AddBlockButton(
             icon: Icons.title_rounded,
             label: 'Título',
-            color: const AppTheme.aminoOrange,
+            color: const Color(0xFFFF9800),
             onTap: onAddHeading,
           ),
           _AddBlockButton(
             icon: Icons.horizontal_rule_rounded,
             label: 'Divisor',
-            color: const AppTheme.badgeAge,
+            color: const Color(0xFF9C27B0),
             onTap: onAddDivider,
           ),
         ],

@@ -155,19 +155,20 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
             child: Row(
               children: [
                 Text('GIFs',
-                    style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: r.fs(18))),
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: r.fs(18))),
                 const Spacer(),
                 // Powered by GIPHY badge
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: r.s(8), vertical: r.s(4)),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: r.s(8), vertical: r.s(4)),
                   decoration: BoxDecoration(
                     color: context.cardBg,
                     borderRadius: BorderRadius.circular(r.s(8)),
                   ),
                   child: Text('Powered by GIPHY',
-                      style: TextStyle(fontSize: r.fs(10), color: context.textHint)),
+                      style: TextStyle(
+                          fontSize: r.fs(10), color: context.textHint)),
                 ),
               ],
             ),
@@ -183,8 +184,7 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
               },
               decoration: InputDecoration(
                 hintText: 'Buscar GIFs...',
-                prefixIcon:
-                    Icon(Icons.search_rounded, color: context.textHint),
+                prefixIcon: Icon(Icons.search_rounded, color: context.textHint),
                 suffixIcon: _query.isNotEmpty
                     ? IconButton(
                         icon: Icon(Icons.clear_rounded, size: r.s(18)),
@@ -201,8 +201,8 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
                   borderRadius: BorderRadius.circular(r.s(12)),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(10)),
+                contentPadding: EdgeInsets.symmetric(
+                    horizontal: r.s(16), vertical: r.s(10)),
               ),
             ),
           ),

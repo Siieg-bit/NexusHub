@@ -241,16 +241,14 @@ class _BokehPainter extends CustomPainter {
       final px = ((dx % size.width) + size.width) % size.width;
       final py = ((dy % size.height) + size.height) % size.height;
 
-      final pulseOpacity =
-          p.opacity * (0.6 + 0.4 * sin(time * 1.5 + p.phase));
+      final pulseOpacity = p.opacity * (0.6 + 0.4 * sin(time * 1.5 + p.phase));
 
       final center = Offset(px, py);
 
       if (p.glowRadius > 0) {
         final glowPaint = Paint()
           ..color = color.withValues(alpha: pulseOpacity * 0.3)
-          ..maskFilter =
-              MaskFilter.blur(BlurStyle.normal, p.glowRadius * 2);
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, p.glowRadius * 2);
         canvas.drawCircle(center, p.size + p.glowRadius, glowPaint);
       }
 
@@ -270,8 +268,7 @@ class _BokehPainter extends CustomPainter {
     }
   }
 
-  void _drawHexagon(
-      Canvas canvas, Offset center, double radius, Paint paint) {
+  void _drawHexagon(Canvas canvas, Offset center, double radius, Paint paint) {
     final path = Path();
     for (int i = 0; i < 6; i++) {
       final angle = (pi / 3) * i - pi / 6;

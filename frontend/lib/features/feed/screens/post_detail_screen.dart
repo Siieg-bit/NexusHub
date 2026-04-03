@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -16,8 +15,6 @@ import '../widgets/poll_quiz_widget.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../moderation/widgets/report_dialog.dart';
 import '../../../core/utils/responsive.dart';
-import 'package:nexus_hub/core/l10n/locale_provider.dart';
-// TODO: Add 'final s = ref.watch(stringsProvider);' in build() methods
 
 /// Provider para comentários de um post.
 final postCommentsProvider =
@@ -51,14 +48,17 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   bool _isBookmarked = false;
 
   /// Incrementa views_count uma única vez por abertura da tela.
-  /// Usa RPC atômica para evitar race condition (read-then-write).
   Future<void> _recordView() async {
     if (_viewRecorded) return;
     _viewRecorded = true;
     try {
-      await SupabaseService.rpc('increment_post_views', params: {
-        'p_post_id': widget.postId,
-      });
+      final row = await SupabaseService.table('posts')
+          .select('views_count')
+          .eq('id', widget.postId)
+          .maybeSingle();
+      final current = (row?['views_count'] as int?) ?? 0;
+      await SupabaseService.table('posts')
+          .update({'views_count': current + 1}).eq('id', widget.postId);
     } catch (e) {
       debugPrint('[NexusHub] Erro ao registrar visualização: $e');
     }
@@ -78,7 +78,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     if (userId == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text(s.loginRequired)),
+          const SnackBar(
+              content: Text('Você precisa estar logado para comentar.')),
         );
       }
       return;
@@ -96,7 +97,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               .eq('id', widget.postId)
               .maybeSingle();
           communityId = row?['community_id'] as String?;
-        } catch (e) { debugPrint('[post_detail_screen.dart] $e'); }
+        } catch (e) {
+          debugPrint('[post_detail_screen.dart] $e');
+        }
       }
 
       await SupabaseService.rpc('create_comment_with_reputation', params: {
@@ -114,7 +117,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       debugPrint('[NexusHub] Erro ao comentar: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao comentar: ${e.toString().replaceAll('Exception: ', '')}')),
+          SnackBar(
+              content: Text(
+                  'Erro ao comentar: ${e.toString().replaceAll('Exception: ', '')}')),
         );
       }
     } finally {
@@ -131,7 +136,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         'p_post_id': widget.postId,
       });
       ref.invalidate(postDetailProvider(widget.postId));
-    } catch (e) { debugPrint('[post_detail_screen.dart] $e'); }
+    } catch (e) {
+      debugPrint('[post_detail_screen.dart] $e');
+    }
   }
 
   Future<void> _toggleBookmark() async {
@@ -141,11 +148,13 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         'p_post_id': widget.postId,
       });
       if (mounted) {
-        final bookmarked = (result as Map<String, dynamic>?)?['bookmarked'] == true;
+        final bookmarked =
+            (result as Map<String, dynamic>?)?['bookmarked'] == true;
         setState(() => _isBookmarked = bookmarked);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(bookmarked ? 'Post salvo!' : 'Post removido dos salvos'),
+            content:
+                Text(bookmarked ? 'Post salvo!' : 'Post removido dos salvos'),
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 1),
           ),
@@ -154,7 +163,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(s.genericError)),
+          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
         );
       }
     }
@@ -165,7 +174,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     Clipboard.setData(ClipboardData(text: link));
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text(s.linkCopied),
+        content: Text('Link copiado!'),
         behavior: SnackBarBehavior.floating,
         duration: Duration(seconds: 2),
       ),
@@ -203,7 +212,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               borderRadius: BorderRadius.circular(r.s(12)),
             ),
             onSelected: (value) async {
-              final post = ref.read(postDetailProvider(widget.postId)).valueOrNull;
+              final post =
+                  ref.read(postDetailProvider(widget.postId)).valueOrNull;
               if (post == null) return;
               switch (value) {
                 case 'report':
@@ -222,7 +232,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         borderRadius: BorderRadius.circular(r.s(16)),
                       ),
                       title: Text('Deletar Post',
-                          style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w700)),
+                          style: TextStyle(
+                              color: context.textPrimary,
+                              fontWeight: FontWeight.w700)),
                       content: Text(
                         'Tem certeza que deseja deletar este post? Esta ação não pode ser desfeita.',
                         style: TextStyle(color: context.textSecondary),
@@ -230,21 +242,23 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(ctx, false),
-                          child: Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
+                          child: Text('Cancelar',
+                              style: TextStyle(color: Colors.grey[500])),
                         ),
                         TextButton(
                           onPressed: () => Navigator.pop(ctx, true),
-                          child: const Text(s.delete,
-                              style: TextStyle(color: AppTheme.errorColor, fontWeight: FontWeight.w700)),
+                          child: const Text('Deletar',
+                              style: TextStyle(
+                                  color: AppTheme.errorColor,
+                                  fontWeight: FontWeight.w700)),
                         ),
                       ],
                     ),
                   );
                   if (confirm == true && mounted) {
                     try {
-                      await SupabaseService.table('posts')
-                          .update({'status': 'deleted'})
-                          .eq('id', widget.postId);
+                      await SupabaseService.table('posts').update(
+                          {'status': 'deleted'}).eq('id', widget.postId);
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -257,7 +271,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     } catch (e) {
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(s.genericError)),
+                          SnackBar(
+                              content:
+                                  Text('Ocorreu um erro. Tente novamente.')),
                         );
                       }
                     }
@@ -273,19 +289,23 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   try {
                     final isPinned = post.isPinned;
                     await SupabaseService.table('posts')
-                        .update({'is_pinned_profile': !isPinned})
-                        .eq('id', widget.postId);
+                        .update({'is_pinned_profile': !isPinned}).eq(
+                            'id', widget.postId);
                     if (!mounted) return;
                     ref.invalidate(postDetailProvider(widget.postId));
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(isPinned ? 'Post desafixado do perfil' : 'Post fixado no perfil'),
+                        content: Text(isPinned
+                            ? 'Post desafixado do perfil'
+                            : 'Post fixado no perfil'),
                         behavior: SnackBarBehavior.floating,
                         duration: const Duration(seconds: 2),
                       ));
                     }
                   } catch (e) {
-                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(s.genericError)));
+                    if (mounted)
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text('Ocorreu um erro. Tente novamente.')));
                   }
                   break;
                 case 'hide':
@@ -298,7 +318,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         'hidden_at': DateTime.now().toIso8601String(),
                       }, onConflict: 'user_id,post_id');
                       if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(const SnackBar(
                           content: Text('Post ocultado do seu feed'),
                           behavior: SnackBarBehavior.floating,
                           duration: Duration(seconds: 2),
@@ -307,38 +328,47 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       }
                     }
                   } catch (e) {
-                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(s.genericError)));
+                    if (mounted)
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text('Ocorreu um erro. Tente novamente.')));
                   }
                   break;
               }
             },
             itemBuilder: (context) {
-              final post = ref.read(postDetailProvider(widget.postId)).valueOrNull;
+              final post =
+                  ref.read(postDetailProvider(widget.postId)).valueOrNull;
               final isAuthor = post?.authorId == SupabaseService.currentUserId;
               return [
                 PopupMenuItem(
                   value: 'copy_link',
                   child: Row(children: [
-                    Icon(Icons.link_rounded, size: r.s(18), color: context.textSecondary),
+                    Icon(Icons.link_rounded,
+                        size: r.s(18), color: context.textSecondary),
                     SizedBox(width: r.s(10)),
-                    Text('Copiar Link', style: TextStyle(color: context.textPrimary)),
+                    Text('Copiar Link',
+                        style: TextStyle(color: context.textPrimary)),
                   ]),
                 ),
                 PopupMenuItem(
                   value: 'report',
                   child: Row(children: [
-                    Icon(Icons.flag_rounded, size: r.s(18), color: AppTheme.aminoOrange),
+                    Icon(Icons.flag_rounded,
+                        size: r.s(18), color: Colors.orange),
                     SizedBox(width: r.s(10)),
-                    Text('Reportar', style: TextStyle(color: context.textPrimary)),
+                    Text('Reportar',
+                        style: TextStyle(color: context.textPrimary)),
                   ]),
                 ),
                 if (isAuthor)
                   PopupMenuItem(
                     value: 'edit',
                     child: Row(children: [
-                      Icon(Icons.edit_rounded, size: r.s(18), color: AppTheme.primaryColor),
+                      Icon(Icons.edit_rounded,
+                          size: r.s(18), color: AppTheme.primaryColor),
                       SizedBox(width: r.s(10)),
-                      Text(s.edit, style: TextStyle(color: context.textPrimary)),
+                      Text('Editar',
+                          style: TextStyle(color: context.textPrimary)),
                     ]),
                   ),
                 if (isAuthor)
@@ -346,13 +376,17 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     value: 'pin_profile',
                     child: Row(children: [
                       Icon(
-                        (post?.isPinned == true) ? Icons.push_pin_rounded : Icons.push_pin_outlined,
+                        (post?.isPinned == true)
+                            ? Icons.push_pin_rounded
+                            : Icons.push_pin_outlined,
                         size: r.s(18),
                         color: AppTheme.primaryColor,
                       ),
                       SizedBox(width: r.s(10)),
                       Text(
-                        (post?.isPinned == true) ? 'Desafixar do Perfil' : 'Fixar no Perfil',
+                        (post?.isPinned == true)
+                            ? 'Desafixar do Perfil'
+                            : 'Fixar no Perfil',
                         style: TextStyle(color: context.textPrimary),
                       ),
                     ]),
@@ -361,18 +395,22 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   PopupMenuItem(
                     value: 'hide',
                     child: Row(children: [
-                      Icon(Icons.visibility_off_rounded, size: r.s(18), color: Colors.grey),
+                      Icon(Icons.visibility_off_rounded,
+                          size: r.s(18), color: Colors.grey),
                       SizedBox(width: r.s(10)),
-                      Text('Ocultar Post', style: TextStyle(color: context.textPrimary)),
+                      Text('Ocultar Post',
+                          style: TextStyle(color: context.textPrimary)),
                     ]),
                   ),
                 if (isAuthor)
                   PopupMenuItem(
                     value: 'delete',
                     child: Row(children: [
-                      Icon(Icons.delete_rounded, size: r.s(18), color: AppTheme.errorColor),
+                      Icon(Icons.delete_rounded,
+                          size: r.s(18), color: AppTheme.errorColor),
                       SizedBox(width: r.s(10)),
-                      Text(s.delete, style: TextStyle(color: AppTheme.errorColor)),
+                      Text('Deletar',
+                          style: TextStyle(color: AppTheme.errorColor)),
                     ]),
                   ),
               ];
@@ -387,7 +425,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           ),
         ),
         error: (error, _) => Center(
-          child: Text('Erro: $error', style: const TextStyle(color: AppTheme.errorColor)),
+          child: Text('Erro: $error',
+              style: const TextStyle(color: AppTheme.errorColor)),
         ),
         data: (post) {
           if (post == null) {
@@ -420,7 +459,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         // ======================================================
                         if (post.title != null && post.title!.isNotEmpty)
                           Padding(
-                            padding: EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(4)),
+                            padding: EdgeInsets.fromLTRB(
+                                r.s(16), r.s(16), r.s(16), r.s(4)),
                             child: Text(
                               post.title!,
                               style: TextStyle(
@@ -443,7 +483,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                 userId: post.authorId,
                                 avatarUrl: post.author?.iconUrl,
                                 size: r.s(40),
-                                onTap: () => context.push('/user/${post.authorId}'),
+                                onTap: () =>
+                                    context.push('/user/${post.authorId}'),
                               ),
                               SizedBox(width: r.s(10)),
                               Expanded(
@@ -467,16 +508,21 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                           SizedBox(width: r.s(6)),
                                           Container(
                                             padding: EdgeInsets.symmetric(
-                                                horizontal: r.s(7), vertical: 2),
+                                                horizontal: r.s(7),
+                                                vertical: 2),
                                             decoration: BoxDecoration(
                                               gradient: LinearGradient(
                                                 colors: [
-                                                  AppTheme.getLevelColor(post.author!.level),
-                                                  AppTheme.getLevelColor(post.author!.level)
+                                                  AppTheme.getLevelColor(
+                                                      post.author!.level),
+                                                  AppTheme.getLevelColor(
+                                                          post.author!.level)
                                                       .withValues(alpha: 0.7),
                                                 ],
                                               ),
-                                              borderRadius: BorderRadius.circular(r.s(10)),
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      r.s(10)),
                                             ),
                                             child: Text(
                                               'Lv.${post.author!.level}',
@@ -492,7 +538,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                     ),
                                     SizedBox(height: r.s(2)),
                                     Text(
-                                      timeago.format(post.createdAt, locale: 'pt_BR'),
+                                      timeago.format(post.createdAt,
+                                          locale: 'pt_BR'),
                                       style: TextStyle(
                                         color: Colors.grey[500],
                                         fontSize: r.fs(12),
@@ -509,12 +556,15 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                       horizontal: r.s(14), vertical: r.s(7)),
                                   decoration: BoxDecoration(
                                     color: post.isLiked
-                                        ? AppTheme.errorColor.withValues(alpha: 0.12)
+                                        ? AppTheme.errorColor
+                                            .withValues(alpha: 0.12)
                                         : Colors.grey.withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(r.s(20)),
+                                    borderRadius:
+                                        BorderRadius.circular(r.s(20)),
                                     border: Border.all(
                                       color: post.isLiked
-                                          ? AppTheme.errorColor.withValues(alpha: 0.4)
+                                          ? AppTheme.errorColor
+                                              .withValues(alpha: 0.4)
                                           : Colors.grey.withValues(alpha: 0.25),
                                     ),
                                   ),
@@ -554,21 +604,26 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         // ======================================================
                         if (post.tags.isNotEmpty)
                           Padding(
-                            padding: EdgeInsets.fromLTRB(r.s(16), 0, r.s(16), r.s(8)),
+                            padding: EdgeInsets.fromLTRB(
+                                r.s(16), 0, r.s(16), r.s(8)),
                             child: Wrap(
                               spacing: 6,
                               runSpacing: 4,
                               children: post.tags.map((tag) {
                                 return GestureDetector(
-                                  onTap: () => context.push('/search?q=%23$tag'),
+                                  onTap: () =>
+                                      context.push('/search?q=%23$tag'),
                                   child: Container(
                                     padding: EdgeInsets.symmetric(
                                         horizontal: r.s(10), vertical: r.s(4)),
                                     decoration: BoxDecoration(
-                                      color: AppTheme.primaryColor.withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(r.s(12)),
+                                      color: AppTheme.primaryColor
+                                          .withValues(alpha: 0.15),
+                                      borderRadius:
+                                          BorderRadius.circular(r.s(12)),
                                       border: Border.all(
-                                        color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                                        color: AppTheme.primaryColor
+                                            .withValues(alpha: 0.3),
                                       ),
                                     ),
                                     child: Text(
@@ -598,7 +653,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           )
                         else
                           Padding(
-                            padding: EdgeInsets.fromLTRB(r.s(16), 0, r.s(16), r.s(16)),
+                            padding: EdgeInsets.fromLTRB(
+                                r.s(16), 0, r.s(16), r.s(16)),
                             child: Text(
                               post.content,
                               style: TextStyle(
@@ -615,15 +671,16 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         if (post.type == 'poll')
                           PollDetailWidget(
                             post: post,
-                            onVoted: () => ref.invalidate(postDetailProvider(widget.postId)),
+                            onVoted: () => ref
+                                .invalidate(postDetailProvider(widget.postId)),
                           ),
                         if (post.type == 'quiz')
                           QuizDetailWidget(
                             post: post,
-                            onCompleted: () => ref.invalidate(postDetailProvider(widget.postId)),
+                            onCompleted: () => ref
+                                .invalidate(postDetailProvider(widget.postId)),
                           ),
-                        if (post.type == 'qa')
-                          _buildQAHeader(post),
+                        if (post.type == 'qa') _buildQAHeader(post),
 
                         // ======================================================
                         // MÍDIA
@@ -656,7 +713,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                               Text(
                                 '${post.viewsCount} visualizações',
                                 style: TextStyle(
-                                    color: Colors.grey[600], fontSize: r.fs(12)),
+                                    color: Colors.grey[600],
+                                    fontSize: r.fs(12)),
                               ),
                             ],
                           ),
@@ -711,7 +769,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                         horizontal: r.s(14), vertical: r.s(10)),
                                     decoration: BoxDecoration(
                                       color: Colors.grey.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(r.s(20)),
+                                      borderRadius:
+                                          BorderRadius.circular(r.s(20)),
                                     ),
                                     child: Text(
                                       'Diga algo...',
@@ -743,19 +802,22 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             padding: EdgeInsets.all(r.s(16)),
                             child: Text(
                               'Erro ao carregar comentários. Tente novamente.',
-                              style: const TextStyle(color: AppTheme.errorColor),
+                              style:
+                                  const TextStyle(color: AppTheme.errorColor),
                             ),
                           ),
                           data: (comments) {
                             if (comments.isEmpty) {
                               return Padding(
-                                padding: EdgeInsets.symmetric(vertical: r.s(32)),
+                                padding:
+                                    EdgeInsets.symmetric(vertical: r.s(32)),
                                 child: Center(
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Icon(Icons.refresh_rounded,
-                                          size: r.s(28), color: Colors.grey[400]),
+                                          size: r.s(28),
+                                          color: Colors.grey[400]),
                                       SizedBox(height: r.s(8)),
                                       Text(
                                         'Nenhum comentário',
@@ -795,13 +857,16 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               AnimatedBuilder(
                 animation: _commentFocusNode,
                 builder: (context, child) {
-                  if (!_commentFocusNode.hasFocus) return const SizedBox.shrink();
+                  if (!_commentFocusNode.hasFocus)
+                    return const SizedBox.shrink();
                   return Container(
-                    padding: EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16), r.s(8)),
+                    padding:
+                        EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16), r.s(8)),
                     decoration: BoxDecoration(
                       color: context.surfaceColor,
                       border: Border(
-                        top: BorderSide(color: Colors.grey.withValues(alpha: 0.15)),
+                        top: BorderSide(
+                            color: Colors.grey.withValues(alpha: 0.15)),
                       ),
                     ),
                     child: SafeArea(
@@ -812,7 +877,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                               controller: _commentController,
                               focusNode: _commentFocusNode,
                               style: TextStyle(
-                                  color: context.textPrimary, fontSize: r.fs(14)),
+                                  color: context.textPrimary,
+                                  fontSize: r.fs(14)),
                               decoration: InputDecoration(
                                 hintText: 'Escreva um comentário...',
                                 hintStyle: TextStyle(color: Colors.grey[500]),
@@ -839,8 +905,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                       height: r.s(18),
                                       child: const CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(
-                                            Colors.white),
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                                Colors.white),
                                       ),
                                     )
                                   : Icon(Icons.send_rounded,
@@ -915,7 +982,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF1A237E).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(r.s(14)),
-        border: Border.all(color: const Color(0xFF3F51B5).withValues(alpha: 0.3)),
+        border:
+            Border.all(color: const Color(0xFF3F51B5).withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -955,7 +1023,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           GestureDetector(
             onTap: () => _commentFocusNode.requestFocus(),
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(6)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(6)),
               decoration: BoxDecoration(
                 color: const Color(0xFF3F51B5),
                 borderRadius: BorderRadius.circular(r.s(20)),
@@ -1079,7 +1148,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       ScaffoldMessenger.of(ctx).showSnackBar(
                         SnackBar(
                           content: Text(
-                            e.toString().contains('Post não encontrado ou sem permissão')
+                            e.toString().contains(
+                                    'Post não encontrado ou sem permissão')
                                 ? 'Você não tem permissão para editar este post.'
                                 : 'Ocorreu um erro. Tente novamente.',
                           ),
@@ -1191,7 +1261,9 @@ class _CommentTileState extends State<_CommentTile> {
           .eq('comment_id', widget.comment.id)
           .maybeSingle();
       if (mounted && res != null) setState(() => _isLiked = true);
-    } catch (e) { debugPrint('[post_detail_screen.dart] $e'); }
+    } catch (e) {
+      debugPrint('[post_detail_screen.dart] $e');
+    }
   }
 
   Future<void> _toggleCommentLike() async {
@@ -1251,7 +1323,8 @@ class _CommentTileState extends State<_CommentTile> {
                     SizedBox(width: r.s(8)),
                     Text(
                       timeago.format(comment.createdAt, locale: 'pt_BR'),
-                      style: TextStyle(color: Colors.grey[500], fontSize: r.fs(11)),
+                      style: TextStyle(
+                          color: Colors.grey[500], fontSize: r.fs(11)),
                     ),
                   ],
                 ),

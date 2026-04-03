@@ -43,7 +43,7 @@ class CommunityGuidelinesTab extends ConsumerWidget {
               Row(
                 children: [
                   Icon(Icons.public_rounded,
-                      color: AppTheme.aminoOrange, size: r.s(18)),
+                      color: Color(0xFFFF9800), size: r.s(18)),
                   SizedBox(width: r.s(8)),
                   Expanded(
                     child: Text(

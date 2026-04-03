@@ -80,7 +80,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           borderRadius: BorderRadius.circular(r.s(28)),
                           boxShadow: [
                             BoxShadow(
-                              color: AppTheme.primaryColor.withValues(alpha: 0.4),
+                              color:
+                                  AppTheme.primaryColor.withValues(alpha: 0.4),
                               blurRadius: 30,
                               spreadRadius: 2,
                             ),

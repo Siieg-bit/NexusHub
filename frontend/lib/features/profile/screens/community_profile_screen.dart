@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
@@ -35,8 +34,7 @@ class CommunityProfileScreen extends StatefulWidget {
   });
 
   @override
-  State<CommunityProfileScreen> createState() =>
-      _CommunityProfileScreenState();
+  State<CommunityProfileScreen> createState() => _CommunityProfileScreenState();
 }
 
 class _CommunityProfileScreenState extends State<CommunityProfileScreen>
@@ -56,8 +54,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
   int _followingCount = 0;
   String _communityName = '';
 
-  bool get _isOwnProfile =>
-      widget.userId == SupabaseService.currentUserId;
+  bool get _isOwnProfile => widget.userId == SupabaseService.currentUserId;
 
   @override
   void initState() {
@@ -83,7 +80,9 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
             .eq('id', widget.communityId)
             .single();
         _communityName = communityRes['name'] as String? ?? '';
-      } catch (e) { debugPrint('[community_profile_screen.dart] $e'); }
+      } catch (e) {
+        debugPrint('[community_profile_screen.dart] $e');
+      }
 
       // Membership na comunidade
       final memberRes = await SupabaseService.table('community_members')
@@ -123,8 +122,9 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           .eq('profile_wall_id', widget.userId)
           .order('created_at', ascending: false)
           .limit(30);
-      _wallComments =
-          (wallRes as List? ?? []).map((e) => CommentModel.fromJson(e)).toList();
+      _wallComments = (wallRes as List? ?? [])
+          .map((e) => CommentModel.fromJson(e))
+          .toList();
 
       // Contagem de seguidores/seguindo
       final followersRes = await SupabaseService.table('follows')
@@ -164,7 +164,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
     }
 
     final reputation = _membership?['local_reputation'] as int? ?? 0;
-    final level = _membership?['local_level'] as int? ?? calculateLevel(reputation);
+    final level =
+        _membership?['local_level'] as int? ?? calculateLevel(reputation);
     final title = levelTitle(level);
     final role = _membership?['role'] as String? ?? 'member';
     final titles = (_membership?['custom_titles'] as List<dynamic>?) ?? [];
@@ -174,7 +175,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
     final localBannerUrl = _membership?['local_banner_url'] as String?;
     final localBio = _membership?['local_bio'] as String?;
     final joinedAt = _membership?['joined_at'] != null
-        ? DateTime.tryParse(_membership?['joined_at'] as String? ?? '')
+        ? DateTime.tryParse(_membership!['joined_at'] as String? ?? '')
         : null;
     final coins = _user?.coins ?? 0;
     final isOnline = _user?.isOnline ?? false;
@@ -239,7 +240,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                       height: r.s(8),
                       decoration: BoxDecoration(
                         color: isOnline
-                            ? const AppTheme.primaryColor
+                            ? const Color(0xFF4CAF50)
                             : Colors.grey[500],
                         shape: BoxShape.circle,
                       ),
@@ -370,7 +371,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                     Text(
                                       'lv',
                                       style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.85),
+                                        color: Colors.white
+                                            .withValues(alpha: 0.85),
                                         fontSize: r.fs(10),
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -461,8 +463,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(Icons.edit_rounded,
-                                        size: r.s(14),
-                                        color: Colors.white),
+                                        size: r.s(14), color: Colors.white),
                                     SizedBox(width: r.s(6)),
                                     Text(
                                       'Editar',
@@ -485,10 +486,9 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                   onTap: () => _toggleFollow(context),
                                   child: Container(
                                     padding: EdgeInsets.symmetric(
-                                        horizontal: r.s(16),
-                                        vertical: r.s(8)),
+                                        horizontal: r.s(16), vertical: r.s(8)),
                                     decoration: BoxDecoration(
-                                      color: const AppTheme.aminoOrange,
+                                      color: const Color(0xFFFF9800),
                                       borderRadius:
                                           BorderRadius.circular(r.s(20)),
                                     ),
@@ -496,8 +496,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Text('😊',
-                                            style: TextStyle(
-                                                fontSize: r.fs(14))),
+                                            style:
+                                                TextStyle(fontSize: r.fs(14))),
                                         SizedBox(width: r.s(6)),
                                         Text(
                                           'Seguir',
@@ -517,16 +517,15 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                   onTap: () => _openDm(context),
                                   child: Container(
                                     padding: EdgeInsets.symmetric(
-                                        horizontal: r.s(16),
-                                        vertical: r.s(8)),
+                                        horizontal: r.s(16), vertical: r.s(8)),
                                     decoration: BoxDecoration(
-                                      color: Colors.white
-                                          .withValues(alpha: 0.15),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.15),
                                       borderRadius:
                                           BorderRadius.circular(r.s(20)),
                                       border: Border.all(
-                                        color: Colors.white
-                                            .withValues(alpha: 0.3),
+                                        color:
+                                            Colors.white.withValues(alpha: 0.3),
                                       ),
                                     ),
                                     child: Row(
@@ -554,22 +553,19 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
 
                           // ── CONQUISTAS + MOEDAS BAR (dentro do banner) ──
                           Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: r.s(12)),
+                            padding: EdgeInsets.symmetric(horizontal: r.s(12)),
                             child: Row(
                               children: [
                                 // Conquistas badge
                                 GestureDetector(
-                                  onTap: () =>
-                                      context.push('/achievements'),
+                                  onTap: () => context.push('/achievements'),
                                   child: Container(
                                     padding: EdgeInsets.symmetric(
-                                        horizontal: r.s(12),
-                                        vertical: r.s(6)),
+                                        horizontal: r.s(12), vertical: r.s(6)),
                                     decoration: BoxDecoration(
                                       gradient: const LinearGradient(
                                         colors: [
-                                          AppTheme.aminoOrange,
+                                          Color(0xFFFF9800),
                                           Color(0xFFFFB74D)
                                         ],
                                       ),
@@ -580,8 +576,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Icon(Icons.emoji_events_rounded,
-                                            color: Colors.white,
-                                            size: r.s(14)),
+                                            color: Colors.white, size: r.s(14)),
                                         SizedBox(width: r.s(4)),
                                         Text(
                                           streak > 0
@@ -599,7 +594,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                           width: r.s(16),
                                           height: r.s(16),
                                           decoration: const BoxDecoration(
-                                            color: AppTheme.errorColor,
+                                            color: Colors.red,
                                             shape: BoxShape.circle,
                                           ),
                                           child: Center(
@@ -624,12 +619,11 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                   onTap: () => context.push('/wallet'),
                                   child: Container(
                                     padding: EdgeInsets.symmetric(
-                                        horizontal: r.s(10),
-                                        vertical: r.s(6)),
+                                        horizontal: r.s(10), vertical: r.s(6)),
                                     decoration: BoxDecoration(
                                       gradient: const LinearGradient(
                                         colors: [
-                                          AppTheme.infoColor,
+                                          Color(0xFF2196F3),
                                           Color(0xFF42A5F5)
                                         ],
                                       ),
@@ -646,7 +640,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                             shape: BoxShape.circle,
                                             gradient: LinearGradient(
                                               colors: [
-                                                AppTheme.coinGold,
+                                                Color(0xFFFFD700),
                                                 Color(0xFFFFA500)
                                               ],
                                             ),
@@ -657,8 +651,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                               style: TextStyle(
                                                 color: Colors.white,
                                                 fontSize: r.fs(9),
-                                                fontWeight:
-                                                    FontWeight.w900,
+                                                fontWeight: FontWeight.w900,
                                                 height: 1.0,
                                               ),
                                             ),
@@ -708,8 +701,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
             SliverToBoxAdapter(
               child: Container(
                 color: context.scaffoldBg,
-                padding: EdgeInsets.fromLTRB(
-                    r.s(16), r.s(16), r.s(16), r.s(8)),
+                padding: EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(8)),
                 child: Row(
                   children: [
                     // Reputação
@@ -800,13 +792,13 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
             SliverToBoxAdapter(
               child: Container(
                 margin: EdgeInsets.fromLTRB(0, r.s(4), 0, 0),
-                padding: EdgeInsets.fromLTRB(
-                    r.s(16), r.s(16), r.s(16), r.s(12)),
+                padding:
+                    EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(12)),
                 decoration: BoxDecoration(
                   color: context.surfaceColor,
                   border: Border(
-                    top: BorderSide(
-                        color: Colors.white.withValues(alpha: 0.05)),
+                    top:
+                        BorderSide(color: Colors.white.withValues(alpha: 0.05)),
                   ),
                 ),
                 child: Column(
@@ -961,41 +953,41 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
               communityId: widget.communityId,
               communityName: _communityName,
             ),
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                    horizontal: r.s(16), vertical: r.s(14)),
-                decoration: BoxDecoration(
-                  color: context.surfaceColor,
-                  border: Border(
-                    bottom: BorderSide(
-                        color: Colors.white.withValues(alpha: 0.05)),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: r.s(30),
-                      height: r.s(30),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(Icons.add,
-                          color: Colors.black87, size: r.s(20)),
-                    ),
-                    SizedBox(width: r.s(12)),
-                    Text(
-                      'Criar nova publicação',
-                      style: TextStyle(
-                        color: context.textPrimary,
-                        fontSize: r.fs(15),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
+            child: Container(
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(14)),
+              decoration: BoxDecoration(
+                color: context.surfaceColor,
+                border: Border(
+                  bottom:
+                      BorderSide(color: Colors.white.withValues(alpha: 0.05)),
                 ),
               ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: r.s(30),
+                    height: r.s(30),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child:
+                        Icon(Icons.add, color: Colors.black87, size: r.s(20)),
+                  ),
+                  SizedBox(width: r.s(12)),
+                  Text(
+                    'Criar nova publicação',
+                    style: TextStyle(
+                      color: context.textPrimary,
+                      fontSize: r.fs(15),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
 
         // ── Minhas Entradas Wiki — sempre visível (com botão + se próprio perfil) ──
@@ -1003,8 +995,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           Padding(
             padding: EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(8)),
             child: GestureDetector(
-              onTap: () => context
-                  .push('/community/${widget.communityId}/wiki'),
+              onTap: () =>
+                  context.push('/community/${widget.communityId}/wiki'),
               child: Row(
                 children: [
                   Text(
@@ -1033,8 +1025,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                 // Slot "+" para criar nova entrada wiki (índice 0 se próprio)
                 if (_isOwnProfile && index == 0) {
                   return GestureDetector(
-                    onTap: () => context.push(
-                        '/community/${widget.communityId}/wiki/create'),
+                    onTap: () => context
+                        .push('/community/${widget.communityId}/wiki/create'),
                     child: Container(
                       width: r.s(90),
                       margin: EdgeInsets.symmetric(horizontal: r.s(4)),
@@ -1143,14 +1135,13 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
             return GestureDetector(
               onTap: () => context.push('/post/${post['id']}'),
               child: Container(
-                margin: EdgeInsets.fromLTRB(
-                    r.s(16), r.s(6), r.s(16), r.s(6)),
+                margin: EdgeInsets.fromLTRB(r.s(16), r.s(6), r.s(16), r.s(6)),
                 padding: EdgeInsets.all(r.s(16)),
                 decoration: BoxDecoration(
                   color: context.surfaceColor,
                   borderRadius: BorderRadius.circular(r.s(12)),
-                  border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.05)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.05)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1214,8 +1205,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
       width: r.s(90),
       height: r.s(70),
       color: context.scaffoldBg,
-      child: Icon(Icons.menu_book_rounded,
-          size: r.s(28), color: Colors.grey[700]),
+      child:
+          Icon(Icons.menu_book_rounded, size: r.s(28), color: Colors.grey[700]),
     );
   }
 
@@ -1232,8 +1223,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           decoration: BoxDecoration(
             color: context.surfaceColor,
             border: Border(
-              bottom: BorderSide(
-                  color: Colors.white.withValues(alpha: 0.05)),
+              bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
             ),
           ),
           child: Row(
@@ -1241,12 +1231,12 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
               Expanded(
                 child: TextField(
                   controller: _wallController,
-                  style: TextStyle(
-                      color: context.textPrimary, fontSize: r.fs(14)),
+                  style:
+                      TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
                   decoration: InputDecoration(
                     hintText: 'Escreva no mural...',
-                    hintStyle: TextStyle(
-                        color: Colors.grey[600], fontSize: r.fs(14)),
+                    hintStyle:
+                        TextStyle(color: Colors.grey[600], fontSize: r.fs(14)),
                     filled: true,
                     fillColor: context.scaffoldBg,
                     border: OutlineInputBorder(
@@ -1293,32 +1283,27 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                         color: context.surfaceColor,
                         borderRadius: BorderRadius.circular(r.s(12)),
                         border: Border.all(
-                            color:
-                                Colors.white.withValues(alpha: 0.05)),
+                            color: Colors.white.withValues(alpha: 0.05)),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           GestureDetector(
-                            onTap: () => context
-                                .push('/user/${comment.authorId}'),
+                            onTap: () =>
+                                context.push('/user/${comment.authorId}'),
                             child: CircleAvatar(
                               radius: 18,
                               backgroundColor: context.scaffoldBg,
                               backgroundImage: () {
-                                final authorIcon =
-                                    comment.author?.iconUrl;
+                                final authorIcon = comment.author?.iconUrl;
                                 return authorIcon != null &&
                                         authorIcon.isNotEmpty
-                                    ? CachedNetworkImageProvider(
-                                        authorIcon)
+                                    ? CachedNetworkImageProvider(authorIcon)
                                     : null;
                               }(),
                               child: () {
-                                final authorIcon =
-                                    comment.author?.iconUrl;
-                                return authorIcon == null ||
-                                        authorIcon.isEmpty
+                                final authorIcon = comment.author?.iconUrl;
+                                return authorIcon == null || authorIcon.isEmpty
                                     ? Icon(Icons.person_rounded,
                                         size: r.s(18),
                                         color: context.textPrimary)
@@ -1329,8 +1314,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                           SizedBox(width: r.s(10)),
                           Expanded(
                             child: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   comment.author?.nickname ?? 'Anônimo',
@@ -1382,8 +1366,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
             SizedBox(height: r.s(12)),
             Text('Posts salvos são privados',
                 style: TextStyle(
-                    color: Colors.grey[500],
-                    fontWeight: FontWeight.w600)),
+                    color: Colors.grey[500], fontWeight: FontWeight.w600)),
           ],
         ),
       );
@@ -1399,13 +1382,11 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
             SizedBox(height: r.s(12)),
             Text('Nenhum post salvo',
                 style: TextStyle(
-                    color: Colors.grey[500],
-                    fontWeight: FontWeight.w600)),
+                    color: Colors.grey[500], fontWeight: FontWeight.w600)),
             SizedBox(height: r.s(6)),
             Text(
               'Toque no ícone de bookmark nos posts para salvá-los',
-              style: TextStyle(
-                  color: Colors.grey[600], fontSize: r.fs(12)),
+              style: TextStyle(color: Colors.grey[600], fontSize: r.fs(12)),
             ),
           ],
         ),
@@ -1418,10 +1399,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
       separatorBuilder: (_, __) => SizedBox(height: r.s(10)),
       itemBuilder: (context, index) {
         final bookmark = _savedPosts[index];
-        final post =
-            bookmark['posts'] as Map<String, dynamic>? ?? {};
-        final author =
-            post['profiles'] as Map<String, dynamic>?;
+        final post = bookmark['posts'] as Map<String, dynamic>? ?? {};
+        final author = post['profiles'] as Map<String, dynamic>?;
         final postId = post['id'] as String?;
 
         return GestureDetector(
@@ -1433,8 +1412,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
             decoration: BoxDecoration(
               color: context.surfaceColor,
               borderRadius: BorderRadius.circular(r.s(14)),
-              border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.05)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
             ),
             child: Row(
               children: [
@@ -1448,8 +1426,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                       fit: BoxFit.cover,
                     ),
                   ),
-                if (post['cover_image_url'] != null)
-                  SizedBox(width: r.s(12)),
+                if (post['cover_image_url'] != null) SizedBox(width: r.s(12)),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1468,8 +1445,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                       Text(
                         'por ${author?['nickname'] ?? 'Usuário'}',
                         style: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: r.fs(12)),
+                            color: Colors.grey[500], fontSize: r.fs(12)),
                       ),
                     ],
                   ),
@@ -1485,8 +1461,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                       if (!mounted) return;
                       setState(() => _savedPosts.removeAt(index));
                     } catch (e) {
-                      debugPrint(
-                          '[community_profile_screen] Erro: $e');
+                      debugPrint('[community_profile_screen] Erro: $e');
                     }
                   },
                 ),
@@ -1509,8 +1484,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           .limit(50);
       if (mounted) {
         setState(() {
-          _savedPosts =
-              List<Map<String, dynamic>>.from(res as List? ?? []);
+          _savedPosts = List<Map<String, dynamic>>.from(res as List? ?? []);
           _savedPostsLoaded = true;
         });
       }
@@ -1536,20 +1510,19 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           'p_following_id': widget.userId,
         },
       );
-      final isNowFollowing = result is Map
-          ? (result['following'] == true)
-          : true;
+      final isNowFollowing =
+          result is Map ? (result['following'] == true) : true;
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(isNowFollowing ? 'Seguindo!' : 'Deixou de seguir')),
+          SnackBar(
+              content: Text(isNowFollowing ? 'Seguindo!' : 'Deixou de seguir')),
         );
       }
       _loadProfile();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Ocorreu um erro. Tente novamente.')),
+          const SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
         );
       }
     }
@@ -1575,7 +1548,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           message = 'Este usuário não aceita mensagens diretas.';
         } else if (err.contains('só aceita DMs')) {
           message = 'Este usuário só aceita mensagens de perfis permitidos.';
-        } else if (err.contains('Não é possível enviar mensagem para este usuário')) {
+        } else if (err
+            .contains('Não é possível enviar mensagem para este usuário')) {
           message = 'Não foi possível iniciar conversa com este usuário.';
         }
 
@@ -1611,8 +1585,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Ocorreu um erro. Tente novamente.')),
+          const SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
         );
       }
     }
@@ -1675,8 +1648,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
   Widget _optionTile(IconData icon, String label, VoidCallback onTap,
       {bool isDestructive = false}) {
     final r = context.r;
-    final color =
-        isDestructive ? AppTheme.errorColor : Colors.grey[400];
+    final color = isDestructive ? AppTheme.errorColor : Colors.grey[400];
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -1718,8 +1690,18 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
 
   String _memberSinceText(DateTime joinedAt) {
     const months = [
-      'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
-      'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'
+      'janeiro',
+      'fevereiro',
+      'março',
+      'abril',
+      'maio',
+      'junho',
+      'julho',
+      'agosto',
+      'setembro',
+      'outubro',
+      'novembro',
+      'dezembro'
     ];
     final days = DateTime.now().difference(joinedAt).inDays;
     return 'Membro desde ${months[joinedAt.month - 1]} ${joinedAt.year} ($days dias)';

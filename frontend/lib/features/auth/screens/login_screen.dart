@@ -174,7 +174,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       SupabaseService.auth.resetPasswordForEmail(email);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Email de recupera\u00e7\u00e3o enviado para $email'),
+                          content: Text(
+                              'Email de recupera\u00e7\u00e3o enviado para $email'),
                           behavior: SnackBarBehavior.floating,
                         ),
                       );
@@ -211,7 +212,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           Expanded(
                             child: Text(authState.error!,
                                 style: TextStyle(
-                                    color: AppTheme.errorColor, fontSize: r.fs(13))),
+                                    color: AppTheme.errorColor,
+                                    fontSize: r.fs(13))),
                           ),
                         ],
                       ),
@@ -370,7 +372,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     children: [
                       Text('Não tem conta? ',
                           style: TextStyle(
-                              color: context.textSecondary, fontSize: r.fs(14))),
+                              color: context.textSecondary,
+                              fontSize: r.fs(14))),
                       GestureDetector(
                         onTap: () => context.go('/signup'),
                         child: Text('Criar conta',

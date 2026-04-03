@@ -120,8 +120,7 @@ class _FlagCenterScreenState extends State<FlagCenterScreen>
 
   Widget _buildFlagList(List<Map<String, dynamic>> flags,
       {required bool isPending}) {
-
-      final r = context.r;
+    final r = context.r;
     if (flags.isEmpty) {
       return Center(
         child: Column(
@@ -252,7 +251,8 @@ class _FlagCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(4)),
+                padding:
+                    EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(4)),
                 decoration: BoxDecoration(
                   color: _flagTypeColor(type).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(r.s(12)),
@@ -272,8 +272,8 @@ class _FlagCard extends StatelessWidget {
               const Spacer(),
               if (!isPending)
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(4)),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: r.s(10), vertical: r.s(4)),
                   decoration: BoxDecoration(
                     color: status == 'approved'
                         ? AppTheme.primaryColor.withValues(alpha: 0.15)

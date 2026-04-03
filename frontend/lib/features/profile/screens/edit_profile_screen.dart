@@ -77,7 +77,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
       if (_avatarUrl != null) {
         updateData['icon_url'] = _avatarUrl;
       }
-      await SupabaseService.table('profiles').update(updateData).eq('id', userId);
+      await SupabaseService.table('profiles')
+          .update(updateData)
+          .eq('id', userId);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -89,9 +91,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-          content: Text('Erro ao salvar: ${e.toString().contains('duplicate') ? 'Esse Amino ID já está em uso.' : 'Tente novamente.'}'),
-          backgroundColor: AppTheme.errorColor,
-        ),
+            content: Text(
+                'Erro ao salvar: ${e.toString().contains('duplicate') ? 'Esse Amino ID já está em uso.' : 'Tente novamente.'}'),
+            backgroundColor: AppTheme.errorColor,
+          ),
         );
       }
     } finally {
@@ -122,7 +125,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
   }
 
   /// Insere formatação Markdown no campo de bio.
-  void _applyFormat(String prefix, String suffix, {String placeholder = 'texto'}) {
+  void _applyFormat(String prefix, String suffix,
+      {String placeholder = 'texto'}) {
     final ctrl = _bioController;
     final sel = ctrl.selection;
     final text = ctrl.text;
@@ -136,7 +140,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
     ctrl.value = TextEditingValue(
       text: newText,
       selection: TextSelection.collapsed(
-          offset: sel.isValid ? sel.start + replacement.length : newText.length),
+          offset:
+              sel.isValid ? sel.start + replacement.length : newText.length),
     );
     // FIX Bug #4: Re-focar o campo de bio após aplicar formatação
     _bioFocusNode.requestFocus();
@@ -202,7 +207,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                              color:
+                                  AppTheme.primaryColor.withValues(alpha: 0.2),
                               blurRadius: 12,
                               spreadRadius: 2,
                             ),
@@ -211,9 +217,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                         child: CircleAvatar(
                           radius: 50,
                           backgroundColor: context.surfaceColor,
-                          backgroundImage: _avatarUrl != null && _avatarUrl!.isNotEmpty
-                              ? CachedNetworkImageProvider(_avatarUrl!)
-                              : null,
+                          backgroundImage:
+                              _avatarUrl != null && _avatarUrl!.isNotEmpty
+                                  ? CachedNetworkImageProvider(_avatarUrl!)
+                                  : null,
                           child: _avatarUrl == null || _avatarUrl!.isEmpty
                               ? Text(
                                   (user?.nickname ?? '?')[0].toUpperCase(),
@@ -233,7 +240,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                           padding: EdgeInsets.all(r.s(8)),
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                              colors: [
+                                AppTheme.primaryColor,
+                                AppTheme.accentColor
+                              ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
@@ -249,7 +259,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                                   height: r.s(18),
                                   child: const CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
                                   ),
                                 )
                               : Icon(
@@ -317,8 +328,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                     color: AppTheme.primaryColor, size: r.s(20)),
                 SizedBox(width: r.s(8)),
                 Text('Bio',
-                    style: TextStyle(
-                        color: Colors.grey[500], fontSize: r.fs(14))),
+                    style:
+                        TextStyle(color: Colors.grey[500], fontSize: r.fs(14))),
                 const Spacer(),
                 Flexible(
                   child: TabBar(
@@ -343,8 +354,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
           ),
 
           // Toolbar de formatação (visível apenas no modo edição)
-          if (!_bioPreviewMode)
-            _buildFormatToolbar(r),
+          if (!_bioPreviewMode) _buildFormatToolbar(r),
 
           // Área de edição ou prévia
           SizedBox(
@@ -359,17 +369,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                   maxLines: null,
                   expands: true,
                   maxLength: 500,
-                  style: TextStyle(
-                      color: context.textPrimary, fontSize: r.fs(14)),
+                  style:
+                      TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
                   decoration: InputDecoration(
                     hintText:
                         'Escreva sua bio... Use **negrito**, *itálico*, ~~tachado~~',
-                    hintStyle: TextStyle(
-                        color: Colors.grey[600], fontSize: r.fs(13)),
+                    hintStyle:
+                        TextStyle(color: Colors.grey[600], fontSize: r.fs(13)),
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.all(r.s(12)),
-                    counterStyle: TextStyle(
-                        color: Colors.grey[600], fontSize: r.fs(11)),
+                    counterStyle:
+                        TextStyle(color: Colors.grey[600], fontSize: r.fs(11)),
                   ),
                 ),
                 // Aba Prévia
@@ -392,8 +402,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                         data: text,
                         styleSheet: MarkdownStyleSheet(
                           p: TextStyle(
-                              color: context.textPrimary,
-                              fontSize: r.fs(14)),
+                              color: context.textPrimary, fontSize: r.fs(14)),
                           strong: TextStyle(
                               color: context.textPrimary,
                               fontWeight: FontWeight.w700,
@@ -463,7 +472,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                       onTap: b.onTap,
                       borderRadius: BorderRadius.circular(r.s(6)),
                       splashColor: AppTheme.primaryColor.withValues(alpha: 0.2),
-                      highlightColor: AppTheme.primaryColor.withValues(alpha: 0.1),
+                      highlightColor:
+                          AppTheme.primaryColor.withValues(alpha: 0.1),
                       child: Padding(
                         padding: EdgeInsets.symmetric(horizontal: r.s(8)),
                         child: Icon(b.icon,
@@ -531,8 +541,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
             },
             child: const Text('Inserir',
                 style: TextStyle(
-                    color: AppTheme.primaryColor,
-                    fontWeight: FontWeight.w700)),
+                    color: AppTheme.primaryColor, fontWeight: FontWeight.w700)),
           ),
         ],
       ),

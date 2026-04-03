@@ -42,8 +42,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
   }
 
   Future<void> _unblockUser(String blockId, String nickname) async {
-
-      final r = context.r;
+    final r = context.r;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -67,7 +66,8 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
           GestureDetector(
             onTap: () => Navigator.pop(ctx, false),
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(r.s(20)),
               ),
@@ -83,7 +83,8 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
           GestureDetector(
             onTap: () => Navigator.pop(ctx, true),
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [AppTheme.primaryColor, AppTheme.accentColor],
@@ -121,7 +122,8 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('$nickname desbloqueado', style: TextStyle(color: context.textPrimary)),
+            content: Text('$nickname desbloqueado',
+                style: TextStyle(color: context.textPrimary)),
             backgroundColor: context.surfaceColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -135,7 +137,8 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ocorreu um erro. Tente novamente.', style: const TextStyle(color: Colors.white)),
+            content: Text('Ocorreu um erro. Tente novamente.',
+                style: const TextStyle(color: Colors.white)),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -167,7 +170,8 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
               ),
             )
           : _blockedUsers.isEmpty
@@ -213,7 +217,8 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                         blocked['nickname'] as String? ?? 'Usuário';
                     final iconUrl = blocked['icon_url'] as String?;
                     final blockedAt = block['created_at'] != null
-                        ? DateTime.tryParse(block['created_at'] as String? ?? '')
+                        ? DateTime.tryParse(
+                            block['created_at'] as String? ?? '')
                         : null;
 
                     return Container(
@@ -259,18 +264,20 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                             ),
                           ),
                           GestureDetector(
-                            onTap: () =>
-                                _unblockUser(block['id'] as String? ?? '', nickname),
+                            onTap: () => _unblockUser(
+                                block['id'] as String? ?? '', nickname),
                             child: Container(
                               padding: EdgeInsets.symmetric(
                                 horizontal: r.s(12),
                                 vertical: r.s(8),
                               ),
                               decoration: BoxDecoration(
-                                color: AppTheme.errorColor.withValues(alpha: 0.1),
+                                color:
+                                    AppTheme.errorColor.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(r.s(20)),
                                 border: Border.all(
-                                  color: AppTheme.errorColor.withValues(alpha: 0.3),
+                                  color: AppTheme.errorColor
+                                      .withValues(alpha: 0.3),
                                 ),
                               ),
                               child: Text(

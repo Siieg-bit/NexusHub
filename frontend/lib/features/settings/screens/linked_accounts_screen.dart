@@ -71,7 +71,8 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao vincular ${provider.name}. Tente novamente.'),
+            content:
+                Text('Erro ao vincular ${provider.name}. Tente novamente.'),
             behavior: SnackBarBehavior.floating,
             backgroundColor: AppTheme.errorColor,
           ),
@@ -86,8 +87,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
     if (_identities.length <= 1) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-              'Não é possível desvincular a única forma de login.'),
+          content: Text('Não é possível desvincular a única forma de login.'),
           behavior: SnackBarBehavior.floating,
           backgroundColor: AppTheme.errorColor,
         ),
@@ -112,8 +112,8 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Desvincular',
-                style: TextStyle(color: AppTheme.errorColor)),
+            child:
+                const Text('Desvincular', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -124,8 +124,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
 
     setState(() => _isLinking = true);
     try {
-      final identity =
-          _identities.firstWhere((i) => i['provider'] == provider);
+      final identity = _identities.firstWhere((i) => i['provider'] == provider);
       await SupabaseService.client.auth.unlinkIdentity(
         UserIdentity(
           id: identity['id'] as String? ?? '',
@@ -133,8 +132,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
           identityData: const {},
           identityId: identity['identity_id'] as String? ?? '',
           provider: provider,
-          createdAt: (identity['created_at'] as DateTime?)
-              ?.toIso8601String(),
+          createdAt: (identity['created_at'] as DateTime?)?.toIso8601String(),
           lastSignInAt: DateTime.now().toIso8601String(),
           updatedAt: DateTime.now().toIso8601String(),
         ),
@@ -266,7 +264,7 @@ class _ProviderTile extends StatelessWidget {
                 Text(
                   isLinked ? 'Vinculado' : 'Não vinculado',
                   style: TextStyle(
-                    color: isLinked ? AppTheme.primaryColor : Colors.grey[500],
+                    color: isLinked ? Colors.green : Colors.grey[500],
                     fontSize: r.fs(12),
                   ),
                 ),
@@ -285,7 +283,7 @@ class _ProviderTile extends StatelessWidget {
               child: Text(
                 isLinked ? 'Desvincular' : 'Vincular',
                 style: TextStyle(
-                  color: isLinked ? AppTheme.errorColor : AppTheme.primaryColor,
+                  color: isLinked ? Colors.red : AppTheme.primaryColor,
                   fontSize: r.fs(14),
                 ),
               ),

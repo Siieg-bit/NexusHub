@@ -121,13 +121,15 @@ class MessageModel {
     if (mediaUrl != null) map['media_url'] = mediaUrl;
     if (mediaType != null) map['media_type'] = mediaType;
     if (mediaDuration != null) map['media_duration'] = mediaDuration;
-    if (mediaThumbnailUrl != null) map['media_thumbnail_url'] = mediaThumbnailUrl;
+    if (mediaThumbnailUrl != null)
+      map['media_thumbnail_url'] = mediaThumbnailUrl;
     if (stickerId != null) map['sticker_id'] = stickerId;
     if (stickerUrl != null) map['sticker_url'] = stickerUrl;
     if (replyToId != null) map['reply_to_id'] = replyToId;
     if (sharedUserId != null) map['shared_user_id'] = sharedUserId;
     if (sharedUrl != null) map['shared_url'] = sharedUrl;
-    if (sharedLinkSummary != null) map['shared_link_summary'] = sharedLinkSummary;
+    if (sharedLinkSummary != null)
+      map['shared_link_summary'] = sharedLinkSummary;
     if (tipAmount != null) map['tip_amount'] = tipAmount;
     return map;
   }
@@ -135,7 +137,8 @@ class MessageModel {
   // Getters de conveniência para identificar o tipo visual da mensagem.
   // Como o banco usa tipos mapeados (ex: 'text' para imagens), estes getters
   // verificam campos adicionais para determinar o tipo real.
-  bool get isTextMessage => type == 'text' && mediaUrl == null && replyToId == null;
+  bool get isTextMessage =>
+      type == 'text' && mediaUrl == null && replyToId == null;
   bool get isImageMessage => mediaType == 'image' && mediaUrl != null;
   bool get isGifMessage => mediaType == 'gif' && mediaUrl != null;
   bool get isSystemMessage => type == 'system' || type.startsWith('system_');

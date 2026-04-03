@@ -22,6 +22,7 @@ class AminoAnimations {
   static const Curve spring = Curves.elasticOut;
   static const Curve bounceOut = Curves.bounceOut;
   static const Curve decelerate = Curves.decelerate;
+
   /// Curva customizada para drawer slide (cubic-bezier(0.16, 1, 0.3, 1))
   static const Curve drawerCurve = Cubic(0.16, 1, 0.3, 1);
 
@@ -302,7 +303,8 @@ class _PulseGlowWidgetState extends State<_PulseGlowWidget>
         decoration: BoxDecoration(
           boxShadow: [
             BoxShadow(
-              color: widget.glowColor.withValues(alpha: 0.4 * _controller.value),
+              color:
+                  widget.glowColor.withValues(alpha: 0.4 * _controller.value),
               blurRadius: 8 * _controller.value,
               spreadRadius: 0,
             ),
@@ -382,7 +384,8 @@ class _CardPressWidgetState extends State<_CardPressWidget> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         curve: Curves.easeInOut,
-        transform: Matrix4.diagonal3Values(_isPressed ? 0.97 : 1.0, _isPressed ? 0.97 : 1.0, 1.0),
+        transform: Matrix4.diagonal3Values(
+            _isPressed ? 0.97 : 1.0, _isPressed ? 0.97 : 1.0, 1.0),
         child: AnimatedOpacity(
           duration: const Duration(milliseconds: 150),
           opacity: _isPressed ? 0.85 : 1.0,

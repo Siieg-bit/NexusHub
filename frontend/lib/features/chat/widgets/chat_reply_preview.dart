@@ -49,8 +49,7 @@ class ChatReplyPreview extends StatelessWidget {
                 ),
                 Text(
                   replyingTo.content ?? '',
-                  style: TextStyle(
-                      fontSize: r.fs(12), color: Colors.grey[500]),
+                  style: TextStyle(fontSize: r.fs(12), color: Colors.grey[500]),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

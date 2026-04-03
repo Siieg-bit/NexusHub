@@ -47,8 +47,8 @@ class ProfileWallTab extends ConsumerWidget {
               Expanded(
                 child: TextField(
                   controller: wallController,
-                  style: TextStyle(
-                      color: context.textPrimary, fontSize: r.fs(14)),
+                  style:
+                      TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
                   decoration: InputDecoration(
                     hintText: 'Escreva no mural...',
                     hintStyle:
@@ -124,9 +124,9 @@ class ProfileWallTab extends ConsumerWidget {
                             as Map<String, dynamic>? ??
                         {};
                     final authorId = msg['author_id'] as String? ?? '';
-                    final createdAt = DateTime.tryParse(
-                            msg['created_at'] as String? ?? '') ??
-                        DateTime.now();
+                    final createdAt =
+                        DateTime.tryParse(msg['created_at'] as String? ?? '') ??
+                            DateTime.now();
                     final canDelete =
                         isOwnWall || authorId == SupabaseService.currentUserId;
 

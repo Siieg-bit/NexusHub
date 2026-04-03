@@ -336,7 +336,8 @@ class ImagePickerGrid extends StatelessWidget {
                 color: Colors.grey[800],
                 borderRadius: BorderRadius.circular(r.s(8)),
                 border: Border.all(
-                    color: (Colors.grey[600] ?? Colors.grey), style: BorderStyle.solid),
+                    color: (Colors.grey[600] ?? Colors.grey),
+                    style: BorderStyle.solid),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -344,7 +345,8 @@ class ImagePickerGrid extends StatelessWidget {
                   Icon(Icons.add_photo_alternate_rounded,
                       color: Colors.grey[400], size: r.s(28)),
                   Text('${allImages.length}/$maxImages',
-                      style: TextStyle(color: Colors.grey[500], fontSize: r.fs(10))),
+                      style: TextStyle(
+                          color: Colors.grey[500], fontSize: r.fs(10))),
                 ],
               ),
             ),

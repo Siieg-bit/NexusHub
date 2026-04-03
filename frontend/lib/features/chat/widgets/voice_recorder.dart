@@ -115,8 +115,7 @@ class _VoiceRecorderState extends State<VoiceRecorder>
             if (mounted) {
               setState(() {
                 // Normalizar amplitude (-160 a 0 dB) para 0.0 a 1.0
-                final normalized =
-                    ((amp.current + 60) / 60).clamp(0.0, 1.0);
+                final normalized = ((amp.current + 60) / 60).clamp(0.0, 1.0);
                 _amplitudes.add(normalized);
                 // Manter apenas os últimos 50 valores
                 if (_amplitudes.length > 50) {
@@ -235,8 +234,8 @@ class _VoiceRecorderState extends State<VoiceRecorder>
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: AppTheme.errorColor
-                                  .withValues(alpha: 0.5 * _pulseAnimation.value),
+                              color: AppTheme.errorColor.withValues(
+                                  alpha: 0.5 * _pulseAnimation.value),
                               blurRadius: 4 * _pulseAnimation.value,
                             ),
                           ],
@@ -283,8 +282,8 @@ class _VoiceRecorderState extends State<VoiceRecorder>
                 color: AppTheme.primaryColor,
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.send_rounded,
-                  color: Colors.white, size: r.s(22)),
+              child:
+                  Icon(Icons.send_rounded, color: Colors.white, size: r.s(22)),
             ),
           ),
         ],
@@ -409,8 +408,7 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
     final bgColor = widget.isMine
         ? Colors.white.withValues(alpha: 0.15)
         : AppTheme.accentColor.withValues(alpha: 0.1);
-    final fgColor =
-        widget.isMine ? Colors.white : AppTheme.accentColor;
+    final fgColor = widget.isMine ? Colors.white : AppTheme.accentColor;
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
@@ -429,9 +427,7 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                _isPlaying
-                    ? Icons.pause_rounded
-                    : Icons.play_arrow_rounded,
+                _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
                 color: fgColor,
                 size: r.s(22),
               ),
@@ -497,8 +493,8 @@ class _StaticWaveformPainter extends CustomPainter {
 
     // Gerar padrão de waveform pseudo-aleatório mas consistente
     final rng = Random(42); // Seed fixa para consistência
-    final heights = List.generate(
-        barCount, (_) => 0.2 + rng.nextDouble() * 0.8);
+    final heights =
+        List.generate(barCount, (_) => 0.2 + rng.nextDouble() * 0.8);
 
     final activePaint = Paint()
       ..color = activeColor

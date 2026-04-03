@@ -30,8 +30,7 @@ class IAPService {
   static Future<void> initialize() async {
     if (_initialized) return;
     try {
-      await Purchases.setLogLevel(
-          kDebugMode ? LogLevel.debug : LogLevel.error);
+      await Purchases.setLogLevel(kDebugMode ? LogLevel.debug : LogLevel.error);
       final config = PurchasesConfiguration(_apiKeyAndroid);
       await Purchases.configure(config);
 
@@ -82,8 +81,7 @@ class IAPService {
   static Future<void> _checkEntitlements() async {
     try {
       final info = await Purchases.getCustomerInfo();
-      _isAminoPlus =
-          info.entitlements.active.containsKey(entitlementAminoPlus);
+      _isAminoPlus = info.entitlements.active.containsKey(entitlementAminoPlus);
       // Sincronizar com Supabase
       final userId = SupabaseService.currentUserId;
       if (userId != null) {
@@ -112,8 +110,8 @@ class IAPService {
     if (!_initialized) return fallbackCoinPackages;
     try {
       final offerings = await Purchases.getOfferings();
-      final current = offerings.getOffering(_offeringDefault) ??
-          offerings.current;
+      final current =
+          offerings.getOffering(_offeringDefault) ?? offerings.current;
       if (current == null) return fallbackCoinPackages;
 
       return current.availablePackages.map((pkg) {
@@ -172,8 +170,8 @@ class IAPService {
     }
     try {
       final offerings = await Purchases.getOfferings();
-      final current = offerings.getOffering(_offeringDefault) ??
-          offerings.current;
+      final current =
+          offerings.getOffering(_offeringDefault) ?? offerings.current;
       if (current == null) {
         debugPrint('[IAPService] Nenhuma oferta disponível');
         return false;
@@ -214,8 +212,7 @@ class IAPService {
     if (!_initialized) return false;
     try {
       final info = await Purchases.restorePurchases();
-      _isAminoPlus =
-          info.entitlements.active.containsKey(entitlementAminoPlus);
+      _isAminoPlus = info.entitlements.active.containsKey(entitlementAminoPlus);
       // Sincronizar com Supabase
       final userId = SupabaseService.currentUserId;
       if (userId != null) {

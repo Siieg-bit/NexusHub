@@ -58,7 +58,7 @@ class _PostCardState extends State<PostCard>
       _selectedQuizOption = null;
       _quizAnswered = false;
     } else if (oldWidget.post.isLiked != widget.post.isLiked ||
-               oldWidget.post.likesCount != widget.post.likesCount) {
+        oldWidget.post.likesCount != widget.post.likesCount) {
       // Bug #8 fix: Mesmo post, mas is_liked ou likesCount mudou no provider
       // (ex: refresh do feed após navegar de volta). Sincronizar estado local
       // sem resetar as seleções de poll/quiz.
@@ -240,7 +240,7 @@ class _PostCardState extends State<PostCard>
   // COMMUNITY HEADER (small, above author)
   // ══════════════════════════════════════════════════════════════════════════
   Widget _buildCommunityHeader() {
-      final r = context.r;
+    final r = context.r;
     return Padding(
       padding: EdgeInsets.fromLTRB(r.s(12), r.s(10), r.s(12), 0),
       child: Row(
@@ -285,7 +285,7 @@ class _PostCardState extends State<PostCard>
   // AUTHOR HEADER — Estilo Amino
   // ══════════════════════════════════════════════════════════════════════════
   Widget _buildAuthorHeader(BuildContext context) {
-      final r = context.r;
+    final r = context.r;
     return Padding(
       padding: EdgeInsets.fromLTRB(r.s(12), r.s(10), r.s(12), r.s(8)),
       child: Row(
@@ -357,7 +357,8 @@ class _PostCardState extends State<PostCard>
                     // Time ago
                     Text(
                       timeago.format(_post.createdAt, locale: 'pt_BR'),
-                      style: TextStyle(color: Colors.grey[600], fontSize: r.fs(10)),
+                      style: TextStyle(
+                          color: Colors.grey[600], fontSize: r.fs(10)),
                     ),
                     // Type badge
                     if (_post.type != 'normal') ...[
@@ -386,7 +387,8 @@ class _PostCardState extends State<PostCard>
           // Featured/Pinned badge
           if (_post.isFeatured)
             Container(
-              padding: EdgeInsets.symmetric(horizontal: r.s(6), vertical: r.s(3)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(6), vertical: r.s(3)),
               decoration: BoxDecoration(
                 color: AppTheme.warningColor.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(r.s(6)),
@@ -434,7 +436,7 @@ class _PostCardState extends State<PostCard>
 
   // ── POLL ──
   Widget _buildPoll() {
-      final r = context.r;
+    final r = context.r;
     final pollData = _post.pollData;
     if (pollData == null) return const SizedBox.shrink();
     final options = (pollData['options'] as List<dynamic>?) ?? [];
@@ -457,8 +459,8 @@ class _PostCardState extends State<PostCard>
               onTap: () => _votePoll(i),
               child: Container(
                 margin: EdgeInsets.only(bottom: r.s(6)),
-                padding:
-                    EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(10)),
+                padding: EdgeInsets.symmetric(
+                    horizontal: r.s(12), vertical: r.s(10)),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? AppTheme.primaryColor.withValues(alpha: 0.15)
@@ -496,7 +498,8 @@ class _PostCardState extends State<PostCard>
             Padding(
               padding: EdgeInsets.only(top: r.s(4)),
               child: Text('$totalVotes votos',
-                  style: TextStyle(color: Colors.grey[600], fontSize: r.fs(10))),
+                  style:
+                      TextStyle(color: Colors.grey[600], fontSize: r.fs(10))),
             ),
         ],
       ),
@@ -505,7 +508,7 @@ class _PostCardState extends State<PostCard>
 
   // ── QUIZ ──
   Widget _buildQuiz() {
-      final r = context.r;
+    final r = context.r;
     final quizData = _post.quizData;
     if (quizData == null) return const SizedBox.shrink();
     final questions = (quizData['questions'] as List<dynamic>?) ?? [];
@@ -540,7 +543,8 @@ class _PostCardState extends State<PostCard>
                 if (questions.length > 1) ...[
                   SizedBox(width: r.s(4)),
                   Text('(${questions.length} perguntas)',
-                      style: TextStyle(fontSize: r.fs(10), color: Colors.grey[600])),
+                      style: TextStyle(
+                          fontSize: r.fs(10), color: Colors.grey[600])),
                 ],
               ],
             ),
@@ -570,8 +574,8 @@ class _PostCardState extends State<PostCard>
                 onTap: () => _answerQuiz(i),
                 child: Container(
                   margin: EdgeInsets.only(bottom: r.s(6)),
-                  padding:
-                      EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(10)),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: r.s(12), vertical: r.s(10)),
                   decoration: BoxDecoration(
                     color: bgColor,
                     borderRadius: BorderRadius.circular(r.s(8)),
@@ -603,7 +607,7 @@ class _PostCardState extends State<PostCard>
 
   // ── Q&A ──
   Widget _buildQA() {
-      final r = context.r;
+    final r = context.r;
     return Padding(
       padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(8)),
       child: Container(
@@ -642,7 +646,8 @@ class _PostCardState extends State<PostCard>
                           fontSize: r.fs(11),
                           color: Color(0xFF3F51B5))),
                   Text('${_post.commentsCount} respostas',
-                      style: TextStyle(fontSize: r.fs(10), color: Colors.grey[600])),
+                      style: TextStyle(
+                          fontSize: r.fs(10), color: Colors.grey[600])),
                 ],
               ),
             ),
@@ -656,7 +661,7 @@ class _PostCardState extends State<PostCard>
 
   // ── LINK PREVIEW ──
   Widget _buildLinkPreview() {
-      final r = context.r;
+    final r = context.r;
     final url = _post.externalUrl ?? '';
     final summary = _post.linkSummary;
     final linkTitle = summary?['title'] as String? ?? url;
@@ -725,7 +730,8 @@ class _PostCardState extends State<PostCard>
                           child: Text(
                             Uri.tryParse(url)?.host ?? url,
                             style: TextStyle(
-                                color: AppTheme.primaryColor, fontSize: r.fs(10)),
+                                color: AppTheme.primaryColor,
+                                fontSize: r.fs(10)),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -744,11 +750,11 @@ class _PostCardState extends State<PostCard>
 
   // ── CROSSPOST / REPOST BANNER ──
   Widget _buildCrosspostBanner() {
-      final r = context.r;
+    final r = context.r;
     final isRepost = _post.type == 'repost';
     final label = isRepost ? 'Repost' : 'Crosspost';
     final icon = isRepost ? Icons.repeat_rounded : Icons.share_rounded;
-    final color = isRepost ? const Color(0xFF607D8B) : const AppTheme.badgeAge;
+    final color = isRepost ? const Color(0xFF607D8B) : const Color(0xFF9C27B0);
     final originId = _post.originalCommunityId;
 
     return Padding(
@@ -803,7 +809,8 @@ class _PostCardState extends State<PostCard>
                   ],
                 ),
               ),
-              Icon(Icons.open_in_new_rounded, size: r.s(14), color: Colors.grey[600]),
+              Icon(Icons.open_in_new_rounded,
+                  size: r.s(14), color: Colors.grey[600]),
             ],
           ),
         ),
@@ -815,7 +822,7 @@ class _PostCardState extends State<PostCard>
   // ACTIONS FOOTER — Estilo Amino (like com animação, comment, tags)
   // ══════════════════════════════════════════════════════════════════════════
   Widget _buildActions(BuildContext context) {
-      final r = context.r;
+    final r = context.r;
     return Padding(
       padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(10)),
       child: Row(
@@ -830,35 +837,35 @@ class _PostCardState extends State<PostCard>
               onTap: _toggleLike,
               behavior: HitTestBehavior.opaque,
               child: Row(
-              children: [
-                ScaleTransition(
-                  scale: Tween<double>(begin: 1.0, end: 1.3)
-                      .chain(CurveTween(curve: Curves.easeOut))
-                      .animate(_likeController),
-                  child: Icon(
-                    _post.isLiked
-                        ? Icons.favorite_rounded
-                        : Icons.favorite_border_rounded,
-                    size: r.s(16),
-                    color: _post.isLiked
-                        ? const Color(0xFFEF4444)
-                        : Colors.grey[600],
+                children: [
+                  ScaleTransition(
+                    scale: Tween<double>(begin: 1.0, end: 1.3)
+                        .chain(CurveTween(curve: Curves.easeOut))
+                        .animate(_likeController),
+                    child: Icon(
+                      _post.isLiked
+                          ? Icons.favorite_rounded
+                          : Icons.favorite_border_rounded,
+                      size: r.s(16),
+                      color: _post.isLiked
+                          ? const Color(0xFFEF4444)
+                          : Colors.grey[600],
+                    ),
                   ),
-                ),
-                SizedBox(width: r.s(4)),
-                Text(
-                  '${_post.likesCount}',
-                  style: TextStyle(
-                    color: _post.isLiked
-                        ? const Color(0xFFEF4444)
-                        : Colors.grey[600],
-                    fontSize: r.fs(12),
-                    fontWeight: FontWeight.w500,
+                  SizedBox(width: r.s(4)),
+                  Text(
+                    '${_post.likesCount}',
+                    style: TextStyle(
+                      color: _post.isLiked
+                          ? const Color(0xFFEF4444)
+                          : Colors.grey[600],
+                      fontSize: r.fs(12),
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
           ),
           SizedBox(width: r.s(16)),
 
@@ -870,20 +877,20 @@ class _PostCardState extends State<PostCard>
               onTap: () => context.push('/post/${_post.id}'),
               behavior: HitTestBehavior.opaque,
               child: Row(
-              children: [
-                Icon(Icons.chat_bubble_outline_rounded,
-                    size: r.s(16), color: Colors.grey[600]),
-                SizedBox(width: r.s(4)),
-                Text(
-                  '${_post.commentsCount}',
-                  style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: r.fs(12),
-                      fontWeight: FontWeight.w500),
-                ),
-              ],
+                children: [
+                  Icon(Icons.chat_bubble_outline_rounded,
+                      size: r.s(16), color: Colors.grey[600]),
+                  SizedBox(width: r.s(4)),
+                  Text(
+                    '${_post.commentsCount}',
+                    style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: r.fs(12),
+                        fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
             ),
-          ),
           ),
 
           const Spacer(),
@@ -893,8 +900,8 @@ class _PostCardState extends State<PostCard>
             ...(_post.tags.take(2).map((tag) => Padding(
                   padding: EdgeInsets.only(left: r.s(6)),
                   child: Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: r.s(8), vertical: r.s(3)),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: r.s(8), vertical: r.s(3)),
                     decoration: BoxDecoration(
                       color: context.surfaceColor,
                       borderRadius: BorderRadius.circular(r.s(12)),
@@ -958,7 +965,7 @@ class _PostCardState extends State<PostCard>
   Color get _typeColor {
     switch (_post.type) {
       case 'poll':
-        return const AppTheme.accentColor;
+        return const Color(0xFF00BCD4);
       case 'quiz':
         return AppTheme.accentColor;
       case 'qa':
@@ -967,7 +974,7 @@ class _PostCardState extends State<PostCard>
       case 'external':
         return AppTheme.primaryColor;
       case 'crosspost':
-        return const AppTheme.badgeAge;
+        return const Color(0xFF9C27B0);
       case 'repost':
         return const Color(0xFF607D8B);
       default:

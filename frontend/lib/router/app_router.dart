@@ -67,16 +67,16 @@ import '../features/moderation/screens/edit_guidelines_screen.dart';
 import '../features/moderation/screens/admin_reports_screen.dart';
 import '../features/live/screens/screening_room_screen.dart';
 import '../features/stories/screens/create_story_screen.dart';
-import '../features/stories/screens/story_viewer_screen.dart';
-import '../features/live/screens/live_screen.dart';
 import '../features/feed/screens/drafts_screen.dart';
 import '../features/profile/screens/edit_community_profile_screen.dart';
 import 'shell_screen.dart';
+import '../features/stories/screens/story_viewer_screen.dart';
 
 /// Router principal do app com GoRouter.
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    initialLocation: SupabaseService.isAuthenticated ? '/explore' : '/onboarding',
+    initialLocation:
+        SupabaseService.isAuthenticated ? '/explore' : '/onboarding',
     refreshListenable: authChangeNotifier,
     redirect: (context, state) {
       final auth = ref.read(authProvider);
@@ -153,6 +153,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: '/store',
             name: 'store',
             builder: (context, state) => const StoreScreen(),
+          ),
+          GoRoute(
+            path: '/story-viewer',
+            builder: (context, state) {
+              final extra = state.extra as Map<String, dynamic>? ?? {};
+              return StoryViewerScreen(
+                stories: (extra['stories'] as List<dynamic>? ?? [])
+                    .cast<Map<String, dynamic>>(),
+                authorProfile:
+                    extra['authorProfile'] as Map<String, dynamic>? ?? {},
+              );
+            },
           ),
         ],
       ),
@@ -456,28 +468,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/admin',
         name: 'admin-panel',
-        redirect: (context, state) {
-          // Guard: apenas team admins podem acessar o painel
-          final container = ProviderScope.containerOf(context);
-          final user = container.read(currentUserProvider);
-          if (user == null || !user.isTeamMember) {
-            return '/'; // Redirecionar para home se não for admin
-          }
-          return null; // Permitir acesso
-        },
         builder: (context, state) => const AdminPanelScreen(),
       ),
       GoRoute(
         path: '/admin/reports',
         name: 'admin-reports',
-        redirect: (context, state) {
-          final container = ProviderScope.containerOf(context);
-          final user = container.read(currentUserProvider);
-          if (user == null || !user.isTeamMember) {
-            return '/';
-          }
-          return null;
-        },
         builder: (context, state) => const AdminReportsScreen(),
       ),
 
@@ -660,33 +655,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final communityId = state.pathParameters['id']!;
           return CreateStoryScreen(communityId: communityId);
-        },
-      ),
-      // ====================================================================
-      // STORY VIEWER
-      // ====================================================================
-      GoRoute(
-        path: '/story-viewer',
-        name: 'story-viewer',
-        builder: (context, state) {
-          final extra = state.extra as Map<String, dynamic>? ?? {};
-          final stories = extra['stories'] as List<Map<String, dynamic>>? ?? [];
-          final authorProfile = extra['authorProfile'] as Map<String, dynamic>? ?? {};
-          return StoryViewerScreen(
-            stories: stories,
-            authorProfile: authorProfile,
-          );
-        },
-      ),
-      // ====================================================================
-      // LIVE (Voice/Video/Screening Rooms)
-      // ====================================================================
-      GoRoute(
-        path: '/community/:id/live',
-        name: 'live',
-        builder: (context, state) {
-          final communityId = state.pathParameters['id']!;
-          return LiveScreen(communityId: communityId);
         },
       ),
     ],

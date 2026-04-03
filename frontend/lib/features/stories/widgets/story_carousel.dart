@@ -62,11 +62,11 @@ class _StoryCarouselState extends State<StoryCarousel> {
             .select('story_id')
             .eq('viewer_id', currentUserId);
         final viewedIds = (viewedRes as List? ?? [])
-            .map((v) => (v['story_id'] as String?) ?? '').toSet();
+            .map((v) => (v['story_id'] as String?) ?? '')
+            .toSet();
 
         for (final group in grouped.values) {
-          final groupStories =
-              group['stories'] as List<Map<String, dynamic>>;
+          final groupStories = group['stories'] as List<Map<String, dynamic>>;
           group['has_unviewed'] =
               groupStories.any((s) => !viewedIds.contains(s['id']));
         }
@@ -105,7 +105,8 @@ class _StoryCarouselState extends State<StoryCarousel> {
             )
           : ListView.builder(
               scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
               itemCount: _storyGroups.length + 1, // +1 para o botão "Criar"
               itemBuilder: (ctx, i) {
                 if (i == 0) return _buildCreateButton(ctx);
@@ -116,14 +117,13 @@ class _StoryCarouselState extends State<StoryCarousel> {
   }
 
   Widget _buildCreateButton(BuildContext context) {
-      final r = context.r;
+    final r = context.r;
     return Padding(
       padding: EdgeInsets.only(right: r.s(12)),
       child: GestureDetector(
         onTap: () {
           Navigator.of(context).push(MaterialPageRoute(
-            builder: (_) =>
-                CreateStoryScreen(communityId: widget.communityId),
+            builder: (_) => CreateStoryScreen(communityId: widget.communityId),
           ));
         },
         child: Column(
@@ -164,16 +164,13 @@ class _StoryCarouselState extends State<StoryCarousel> {
     );
   }
 
-  Widget _buildStoryAvatar(
-      BuildContext context, Map<String, dynamic> group) {
-
-      final r = context.r;
+  Widget _buildStoryAvatar(BuildContext context, Map<String, dynamic> group) {
+    final r = context.r;
     final profile = group['profile'] as Map<String, dynamic>?;
     final username = profile?['nickname'] as String? ?? '?';
     final avatarUrl = profile?['icon_url'] as String?;
     final hasUnviewed = group['has_unviewed'] as bool? ?? false;
-    final stories =
-        group['stories'] as List<Map<String, dynamic>>;
+    final stories = group['stories'] as List<Map<String, dynamic>>;
 
     return Padding(
       padding: EdgeInsets.only(right: r.s(12)),
@@ -198,9 +195,9 @@ class _StoryCarouselState extends State<StoryCarousel> {
                 gradient: hasUnviewed
                     ? const LinearGradient(
                         colors: [
-                          AppTheme.fabPink,
+                          Color(0xFFE91E63),
                           Color(0xFFFF5722),
-                          AppTheme.aminoOrange,
+                          Color(0xFFFF9800),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -208,7 +205,8 @@ class _StoryCarouselState extends State<StoryCarousel> {
                     : null,
                 border: hasUnviewed
                     ? null
-                    : Border.all(color: Colors.grey[700] ?? Colors.grey, width: 2),
+                    : Border.all(
+                        color: Colors.grey[700] ?? Colors.grey, width: 2),
               ),
               child: Container(
                 decoration: BoxDecoration(
@@ -238,12 +236,9 @@ class _StoryCarouselState extends State<StoryCarousel> {
               child: Text(
                 username,
                 style: TextStyle(
-                  color: hasUnviewed
-                      ? context.textPrimary
-                      : Colors.grey[600],
+                  color: hasUnviewed ? context.textPrimary : Colors.grey[600],
                   fontSize: r.fs(10),
-                  fontWeight:
-                      hasUnviewed ? FontWeight.w700 : FontWeight.w500,
+                  fontWeight: hasUnviewed ? FontWeight.w700 : FontWeight.w500,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

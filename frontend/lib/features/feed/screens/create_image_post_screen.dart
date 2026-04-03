@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -8,8 +7,6 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/media_utils.dart';
 import '../../../core/utils/responsive.dart';
-import 'package:nexus_hub/core/l10n/locale_provider.dart';
-// TODO: Add 'final s = ref.watch(stringsProvider);' in build() methods
 
 // =============================================================================
 // CREATE IMAGE POST SCREEN — Post com galeria de imagens
@@ -24,8 +21,7 @@ class CreateImagePostScreen extends ConsumerStatefulWidget {
       _CreateImagePostScreenState();
 }
 
-class _CreateImagePostScreenState
-    extends ConsumerState<CreateImagePostScreen> {
+class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
   final _titleController = TextEditingController();
   final _captionController = TextEditingController();
   final List<String> _mediaUrls = [];
@@ -44,32 +40,26 @@ class _CreateImagePostScreenState
     final picker = ImagePicker();
     final images = await picker.pickMultiImage();
     if (images.isEmpty) return;
-    if (!mounted) return;
     setState(() => _isUploading = true);
     try {
       final userId = SupabaseService.currentUserId ?? 'unknown';
-      // Upload em paralelo para melhor performance
-      final uploadFutures = images.asMap().entries.map((entry) async {
-        final idx = entry.key;
-        final image = entry.value;
+      for (final image in images) {
         final rawBytes = await image.readAsBytes();
         final bytes = await MediaUtils.compressImage(rawBytes);
         final path =
-            'posts/$userId/${DateTime.now().millisecondsSinceEpoch}_${idx}_${image.name}';
+            'posts/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
         await SupabaseService.storage
             .from('post_media')
             .uploadBinary(path, bytes);
-        return SupabaseService.storage
-            .from('post_media')
-            .getPublicUrl(path);
-      });
-      final urls = await Future.wait(uploadFutures);
-      if (mounted) setState(() => _mediaUrls.addAll(urls));
+        final url =
+            SupabaseService.storage.from('post_media').getPublicUrl(path);
+        if (mounted) setState(() => _mediaUrls.add(url));
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(s.uploadError),
+            content: Text('Erro no upload. Tente novamente.'),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -83,7 +73,7 @@ class _CreateImagePostScreenState
     if (_mediaUrls.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(s.addAtLeastOneImage),
+          content: Text('Adicione pelo menos uma imagem'),
           backgroundColor: AppTheme.errorColor,
         ),
       );
@@ -103,9 +93,8 @@ class _CreateImagePostScreenState
                 ? _titleController.text.trim()
                 : null,
             'content': _captionController.text.trim(),
-            'media_list': _mediaUrls
-                .map((url) => {'url': url, 'type': 'image'})
-                .toList(),
+            'media_list':
+                _mediaUrls.map((url) => {'url': url, 'type': 'image'}).toList(),
             'cover_image_url': _mediaUrls.first,
             'visibility': _visibility,
             'comments_blocked': false,
@@ -121,7 +110,9 @@ class _CreateImagePostScreenState
           'p_raw_amount': 15,
           'p_reference_id': result['id'],
         });
-      } catch (e) { debugPrint('[create_image_post_screen.dart] $e'); }
+      } catch (e) {
+        debugPrint('[create_image_post_screen.dart] $e');
+      }
 
       if (mounted) {
         context.pop();
@@ -137,7 +128,7 @@ class _CreateImagePostScreenState
         setState(() => _isSubmitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(s.publishError),
+            content: Text('Erro ao publicar. Tente novamente.'),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -180,15 +171,15 @@ class _CreateImagePostScreenState
             itemBuilder: (_) => [
               PopupMenuItem(
                   value: 'public',
-                  child: Text(s.public,
+                  child: Text('Público',
                       style: TextStyle(color: context.textPrimary))),
               PopupMenuItem(
                   value: 'followers',
-                  child: Text(s.followers,
+                  child: Text('Seguidores',
                       style: TextStyle(color: context.textPrimary))),
               PopupMenuItem(
                   value: 'private',
-                  child: Text(s.private,
+                  child: Text('Privado',
                       style: TextStyle(color: context.textPrimary))),
             ],
           ),
@@ -231,8 +222,8 @@ class _CreateImagePostScreenState
                   fontWeight: FontWeight.w600),
               decoration: InputDecoration(
                 hintText: 'Título (opcional)...',
-                hintStyle: TextStyle(
-                    color: context.textSecondary, fontSize: r.fs(18)),
+                hintStyle:
+                    TextStyle(color: context.textSecondary, fontSize: r.fs(18)),
                 border: InputBorder.none,
                 counterText: '',
               ),
@@ -246,12 +237,11 @@ class _CreateImagePostScreenState
               maxLines: 5,
               minLines: 2,
               textCapitalization: TextCapitalization.sentences,
-              style: TextStyle(
-                  color: context.textPrimary, fontSize: r.fs(15)),
+              style: TextStyle(color: context.textPrimary, fontSize: r.fs(15)),
               decoration: InputDecoration(
                 hintText: 'Escreva uma legenda...',
-                hintStyle: TextStyle(
-                    color: context.textSecondary, fontSize: r.fs(15)),
+                hintStyle:
+                    TextStyle(color: context.textSecondary, fontSize: r.fs(15)),
                 border: InputBorder.none,
                 counterText: '',
               ),
@@ -283,8 +273,7 @@ class _CreateImagePostScreenState
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (_isUploading)
-                      CircularProgressIndicator(
-                          color: AppTheme.primaryColor)
+                      CircularProgressIndicator(color: AppTheme.primaryColor)
                     else ...[
                       Icon(Icons.add_photo_alternate_rounded,
                           color: AppTheme.primaryColor, size: r.s(48)),
@@ -292,8 +281,7 @@ class _CreateImagePostScreenState
                       Text(
                         'Toque para adicionar imagens',
                         style: TextStyle(
-                            color: context.textSecondary,
-                            fontSize: r.fs(14)),
+                            color: context.textSecondary, fontSize: r.fs(14)),
                       ),
                     ],
                   ],
@@ -321,14 +309,12 @@ class _CreateImagePostScreenState
                       color: context.cardBg,
                       borderRadius: BorderRadius.circular(r.s(8)),
                       border: Border.all(
-                          color:
-                              context.dividerClr.withValues(alpha: 0.4)),
+                          color: context.dividerClr.withValues(alpha: 0.4)),
                     ),
                     child: _isUploading
                         ? Center(
                             child: CircularProgressIndicator(
-                                color: AppTheme.primaryColor,
-                                strokeWidth: 2))
+                                color: AppTheme.primaryColor, strokeWidth: 2))
                         : Icon(Icons.add_rounded,
                             color: AppTheme.primaryColor, size: r.s(28)),
                   ),
@@ -339,15 +325,13 @@ class _CreateImagePostScreenState
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(r.s(8)),
-                    child: Image.network(_mediaUrls[index],
-                        fit: BoxFit.cover),
+                    child: Image.network(_mediaUrls[index], fit: BoxFit.cover),
                   ),
                   Positioned(
                     top: r.s(4),
                     right: r.s(4),
                     child: GestureDetector(
-                      onTap: () =>
-                          setState(() => _mediaUrls.removeAt(index)),
+                      onTap: () => setState(() => _mediaUrls.removeAt(index)),
                       child: Container(
                         padding: EdgeInsets.all(r.s(2)),
                         decoration: BoxDecoration(

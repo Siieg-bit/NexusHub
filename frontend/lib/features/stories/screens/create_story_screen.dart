@@ -29,14 +29,14 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
   VideoPlayerController? _videoPreviewController;
 
   static const _bgColors = [
-    AppTheme.scaffoldBg,
-    AppTheme.fabPink,
-    AppTheme.badgeAge,
-    AppTheme.infoColor,
-    AppTheme.accentColor,
-    AppTheme.primaryColor,
+    Color(0xFF0D1B2A),
+    Color(0xFFE91E63),
+    Color(0xFF9C27B0),
+    Color(0xFF2196F3),
+    Color(0xFF00BCD4),
+    Color(0xFF4CAF50),
     Color(0xFFFF5722),
-    AppTheme.aminoOrange,
+    Color(0xFFFF9800),
     Color(0xFF795548),
     Color(0xFF607D8B),
   ];
@@ -69,11 +69,11 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
       final path =
           'stories/${widget.communityId}/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
       await SupabaseService.client.storage
-          .from('post_media')
+          .from('media')
           .uploadBinary(path, bytes);
       if (!mounted) return;
       final url =
-          SupabaseService.client.storage.from('post_media').getPublicUrl(path);
+          SupabaseService.client.storage.from('media').getPublicUrl(path);
 
       if (!mounted) return;
       setState(() {
@@ -113,11 +113,11 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
       final bytes = await video.readAsBytes();
       final path =
           'stories/${widget.communityId}/$userId/${DateTime.now().millisecondsSinceEpoch}_${video.name}';
-      await SupabaseService.client.storage
-          .from('post_media')
-          .uploadBinary(path, bytes, fileOptions: const FileOptions(contentType: 'video/mp4'));
+      await SupabaseService.client.storage.from('media').uploadBinary(
+          path, bytes,
+          fileOptions: const FileOptions(contentType: 'video/mp4'));
       final url =
-          SupabaseService.client.storage.from('post_media').getPublicUrl(path);
+          SupabaseService.client.storage.from('media').getPublicUrl(path);
 
       // Inicializar preview do vídeo
       _videoPreviewController?.dispose();
@@ -183,9 +183,8 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
         'p_caption': _textController.text.trim().isNotEmpty
             ? _textController.text.trim()
             : null,
-        'p_background_color': _type == 'text'
-            ? _bgHexCodes[_selectedBgIndex]
-            : '#000000',
+        'p_background_color':
+            _type == 'text' ? _bgHexCodes[_selectedBgIndex] : '#000000',
         'p_duration_seconds': _type == 'text' ? 5 : 7,
       });
 
@@ -230,7 +229,8 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
           children: [
             // ── Top bar ──
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
               child: Row(
                 children: [
                   GestureDetector(
@@ -282,7 +282,8 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
 
             // ── Type selector ──
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               child: Row(
                 children: [
                   _TypeChip(
@@ -338,7 +339,8 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                   fit: StackFit.expand,
                   children: [
                     // Preview de vídeo
-                    if (_type == 'video' && _videoPreviewController != null &&
+                    if (_type == 'video' &&
+                        _videoPreviewController != null &&
                         _videoPreviewController!.value.isInitialized)
                       ClipRRect(
                         borderRadius: BorderRadius.circular(r.s(16)),
@@ -446,8 +448,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                     itemBuilder: (_, i) {
                       final isSelected = _selectedBgIndex == i;
                       return GestureDetector(
-                        onTap: () =>
-                            setState(() => _selectedBgIndex = i),
+                        onTap: () => setState(() => _selectedBgIndex = i),
                         child: Container(
                           width: r.s(36),
                           height: r.s(36),
@@ -457,8 +458,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                             shape: BoxShape.circle,
                             border: isSelected
                                 ? Border.all(color: Colors.white, width: r.s(3))
-                                : Border.all(
-                                    color: Colors.white24, width: 1),
+                                : Border.all(color: Colors.white24, width: 1),
                           ),
                         ),
                       );
@@ -501,8 +501,7 @@ class _TypeChip extends StatelessWidget {
               : Colors.white.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(r.s(20)),
           border: isSelected
-              ? Border.all(
-                  color: AppTheme.accentColor.withValues(alpha: 0.5))
+              ? Border.all(color: AppTheme.accentColor.withValues(alpha: 0.5))
               : null,
         ),
         child: Row(

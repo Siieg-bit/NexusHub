@@ -107,7 +107,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
   String? _communityIdFromNotification(Map<String, dynamic> notification) {
     final payload = _notificationData(notification);
-    return notification['community_id'] as String? ?? payload['community_id'] as String?;
+    return notification['community_id'] as String? ??
+        payload['community_id'] as String?;
   }
 
   Future<void> _acceptCommunityInvite(Map<String, dynamic> notification) async {
@@ -122,7 +123,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       return;
     }
 
-    if (notificationId != null && _acceptingInviteIds.contains(notificationId)) {
+    if (notificationId != null &&
+        _acceptingInviteIds.contains(notificationId)) {
       return;
     }
 
@@ -138,11 +140,14 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           ? Map<String, dynamic>.from(response)
           : <String, dynamic>{};
       final error = result['error'] as String?;
-      final communityId = result['community_id'] as String? ?? fallbackCommunityId;
+      final communityId =
+          result['community_id'] as String? ?? fallbackCommunityId;
 
       if (error == null || error == 'already_member') {
         if (notificationId != null) {
-          await ref.read(notificationProvider.notifier).markAsRead(notificationId);
+          await ref
+              .read(notificationProvider.notifier)
+              .markAsRead(notificationId);
         }
         await ref.read(notificationProvider.notifier).refresh();
 
@@ -203,7 +208,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     }
 
     final type = notification['type'] as String? ?? '';
-    final targetId = notification['post_id'] as String? ?? notification['community_id'] as String?;
+    final targetId = notification['post_id'] as String? ??
+        notification['community_id'] as String?;
 
     switch (type) {
       case 'like':
@@ -271,8 +277,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             onTap: _confirmClearAll,
             child: Container(
               margin: EdgeInsets.only(right: r.s(12)),
-              padding: EdgeInsets.symmetric(
-                  horizontal: r.s(14), vertical: r.s(7)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(7)),
               decoration: BoxDecoration(
                 color: AppTheme.errorColor,
                 borderRadius: BorderRadius.circular(r.s(20)),
@@ -309,8 +315,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               ),
               SizedBox(height: r.s(12)),
               GestureDetector(
-                onTap: () =>
-                    ref.read(notificationProvider.notifier).refresh(),
+                onTap: () => ref.read(notificationProvider.notifier).refresh(),
                 child: Container(
                   padding: EdgeInsets.symmetric(
                       horizontal: r.s(20), vertical: r.s(10)),
@@ -345,16 +350,14 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 // ── Link para configurações de push ──────────────────────
                 SliverToBoxAdapter(
                   child: InkWell(
-                    onTap: () =>
-                        context.push('/settings/notifications'),
+                    onTap: () => context.push('/settings/notifications'),
                     child: Container(
                       padding: EdgeInsets.symmetric(
                           horizontal: r.s(16), vertical: r.s(14)),
                       decoration: BoxDecoration(
                         border: Border(
                           bottom: BorderSide(
-                            color: context.dividerClr
-                                .withValues(alpha: 0.15),
+                            color: context.dividerClr.withValues(alpha: 0.15),
                             width: 0.5,
                           ),
                         ),
@@ -362,8 +365,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                       child: Row(
                         children: [
                           Icon(Icons.settings_rounded,
-                              color: context.textSecondary,
-                              size: r.s(18)),
+                              color: context.textSecondary, size: r.s(18)),
                           SizedBox(width: r.s(10)),
                           Text(
                             'Configurações de Notificação Push',
@@ -375,8 +377,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                           ),
                           const Spacer(),
                           Icon(Icons.chevron_right_rounded,
-                              color: context.textSecondary,
-                              size: r.s(18)),
+                              color: context.textSecondary, size: r.s(18)),
                         ],
                       ),
                     ),
@@ -421,8 +422,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                       (context, index) {
                         final notification = notifications[index];
                         final notificationId = notification['id'] as String?;
-                        final hasInviteAction =
-                            notification['type'] == 'community_invite' &&
+                        final hasInviteAction = notification['type'] ==
+                                'community_invite' &&
                             _inviteCodeFromNotification(notification) != null;
 
                         return _NotificationTile(
@@ -540,11 +541,11 @@ class _NotificationTile extends StatelessWidget {
       case 'achievement':
         return AppTheme.warningColor;
       case 'chat_message':
-        return const AppTheme.primaryColor;
+        return const Color(0xFF4CAF50);
       case 'dm_invite':
-        return const AppTheme.badgeAge;
+        return const Color(0xFF9C27B0);
       case 'wall_post':
-        return const AppTheme.infoColor;
+        return const Color(0xFF2196F3);
       case 'moderation':
       case 'strike':
       case 'ban':
@@ -560,21 +561,21 @@ class _NotificationTile extends StatelessWidget {
     final type = data['type'] as String? ?? 'general';
     final isRead = data['is_read'] as bool? ?? false;
     final actor = data['profiles'] as Map<String, dynamic>?;
-    final content = data['body'] as String? ?? data['title'] as String? ?? 'Notificação';
-    final createdAt =
-        DateTime.tryParse(data['created_at'] as String? ?? '') ??
-            DateTime.now();
+    final content =
+        data['body'] as String? ?? data['title'] as String? ?? 'Notificação';
+    final createdAt = DateTime.tryParse(data['created_at'] as String? ?? '') ??
+        DateTime.now();
 
     final iconColor = _getIconColor(type);
     final avatarUrl = actor?['icon_url'] as String?;
     final nickname = actor?['nickname'] as String? ?? '';
-    final hasPrimaryAction = type == 'community_invite' && onPrimaryAction != null;
+    final hasPrimaryAction =
+        type == 'community_invite' && onPrimaryAction != null;
 
     return InkWell(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.symmetric(
-            horizontal: r.s(16), vertical: r.s(12)),
+        padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
         decoration: BoxDecoration(
           // Fundo levemente destacado para não lidas
           color: isRead
@@ -630,8 +631,7 @@ class _NotificationTile extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: iconColor,
                       shape: BoxShape.circle,
-                      border: Border.all(
-                          color: context.scaffoldBg, width: 1.5),
+                      border: Border.all(color: context.scaffoldBg, width: 1.5),
                     ),
                     child: Icon(
                       _getIcon(type),
@@ -664,15 +664,13 @@ class _NotificationTile extends StatelessWidget {
                         if (nickname.isNotEmpty)
                           TextSpan(
                             text: '$nickname ',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w700),
+                            style: const TextStyle(fontWeight: FontWeight.w700),
                           ),
                         TextSpan(
                           text: content,
                           style: TextStyle(
-                            fontWeight: isRead
-                                ? FontWeight.w400
-                                : FontWeight.w500,
+                            fontWeight:
+                                isRead ? FontWeight.w400 : FontWeight.w500,
                             color: isRead
                                 ? context.textSecondary
                                 : context.textPrimary,
@@ -703,7 +701,8 @@ class _NotificationTile extends StatelessWidget {
                           color: AppTheme.primaryColor.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(r.s(10)),
                           border: Border.all(
-                            color: AppTheme.primaryColor.withValues(alpha: 0.28),
+                            color:
+                                AppTheme.primaryColor.withValues(alpha: 0.28),
                           ),
                         ),
                         child: Row(
@@ -780,9 +779,9 @@ class _RetryBanner extends StatelessWidget {
       margin: EdgeInsets.all(r.s(16)),
       padding: EdgeInsets.all(r.s(12)),
       decoration: BoxDecoration(
-        color: AppTheme.errorColor.withValues(alpha: 0.08),
+        color: Colors.red.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(r.s(10)),
-        border: Border.all(color: AppTheme.errorColor.withValues(alpha: 0.2)),
+        border: Border.all(color: Colors.red.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -801,10 +800,10 @@ class _RetryBanner extends StatelessWidget {
           GestureDetector(
             onTap: onRetry,
             child: Container(
-              padding: EdgeInsets.symmetric(
-                  horizontal: r.s(12), vertical: r.s(6)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(6)),
               decoration: BoxDecoration(
-                color: AppTheme.errorColor.withValues(alpha: 0.15),
+                color: Colors.red.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(r.s(8)),
               ),
               child: Text(

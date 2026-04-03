@@ -96,16 +96,13 @@ class PresenceService {
     _presenceState[channelId] = {};
 
     // Escutar eventos de presença
-    channel
-        .onPresenceSync((_) {
-          _handleSync(channelId, channel);
-        })
-        .onPresenceJoin((payload) {
-          _handleJoin(channelId, payload);
-        })
-        .onPresenceLeave((payload) {
-          _handleLeave(channelId, payload);
-        });
+    channel.onPresenceSync((_) {
+      _handleSync(channelId, channel);
+    }).onPresenceJoin((payload) {
+      _handleJoin(channelId, payload);
+    }).onPresenceLeave((payload) {
+      _handleLeave(channelId, payload);
+    });
 
     // Subscrever e fazer track
     channel.subscribe((status, error) async {

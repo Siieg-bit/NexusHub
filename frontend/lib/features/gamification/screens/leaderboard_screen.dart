@@ -214,12 +214,9 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                           p.$2,
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: isSelected
-                                ? Colors.white
-                                : Colors.grey[400],
-                            fontWeight: isSelected
-                                ? FontWeight.w800
-                                : FontWeight.w500,
+                            color: isSelected ? Colors.white : Colors.grey[400],
+                            fontWeight:
+                                isSelected ? FontWeight.w800 : FontWeight.w500,
                             fontSize: r.fs(12),
                           ),
                         ),
@@ -319,7 +316,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                                 rank: 1,
                                 data: members[0],
                                 podiumHeight: r.s(110),
-                                color: const AppTheme.coinGold,
+                                color: const Color(0xFFFFD700),
                                 medal: '🥇',
                                 isFirst: true,
                               ),
@@ -427,9 +424,7 @@ class _PodiumItem extends StatelessWidget {
 
           // Avatar com borda colorida
           GestureDetector(
-            onTap: userId != null
-                ? () => context.push('/user/$userId')
-                : null,
+            onTap: userId != null ? () => context.push('/user/$userId') : null,
             child: Container(
               padding: const EdgeInsets.all(2),
               decoration: BoxDecoration(
@@ -538,7 +533,7 @@ class _LeaderboardTile extends StatelessWidget {
   const _LeaderboardTile({required this.data, required this.rank});
 
   Color _rankColor(int rank) {
-    if (rank == 1) return const AppTheme.coinGold;
+    if (rank == 1) return const Color(0xFFFFD700);
     if (rank == 2) return const Color(0xFFC0C0C0);
     if (rank == 3) return const Color(0xFFCD7F32);
     return Colors.grey.shade600;
@@ -583,9 +578,7 @@ class _LeaderboardTile extends StatelessWidget {
 
           // Avatar
           GestureDetector(
-            onTap: userId != null
-                ? () => context.push('/user/$userId')
-                : null,
+            onTap: userId != null ? () => context.push('/user/$userId') : null,
             child: CosmeticAvatar(
               userId: userId,
               avatarUrl: data['icon_url'] as String?,
@@ -618,8 +611,8 @@ class _LeaderboardTile extends StatelessWidget {
                       padding: EdgeInsets.symmetric(
                           horizontal: r.s(7), vertical: r.s(3)),
                       decoration: BoxDecoration(
-                        color: AppTheme.getLevelColor(lvl)
-                            .withValues(alpha: 0.18),
+                        color:
+                            AppTheme.getLevelColor(lvl).withValues(alpha: 0.18),
                         borderRadius: BorderRadius.circular(r.s(20)),
                         border: Border.all(
                           color: AppTheme.getLevelColor(lvl)
@@ -637,8 +630,7 @@ class _LeaderboardTile extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (data['role'] != null &&
-                    data['role'] != 'member') ...[
+                if (data['role'] != null && data['role'] != 'member') ...[
                   SizedBox(height: r.s(3)),
                   Text(
                     (data['role'] as String? ?? '').toUpperCase(),

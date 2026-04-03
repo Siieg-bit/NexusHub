@@ -68,8 +68,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
       final now = DateTime.now().toUtc();
       final todayStart =
           DateTime(now.year, now.month, now.day).toIso8601String();
-      final weekStart =
-          now.subtract(const Duration(days: 7)).toIso8601String();
+      final weekStart = now.subtract(const Duration(days: 7)).toIso8601String();
 
       final users =
           await SupabaseService.table('profiles').select('id').count();
@@ -87,8 +86,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
           .count();
       _newUsersWeek = newWeek.count;
 
-      final posts =
-          await SupabaseService.table('posts').select('id').count();
+      final posts = await SupabaseService.table('posts').select('id').count();
       _totalPosts = posts.count;
 
       final postsToday = await SupabaseService.table('posts')
@@ -123,8 +121,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
 
   Future<void> _loadModerationStats() async {
     try {
-      final total =
-          await SupabaseService.table('flags').select('id').count();
+      final total = await SupabaseService.table('flags').select('id').count();
       _totalFlags = total.count;
 
       final pending = await SupabaseService.table('flags')
@@ -168,8 +165,8 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
       _aminoPlusUsers = aminoPlus.count;
 
       // Total de coins em circulação
-      final coinsData = await SupabaseService.table('profiles')
-          .select('coin_balance');
+      final coinsData =
+          await SupabaseService.table('profiles').select('coin_balance');
       int total = 0;
       for (final row in ((coinsData as List? ?? []))) {
         total += (row['coin_balance'] as int? ?? 0);
@@ -237,11 +234,11 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
             _StatData('Total', _totalUsers.toString(), Icons.people_rounded,
                 AppTheme.primaryColor),
             _StatData('Hoje', _newUsersToday.toString(),
-                Icons.person_add_rounded, AppTheme.primaryColor),
+                Icons.person_add_rounded, Colors.green),
             _StatData('Últimos 7 dias', _newUsersWeek.toString(),
-                Icons.trending_up_rounded, AppTheme.aminoOrange),
-            _StatData('Banidos', _bannedUsers.toString(),
-                Icons.block_rounded, AppTheme.errorColor),
+                Icons.trending_up_rounded, Colors.orange),
+            _StatData('Banidos', _bannedUsers.toString(), Icons.block_rounded,
+                Colors.red),
           ], r),
           SizedBox(height: r.s(20)),
           _sectionTitle('Conteúdo', r),
@@ -249,7 +246,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
             _StatData('Posts totais', _totalPosts.toString(),
                 Icons.article_rounded, AppTheme.accentColor),
             _StatData('Posts hoje', _postsToday.toString(),
-                Icons.post_add_rounded, AppTheme.accentColor),
+                Icons.post_add_rounded, Colors.teal),
             _StatData('Mensagens totais', _totalMessages.toString(),
                 Icons.chat_rounded, Colors.purple),
             _StatData('Mensagens hoje', _messagesToday.toString(),
@@ -261,7 +258,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
             _StatData('Total', _totalCommunities.toString(),
                 Icons.groups_rounded, Colors.amber),
             _StatData('Ativas', _activeCommunities.toString(),
-                Icons.check_circle_rounded, AppTheme.primaryColor),
+                Icons.check_circle_rounded, Colors.green),
           ], r),
         ],
       ),
@@ -276,12 +273,12 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
         children: [
           _sectionTitle('Denúncias', r),
           _statsGrid([
-            _StatData('Total', _totalFlags.toString(),
-                Icons.flag_rounded, AppTheme.aminoOrange),
+            _StatData('Total', _totalFlags.toString(), Icons.flag_rounded,
+                Colors.orange),
             _StatData('Pendentes', _pendingFlags.toString(),
-                Icons.pending_rounded, AppTheme.errorColor),
+                Icons.pending_rounded, Colors.red),
             _StatData('Resolvidas', _resolvedFlags.toString(),
-                Icons.check_circle_rounded, AppTheme.primaryColor),
+                Icons.check_circle_rounded, Colors.green),
             _StatData('Usuários banidos', _bannedUsers.toString(),
                 Icons.block_rounded, Colors.red[900]!),
           ], r),
@@ -310,13 +307,12 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
         children: [
           _sectionTitle('Economia', r),
           _statsGrid([
-            _StatData('Coins em circulação',
-                _totalCoinsCirculating.toString(),
+            _StatData('Coins em circulação', _totalCoinsCirculating.toString(),
                 Icons.monetization_on_rounded, Colors.amber),
             _StatData('Assinantes Amino+', _aminoPlusUsers.toString(),
                 Icons.star_rounded, AppTheme.primaryColor),
             _StatData('Check-ins totais', _totalCheckIns.toString(),
-                Icons.calendar_today_rounded, AppTheme.accentColor),
+                Icons.calendar_today_rounded, Colors.teal),
           ], r),
           SizedBox(height: r.s(20)),
           _sectionTitle('Taxa de Monetização', r),
@@ -331,8 +327,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
                 _buildRateRow(
                   'Taxa Amino+',
                   _totalUsers > 0
-                      ? (_aminoPlusUsers / _totalUsers * 100)
-                          .toStringAsFixed(1)
+                      ? (_aminoPlusUsers / _totalUsers * 100).toStringAsFixed(1)
                       : '0.0',
                   '%',
                   AppTheme.primaryColor,
@@ -361,13 +356,12 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
     final status = flag['status'] as String? ?? 'pending';
     final reason = flag['reason'] as String? ?? 'Sem motivo';
     final createdAt = flag['created_at'] as String?;
-    final date = createdAt != null
-        ? DateTime.tryParse(createdAt)?.toLocal()
-        : null;
+    final date =
+        createdAt != null ? DateTime.tryParse(createdAt)?.toLocal() : null;
     final statusColor = status == 'pending'
-        ? AppTheme.aminoOrange
+        ? Colors.orange
         : status == 'resolved'
-            ? AppTheme.primaryColor
+            ? Colors.green
             : Colors.grey;
 
     return Container(
@@ -397,15 +391,14 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
                 if (date != null)
                   Text(
                     '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}',
-                    style: TextStyle(
-                        color: Colors.grey[600], fontSize: r.fs(11)),
+                    style:
+                        TextStyle(color: Colors.grey[600], fontSize: r.fs(11)),
                   ),
               ],
             ),
           ),
           Container(
-            padding:
-                EdgeInsets.symmetric(horizontal: r.s(8), vertical: r.s(4)),
+            padding: EdgeInsets.symmetric(horizontal: r.s(8), vertical: r.s(4)),
             decoration: BoxDecoration(
               color: statusColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(r.s(8)),
@@ -423,14 +416,13 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
     );
   }
 
-  Widget _buildRateRow(String label, String value, String unit, Color color,
-      Responsive r) {
+  Widget _buildRateRow(
+      String label, String value, String unit, Color color, Responsive r) {
     return Row(
       children: [
         Expanded(
           child: Text(label,
-              style: TextStyle(
-                  color: context.textPrimary, fontSize: r.fs(14))),
+              style: TextStyle(color: context.textPrimary, fontSize: r.fs(14))),
         ),
         RichText(
           text: TextSpan(
@@ -444,8 +436,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
               ),
               TextSpan(
                 text: ' $unit',
-                style: TextStyle(
-                    color: Colors.grey[500], fontSize: r.fs(12)),
+                style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
               ),
             ],
           ),
@@ -510,8 +501,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
               ),
               Text(
                 stat.label,
-                style: TextStyle(
-                    color: Colors.grey[500], fontSize: r.fs(11)),
+                style: TextStyle(color: Colors.grey[500], fontSize: r.fs(11)),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),

@@ -21,7 +21,8 @@ class DraftsScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: context.textPrimary, size: r.s(22)),
+          icon:
+              Icon(Icons.arrow_back, color: context.textPrimary, size: r.s(22)),
           onPressed: () => context.pop(),
         ),
         title: Text(
@@ -49,7 +50,8 @@ class DraftsScreen extends ConsumerWidget {
               ),
               SizedBox(height: r.s(16)),
               ElevatedButton(
-                onPressed: () => ref.read(postDraftsProvider.notifier).refresh(),
+                onPressed: () =>
+                    ref.read(postDraftsProvider.notifier).refresh(),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryColor,
                   shape: RoundedRectangleBorder(
@@ -94,8 +96,7 @@ class DraftsScreen extends ConsumerWidget {
           return ListView.builder(
             padding: EdgeInsets.all(r.s(16)),
             itemCount: drafts.length,
-            itemBuilder: (context, index) =>
-                _DraftCard(draft: drafts[index]),
+            itemBuilder: (context, index) => _DraftCard(draft: drafts[index]),
           );
         },
       ),
@@ -258,11 +259,11 @@ class _DraftCard extends ConsumerWidget {
         break;
       case 'poll':
         icon = Icons.poll_rounded;
-        color = AppTheme.aminoOrange;
+        color = Colors.orange;
         break;
       case 'quiz':
         icon = Icons.quiz_rounded;
-        color = AppTheme.accentColor;
+        color = Colors.teal;
         break;
       case 'link':
         icon = Icons.link_rounded;

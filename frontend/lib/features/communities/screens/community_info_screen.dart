@@ -75,7 +75,9 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
         }
       }
       // Fallback: split category as tag
-      if (tags.isEmpty && community.category.isNotEmpty && community.category != 'general') {
+      if (tags.isEmpty &&
+          community.category.isNotEmpty &&
+          community.category != 'general') {
         tags = [community.category];
       }
 
@@ -208,7 +210,8 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
                   color: Colors.black.withValues(alpha: 0.4),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 20),
+                child: const Icon(Icons.arrow_back_rounded,
+                    color: Colors.white, size: 20),
               ),
               onPressed: () => Navigator.pop(context),
             ),
@@ -220,11 +223,13 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
                     color: Colors.black.withValues(alpha: 0.4),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.share_rounded, color: Colors.white, size: 20),
+                  child: const Icon(Icons.share_rounded,
+                      color: Colors.white, size: 20),
                 ),
                 onPressed: () {
                   // Share community link
-                  final link = community.link ?? community.endpoint ?? community.id;
+                  final link =
+                      community.link ?? community.endpoint ?? community.id;
                   Clipboard.setData(ClipboardData(text: link));
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -242,7 +247,8 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
                     color: Colors.black.withValues(alpha: 0.4),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.more_horiz_rounded, color: Colors.white, size: 20),
+                  child: const Icon(Icons.more_horiz_rounded,
+                      color: Colors.white, size: 20),
                 ),
                 onPressed: () {},
               ),
@@ -252,21 +258,28 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
                 fit: StackFit.expand,
                 children: [
                   // Banner image
-                  if (community.bannerUrl != null && community.bannerUrl!.isNotEmpty)
+                  if (community.bannerUrl != null &&
+                      community.bannerUrl!.isNotEmpty)
                     CachedNetworkImage(
                       imageUrl: community.bannerUrl!,
                       fit: BoxFit.cover,
                       placeholder: (_, __) => Container(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [themeColor, themeColor.withValues(alpha: 0.5)],
+                            colors: [
+                              themeColor,
+                              themeColor.withValues(alpha: 0.5)
+                            ],
                           ),
                         ),
                       ),
                       errorWidget: (_, __, ___) => Container(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [themeColor, themeColor.withValues(alpha: 0.5)],
+                            colors: [
+                              themeColor,
+                              themeColor.withValues(alpha: 0.5)
+                            ],
                           ),
                         ),
                       ),
@@ -275,7 +288,10 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
                     Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [themeColor, themeColor.withValues(alpha: 0.5)],
+                          colors: [
+                            themeColor,
+                            themeColor.withValues(alpha: 0.5)
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -335,7 +351,8 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
                           ],
                         ),
                         clipBehavior: Clip.antiAlias,
-                        child: community.iconUrl != null && community.iconUrl!.isNotEmpty
+                        child: community.iconUrl != null &&
+                                community.iconUrl!.isNotEmpty
                             ? CachedNetworkImage(
                                 imageUrl: community.iconUrl!,
                                 fit: BoxFit.cover,
@@ -457,7 +474,8 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(r.s(16)),
                             border: Border.all(
-                              color: AppTheme.accentColor.withValues(alpha: 0.6),
+                              color:
+                                  AppTheme.accentColor.withValues(alpha: 0.6),
                               width: 1,
                             ),
                           ),
@@ -559,15 +577,15 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
 
                   // ── Additional info ──
                   _buildInfoRow(context, 'Categoria', community.category),
-                  _buildInfoRow(context, 'Tipo de acesso',
+                  _buildInfoRow(
+                      context,
+                      'Tipo de acesso',
                       community.joinType == 'open'
                           ? 'Aberta'
                           : community.joinType == 'request'
                               ? 'Solicitar entrada'
                               : 'Somente convite'),
-                  _buildInfoRow(
-                      context,
-                      'Criada em',
+                  _buildInfoRow(context, 'Criada em',
                       '${community.createdAt.day}/${community.createdAt.month}/${community.createdAt.year}'),
 
                   SizedBox(
@@ -613,7 +631,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
             margin: EdgeInsets.only(right: r.s(2)),
             decoration: BoxDecoration(
               color: filled
-                  ? Color.lerp(AppTheme.primaryColor, AppTheme.aminoOrange, i / barCount)
+                  ? Color.lerp(Colors.green, Colors.orange, i / barCount)
                   : Colors.grey[800],
               borderRadius: BorderRadius.circular(r.s(2)),
             ),

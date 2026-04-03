@@ -42,10 +42,12 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
       // quando o usuário estiver visualizando o próprio perfil.
       if (currentUserId != null && userId == currentUserId) {
         try {
-          final rpcRes = await SupabaseService.rpc('check_achievements', params: {
+          final rpcRes =
+              await SupabaseService.rpc('check_achievements', params: {
             'p_user_id': userId,
           });
-          _newlyUnlocked = List<Map<String, dynamic>>.from(rpcRes as List? ?? []);
+          _newlyUnlocked =
+              List<Map<String, dynamic>>.from(rpcRes as List? ?? []);
         } catch (_) {
           _newlyUnlocked = [];
         }
@@ -63,7 +65,8 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
       final unlockedRes = await SupabaseService.table('user_achievements')
           .select('achievement_id, unlocked_at')
           .eq('user_id', userId);
-      final unlocked = List<Map<String, dynamic>>.from(unlockedRes as List? ?? []);
+      final unlocked =
+          List<Map<String, dynamic>>.from(unlockedRes as List? ?? []);
 
       _unlockedIds = unlocked
           .map((u) => (u['achievement_id'] as String?) ?? '')
@@ -101,7 +104,8 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
       int maxStreak = 0;
       DateTime? lastDate;
 
-      for (final row in List<Map<String, dynamic>>.from(checkins as List? ?? [])) {
+      for (final row
+          in List<Map<String, dynamic>>.from(checkins as List? ?? [])) {
         final dateStr = (row['checkin_date'] as String?) ?? '';
         data[dateStr] = 1; // Nível 1 para check-in simples
 
@@ -190,10 +194,12 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                           width: double.infinity,
                           padding: EdgeInsets.all(r.s(16)),
                           decoration: BoxDecoration(
-                            color: AppTheme.successColor.withValues(alpha: 0.12),
+                            color:
+                                AppTheme.successColor.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(r.s(16)),
                             border: Border.all(
-                              color: AppTheme.successColor.withValues(alpha: 0.35),
+                              color:
+                                  AppTheme.successColor.withValues(alpha: 0.35),
                             ),
                           ),
                           child: Column(
@@ -254,7 +260,8 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                           borderRadius: BorderRadius.circular(r.s(16)),
                           boxShadow: [
                             BoxShadow(
-                              color: AppTheme.warningColor.withValues(alpha: 0.3),
+                              color:
+                                  AppTheme.warningColor.withValues(alpha: 0.3),
                               blurRadius: 12,
                               offset: const Offset(0, 4),
                             ),
@@ -356,13 +363,13 @@ class _AchievementTile extends StatelessWidget {
     Color rarityColor;
     switch (rarity) {
       case 'legendary':
-        rarityColor = const AppTheme.coinGold;
+        rarityColor = const Color(0xFFFFD700);
         break;
       case 'epic':
-        rarityColor = const AppTheme.badgeAge;
+        rarityColor = const Color(0xFF9C27B0);
         break;
       case 'rare':
-        rarityColor = const AppTheme.infoColor;
+        rarityColor = const Color(0xFF2196F3);
         break;
       default:
         rarityColor = (Colors.grey[500] ?? Colors.grey);

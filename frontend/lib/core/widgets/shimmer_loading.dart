@@ -44,8 +44,7 @@ class _ShimmerLoadingState extends State<ShimmerLoading>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final baseColor = isDark ? context.cardBg : const Color(0xFFE0E0E8);
-    final highlightColor =
-        isDark ? context.cardBgAlt : const Color(0xFFF5F5F8);
+    final highlightColor = isDark ? context.cardBgAlt : const Color(0xFFF5F5F8);
 
     return AnimatedBuilder(
       animation: _animation,
@@ -102,7 +101,6 @@ class ShimmerCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: size,

@@ -113,7 +113,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
       } else if (data != null && data['error'] == 'already_checked_in') {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Você já fez check-in hoje nesta comunidade!'),
-          backgroundColor: AppTheme.aminoOrange,
+          backgroundColor: Colors.orange,
           behavior: SnackBarBehavior.floating,
           duration: Duration(seconds: 2),
         ));
@@ -295,8 +295,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                 color: Colors.grey[850],
                 image: community.iconUrl != null
                     ? DecorationImage(
-                        image:
-                            CachedNetworkImageProvider(community.iconUrl!),
+                        image: CachedNetworkImageProvider(community.iconUrl!),
                         fit: BoxFit.cover,
                       )
                     : null,
@@ -670,11 +669,11 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: done
-                          ? const AppTheme.primaryColor
+                          ? const Color(0xFF4CAF50)
                           : Colors.grey.withValues(alpha: 0.25),
                       border: Border.all(
                         color: done
-                            ? const AppTheme.primaryColor
+                            ? const Color(0xFF4CAF50)
                             : Colors.white.withValues(alpha: 0.20),
                         width: 1.5,
                       ),
@@ -715,7 +714,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
               ? 'Fazendo check-in...'
               : 'Check-in streak lost. Tap here to fix it!',
           style: TextStyle(
-            color: const AppTheme.primaryColor,
+            color: const Color(0xFF4CAF50),
             fontSize: r.fs(11),
             fontWeight: FontWeight.w600,
             shadows: const [
@@ -813,7 +812,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         ),
         _AminoDrawerTile(
           icon: Icons.auto_stories_rounded,
-          iconColor: const AppTheme.badgeAge,
+          iconColor: const Color(0xFF9C27B0),
           label: 'Wiki',
           onTap: () => _closeAndNavigate(() {
             context.push('/community/${widget.community.id}/wiki');

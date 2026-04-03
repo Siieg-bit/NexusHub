@@ -24,7 +24,8 @@ final userProfileProvider =
       } else if (response is Map) {
         data = Map<String, dynamic>.from(response);
       } else {
-        throw Exception('Unexpected RPC response type: ${response.runtimeType}');
+        throw Exception(
+            'Unexpected RPC response type: ${response.runtimeType}');
       }
       if (data.containsKey('error')) {
         throw Exception(data['error']);
@@ -113,7 +114,8 @@ final userPostsProvider =
 
 /// Provider para stories do usuário (tabela stories, NÃO posts).
 final userStoriesProvider =
-    FutureProvider.family<List<Map<String, dynamic>>, String>((ref, userId) async {
+    FutureProvider.family<List<Map<String, dynamic>>, String>(
+        (ref, userId) async {
   try {
     final response = await SupabaseService.table('stories')
         .select('*, profiles!author_id(*)')
@@ -151,8 +153,7 @@ final userWallProvider =
         (ref, userId) async {
   try {
     final res = await SupabaseService.table('comments')
-        .select(
-            '*, profiles!comments_author_id_fkey(id, nickname, icon_url)')
+        .select('*, profiles!comments_author_id_fkey(id, nickname, icon_url)')
         .eq('profile_wall_id', userId)
         .eq('status', 'ok')
         .order('created_at', ascending: false)

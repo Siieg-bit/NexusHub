@@ -87,21 +87,26 @@ class ThreadMessagesNotifier
 
   Future<List<MessageModel>> _fetchPage(String threadId, int page) async {
     final res = await SupabaseService.table('chat_messages')
-        .select('*, profiles!chat_messages_author_id_fkey(id, nickname, icon_url)')
+        .select(
+            '*, profiles!chat_messages_author_id_fkey(id, nickname, icon_url)')
         .eq('thread_id', threadId)
         .order('created_at', ascending: false)
         .range(page * _pageSize, (page + 1) * _pageSize - 1);
 
     final list = res as List;
-    final messages = list.map((e) {
-      final map = Map<String, dynamic>.from(e as Map);
-      // Normalizar o campo de autor para que MessageModel.fromJson encontre
-      if (map['profiles'] != null) {
-        map['sender'] = map['profiles'];
-        map['author'] = map['profiles'];
-      }
-      return MessageModel.fromJson(map);
-    }).toList().reversed.toList();
+    final messages = list
+        .map((e) {
+          final map = Map<String, dynamic>.from(e as Map);
+          // Normalizar o campo de autor para que MessageModel.fromJson encontre
+          if (map['profiles'] != null) {
+            map['sender'] = map['profiles'];
+            map['author'] = map['profiles'];
+          }
+          return MessageModel.fromJson(map);
+        })
+        .toList()
+        .reversed
+        .toList();
 
     _hasMore = list.length >= _pageSize;
     return messages;
@@ -179,7 +184,9 @@ class ThreadMessagesNotifier
                 updatedMsg['sender'] = profile;
                 updatedMsg['author'] = profile;
               }
-            } catch (e) { debugPrint('[chat_provider.dart] $e'); }
+            } catch (e) {
+              debugPrint('[chat_provider.dart] $e');
+            }
 
             final message = MessageModel.fromJson(updatedMsg);
             final current = state.valueOrNull ?? [];

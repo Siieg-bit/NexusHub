@@ -43,8 +43,7 @@ class _EditCommunityProfileScreenState
       if (userId == null) return;
 
       final membership = await SupabaseService.table('community_members')
-          .select(
-              'local_nickname, local_bio, local_icon_url, local_banner_url')
+          .select('local_nickname, local_bio, local_icon_url, local_banner_url')
           .eq('community_id', widget.communityId)
           .eq('user_id', userId)
           .single();
@@ -65,8 +64,7 @@ class _EditCommunityProfileScreenState
   }
 
   Future<String?> _uploadImage(String folder) async {
-
-      final r = context.r;
+    final r = context.r;
     final picker = ImagePicker();
     final image = await picker.pickImage(
       source: ImageSource.gallery,
@@ -83,10 +81,10 @@ class _EditCommunityProfileScreenState
           'community_profiles/${widget.communityId}/$userId/$folder/${DateTime.now().millisecondsSinceEpoch}.$ext';
 
       await SupabaseService.client.storage
-          .from('post_media')
+          .from('media')
           .uploadBinary(path, bytes);
 
-      return SupabaseService.client.storage.from('post_media').getPublicUrl(path);
+      return SupabaseService.client.storage.from('media').getPublicUrl(path);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -300,8 +298,7 @@ class _EditCommunityProfileScreenState
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
-                        onPressed: () =>
-                            setState(() => _localBannerUrl = null),
+                        onPressed: () => setState(() => _localBannerUrl = null),
                         child: Text(
                           'Remover banner',
                           style: TextStyle(
@@ -359,8 +356,7 @@ class _EditCommunityProfileScreenState
                   if (_localIconUrl != null)
                     Center(
                       child: TextButton(
-                        onPressed: () =>
-                            setState(() => _localIconUrl = null),
+                        onPressed: () => setState(() => _localIconUrl = null),
                         child: Text(
                           'Remover avatar local',
                           style: TextStyle(

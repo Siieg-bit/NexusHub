@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
-import 'package:nexus_hub/core/l10n/locale_provider.dart';
 
 /// Tela de Dispositivos Conectados — lista sessões ativas e permite revogar.
 /// Baseado na tabela device_fingerprints do schema v5.
@@ -43,8 +42,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
   }
 
   Future<void> _revokeDevice(String deviceId) async {
-
-      final r = context.r;
+    final r = context.r;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -53,17 +51,23 @@ class _DevicesScreenState extends State<DevicesScreen> {
           borderRadius: BorderRadius.circular(r.s(16)),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
-        title: Text(s.revokeDevice, style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
-        content: Text('Isso encerrará a sessão neste dispositivo. '
-            'O usuário precisará fazer login novamente.', style: TextStyle(color: Colors.grey[500])),
+        title: Text('Revogar Dispositivo',
+            style: TextStyle(
+                color: context.textPrimary, fontWeight: FontWeight.w800)),
+        content: Text(
+            'Isso encerrará a sessão neste dispositivo. '
+            'O usuário precisará fazer login novamente.',
+            style: TextStyle(color: Colors.grey[500])),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: Text(s.cancel, style: TextStyle(color: Colors.grey[500]))),
+              child:
+                  Text('Cancelar', style: TextStyle(color: Colors.grey[500]))),
           GestureDetector(
             onTap: () => Navigator.pop(ctx, true),
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
                 color: AppTheme.errorColor,
                 borderRadius: BorderRadius.circular(r.s(20)),
@@ -75,7 +79,9 @@ class _DevicesScreenState extends State<DevicesScreen> {
                   ),
                 ],
               ),
-              child: const Text('Revogar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+              child: const Text('Revogar',
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w700)),
             ),
           ),
         ],
@@ -95,10 +101,13 @@ class _DevicesScreenState extends State<DevicesScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Dispositivo revogado', style: TextStyle(color: context.textPrimary)),
+            content: Text('Dispositivo revogado',
+                style: TextStyle(color: context.textPrimary)),
             backgroundColor: context.surfaceColor,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(12)), side: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(r.s(12)),
+                side: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
           ),
         );
       }
@@ -106,10 +115,12 @@ class _DevicesScreenState extends State<DevicesScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(s.genericError, style: const TextStyle(color: Colors.white)),
+            content: Text('Ocorreu um erro. Tente novamente.',
+                style: const TextStyle(color: Colors.white)),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(12))),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(r.s(12))),
           ),
         );
       }
@@ -117,8 +128,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
   }
 
   Future<void> _revokeAllOthers() async {
-
-      final r = context.r;
+    final r = context.r;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -127,17 +137,23 @@ class _DevicesScreenState extends State<DevicesScreen> {
           borderRadius: BorderRadius.circular(r.s(16)),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
-        title: Text(s.revokeAllOthers, style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
-        content: Text('Isso encerrará todas as sessões exceto a atual. '
-            'Todos os outros dispositivos precisarão fazer login novamente.', style: TextStyle(color: Colors.grey[500])),
+        title: Text('Revogar Todos os Outros',
+            style: TextStyle(
+                color: context.textPrimary, fontWeight: FontWeight.w800)),
+        content: Text(
+            'Isso encerrará todas as sessões exceto a atual. '
+            'Todos os outros dispositivos precisarão fazer login novamente.',
+            style: TextStyle(color: Colors.grey[500])),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: Text(s.cancel, style: TextStyle(color: Colors.grey[500]))),
+              child:
+                  Text('Cancelar', style: TextStyle(color: Colors.grey[500]))),
           GestureDetector(
             onTap: () => Navigator.pop(ctx, true),
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
                 color: AppTheme.errorColor,
                 borderRadius: BorderRadius.circular(r.s(20)),
@@ -150,7 +166,8 @@ class _DevicesScreenState extends State<DevicesScreen> {
                 ],
               ),
               child: const Text('Revogar Todos',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w700)),
             ),
           ),
         ],
@@ -165,10 +182,13 @@ class _DevicesScreenState extends State<DevicesScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(s.allSessionsRevoked, style: TextStyle(color: context.textPrimary)),
+            content: Text('Todas as outras sessões foram encerradas',
+                style: TextStyle(color: context.textPrimary)),
             backgroundColor: context.surfaceColor,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(12)), side: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(r.s(12)),
+                side: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
           ),
         );
       }
@@ -176,10 +196,12 @@ class _DevicesScreenState extends State<DevicesScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(s.genericError, style: const TextStyle(color: Colors.white)),
+            content: Text('Ocorreu um erro. Tente novamente.',
+                style: const TextStyle(color: Colors.white)),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(12))),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(r.s(12))),
           ),
         );
       }
@@ -211,27 +233,34 @@ class _DevicesScreenState extends State<DevicesScreen> {
         elevation: 0,
         iconTheme: IconThemeData(color: context.textPrimary),
         title: Text('Dispositivos Conectados',
-            style: TextStyle(fontWeight: FontWeight.w800, color: context.textPrimary)),
+            style: TextStyle(
+                fontWeight: FontWeight.w800, color: context.textPrimary)),
         actions: [
           if (_devices.length > 1)
             GestureDetector(
               onTap: _revokeAllOthers,
               child: Container(
                 margin: EdgeInsets.only(right: r.s(16)),
-                padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(6)),
+                padding:
+                    EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(6)),
                 decoration: BoxDecoration(
                   color: AppTheme.errorColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(r.s(20)),
-                  border: Border.all(color: AppTheme.errorColor.withValues(alpha: 0.3)),
+                  border: Border.all(
+                      color: AppTheme.errorColor.withValues(alpha: 0.3)),
                 ),
                 child: Text('Revogar Outros',
-                    style: TextStyle(color: AppTheme.errorColor, fontSize: r.fs(12), fontWeight: FontWeight.w700)),
+                    style: TextStyle(
+                        color: AppTheme.errorColor,
+                        fontSize: r.fs(12),
+                        fontWeight: FontWeight.w700)),
               ),
             ),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppTheme.primaryColor))
           : _devices.isEmpty
               ? Center(
                   child: Column(
@@ -267,7 +296,8 @@ class _DevicesScreenState extends State<DevicesScreen> {
                             Container(
                               padding: EdgeInsets.all(r.s(8)),
                               decoration: BoxDecoration(
-                                color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                                color: AppTheme.primaryColor
+                                    .withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(Icons.info_rounded,
@@ -298,7 +328,8 @@ class _DevicesScreenState extends State<DevicesScreen> {
                     final browser = device['browser'] as String? ?? '';
                     final ipAddress = device['ip_address'] as String? ?? '';
                     final lastSeen = device['last_seen_at'] != null
-                        ? DateTime.tryParse(device['last_seen_at'] as String? ?? '')
+                        ? DateTime.tryParse(
+                            device['last_seen_at'] as String? ?? '')
                         : null;
                     final isCurrentDevice =
                         device['is_current'] as bool? ?? false;
@@ -315,7 +346,8 @@ class _DevicesScreenState extends State<DevicesScreen> {
                         boxShadow: isCurrentDevice
                             ? [
                                 BoxShadow(
-                                  color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                                  color: AppTheme.primaryColor
+                                      .withValues(alpha: 0.1),
                                   blurRadius: 8,
                                   offset: const Offset(0, 2),
                                 )
@@ -331,8 +363,10 @@ class _DevicesScreenState extends State<DevicesScreen> {
                               gradient: isCurrentDevice
                                   ? LinearGradient(
                                       colors: [
-                                        AppTheme.primaryColor.withValues(alpha: 0.2),
-                                        AppTheme.accentColor.withValues(alpha: 0.2),
+                                        AppTheme.primaryColor
+                                            .withValues(alpha: 0.2),
+                                        AppTheme.accentColor
+                                            .withValues(alpha: 0.2),
                                       ],
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
@@ -368,7 +402,8 @@ class _DevicesScreenState extends State<DevicesScreen> {
                                       SizedBox(width: r.s(8)),
                                       Container(
                                         padding: EdgeInsets.symmetric(
-                                            horizontal: r.s(8), vertical: r.s(4)),
+                                            horizontal: r.s(8),
+                                            vertical: r.s(4)),
                                         decoration: BoxDecoration(
                                           gradient: const LinearGradient(
                                             colors: [
@@ -379,7 +414,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                                           borderRadius:
                                               BorderRadius.circular(r.s(20)),
                                         ),
-                                        child: Text(s.current,
+                                        child: Text('Atual',
                                             style: TextStyle(
                                                 color: Colors.white,
                                                 fontSize: r.fs(10),
@@ -409,7 +444,8 @@ class _DevicesScreenState extends State<DevicesScreen> {
                                   Text(
                                     'Último acesso: ${lastSeen.day.toString().padLeft(2, '0')}/${lastSeen.month.toString().padLeft(2, '0')}/${lastSeen.year} ${lastSeen.hour.toString().padLeft(2, '0')}:${lastSeen.minute.toString().padLeft(2, '0')}',
                                     style: TextStyle(
-                                        color: Colors.grey[600], fontSize: r.fs(11)),
+                                        color: Colors.grey[600],
+                                        fontSize: r.fs(11)),
                                   ),
                                 ],
                               ],
@@ -423,7 +459,8 @@ class _DevicesScreenState extends State<DevicesScreen> {
                               child: Container(
                                 padding: EdgeInsets.all(r.s(8)),
                                 decoration: BoxDecoration(
-                                  color: AppTheme.errorColor.withValues(alpha: 0.1),
+                                  color: AppTheme.errorColor
+                                      .withValues(alpha: 0.1),
                                   shape: BoxShape.circle,
                                 ),
                                 child: Icon(Icons.close_rounded,

@@ -73,7 +73,9 @@ class PostDraftModel {
   String get preview {
     if (title != null && title!.isNotEmpty) return title!;
     if (content != null && content!.isNotEmpty) {
-      return content!.length > 80 ? '${content!.substring(0, 80)}...' : content!;
+      return content!.length > 80
+          ? '${content!.substring(0, 80)}...'
+          : content!;
     }
     return 'Rascunho sem título';
   }

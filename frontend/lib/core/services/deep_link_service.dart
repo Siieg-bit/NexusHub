@@ -19,7 +19,7 @@ class DeepLinkService {
   DeepLinkService._();
 
   static GoRouter? _router;
-  static StreamSubscription<AuthState>? _authSubscription;
+  static StreamSubscription? _authSubscription;
 
   /// Inicializa o serviço com o router do app.
   static void init(GoRouter router) {
@@ -27,11 +27,10 @@ class DeepLinkService {
     _listenToAuthDeepLinks();
   }
 
-  /// Cancela todas as subscriptions para evitar memory leaks.
+  /// Cancela subscriptions para evitar memory leaks.
   static void dispose() {
     _authSubscription?.cancel();
     _authSubscription = null;
-    _router = null;
   }
 
   /// Escuta deep links de autenticação do Supabase (magic link, OAuth callback).

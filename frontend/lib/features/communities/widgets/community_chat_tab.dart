@@ -37,7 +37,8 @@ class _CommunityChatTabState extends State<CommunityChatTab> {
     try {
       // Buscar chats públicos com join no perfil do host
       final response = await SupabaseService.table('chat_threads')
-          .select('*, host:profiles!chat_threads_host_id_fkey(id, nickname, icon_url)')
+          .select(
+              '*, host:profiles!chat_threads_host_id_fkey(id, nickname, icon_url)')
           .eq('community_id', widget.communityId)
           .eq('type', 'public')
           .order('is_pinned', ascending: false)
@@ -71,13 +72,13 @@ class _CommunityChatTabState extends State<CommunityChatTab> {
     final isPinned = chat['is_pinned'] as bool? ?? false;
     try {
       await SupabaseService.table('chat_threads')
-          .update({'is_pinned': !isPinned})
-          .eq('id', chat['id'] as String);
+          .update({'is_pinned': !isPinned}).eq('id', chat['id'] as String);
       await _refresh();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(isPinned ? 'Chat desafixado.' : 'Chat fixado no topo.'),
+            content:
+                Text(isPinned ? 'Chat desafixado.' : 'Chat fixado no topo.'),
             backgroundColor: AppTheme.primaryColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -101,8 +102,7 @@ class _CommunityChatTabState extends State<CommunityChatTab> {
       final result = await SupabaseService.rpc('leave_public_chat', params: {
         'p_thread_id': chat['id'] as String,
       });
-      final wasDeleted =
-          (result as Map<String, dynamic>?)?['deleted'] == true;
+      final wasDeleted = (result as Map<String, dynamic>?)?['deleted'] == true;
       if (mounted) {
         setState(() => _chats.removeWhere((c) => c['id'] == chat['id']));
         ScaffoldMessenger.of(context).showSnackBar(
@@ -139,8 +139,7 @@ class _CommunityChatTabState extends State<CommunityChatTab> {
       ),
       builder: (ctx) => SafeArea(
         child: Padding(
-          padding: EdgeInsets.symmetric(
-              horizontal: r.s(16), vertical: r.s(12)),
+          padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -168,9 +167,7 @@ class _CommunityChatTabState extends State<CommunityChatTab> {
                 _menuTile(
                   context,
                   r,
-                  isPinned
-                      ? Icons.push_pin_outlined
-                      : Icons.push_pin_rounded,
+                  isPinned ? Icons.push_pin_outlined : Icons.push_pin_rounded,
                   isPinned ? 'Desafixar Chat' : 'Fixar Chat no Topo',
                   () {
                     Navigator.pop(ctx);
@@ -220,8 +217,7 @@ class _CommunityChatTabState extends State<CommunityChatTab> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancelar',
-                style: TextStyle(color: Colors.grey[500])),
+            child: Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
           ),
           TextButton(
             onPressed: () async {
@@ -247,8 +243,7 @@ class _CommunityChatTabState extends State<CommunityChatTab> {
     VoidCallback onTap, {
     bool isDestructive = false,
   }) {
-    final color =
-        isDestructive ? AppTheme.errorColor : Colors.grey[400]!;
+    final color = isDestructive ? AppTheme.errorColor : Colors.grey[400]!;
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -256,8 +251,7 @@ class _CommunityChatTabState extends State<CommunityChatTab> {
         padding: EdgeInsets.symmetric(vertical: r.s(12)),
         decoration: BoxDecoration(
           border: Border(
-            bottom: BorderSide(
-                color: Colors.white.withValues(alpha: 0.05)),
+            bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
           ),
         ),
         child: Row(
@@ -268,9 +262,8 @@ class _CommunityChatTabState extends State<CommunityChatTab> {
               child: Text(
                 label,
                 style: TextStyle(
-                  color: isDestructive
-                      ? AppTheme.errorColor
-                      : context.textPrimary,
+                  color:
+                      isDestructive ? AppTheme.errorColor : context.textPrimary,
                   fontSize: r.fs(14),
                 ),
               ),
@@ -396,8 +389,8 @@ class _ChatCard extends StatelessWidget {
     final host = chat['host'] as Map<String, dynamic>?;
     final hostAvatar = host?['icon_url'] as String?;
     final description = chat['description'] as String?;
-    final coverUrl = chat['background_url'] as String? ??
-        chat['icon_url'] as String?;
+    final coverUrl =
+        chat['background_url'] as String? ?? chat['icon_url'] as String?;
 
     return AminoAnimations.staggerItem(
       index: 0,
@@ -469,8 +462,7 @@ class _ChatCard extends StatelessWidget {
                           height: r.s(32),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(
-                                color: Colors.white, width: 1.5),
+                            border: Border.all(color: Colors.white, width: 1.5),
                           ),
                           child: ClipOval(
                             child: hostAvatar != null
@@ -492,10 +484,9 @@ class _ChatCard extends StatelessWidget {
                           child: Container(
                             padding: EdgeInsets.all(r.s(3)),
                             decoration: BoxDecoration(
-                              color: AppTheme.primaryColor
-                                  .withValues(alpha: 0.9),
-                              borderRadius:
-                                  BorderRadius.circular(r.s(6)),
+                              color:
+                                  AppTheme.primaryColor.withValues(alpha: 0.9),
+                              borderRadius: BorderRadius.circular(r.s(6)),
                             ),
                             child: Icon(Icons.push_pin_rounded,
                                 color: Colors.white, size: r.s(10)),
@@ -510,10 +501,9 @@ class _ChatCard extends StatelessWidget {
                             padding: EdgeInsets.symmetric(
                                 horizontal: r.s(7), vertical: r.s(3)),
                             decoration: BoxDecoration(
-                              color: AppTheme.primaryColor
-                                  .withValues(alpha: 0.85),
-                              borderRadius:
-                                  BorderRadius.circular(r.s(20)),
+                              color:
+                                  AppTheme.primaryColor.withValues(alpha: 0.85),
+                              borderRadius: BorderRadius.circular(r.s(20)),
                             ),
                             child: Text(
                               description,
@@ -562,16 +552,14 @@ class _ChatCard extends StatelessWidget {
                             Text(
                               '$membersCount',
                               style: TextStyle(
-                                  color: Colors.grey[500],
-                                  fontSize: r.fs(10)),
+                                  color: Colors.grey[500], fontSize: r.fs(10)),
                             ),
                             if (timeStr.isNotEmpty) ...[
                               const Spacer(),
                               Text(
                                 timeStr,
                                 style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: r.fs(9)),
+                                    color: Colors.grey[600], fontSize: r.fs(9)),
                               ),
                             ],
                           ],
@@ -611,8 +599,7 @@ class _ChatCard extends StatelessWidget {
   Widget _avatarFallback(Responsive r) {
     return Container(
       color: Colors.grey[800],
-      child: Icon(Icons.person_rounded,
-          color: Colors.grey[500], size: r.s(18)),
+      child: Icon(Icons.person_rounded, color: Colors.grey[500], size: r.s(18)),
     );
   }
 }

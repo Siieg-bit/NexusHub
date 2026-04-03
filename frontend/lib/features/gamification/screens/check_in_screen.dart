@@ -6,8 +6,6 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../core/utils/responsive.dart';
-import 'package:nexus_hub/core/l10n/locale_provider.dart';
-// TODO: Add 'final s = ref.watch(stringsProvider);' in build() methods
 
 /// Tela de check-in diário com gamificação — Estilo Amino Apps.
 class CheckInScreen extends ConsumerStatefulWidget {
@@ -102,8 +100,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
   }
 
   Future<void> _repairStreak() async {
-
-      final r = context.r;
+    final r = context.r;
     try {
       final result =
           await SupabaseService.rpc('repair_streak', params: {'p_cost': 50});
@@ -130,8 +127,8 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(
-                    data['message'] as String? ?? 'Moedas insuficientes'),
+                content:
+                    Text(data['message'] as String? ?? 'Moedas insuficientes'),
                 backgroundColor: AppTheme.errorColor,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
@@ -145,7 +142,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(s.genericError),
+            content: Text('Ocorreu um erro. Tente novamente.'),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -157,8 +154,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
   }
 
   Future<void> _doCheckIn() async {
-
-      final r = context.r;
+    final r = context.r;
     setState(() => _isLoading = true);
 
     try {
@@ -197,7 +193,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(s.genericError),
+            content: Text('Ocorreu um erro. Tente novamente.'),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -283,12 +279,12 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             // DIAS DA SEMANA — Estilo Amino
             // ================================================================
             Container(
-              padding: EdgeInsets.symmetric(vertical: r.s(16), horizontal: r.s(12)),
+              padding:
+                  EdgeInsets.symmetric(vertical: r.s(16), horizontal: r.s(12)),
               decoration: BoxDecoration(
                 color: context.surfaceColor,
                 borderRadius: BorderRadius.circular(r.s(16)),
-                border:
-                    Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -371,14 +367,14 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [
-                        AppTheme.aminoOrange,
+                        Color(0xFFFF9800),
                         Color(0xFFFF5722),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(r.s(16)),
                     boxShadow: [
                       BoxShadow(
-                        color: const AppTheme.aminoOrange.withValues(alpha: 0.3),
+                        color: const Color(0xFFFF9800).withValues(alpha: 0.3),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -434,8 +430,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
               decoration: BoxDecoration(
                 color: context.surfaceColor,
                 borderRadius: BorderRadius.circular(r.s(16)),
-                border:
-                    Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -447,11 +442,11 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                   SizedBox(height: r.s(10)),
                   _InfoRow(
                       icon: Icons.calendar_today_rounded,
-                      text: 'Faça check-in todos os dias para manter sua sequência'),
+                      text:
+                          'Faça check-in todos os dias para manter sua sequência'),
                   _InfoRow(
                       icon: Icons.trending_up_rounded,
-                      text:
-                          'Sequência maior = mais XP e moedas'),
+                      text: 'Sequência maior = mais XP e moedas'),
                   _InfoRow(
                       icon: Icons.star_rounded,
                       text: '7 dias consecutivos = bônus especial!'),
@@ -468,7 +463,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
   }
 
   Widget _buildMainIcon(bool completed) {
-      final r = context.r;
+    final r = context.r;
     return Container(
       width: r.s(140),
       height: r.s(140),
@@ -477,15 +472,13 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
         gradient: LinearGradient(
           colors: completed
               ? [AppTheme.primaryColor, AppTheme.accentColor]
-              : [const AppTheme.aminoOrange, const Color(0xFFFF5722)],
+              : [const Color(0xFFFF9800), const Color(0xFFFF5722)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         boxShadow: [
           BoxShadow(
-            color: (completed
-                    ? AppTheme.primaryColor
-                    : const AppTheme.aminoOrange)
+            color: (completed ? AppTheme.primaryColor : const Color(0xFFFF9800))
                 .withValues(alpha: 0.4),
             blurRadius: 24,
             spreadRadius: 4,
@@ -503,7 +496,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
   }
 
   Widget _buildLuckyDrawSection() {
-      final r = context.r;
+    final r = context.r;
     return Container(
       padding: EdgeInsets.all(r.s(16)),
       decoration: BoxDecoration(
@@ -514,8 +507,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
           ],
         ),
         borderRadius: BorderRadius.circular(r.s(16)),
-        border:
-            Border.all(color: AppTheme.warningColor.withValues(alpha: 0.2)),
+        border: Border.all(color: AppTheme.warningColor.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
@@ -536,8 +528,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
           if (_luckyDrawUsed && _luckyDrawPrize > 0)
             Text('Você ganhou $_luckyDrawPrize moedas extras!',
                 style: const TextStyle(
-                    color: AppTheme.primaryColor,
-                    fontWeight: FontWeight.w700))
+                    color: AppTheme.primaryColor, fontWeight: FontWeight.w700))
           else if (_luckyDrawUsed)
             Text('Mais sorte na próxima vez!',
                 style: TextStyle(color: Colors.grey[500]))
@@ -548,17 +539,16 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             GestureDetector(
               onTap: _doLuckyDraw,
               child: Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: r.s(24), vertical: r.s(10)),
+                padding: EdgeInsets.symmetric(
+                    horizontal: r.s(24), vertical: r.s(10)),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [AppTheme.coinGold, Color(0xFFFFA500)],
+                    colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
                   ),
                   borderRadius: BorderRadius.circular(r.s(12)),
                   boxShadow: [
                     BoxShadow(
-                      color:
-                          const AppTheme.coinGold.withValues(alpha: 0.3),
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -586,14 +576,13 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
   }
 
   Widget _buildStreakRepairSection() {
-      final r = context.r;
+    final r = context.r;
     return Container(
       padding: EdgeInsets.all(r.s(16)),
       decoration: BoxDecoration(
         color: AppTheme.errorColor.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(r.s(16)),
-        border:
-            Border.all(color: AppTheme.errorColor.withValues(alpha: 0.15)),
+        border: Border.all(color: AppTheme.errorColor.withValues(alpha: 0.15)),
       ),
       child: Column(
         children: [
@@ -691,12 +680,11 @@ class _DayCircle extends StatelessWidget {
         color: active
             ? null
             : isToday
-                ? const AppTheme.aminoOrange.withValues(alpha: 0.2)
+                ? const Color(0xFFFF9800).withValues(alpha: 0.2)
                 : context.surfaceColor,
         border: isToday && !active
             ? Border.all(
-                color: const AppTheme.aminoOrange.withValues(alpha: 0.5),
-                width: 2)
+                color: const Color(0xFFFF9800).withValues(alpha: 0.5), width: 2)
             : null,
         boxShadow: active
             ? [
@@ -712,9 +700,7 @@ class _DayCircle extends StatelessWidget {
             ? Icon(Icons.check_rounded, color: Colors.white, size: r.s(18))
             : Text(day,
                 style: TextStyle(
-                    color: isToday
-                        ? const AppTheme.aminoOrange
-                        : Colors.grey[600],
+                    color: isToday ? const Color(0xFFFF9800) : Colors.grey[600],
                     fontWeight: FontWeight.w700,
                     fontSize: r.fs(12))),
       ),

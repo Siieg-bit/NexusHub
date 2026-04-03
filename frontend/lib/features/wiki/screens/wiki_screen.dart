@@ -5,7 +5,6 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
-import 'package:nexus_hub/core/l10n/locale_provider.dart';
 
 // ============================================================================
 // WIKI LIST SCREEN
@@ -60,7 +59,8 @@ class _WikiListScreenState extends State<WikiListScreen> {
   List<Map<String, dynamic>> get _filteredEntries {
     var list = _entries;
     if (_selectedCategoryId != null) {
-      list = list.where((e) => e['category_id'] == _selectedCategoryId).toList();
+      list =
+          list.where((e) => e['category_id'] == _selectedCategoryId).toList();
     }
     final search = _searchController.text.trim().toLowerCase();
     if (search.isNotEmpty) {
@@ -98,7 +98,8 @@ class _WikiListScreenState extends State<WikiListScreen> {
                 context.push('/community/${widget.communityId}/wiki/review'),
             child: Container(
               margin: EdgeInsets.symmetric(vertical: r.s(8)),
-              padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(8)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(8)),
               decoration: BoxDecoration(
                 color: AppTheme.warningColor.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(r.s(20)),
@@ -112,8 +113,10 @@ class _WikiListScreenState extends State<WikiListScreen> {
             onTap: () =>
                 context.push('/community/${widget.communityId}/wiki/create'),
             child: Container(
-              margin: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
-              padding: EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(8)),
+              margin:
+                  EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(8)),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [AppTheme.primaryColor, AppTheme.accentColor],
@@ -149,84 +152,88 @@ class _WikiListScreenState extends State<WikiListScreen> {
                 if (!mounted) return;
               },
               child: Column(
-              children: [
-                Padding(
-                  padding: EdgeInsets.all(r.s(16)),
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: (_) => setState(() {}),
-                    style: TextStyle(color: context.textPrimary),
-                    decoration: InputDecoration(
-                      hintText: 'Buscar no catálogo...',
-                      hintStyle: TextStyle(color: context.textSecondary),
-                      prefixIcon: Icon(Icons.search_rounded, size: r.s(20), color: context.textSecondary),
-                      filled: true,
-                      fillColor: context.surfaceColor,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(r.s(16)),
-                        borderSide: BorderSide.none,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.all(r.s(16)),
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: (_) => setState(() {}),
+                      style: TextStyle(color: context.textPrimary),
+                      decoration: InputDecoration(
+                        hintText: 'Buscar no catálogo...',
+                        hintStyle: TextStyle(color: context.textSecondary),
+                        prefixIcon: Icon(Icons.search_rounded,
+                            size: r.s(20), color: context.textSecondary),
+                        filled: true,
+                        fillColor: context.surfaceColor,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(r.s(16)),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                            horizontal: r.s(16), vertical: r.s(10)),
                       ),
-                      contentPadding: EdgeInsets.symmetric(
-                          horizontal: r.s(16), vertical: r.s(10)),
                     ),
                   ),
-                ),
-                if (_categoryList.isNotEmpty)
-                  SizedBox(
-                    height: r.s(40),
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      padding: EdgeInsets.symmetric(horizontal: r.s(16)),
-                      children: [
-                        _CategoryChip(
-                          label: 'Todos',
-                          isSelected: _selectedCategoryId == null,
-                          onTap: () => setState(() => _selectedCategoryId = null),
-                        ),
-                        ..._categoryList.map((cat) => _CategoryChip(
-                              label: cat['name'] as String? ?? '',
-                              isSelected: _selectedCategoryId == cat['id'],
-                              onTap: () =>
-                                  setState(() => _selectedCategoryId = cat['id'] as String?),
-                            )),
-                      ],
-                    ),
-                  ),
-                SizedBox(height: r.s(8)),
-                Expanded(
-                  child: _filteredEntries.isEmpty
-                      ? ListView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          children: [
-                            SizedBox(height: r.s(100)),
-                            Center(
-                              child: Text('Nenhuma entrada encontrada',
-                                  style: TextStyle(color: context.textSecondary)),
-                            ),
-                          ],
-                        )
-                      : GridView.builder(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          padding: EdgeInsets.all(r.s(16)),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            mainAxisSpacing: 12,
-                            crossAxisSpacing: 12,
-                            childAspectRatio: 0.85,
+                  if (_categoryList.isNotEmpty)
+                    SizedBox(
+                      height: r.s(40),
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        padding: EdgeInsets.symmetric(horizontal: r.s(16)),
+                        children: [
+                          _CategoryChip(
+                            label: 'Todos',
+                            isSelected: _selectedCategoryId == null,
+                            onTap: () =>
+                                setState(() => _selectedCategoryId = null),
                           ),
-                          itemCount: _filteredEntries.length,
-                          itemBuilder: (context, index) {
-                            final entry = _filteredEntries[index];
-                            return _WikiEntryCard(
-                              entry: entry,
-                              onTap: () => context.push('/wiki/${entry['id']}'),
-                            );
-                          },
-                        ),
-                ),
-              ],
-            ),
+                          ..._categoryList.map((cat) => _CategoryChip(
+                                label: cat['name'] as String? ?? '',
+                                isSelected: _selectedCategoryId == cat['id'],
+                                onTap: () => setState(() =>
+                                    _selectedCategoryId = cat['id'] as String?),
+                              )),
+                        ],
+                      ),
+                    ),
+                  SizedBox(height: r.s(8)),
+                  Expanded(
+                    child: _filteredEntries.isEmpty
+                        ? ListView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            children: [
+                              SizedBox(height: r.s(100)),
+                              Center(
+                                child: Text('Nenhuma entrada encontrada',
+                                    style: TextStyle(
+                                        color: context.textSecondary)),
+                              ),
+                            ],
+                          )
+                        : GridView.builder(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            padding: EdgeInsets.all(r.s(16)),
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 12,
+                              crossAxisSpacing: 12,
+                              childAspectRatio: 0.85,
+                            ),
+                            itemCount: _filteredEntries.length,
+                            itemBuilder: (context, index) {
+                              final entry = _filteredEntries[index];
+                              return _WikiEntryCard(
+                                entry: entry,
+                                onTap: () =>
+                                    context.push('/wiki/${entry['id']}'),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
             ),
     );
   }
@@ -458,7 +465,8 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
             .order('created_at', ascending: false)
             .limit(20);
         if (!mounted) return;
-        _whatILikeList = List<Map<String, dynamic>>.from(likesRes as List? ?? []);
+        _whatILikeList =
+            List<Map<String, dynamic>>.from(likesRes as List? ?? []);
       } catch (e) {
         debugPrint('[wiki_screen] Erro: $e');
       }
@@ -470,8 +478,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
   }
 
   Future<void> _togglePinToProfile() async {
-
-      final r = context.r;
+    final r = context.r;
     final userId = SupabaseService.currentUserId;
     if (userId == null) return;
     try {
@@ -480,9 +487,8 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
         'p_user_id': userId,
         'p_wiki_id': widget.wikiId,
       });
-      final isNowBookmarked = result is Map
-          ? (result['bookmarked'] == true)
-          : !_isPinnedToProfile;
+      final isNowBookmarked =
+          result is Map ? (result['bookmarked'] == true) : !_isPinnedToProfile;
       if (mounted) {
         setState(() => _isPinnedToProfile = isNowBookmarked);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -490,11 +496,11 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
             content: Text(isNowBookmarked
                 ? 'Wiki fixada no seu perfil!'
                 : 'Wiki removida do perfil'),
-            backgroundColor: isNowBookmarked
-                ? AppTheme.primaryColor
-                : context.surfaceColor,
+            backgroundColor:
+                isNowBookmarked ? AppTheme.primaryColor : context.surfaceColor,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(12))),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(r.s(12))),
           ),
         );
       }
@@ -566,14 +572,14 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
       );
     }
 
-    final title = _entry?['title'] as String? ?? 'Sem título';
-    final content = _entry?['content'] as String? ?? '';
-    final coverUrl = _entry?['cover_image_url'] as String?;
+    final title = _entry!['title'] as String? ?? 'Sem título';
+    final content = _entry!['content'] as String? ?? '';
+    final coverUrl = _entry!['cover_image_url'] as String?;
     // Categoria vem do join wiki_categories(id, name)
-    final catData = _entry?['wiki_categories'] as Map<String, dynamic>?;
+    final catData = _entry!['wiki_categories'] as Map<String, dynamic>?;
     final category = catData?['name'] as String?;
-    final author = _entry?['profiles'] as Map<String, dynamic>?;
-    final infoboxData = _entry?['infobox'] as Map<String, dynamic>?;
+    final author = _entry!['profiles'] as Map<String, dynamic>?;
+    final infoboxData = _entry!['infobox'] as Map<String, dynamic>?;
 
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -654,8 +660,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                         color: context.surfaceColor,
                         borderRadius: BorderRadius.circular(r.s(16)),
                         border: Border.all(
-                            color:
-                                Colors.white.withValues(alpha: 0.05)),
+                            color: Colors.white.withValues(alpha: 0.05)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -667,8 +672,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                                   color: context.textPrimary)),
                           SizedBox(height: r.s(8)),
                           ...infoboxData.entries.map((e) => Padding(
-                                padding:
-                                    EdgeInsets.symmetric(vertical: r.s(6)),
+                                padding: EdgeInsets.symmetric(vertical: r.s(6)),
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -748,7 +752,8 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                           shadows: star <= _userRating
                               ? [
                                   BoxShadow(
-                                    color: AppTheme.warningColor.withValues(alpha: 0.6),
+                                    color: AppTheme.warningColor
+                                        .withValues(alpha: 0.6),
                                     blurRadius: 8,
                                     spreadRadius: 1,
                                     offset: const Offset(0, 2),
@@ -804,14 +809,18 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                           padding: EdgeInsets.all(r.s(12)),
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                              colors: [
+                                AppTheme.primaryColor,
+                                AppTheme.accentColor
+                              ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             borderRadius: BorderRadius.circular(r.s(24)),
                             boxShadow: [
                               BoxShadow(
-                                color: AppTheme.primaryColor.withValues(alpha: 0.5),
+                                color: AppTheme.primaryColor
+                                    .withValues(alpha: 0.5),
                                 blurRadius: 8,
                                 spreadRadius: 1,
                                 offset: const Offset(0, 2),
@@ -833,10 +842,12 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                       decoration: BoxDecoration(
                         color: context.surfaceColor,
                         borderRadius: BorderRadius.circular(r.s(16)),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.05)),
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.primaryColor.withValues(alpha: 0.05),
+                            color:
+                                AppTheme.primaryColor.withValues(alpha: 0.05),
                             blurRadius: 6,
                             spreadRadius: 1,
                             offset: const Offset(0, 2),
@@ -867,7 +878,8 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                                 Text(
                                   item['content'] as String? ?? '',
                                   style: TextStyle(
-                                      fontSize: r.fs(14), color: context.textPrimary),
+                                      fontSize: r.fs(14),
+                                      color: context.textPrimary),
                                 ),
                               ],
                             ),
@@ -933,8 +945,7 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
   }
 
   Future<void> _submit() async {
-
-      final r = context.r;
+    final r = context.r;
     if (_titleController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Título é obrigatório')),
@@ -974,14 +985,15 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
             content: const Text('Entrada enviada para revisão dos curadores!'),
             backgroundColor: AppTheme.primaryColor,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(12))),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(r.s(12))),
           ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(s.genericError)),
+          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
         );
       }
     } finally {
@@ -1009,7 +1021,7 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
         backgroundColor: context.scaffoldBg,
         elevation: 0,
         iconTheme: IconThemeData(color: context.textPrimary),
-        title: Text(s.newWikiEntry,
+        title: Text('Nova Entrada Wiki',
             style: TextStyle(
                 fontWeight: FontWeight.w800,
                 color: context.textPrimary,
@@ -1018,8 +1030,10 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
           GestureDetector(
             onTap: _isSubmitting ? null : _submit,
             child: Container(
-              margin: EdgeInsets.only(right: r.s(12), top: r.s(8), bottom: r.s(8)),
-              padding: EdgeInsets.symmetric(horizontal: r.s(18), vertical: r.s(10)),
+              margin:
+                  EdgeInsets.only(right: r.s(12), top: r.s(8), bottom: r.s(8)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(18), vertical: r.s(10)),
               decoration: BoxDecoration(
                 gradient: _isSubmitting
                     ? LinearGradient(
@@ -1052,7 +1066,7 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: context.textPrimary),
                     )
-                  : Text(s.publish,
+                  : Text('Publicar',
                       style: TextStyle(
                           color: context.textPrimary,
                           fontWeight: FontWeight.w700,
@@ -1080,8 +1094,8 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
                   borderRadius: BorderRadius.circular(r.s(16)),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
+                contentPadding: EdgeInsets.symmetric(
+                    horizontal: r.s(16), vertical: r.s(12)),
               ),
             ),
             SizedBox(height: r.s(16)),
@@ -1107,7 +1121,8 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
                     child: DropdownButtonFormField<String>(
                       value: _selectedCategoryId,
                       dropdownColor: context.surfaceColor,
-                      style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+                      style: TextStyle(
+                          color: context.textPrimary, fontSize: r.fs(14)),
                       decoration: InputDecoration(
                         hintText: _categories.isEmpty
                             ? 'Nenhuma categoria dispon\u00edvel'
@@ -1127,7 +1142,8 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
                           ),
                         );
                       }).toList(),
-                      onChanged: (val) => setState(() => _selectedCategoryId = val),
+                      onChanged: (val) =>
+                          setState(() => _selectedCategoryId = val),
                     ),
                   ),
             SizedBox(height: r.s(16)),
@@ -1173,8 +1189,8 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
                     setState(() => _infoboxFields.add(_InfoboxField()));
                   },
                   child: Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(8)),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: r.s(14), vertical: r.s(8)),
                     decoration: BoxDecoration(
                       color: AppTheme.primaryColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(r.s(24)),

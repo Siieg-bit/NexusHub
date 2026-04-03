@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
-import 'package:nexus_hub/core/l10n/locale_provider.dart';
-import 'package:nexus_hub/config/app_theme.dart';
 
 /// Carteira / Minha Carteira — Estilo Amino original.
 /// Header azul celeste brilhante com moeda dourada, corpo claro/branco.
@@ -145,7 +143,7 @@ class _WalletScreenState extends State<WalletScreen> {
                                   shape: BoxShape.circle,
                                   gradient: const LinearGradient(
                                     colors: [
-                                      AppTheme.coinGold,
+                                      Color(0xFFFFD700),
                                       Color(0xFFFFA500),
                                     ],
                                     begin: Alignment.topLeft,
@@ -153,7 +151,7 @@ class _WalletScreenState extends State<WalletScreen> {
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const AppTheme.coinGold
+                                      color: const Color(0xFFFFD700)
                                           .withValues(alpha: 0.4),
                                       blurRadius: 16,
                                       spreadRadius: 2,
@@ -209,7 +207,7 @@ class _WalletScreenState extends State<WalletScreen> {
                         // Seção: Assinaturas
                         _WalletMenuTile(
                           icon: Icons.card_membership_rounded,
-                          iconColor: const AppTheme.primaryColor,
+                          iconColor: const Color(0xFF4CAF50),
                           title: 'Assinaturas',
                           subtitle: 'Gerencie seu Amino+',
                           onTap: () => context.push('/store'),
@@ -218,7 +216,7 @@ class _WalletScreenState extends State<WalletScreen> {
                         // Seção: Histórico
                         _WalletMenuTile(
                           icon: Icons.history_rounded,
-                          iconColor: const AppTheme.infoColor,
+                          iconColor: const Color(0xFF2196F3),
                           title: 'Histórico',
                           subtitle: '${_transactions.length} transações',
                           onTap: () => _showHistory(),
@@ -227,7 +225,7 @@ class _WalletScreenState extends State<WalletScreen> {
                         // Seção: Transferir
                         _WalletMenuTile(
                           icon: Icons.send_rounded,
-                          iconColor: const AppTheme.badgeAge,
+                          iconColor: const Color(0xFF9C27B0),
                           title: 'Transferir Moedas',
                           subtitle: 'Envie moedas para um amigo',
                           onTap: () => _showTransferDialog(),
@@ -236,7 +234,7 @@ class _WalletScreenState extends State<WalletScreen> {
                         // Seção: Props
                         _WalletMenuTile(
                           icon: Icons.volunteer_activism_rounded,
-                          iconColor: const AppTheme.fabPink,
+                          iconColor: const Color(0xFFE91E63),
                           title: 'Enviar Props',
                           subtitle: 'Reconheça um membro',
                           onTap: () => _showPropsDialog(),
@@ -274,7 +272,7 @@ class _WalletScreenState extends State<WalletScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(Icons.star_rounded,
-                                      color: AppTheme.coinGold, size: r.s(18)),
+                                      color: Color(0xFFFFD700), size: r.s(18)),
                                   SizedBox(width: r.s(8)),
                                   Text(
                                     'Visite a loja',
@@ -286,7 +284,7 @@ class _WalletScreenState extends State<WalletScreen> {
                                   ),
                                   SizedBox(width: r.s(8)),
                                   Icon(Icons.star_rounded,
-                                      color: AppTheme.coinGold, size: r.s(18)),
+                                      color: Color(0xFFFFD700), size: r.s(18)),
                                 ],
                               ),
                             ),
@@ -307,7 +305,7 @@ class _WalletScreenState extends State<WalletScreen> {
   // HISTÓRICO — Modal bottom sheet com transações
   // ===========================================================================
   void _showHistory() {
-      final r = context.r;
+    final r = context.r;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -357,8 +355,7 @@ class _WalletScreenState extends State<WalletScreen> {
                         final tx = _transactions[index];
                         final amount = tx['amount'] as int? ?? 0;
                         final type = tx['type'] as String? ?? '';
-                        final desc =
-                            tx['description'] as String? ?? type;
+                        final desc = tx['description'] as String? ?? type;
                         final isPositive = amount >= 0;
                         final createdAt = tx['created_at'] != null
                             ? DateTime.parse(tx['created_at'] as String? ?? '')
@@ -371,8 +368,8 @@ class _WalletScreenState extends State<WalletScreen> {
                             height: r.s(36),
                             decoration: BoxDecoration(
                               color: (isPositive
-                                      ? const AppTheme.primaryColor
-                                      : const AppTheme.errorColor)
+                                      ? const Color(0xFF4CAF50)
+                                      : const Color(0xFFE53935))
                                   .withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(r.s(10)),
                             ),
@@ -381,8 +378,8 @@ class _WalletScreenState extends State<WalletScreen> {
                                   ? Icons.arrow_downward_rounded
                                   : Icons.arrow_upward_rounded,
                               color: isPositive
-                                  ? const AppTheme.primaryColor
-                                  : const AppTheme.errorColor,
+                                  ? const Color(0xFF4CAF50)
+                                  : const Color(0xFFE53935),
                               size: r.s(18),
                             ),
                           ),
@@ -399,8 +396,8 @@ class _WalletScreenState extends State<WalletScreen> {
                             '${isPositive ? '+' : ''}$amount',
                             style: TextStyle(
                               color: isPositive
-                                  ? const AppTheme.primaryColor
-                                  : const AppTheme.errorColor,
+                                  ? const Color(0xFF4CAF50)
+                                  : const Color(0xFFE53935),
                               fontWeight: FontWeight.w800,
                               fontSize: r.fs(14),
                             ),
@@ -419,7 +416,7 @@ class _WalletScreenState extends State<WalletScreen> {
   // TRANSFERIR — Dialog
   // ===========================================================================
   void _showTransferDialog() {
-      final r = context.r;
+    final r = context.r;
     final userIdCtrl = TextEditingController();
     final amountCtrl = TextEditingController();
 
@@ -442,10 +439,11 @@ class _WalletScreenState extends State<WalletScreen> {
               decoration: InputDecoration(
                 labelText: 'Amino ID do destinatário',
                 labelStyle: TextStyle(color: Colors.grey[500]),
-                prefixIcon: const Icon(Icons.person_rounded,
-                    color: Color(0xFF00AAFF)),
+                prefixIcon:
+                    const Icon(Icons.person_rounded, color: Color(0xFF00AAFF)),
                 enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: (Colors.grey[300] ?? Colors.grey)),
+                  borderSide:
+                      BorderSide(color: (Colors.grey[300] ?? Colors.grey)),
                 ),
                 focusedBorder: const UnderlineInputBorder(
                   borderSide: BorderSide(color: Color(0xFF00AAFF)),
@@ -461,12 +459,13 @@ class _WalletScreenState extends State<WalletScreen> {
                 labelText: 'Quantidade',
                 labelStyle: TextStyle(color: Colors.grey[500]),
                 prefixIcon: const Icon(Icons.monetization_on_rounded,
-                    color: AppTheme.aminoOrange),
+                    color: Color(0xFFFF9800)),
                 enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: (Colors.grey[300] ?? Colors.grey)),
+                  borderSide:
+                      BorderSide(color: (Colors.grey[300] ?? Colors.grey)),
                 ),
                 focusedBorder: const UnderlineInputBorder(
-                  borderSide: BorderSide(color: AppTheme.aminoOrange),
+                  borderSide: BorderSide(color: Color(0xFFFF9800)),
                 ),
               ),
             ),
@@ -478,8 +477,8 @@ class _WalletScreenState extends State<WalletScreen> {
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: Text(s.cancel,
-                  style: TextStyle(color: Colors.grey[500]))),
+              child:
+                  Text('Cancelar', style: TextStyle(color: Colors.grey[500]))),
           GestureDetector(
             onTap: () async {
               final amount = int.tryParse(amountCtrl.text) ?? 0;
@@ -493,7 +492,7 @@ class _WalletScreenState extends State<WalletScreen> {
               }
               if (amount > _coins) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text(s.insufficientBalance)),
+                  const SnackBar(content: Text('Saldo insuficiente')),
                 );
                 return;
               }
@@ -513,7 +512,8 @@ class _WalletScreenState extends State<WalletScreen> {
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(s.genericError)),
+                    SnackBar(
+                        content: Text('Ocorreu um erro. Tente novamente.')),
                   );
                 }
               }
@@ -539,7 +539,7 @@ class _WalletScreenState extends State<WalletScreen> {
   // PROPS — Dialog
   // ===========================================================================
   void _showPropsDialog() {
-      final r = context.r;
+    final r = context.r;
     final userIdCtrl = TextEditingController();
     int selectedAmount = 10;
 
@@ -553,13 +553,11 @@ class _WalletScreenState extends State<WalletScreen> {
           ),
           title: Row(
             children: [
-              Icon(Icons.volunteer_activism_rounded,
-                  color: AppTheme.fabPink),
+              Icon(Icons.volunteer_activism_rounded, color: Color(0xFFE91E63)),
               SizedBox(width: r.s(8)),
               Text('Enviar Props',
                   style: TextStyle(
-                      color: Color(0xFF333333),
-                      fontWeight: FontWeight.w800)),
+                      color: Color(0xFF333333), fontWeight: FontWeight.w800)),
             ],
           ),
           content: Column(
@@ -574,7 +572,8 @@ class _WalletScreenState extends State<WalletScreen> {
                   prefixIcon: const Icon(Icons.person_rounded,
                       color: Color(0xFF00AAFF)),
                   enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: (Colors.grey[300] ?? Colors.grey)),
+                    borderSide:
+                        BorderSide(color: (Colors.grey[300] ?? Colors.grey)),
                   ),
                   focusedBorder: const UnderlineInputBorder(
                     borderSide: BorderSide(color: Color(0xFF00AAFF)),
@@ -584,8 +583,7 @@ class _WalletScreenState extends State<WalletScreen> {
               SizedBox(height: r.s(16)),
               const Text('Quantidade de Props',
                   style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF333333))),
+                      fontWeight: FontWeight.w700, color: Color(0xFF333333))),
               SizedBox(height: r.s(8)),
               Wrap(
                 spacing: 8,
@@ -598,7 +596,7 @@ class _WalletScreenState extends State<WalletScreen> {
                                 ? Colors.white
                                 : const Color(0xFF333333))),
                     selected: isSelected,
-                    selectedColor: const AppTheme.fabPink,
+                    selectedColor: const Color(0xFFE91E63),
                     backgroundColor: Colors.grey[100],
                     side: BorderSide(
                         color: isSelected
@@ -612,13 +610,14 @@ class _WalletScreenState extends State<WalletScreen> {
               ),
               SizedBox(height: r.s(8)),
               Text('Custo: $selectedAmount coins',
-                  style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
+                  style:
+                      TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
             ],
           ),
           actions: [
             TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: Text(s.cancel,
+                child: Text('Cancelar',
                     style: TextStyle(color: Colors.grey[500]))),
             GestureDetector(
               onTap: () async {
@@ -627,7 +626,7 @@ class _WalletScreenState extends State<WalletScreen> {
                 if (targetAminoId.isEmpty) return;
                 if (selectedAmount > _coins) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text(s.insufficientBalance)),
+                    const SnackBar(content: Text('Saldo insuficiente')),
                   );
                   return;
                 }
@@ -642,14 +641,14 @@ class _WalletScreenState extends State<WalletScreen> {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                          content:
-                              Text('$selectedAmount props enviados!')),
+                          content: Text('$selectedAmount props enviados!')),
                     );
                   }
                 } catch (e) {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(s.genericError)),
+                      SnackBar(
+                          content: Text('Ocorreu um erro. Tente novamente.')),
                     );
                   }
                 }
@@ -659,11 +658,11 @@ class _WalletScreenState extends State<WalletScreen> {
                     EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [AppTheme.fabPink, Color(0xFFC2185B)],
+                    colors: [Color(0xFFE91E63), Color(0xFFC2185B)],
                   ),
                   borderRadius: BorderRadius.circular(r.s(20)),
                 ),
-                child: const Text(s.sendMessage,
+                child: const Text('Enviar',
                     style: TextStyle(
                         color: Colors.white, fontWeight: FontWeight.w700)),
               ),
@@ -740,7 +739,8 @@ class _WalletMenuTile extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
+                    style:
+                        TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
                   ),
                 ],
               ),

@@ -95,15 +95,16 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
           SnackBar(
             content: Row(
               children: [
-                Icon(Icons.check_circle_rounded, color: Colors.white, size: r.s(18)),
+                Icon(Icons.check_circle_rounded,
+                    color: Colors.white, size: r.s(18)),
                 SizedBox(width: r.s(8)),
                 Text('Guidelines salvas com sucesso!'),
               ],
             ),
             backgroundColor: AppTheme.successColor,
             behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(12))),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(r.s(12))),
           ),
         );
         Navigator.pop(context, true);
@@ -214,7 +215,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
   }
 
   Widget _buildEditorTab() {
-      final r = context.r;
+    final r = context.r;
     return Column(
       children: [
         // Templates rápidos
@@ -231,8 +232,8 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
                 onTap: () => _insertTemplate(section),
                 child: Container(
                   margin: EdgeInsets.only(right: r.s(8)),
-                  padding:
-                      EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(6)),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: r.s(12), vertical: r.s(6)),
                   decoration: BoxDecoration(
                     color: context.surfaceColor,
                     borderRadius: BorderRadius.circular(r.s(20)),
@@ -303,7 +304,8 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
 
         // Contagem de caracteres
         Padding(
-          padding: EdgeInsets.only(bottom: r.s(16), left: r.s(16), right: r.s(16)),
+          padding:
+              EdgeInsets.only(bottom: r.s(16), left: r.s(16), right: r.s(16)),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -330,14 +332,15 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
   }
 
   Widget _buildPreviewTab() {
-      final r = context.r;
+    final r = context.r;
     final text = _guidelinesController.text;
     if (text.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.description_rounded, size: r.s(64), color: Colors.grey[600]),
+            Icon(Icons.description_rounded,
+                size: r.s(64), color: Colors.grey[600]),
             SizedBox(height: r.s(16)),
             Text(
               'Nenhum conteúdo para visualizar',
@@ -436,7 +439,8 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
           final match = RegExp(r'^(\d+)\.\s(.*)').firstMatch(line);
           if (match != null) {
             return Padding(
-              padding: EdgeInsets.only(left: r.s(8), top: r.s(4), bottom: r.s(4)),
+              padding:
+                  EdgeInsets.only(left: r.s(8), top: r.s(4), bottom: r.s(4)),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

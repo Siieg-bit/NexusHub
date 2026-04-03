@@ -65,7 +65,8 @@ class PaginationService {
     int pageSize = 50,
   }) async {
     final res = await SupabaseService.table('chat_messages')
-        .select('*, profiles!chat_messages_author_id_fkey(id, nickname, icon_url)')
+        .select(
+            '*, profiles!chat_messages_author_id_fkey(id, nickname, icon_url)')
         .eq('thread_id', threadId)
         .order('created_at', ascending: false)
         .range(page * pageSize, (page + 1) * pageSize - 1);
@@ -123,7 +124,8 @@ class PaginationService {
     String? status,
   }) async {
     var query = SupabaseService.table('wiki_entries')
-        .select('*, profiles!wiki_entries_author_id_fkey(id, nickname, icon_url)')
+        .select(
+            '*, profiles!wiki_entries_author_id_fkey(id, nickname, icon_url)')
         .eq('community_id', communityId);
 
     if (category != null && category.isNotEmpty) {

@@ -15,7 +15,8 @@ import '../widgets/community_create_menu.dart';
 // Provider: chats do usuário filtrados por comunidade
 // =============================================================================
 final communityMyChatsProvider =
-    FutureProvider.family<List<ChatRoomModel>, String>((ref, communityId) async {
+    FutureProvider.family<List<ChatRoomModel>, String>(
+        (ref, communityId) async {
   final userId = SupabaseService.currentUserId;
   if (userId == null) return [];
   final response = await SupabaseService.table('chat_members')
@@ -70,7 +71,8 @@ final favoriteMembersProvider =
   if (userId == null) return [];
   // Buscar quem o usuário segue
   final follows = await SupabaseService.table('follows')
-      .select('following_id, profiles!follows_following_id_fkey(id, nickname, icon_url)')
+      .select(
+          'following_id, profiles!follows_following_id_fkey(id, nickname, icon_url)')
       .eq('follower_id', userId)
       .limit(30);
   return List<Map<String, dynamic>>.from(follows as List? ?? []);
@@ -115,8 +117,7 @@ class _MyCommunityChatsScreenState
   @override
   Widget build(BuildContext context) {
     final r = context.r;
-    final chatsAsync =
-        ref.watch(communityMyChatsProvider(widget.communityId));
+    final chatsAsync = ref.watch(communityMyChatsProvider(widget.communityId));
     final membersAsync =
         ref.watch(communityMemberAvatarsProvider(widget.communityId));
     final favoritesAsync =
@@ -136,12 +137,10 @@ class _MyCommunityChatsScreenState
               child: RefreshIndicator(
                 color: AppTheme.primaryColor,
                 onRefresh: () async {
-                  ref.invalidate(
-                      communityMyChatsProvider(widget.communityId));
+                  ref.invalidate(communityMyChatsProvider(widget.communityId));
                   ref.invalidate(
                       communityMemberAvatarsProvider(widget.communityId));
-                  ref.invalidate(
-                      favoriteMembersProvider(widget.communityId));
+                  ref.invalidate(favoriteMembersProvider(widget.communityId));
                   await Future.delayed(const Duration(milliseconds: 300));
                 },
                 child: ListView(
@@ -154,8 +153,7 @@ class _MyCommunityChatsScreenState
                     membersAsync.when(
                       loading: () => const SizedBox.shrink(),
                       error: (_, __) => const SizedBox.shrink(),
-                      data: (members) =>
-                          _buildAllMembersRow(r, members),
+                      data: (members) => _buildAllMembersRow(r, members),
                     ),
                     SizedBox(height: r.s(4)),
                     // ── Meus Membros Favoritos ──
@@ -221,8 +219,7 @@ class _MyCommunityChatsScreenState
   // ---------------------------------------------------------------------------
   Widget _buildAppBar(Responsive r) {
     return Container(
-      padding:
-          EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
+      padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
       child: Row(
         children: [
           // Botão voltar
@@ -253,10 +250,10 @@ class _MyCommunityChatsScreenState
               });
             },
             child: Container(
-              padding: EdgeInsets.symmetric(
-                  horizontal: r.s(14), vertical: r.s(7)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(7)),
               decoration: BoxDecoration(
-                color: const AppTheme.primaryColor,
+                color: const Color(0xFF4CAF50),
                 borderRadius: BorderRadius.circular(r.s(20)),
               ),
               child: Row(
@@ -287,29 +284,25 @@ class _MyCommunityChatsScreenState
   // ---------------------------------------------------------------------------
   Widget _buildSearchBar(Responsive r) {
     return Container(
-      margin: EdgeInsets.symmetric(
-          horizontal: r.s(16), vertical: r.s(6)),
-      padding:
-          EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
+      margin: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(6)),
+      padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
       decoration: BoxDecoration(
         color: context.cardBg,
         borderRadius: BorderRadius.circular(r.s(24)),
       ),
       child: Row(
         children: [
-          Icon(Icons.search_rounded,
-              color: context.textHint, size: r.s(18)),
+          Icon(Icons.search_rounded, color: context.textHint, size: r.s(18)),
           SizedBox(width: r.s(8)),
           Expanded(
             child: TextField(
               controller: _searchController,
               onChanged: (v) => setState(() => _searchQuery = v),
-              style: TextStyle(
-                  color: context.textPrimary, fontSize: r.fs(13)),
+              style: TextStyle(color: context.textPrimary, fontSize: r.fs(13)),
               decoration: InputDecoration(
                 hintText: 'Procurar Meus Chats',
-                hintStyle: TextStyle(
-                    color: context.textHint, fontSize: r.fs(13)),
+                hintStyle:
+                    TextStyle(color: context.textHint, fontSize: r.fs(13)),
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
@@ -333,8 +326,7 @@ class _MyCommunityChatsScreenState
   // ---------------------------------------------------------------------------
   // TODOS OS MEMBROS
   // ---------------------------------------------------------------------------
-  Widget _buildAllMembersRow(
-      Responsive r, List<Map<String, dynamic>> members) {
+  Widget _buildAllMembersRow(Responsive r, List<Map<String, dynamic>> members) {
     final avatarUrls = members
         .map((m) {
           final p = m['profiles'] as Map<String, dynamic>?;
@@ -350,10 +342,8 @@ class _MyCommunityChatsScreenState
       },
       behavior: HitTestBehavior.opaque,
       child: Container(
-        margin: EdgeInsets.symmetric(
-            horizontal: r.s(16), vertical: r.s(8)),
-        padding: EdgeInsets.symmetric(
-            horizontal: r.s(14), vertical: r.s(10)),
+        margin: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+        padding: EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(10)),
         decoration: BoxDecoration(
           color: context.cardBg,
           borderRadius: BorderRadius.circular(r.s(12)),
@@ -365,7 +355,7 @@ class _MyCommunityChatsScreenState
               width: r.s(32),
               height: r.s(32),
               decoration: BoxDecoration(
-                color: const AppTheme.infoColor,
+                color: const Color(0xFF2196F3),
                 shape: BoxShape.circle,
               ),
               child: Icon(Icons.person_rounded,
@@ -399,14 +389,11 @@ class _MyCommunityChatsScreenState
                         height: r.s(30),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(
-                              color: context.cardBg, width: 2),
-                          color: AppTheme.primaryColor
-                              .withValues(alpha: 0.4),
+                          border: Border.all(color: context.cardBg, width: 2),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.4),
                           image: url != null
                               ? DecorationImage(
-                                  image:
-                                      CachedNetworkImageProvider(url),
+                                  image: CachedNetworkImageProvider(url),
                                   fit: BoxFit.cover,
                                 )
                               : null,
@@ -427,8 +414,7 @@ class _MyCommunityChatsScreenState
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.grey[700],
-                        border:
-                            Border.all(color: context.cardBg, width: 2),
+                        border: Border.all(color: context.cardBg, width: 2),
                       ),
                       child: Icon(Icons.more_horiz_rounded,
                           color: Colors.white, size: r.s(14)),
@@ -481,10 +467,8 @@ class _MyCommunityChatsScreenState
             itemCount: favorites.length,
             itemBuilder: (context, index) {
               final item = favorites[index];
-              final profile =
-                  item['profiles'] as Map<String, dynamic>? ?? {};
-              final nickname =
-                  profile['nickname'] as String? ?? 'Membro';
+              final profile = item['profiles'] as Map<String, dynamic>? ?? {};
+              final nickname = profile['nickname'] as String? ?? 'Membro';
               final iconUrl = profile['icon_url'] as String?;
               final userId = item['following_id'] as String?;
               return GestureDetector(
@@ -503,12 +487,10 @@ class _MyCommunityChatsScreenState
                         height: r.s(52),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: AppTheme.primaryColor
-                              .withValues(alpha: 0.3),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.3),
                           image: iconUrl != null
                               ? DecorationImage(
-                                  image:
-                                      CachedNetworkImageProvider(iconUrl),
+                                  image: CachedNetworkImageProvider(iconUrl),
                                   fit: BoxFit.cover,
                                 )
                               : null,
@@ -549,8 +531,7 @@ class _MyCommunityChatsScreenState
   // ---------------------------------------------------------------------------
   // LISTA DE CHATS
   // ---------------------------------------------------------------------------
-  Widget _buildChatsList(
-      Responsive r, List<ChatRoomModel> chats) {
+  Widget _buildChatsList(Responsive r, List<ChatRoomModel> chats) {
     if (chats.isEmpty) {
       return Padding(
         padding: EdgeInsets.all(r.s(32)),
@@ -563,8 +544,8 @@ class _MyCommunityChatsScreenState
               _searchQuery.isEmpty
                   ? 'Você ainda não entrou em nenhum chat nesta comunidade.'
                   : 'Nenhum chat encontrado para "$_searchQuery".',
-              style: TextStyle(
-                  color: context.textSecondary, fontSize: r.fs(13)),
+              style:
+                  TextStyle(color: context.textSecondary, fontSize: r.fs(13)),
               textAlign: TextAlign.center,
             ),
           ],
@@ -628,8 +609,7 @@ class _CommunityChatTile extends ConsumerWidget {
     }
   }
 
-  Future<void> _showContextMenu(
-      BuildContext context, WidgetRef ref) async {
+  Future<void> _showContextMenu(BuildContext context, WidgetRef ref) async {
     final r = context.r;
     final isPinned = chatRoom.isPinnedByUser;
     final userId = SupabaseService.currentUserId;
@@ -639,8 +619,7 @@ class _CommunityChatTile extends ConsumerWidget {
       context: context,
       backgroundColor: context.cardBg,
       shape: RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.vertical(top: Radius.circular(r.s(20))),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
       ),
       builder: (ctx) => SafeArea(
         child: Column(
@@ -656,8 +635,8 @@ class _CommunityChatTile extends ConsumerWidget {
               ),
             ),
             Padding(
-              padding: EdgeInsets.symmetric(
-                  horizontal: r.s(16), vertical: r.s(8)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               child: Text(
                 chatRoom.title,
                 style: TextStyle(
@@ -670,40 +649,32 @@ class _CommunityChatTile extends ConsumerWidget {
               ),
             ),
             Divider(
-                color: context.dividerClr.withValues(alpha: 0.3),
-                height: 1),
+                color: context.dividerClr.withValues(alpha: 0.3), height: 1),
             // Fixar / Desafixar
             ListTile(
               leading: Icon(
-                isPinned
-                    ? Icons.push_pin_outlined
-                    : Icons.push_pin_rounded,
-                color: isPinned
-                    ? AppTheme.accentColor
-                    : context.textSecondary,
+                isPinned ? Icons.push_pin_outlined : Icons.push_pin_rounded,
+                color: isPinned ? AppTheme.accentColor : context.textSecondary,
                 size: r.s(22),
               ),
               title: Text(
                 isPinned ? 'Desafixar do topo' : 'Fixar no topo',
-                style: TextStyle(
-                    color: context.textPrimary, fontSize: r.fs(14)),
+                style:
+                    TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
               ),
               onTap: () async {
                 Navigator.of(ctx).pop();
                 try {
                   if (isPinned) {
-                    await SupabaseService.rpc('unpin_chat_for_user',
-                        params: {
-                          'p_thread_id': chatRoom.id,
-                        });
+                    await SupabaseService.rpc('unpin_chat_for_user', params: {
+                      'p_thread_id': chatRoom.id,
+                    });
                   } else {
-                    await SupabaseService.rpc('pin_chat_for_user',
-                        params: {
-                          'p_thread_id': chatRoom.id,
-                        });
+                    await SupabaseService.rpc('pin_chat_for_user', params: {
+                      'p_thread_id': chatRoom.id,
+                    });
                   }
-                  ref.invalidate(
-                      communityMyChatsProvider(communityId));
+                  ref.invalidate(communityMyChatsProvider(communityId));
                   ref.invalidate(chatListProvider);
                 } catch (e) {
                   debugPrint('[MyCommunityChats] Pin error: $e');
@@ -715,11 +686,9 @@ class _CommunityChatTile extends ConsumerWidget {
               leading: Icon(Icons.exit_to_app_rounded,
                   color: AppTheme.errorColor, size: r.s(22)),
               title: Text(
-                chatRoom.type == 'dm'
-                    ? 'Apagar conversa'
-                    : 'Sair do chat',
-                style: TextStyle(
-                    color: AppTheme.errorColor, fontSize: r.fs(14)),
+                chatRoom.type == 'dm' ? 'Apagar conversa' : 'Sair do chat',
+                style:
+                    TextStyle(color: AppTheme.errorColor, fontSize: r.fs(14)),
               ),
               onTap: () async {
                 Navigator.of(ctx).pop();
@@ -742,21 +711,18 @@ class _CommunityChatTile extends ConsumerWidget {
                           ? 'A conversa será removida da sua lista.'
                           : 'Você poderá entrar novamente depois.',
                       style: TextStyle(
-                          color: context.textSecondary,
-                          fontSize: r.fs(13)),
+                          color: context.textSecondary, fontSize: r.fs(13)),
                     ),
                     actions: [
                       TextButton(
-                        onPressed: () =>
-                            Navigator.of(dCtx).pop(false),
+                        onPressed: () => Navigator.of(dCtx).pop(false),
                         child: Text('Cancelar',
                             style: TextStyle(
                                 color: context.textSecondary,
                                 fontSize: r.fs(13))),
                       ),
                       TextButton(
-                        onPressed: () =>
-                            Navigator.of(dCtx).pop(true),
+                        onPressed: () => Navigator.of(dCtx).pop(true),
                         child: Text(
                           chatRoom.type == 'dm' ? 'Apagar' : 'Sair',
                           style: TextStyle(
@@ -770,12 +736,10 @@ class _CommunityChatTile extends ConsumerWidget {
                 );
                 if (confirm != true) return;
                 try {
-                  await SupabaseService.rpc('leave_public_chat',
-                      params: {
-                        'p_thread_id': chatRoom.id,
-                      });
-                  ref.invalidate(
-                      communityMyChatsProvider(communityId));
+                  await SupabaseService.rpc('leave_public_chat', params: {
+                    'p_thread_id': chatRoom.id,
+                  });
+                  ref.invalidate(communityMyChatsProvider(communityId));
                   ref.invalidate(chatListProvider);
                 } catch (e) {
                   debugPrint('[MyCommunityChats] Leave error: $e');
@@ -800,8 +764,7 @@ class _CommunityChatTile extends ConsumerWidget {
       onTap: () => context.push('/chat/${chatRoom.id}'),
       onLongPress: () => _showContextMenu(context, ref),
       child: Container(
-        padding: EdgeInsets.symmetric(
-            horizontal: r.s(16), vertical: r.s(10)),
+        padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(10)),
         decoration: isPinned
             ? BoxDecoration(
                 border: Border(
@@ -828,8 +791,8 @@ class _CommunityChatTile extends ConsumerWidget {
                             imageUrl: chatRoom.iconUrl!,
                             fit: BoxFit.cover,
                             placeholder: (_, __) => Container(
-                              color: AppTheme.primaryColor
-                                  .withValues(alpha: 0.3),
+                              color:
+                                  AppTheme.primaryColor.withValues(alpha: 0.3),
                             ),
                             errorWidget: (_, __, ___) => Icon(
                               Icons.chat_bubble_rounded,
@@ -852,8 +815,8 @@ class _CommunityChatTile extends ConsumerWidget {
                       decoration: BoxDecoration(
                         color: AppTheme.errorColor,
                         shape: BoxShape.circle,
-                        border: Border.all(
-                            color: context.scaffoldBg, width: 1.5),
+                        border:
+                            Border.all(color: context.scaffoldBg, width: 1.5),
                       ),
                     ),
                   ),
@@ -880,8 +843,7 @@ class _CommunityChatTile extends ConsumerWidget {
                     children: [
                       if (isPinned) ...[
                         Icon(Icons.push_pin_rounded,
-                            size: r.s(11),
-                            color: AppTheme.accentColor),
+                            size: r.s(11), color: AppTheme.accentColor),
                         SizedBox(width: r.s(3)),
                       ],
                       Expanded(
@@ -890,9 +852,8 @@ class _CommunityChatTile extends ConsumerWidget {
                           style: TextStyle(
                             color: context.textPrimary,
                             fontSize: r.fs(14),
-                            fontWeight: hasUnread
-                                ? FontWeight.w700
-                                : FontWeight.w600,
+                            fontWeight:
+                                hasUnread ? FontWeight.w700 : FontWeight.w600,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -905,13 +866,10 @@ class _CommunityChatTile extends ConsumerWidget {
                   Text(
                     chatRoom.lastMessagePreview ?? 'Sem mensagens',
                     style: TextStyle(
-                      color: hasUnread
-                          ? context.textSecondary
-                          : context.textHint,
+                      color:
+                          hasUnread ? context.textSecondary : context.textHint,
                       fontSize: r.fs(12),
-                      fontWeight: hasUnread
-                          ? FontWeight.w500
-                          : FontWeight.w400,
+                      fontWeight: hasUnread ? FontWeight.w500 : FontWeight.w400,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -925,24 +883,19 @@ class _CommunityChatTile extends ConsumerWidget {
               children: [
                 Text(
                   chatRoom.lastMessageAt != null
-                      ? timeago.format(chatRoom.lastMessageAt!,
-                          locale: 'pt_BR')
+                      ? timeago.format(chatRoom.lastMessageAt!, locale: 'pt_BR')
                       : '',
                   style: TextStyle(
-                    color: hasUnread
-                        ? AppTheme.accentColor
-                        : context.textHint,
+                    color: hasUnread ? AppTheme.accentColor : context.textHint,
                     fontSize: r.fs(10),
-                    fontWeight: hasUnread
-                        ? FontWeight.w600
-                        : FontWeight.w400,
+                    fontWeight: hasUnread ? FontWeight.w600 : FontWeight.w400,
                   ),
                 ),
                 if (hasUnread && chatRoom.unreadCount > 1) ...[
                   SizedBox(height: r.s(4)),
                   Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: r.s(6), vertical: 2),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: r.s(6), vertical: 2),
                     decoration: BoxDecoration(
                       color: AppTheme.accentColor,
                       borderRadius: BorderRadius.circular(r.s(10)),

@@ -68,8 +68,8 @@ class ChatInputBar extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: context.cardBg,
                   borderRadius: BorderRadius.circular(r.s(24)),
-                  border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.05)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.05)),
                 ),
                 child: Row(
                   children: [

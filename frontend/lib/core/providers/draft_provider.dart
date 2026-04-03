@@ -23,7 +23,8 @@ class PostDraftsNotifier extends AsyncNotifier<List<PostDraftModel>> {
         .order('updated_at', ascending: false);
 
     return (data as List? ?? [])
-        .map((e) => PostDraftModel.fromJson(Map<String, dynamic>.from(e as Map)))
+        .map(
+            (e) => PostDraftModel.fromJson(Map<String, dynamic>.from(e as Map)))
         .toList();
   }
 
@@ -42,19 +43,23 @@ class PostDraftsNotifier extends AsyncNotifier<List<PostDraftModel>> {
     if (userId == null) return null;
 
     try {
-      final data = await SupabaseService.table('post_drafts').insert({
-        'user_id': userId,
-        if (communityId != null) 'community_id': communityId,
-        if (title != null) 'title': title,
-        if (content != null) 'content': content,
-        if (contentBlocks != null) 'content_blocks': contentBlocks,
-        'media_urls': mediaUrls ?? [],
-        'post_type': postType,
-        'tags': tags ?? [],
-        'visibility': visibility,
-      }).select().single();
+      final data = await SupabaseService.table('post_drafts')
+          .insert({
+            'user_id': userId,
+            if (communityId != null) 'community_id': communityId,
+            if (title != null) 'title': title,
+            if (content != null) 'content': content,
+            if (contentBlocks != null) 'content_blocks': contentBlocks,
+            'media_urls': mediaUrls ?? [],
+            'post_type': postType,
+            'tags': tags ?? [],
+            'visibility': visibility,
+          })
+          .select()
+          .single();
 
-      final draft = PostDraftModel.fromJson(Map<String, dynamic>.from(data as Map));
+      final draft =
+          PostDraftModel.fromJson(Map<String, dynamic>.from(data as Map));
       final current = state.valueOrNull ?? [];
       state = AsyncData([draft, ...current]);
       return draft;

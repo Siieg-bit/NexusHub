@@ -79,9 +79,8 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
       if (userId == null) throw Exception('Não autenticado');
 
       // Montar opções da enquete como JSON
-      final pollOpts = validOptions
-          .map((c) => {'text': c.text.trim()})
-          .toList();
+      final pollOpts =
+          validOptions.map((c) => {'text': c.text.trim()}).toList();
 
       // RPC atômica: cria post + poll_options + reputação
       await SupabaseService.rpc('create_post_with_reputation', params: {
@@ -287,8 +286,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
                         decoration: InputDecoration(
                           hintText: 'Opção ${i + 1}',
                           hintStyle: TextStyle(
-                              color: context.textSecondary,
-                              fontSize: r.fs(14)),
+                              color: context.textSecondary, fontSize: r.fs(14)),
                           filled: true,
                           fillColor: context.cardBg,
                           border: OutlineInputBorder(
@@ -351,8 +349,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
       style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle:
-            TextStyle(color: context.textSecondary, fontSize: r.fs(14)),
+        hintStyle: TextStyle(color: context.textSecondary, fontSize: r.fs(14)),
         filled: true,
         fillColor: context.cardBg,
         border: OutlineInputBorder(
@@ -361,8 +358,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(r.s(12)),
-          borderSide:
-              BorderSide(color: const Color(0xFF0891B2), width: 1.5),
+          borderSide: BorderSide(color: const Color(0xFF0891B2), width: 1.5),
         ),
         counterText: '',
         contentPadding:

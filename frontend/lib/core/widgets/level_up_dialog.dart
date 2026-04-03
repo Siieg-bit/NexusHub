@@ -238,8 +238,8 @@ class _LevelUpContentState extends State<_LevelUpContent>
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: levelColor
-                                    .withValues(alpha: 0.4 * _glowAnimation.value),
+                                color: levelColor.withValues(
+                                    alpha: 0.4 * _glowAnimation.value),
                                 blurRadius: 30 * _glowAnimation.value,
                                 spreadRadius: 5 * _glowAnimation.value,
                               ),
@@ -258,7 +258,8 @@ class _LevelUpContentState extends State<_LevelUpContent>
                                     height: 1,
                                     shadows: [
                                       Shadow(
-                                        color: levelColor.withValues(alpha: 0.5),
+                                        color:
+                                            levelColor.withValues(alpha: 0.5),
                                         blurRadius: 20,
                                       ),
                                     ],
@@ -380,8 +381,7 @@ class _ConfettiPainter extends CustomPainter {
     for (final p in particles) {
       // Atualizar posição
       final y = ((p.y + progress * p.speed * 3) % 1.3) * size.height;
-      final x = (p.x + sin(progress * 10 + p.rotation) * p.wobble) *
-          size.width;
+      final x = (p.x + sin(progress * 10 + p.rotation) * p.wobble) * size.width;
 
       canvas.save();
       canvas.translate(x, y);

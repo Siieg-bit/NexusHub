@@ -218,9 +218,11 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
     final mediaUrl = story['media_url'] as String?;
     final textContent = story['text_content'] as String?;
     final bgColor = story['background_color'] as String? ?? '#000000';
-    final username =
-        (widget.authorProfile['nickname'] ?? widget.authorProfile['username']) as String? ?? 'Anônimo';
-    final avatarUrl = (widget.authorProfile['icon_url'] ?? widget.authorProfile['avatar_url']) as String?;
+    final username = (widget.authorProfile['nickname'] ??
+            widget.authorProfile['username']) as String? ??
+        'Anônimo';
+    final avatarUrl = (widget.authorProfile['icon_url'] ??
+        widget.authorProfile['avatar_url']) as String?;
     final createdAt = story['created_at'] as String?;
 
     return Scaffold(
@@ -266,8 +268,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
               Image.network(
                 mediaUrl,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) =>
-                    Container(color: Colors.black),
+                errorBuilder: (_, __, ___) => Container(color: Colors.black),
               )
             else if (type == 'text')
               Container(
@@ -347,8 +348,8 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
                               ? const LinearProgressIndicator(
                                   value: 1,
                                   backgroundColor: Colors.white24,
-                                  valueColor: AlwaysStoppedAnimation(
-                                      Colors.white),
+                                  valueColor:
+                                      AlwaysStoppedAnimation(Colors.white),
                                 )
                               : i == _currentIndex
                                   ? AnimatedBuilder(
@@ -427,7 +428,9 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
             ),
 
             // ── Text overlay para stories de imagem ──
-            if (type == 'image' && textContent != null && textContent.isNotEmpty)
+            if (type == 'image' &&
+                textContent != null &&
+                textContent.isNotEmpty)
               Positioned(
                 bottom: 100,
                 left: 16,
@@ -457,8 +460,8 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
               right: 0,
               child: Center(
                 child: Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: r.s(16), vertical: r.s(8)),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(r.s(30)),
@@ -470,7 +473,8 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
                         onTap: () => _sendReaction(emoji),
                         child: Padding(
                           padding: EdgeInsets.symmetric(horizontal: r.s(8)),
-                          child: Text(emoji, style: TextStyle(fontSize: r.fs(24))),
+                          child:
+                              Text(emoji, style: TextStyle(fontSize: r.fs(24))),
                         ),
                       );
                     }).toList(),

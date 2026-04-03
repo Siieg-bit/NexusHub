@@ -180,7 +180,7 @@ class ProceduralBubbleFrame extends StatelessWidget {
     required this.child,
     required this.isMine,
     this.style = 'gradient',
-    this.primaryColor = const AppTheme.fabPink,
+    this.primaryColor = const Color(0xFFE91E63),
     this.secondaryColor = const Color(0xFFFF5252),
     this.maxWidth = 280,
   });
@@ -207,7 +207,8 @@ class ProceduralBubbleFrame extends StatelessWidget {
               isMine: isMine,
             ),
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: r.s(18), vertical: r.s(12)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(18), vertical: r.s(12)),
               child: DefaultTextStyle(
                 style: TextStyle(
                   color: Colors.white,
@@ -372,14 +373,20 @@ class _ProceduralFramePainter extends CustomPainter {
     final path = Path();
     path.moveTo(center.dx, center.dy + size * 0.4);
     path.cubicTo(
-      center.dx - size, center.dy - size * 0.2,
-      center.dx - size * 0.5, center.dy - size,
-      center.dx, center.dy - size * 0.4,
+      center.dx - size,
+      center.dy - size * 0.2,
+      center.dx - size * 0.5,
+      center.dy - size,
+      center.dx,
+      center.dy - size * 0.4,
     );
     path.cubicTo(
-      center.dx + size * 0.5, center.dy - size,
-      center.dx + size, center.dy - size * 0.2,
-      center.dx, center.dy + size * 0.4,
+      center.dx + size * 0.5,
+      center.dy - size,
+      center.dx + size,
+      center.dy - size * 0.2,
+      center.dx,
+      center.dy + size * 0.4,
     );
     canvas.drawPath(path, paint);
   }

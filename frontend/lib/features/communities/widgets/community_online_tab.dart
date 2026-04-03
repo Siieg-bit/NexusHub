@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -28,8 +27,7 @@ class CommunityOnlineTab extends ConsumerStatefulWidget {
   const CommunityOnlineTab({super.key, required this.community});
 
   @override
-  ConsumerState<CommunityOnlineTab> createState() =>
-      _CommunityOnlineTabState();
+  ConsumerState<CommunityOnlineTab> createState() => _CommunityOnlineTabState();
 }
 
 class _CommunityOnlineTabState extends ConsumerState<CommunityOnlineTab> {
@@ -149,8 +147,8 @@ class _HappeningSection extends ConsumerWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A2E).withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(r.s(14)),
-        border: Border.all(
-            color: Colors.white.withValues(alpha: 0.07), width: 0.5),
+        border:
+            Border.all(color: Colors.white.withValues(alpha: 0.07), width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -160,12 +158,12 @@ class _HappeningSection extends ConsumerWidget {
             onTap: onToggle,
             borderRadius: BorderRadius.circular(r.s(14)),
             child: Padding(
-              padding: EdgeInsets.symmetric(
-                  horizontal: r.s(14), vertical: r.s(12)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(12)),
               child: Row(
                 children: [
                   Icon(Icons.flash_on_rounded,
-                      color: const AppTheme.coinGold, size: r.s(18)),
+                      color: const Color(0xFFFFD700), size: r.s(18)),
                   SizedBox(width: r.s(6)),
                   Text(
                     'What\'s happening now!',
@@ -226,8 +224,8 @@ class _HappeningSection extends ConsumerWidget {
                           margin: EdgeInsets.only(right: r.s(8)),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(r.s(10)),
-                            color: AppTheme.primaryColor
-                                .withValues(alpha: 0.15),
+                            color:
+                                AppTheme.primaryColor.withValues(alpha: 0.15),
                             border: Border.all(
                                 color: AppTheme.primaryColor
                                     .withValues(alpha: 0.3),
@@ -287,9 +285,8 @@ class _HappeningSection extends ConsumerWidget {
               error: (_, __) => const SizedBox.shrink(),
             ),
             secondChild: const SizedBox.shrink(),
-            crossFadeState: expanded
-                ? CrossFadeState.showFirst
-                : CrossFadeState.showSecond,
+            crossFadeState:
+                expanded ? CrossFadeState.showFirst : CrossFadeState.showSecond,
             duration: const Duration(milliseconds: 200),
           ),
         ],
@@ -317,8 +314,8 @@ class _MembersOnlineSection extends StatelessWidget {
     final r = context.r;
 
     final onlineMembers = members.where((m) {
-      final userId = (m['profiles'] as Map?)?['id'] as String? ??
-          m['user_id'] as String?;
+      final userId =
+          (m['profiles'] as Map?)?['id'] as String? ?? m['user_id'] as String?;
       return userId != null && onlineUserIds.contains(userId);
     }).toList();
 
@@ -327,16 +324,16 @@ class _MembersOnlineSection extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A2E).withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(r.s(14)),
-        border: Border.all(
-            color: Colors.white.withValues(alpha: 0.07), width: 0.5),
+        border:
+            Border.all(color: Colors.white.withValues(alpha: 0.07), width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
           Padding(
-            padding: EdgeInsets.symmetric(
-                horizontal: r.s(14), vertical: r.s(12)),
+            padding:
+                EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(12)),
             child: Row(
               children: [
                 Container(
@@ -381,13 +378,10 @@ class _MembersOnlineSection extends StatelessWidget {
                 itemCount: onlineMembers.length,
                 itemBuilder: (context, i) {
                   final m = onlineMembers[i];
-                  final p =
-                      m['profiles'] as Map<String, dynamic>? ?? {};
-                  final nickname =
-                      p['nickname'] as String? ?? 'Usuário';
+                  final p = m['profiles'] as Map<String, dynamic>? ?? {};
+                  final nickname = p['nickname'] as String? ?? 'Usuário';
                   final avatarUrl = p['icon_url'] as String?;
-                  final userId = p['id'] as String? ??
-                      m['user_id'] as String?;
+                  final userId = p['id'] as String? ?? m['user_id'] as String?;
 
                   return AminoAnimations.cardPress(
                     onTap: () => _showMemberSheet(
@@ -404,8 +398,7 @@ class _MembersOnlineSection extends StatelessWidget {
                                 backgroundColor: AppTheme.primaryColor
                                     .withValues(alpha: 0.2),
                                 backgroundImage: avatarUrl != null
-                                    ? CachedNetworkImageProvider(
-                                        avatarUrl)
+                                    ? CachedNetworkImageProvider(avatarUrl)
                                     : null,
                                 child: avatarUrl == null
                                     ? Text(
@@ -441,8 +434,7 @@ class _MembersOnlineSection extends StatelessWidget {
                                 ? '${nickname.substring(0, 7)}…'
                                 : nickname,
                             style: TextStyle(
-                              color:
-                                  Colors.white.withValues(alpha: 0.85),
+                              color: Colors.white.withValues(alpha: 0.85),
                               fontSize: r.fs(10),
                               fontWeight: FontWeight.w500,
                             ),
@@ -481,8 +473,8 @@ class _BrowsingSection extends StatelessWidget {
     final r = context.r;
 
     final onlineMembers = members.where((m) {
-      final userId = (m['profiles'] as Map?)?['id'] as String? ??
-          m['user_id'] as String?;
+      final userId =
+          (m['profiles'] as Map?)?['id'] as String? ?? m['user_id'] as String?;
       return userId != null && onlineUserIds.contains(userId);
     }).toList();
 
@@ -505,12 +497,10 @@ class _BrowsingSection extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(r.s(14)),
         border: Border.all(
-            color: AppTheme.primaryColor.withValues(alpha: 0.3),
-            width: 0.5),
+            color: AppTheme.primaryColor.withValues(alpha: 0.3), width: 0.5),
       ),
       child: Padding(
-        padding:
-            EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(14)),
+        padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(14)),
         child: Row(
           children: [
             // Contagem
@@ -592,12 +582,10 @@ class _AllMembersSection extends StatelessWidget {
     final communityId = community.id;
 
     final leaders = members
-        .where((m) =>
-            m['role'] == 'leader' || m['role'] == 'curator')
+        .where((m) => m['role'] == 'leader' || m['role'] == 'curator')
         .toList();
     final regular = members
-        .where((m) =>
-            m['role'] != 'leader' && m['role'] != 'curator')
+        .where((m) => m['role'] != 'leader' && m['role'] != 'curator')
         .toList();
 
     return Container(
@@ -605,21 +593,20 @@ class _AllMembersSection extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A2E).withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(r.s(14)),
-        border: Border.all(
-            color: Colors.white.withValues(alpha: 0.07), width: 0.5),
+        border:
+            Border.all(color: Colors.white.withValues(alpha: 0.07), width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
           Padding(
-            padding: EdgeInsets.symmetric(
-                horizontal: r.s(14), vertical: r.s(12)),
+            padding:
+                EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(12)),
             child: Row(
               children: [
                 Icon(Icons.people_rounded,
-                    color: Colors.white.withValues(alpha: 0.7),
-                    size: r.s(16)),
+                    color: Colors.white.withValues(alpha: 0.7), size: r.s(16)),
                 SizedBox(width: r.s(6)),
                 Text(
                   'All Members (${members.length})',
@@ -636,8 +623,7 @@ class _AllMembersSection extends StatelessWidget {
           // Leaders
           if (leaders.isNotEmpty) ...[
             Padding(
-              padding: EdgeInsets.only(
-                  left: r.s(14), bottom: r.s(8)),
+              padding: EdgeInsets.only(left: r.s(14), bottom: r.s(8)),
               child: Text(
                 'Leaders',
                 style: TextStyle(
@@ -659,8 +645,7 @@ class _AllMembersSection extends StatelessWidget {
           // Recently Joined
           if (regular.isNotEmpty) ...[
             Padding(
-              padding: EdgeInsets.only(
-                  left: r.s(14), bottom: r.s(8)),
+              padding: EdgeInsets.only(left: r.s(14), bottom: r.s(8)),
               child: Text(
                 'Recently Joined',
                 style: TextStyle(
@@ -705,21 +690,17 @@ class _MemberRow extends StatelessWidget {
     final p = member['profiles'] as Map<String, dynamic>? ?? {};
     final nickname = p['nickname'] as String? ?? 'Usuário';
     final avatarUrl = p['icon_url'] as String?;
-    final userId =
-        p['id'] as String? ?? member['user_id'] as String?;
+    final userId = p['id'] as String? ?? member['user_id'] as String?;
     final role = member['role'] as String? ?? 'member';
     final reputation = member['local_reputation'] as int? ?? 0;
-    final level = member['local_level'] as int? ??
-        calculateLevel(reputation);
-    final isOnline =
-        userId != null && onlineUserIds.contains(userId);
+    final level = member['local_level'] as int? ?? calculateLevel(reputation);
+    final isOnline = userId != null && onlineUserIds.contains(userId);
 
     return AminoAnimations.cardPress(
       onTap: () =>
           _showMemberSheet(context, communityId, member, onlineUserIds),
       child: Padding(
-        padding: EdgeInsets.symmetric(
-            horizontal: r.s(14), vertical: r.s(8)),
+        padding: EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(8)),
         child: Row(
           children: [
             // Avatar
@@ -727,8 +708,7 @@ class _MemberRow extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: r.s(22),
-                  backgroundColor:
-                      AppTheme.primaryColor.withValues(alpha: 0.2),
+                  backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.2),
                   backgroundImage: avatarUrl != null
                       ? CachedNetworkImageProvider(avatarUrl)
                       : null,
@@ -788,18 +768,15 @@ class _MemberRow extends StatelessWidget {
                               horizontal: r.s(5), vertical: r.s(1)),
                           decoration: BoxDecoration(
                             color: role == 'leader'
-                                ? const AppTheme.coinGold
-                                    .withValues(alpha: 0.2)
-                                : AppTheme.primaryColor
-                                    .withValues(alpha: 0.2),
-                            borderRadius:
-                                BorderRadius.circular(r.s(4)),
+                                ? const Color(0xFFFFD700).withValues(alpha: 0.2)
+                                : AppTheme.primaryColor.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(r.s(4)),
                           ),
                           child: Text(
                             role == 'leader' ? 'L' : 'C',
                             style: TextStyle(
                               color: role == 'leader'
-                                  ? const AppTheme.coinGold
+                                  ? const Color(0xFFFFD700)
                                   : AppTheme.primaryColor,
                               fontSize: r.fs(9),
                               fontWeight: FontWeight.w800,
@@ -861,8 +838,7 @@ class _FollowButtonState extends State<_FollowButton> {
 
   Future<void> _checkFollowing() async {
     final currentUserId = SupabaseService.currentUserId;
-    if (currentUserId == null ||
-        currentUserId == widget.targetUserId) return;
+    if (currentUserId == null || currentUserId == widget.targetUserId) return;
     try {
       final res = await SupabaseService.table('follows')
           .select('id')
@@ -870,7 +846,9 @@ class _FollowButtonState extends State<_FollowButton> {
           .eq('following_id', widget.targetUserId)
           .maybeSingle();
       if (mounted) setState(() => _following = res != null);
-    } catch (e) { debugPrint('[community_online_tab.dart] $e'); }
+    } catch (e) {
+      debugPrint('[community_online_tab.dart] $e');
+    }
   }
 
   Future<void> _toggle() async {
@@ -888,9 +866,8 @@ class _FollowButtonState extends State<_FollowButton> {
         },
       );
       if (mounted) {
-        final isNowFollowing = result is Map
-            ? (result['following'] == true)
-            : !_following;
+        final isNowFollowing =
+            result is Map ? (result['following'] == true) : !_following;
         setState(() => _following = isNowFollowing);
       }
     } catch (e) {
@@ -904,8 +881,7 @@ class _FollowButtonState extends State<_FollowButton> {
   Widget build(BuildContext context) {
     final r = context.r;
     final currentUserId = SupabaseService.currentUserId;
-    if (currentUserId == widget.targetUserId ||
-        widget.targetUserId.isEmpty) {
+    if (currentUserId == widget.targetUserId || widget.targetUserId.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -913,8 +889,7 @@ class _FollowButtonState extends State<_FollowButton> {
       onTap: _toggle,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.symmetric(
-            horizontal: r.s(12), vertical: r.s(5)),
+        padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(5)),
         decoration: BoxDecoration(
           color: _following
               ? Colors.transparent
@@ -978,8 +953,7 @@ class _AvatarStack extends StatelessWidget {
               height: size,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(
-                    color: const Color(0xFF0D0D1A), width: 1.5),
+                border: Border.all(color: const Color(0xFF0D0D1A), width: 1.5),
               ),
               child: ClipOval(
                 child: (url ?? '').isNotEmpty
@@ -987,21 +961,17 @@ class _AvatarStack extends StatelessWidget {
                         imageUrl: url!,
                         fit: BoxFit.cover,
                         errorWidget: (_, __, ___) => Container(
-                          color: AppTheme.primaryColor
-                              .withValues(alpha: 0.3),
+                          color: AppTheme.primaryColor.withValues(alpha: 0.3),
                           child: Icon(Icons.person_rounded,
                               size: size * 0.5,
-                              color: Colors.white
-                                  .withValues(alpha: 0.5)),
+                              color: Colors.white.withValues(alpha: 0.5)),
                         ),
                       )
                     : Container(
-                        color: AppTheme.primaryColor
-                            .withValues(alpha: 0.3),
+                        color: AppTheme.primaryColor.withValues(alpha: 0.3),
                         child: Icon(Icons.person_rounded,
                             size: size * 0.5,
-                            color:
-                                Colors.white.withValues(alpha: 0.5)),
+                            color: Colors.white.withValues(alpha: 0.5)),
                       ),
               ),
             ),
@@ -1024,10 +994,8 @@ void _showMemberSheet(
   final p = member['profiles'] as Map<String, dynamic>? ?? {};
   final nickname = p['nickname'] as String? ?? 'Usuário';
   final avatarUrl = p['icon_url'] as String?;
-  final userId =
-      p['id'] as String? ?? member['user_id'] as String?;
-  final isOnline =
-      userId != null && onlineUserIds.contains(userId);
+  final userId = p['id'] as String? ?? member['user_id'] as String?;
+  final isOnline = userId != null && onlineUserIds.contains(userId);
   final currentUserId = SupabaseService.currentUserId;
   final isSelf = userId == currentUserId;
 
@@ -1072,8 +1040,7 @@ class _MemberBottomSheet extends StatelessWidget {
         color: Color(0xFF1A1A2E),
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      padding: EdgeInsets.symmetric(
-          horizontal: r.s(24), vertical: r.s(20)),
+      padding: EdgeInsets.symmetric(horizontal: r.s(24), vertical: r.s(20)),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -1094,8 +1061,7 @@ class _MemberBottomSheet extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: r.s(42),
-                backgroundColor:
-                    AppTheme.primaryColor.withValues(alpha: 0.2),
+                backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.2),
                 backgroundImage: avatarUrl != null
                     ? CachedNetworkImageProvider(avatarUrl!)
                     : null,
@@ -1117,8 +1083,8 @@ class _MemberBottomSheet extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: AppTheme.onlineColor,
                     shape: BoxShape.circle,
-                    border: Border.all(
-                        color: const Color(0xFF1A1A2E), width: 2.5),
+                    border:
+                        Border.all(color: const Color(0xFF1A1A2E), width: 2.5),
                   ),
                 ),
             ],
@@ -1163,13 +1129,10 @@ class _MemberBottomSheet extends StatelessWidget {
                       _openDm(context, communityId, userId);
                     },
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(
-                          color: AppTheme.onlineColor, width: 1.5),
+                      side: BorderSide(color: AppTheme.onlineColor, width: 1.5),
                       shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(r.s(24))),
-                      padding:
-                          EdgeInsets.symmetric(vertical: r.s(12)),
+                          borderRadius: BorderRadius.circular(r.s(24))),
+                      padding: EdgeInsets.symmetric(vertical: r.s(12)),
                     ),
                     child: Text(
                       'Start Chat',
@@ -1187,16 +1150,13 @@ class _MemberBottomSheet extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.pop(context);
-                      context.push(
-                          '/community/$communityId/profile/$userId');
+                      context.push('/community/$communityId/profile/$userId');
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primaryColor,
                       shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(r.s(24))),
-                      padding:
-                          EdgeInsets.symmetric(vertical: r.s(12)),
+                          borderRadius: BorderRadius.circular(r.s(24))),
+                      padding: EdgeInsets.symmetric(vertical: r.s(12)),
                       elevation: 0,
                     ),
                     child: Text(
@@ -1218,8 +1178,7 @@ class _MemberBottomSheet extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context);
-                  context.push(
-                      '/community/$communityId/profile/$userId');
+                  context.push('/community/$communityId/profile/$userId');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryColor,
@@ -1267,7 +1226,8 @@ class _MemberBottomSheet extends StatelessWidget {
           message = 'Este usuário não aceita mensagens diretas.';
         } else if (err.contains('só aceita DMs')) {
           message = 'Este usuário só aceita mensagens de perfis permitidos.';
-        } else if (err.contains('Não é possível enviar mensagem para este usuário')) {
+        } else if (err
+            .contains('Não é possível enviar mensagem para este usuário')) {
           message = 'Não foi possível iniciar conversa com este usuário.';
         }
 

@@ -51,8 +51,7 @@ class ProfileStoriesTab extends ConsumerWidget {
                 SizedBox(height: r.s(12)),
                 Text('Nenhum story ainda',
                     style: TextStyle(
-                        color: Colors.grey[500],
-                        fontWeight: FontWeight.w600)),
+                        color: Colors.grey[500], fontWeight: FontWeight.w600)),
               ],
             ),
           );
@@ -73,8 +72,8 @@ class ProfileStoriesTab extends ConsumerWidget {
             final mediaUrl = story['media_url'] as String?;
             final textContent = story['text_content'] as String?;
             final bgColor = story['background_color'] as String? ?? '#000000';
-            final createdAt = DateTime.tryParse(
-                story['created_at']?.toString() ?? '');
+            final createdAt =
+                DateTime.tryParse(story['created_at']?.toString() ?? '');
 
             return ClipRRect(
               borderRadius: BorderRadius.circular(r.s(8)),

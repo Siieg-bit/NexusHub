@@ -46,7 +46,8 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
 
       // Carregar ghost mode / disable chats / disable comments do profiles
       final profileRes = await SupabaseService.table('profiles')
-          .select('is_ghost_mode, disable_incoming_chats, disable_profile_comments')
+          .select(
+              'is_ghost_mode, disable_incoming_chats, disable_profile_comments')
           .eq('id', userId)
           .maybeSingle();
       if (!mounted) return;
@@ -54,8 +55,10 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
         if (!mounted) return;
         setState(() {
           _isGhostMode = profileRes['is_ghost_mode'] as bool? ?? false;
-          _disableIncomingChats = profileRes['disable_incoming_chats'] as bool? ?? false;
-          _disableProfileComments = profileRes['disable_profile_comments'] as bool? ?? false;
+          _disableIncomingChats =
+              profileRes['disable_incoming_chats'] as bool? ?? false;
+          _disableProfileComments =
+              profileRes['disable_profile_comments'] as bool? ?? false;
         });
       }
 
@@ -148,8 +151,10 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
           GestureDetector(
             onTap: _saveSettings,
             child: Container(
-              margin: EdgeInsets.only(right: r.s(16), top: r.s(10), bottom: r.s(10)),
-              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(6)),
+              margin: EdgeInsets.only(
+                  right: r.s(16), top: r.s(10), bottom: r.s(10)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(6)),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [AppTheme.primaryColor, AppTheme.accentColor],
@@ -394,8 +399,8 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                           height: 1,
                           color: Colors.white.withValues(alpha: 0.05)),
                       ListTile(
-                        leading: Icon(Icons.block_rounded,
-                            color: Colors.grey[500]),
+                        leading:
+                            Icon(Icons.block_rounded, color: Colors.grey[500]),
                         title: Text(
                           'Usuários Bloqueados',
                           style: TextStyle(
@@ -459,27 +464,36 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                                     showDialog(
                                       context: context,
                                       builder: (ctx2) {
-                                        final confirmCtrl = TextEditingController();
+                                        final confirmCtrl =
+                                            TextEditingController();
                                         return AlertDialog(
                                           backgroundColor: context.surfaceColor,
-                                          title: const Text('Confirmar Exclus\u00e3o',
-                                              style: TextStyle(color: AppTheme.errorColor)),
+                                          title: const Text(
+                                              'Confirmar Exclus\u00e3o',
+                                              style: TextStyle(
+                                                  color: AppTheme.errorColor)),
                                           content: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              Text('Digite "EXCLUIR" para confirmar:',
-                                                  style: TextStyle(color: Colors.grey[400])),
+                                              Text(
+                                                  'Digite "EXCLUIR" para confirmar:',
+                                                  style: TextStyle(
+                                                      color: Colors.grey[400])),
                                               SizedBox(height: r.s(12)),
                                               TextField(
                                                 controller: confirmCtrl,
-                                                style: TextStyle(color: context.textPrimary),
+                                                style: TextStyle(
+                                                    color: context.textPrimary),
                                                 decoration: InputDecoration(
                                                   hintText: 'EXCLUIR',
-                                                  hintStyle: TextStyle(color: Colors.grey[600]),
+                                                  hintStyle: TextStyle(
+                                                      color: Colors.grey[600]),
                                                   filled: true,
                                                   fillColor: context.scaffoldBg,
                                                   border: OutlineInputBorder(
-                                                    borderRadius: BorderRadius.circular(r.s(12)),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            r.s(12)),
                                                     borderSide: BorderSide.none,
                                                   ),
                                                 ),
@@ -488,40 +502,58 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                                           ),
                                           actions: [
                                             TextButton(
-                                              onPressed: () => Navigator.pop(ctx2),
+                                              onPressed: () =>
+                                                  Navigator.pop(ctx2),
                                               child: const Text('Cancelar'),
                                             ),
                                             ElevatedButton(
                                               onPressed: () async {
-                                                if (confirmCtrl.text.trim() != 'EXCLUIR') {
-                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                if (confirmCtrl.text.trim() !=
+                                                    'EXCLUIR') {
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
                                                     const SnackBar(
-                                                      content: Text('Digite EXCLUIR para confirmar'),
-                                                      behavior: SnackBarBehavior.floating,
+                                                      content: Text(
+                                                          'Digite EXCLUIR para confirmar'),
+                                                      behavior: SnackBarBehavior
+                                                          .floating,
                                                     ),
                                                   );
                                                   return;
                                                 }
                                                 try {
-                                                  await SupabaseService.client.rpc('delete_user_account');
-                                                  await SupabaseService.client.auth.signOut();
-                                                  if (context.mounted) context.go('/login');
+                                                  await SupabaseService.client
+                                                      .rpc(
+                                                          'delete_user_account');
+                                                  await SupabaseService
+                                                      .client.auth
+                                                      .signOut();
+                                                  if (context.mounted)
+                                                    context.go('/login');
                                                 } catch (e) {
-                                                  if (ctx2.mounted) Navigator.pop(ctx2);
+                                                  if (ctx2.mounted)
+                                                    Navigator.pop(ctx2);
                                                   if (context.mounted) {
-                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
                                                       SnackBar(
-                                                        content: Text('Ocorreu um erro. Tente novamente.'),
-                                                        behavior: SnackBarBehavior.floating,
+                                                        content: Text(
+                                                            'Ocorreu um erro. Tente novamente.'),
+                                                        behavior:
+                                                            SnackBarBehavior
+                                                                .floating,
                                                       ),
                                                     );
                                                   }
                                                 }
                                               },
                                               style: ElevatedButton.styleFrom(
-                                                backgroundColor: AppTheme.errorColor,
+                                                backgroundColor:
+                                                    AppTheme.errorColor,
                                               ),
-                                              child: const Text('Excluir Permanentemente'),
+                                              child: const Text(
+                                                  'Excluir Permanentemente'),
                                             ),
                                           ],
                                         );
@@ -533,7 +565,8 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                                         horizontal: r.s(16), vertical: r.s(8)),
                                     decoration: BoxDecoration(
                                       color: AppTheme.errorColor,
-                                      borderRadius: BorderRadius.circular(r.s(12)),
+                                      borderRadius:
+                                          BorderRadius.circular(r.s(12)),
                                       boxShadow: [
                                         BoxShadow(
                                           color: AppTheme.errorColor

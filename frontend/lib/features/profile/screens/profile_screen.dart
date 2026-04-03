@@ -88,8 +88,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       TextStyle(color: Colors.grey[500], fontSize: r.fs(15))),
               SizedBox(height: r.s(16)),
               GestureDetector(
-                onTap: () =>
-                    ref.invalidate(userProfileProvider(widget.userId)),
+                onTap: () => ref.invalidate(userProfileProvider(widget.userId)),
                 child: Container(
                   padding: EdgeInsets.symmetric(
                       horizontal: r.s(20), vertical: r.s(10)),
@@ -120,529 +119,514 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               await Future.delayed(const Duration(milliseconds: 300));
             },
             child: NestedScrollView(
-            headerSliverBuilder: (context, innerBoxIsScrolled) => [
-              // ================================================================
-              // TOP BAR
-              // ================================================================
-              SliverAppBar(
-                pinned: true,
-                backgroundColor:
-                    context.scaffoldBg.withValues(alpha: 0.95),
-                elevation: 0,
-                leading: IconButton(
-                  icon: Icon(Icons.arrow_back_ios_rounded,
-                      color: Colors.white, size: r.s(20)),
-                  onPressed: () => context.pop(),
-                ),
-                title: GestureDetector(
-                  onTap: () => context.push('/wallet'),
-                  child: Container(
-                    height: r.s(28),
-                    padding: EdgeInsets.symmetric(horizontal: r.s(10)),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppTheme.aminoOrange, Color(0xFFFFB74D)],
+              headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                // ================================================================
+                // TOP BAR
+                // ================================================================
+                SliverAppBar(
+                  pinned: true,
+                  backgroundColor: context.scaffoldBg.withValues(alpha: 0.95),
+                  elevation: 0,
+                  leading: IconButton(
+                    icon: Icon(Icons.arrow_back_ios_rounded,
+                        color: Colors.white, size: r.s(20)),
+                    onPressed: () => context.pop(),
+                  ),
+                  title: GestureDetector(
+                    onTap: () => context.push('/wallet'),
+                    child: Container(
+                      height: r.s(28),
+                      padding: EdgeInsets.symmetric(horizontal: r.s(10)),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFF9800), Color(0xFFFFB74D)],
+                        ),
+                        borderRadius: BorderRadius.circular(r.s(14)),
                       ),
-                      borderRadius: BorderRadius.circular(r.s(14)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: r.s(16),
-                          height: r.s(16),
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              colors: [AppTheme.coinGold, Color(0xFFFFA500)],
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: r.s(16),
+                            height: r.s(16),
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+                              ),
+                            ),
+                            child: Center(
+                              child: Text('A',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: r.fs(9),
+                                      fontWeight: FontWeight.w900,
+                                      height: 1.0)),
                             ),
                           ),
-                          child: Center(
-                            child: Text('A',
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: r.fs(9),
-                                    fontWeight: FontWeight.w900,
-                                    height: 1.0)),
+                          SizedBox(width: r.s(4)),
+                          Text(
+                            _formatCoins(user.coins),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: r.fs(12),
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
+                          SizedBox(width: r.s(4)),
+                          Container(
+                            width: r.s(16),
+                            height: r.s(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.3),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(Icons.add,
+                                color: Colors.white, size: r.s(11)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  centerTitle: true,
+                  actions: [
+                    IconButton(
+                      icon: Icon(Icons.share_outlined,
+                          color: Colors.white, size: r.s(22)),
+                      onPressed: () {
+                        final link = 'https://nexushub.app/u/${widget.userId}';
+                        Clipboard.setData(ClipboardData(text: link));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Link do perfil copiado!'),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        isOwnProfile
+                            ? Icons.menu_rounded
+                            : Icons.more_horiz_rounded,
+                        color: Colors.white,
+                        size: r.s(22),
+                      ),
+                      onPressed: isOwnProfile
+                          ? () => context.push('/settings')
+                          : () => _showUserOptions(context, user),
+                    ),
+                  ],
+                ),
+
+                // ================================================================
+                // AVATAR + EDIT PROFILE
+                // ================================================================
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16), 0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AvatarWithFrame(
+                          avatarUrl: user.iconUrl,
+                          frameUrl: frameUrl,
+                          size: r.s(80),
+                          showAminoPlus: isAminoPlus,
                         ),
-                        SizedBox(width: r.s(4)),
-                        Text(
-                          _formatCoins(user.coins),
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: r.fs(12),
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        SizedBox(width: r.s(4)),
-                        Container(
-                          width: r.s(16),
-                          height: r.s(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.3),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(Icons.add,
-                              color: Colors.white, size: r.s(11)),
+                        const Spacer(),
+                        Padding(
+                          padding: EdgeInsets.only(top: r.s(16)),
+                          child: isOwnProfile
+                              ? GestureDetector(
+                                  onTap: () => context.push('/profile/edit'),
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: r.s(16), vertical: r.s(8)),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.08),
+                                      borderRadius:
+                                          BorderRadius.circular(r.s(8)),
+                                      border: Border.all(
+                                        color: Colors.white
+                                            .withValues(alpha: 0.15),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.edit_rounded,
+                                            size: r.s(14),
+                                            color: Colors.grey[400]),
+                                        SizedBox(width: r.s(6)),
+                                        Text(
+                                          'Edit Profile',
+                                          style: TextStyle(
+                                            color: Colors.grey[300],
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: r.fs(13),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              : GestureDetector(
+                                  onTap: () => _toggleFollow(ref, user),
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: r.s(20), vertical: r.s(8)),
+                                    decoration: BoxDecoration(
+                                      color: user.isFollowing == true
+                                          ? Colors.transparent
+                                          : AppTheme.accentColor,
+                                      borderRadius:
+                                          BorderRadius.circular(r.s(8)),
+                                      border: user.isFollowing == true
+                                          ? Border.all(
+                                              color: AppTheme.accentColor)
+                                          : null,
+                                    ),
+                                    child: Text(
+                                      user.isFollowing == true
+                                          ? 'Seguindo'
+                                          : 'Seguir',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: r.fs(13),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                         ),
                       ],
                     ),
                   ),
                 ),
-                centerTitle: true,
-                actions: [
-                  IconButton(
-                    icon: Icon(Icons.share_outlined,
-                        color: Colors.white, size: r.s(22)),
-                    onPressed: () {
-                      final link =
-                          'https://nexushub.app/u/${widget.userId}';
-                      Clipboard.setData(ClipboardData(text: link));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Link do perfil copiado!'),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    },
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      isOwnProfile
-                          ? Icons.menu_rounded
-                          : Icons.more_horiz_rounded,
-                      color: Colors.white,
-                      size: r.s(22),
-                    ),
-                    onPressed: isOwnProfile
-                        ? () => context.push('/settings')
-                        : () => _showUserOptions(context, user),
-                  ),
-                ],
-              ),
 
-              // ================================================================
-              // AVATAR + EDIT PROFILE
-              // ================================================================
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding:
-                      EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16), 0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AvatarWithFrame(
-                        avatarUrl: user.iconUrl,
-                        frameUrl: frameUrl,
-                        size: r.s(80),
-                        showAminoPlus: isAminoPlus,
-                      ),
-                      const Spacer(),
-                      Padding(
-                        padding: EdgeInsets.only(top: r.s(16)),
-                        child: isOwnProfile
-                            ? GestureDetector(
-                                onTap: () => context.push('/profile/edit'),
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: r.s(16),
-                                      vertical: r.s(8)),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white
-                                        .withValues(alpha: 0.08),
-                                    borderRadius:
-                                        BorderRadius.circular(r.s(8)),
-                                    border: Border.all(
-                                      color: Colors.white
-                                          .withValues(alpha: 0.15),
+                // ================================================================
+                // NOME + BADGES + @USERNAME
+                // ================================================================
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(r.s(16), r.s(12), r.s(16), 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                user.nickname,
+                                style: TextStyle(
+                                  color: context.textPrimary,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: r.fs(22),
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (isAminoPlus) ...[
+                              SizedBox(width: r.s(6)),
+                              const AminoPlusBadge(),
+                            ],
+                            if (user.isNicknameVerified) ...[
+                              SizedBox(width: r.s(4)),
+                              Icon(Icons.verified_rounded,
+                                  color: AppTheme.accentColor, size: r.s(18)),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        if (user.aminoId.isNotEmpty)
+                          Text(
+                            '@${user.aminoId}',
+                            style: TextStyle(
+                                color: Colors.grey[500], fontSize: r.fs(13)),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // ================================================================
+                // FOLLOWING / FOLLOWERS
+                // ================================================================
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: r.s(16), vertical: r.s(12)),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => context.push(
+                                '/user/${widget.userId}/followers?tab=following'),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(vertical: r.s(14)),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.06),
+                                borderRadius: BorderRadius.circular(r.s(12)),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.08),
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    _formatCount(user.followingCount),
+                                    style: TextStyle(
+                                      color: context.textPrimary,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: r.fs(20),
                                     ),
                                   ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.edit_rounded,
-                                          size: r.s(14),
-                                          color: Colors.grey[400]),
-                                      SizedBox(width: r.s(6)),
-                                      Text(
-                                        'Edit Profile',
-                                        style: TextStyle(
-                                          color: Colors.grey[300],
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: r.fs(13),
-                                        ),
-                                      ),
-                                    ],
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Following',
+                                    style: TextStyle(
+                                        color: Colors.grey[500],
+                                        fontSize: r.fs(12)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: r.s(12)),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => context
+                                .push('/user/${widget.userId}/followers'),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(vertical: r.s(14)),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.06),
+                                borderRadius: BorderRadius.circular(r.s(12)),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.08),
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    _formatCount(user.followersCount),
+                                    style: TextStyle(
+                                      color: context.textPrimary,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: r.fs(20),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Followers',
+                                    style: TextStyle(
+                                        color: Colors.grey[500],
+                                        fontSize: r.fs(12)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // ================================================================
+                // BIO
+                // ================================================================
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: r.s(16), vertical: r.s(4)),
+                    child: user.bio.isNotEmpty
+                        ? MarkdownBody(
+                            data: user.bio,
+                            styleSheet: MarkdownStyleSheet(
+                              p: TextStyle(
+                                color: Colors.grey[300],
+                                height: 1.5,
+                                fontSize: r.fs(14),
+                              ),
+                              strong: TextStyle(
+                                color: Colors.grey[300],
+                                fontWeight: FontWeight.w700,
+                                fontSize: r.fs(14),
+                              ),
+                              em: TextStyle(
+                                color: Colors.grey[300],
+                                fontStyle: FontStyle.italic,
+                                fontSize: r.fs(14),
+                              ),
+                              del: TextStyle(
+                                color: Colors.grey[500],
+                                decoration: TextDecoration.lineThrough,
+                                fontSize: r.fs(14),
+                              ),
+                              a: const TextStyle(
+                                color: AppTheme.primaryColor,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          )
+                        : isOwnProfile
+                            ? GestureDetector(
+                                onTap: () => context.push('/profile/edit'),
+                                child: Text(
+                                  'Clique aqui para adicionar sua biografia!',
+                                  style: TextStyle(
+                                    color: AppTheme.accentColor,
+                                    fontSize: r.fs(13),
                                   ),
                                 ),
                               )
-                            : GestureDetector(
-                                onTap: () => _toggleFollow(ref, user),
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: r.s(20),
-                                      vertical: r.s(8)),
-                                  decoration: BoxDecoration(
-                                    color: user.isFollowing == true
-                                        ? Colors.transparent
-                                        : AppTheme.accentColor,
-                                    borderRadius:
-                                        BorderRadius.circular(r.s(8)),
-                                    border: user.isFollowing == true
-                                        ? Border.all(
-                                            color: AppTheme.accentColor)
-                                        : null,
-                                  ),
-                                  child: Text(
-                                    user.isFollowing == true
-                                        ? 'Seguindo'
-                                        : 'Seguir',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: r.fs(13),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                      ),
-                    ],
+                            : const SizedBox.shrink(),
                   ),
                 ),
-              ),
 
-              // ================================================================
-              // NOME + BADGES + @USERNAME
-              // ================================================================
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding:
-                      EdgeInsets.fromLTRB(r.s(16), r.s(12), r.s(16), 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              user.nickname,
-                              style: TextStyle(
-                                color: context.textPrimary,
-                                fontWeight: FontWeight.w800,
-                                fontSize: r.fs(22),
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          if (isAminoPlus) ...[
-                            SizedBox(width: r.s(6)),
-                            const AminoPlusBadge(),
-                          ],
-                          if (user.isNicknameVerified) ...[
-                            SizedBox(width: r.s(4)),
-                            Icon(Icons.verified_rounded,
-                                color: AppTheme.accentColor, size: r.s(18)),
-                          ],
-                        ],
-                      ),
-                      const SizedBox(height: 2),
-                      if (user.aminoId.isNotEmpty)
-                        Text(
-                          '@${user.aminoId}',
-                          style: TextStyle(
-                              color: Colors.grey[500], fontSize: r.fs(13)),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // ================================================================
-              // FOLLOWING / FOLLOWERS
-              // ================================================================
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: r.s(16), vertical: r.s(12)),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => context
-                              .push('/user/${widget.userId}/followers?tab=following'),
-                          child: Container(
-                            padding:
-                                EdgeInsets.symmetric(vertical: r.s(14)),
-                            decoration: BoxDecoration(
-                              color:
-                                  Colors.white.withValues(alpha: 0.06),
-                              borderRadius:
-                                  BorderRadius.circular(r.s(12)),
-                              border: Border.all(
-                                color: Colors.white
-                                    .withValues(alpha: 0.08),
-                              ),
-                            ),
-                            child: Column(
-                              children: [
-                                Text(
-                                  _formatCount(user.followingCount),
-                                  style: TextStyle(
-                                    color: context.textPrimary,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: r.fs(20),
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  'Following',
-                                  style: TextStyle(
-                                      color: Colors.grey[500],
-                                      fontSize: r.fs(12)),
-                                ),
-                              ],
-                            ),
+                // ================================================================
+                // AMINO+ BANNER
+                // ================================================================
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: r.s(16), vertical: r.s(8)),
+                    child: GestureDetector(
+                      onTap: () => context.go('/store'),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: r.s(14), vertical: r.s(12)),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.06),
+                          borderRadius: BorderRadius.circular(r.s(12)),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.08),
                           ),
                         ),
-                      ),
-                      SizedBox(width: r.s(12)),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => context
-                              .push('/user/${widget.userId}/followers'),
-                          child: Container(
-                            padding:
-                                EdgeInsets.symmetric(vertical: r.s(14)),
-                            decoration: BoxDecoration(
-                              color:
-                                  Colors.white.withValues(alpha: 0.06),
-                              borderRadius:
-                                  BorderRadius.circular(r.s(12)),
-                              border: Border.all(
-                                color: Colors.white
-                                    .withValues(alpha: 0.08),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: r.s(8), vertical: r.s(4)),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFD700),
+                                borderRadius: BorderRadius.circular(r.s(6)),
                               ),
-                            ),
-                            child: Column(
-                              children: [
-                                Text(
-                                  _formatCount(user.followersCount),
-                                  style: TextStyle(
-                                    color: context.textPrimary,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: r.fs(20),
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  'Followers',
-                                  style: TextStyle(
-                                      color: Colors.grey[500],
-                                      fontSize: r.fs(12)),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // ================================================================
-              // BIO
-              // ================================================================
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: r.s(16), vertical: r.s(4)),
-                  child: user.bio.isNotEmpty
-                      ? MarkdownBody(
-                          data: user.bio,
-                          styleSheet: MarkdownStyleSheet(
-                            p: TextStyle(
-                              color: Colors.grey[300],
-                              height: 1.5,
-                              fontSize: r.fs(14),
-                            ),
-                            strong: TextStyle(
-                              color: Colors.grey[300],
-                              fontWeight: FontWeight.w700,
-                              fontSize: r.fs(14),
-                            ),
-                            em: TextStyle(
-                              color: Colors.grey[300],
-                              fontStyle: FontStyle.italic,
-                              fontSize: r.fs(14),
-                            ),
-                            del: TextStyle(
-                              color: Colors.grey[500],
-                              decoration: TextDecoration.lineThrough,
-                              fontSize: r.fs(14),
-                            ),
-                            a: const TextStyle(
-                              color: AppTheme.primaryColor,
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
-                        )
-                      : isOwnProfile
-                          ? GestureDetector(
-                              onTap: () => context.push('/profile/edit'),
                               child: Text(
-                                'Clique aqui para adicionar sua biografia!',
+                                'Amino+',
                                 style: TextStyle(
-                                  color: AppTheme.accentColor,
-                                  fontSize: r.fs(13),
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: r.fs(11),
                                 ),
                               ),
-                            )
-                          : const SizedBox.shrink(),
-                ),
-              ),
-
-              // ================================================================
-              // AMINO+ BANNER
-              // ================================================================
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: r.s(16), vertical: r.s(8)),
-                  child: GestureDetector(
-                    onTap: () => context.go('/store'),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: r.s(14), vertical: r.s(12)),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.06),
-                        borderRadius: BorderRadius.circular(r.s(12)),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.08),
+                            ),
+                            SizedBox(width: r.s(10)),
+                            Expanded(
+                              child: Text(
+                                isAminoPlus
+                                    ? 'Membro Amino+'
+                                    : 'Try Amino+ for free today!',
+                                style: TextStyle(
+                                  color: Colors.grey[400],
+                                  fontSize: r.fs(13),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: r.s(8), vertical: r.s(4)),
-                            decoration: BoxDecoration(
-                              color: const AppTheme.coinGold,
-                              borderRadius:
-                                  BorderRadius.circular(r.s(6)),
-                            ),
-                            child: Text(
-                              'Amino+',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w900,
-                                fontSize: r.fs(11),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: r.s(10)),
-                          Expanded(
-                            child: Text(
-                              isAminoPlus
-                                  ? 'Membro Amino+'
-                                  : 'Try Amino+ for free today!',
-                              style: TextStyle(
-                                color: Colors.grey[400],
-                                fontSize: r.fs(13),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ],
+                    ),
+                  ),
+                ),
+
+                // ================================================================
+                // DIVIDER
+                // ================================================================
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: r.s(16), vertical: r.s(4)),
+                    child: Divider(
+                      color: Colors.white.withValues(alpha: 0.08),
+                      height: 1,
+                    ),
+                  ),
+                ),
+
+                // ================================================================
+                // LINKED COMMUNITIES
+                // ================================================================
+                SliverToBoxAdapter(
+                  child: ProfileLinkedCommunities(userId: widget.userId),
+                ),
+
+                // ================================================================
+                // DIVIDER
+                // ================================================================
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: r.s(16), vertical: r.s(4)),
+                    child: Divider(
+                      color: Colors.white.withValues(alpha: 0.08),
+                      height: 1,
+                    ),
+                  ),
+                ),
+
+                // ================================================================
+                // PINNED WIKIS
+                // ================================================================
+                SliverToBoxAdapter(
+                  child: ProfilePinnedWikis(userId: widget.userId),
+                ),
+
+                // ================================================================
+                // TABS — Stories | Wall
+                // ================================================================
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: _TabBarDelegate(
+                    tabBar: TabBar(
+                      controller: _tabController,
+                      labelColor: context.textPrimary,
+                      unselectedLabelColor: Colors.grey[600],
+                      labelStyle: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: r.fs(16),
                       ),
+                      unselectedLabelStyle: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: r.fs(16),
+                      ),
+                      indicatorColor: context.textPrimary,
+                      indicatorWeight: 3,
+                      indicatorSize: TabBarIndicatorSize.label,
+                      tabs: const [
+                        Tab(text: 'Stories'),
+                        Tab(text: 'Wall'),
+                      ],
                     ),
                   ),
-                ),
-              ),
-
-              // ================================================================
-              // DIVIDER
-              // ================================================================
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: r.s(16), vertical: r.s(4)),
-                  child: Divider(
-                    color: Colors.white.withValues(alpha: 0.08),
-                    height: 1,
-                  ),
-                ),
-              ),
-
-              // ================================================================
-              // LINKED COMMUNITIES
-              // ================================================================
-              SliverToBoxAdapter(
-                child: ProfileLinkedCommunities(userId: widget.userId),
-              ),
-
-              // ================================================================
-              // DIVIDER
-              // ================================================================
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: r.s(16), vertical: r.s(4)),
-                  child: Divider(
-                    color: Colors.white.withValues(alpha: 0.08),
-                    height: 1,
-                  ),
-                ),
-              ),
-
-              // ================================================================
-              // PINNED WIKIS
-              // ================================================================
-              SliverToBoxAdapter(
-                child: ProfilePinnedWikis(userId: widget.userId),
-              ),
-
-              // ================================================================
-              // TABS — Stories | Wall
-              // ================================================================
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: _TabBarDelegate(
-                  tabBar: TabBar(
-                    controller: _tabController,
-                    labelColor: context.textPrimary,
-                    unselectedLabelColor: Colors.grey[600],
-                    labelStyle: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: r.fs(16),
-                    ),
-                    unselectedLabelStyle: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: r.fs(16),
-                    ),
-                    indicatorColor: context.textPrimary,
-                    indicatorWeight: 3,
-                    indicatorSize: TabBarIndicatorSize.label,
-                    tabs: const [
-                      Tab(text: 'Stories'),
-                      Tab(text: 'Wall'),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-            body: TabBarView(
-              controller: _tabController,
-              children: [
-                ProfileStoriesTab(userId: widget.userId),
-                ProfileWallTab(
-                  userId: widget.userId,
-                  wallController: _wallController,
                 ),
               ],
+              body: TabBarView(
+                controller: _tabController,
+                children: [
+                  ProfileStoriesTab(userId: widget.userId),
+                  ProfileWallTab(
+                    userId: widget.userId,
+                    wallController: _wallController,
+                  ),
+                ],
+              ),
             ),
-          ),
           ), // RefreshIndicator
         );
       },

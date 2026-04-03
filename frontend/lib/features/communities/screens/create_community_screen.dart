@@ -73,7 +73,8 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
       if (!success) {
         final error = response['error'] as String? ?? 'unknown';
         final message = switch (error) {
-          'unauthenticated' => 'Você precisa estar logado para criar uma comunidade.',
+          'unauthenticated' =>
+            'Você precisa estar logado para criar uma comunidade.',
           'name_required' => 'O nome da comunidade é obrigatório.',
           _ => 'Erro ao criar comunidade. Tente novamente.',
         };
@@ -124,8 +125,10 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
           GestureDetector(
             onTap: _isLoading ? null : _createCommunity,
             child: Container(
-              margin: EdgeInsets.only(right: r.s(16), top: r.s(8), bottom: r.s(8)),
-              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+              margin:
+                  EdgeInsets.only(right: r.s(16), top: r.s(8), bottom: r.s(8)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [AppTheme.primaryColor, AppTheme.accentColor],

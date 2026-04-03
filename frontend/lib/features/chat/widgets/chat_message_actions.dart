@@ -62,7 +62,14 @@ class ChatMessageActionsSheet extends StatelessWidget {
           // Quick reactions
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: ['\u2764\uFE0F', '\uD83D\uDE02', '\uD83D\uDE2E', '\uD83D\uDE22', '\uD83D\uDC4D', '\uD83D\uDC4E']
+            children: [
+              '\u2764\uFE0F',
+              '\uD83D\uDE02',
+              '\uD83D\uDE2E',
+              '\uD83D\uDE22',
+              '\uD83D\uDC4D',
+              '\uD83D\uDC4E'
+            ]
                 .map((emoji) => GestureDetector(
                       onTap: () {
                         Navigator.pop(context);
@@ -101,16 +108,20 @@ class ChatMessageActionsSheet extends StatelessWidget {
           }),
           // Fixar (apenas host, co-hosts ou team)
           if (_canPin())
-            _actionTile(context, r, Icons.push_pin_rounded, 'Fixar Mensagem', () {
+            _actionTile(context, r, Icons.push_pin_rounded, 'Fixar Mensagem',
+                () {
               Navigator.pop(context, ChatMessageAction.pin);
             }),
           // Apagar para mim
-          _actionTile(context, r, Icons.visibility_off_rounded, 'Apagar para mim', () {
+          _actionTile(
+              context, r, Icons.visibility_off_rounded, 'Apagar para mim', () {
             Navigator.pop(context, ChatMessageAction.deleteForMe);
           }, isDestructive: true),
           // Apagar para todos (só autor)
           if (isMe)
-            _actionTile(context, r, Icons.delete_forever_rounded, 'Apagar para todos', () {
+            _actionTile(
+                context, r, Icons.delete_forever_rounded, 'Apagar para todos',
+                () {
               Navigator.pop(context, ChatMessageAction.deleteForAll);
             }, isDestructive: true),
           // Denunciar (só para mensagens de outros)
@@ -138,7 +149,9 @@ class ChatMessageActionsSheet extends StatelessWidget {
             SizedBox(width: r.s(12)),
             Text(label,
                 style: TextStyle(
-                    color: color, fontSize: r.fs(14), fontWeight: FontWeight.w500)),
+                    color: color,
+                    fontSize: r.fs(14),
+                    fontWeight: FontWeight.w500)),
           ],
         ),
       ),

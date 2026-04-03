@@ -17,26 +17,26 @@ import 'package:flutter/material.dart';
 /// Tabela fixa de reputação necessária para cada nível.
 /// Index 0 = Nível 1, Index 19 = Nível 20.
 const List<int> levelThresholds = [
-  0,       // Nível  1  —  0 rep (início)
-  1800,    // Nível  2  —  ~4 dias
-  6300,    // Nível  3  —  ~13 dias
-  13000,   // Nível  4  —  ~26 dias
-  22000,   // Nível  5  —  ~44 dias
-  33000,   // Nível  6  —  ~66 dias (2 meses)
-  46000,   // Nível  7  —  ~92 dias (3 meses)
-  60500,   // Nível  8  —  ~121 dias (4 meses)
-  77000,   // Nível  9  —  ~154 dias (5 meses)
-  95000,   // Nível 10  —  ~190 dias (6 meses)
-  115000,  // Nível 11  —  ~230 dias (8 meses)
-  136500,  // Nível 12  —  ~273 dias (9 meses)
-  159500,  // Nível 13  —  ~319 dias (11 meses)
-  184500,  // Nível 14  —  ~369 dias (1 ano)
-  210500,  // Nível 15  —  ~421 dias (1 ano 2 meses)
-  238500,  // Nível 16  —  ~477 dias (1 ano 4 meses)
-  268000,  // Nível 17  —  ~536 dias (1 ano 6 meses)
-  299000,  // Nível 18  —  ~598 dias (1 ano 8 meses)
-  331000,  // Nível 19  —  ~662 dias (1 ano 10 meses)
-  365000,  // Nível 20  —  ~730 dias (2 anos)
+  0, // Nível  1  —  0 rep (início)
+  1800, // Nível  2  —  ~4 dias
+  6300, // Nível  3  —  ~13 dias
+  13000, // Nível  4  —  ~26 dias
+  22000, // Nível  5  —  ~44 dias
+  33000, // Nível  6  —  ~66 dias (2 meses)
+  46000, // Nível  7  —  ~92 dias (3 meses)
+  60500, // Nível  8  —  ~121 dias (4 meses)
+  77000, // Nível  9  —  ~154 dias (5 meses)
+  95000, // Nível 10  —  ~190 dias (6 meses)
+  115000, // Nível 11  —  ~230 dias (8 meses)
+  136500, // Nível 12  —  ~273 dias (9 meses)
+  159500, // Nível 13  —  ~319 dias (11 meses)
+  184500, // Nível 14  —  ~369 dias (1 ano)
+  210500, // Nível 15  —  ~421 dias (1 ano 2 meses)
+  238500, // Nível 16  —  ~477 dias (1 ano 4 meses)
+  268000, // Nível 17  —  ~536 dias (1 ano 6 meses)
+  299000, // Nível 18  —  ~598 dias (1 ano 8 meses)
+  331000, // Nível 19  —  ~662 dias (1 ano 10 meses)
+  365000, // Nível 20  —  ~730 dias (2 anos)
 ];
 
 /// Nível máximo do sistema.
@@ -153,26 +153,26 @@ int clampDailyReputation(int earnedToday, int amount) {
 /// Nome do nível para exibição (títulos temáticos).
 String levelTitle(int level) {
   const titles = [
-    'Novato',           // 1
-    'Iniciante',        // 2
-    'Aprendiz',         // 3
-    'Explorador',       // 4
-    'Aventureiro',      // 5
-    'Guerreiro',        // 6
-    'Veterano',         // 7
-    'Especialista',     // 8
-    'Mestre',           // 9
-    'Grão-Mestre',      // 10
-    'Campeão',          // 11
-    'Herói',            // 12
-    'Guardião',         // 13
-    'Sentinela',        // 14
-    'Lendário',         // 15
-    'Mítico',           // 16
-    'Divino',           // 17
-    'Celestial',        // 18
-    'Transcendente',    // 19
-    'Supremo',          // 20
+    'Novato', // 1
+    'Iniciante', // 2
+    'Aprendiz', // 3
+    'Explorador', // 4
+    'Aventureiro', // 5
+    'Guerreiro', // 6
+    'Veterano', // 7
+    'Especialista', // 8
+    'Mestre', // 9
+    'Grão-Mestre', // 10
+    'Campeão', // 11
+    'Herói', // 12
+    'Guardião', // 13
+    'Sentinela', // 14
+    'Lendário', // 15
+    'Mítico', // 16
+    'Divino', // 17
+    'Celestial', // 18
+    'Transcendente', // 19
+    'Supremo', // 20
   ];
   final idx = (level - 1).clamp(0, titles.length - 1);
   return titles[idx];

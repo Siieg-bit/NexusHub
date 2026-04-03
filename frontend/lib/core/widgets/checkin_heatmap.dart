@@ -74,8 +74,7 @@ class CheckinHeatmap extends StatelessWidget {
     final weeks = <List<_DayData>>[];
     var currentDate = adjustedStart;
 
-    while (currentDate.isBefore(today) ||
-        currentDate.isAtSameMomentAs(today)) {
+    while (currentDate.isBefore(today) || currentDate.isAtSameMomentAs(today)) {
       final weekday = currentDate.weekday % 7; // 0=Dom, 6=Sáb
       if (weekday == 0) {
         weeks.add([]);
@@ -153,47 +152,48 @@ class CheckinHeatmap extends StatelessWidget {
           // conter qualquer arredondamento residual de subpixel.
           ClipRect(
             child: SizedBox(
-            height: 7 * r.s(14), // 7 rows * label height (alinhado com os labels)
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              reverse: true, // Scroll começa no final (semana atual)
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Labels dos dias da semana
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: ['D', 'S', 'T', 'Q', 'Q', 'S', 'S']
-                        .map((d) => SizedBox(
-                              height: r.s(14),
-                              child: Text(d,
-                                  style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: r.fs(9),
-                                      fontWeight: FontWeight.w500)),
-                            ))
-                        .toList(),
-                  ),
-                  SizedBox(width: r.s(4)),
-                  // Grid de quadrados
-                  ...weeks.map((week) => Padding(
-                        padding: const EdgeInsets.only(right: 2),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: week
-                              .map((day) => _HeatmapCell(
-                                    color: day.isFuture
-                                        ? Colors.transparent
-                                        : _colorForLevel(day.level),
-                                    isToday: day.isToday,
-                                  ))
-                              .toList(),
-                        ),
-                      )),
-                ],
+              height:
+                  7 * r.s(14), // 7 rows * label height (alinhado com os labels)
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                reverse: true, // Scroll começa no final (semana atual)
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Labels dos dias da semana
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: ['D', 'S', 'T', 'Q', 'Q', 'S', 'S']
+                          .map((d) => SizedBox(
+                                height: r.s(14),
+                                child: Text(d,
+                                    style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: r.fs(9),
+                                        fontWeight: FontWeight.w500)),
+                              ))
+                          .toList(),
+                    ),
+                    SizedBox(width: r.s(4)),
+                    // Grid de quadrados
+                    ...weeks.map((week) => Padding(
+                          padding: const EdgeInsets.only(right: 2),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: week
+                                .map((day) => _HeatmapCell(
+                                      color: day.isFuture
+                                          ? Colors.transparent
+                                          : _colorForLevel(day.level),
+                                      isToday: day.isToday,
+                                    ))
+                                .toList(),
+                          ),
+                        )),
+                  ],
+                ),
               ),
             ),
-          ),
           ), // ClipRect
 
           SizedBox(height: r.s(12)),
@@ -203,7 +203,8 @@ class CheckinHeatmap extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text('Menos',
-                  style: TextStyle(color: Colors.grey[600], fontSize: r.fs(10))),
+                  style:
+                      TextStyle(color: Colors.grey[600], fontSize: r.fs(10))),
               SizedBox(width: r.s(4)),
               _HeatmapCell(color: _emptyColor, isToday: false),
               const SizedBox(width: 2),
@@ -216,7 +217,8 @@ class CheckinHeatmap extends StatelessWidget {
               _HeatmapCell(color: _level4, isToday: false),
               SizedBox(width: r.s(4)),
               Text('Mais',
-                  style: TextStyle(color: Colors.grey[600], fontSize: r.fs(10))),
+                  style:
+                      TextStyle(color: Colors.grey[600], fontSize: r.fs(10))),
             ],
           ),
 

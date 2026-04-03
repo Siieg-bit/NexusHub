@@ -85,7 +85,8 @@ class _AppPermissionsScreenState extends State<AppPermissionsScreen>
           builder: (ctx) => AlertDialog(
             backgroundColor: context.surfaceColor,
             title: Text('Permissão negada',
-                style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w700)),
+                style: TextStyle(
+                    color: context.textPrimary, fontWeight: FontWeight.w700)),
             content: Text(
               'A permissão de ${info.title} foi negada permanentemente. '
               'Abra as configurações do sistema para habilitá-la.',
@@ -94,7 +95,8 @@ class _AppPermissionsScreenState extends State<AppPermissionsScreen>
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
+                child:
+                    Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
               ),
               TextButton(
                 onPressed: () {
@@ -102,7 +104,9 @@ class _AppPermissionsScreenState extends State<AppPermissionsScreen>
                   openAppSettings();
                 },
                 child: const Text('Abrir Configurações',
-                    style: TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.w700)),
+                    style: TextStyle(
+                        color: AppTheme.primaryColor,
+                        fontWeight: FontWeight.w700)),
               ),
             ],
           ),
@@ -122,7 +126,8 @@ class _AppPermissionsScreenState extends State<AppPermissionsScreen>
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text('Permissões do App',
-            style: TextStyle(fontWeight: FontWeight.w800, color: context.textPrimary)),
+            style: TextStyle(
+                fontWeight: FontWeight.w800, color: context.textPrimary)),
         iconTheme: IconThemeData(color: context.textPrimary),
       ),
       body: ListView(
@@ -134,16 +139,19 @@ class _AppPermissionsScreenState extends State<AppPermissionsScreen>
             decoration: BoxDecoration(
               color: AppTheme.primaryColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(r.s(12)),
-              border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.2)),
+              border: Border.all(
+                  color: AppTheme.primaryColor.withValues(alpha: 0.2)),
             ),
             child: Row(
               children: [
-                Icon(Icons.info_outline_rounded, color: AppTheme.primaryColor, size: r.s(18)),
+                Icon(Icons.info_outline_rounded,
+                    color: AppTheme.primaryColor, size: r.s(18)),
                 SizedBox(width: r.s(10)),
                 Expanded(
                   child: Text(
                     'Gerencie as permissões que o NexusHub precisa para funcionar corretamente.',
-                    style: TextStyle(color: context.textSecondary, fontSize: r.fs(12)),
+                    style: TextStyle(
+                        color: context.textSecondary, fontSize: r.fs(12)),
                   ),
                 ),
               ],
@@ -165,7 +173,9 @@ class _AppPermissionsScreenState extends State<AppPermissionsScreen>
                   width: r.s(40),
                   height: r.s(40),
                   decoration: BoxDecoration(
-                    color: (isGranted ? AppTheme.primaryColor : (Colors.grey[700] ?? Colors.grey))
+                    color: (isGranted
+                            ? AppTheme.primaryColor
+                            : (Colors.grey[700] ?? Colors.grey))
                         .withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(r.s(10)),
                   ),
@@ -184,7 +194,8 @@ class _AppPermissionsScreenState extends State<AppPermissionsScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(info.description,
-                        style: TextStyle(color: Colors.grey[600], fontSize: r.fs(11))),
+                        style: TextStyle(
+                            color: Colors.grey[600], fontSize: r.fs(11))),
                     SizedBox(height: r.s(2)),
                     Text(
                       isGranted
@@ -217,7 +228,8 @@ class _AppPermissionsScreenState extends State<AppPermissionsScreen>
                         : TextButton(
                             onPressed: () => _requestPermission(info),
                             style: TextButton.styleFrom(
-                              backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
+                              backgroundColor:
+                                  AppTheme.primaryColor.withValues(alpha: 0.1),
                               padding: EdgeInsets.symmetric(
                                   horizontal: r.s(12), vertical: r.s(4)),
                               shape: RoundedRectangleBorder(

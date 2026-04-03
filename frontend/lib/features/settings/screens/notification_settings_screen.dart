@@ -59,7 +59,6 @@ class _NotificationSettingsScreenState
 
       if (res != null) {
         if (!mounted) return;
-        final onlyFriends = res['only_friends'] as bool? ?? false;
         setState(() {
           _pushEnabled = res['push_enabled'] as bool? ?? true;
           _pushLikes = res['push_likes'] as bool? ?? true;
@@ -72,9 +71,16 @@ class _NotificationSettingsScreenState
           _pushAchievements = res['push_achievements'] as bool? ?? true;
           _pushLevelUp = res['push_level_up'] as bool? ?? true;
           _pushModeration = res['push_moderation'] as bool? ?? true;
-          _onlyFriendsLikes = onlyFriends;
-          _onlyFriendsComments = onlyFriends;
-          _onlyFriendsMessages = onlyFriends;
+          _inAppSounds = res['in_app_sounds'] as bool? ?? true;
+          _inAppVibration = res['in_app_vibration'] as bool? ?? true;
+          _onlyFriendsLikes = res['only_friends_likes'] as bool? ?? false;
+          _onlyFriendsComments = res['only_friends_comments'] as bool? ?? false;
+          _onlyFriendsMessages = res['only_friends_messages'] as bool? ?? false;
+          _pauseAllUntil = res['pause_all_until'] != null;
+          if (res['pause_all_until'] != null) {
+            _pauseUntilDate =
+                DateTime.tryParse(res['pause_all_until'] as String? ?? '');
+          }
         });
       }
 
@@ -89,19 +95,26 @@ class _NotificationSettingsScreenState
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
 
-      // Usar a RPC upsert_notification_settings que já existe no backend
-      await SupabaseService.rpc('upsert_notification_settings', params: {
-        'p_push_enabled': _pushEnabled,
-        'p_only_friends': _onlyFriendsLikes || _onlyFriendsComments || _onlyFriendsMessages,
-        'p_push_likes': _pushLikes,
-        'p_push_comments': _pushComments,
-        'p_push_follows': _pushFollows,
-        'p_push_mentions': _pushMentions,
-        'p_push_chat_messages': _pushChatMessages,
-        'p_push_community_invites': _pushCommunityInvites,
-        'p_push_achievements': _pushAchievements,
-        'p_push_level_up': _pushLevelUp,
-        'p_push_moderation': _pushModeration,
+      await SupabaseService.table('notification_settings').upsert({
+        'user_id': userId,
+        'push_enabled': _pushEnabled,
+        'push_likes': _pushLikes,
+        'push_comments': _pushComments,
+        'push_follows': _pushFollows,
+        'push_mentions': _pushMentions,
+        'push_chat_messages': _pushChatMessages,
+        'push_community_invites': _pushCommunityInvites,
+        'push_achievements': _pushAchievements,
+        'push_level_up': _pushLevelUp,
+        'push_moderation': _pushModeration,
+        'in_app_sounds': _inAppSounds,
+        'in_app_vibration': _inAppVibration,
+        'only_friends_likes': _onlyFriendsLikes,
+        'only_friends_comments': _onlyFriendsComments,
+        'only_friends_messages': _onlyFriendsMessages,
+        'pause_all_until': _pauseAllUntil && _pauseUntilDate != null
+            ? _pauseUntilDate!.toIso8601String()
+            : null,
       });
 
       if (mounted) {
@@ -138,8 +151,10 @@ class _NotificationSettingsScreenState
           GestureDetector(
             onTap: _saveSettings,
             child: Container(
-              margin: EdgeInsets.only(right: r.s(16), top: r.s(8), bottom: r.s(8)),
-              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+              margin:
+                  EdgeInsets.only(right: r.s(16), top: r.s(8), bottom: r.s(8)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [AppTheme.primaryColor, AppTheme.accentColor],
@@ -235,7 +250,8 @@ class _NotificationSettingsScreenState
                         value: _pushEnabled,
                         onChanged: (v) => setState(() => _pushEnabled = v),
                         activeColor: AppTheme.primaryColor,
-                        activeTrackColor: AppTheme.primaryColor.withValues(alpha: 0.3),
+                        activeTrackColor:
+                            AppTheme.primaryColor.withValues(alpha: 0.3),
                         inactiveThumbColor: Colors.grey[400],
                         inactiveTrackColor: Colors.grey[800],
                       ),
@@ -256,7 +272,7 @@ class _NotificationSettingsScreenState
                         ? 'Apenas de amigos'
                         : 'Quando alguém curte seu post',
                     value: _pushLikes,
-                    color: const AppTheme.fabPink,
+                    color: const Color(0xFFE91E63),
                     onChanged: (v) => setState(() => _pushLikes = v),
                     filterWidget: _pushLikes
                         ? _FriendsOnlyChip(
@@ -296,7 +312,7 @@ class _NotificationSettingsScreenState
                     title: 'Menções',
                     subtitle: 'Quando alguém menciona você',
                     value: _pushMentions,
-                    color: const AppTheme.accentColor,
+                    color: const Color(0xFF00BCD4),
                     onChanged: (v) => setState(() => _pushMentions = v),
                   ),
                   SizedBox(height: r.s(24)),
@@ -341,7 +357,7 @@ class _NotificationSettingsScreenState
                     title: 'Subiu de Nível',
                     subtitle: 'Quando sobe de nível',
                     value: _pushLevelUp,
-                    color: const AppTheme.badgeAge,
+                    color: const Color(0xFF9C27B0),
                     onChanged: (v) => setState(() => _pushLevelUp = v),
                   ),
                   SizedBox(height: r.s(24)),
@@ -383,7 +399,8 @@ class _NotificationSettingsScreenState
                             width: r.s(40),
                             height: r.s(40),
                             decoration: BoxDecoration(
-                              color: AppTheme.warningColor.withValues(alpha: 0.15),
+                              color:
+                                  AppTheme.warningColor.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(r.s(12)),
                             ),
                             child: Icon(Icons.do_not_disturb_on_rounded,
@@ -418,7 +435,8 @@ class _NotificationSettingsScreenState
                                 final now = DateTime.now();
                                 final picked = await showDateTimePicker(
                                   context: context,
-                                  initialDate: now.add(const Duration(hours: 8)),
+                                  initialDate:
+                                      now.add(const Duration(hours: 8)),
                                   firstDate: now,
                                   lastDate: now.add(const Duration(days: 30)),
                                 );
@@ -557,7 +575,10 @@ class _NotifToggle extends StatelessWidget {
                     fontSize: r.fs(13),
                   ),
                 ),
-                if (filterWidget != null) ...[SizedBox(height: r.s(6)), filterWidget!],
+                if (filterWidget != null) ...[
+                  SizedBox(height: r.s(6)),
+                  filterWidget!
+                ],
               ],
             ),
           ),

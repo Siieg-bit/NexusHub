@@ -42,9 +42,7 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
         summary.contains('A RenderFlex') ||
         summary.contains('overflowed by') ||
         (details.exception is FlutterError &&
-            (details.exception as FlutterError)
-                .message
-                .contains('overflowed'));
+            (details.exception as FlutterError).message.contains('overflowed'));
   }
 
   @override

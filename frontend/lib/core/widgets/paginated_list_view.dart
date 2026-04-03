@@ -352,7 +352,7 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
   }
 
   Widget _buildError() {
-      final r = context.r;
+    final r = context.r;
     return Center(
       child: Padding(
         padding: EdgeInsets.all(r.s(32)),
@@ -384,7 +384,7 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
   }
 
   Widget _buildEmpty() {
-      final r = context.r;
+    final r = context.r;
     return Center(
       child: Padding(
         padding: EdgeInsets.all(r.s(32)),

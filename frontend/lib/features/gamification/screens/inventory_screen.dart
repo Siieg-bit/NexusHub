@@ -47,7 +47,8 @@ class _InventoryScreenState extends State<InventoryScreen>
 
       _equippedIds = _items
           .where((i) => i['is_equipped'] == true)
-          .map((i) => (i['id'] as String?) ?? '').toSet();
+          .map((i) => (i['id'] as String?) ?? '')
+          .toSet();
 
       if (!mounted) return;
       if (mounted) setState(() => _isLoading = false);
@@ -73,8 +74,7 @@ class _InventoryScreenState extends State<InventoryScreen>
   }
 
   Future<void> _toggleEquip(Map<String, dynamic> item) async {
-
-      final r = context.r;
+    final r = context.r;
     final itemId = (item['id'] as String?) ?? '';
     final isEquipped = _equippedIds.contains(itemId);
 
@@ -108,7 +108,8 @@ class _InventoryScreenState extends State<InventoryScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ocorreu um erro. Tente novamente.', style: const TextStyle(color: Colors.white)),
+            content: Text('Ocorreu um erro. Tente novamente.',
+                style: const TextStyle(color: Colors.white)),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -171,7 +172,7 @@ class _InventoryScreenState extends State<InventoryScreen>
   }
 
   Widget _buildGrid(List<Map<String, dynamic>> items) {
-      final r = context.r;
+    final r = context.r;
     if (items.isEmpty) {
       return Center(
         child: Column(
@@ -197,7 +198,8 @@ class _InventoryScreenState extends State<InventoryScreen>
                 // Navegar para a loja
               },
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: r.s(24), vertical: r.s(12)),
+                padding: EdgeInsets.symmetric(
+                    horizontal: r.s(24), vertical: r.s(12)),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [AppTheme.primaryColor, AppTheme.accentColor],
@@ -303,7 +305,10 @@ class _InventoryScreenState extends State<InventoryScreen>
                             padding: EdgeInsets.all(r.s(4)),
                             decoration: const BoxDecoration(
                               gradient: LinearGradient(
-                                colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                                colors: [
+                                  AppTheme.primaryColor,
+                                  AppTheme.accentColor
+                                ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),

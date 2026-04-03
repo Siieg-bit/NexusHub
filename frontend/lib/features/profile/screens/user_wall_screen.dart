@@ -30,8 +30,7 @@ class _UserWallScreenState extends State<UserWallScreen> {
   Future<void> _loadMessages() async {
     try {
       final res = await SupabaseService.table('comments')
-          .select(
-              '*, profiles!comments_author_id_fkey(id, nickname, icon_url)')
+          .select('*, profiles!comments_author_id_fkey(id, nickname, icon_url)')
           .eq('profile_wall_id', widget.userId)
           .eq('status', 'ok')
           .order('created_at', ascending: false)
@@ -137,8 +136,8 @@ class _UserWallScreenState extends State<UserWallScreen> {
                           itemCount: _messages.length,
                           itemBuilder: (context, index) {
                             final msg = _messages[index];
-                            final author =
-                                (msg['profiles'] ?? msg['author']) as Map<String, dynamic>?;
+                            final author = (msg['profiles'] ?? msg['author'])
+                                as Map<String, dynamic>?;
                             final authorId = msg['author_id'] as String?;
                             final createdAt = DateTime.tryParse(
                                     msg['created_at'] as String? ?? '') ??
@@ -179,15 +178,16 @@ class _UserWallScreenState extends State<UserWallScreen> {
                                           child: CircleAvatar(
                                             radius: 16,
                                             backgroundColor: context.scaffoldBg,
-                                            backgroundImage:
-                                                author?['icon_url'] != null
-                                                    ? CachedNetworkImageProvider(
-                                                        author!['icon_url']
-                                                            as String? ?? '')
-                                                    : null,
+                                            backgroundImage: author?[
+                                                        'icon_url'] !=
+                                                    null
+                                                ? CachedNetworkImageProvider(
+                                                    author!['icon_url']
+                                                            as String? ??
+                                                        '')
+                                                : null,
                                             child: author?['icon_url'] == null
-                                                ? Icon(
-                                                    Icons.person_rounded,
+                                                ? Icon(Icons.person_rounded,
                                                     size: r.s(16),
                                                     color: context.textPrimary)
                                                 : null,

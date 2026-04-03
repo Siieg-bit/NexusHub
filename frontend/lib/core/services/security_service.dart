@@ -3,28 +3,17 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'supabase_service.dart';
 
-/// Serviço de Segurança — sanitização, validação e helpers.
+/// Serviço de Segurança — sanitização e validação.
 ///
 /// Implementa:
 /// - Sanitização de input contra XSS
 /// - Validação de dados antes de enviar ao servidor
-/// - Content Security Policy helpers
+/// - Detecção de spam
+/// - Hash SHA-256 para cache keys
 ///
-/// NOTA: Assinatura HMAC foi removida do cliente por segurança.
-/// Toda validação de integridade de requisições deve ocorrer
-/// exclusivamente no backend (Edge Functions / RPCs com SECURITY DEFINER).
-/// O cliente envia apenas o JWT do Supabase como autenticação.
+/// Nota: Toda validação de integridade (HMAC) deve ocorrer no backend
+/// via Edge Functions ou RLS policies.
 class SecurityService {
-  // ──────────────────────────────────────────────────────────────────────────
-  // HMAC REMOVIDO — A chave secreta NUNCA deve estar no código do cliente.
-  //
-  // Se precisar de assinatura de requisições, implemente no backend:
-  // 1. Crie uma Edge Function que valide o JWT e assine a operação server-side
-  // 2. Use SECURITY DEFINER nas RPCs para garantir que apenas o backend
-  //    execute operações privilegiadas
-  // 3. O auth.uid() dentro das RPCs já garante a identidade do usuário
-  // ──────────────────────────────────────────────────────────────────────────
-
   /// Sanitiza texto contra XSS (remove tags HTML perigosas)
   static String sanitizeHtml(String input) {
     // Remove script tags

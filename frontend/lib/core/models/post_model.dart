@@ -85,7 +85,8 @@ class PostModel {
       type: json['type'] as String? ?? 'normal',
       title: json['title'] as String?,
       content: json['content'] as String? ?? '',
-      mediaUrl: (json['media_list'] is List && (json['media_list'] as List).isNotEmpty)
+      mediaUrl: (json['media_list'] is List &&
+              (json['media_list'] as List).isNotEmpty)
           ? ((json['media_list'] as List).first is Map
               ? (json['media_list'] as List).first['url'] as String?
               : (json['media_list'] as List).first as String?)
@@ -140,7 +141,11 @@ class PostModel {
       'type': type,
       'title': title,
       'content': content,
-      'media_list': mediaUrl != null ? [{'url': mediaUrl, 'type': 'image'}] : [],
+      'media_list': mediaUrl != null
+          ? [
+              {'url': mediaUrl, 'type': 'image'}
+            ]
+          : [],
       'cover_image_url': mediaUrl,
       'tags': tags,
       if (pollData != null) 'poll_data': pollData,
@@ -194,7 +199,8 @@ class PostModel {
   }
 
   /// Verifica se o post tem conteúdo em blocos (editor rico)
-  bool get hasBlockContent => contentBlocks != null && contentBlocks!.isNotEmpty;
+  bool get hasBlockContent =>
+      contentBlocks != null && contentBlocks!.isNotEmpty;
 
   /// Retorna true se o post está em destaque e ainda não expirou
   bool get isFeaturedActive {

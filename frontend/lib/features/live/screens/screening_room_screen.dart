@@ -255,8 +255,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
   }
 
   Future<void> _showAddVideoDialog() async {
-
-      final r = context.r;
+    final r = context.r;
     final urlController = TextEditingController();
     final titleController = TextEditingController();
 
@@ -264,7 +263,8 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: context.surfaceColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(16))),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(r.s(16))),
         title: Text('Adicionar Vídeo',
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w800)),
@@ -277,8 +277,8 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
               decoration: InputDecoration(
                 hintText: 'Cole o link do vídeo (YouTube, etc.)',
                 hintStyle: TextStyle(color: Colors.grey[600]),
-                prefixIcon: const Icon(Icons.link_rounded,
-                    color: AppTheme.accentColor),
+                prefixIcon:
+                    const Icon(Icons.link_rounded, color: AppTheme.accentColor),
                 filled: true,
                 fillColor: context.cardBg,
                 border: OutlineInputBorder(
@@ -351,7 +351,10 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
       final userId = SupabaseService.currentUserId;
       if (userId != null && _sessionId != null) {
         await SupabaseService.table('call_participants')
-            .update({'status': 'disconnected', 'left_at': DateTime.now().toIso8601String()})
+            .update({
+              'status': 'disconnected',
+              'left_at': DateTime.now().toIso8601String()
+            })
             .eq('call_session_id', _sessionId!)
             .eq('user_id', userId);
 
@@ -362,9 +365,10 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
 
         // Se é host, encerrar a sala
         if (_isHost) {
-          await SupabaseService.table('call_sessions')
-              .update({'status': 'ended', 'ended_at': DateTime.now().toIso8601String()})
-              .eq('id', _sessionId!);
+          await SupabaseService.table('call_sessions').update({
+            'status': 'ended',
+            'ended_at': DateTime.now().toIso8601String()
+          }).eq('id', _sessionId!);
         }
       }
     } catch (e) {
@@ -413,7 +417,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
   }
 
   Widget _buildTopBar() {
-      final r = context.r;
+    final r = context.r;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
       decoration: BoxDecoration(
@@ -450,7 +454,8 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
           ),
           const Spacer(),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(4)),
+            padding:
+                EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(4)),
             decoration: BoxDecoration(
               color: AppTheme.accentColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(r.s(12)),
@@ -494,7 +499,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
   }
 
   Widget _buildVideoArea() {
-      final r = context.r;
+    final r = context.r;
     if (_currentVideoUrl == null || _currentVideoUrl!.isEmpty) {
       return Container(
         height: r.s(200),
@@ -503,7 +508,8 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.live_tv_rounded, color: Colors.grey[700], size: r.s(48)),
+              Icon(Icons.live_tv_rounded,
+                  color: Colors.grey[700], size: r.s(48)),
               SizedBox(height: r.s(12)),
               Text(
                 _isHost
@@ -595,9 +601,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    _isPlaying
-                        ? Icons.pause_rounded
-                        : Icons.play_arrow_rounded,
+                    _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
                     color: Colors.white,
                     size: r.s(32),
                   ),
@@ -610,7 +614,8 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
             top: 8,
             right: 8,
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: r.s(8), vertical: r.s(4)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(8), vertical: r.s(4)),
               decoration: BoxDecoration(
                 color: _isPlaying
                     ? AppTheme.successColor.withValues(alpha: 0.8)
@@ -645,7 +650,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
   }
 
   Widget _buildParticipantsStrip() {
-      final r = context.r;
+    final r = context.r;
     return Container(
       height: r.s(56),
       padding: EdgeInsets.symmetric(horizontal: r.s(12)),
@@ -731,7 +736,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
   }
 
   Widget _buildChatArea() {
-      final r = context.r;
+    final r = context.r;
     if (_chatMessages.isEmpty) {
       return Center(
         child: Column(
@@ -780,8 +785,8 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
               ],
               Flexible(
                 child: Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: r.s(12), vertical: r.s(8)),
                   decoration: BoxDecoration(
                     color: isMe
                         ? AppTheme.primaryColor.withValues(alpha: 0.2)
@@ -803,7 +808,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
   }
 
   Widget _buildChatInput() {
-      final r = context.r;
+    final r = context.r;
     return Container(
       padding: EdgeInsets.fromLTRB(r.s(12), r.s(8), r.s(12), r.s(8)),
       decoration: BoxDecoration(
@@ -824,11 +829,12 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
                 ),
                 child: TextField(
                   controller: _chatController,
-                  style: TextStyle(
-                      color: context.textPrimary, fontSize: r.fs(14)),
+                  style:
+                      TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
                   decoration: InputDecoration(
                     hintText: 'Diga algo...',
-                    hintStyle: TextStyle(color: Colors.grey[600], fontSize: r.fs(14)),
+                    hintStyle:
+                        TextStyle(color: Colors.grey[600], fontSize: r.fs(14)),
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.symmetric(
                         horizontal: r.s(16), vertical: r.s(10)),

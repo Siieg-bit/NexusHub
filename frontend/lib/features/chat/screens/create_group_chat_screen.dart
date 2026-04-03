@@ -8,8 +8,6 @@ import 'dart:io';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
-import 'package:nexus_hub/core/l10n/locale_provider.dart';
-// TODO: Add 'final s = ref.watch(stringsProvider);' in build() methods
 
 // =============================================================================
 // CREATE GROUP CHAT SCREEN — Estilo Amino Apps
@@ -119,8 +117,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
   }
 
   Future<void> _pickCoverImage() async {
-
-      final r = context.r;
+    final r = context.r;
     try {
       final picker = ImagePicker();
       final picked = await picker.pickImage(
@@ -139,7 +136,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
   Future<void> _createGroupChat() async {
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(s.enterGroupName)),
+        const SnackBar(content: Text('Digite um nome para o grupo')),
       );
       return;
     }
@@ -157,10 +154,10 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
         final fileName =
             'chat_covers/${DateTime.now().millisecondsSinceEpoch}.jpg';
         await SupabaseService.client.storage
-            .from('post_media')
+            .from('uploads')
             .uploadBinary(fileName, bytes);
         coverUrl = SupabaseService.client.storage
-            .from('post_media')
+            .from('uploads')
             .getPublicUrl(fileName);
       }
 
@@ -283,7 +280,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
   // STEP INDICATOR
   // ==========================================================================
   Widget _buildStepIndicator() {
-      final r = context.r;
+    final r = context.r;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: r.s(24), vertical: r.s(16)),
       child: Row(
@@ -299,7 +296,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
   }
 
   Widget _buildStepDot(int step, String label) {
-      final r = context.r;
+    final r = context.r;
     final isActive = _currentStep >= step;
     final isCurrent = _currentStep == step;
     return Column(
@@ -351,7 +348,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
   }
 
   Widget _buildStepLine(int afterStep) {
-      final r = context.r;
+    final r = context.r;
     final isActive = _currentStep > afterStep;
     return Expanded(
       child: Container(
@@ -366,7 +363,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
   // STEP 0: SELECIONAR COMUNIDADE
   // ==========================================================================
   Widget _buildCommunityStep() {
-      final r = context.r;
+    final r = context.r;
     if (_isLoadingCommunities) {
       return const Center(
         child: CircularProgressIndicator(
@@ -381,7 +378,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
           children: [
             Icon(Icons.groups_rounded, size: r.s(48), color: Colors.grey[600]),
             SizedBox(height: r.s(12)),
-            Text(s.noCommunityFound,
+            Text('Nenhuma comunidade encontrada',
                 style: TextStyle(color: Colors.grey[500])),
             SizedBox(height: r.s(8)),
             Text('Entre em uma comunidade primeiro',
@@ -482,7 +479,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
   // STEP 1: INFO DO GRUPO (nome, descricao, imagem, publico/privado)
   // ==========================================================================
   Widget _buildInfoStep() {
-      final r = context.r;
+    final r = context.r;
     return ListView(
       padding: EdgeInsets.all(r.s(16)),
       children: [
@@ -512,8 +509,8 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                           size: r.s(36), color: Colors.grey[600]),
                       SizedBox(height: r.s(8)),
                       Text('Adicionar capa (opcional)',
-                          style:
-                              TextStyle(color: Colors.grey[600], fontSize: r.fs(13))),
+                          style: TextStyle(
+                              color: Colors.grey[600], fontSize: r.fs(13))),
                     ],
                   )
                 : null,
@@ -583,7 +580,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
             children: [
               Icon(
                 _isPublic ? Icons.public_rounded : Icons.lock_rounded,
-                color: _isPublic ? AppTheme.primaryColor : AppTheme.aminoOrange,
+                color: _isPublic ? AppTheme.primaryColor : Colors.orange,
                 size: r.s(22),
               ),
               SizedBox(width: r.s(12)),
@@ -603,7 +600,8 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                       _isPublic
                           ? 'Qualquer membro da comunidade pode entrar'
                           : 'Apenas membros convidados podem entrar',
-                      style: TextStyle(color: Colors.grey[500], fontSize: r.fs(11)),
+                      style: TextStyle(
+                          color: Colors.grey[500], fontSize: r.fs(11)),
                     ),
                   ],
                 ),
@@ -641,7 +639,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
               const Spacer(),
               GestureDetector(
                 onTap: () => setState(() => _currentStep = 0),
-                child: Text(s.change,
+                child: Text('Alterar',
                     style: TextStyle(
                         color: AppTheme.accentColor,
                         fontSize: r.fs(12),
@@ -657,7 +655,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
           onTap: () {
             if (_nameController.text.trim().isEmpty) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text(s.enterGroupName)),
+                const SnackBar(content: Text('Digite um nome para o grupo')),
               );
               return;
             }
@@ -699,7 +697,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
   // STEP 2: SELECIONAR MEMBROS
   // ==========================================================================
   Widget _buildMembersStep() {
-      final r = context.r;
+    final r = context.r;
     return Column(
       children: [
         // Search bar
@@ -711,8 +709,8 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
             decoration: InputDecoration(
               hintText: 'Buscar membros...',
               hintStyle: TextStyle(color: Colors.grey[600]),
-              prefixIcon:
-                  Icon(Icons.search_rounded, color: Colors.grey[600], size: r.s(20)),
+              prefixIcon: Icon(Icons.search_rounded,
+                  color: Colors.grey[600], size: r.s(20)),
               filled: true,
               fillColor: context.surfaceColor,
               border: OutlineInputBorder(
@@ -728,12 +726,13 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
         // Selected count
         if (_selectedMemberIds.isNotEmpty)
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(4)),
+            padding:
+                EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(4)),
             child: Row(
               children: [
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(4)),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: r.s(10), vertical: r.s(4)),
                   decoration: BoxDecoration(
                     color: AppTheme.primaryColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(r.s(12)),
@@ -750,7 +749,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                 const Spacer(),
                 GestureDetector(
                   onTap: () => setState(() => _selectedMemberIds.clear()),
-                  child: Text(s.clearCache,
+                  child: Text('Limpar',
                       style: TextStyle(
                           color: Colors.grey[500],
                           fontSize: r.fs(12),
@@ -769,7 +768,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
                 )
               : _filteredMembers.isEmpty
                   ? Center(
-                      child: Text(s.noMemberFound,
+                      child: Text('Nenhum membro encontrado',
                           style: TextStyle(color: Colors.grey[500])),
                     )
                   : ListView.builder(

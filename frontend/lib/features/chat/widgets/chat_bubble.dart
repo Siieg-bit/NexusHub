@@ -42,7 +42,7 @@ class ChatBubble extends StatelessWidget {
       case 'leader':
         return AppTheme.primaryColor; // Verde Amino para Leader
       case 'curator':
-        return const AppTheme.aminoMagenta; // Rosa/Magenta para Curator
+        return const Color(0xFFE040FB); // Rosa/Magenta para Curator
       default:
         return isMine
             ? AppTheme.primaryColor
@@ -52,7 +52,10 @@ class ChatBubble extends StatelessWidget {
 
   /// Cor do texto baseada no tipo de bubble
   Color _textColor(BuildContext context) {
-    if (isMine || userRole == 'agent' || userRole == 'leader' || userRole == 'curator') {
+    if (isMine ||
+        userRole == 'agent' ||
+        userRole == 'leader' ||
+        userRole == 'curator') {
       return Colors.white;
     }
     return context.textPrimary;
@@ -70,7 +73,7 @@ class ChatBubble extends StatelessWidget {
   }
 
   Widget _buildDefaultBubble(BuildContext context) {
-      final r = context.r;
+    final r = context.r;
     return Align(
       alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
       child: Padding(
@@ -369,9 +372,8 @@ class StreakBar extends StatelessWidget {
                   Text(
                     _dayLabel(i),
                     style: TextStyle(
-                      color: isActive
-                          ? AppTheme.warningColor
-                          : Colors.grey[600],
+                      color:
+                          isActive ? AppTheme.warningColor : Colors.grey[600],
                       fontSize: r.fs(9),
                       fontWeight:
                           isActive ? FontWeight.w600 : FontWeight.normal,

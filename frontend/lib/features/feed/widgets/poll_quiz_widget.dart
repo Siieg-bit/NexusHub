@@ -50,8 +50,8 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
             (options as List? ?? []).map((o) => o['id'] as String?).toSet();
         for (final vote in ((votes as List? ?? []))) {
           if (optionIds.contains(vote['option_id']) == true) {
-            _selectedOption = (options)
-                .indexWhere((o) => o['id'] == vote['option_id']);
+            _selectedOption =
+                (options).indexWhere((o) => o['id'] == vote['option_id']);
             _hasVoted = true;
             break;
           }
@@ -63,8 +63,8 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
           _options = (options as List? ?? [])
               .map((o) => Map<String, dynamic>.from(o as Map))
               .toList();
-          _totalVotes =
-              _options.fold(0, (sum, o) => sum + ((o['votes_count'] as int?) ?? 0));
+          _totalVotes = _options.fold(
+              0, (sum, o) => sum + ((o['votes_count'] as int?) ?? 0));
         });
       }
     } catch (e) {
@@ -73,12 +73,16 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
       if (pollData != null && mounted) {
         final options = (pollData['options'] as List<dynamic>?) ?? [];
         setState(() {
-          _options = options
-              .map((o) => Map<String, dynamic>.from(o as Map))
-              .toList();
+          _options =
+              options.map((o) => Map<String, dynamic>.from(o as Map)).toList();
           _totalVotes = (pollData['total_votes'] as int?) ??
               _options.fold(
-                  0, (sum, o) => sum + ((o['votes'] as int?) ?? (o['votes_count'] as int?) ?? 0));
+                  0,
+                  (sum, o) =>
+                      sum +
+                      ((o['votes'] as int?) ??
+                          (o['votes_count'] as int?) ??
+                          0));
         });
       }
     }
@@ -91,9 +95,8 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
     final previousSelectedOption = _selectedOption;
     final previousHasVoted = _hasVoted;
     final previousTotalVotes = _totalVotes;
-    final previousOptions = _options
-        .map((option) => Map<String, dynamic>.from(option))
-        .toList();
+    final previousOptions =
+        _options.map((option) => Map<String, dynamic>.from(option)).toList();
 
     setState(() {
       _selectedOption = index;
@@ -144,9 +147,10 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
           _selectedOption = selectedIndex >= 0 ? selectedIndex : index;
           _options = previousOptions;
           if (_selectedOption != null && _selectedOption! < _options.length) {
-            final current = (_options[_selectedOption!]['votes_count'] as int?) ??
-                (_options[_selectedOption!]['votes'] as int?) ??
-                0;
+            final current =
+                (_options[_selectedOption!]['votes_count'] as int?) ??
+                    (_options[_selectedOption!]['votes'] as int?) ??
+                    0;
             _options[_selectedOption!]['votes_count'] = current;
           }
           if (serverTotalVotes != null) {
@@ -201,7 +205,8 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
           // Header
           Row(
             children: [
-              Icon(Icons.poll_rounded, size: r.s(18), color: AppTheme.accentColor),
+              Icon(Icons.poll_rounded,
+                  size: r.s(18), color: AppTheme.accentColor),
               SizedBox(width: r.s(8)),
               Text(
                 'Enquete',
@@ -229,9 +234,8 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
             final text = (opt['text'] as String?) ??
                 (opt['option_text'] as String?) ??
                 'Opção ${i + 1}';
-            final votes = (opt['votes_count'] as int?) ??
-                (opt['votes'] as int?) ??
-                0;
+            final votes =
+                (opt['votes_count'] as int?) ?? (opt['votes'] as int?) ?? 0;
             final pct = _totalVotes > 0 ? votes / _totalVotes : 0.0;
             final isSelected = _selectedOption == i;
 
@@ -243,9 +247,8 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(r.s(10)),
                   border: Border.all(
-                    color: isSelected
-                        ? AppTheme.accentColor
-                        : context.dividerClr,
+                    color:
+                        isSelected ? AppTheme.accentColor : context.dividerClr,
                     width: isSelected ? 1.5 : 0.5,
                   ),
                 ),
@@ -262,7 +265,8 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
                             child: Container(
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? AppTheme.accentColor.withValues(alpha: 0.15)
+                                    ? AppTheme.accentColor
+                                        .withValues(alpha: 0.15)
                                     : context.textHint.withValues(alpha: 0.05),
                               ),
                             ),
@@ -391,9 +395,8 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
     if (quizData != null && mounted) {
       final qs = (quizData['questions'] as List<dynamic>?) ?? [];
       setState(() {
-        _questions = qs
-            .map((q) => Map<String, dynamic>.from(q as Map))
-            .toList();
+        _questions =
+            qs.map((q) => Map<String, dynamic>.from(q as Map)).toList();
       });
     }
   }
@@ -469,7 +472,7 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
   }
 
   Widget _buildResult() {
-      final r = context.r;
+    final r = context.r;
     final pct = _questions.isNotEmpty ? _score / _questions.length : 0.0;
     final emoji = pct >= 0.8
         ? '🎉'
@@ -527,7 +530,7 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
   }
 
   Widget _buildQuestion() {
-      final r = context.r;
+    final r = context.r;
     final q = _questions[_currentQuestion];
     final questionText = (q['question_text'] as String?) ??
         (q['text'] as String?) ??
@@ -550,7 +553,8 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
         // Header
         Row(
           children: [
-            Icon(Icons.quiz_rounded, size: r.s(18), color: AppTheme.accentColor),
+            Icon(Icons.quiz_rounded,
+                size: r.s(18), color: AppTheme.accentColor),
             SizedBox(width: r.s(8)),
             Text(
               'Quiz — Pergunta ${_currentQuestion + 1}/${_questions.length}',
@@ -631,7 +635,8 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
               decoration: BoxDecoration(
                 color: bgColor,
                 borderRadius: BorderRadius.circular(r.s(10)),
-                border: Border.all(color: borderColor, width: isSelected ? 1.5 : 0.5),
+                border: Border.all(
+                    color: borderColor, width: isSelected ? 1.5 : 0.5),
               ),
               child: Row(
                 children: [
@@ -647,9 +652,8 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
                               : AppTheme.errorColor)
                           : Colors.transparent,
                       border: Border.all(
-                        color: isSelected
-                            ? Colors.transparent
-                            : context.textHint,
+                        color:
+                            isSelected ? Colors.transparent : context.textHint,
                         width: 1.5,
                       ),
                     ),

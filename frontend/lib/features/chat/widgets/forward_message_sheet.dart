@@ -77,9 +77,7 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
     setState(() {
       _filtered = q.isEmpty
           ? _chats
-          : _chats
-              .where((c) => c.title.toLowerCase().contains(q))
-              .toList();
+          : _chats.where((c) => c.title.toLowerCase().contains(q)).toList();
     });
   }
 
@@ -89,9 +87,8 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
-      // Enviar para todos os threads em paralelo (evita N+1 sequencial)
-      await Future.wait(
-        _selected.map((threadId) => SupabaseService.rpc(
+      for (final threadId in _selected) {
+        await SupabaseService.rpc(
           'send_chat_message_with_reputation',
           params: {
             'p_thread_id': threadId,
@@ -100,8 +97,8 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
             if (widget.mediaUrl != null) 'p_media_url': widget.mediaUrl,
             if (widget.mediaType != null) 'p_media_type': widget.mediaType,
           },
-        )),
-      );
+        );
+      }
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -151,8 +148,8 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
           ),
           // Header
           Padding(
-            padding: EdgeInsets.symmetric(
-                horizontal: r.s(20), vertical: r.s(12)),
+            padding:
+                EdgeInsets.symmetric(horizontal: r.s(20), vertical: r.s(12)),
             child: Row(
               children: [
                 Text(
@@ -210,8 +207,8 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
                         : (widget.messageContent.length > 60
                             ? '${widget.messageContent.substring(0, 60)}...'
                             : widget.messageContent),
-                    style: TextStyle(
-                        color: Colors.grey[400], fontSize: r.fs(13)),
+                    style:
+                        TextStyle(color: Colors.grey[400], fontSize: r.fs(13)),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -229,8 +226,7 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
               decoration: InputDecoration(
                 hintText: 'Buscar chat...',
                 hintStyle: TextStyle(color: Colors.grey[600]),
-                prefixIcon:
-                    Icon(Icons.search_rounded, color: Colors.grey[600]),
+                prefixIcon: Icon(Icons.search_rounded, color: Colors.grey[600]),
                 filled: true,
                 fillColor: context.scaffoldBg,
                 border: OutlineInputBorder(
@@ -292,8 +288,7 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
                                         shape: BoxShape.circle,
                                       ),
                                       child: Icon(Icons.check_rounded,
-                                          color: Colors.white,
-                                          size: r.s(12)),
+                                          color: Colors.white, size: r.s(12)),
                                     ),
                                   ),
                               ],
@@ -311,8 +306,7 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
                                   ? 'Mensagem direta'
                                   : '${chat.membersCount} membros',
                               style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: r.fs(12)),
+                                  color: Colors.grey[600], fontSize: r.fs(12)),
                             ),
                             trailing: Checkbox(
                               value: isSelected,

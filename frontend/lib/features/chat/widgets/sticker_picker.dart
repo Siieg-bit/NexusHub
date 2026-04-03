@@ -118,9 +118,14 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
-      final stickerId = sticker['sticker_id'] as String? ?? sticker['id'] as String? ?? '';
-      final stickerUrl = sticker['sticker_url'] as String? ?? sticker['image_url'] as String? ?? '';
-      final stickerName = sticker['sticker_name'] as String? ?? sticker['name'] as String? ?? '';
+      final stickerId =
+          sticker['sticker_id'] as String? ?? sticker['id'] as String? ?? '';
+      final stickerUrl = sticker['sticker_url'] as String? ??
+          sticker['image_url'] as String? ??
+          '';
+      final stickerName = sticker['sticker_name'] as String? ??
+          sticker['name'] as String? ??
+          '';
       await SupabaseService.table('recently_used_stickers').upsert({
         'user_id': userId,
         'sticker_id': stickerId,
@@ -143,7 +148,8 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
           .order('created_at', ascending: false);
       _favoriteStickers = List<Map<String, dynamic>>.from(res as List? ?? []);
       _favoriteStickerIds = _favoriteStickers
-          .map((s) => (s['sticker_id'] as String?) ?? '').toSet();
+          .map((s) => (s['sticker_id'] as String?) ?? '')
+          .toSet();
     } catch (e) {
       debugPrint('[sticker_picker] Erro: $e');
     }
@@ -151,23 +157,18 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
 
   Future<void> _loadStickerPacks() async {
     try {
-      // Carregar packs reais da tabela sticker_packs com seus stickers
-      final packsRes = await SupabaseService.table('sticker_packs')
-          .select('*, stickers(*)')
+      final res = await SupabaseService.table('store_items')
+          .select()
+          .eq('type', 'sticker')
           .eq('is_active', true)
-          .order('sort_order', ascending: true);
-      final packsList = List<Map<String, dynamic>>.from(packsRes as List? ?? []);
+          .order('name');
+      final items = List<Map<String, dynamic>>.from(res as List? ?? []);
 
       final packs = <String, List<Map<String, dynamic>>>{};
-      for (final pack in packsList) {
-        final packName = pack['name'] as String? ?? 'Sem nome';
-        final stickers = List<Map<String, dynamic>>.from(
-            pack['stickers'] as List? ?? []);
-        // Ordenar stickers por sort_order
-        stickers.sort((a, b) =>
-            ((a['sort_order'] as int?) ?? 0).compareTo(
-                (b['sort_order'] as int?) ?? 0));
-        packs[packName] = stickers;
+      for (final item in items) {
+        final pack = item['category'] as String? ?? 'Geral';
+        packs.putIfAbsent(pack, () => []);
+        packs[pack]!.add(item);
       }
 
       _packs = packs.keys
@@ -175,7 +176,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
           .toList();
       _stickersByPack = packs;
     } catch (e) {
-      debugPrint('[sticker_picker] Erro ao carregar packs: $e');
+      debugPrint('[sticker_picker] Erro: $e');
     }
 
     // Aba Emojis padrão
@@ -201,8 +202,8 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
-      final stickerId = sticker['sticker_id'] as String? ??
-          sticker['id'] as String? ?? '';
+      final stickerId =
+          sticker['sticker_id'] as String? ?? sticker['id'] as String? ?? '';
       final isFav = _favoriteStickerIds.contains(stickerId);
 
       if (isFav) {
@@ -222,7 +223,8 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
           'user_id': userId,
           'sticker_id': stickerId,
           'sticker_url': sticker['sticker_url'] as String? ??
-              sticker['image_url'] as String? ?? '',
+              sticker['image_url'] as String? ??
+              '',
           'sticker_name': sticker['name'] as String? ?? '',
         };
         await SupabaseService.table('user_sticker_favorites').insert(entry);
@@ -241,7 +243,8 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(isFav ? 'Removido dos favoritos' : 'Adicionado aos favoritos'),
+          content: Text(
+              isFav ? 'Removido dos favoritos' : 'Adicionado aos favoritos'),
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 1),
         ));
@@ -288,8 +291,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
                     children: [
                       Text('Figurinhas',
                           style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: r.fs(18))),
+                              fontWeight: FontWeight.bold, fontSize: r.fs(18))),
                       const Spacer(),
                       Text('Segure para favoritar',
                           style: TextStyle(
@@ -318,8 +320,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
                       if (packName == 'Emojis') {
                         return _buildEmojiGrid();
                       }
-                      return _buildStickerGrid(
-                          _stickersByPack[packName] ?? [],
+                      return _buildStickerGrid(_stickersByPack[packName] ?? [],
                           isFavTab: packName == _favTab);
                     }).toList(),
                   ),
@@ -359,8 +360,8 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
               borderRadius: BorderRadius.circular(r.s(12)),
             ),
             child: Center(
-              child: Text(sticker['emoji']!,
-                  style: TextStyle(fontSize: r.fs(32))),
+              child:
+                  Text(sticker['emoji']!, style: TextStyle(fontSize: r.fs(32))),
             ),
           ),
         );
@@ -402,9 +403,10 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
       itemBuilder: (context, index) {
         final sticker = stickers[index];
         final imageUrl = sticker['image_url'] as String? ??
-            sticker['sticker_url'] as String? ?? '';
-        final stickerId = sticker['id'] as String? ??
-            sticker['sticker_id'] as String? ?? '';
+            sticker['sticker_url'] as String? ??
+            '';
+        final stickerId =
+            sticker['id'] as String? ?? sticker['sticker_id'] as String? ?? '';
         final isFav = _favoriteStickerIds.contains(stickerId);
         return GestureDetector(
           onTap: () {

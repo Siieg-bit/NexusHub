@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -54,8 +53,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
       // Ler o texto dos blocos ANTES de qualquer await para evitar
       // acesso a controllers já disposed após context.pop().
       final content = _blocks
-          .where((b) =>
-              b.type == BlockType.text || b.type == BlockType.heading)
+          .where((b) => b.type == BlockType.text || b.type == BlockType.heading)
           .map((b) => b.controller?.text ?? b.text)
           .where((t) => t.isNotEmpty)
           .join('\n\n');
@@ -82,7 +80,9 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
           'p_raw_amount': 15,
           'p_reference_id': result['id'],
         });
-      } catch (e) { debugPrint('[create_blog_screen.dart] $e'); }
+      } catch (e) {
+        debugPrint('[create_blog_screen.dart] $e');
+      }
 
       if (mounted) {
         context.pop();
@@ -161,8 +161,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
                     width: r.s(18),
                     height: r.s(18),
                     child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppTheme.primaryColor),
+                        strokeWidth: 2, color: AppTheme.primaryColor),
                   )
                 : Text(
                     'Publicar',

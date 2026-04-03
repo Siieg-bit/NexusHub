@@ -57,8 +57,8 @@ class _CommunityGeneralLinksScreenState
         TextEditingController(text: existing?['title'] as String? ?? '');
     final urlCtrl =
         TextEditingController(text: existing?['url'] as String? ?? '');
-    final isActive = ValueNotifier<bool>(
-        existing?['is_active'] as bool? ?? true);
+    final isActive =
+        ValueNotifier<bool>(existing?['is_active'] as bool? ?? true);
 
     final result = await showDialog<bool>(
       context: context,
@@ -133,8 +133,7 @@ class _CommunityGeneralLinksScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Cancelar',
-                style: TextStyle(color: Colors.grey[400])),
+            child: Text('Cancelar', style: TextStyle(color: Colors.grey[400])),
           ),
           ElevatedButton(
             onPressed: () {
@@ -219,8 +218,7 @@ class _CommunityGeneralLinksScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Cancelar',
-                style: TextStyle(color: Colors.grey[400])),
+            child: Text('Cancelar', style: TextStyle(color: Colors.grey[400])),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -272,9 +270,8 @@ class _CommunityGeneralLinksScreenState
     // Atualizar sort_order no banco
     try {
       for (int i = 0; i < _links.length; i++) {
-        await SupabaseService.table('community_general_links')
-            .update({'sort_order': i})
-            .eq('id', _links[i]['id'] as String? ?? '');
+        await SupabaseService.table('community_general_links').update(
+            {'sort_order': i}).eq('id', _links[i]['id'] as String? ?? '');
       }
     } catch (e) {
       _showError('Erro ao reordenar. Tente novamente.');
@@ -301,8 +298,8 @@ class _CommunityGeneralLinksScreenState
         backgroundColor: AppTheme.surfaceColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded,
-              color: Colors.white),
+          icon:
+              const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
@@ -376,8 +373,7 @@ class _CommunityGeneralLinksScreenState
                           onReorder: _reorderLinks,
                           itemBuilder: (context, index) {
                             final link = _links[index];
-                            final isActive =
-                                link['is_active'] as bool? ?? true;
+                            final isActive = link['is_active'] as bool? ?? true;
                             return _LinkTile(
                               key: ValueKey(link['id']),
                               link: link,
@@ -391,14 +387,15 @@ class _CommunityGeneralLinksScreenState
                                 try {
                                   await SupabaseService.table(
                                           'community_general_links')
-                                      .update({'is_active': !isActive})
-                                      .eq('id', link['id'] as String? ?? '');
+                                      .update({'is_active': !isActive}).eq(
+                                          'id', link['id'] as String? ?? '');
                                 } catch (e) {
                                   if (!mounted) return;
                                   setState(() {
                                     _links[index]['is_active'] = isActive;
                                   });
-                                  _showError('Erro ao atualizar. Tente novamente.');
+                                  _showError(
+                                      'Erro ao atualizar. Tente novamente.');
                                 }
                               },
                             );
@@ -425,8 +422,7 @@ class _CommunityGeneralLinksScreenState
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.link_off_rounded,
-              color: Colors.grey[700], size: r.s(64)),
+          Icon(Icons.link_off_rounded, color: Colors.grey[700], size: r.s(64)),
           SizedBox(height: r.s(16)),
           Text(
             'Nenhum link adicionado',

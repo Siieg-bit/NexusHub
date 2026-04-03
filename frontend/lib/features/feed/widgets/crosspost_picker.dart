@@ -47,7 +47,8 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
 
       // Buscar comunidades que o usuário é membro
       final result = await SupabaseService.table('community_members')
-          .select('community_id, communities!community_members_community_id_fkey(id, name, icon_url, members_count)')
+          .select(
+              'community_id, communities!community_members_community_id_fkey(id, name, icon_url, members_count)')
           .eq('user_id', userId)
           .neq('community_id', widget.currentCommunityId);
       if (!mounted) return;
@@ -93,7 +94,8 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
           // Header
           Row(
             children: [
-              Icon(Icons.share_rounded, color: AppTheme.accentColor, size: r.s(20)),
+              Icon(Icons.share_rounded,
+                  color: AppTheme.accentColor, size: r.s(20)),
               SizedBox(width: r.s(8)),
               Text(
                 'Crosspost para:',
@@ -131,7 +133,7 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
   }
 
   Widget _buildSelectedCommunity(Map<String, dynamic> community) {
-      final r = context.r;
+    final r = context.r;
     return Container(
       padding: EdgeInsets.all(r.s(12)),
       decoration: BoxDecoration(
@@ -192,7 +194,7 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
   }
 
   Widget _buildPickerButton() {
-      final r = context.r;
+    final r = context.r;
     return GestureDetector(
       onTap: _showCommunityPicker,
       child: Container(
@@ -226,8 +228,7 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
   }
 
   void _showCommunityPicker() {
-
-      final r = context.r;
+    final r = context.r;
     showModalBottomSheet(
       context: context,
       backgroundColor: context.scaffoldBg,
@@ -314,73 +315,79 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
                                   Text(
                                     'Entre em mais comunidades para fazer crosspost',
                                     style: TextStyle(
-                                        color: Colors.grey[600], fontSize: r.fs(12)),
+                                        color: Colors.grey[600],
+                                        fontSize: r.fs(12)),
                                   ),
                                 ],
                               ),
                             )
-                      : ListView.builder(
-                          controller: scrollController,
-                          padding: EdgeInsets.all(r.s(16)),
-                          itemCount: _communities.length,
-                          itemBuilder: (_, index) {
-                            final c = _communities[index];
-                            return Container(
-                              margin: EdgeInsets.only(bottom: r.s(8)),
-                              decoration: BoxDecoration(
-                                color: context.surfaceColor,
-                                borderRadius: BorderRadius.circular(r.s(12)),
-                                border: Border.all(
-                                    color:
-                                        Colors.white.withValues(alpha: 0.05)),
-                              ),
-                              child: ListTile(
-                                onTap: () {
-                                  widget.onCommunitySelected(c);
-                                  Navigator.pop(ctx);
-                                },
-                                leading: Container(
-                                  width: r.s(44),
-                                  height: r.s(44),
+                          : ListView.builder(
+                              controller: scrollController,
+                              padding: EdgeInsets.all(r.s(16)),
+                              itemCount: _communities.length,
+                              itemBuilder: (_, index) {
+                                final c = _communities[index];
+                                return Container(
+                                  margin: EdgeInsets.only(bottom: r.s(8)),
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(r.s(10)),
-                                    color: AppTheme.primaryColor
-                                        .withValues(alpha: 0.2),
-                                    image: c['icon_url'] != null
-                                        ? DecorationImage(
-                                            image:
-                                                CachedNetworkImageProvider(
-                                                    c['icon_url'] as String? ?? ''),
-                                            fit: BoxFit.cover,
-                                          )
-                                        : null,
+                                    color: context.surfaceColor,
+                                    borderRadius:
+                                        BorderRadius.circular(r.s(12)),
+                                    border: Border.all(
+                                        color: Colors.white
+                                            .withValues(alpha: 0.05)),
                                   ),
-                                  child: c['icon_url'] == null
-                                      ? Icon(Icons.groups_rounded,
-                                          color: AppTheme.accentColor,
-                                          size: r.s(22))
-                                      : null,
-                                ),
-                                title: Text(
-                                  c['name'] as String? ?? '',
-                                  style: TextStyle(
-                                    color: context.textPrimary,
-                                    fontWeight: FontWeight.w700,
+                                  child: ListTile(
+                                    onTap: () {
+                                      widget.onCommunitySelected(c);
+                                      Navigator.pop(ctx);
+                                    },
+                                    leading: Container(
+                                      width: r.s(44),
+                                      height: r.s(44),
+                                      decoration: BoxDecoration(
+                                        borderRadius:
+                                            BorderRadius.circular(r.s(10)),
+                                        color: AppTheme.primaryColor
+                                            .withValues(alpha: 0.2),
+                                        image: c['icon_url'] != null
+                                            ? DecorationImage(
+                                                image:
+                                                    CachedNetworkImageProvider(
+                                                        c['icon_url']
+                                                                as String? ??
+                                                            ''),
+                                                fit: BoxFit.cover,
+                                              )
+                                            : null,
+                                      ),
+                                      child: c['icon_url'] == null
+                                          ? Icon(Icons.groups_rounded,
+                                              color: AppTheme.accentColor,
+                                              size: r.s(22))
+                                          : null,
+                                    ),
+                                    title: Text(
+                                      c['name'] as String? ?? '',
+                                      style: TextStyle(
+                                        color: context.textPrimary,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      '${c['members_count'] ?? 0} membros',
+                                      style: TextStyle(
+                                          color: Colors.grey[500],
+                                          fontSize: r.fs(12)),
+                                    ),
+                                    trailing: Icon(
+                                        Icons.arrow_forward_ios_rounded,
+                                        size: r.s(16),
+                                        color: context.textHint),
                                   ),
-                                ),
-                                subtitle: Text(
-                                  '${c['members_count'] ?? 0} membros',
-                                  style: TextStyle(
-                                      color: Colors.grey[500], fontSize: r.fs(12)),
-                                ),
-                                trailing: Icon(
-                                    Icons.arrow_forward_ios_rounded,
-                                    size: r.s(16),
-                                    color: context.textHint),
-                              ),
-                            );
-                          },
-                        ),
+                                );
+                              },
+                            ),
             ),
           ],
         ),

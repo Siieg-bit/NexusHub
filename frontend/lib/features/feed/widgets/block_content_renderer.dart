@@ -76,7 +76,7 @@ class BlockContentRenderer extends StatelessWidget {
 
   /// Bloco de texto — parágrafo com formatação básica
   Widget _buildTextBlock(Map<String, dynamic> block, BuildContext context) {
-      final r = context.r;
+    final r = context.r;
     final content = block['content'] as String? ?? '';
     final isBold = block['bold'] == true;
     final isItalic = block['italic'] == true;
@@ -103,7 +103,11 @@ class BlockContentRenderer extends StatelessWidget {
     final content = block['content'] as String? ?? '';
     final level = block['level'] as int? ?? 2;
 
-    final fontSize = level == 1 ? 22.0 : level == 2 ? 18.0 : 16.0;
+    final fontSize = level == 1
+        ? 22.0
+        : level == 2
+            ? 18.0
+            : 16.0;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
@@ -121,7 +125,7 @@ class BlockContentRenderer extends StatelessWidget {
 
   /// Bloco de imagem — imagem inline com legenda opcional
   Widget _buildImageBlock(Map<String, dynamic> block, BuildContext context) {
-      final r = context.r;
+    final r = context.r;
     final url = block['url'] as String? ?? '';
     final caption = block['caption'] as String?;
 
@@ -181,7 +185,7 @@ class BlockContentRenderer extends StatelessWidget {
 
   /// Bloco de divisor — separador visual
   Widget _buildDividerBlock(BuildContext context) {
-      final r = context.r;
+    final r = context.r;
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: horizontalPadding * 2,
@@ -223,13 +227,14 @@ class BlockContentRenderer extends StatelessWidget {
 
   /// Bloco de citação — quote com barra lateral
   Widget _buildQuoteBlock(Map<String, dynamic> block, BuildContext context) {
-      final r = context.r;
+    final r = context.r;
     final content = block['content'] as String? ?? '';
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
       child: Container(
-        padding: EdgeInsets.only(left: r.s(14), top: r.s(10), bottom: r.s(10), right: r.s(10)),
+        padding: EdgeInsets.only(
+            left: r.s(14), top: r.s(10), bottom: r.s(10), right: r.s(10)),
         decoration: BoxDecoration(
           border: Border(
             left: BorderSide(
@@ -258,7 +263,7 @@ class BlockContentRenderer extends StatelessWidget {
 
   /// Bloco de link — preview de link embutido
   Widget _buildLinkBlock(Map<String, dynamic> block, BuildContext context) {
-      final r = context.r;
+    final r = context.r;
     final url = block['url'] as String? ?? '';
     final title = block['title'] as String? ?? url;
     final preview = block['preview'] as String?;

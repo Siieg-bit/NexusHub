@@ -79,7 +79,7 @@ class CommunityMembersScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final r = context.r;
+    final r = context.r;
     final membersAsync = ref.watch(allCommunityMembersProvider(communityId));
 
     return Scaffold(
@@ -121,17 +121,14 @@ class CommunityMembersScreen extends ConsumerWidget {
           final leaders = members
               .where((m) => m['role'] == 'agent' || m['role'] == 'leader')
               .toList();
-          leaders.sort((a, b) =>
-              _rolePriority(a['role'] as String? ?? 'member')
-                  .compareTo(_rolePriority(b['role'] as String? ?? 'member')));
+          leaders.sort((a, b) => _rolePriority(a['role'] as String? ?? 'member')
+              .compareTo(_rolePriority(b['role'] as String? ?? 'member')));
 
-          final curators = members
-              .where((m) => m['role'] == 'curator')
-              .toList();
+          final curators =
+              members.where((m) => m['role'] == 'curator').toList();
 
-          final moderators = members
-              .where((m) => m['role'] == 'moderator')
-              .toList();
+          final moderators =
+              members.where((m) => m['role'] == 'moderator').toList();
 
           final regular = members
               .where((m) =>
@@ -151,82 +148,82 @@ class CommunityMembersScreen extends ConsumerWidget {
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: EdgeInsets.all(r.s(12)),
-            children: [
-              // Total de membros
-              Padding(
-                padding: EdgeInsets.only(bottom: r.s(16)),
-                child: Text(
-                  '${members.length} membro${members.length > 1 ? 's' : ''}',
-                  style: TextStyle(
-                    color: Colors.grey[500],
-                    fontSize: r.fs(13),
-                    fontWeight: FontWeight.w500,
+              children: [
+                // Total de membros
+                Padding(
+                  padding: EdgeInsets.only(bottom: r.s(16)),
+                  child: Text(
+                    '${members.length} membro${members.length > 1 ? 's' : ''}',
+                    style: TextStyle(
+                      color: Colors.grey[500],
+                      fontSize: r.fs(13),
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
                 ),
-              ),
 
-              // Líderes
-              if (leaders.isNotEmpty) ...[
+                // Líderes
+                if (leaders.isNotEmpty) ...[
+                  _SectionHeader(
+                    title: 'LÍDERES',
+                    count: leaders.length,
+                    color: AppTheme.errorColor,
+                  ),
+                  ...leaders.asMap().entries.map((entry) => _MemberTile(
+                      index: entry.key,
+                      member: entry.value,
+                      roleLabel: _roleLabel,
+                      roleColor: _roleColor,
+                      communityId: communityId)),
+                  SizedBox(height: r.s(16)),
+                ],
+
+                // Curadores
+                if (curators.isNotEmpty) ...[
+                  _SectionHeader(
+                    title: 'CURADORES',
+                    count: curators.length,
+                    color: AppTheme.accentColor,
+                  ),
+                  ...curators.asMap().entries.map((entry) => _MemberTile(
+                      index: entry.key,
+                      member: entry.value,
+                      roleLabel: _roleLabel,
+                      roleColor: _roleColor,
+                      communityId: communityId)),
+                  SizedBox(height: r.s(16)),
+                ],
+
+                // Moderadores
+                if (moderators.isNotEmpty) ...[
+                  _SectionHeader(
+                    title: 'MODERADORES',
+                    count: moderators.length,
+                    color: AppTheme.primaryColor,
+                  ),
+                  ...moderators.asMap().entries.map((entry) => _MemberTile(
+                      index: entry.key,
+                      member: entry.value,
+                      roleLabel: _roleLabel,
+                      roleColor: _roleColor,
+                      communityId: communityId)),
+                  SizedBox(height: r.s(16)),
+                ],
+
+                // Membros comuns (mais recente ao mais antigo)
                 _SectionHeader(
-                  title: 'LÍDERES',
-                  count: leaders.length,
-                  color: AppTheme.errorColor,
+                  title: 'MEMBROS',
+                  count: regular.length,
+                  color: context.textSecondary,
                 ),
-                ...leaders.asMap().entries.map((entry) => _MemberTile(
+                ...regular.asMap().entries.map((entry) => _MemberTile(
                     index: entry.key,
                     member: entry.value,
                     roleLabel: _roleLabel,
                     roleColor: _roleColor,
                     communityId: communityId)),
-                SizedBox(height: r.s(16)),
               ],
-
-              // Curadores
-              if (curators.isNotEmpty) ...[
-                _SectionHeader(
-                  title: 'CURADORES',
-                  count: curators.length,
-                  color: AppTheme.accentColor,
-                ),
-                ...curators.asMap().entries.map((entry) => _MemberTile(
-                    index: entry.key,
-                    member: entry.value,
-                    roleLabel: _roleLabel,
-                    roleColor: _roleColor,
-                    communityId: communityId)),
-                SizedBox(height: r.s(16)),
-              ],
-
-              // Moderadores
-              if (moderators.isNotEmpty) ...[
-                _SectionHeader(
-                  title: 'MODERADORES',
-                  count: moderators.length,
-                  color: AppTheme.primaryColor,
-                ),
-                ...moderators.asMap().entries.map((entry) => _MemberTile(
-                    index: entry.key,
-                    member: entry.value,
-                    roleLabel: _roleLabel,
-                    roleColor: _roleColor,
-                    communityId: communityId)),
-                SizedBox(height: r.s(16)),
-              ],
-
-              // Membros comuns (mais recente ao mais antigo)
-              _SectionHeader(
-                title: 'MEMBROS',
-                count: regular.length,
-                color: context.textSecondary,
-              ),
-              ...regular.asMap().entries.map((entry) => _MemberTile(
-                  index: entry.key,
-                  member: entry.value,
-                  roleLabel: _roleLabel,
-                  roleColor: _roleColor,
-                  communityId: communityId)),
-            ],
             ),
           );
         },
@@ -382,7 +379,8 @@ class _MemberTile extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text('Lv.$level ${levelTitle(level)}',
                         style: TextStyle(
-                            color: AppTheme.getLevelColor(level), fontSize: r.fs(11))),
+                            color: AppTheme.getLevelColor(level),
+                            fontSize: r.fs(11))),
                   ],
                 ),
               ),

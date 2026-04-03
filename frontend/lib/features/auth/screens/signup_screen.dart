@@ -174,7 +174,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       ),
                     ),
                     validator: (value) {
-                      if (value == null || value.isEmpty) return 'Crie uma senha';
+                      if (value == null || value.isEmpty)
+                        return 'Crie uma senha';
                       if (value.length < 6) return 'Mínimo 6 caracteres';
                       return null;
                     },
@@ -233,7 +234,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           child: Text(
                             'Aceito os Termos de Uso e Política de Privacidade',
                             style: TextStyle(
-                                color: context.textSecondary, fontSize: r.fs(13)),
+                                color: context.textSecondary,
+                                fontSize: r.fs(13)),
                           ),
                         ),
                       ],
@@ -263,7 +265,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                             Expanded(
                               child: Text(authState.error!,
                                   style: TextStyle(
-                                      color: AppTheme.errorColor, fontSize: r.fs(13))),
+                                      color: AppTheme.errorColor,
+                                      fontSize: r.fs(13))),
                             ),
                           ],
                         ),
@@ -383,7 +386,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     children: [
                       Text('Já tem conta? ',
                           style: TextStyle(
-                              color: context.textSecondary, fontSize: r.fs(14))),
+                              color: context.textSecondary,
+                              fontSize: r.fs(14))),
                       GestureDetector(
                         onTap: () => context.go('/login'),
                         child: Text('Fazer login',

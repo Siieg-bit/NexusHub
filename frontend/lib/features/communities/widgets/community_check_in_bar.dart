@@ -113,9 +113,7 @@ class _CommunityCheckInBarState extends ConsumerState<CommunityCheckInBar> {
                   height: r.s(6),
                   margin: EdgeInsets.only(right: i < 6 ? 3 : 0),
                   decoration: BoxDecoration(
-                    color: filled
-                        ? AppTheme.primaryColor
-                        : context.dividerClr,
+                    color: filled ? AppTheme.primaryColor : context.dividerClr,
                     borderRadius: BorderRadius.circular(r.s(3)),
                   ),
                   child: filled
@@ -149,8 +147,8 @@ class _CommunityCheckInBarState extends ConsumerState<CommunityCheckInBar> {
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(r.s(10))),
-                textStyle: TextStyle(
-                    fontWeight: FontWeight.w700, fontSize: r.fs(14)),
+                textStyle:
+                    TextStyle(fontWeight: FontWeight.w700, fontSize: r.fs(14)),
               ),
               child: _loading
                   ? SizedBox(

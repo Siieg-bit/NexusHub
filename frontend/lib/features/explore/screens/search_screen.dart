@@ -114,7 +114,8 @@ class _SearchScreenState extends State<SearchScreen>
                   color: Colors.grey[500], size: r.s(20)),
               suffixIcon: _query.isNotEmpty
                   ? IconButton(
-                      icon: Icon(Icons.close_rounded, size: r.s(18), color: Colors.grey[500]),
+                      icon: Icon(Icons.close_rounded,
+                          size: r.s(18), color: Colors.grey[500]),
                       onPressed: () {
                         _searchController.clear();
                         _performSearch('');
@@ -143,7 +144,8 @@ class _SearchScreenState extends State<SearchScreen>
         ),
       ),
       body: _isSearching
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppTheme.primaryColor))
           : _query.isEmpty
               ? _buildEmptyState()
               : TabBarView(
@@ -158,7 +160,7 @@ class _SearchScreenState extends State<SearchScreen>
   }
 
   Widget _buildEmptyState() {
-      final r = context.r;
+    final r = context.r;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -173,7 +175,7 @@ class _SearchScreenState extends State<SearchScreen>
   }
 
   Widget _buildCommunityResults() {
-      final r = context.r;
+    final r = context.r;
     if (_communities.isEmpty) {
       return Center(
         child: Text('Nenhuma comunidade encontrada',
@@ -193,7 +195,8 @@ class _SearchScreenState extends State<SearchScreen>
             border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
           child: ListTile(
-            contentPadding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+            contentPadding:
+                EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
             onTap: () => context.push('/community/${c['id']}'),
             leading: Container(
               width: r.s(48),
@@ -203,13 +206,15 @@ class _SearchScreenState extends State<SearchScreen>
                 color: AppTheme.primaryColor.withValues(alpha: 0.1),
                 image: c['icon_url'] != null
                     ? DecorationImage(
-                        image: CachedNetworkImageProvider(c['icon_url'] as String? ?? ''),
+                        image: CachedNetworkImageProvider(
+                            c['icon_url'] as String? ?? ''),
                         fit: BoxFit.cover,
                       )
                     : null,
               ),
               child: c['icon_url'] == null
-                  ? const Icon(Icons.groups_rounded, color: AppTheme.primaryColor)
+                  ? const Icon(Icons.groups_rounded,
+                      color: AppTheme.primaryColor)
                   : null,
             ),
             title: Text(c['name'] as String? ?? '',
@@ -231,7 +236,7 @@ class _SearchScreenState extends State<SearchScreen>
   }
 
   Widget _buildUserResults() {
-      final r = context.r;
+    final r = context.r;
     if (_users.isEmpty) {
       return Center(
         child: Text('Nenhum usuário encontrado',
@@ -251,7 +256,8 @@ class _SearchScreenState extends State<SearchScreen>
             border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
           child: ListTile(
-            contentPadding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+            contentPadding:
+                EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
             onTap: () => context.push('/user/${u['id']}'),
             leading: CosmeticAvatar(
               userId: u['id'] as String?,
@@ -267,7 +273,10 @@ class _SearchScreenState extends State<SearchScreen>
               padding: EdgeInsets.only(top: r.s(4)),
               child: Text(
                 'Nível ${u['level'] ?? 1}',
-                style: TextStyle(color: AppTheme.accentColor, fontSize: r.fs(13), fontWeight: FontWeight.w600),
+                style: TextStyle(
+                    color: AppTheme.accentColor,
+                    fontSize: r.fs(13),
+                    fontWeight: FontWeight.w600),
               ),
             ),
           ),
@@ -277,7 +286,7 @@ class _SearchScreenState extends State<SearchScreen>
   }
 
   Widget _buildPostResults() {
-      final r = context.r;
+    final r = context.r;
     if (_posts.isEmpty) {
       return Center(
         child: Text('Nenhum post encontrado',
@@ -298,7 +307,8 @@ class _SearchScreenState extends State<SearchScreen>
             border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
           child: ListTile(
-            contentPadding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+            contentPadding:
+                EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
             onTap: () => context.push('/post/${p['id']}'),
             leading: Container(
               width: r.s(48),

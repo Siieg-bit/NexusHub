@@ -37,7 +37,8 @@ class MessageBubble extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: r.s(8)),
         child: Center(
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(6)),
+            padding:
+                EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(6)),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(r.s(12)),
@@ -61,112 +62,111 @@ class MessageBubble extends StatelessWidget {
         crossAxisAlignment:
             isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
-      Row(
-        mainAxisAlignment:
-            isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (!isMe && showAvatar)
-            GestureDetector(
-              onTap: () => context.push('/user/${message.authorId}'),
-              child: CircleAvatar(
-                radius: 16,
-                backgroundColor: context.surfaceColor,
-                backgroundImage: () {
-                  final msgIcon = message.author?.iconUrl;
-                  return msgIcon != null && msgIcon.isNotEmpty
-                      ? CachedNetworkImageProvider(msgIcon)
-                      : null;
-                }(),
-                child: () {
-                  final msgIcon = message.author?.iconUrl;
-                  return msgIcon == null || msgIcon.isEmpty
-                      ? Text(
-                          (message.author?.nickname ?? '?')[0].toUpperCase(),
-                          style: TextStyle(
-                              fontSize: r.fs(11), color: Colors.grey[400]),
-                        )
-                      : null;
-                }(),
-              ),
-            )
-          else if (!isMe)
-            SizedBox(width: r.s(32)),
-          SizedBox(width: r.s(8)),
-          Flexible(
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(10)),
-              decoration: BoxDecoration(
-                color: isMe
-                    ? AppTheme.primaryColor
-                    : context.surfaceColor,
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(16),
-                  topRight: const Radius.circular(16),
-                  bottomLeft:
-                      Radius.circular(isMe ? 16 : (showAvatar ? 4 : 16)),
-                  bottomRight:
-                      Radius.circular(isMe ? (showAvatar ? 4 : 16) : 16),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (!isMe && showAvatar)
-                    Padding(
-                      padding: EdgeInsets.only(bottom: r.s(4)),
-                      child: Text(
-                        message.author?.nickname ?? 'User',
-                        style: TextStyle(
-                          color: AppTheme.primaryColor,
-                          fontSize: r.fs(11),
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  // Conteúdo baseado no tipo
-                  _buildContent(context),
-                  // Hora + indicador de editado
-                  Padding(
-                    padding: EdgeInsets.only(top: r.s(4)),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          _formatTime(message.createdAt),
-                          style: TextStyle(
-                            color: isMe
-                                ? Colors.white.withValues(alpha: 0.6)
-                                : Colors.grey[600],
-                            fontSize: r.fs(10),
-                          ),
-                        ),
-                        if (message.isEdited) ...[
-                          SizedBox(width: r.s(4)),
-                          Text(
-                            'editado',
-                            style: TextStyle(
-                              color: isMe
-                                  ? Colors.white.withValues(alpha: 0.45)
-                                  : Colors.grey[600],
-                              fontSize: r.fs(9),
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                        ],
-                      ],
+          Row(
+            mainAxisAlignment:
+                isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (!isMe && showAvatar)
+                GestureDetector(
+                  onTap: () => context.push('/user/${message.authorId}'),
+                  child: CircleAvatar(
+                    radius: 16,
+                    backgroundColor: context.surfaceColor,
+                    backgroundImage: () {
+                      final msgIcon = message.author?.iconUrl;
+                      return msgIcon != null && msgIcon.isNotEmpty
+                          ? CachedNetworkImageProvider(msgIcon)
+                          : null;
+                    }(),
+                    child: () {
+                      final msgIcon = message.author?.iconUrl;
+                      return msgIcon == null || msgIcon.isEmpty
+                          ? Text(
+                              (message.author?.nickname ?? '?')[0]
+                                  .toUpperCase(),
+                              style: TextStyle(
+                                  fontSize: r.fs(11), color: Colors.grey[400]),
+                            )
+                          : null;
+                    }(),
+                  ),
+                )
+              else if (!isMe)
+                SizedBox(width: r.s(32)),
+              SizedBox(width: r.s(8)),
+              Flexible(
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: r.s(14), vertical: r.s(10)),
+                  decoration: BoxDecoration(
+                    color: isMe ? AppTheme.primaryColor : context.surfaceColor,
+                    borderRadius: BorderRadius.only(
+                      topLeft: const Radius.circular(16),
+                      topRight: const Radius.circular(16),
+                      bottomLeft:
+                          Radius.circular(isMe ? 16 : (showAvatar ? 4 : 16)),
+                      bottomRight:
+                          Radius.circular(isMe ? (showAvatar ? 4 : 16) : 16),
                     ),
                   ),
-                ],
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (!isMe && showAvatar)
+                        Padding(
+                          padding: EdgeInsets.only(bottom: r.s(4)),
+                          child: Text(
+                            message.author?.nickname ?? 'User',
+                            style: TextStyle(
+                              color: AppTheme.primaryColor,
+                              fontSize: r.fs(11),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      // Conteúdo baseado no tipo
+                      _buildContent(context),
+                      // Hora + indicador de editado
+                      Padding(
+                        padding: EdgeInsets.only(top: r.s(4)),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _formatTime(message.createdAt),
+                              style: TextStyle(
+                                color: isMe
+                                    ? Colors.white.withValues(alpha: 0.6)
+                                    : Colors.grey[600],
+                                fontSize: r.fs(10),
+                              ),
+                            ),
+                            if (message.isEdited) ...[
+                              SizedBox(width: r.s(4)),
+                              Text(
+                                'editado',
+                                style: TextStyle(
+                                  color: isMe
+                                      ? Colors.white.withValues(alpha: 0.45)
+                                      : Colors.grey[600],
+                                  fontSize: r.fs(9),
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
+          // ── Reações abaixo do bubble ──
+          if (message.reactions.isNotEmpty) _buildReactionsRow(context),
         ],
-      ),
-      // ── Reações abaixo do bubble ──
-      if (message.reactions.isNotEmpty)
-        _buildReactionsRow(context),
-      ],
       ),
     );
   }
@@ -202,8 +202,8 @@ class MessageBubble extends StatelessWidget {
             return GestureDetector(
               onTap: () => onReactionTap?.call(emoji),
               child: Container(
-                padding: EdgeInsets.symmetric(
-                    horizontal: r.s(6), vertical: r.s(2)),
+                padding:
+                    EdgeInsets.symmetric(horizontal: r.s(6), vertical: r.s(2)),
                 decoration: BoxDecoration(
                   color: iReacted
                       ? AppTheme.primaryColor.withValues(alpha: 0.25)
@@ -225,9 +225,8 @@ class MessageBubble extends StatelessWidget {
                       '${users.length}',
                       style: TextStyle(
                         fontSize: r.fs(10),
-                        color: iReacted
-                            ? AppTheme.primaryColor
-                            : Colors.grey[500],
+                        color:
+                            iReacted ? AppTheme.primaryColor : Colors.grey[500],
                         fontWeight:
                             iReacted ? FontWeight.w600 : FontWeight.normal,
                       ),
@@ -243,7 +242,7 @@ class MessageBubble extends StatelessWidget {
   }
 
   Widget _buildContent(BuildContext context) {
-      final r = context.r;
+    final r = context.r;
     final type = message.type;
     final textColor = isMe ? Colors.white : context.textPrimary;
 
@@ -259,9 +258,11 @@ class MessageBubble extends StatelessWidget {
           width: r.s(200),
           fit: BoxFit.cover,
           placeholder: (_, __) => Container(
-            width: r.s(200), height: r.s(150),
+            width: r.s(200),
+            height: r.s(150),
             color: Colors.grey[800],
-            child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            child:
+                const Center(child: CircularProgressIndicator(strokeWidth: 2)),
           ),
         ),
       );
@@ -312,10 +313,16 @@ class MessageBubble extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Audio', style: TextStyle(color: textColor, fontSize: r.fs(13), fontWeight: FontWeight.w600)),
+              Text('Audio',
+                  style: TextStyle(
+                      color: textColor,
+                      fontSize: r.fs(13),
+                      fontWeight: FontWeight.w600)),
               if (message.mediaDuration != null)
                 Text('${message.mediaDuration}s',
-                    style: TextStyle(color: textColor.withValues(alpha: 0.6), fontSize: r.fs(11))),
+                    style: TextStyle(
+                        color: textColor.withValues(alpha: 0.6),
+                        fontSize: r.fs(11))),
               Container(
                 width: r.s(120),
                 height: r.s(4),
@@ -341,10 +348,13 @@ class MessageBubble extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Audio', style: TextStyle(color: textColor, fontSize: r.fs(13))),
+              Text('Audio',
+                  style: TextStyle(color: textColor, fontSize: r.fs(13))),
               if (message.mediaDuration != null)
                 Text('${message.mediaDuration}s',
-                    style: TextStyle(color: textColor.withValues(alpha: 0.6), fontSize: r.fs(11))),
+                    style: TextStyle(
+                        color: textColor.withValues(alpha: 0.6),
+                        fontSize: r.fs(11))),
               Container(
                 width: r.s(120),
                 height: r.s(4),
@@ -369,7 +379,8 @@ class MessageBubble extends StatelessWidget {
           borderRadius: BorderRadius.circular(r.s(8)),
         ),
         child: Center(
-          child: Icon(Icons.play_circle_rounded, color: Colors.white, size: r.s(48)),
+          child: Icon(Icons.play_circle_rounded,
+              color: Colors.white, size: r.s(48)),
         ),
       );
     }
@@ -391,8 +402,7 @@ class MessageBubble extends StatelessWidget {
             SizedBox(width: r.s(8)),
             Text('$amount coins',
                 style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.warningColor)),
+                    fontWeight: FontWeight.bold, color: AppTheme.warningColor)),
           ],
         ),
       );
@@ -402,9 +412,8 @@ class MessageBubble extends StatelessWidget {
       final isVoice = type == 'system_voice_start';
       final icon = isVoice ? Icons.headset_mic_rounded : Icons.live_tv_rounded;
       final label = isVoice ? 'Voice Chat' : 'Screening Room';
-      final accentColor = isVoice
-          ? const AppTheme.primaryColor
-          : const Color(0xFFFF5722);
+      final accentColor =
+          isVoice ? const Color(0xFF4CAF50) : const Color(0xFFFF5722);
       return Container(
         padding: EdgeInsets.all(r.s(12)),
         decoration: BoxDecoration(
@@ -417,8 +426,8 @@ class MessageBubble extends StatelessWidget {
             Icon(icon, color: accentColor),
             SizedBox(width: r.s(8)),
             Text(label,
-                style: TextStyle(
-                    fontWeight: FontWeight.w600, color: accentColor)),
+                style:
+                    TextStyle(fontWeight: FontWeight.w600, color: accentColor)),
           ],
         ),
       );
@@ -456,7 +465,9 @@ class MessageBubble extends StatelessWidget {
               ],
             ),
           ),
-          if (message.content != null && message.content != url && message.content!.isNotEmpty)
+          if (message.content != null &&
+              message.content != url &&
+              message.content!.isNotEmpty)
             Padding(
               padding: EdgeInsets.only(top: r.s(4)),
               child: Text(message.content!,
@@ -471,11 +482,15 @@ class MessageBubble extends StatelessWidget {
       try {
         // Tentar parsear o JSON do poll
         final content = message.content!;
-        final questionMatch = RegExp(r'"question":"([^"]*)"').firstMatch(content);
+        final questionMatch =
+            RegExp(r'"question":"([^"]*)"').firstMatch(content);
         final question = questionMatch?.group(1) ?? 'Enquete';
         final optionsMatch = RegExp(r'"options":\[(.*?)\]').firstMatch(content);
         final optionsStr = optionsMatch?.group(1) ?? '';
-        final options = RegExp(r'"([^"]*)"').allMatches(optionsStr).map((m) => m.group(1) ?? '').toList();
+        final options = RegExp(r'"([^"]*)"')
+            .allMatches(optionsStr)
+            .map((m) => m.group(1) ?? '')
+            .toList();
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -488,8 +503,8 @@ class MessageBubble extends StatelessWidget {
             SizedBox(height: r.s(8)),
             ...options.map((opt) => Container(
                   margin: EdgeInsets.only(bottom: r.s(4)),
-                  padding:
-                      EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: r.s(12), vertical: r.s(8)),
                   decoration: BoxDecoration(
                     color: textColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(r.s(8)),

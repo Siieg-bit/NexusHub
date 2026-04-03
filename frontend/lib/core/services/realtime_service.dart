@@ -145,13 +145,14 @@ class RealtimeService {
     managed.retryTimer = Timer(Duration(seconds: delay), () {
       if (!_channels.containsKey(managed.name)) return; // Foi removido
 
-      debugPrint(
-          '[RealtimeService] ${managed.name}: tentando reconexão...');
+      debugPrint('[RealtimeService] ${managed.name}: tentando reconexão...');
 
       // Recriar o canal (o antigo pode estar em estado inválido)
       try {
         managed.channel.unsubscribe();
-      } catch (e) { debugPrint('[realtime_service.dart] $e'); }
+      } catch (e) {
+        debugPrint('[realtime_service.dart] $e');
+      }
 
       final newChannel = SupabaseService.client.channel(managed.name);
       managed.configure(newChannel);

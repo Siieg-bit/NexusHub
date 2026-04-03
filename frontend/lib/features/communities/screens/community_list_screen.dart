@@ -95,7 +95,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
   }
 
   Widget _buildCommunityList(List<CommunityModel> communities) {
-      final r = context.r;
+    final r = context.r;
     return RefreshIndicator(
       color: AppTheme.primaryColor,
       onRefresh: () async {
@@ -132,7 +132,8 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                   Expanded(
                     child: ReorderableListView.builder(
                       scrollDirection: Axis.horizontal,
-                      padding: EdgeInsets.only(left: r.s(14), right: r.s(8), top: r.s(18)),
+                      padding: EdgeInsets.only(
+                          left: r.s(14), right: r.s(8), top: r.s(18)),
                       itemCount: (_reorderedCommunities ?? communities).length,
                       onReorder: (oldIndex, newIndex) {
                         HapticFeedback.mediumImpact();
@@ -159,13 +160,15 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                         );
                       },
                       itemBuilder: (context, index) {
-                        final community = (_reorderedCommunities ?? communities)[index];
+                        final community =
+                            (_reorderedCommunities ?? communities)[index];
                         return Padding(
                           key: ValueKey(community.id),
                           padding: EdgeInsets.only(right: r.s(8)),
                           child: _AminoCommunityCard(
                             community: community,
-                            onTap: () => context.push('/community/${community.id}'),
+                            onTap: () =>
+                                context.push('/community/${community.id}'),
                             onLongPress: () {
                               HapticFeedback.mediumImpact();
                               _showCommunityPreview(context, community);
@@ -262,7 +265,8 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                 ),
                 // Header com nome da comunidade
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: r.s(16), vertical: r.s(8)),
                   child: Row(
                     children: [
                       Container(
@@ -273,12 +277,14 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                           color: ctx.cardBg,
                         ),
                         clipBehavior: Clip.antiAlias,
-                        child: community.iconUrl != null && community.iconUrl!.isNotEmpty
+                        child: community.iconUrl != null &&
+                                community.iconUrl!.isNotEmpty
                             ? CachedNetworkImage(
                                 imageUrl: community.iconUrl!,
                                 fit: BoxFit.cover,
                               )
-                            : Icon(Icons.groups_rounded, color: ctx.textHint, size: r.s(20)),
+                            : Icon(Icons.groups_rounded,
+                                color: ctx.textHint, size: r.s(20)),
                       ),
                       SizedBox(width: r.s(12)),
                       Expanded(
@@ -299,10 +305,14 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                 Divider(color: Colors.grey[800], height: 1),
                 // 1. Ver detalhes da comunidade
                 ListTile(
-                  leading: Icon(Icons.info_outline_rounded, color: AppTheme.accentColor, size: r.s(22)),
+                  leading: Icon(Icons.info_outline_rounded,
+                      color: AppTheme.accentColor, size: r.s(22)),
                   title: Text(
                     'Ver detalhes da comunidade',
-                    style: TextStyle(color: ctx.textPrimary, fontSize: r.fs(14), fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                        color: ctx.textPrimary,
+                        fontSize: r.fs(14),
+                        fontWeight: FontWeight.w600),
                   ),
                   onTap: () {
                     Navigator.pop(ctx);
@@ -311,10 +321,14 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                 ),
                 // 2. Reordenar comunidades
                 ListTile(
-                  leading: Icon(Icons.swap_vert_rounded, color: AppTheme.aminoPurple, size: r.s(22)),
+                  leading: Icon(Icons.swap_vert_rounded,
+                      color: AppTheme.aminoPurple, size: r.s(22)),
                   title: Text(
                     'Reordenar comunidades',
-                    style: TextStyle(color: ctx.textPrimary, fontSize: r.fs(14), fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                        color: ctx.textPrimary,
+                        fontSize: r.fs(14),
+                        fontWeight: FontWeight.w600),
                   ),
                   onTap: () {
                     Navigator.pop(ctx);
@@ -323,10 +337,14 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                 ),
                 // 3. Sair da comunidade
                 ListTile(
-                  leading: Icon(Icons.exit_to_app_rounded, color: AppTheme.errorColor, size: r.s(22)),
+                  leading: Icon(Icons.exit_to_app_rounded,
+                      color: AppTheme.errorColor, size: r.s(22)),
                   title: Text(
                     'Sair da comunidade',
-                    style: TextStyle(color: AppTheme.errorColor, fontSize: r.fs(14), fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                        color: AppTheme.errorColor,
+                        fontSize: r.fs(14),
+                        fontWeight: FontWeight.w600),
                   ),
                   onTap: () {
                     Navigator.pop(ctx);
@@ -344,7 +362,8 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
   void _showReorderMode() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Segure e arraste os cards para reordenar suas comunidades.'),
+        content: const Text(
+            'Segure e arraste os cards para reordenar suas comunidades.'),
         backgroundColor: AppTheme.accentColor,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 3),
@@ -352,17 +371,20 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
     );
   }
 
-  Future<void> _confirmLeaveCommunity(BuildContext context, CommunityModel community) async {
+  Future<void> _confirmLeaveCommunity(
+      BuildContext context, CommunityModel community) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) {
         final r = ctx.r;
         return AlertDialog(
           backgroundColor: ctx.surfaceColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(16))),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(r.s(16))),
           title: Text(
             'Sair da comunidade',
-            style: TextStyle(color: ctx.textPrimary, fontWeight: FontWeight.w800),
+            style:
+                TextStyle(color: ctx.textPrimary, fontWeight: FontWeight.w800),
           ),
           content: Text(
             'Tem certeza que deseja sair de "${community.name}"? Voc\u00ea poder\u00e1 entrar novamente depois.',
@@ -371,11 +393,14 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: Text('Cancelar', style: TextStyle(color: ctx.textSecondary)),
+              child:
+                  Text('Cancelar', style: TextStyle(color: ctx.textSecondary)),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: Text('Sair', style: TextStyle(color: AppTheme.errorColor, fontWeight: FontWeight.w700)),
+              child: Text('Sair',
+                  style: TextStyle(
+                      color: AppTheme.errorColor, fontWeight: FontWeight.w700)),
             ),
           ],
         );
@@ -407,7 +432,8 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Erro ao sair da comunidade. Tente novamente.'),
+              content:
+                  const Text('Erro ao sair da comunidade. Tente novamente.'),
               backgroundColor: AppTheme.errorColor,
               behavior: SnackBarBehavior.floating,
             ),
@@ -418,15 +444,14 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
   }
 
   Widget _buildEmptyState() {
-      final r = context.r;
+    final r = context.r;
     return Center(
       child: Padding(
         padding: EdgeInsets.all(r.s(32)),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.groups_rounded,
-                color: context.textHint, size: r.s(48)),
+            Icon(Icons.groups_rounded, color: context.textHint, size: r.s(48)),
             SizedBox(height: r.s(12)),
             Text(
               'Nenhuma comunidade',
@@ -449,8 +474,8 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
             GestureDetector(
               onTap: () => context.go('/explore'),
               child: Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: r.s(24), vertical: r.s(10)),
+                padding: EdgeInsets.symmetric(
+                    horizontal: r.s(24), vertical: r.s(10)),
                 decoration: BoxDecoration(
                   color: AppTheme.primaryColor,
                   borderRadius: BorderRadius.circular(r.s(20)),
@@ -472,7 +497,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
   }
 
   Widget _buildErrorState() {
-      final r = context.r;
+    final r = context.r;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -588,7 +613,7 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Você já fez check-in hoje nesta comunidade!'),
-              backgroundColor: AppTheme.aminoOrange,
+              backgroundColor: Colors.orange,
               behavior: SnackBarBehavior.floating,
               duration: Duration(seconds: 2),
             ),
@@ -652,7 +677,8 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
                         fit: StackFit.expand,
                         children: [
                           // Imagem
-                          widget.community.bannerUrl != null && widget.community.bannerUrl!.isNotEmpty
+                          widget.community.bannerUrl != null &&
+                                  widget.community.bannerUrl!.isNotEmpty
                               ? CachedNetworkImage(
                                   imageUrl: widget.community.bannerUrl ?? '',
                                   fit: BoxFit.cover,
@@ -675,8 +701,8 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
                                   color: color.withValues(alpha: 0.3),
                                   child: Center(
                                     child: Icon(Icons.groups_rounded,
-                                        color: Colors.white
-                                            .withValues(alpha: 0.2),
+                                        color:
+                                            Colors.white.withValues(alpha: 0.2),
                                         size: r.s(28)),
                                   ),
                                 ),
@@ -738,7 +764,8 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
                       GestureDetector(
                         onTap: _isCheckingIn ? null : _doCheckIn,
                         child: Padding(
-                          padding: EdgeInsets.fromLTRB(r.s(6), r.s(4), r.s(6), r.s(5)),
+                          padding: EdgeInsets.fromLTRB(
+                              r.s(6), r.s(4), r.s(6), r.s(5)),
                           child: Container(
                             width: double.infinity,
                             padding: EdgeInsets.symmetric(vertical: r.s(4)),
@@ -778,7 +805,8 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
                     else
                       // Streak badge — mostra quando já fez check-in hoje
                       Padding(
-                        padding: EdgeInsets.fromLTRB(r.s(6), r.s(4), r.s(6), r.s(5)),
+                        padding:
+                            EdgeInsets.fromLTRB(r.s(6), r.s(4), r.s(6), r.s(5)),
                         child: Container(
                           width: double.infinity,
                           padding: EdgeInsets.symmetric(vertical: r.s(3)),
@@ -833,15 +861,15 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
                   ],
                 ),
                 clipBehavior: Clip.antiAlias,
-                child: widget.community.iconUrl != null && widget.community.iconUrl!.isNotEmpty
+                child: widget.community.iconUrl != null &&
+                        widget.community.iconUrl!.isNotEmpty
                     ? CachedNetworkImage(
                         imageUrl: widget.community.iconUrl ?? '',
                         fit: BoxFit.cover,
                         memCacheWidth: 96,
                         memCacheHeight: 96,
                       )
-                    : Icon(Icons.person,
-                        color: Colors.white54, size: r.s(18)),
+                    : Icon(Icons.person, color: Colors.white54, size: r.s(18)),
               ),
             ),
           ],
@@ -969,7 +997,7 @@ class _CommunityPreviewSheetState
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Você já fez check-in hoje nesta comunidade!'),
-              backgroundColor: AppTheme.aminoOrange,
+              backgroundColor: Colors.orange,
               behavior: SnackBarBehavior.floating,
               duration: Duration(seconds: 2),
             ),
@@ -1029,7 +1057,8 @@ class _CommunityPreviewSheetState
                 child: SizedBox(
                   height: r.s(140),
                   width: double.infinity,
-                  child: widget.community.bannerUrl != null && widget.community.bannerUrl!.isNotEmpty
+                  child: widget.community.bannerUrl != null &&
+                          widget.community.bannerUrl!.isNotEmpty
                       ? CachedNetworkImage(
                           imageUrl: widget.community.bannerUrl ?? '',
                           fit: BoxFit.cover,
@@ -1092,7 +1121,8 @@ class _CommunityPreviewSheetState
                     border: Border.all(color: color, width: 2),
                   ),
                   clipBehavior: Clip.antiAlias,
-                  child: widget.community.iconUrl != null && widget.community.iconUrl!.isNotEmpty
+                  child: widget.community.iconUrl != null &&
+                          widget.community.iconUrl!.isNotEmpty
                       ? CachedNetworkImage(
                           imageUrl: widget.community.iconUrl ?? '',
                           fit: BoxFit.cover,
@@ -1143,7 +1173,8 @@ class _CommunityPreviewSheetState
               children: [
                 _StatChip(
                   icon: Icons.people_rounded,
-                  label: '${_formatCount(widget.community.membersCount)} membros',
+                  label:
+                      '${_formatCount(widget.community.membersCount)} membros',
                   color: AppTheme.accentColor,
                 ),
                 SizedBox(width: r.s(8)),

@@ -87,8 +87,7 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
   }
 
   void _onHorizontalDragStart(DragStartDetails details) {
-    _edgeDragActive =
-        !_isOpen && details.globalPosition.dx <= _edgeDragWidth;
+    _edgeDragActive = !_isOpen && details.globalPosition.dx <= _edgeDragWidth;
   }
 
   void _onHorizontalDragUpdate(DragUpdateDetails details) {
@@ -117,8 +116,7 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final effectiveMaxSlide =
-        widget.maxSlide.clamp(0.0, screenWidth * 0.92);
+    final effectiveMaxSlide = widget.maxSlide.clamp(0.0, screenWidth * 0.92);
 
     return GestureDetector(
       onHorizontalDragStart: _onHorizontalDragStart,

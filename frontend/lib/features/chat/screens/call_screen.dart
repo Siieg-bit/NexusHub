@@ -192,7 +192,9 @@ class _CallScreenState extends State<CallScreen> {
                       height: r.s(160),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(r.s(12)),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.05), width: 1),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.05),
+                            width: 1),
                       ),
                       clipBehavior: Clip.antiAlias,
                       child: CallService.engine != null
@@ -214,7 +216,7 @@ class _CallScreenState extends State<CallScreen> {
   }
 
   Widget _buildHeader(String title) {
-      final r = context.r;
+    final r = context.r;
     return Padding(
       padding: EdgeInsets.all(r.s(16)),
       child: Row(
@@ -244,15 +246,16 @@ class _CallScreenState extends State<CallScreen> {
                   ),
                   SizedBox(width: r.s(6)),
                   Text(_elapsed,
-                      style:
-                          TextStyle(color: Colors.grey[500], fontSize: r.fs(14))),
+                      style: TextStyle(
+                          color: Colors.grey[500], fontSize: r.fs(14))),
                 ],
               ),
             ],
           ),
           const Spacer(),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(4)),
+            padding:
+                EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(4)),
             decoration: BoxDecoration(
               color: AppTheme.primaryColor.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(r.s(20)),
@@ -277,7 +280,7 @@ class _CallScreenState extends State<CallScreen> {
 
   /// Grid de vídeo real via Agora
   Widget _buildVideoGrid() {
-      final r = context.r;
+    final r = context.r;
     if (CallService.engine == null) {
       return const Center(
         child: CircularProgressIndicator(color: AppTheme.primaryColor),
@@ -334,7 +337,7 @@ class _CallScreenState extends State<CallScreen> {
 
   /// Grid de áudio com indicadores de volume
   Widget _buildAudioGrid() {
-      final r = context.r;
+    final r = context.r;
     if (_participants.isEmpty) {
       return Center(
         child: Column(
@@ -363,7 +366,7 @@ class _CallScreenState extends State<CallScreen> {
   }
 
   Widget _buildParticipantTile(Map<String, dynamic> participant) {
-      final r = context.r;
+    final r = context.r;
     final profile = participant['profiles'] as Map<String, dynamic>?;
     final nickname = profile?['nickname'] as String? ?? 'Usuário';
     final iconUrl = profile?['icon_url'] as String?;
@@ -418,8 +421,7 @@ class _CallScreenState extends State<CallScreen> {
                   decoration: BoxDecoration(
                     color: AppTheme.primaryColor,
                     shape: BoxShape.circle,
-                    border:
-                        Border.all(color: context.surfaceColor, width: 2),
+                    border: Border.all(color: context.surfaceColor, width: 2),
                   ),
                   child: Icon(Icons.mic_rounded,
                       color: Colors.white, size: r.s(12)),
@@ -446,7 +448,8 @@ class _CallScreenState extends State<CallScreen> {
               ),
               SizedBox(width: r.s(4)),
               Text('Conectado',
-                  style: TextStyle(color: Colors.grey[500], fontSize: r.fs(11))),
+                  style:
+                      TextStyle(color: Colors.grey[500], fontSize: r.fs(11))),
             ],
           ),
           // Audio level bar
@@ -464,7 +467,7 @@ class _CallScreenState extends State<CallScreen> {
   }
 
   Widget _buildAvatarPlaceholder(String name) {
-      final r = context.r;
+    final r = context.r;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -479,21 +482,26 @@ class _CallScreenState extends State<CallScreen> {
                     fontWeight: FontWeight.w800)),
           ),
           SizedBox(height: r.s(16)),
-          Text(name, style: TextStyle(color: context.textPrimary, fontSize: r.fs(18), fontWeight: FontWeight.w700)),
+          Text(name,
+              style: TextStyle(
+                  color: context.textPrimary,
+                  fontSize: r.fs(18),
+                  fontWeight: FontWeight.w700)),
         ],
       ),
     );
   }
 
   Widget _buildScreeningArea() {
-      final r = context.r;
+    final r = context.r;
     return Container(
       margin: EdgeInsets.symmetric(horizontal: r.s(16)),
       height: r.s(200),
       decoration: BoxDecoration(
         color: context.surfaceColor,
         borderRadius: BorderRadius.circular(r.s(16)),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05), width: 1),
+        border:
+            Border.all(color: Colors.white.withValues(alpha: 0.05), width: 1),
       ),
       child: _remoteUsers.isNotEmpty && CallService.engine != null
           ? ClipRRect(
@@ -513,7 +521,9 @@ class _CallScreenState extends State<CallScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.live_tv_rounded, color: Colors.white.withValues(alpha: 0.24), size: r.s(48)),
+                  Icon(Icons.live_tv_rounded,
+                      color: Colors.white.withValues(alpha: 0.24),
+                      size: r.s(48)),
                   SizedBox(height: r.s(8)),
                   Text('Tela compartilhada aparecerá aqui',
                       style: TextStyle(color: Colors.grey[500])),
@@ -524,7 +534,7 @@ class _CallScreenState extends State<CallScreen> {
   }
 
   Widget _buildControls(bool isVideo) {
-      final r = context.r;
+    final r = context.r;
     return Padding(
       padding: EdgeInsets.all(r.s(24)),
       child: Row(
@@ -637,9 +647,9 @@ class _ControlButton extends StatelessWidget {
                       : Colors.white.withValues(alpha: 0.05),
               shape: BoxShape.circle,
               border: Border.all(
-                color: isEnd 
-                    ? Colors.transparent 
-                    : isActive 
+                color: isEnd
+                    ? Colors.transparent
+                    : isActive
                         ? AppTheme.primaryColor.withValues(alpha: 0.5)
                         : Colors.white.withValues(alpha: 0.05),
                 width: 1,

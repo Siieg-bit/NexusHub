@@ -215,7 +215,8 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
         0,
       ),
       color: const Color(0xFF1E2A3A),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(10))),
+      shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(10))),
       items: [
         PopupMenuItem(
           value: 'pt',
@@ -235,7 +236,8 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
         // Por ora, registra a seleção e mostra feedback visual.
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(value == 'pt' ? 'Idioma: Português' : 'Language: English'),
+            content:
+                Text(value == 'pt' ? 'Idioma: Português' : 'Language: English'),
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 1),
           ),
@@ -370,9 +372,7 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
                           minHeight: r.s(14),
                         ),
                         child: Text(
-                          notificationCount > 99
-                              ? '99+'
-                              : '$notificationCount',
+                          notificationCount > 99 ? '99+' : '$notificationCount',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: r.fs(8),

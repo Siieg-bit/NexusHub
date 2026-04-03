@@ -1,6 +1,4 @@
-// TODO: Add 'final s = ref.watch(stringsProvider);' in build() methods
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -31,8 +29,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _exportData() async {
-
-      final r = context.r;
+    final r = context.r;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -45,7 +42,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           children: [
             Icon(Icons.download_rounded, color: AppTheme.primaryColor),
             SizedBox(width: r.s(8)),
-            Text('Exportar Dados', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
+            Text('Exportar Dados',
+                style: TextStyle(
+                    color: context.textPrimary, fontWeight: FontWeight.w800)),
           ],
         ),
         content: Text(
@@ -56,8 +55,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           GestureDetector(
             onTap: () => Navigator.pop(ctx),
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
-              child: Text(s.cancel, style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w700)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+              child: Text('Cancelar',
+                  style: TextStyle(
+                      color: Colors.grey[500], fontWeight: FontWeight.w700)),
             ),
           ),
           GestureDetector(
@@ -75,13 +77,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(s.genericError)),
+                    SnackBar(
+                        content: Text('Ocorreu um erro. Tente novamente.')),
                   );
                 }
               }
             },
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [AppTheme.primaryColor, AppTheme.accentColor],
@@ -95,7 +99,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ],
               ),
-              child: const Text('Solicitar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+              child: const Text('Solicitar',
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w800)),
             ),
           ),
         ],
@@ -104,8 +110,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _deleteAccount() async {
-
-      final r = context.r;
+    final r = context.r;
     final confirm1 = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -118,7 +123,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           children: [
             Icon(Icons.warning_rounded, color: AppTheme.errorColor),
             SizedBox(width: r.s(8)),
-            Text('Excluir Conta', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
+            Text('Excluir Conta',
+                style: TextStyle(
+                    color: context.textPrimary, fontWeight: FontWeight.w800)),
           ],
         ),
         content: Text(
@@ -130,14 +137,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           GestureDetector(
             onTap: () => Navigator.pop(ctx, false),
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
-              child: Text(s.cancel, style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w700)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+              child: Text('Cancelar',
+                  style: TextStyle(
+                      color: Colors.grey[500], fontWeight: FontWeight.w700)),
             ),
           ),
           GestureDetector(
             onTap: () => Navigator.pop(ctx, true),
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
                 color: AppTheme.errorColor,
                 borderRadius: BorderRadius.circular(r.s(12)),
@@ -150,7 +161,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ],
               ),
               child: const Text('Sim, excluir',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w800)),
             ),
           ),
         ],
@@ -169,7 +181,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           borderRadius: BorderRadius.circular(r.s(16)),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
-        title: Text('Confirmação Final', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
+        title: Text('Confirmação Final',
+            style: TextStyle(
+                color: context.textPrimary, fontWeight: FontWeight.w800)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -182,82 +196,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               style: TextStyle(color: context.textPrimary),
               decoration: InputDecoration(
                 hintText: 'EXCLUIR',
-                hintStyle: TextStyle(color: Colors.grey[600]),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(r.s(12)),
-                  borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(r.s(12)),
-                  borderSide: const BorderSide(color: AppTheme.errorColor),
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          GestureDetector(
-            onTap: () => Navigator.pop(ctx, false),
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
-              child: Text(s.cancel, style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w700)),
-            ),
-          ),
-          GestureDetector(
-            onTap: () {
-              if (confirmCtrl.text.trim() == 'EXCLUIR') {
-                Navigator.pop(ctx, true);
-              }
-            },
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
-              decoration: BoxDecoration(
-                color: AppTheme.errorColor,
-                borderRadius: BorderRadius.circular(r.s(12)),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.errorColor.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: const Text(s.deletePermanently,
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm2 != true || !mounted) return;
-
-    // Reautenticação: exigir senha antes de ação destrutiva
-    final passwordCtrl = TextEditingController();
-    final reauth = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: context.surfaceColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(r.s(16)),
-          side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
-        ),
-        title: Text('Confirme sua identidade',
-            style: TextStyle(
-                color: context.textPrimary, fontWeight: FontWeight.w800)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-                'Por segurança, digite sua senha para confirmar a exclusão.',
-                style: TextStyle(color: Colors.grey[500])),
-            SizedBox(height: r.s(12)),
-            TextField(
-              controller: passwordCtrl,
-              obscureText: true,
-              style: TextStyle(color: context.textPrimary),
-              decoration: InputDecoration(
-                hintText: 'Sua senha',
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(r.s(12)),
@@ -276,27 +214,34 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           GestureDetector(
             onTap: () => Navigator.pop(ctx, false),
             child: Container(
-              padding: EdgeInsets.symmetric(
-                  horizontal: r.s(16), vertical: r.s(8)),
-              child: Text(s.cancel,
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+              child: Text('Cancelar',
                   style: TextStyle(
                       color: Colors.grey[500], fontWeight: FontWeight.w700)),
             ),
           ),
           GestureDetector(
             onTap: () {
-              if (passwordCtrl.text.isNotEmpty) {
+              if (confirmCtrl.text.trim() == 'EXCLUIR') {
                 Navigator.pop(ctx, true);
               }
             },
             child: Container(
-              padding: EdgeInsets.symmetric(
-                  horizontal: r.s(16), vertical: r.s(8)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
                 color: AppTheme.errorColor,
                 borderRadius: BorderRadius.circular(r.s(12)),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.errorColor.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-              child: const Text(s.confirm,
+              child: const Text('Excluir Permanentemente',
                   style: TextStyle(
                       color: Colors.white, fontWeight: FontWeight.w800)),
             ),
@@ -305,28 +250,49 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
     );
 
-    if (reauth != true || !mounted) return;
+    if (confirm2 != true || !mounted) return;
 
     try {
-      // Reautenticar com Supabase antes de deletar
-      final email = SupabaseService.client.auth.currentUser?.email;
-      if (email != null && passwordCtrl.text.isNotEmpty) {
-        await SupabaseService.client.auth.signInWithPassword(
-          email: email,
-          password: passwordCtrl.text,
-        );
+      // Reautenticação: pedir senha antes de deletar
+      final passwordCtrl = TextEditingController();
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Confirme sua senha'),
+          content: TextField(
+            controller: passwordCtrl,
+            obscureText: true,
+            decoration: const InputDecoration(hintText: 'Senha atual'),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancelar')),
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Confirmar')),
+          ],
+        ),
+      );
+      if (confirmed != true || passwordCtrl.text.isEmpty) return;
+      // Verificar senha
+      try {
+        final email = SupabaseService.client.auth.currentUser?.email ?? '';
+        await SupabaseService.client.auth
+            .signInWithPassword(email: email, password: passwordCtrl.text);
+      } catch (_) {
+        if (mounted)
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text('Senha incorreta')));
+        return;
       }
-
       await SupabaseService.rpc('delete_user_account');
       await SupabaseService.client.auth.signOut();
       if (mounted) context.go('/login');
     } catch (e) {
       if (mounted) {
-        final errorMsg = e.toString().contains('Invalid login')
-            ? 'Senha incorreta. Tente novamente.'
-            : 'Erro ao excluir conta. Tente novamente.';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMsg)),
+          SnackBar(content: Text('Erro ao excluir conta. Tente novamente.')),
         );
       }
     }
@@ -360,11 +326,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text('Configurações',
-            style: TextStyle(fontWeight: FontWeight.w800, color: context.textPrimary)),
+            style: TextStyle(
+                fontWeight: FontWeight.w800, color: context.textPrimary)),
         iconTheme: IconThemeData(color: context.textPrimary),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppTheme.primaryColor))
           : ListView(
               padding: EdgeInsets.all(r.s(16)),
               children: [
@@ -382,7 +350,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     decoration: BoxDecoration(
                       color: context.surfaceColor,
                       borderRadius: BorderRadius.circular(r.s(16)),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.05)),
                       boxShadow: [
                         BoxShadow(
                           color: AppTheme.primaryColor.withValues(alpha: 0.05),
@@ -398,7 +367,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                                color: AppTheme.primaryColor
+                                    .withValues(alpha: 0.2),
                                 blurRadius: 8,
                               ),
                             ],
@@ -426,7 +396,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 _profile?['nickname'] as String? ?? 'Usuário',
                                 style: TextStyle(
                                     color: context.textPrimary,
-                                    fontWeight: FontWeight.w800, fontSize: r.fs(16)),
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: r.fs(16)),
                               ),
                               Text(
                                 'Nível ${_profile?['level'] ?? 1}',
@@ -466,11 +437,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         context: context,
                         builder: (ctx) {
                           final emailCtrl = TextEditingController(
-                            text: SupabaseService.client.auth.currentUser?.email ?? '',
+                            text: SupabaseService
+                                    .client.auth.currentUser?.email ??
+                                '',
                           );
                           return AlertDialog(
                             backgroundColor: context.surfaceColor,
-                            title: Text(s.changeEmail,
+                            title: Text('Alterar Email',
                                 style: TextStyle(color: context.textPrimary)),
                             content: TextField(
                               controller: emailCtrl,
@@ -489,19 +462,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(ctx),
-                                child: const Text(s.cancel),
+                                child: const Text('Cancelar'),
                               ),
                               ElevatedButton(
                                 onPressed: () async {
                                   try {
-                                    await SupabaseService.client.auth.updateUser(
-                                      UserAttributes(email: emailCtrl.text.trim()),
+                                    await SupabaseService.client.auth
+                                        .updateUser(
+                                      UserAttributes(
+                                          email: emailCtrl.text.trim()),
                                     );
                                     if (ctx.mounted) Navigator.pop(ctx);
                                     if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
                                         const SnackBar(
-                                          content: Text('Email de confirma\u00e7\u00e3o enviado!'),
+                                          content: Text(
+                                              'Email de confirma\u00e7\u00e3o enviado!'),
                                           behavior: SnackBarBehavior.floating,
                                         ),
                                       );
@@ -509,9 +486,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   } catch (e) {
                                     if (ctx.mounted) Navigator.pop(ctx);
                                     if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
                                         SnackBar(
-                                          content: Text(s.genericError),
+                                          content: Text(
+                                              'Ocorreu um erro. Tente novamente.'),
                                           behavior: SnackBarBehavior.floating,
                                         ),
                                       );
@@ -521,7 +500,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppTheme.primaryColor,
                                 ),
-                                child: const Text(s.save),
+                                child: const Text('Salvar'),
                               ),
                             ],
                           );
@@ -555,7 +534,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   _ThemeSelectorItem(
                     currentMode: ref.watch(themeProvider),
-                    onSelect: (mode) => ref.read(themeProvider.notifier).setTheme(mode),
+                    onSelect: (mode) =>
+                        ref.read(themeProvider.notifier).setTheme(mode),
                   ),
                   _SettingsItem(
                     icon: Icons.language_rounded,
@@ -567,7 +547,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         context: context,
                         backgroundColor: context.surfaceColor,
                         shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(20)),
                         ),
                         builder: (ctx) => Padding(
                           padding: EdgeInsets.all(r.s(24)),
@@ -581,23 +562,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                       fontWeight: FontWeight.w800)),
                               SizedBox(height: r.s(16)),
                               ...AppLocale.values.map((locale) => ListTile(
-                                leading: Text(locale.flag, style: TextStyle(fontSize: r.fs(24))),
-                                title: Text(locale.label,
-                                    style: TextStyle(color: context.textPrimary)),
-                                trailing: currentLocale == locale
-                                    ? const Icon(Icons.check_circle_rounded, color: AppTheme.primaryColor)
-                                    : null,
-                                onTap: () {
-                                  ref.read(localeProvider.notifier).setLocale(locale);
-                                  Navigator.pop(ctx);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Idioma alterado para ${locale.label}'),
-                                      behavior: SnackBarBehavior.floating,
-                                    ),
-                                  );
-                                },
-                              )),
+                                    leading: Text(locale.flag,
+                                        style: TextStyle(fontSize: r.fs(24))),
+                                    title: Text(locale.label,
+                                        style: TextStyle(
+                                            color: context.textPrimary)),
+                                    trailing: currentLocale == locale
+                                        ? const Icon(Icons.check_circle_rounded,
+                                            color: AppTheme.primaryColor)
+                                        : null,
+                                    onTap: () {
+                                      ref
+                                          .read(localeProvider.notifier)
+                                          .setLocale(locale);
+                                      Navigator.pop(ctx);
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                              'Idioma alterado para ${locale.label}'),
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
+                                    },
+                                  )),
                             ],
                           ),
                         ),
@@ -616,13 +604,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           backgroundColor: context.surfaceColor,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(r.s(16)),
-                            side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+                            side: BorderSide(
+                                color: Colors.white.withValues(alpha: 0.05)),
                           ),
                           title: Row(
                             children: [
-                              Icon(Icons.cleaning_services_rounded, color: AppTheme.accentColor),
+                              Icon(Icons.cleaning_services_rounded,
+                                  color: AppTheme.accentColor),
                               SizedBox(width: r.s(8)),
-                              Text('Limpar Cache', style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
+                              Text('Limpar Cache',
+                                  style: TextStyle(
+                                      color: context.textPrimary,
+                                      fontWeight: FontWeight.w800)),
                             ],
                           ),
                           content: Text(
@@ -635,21 +628,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             GestureDetector(
                               onTap: () => Navigator.pop(ctx, false),
                               child: Container(
-                                padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
-                                child: Text(s.cancel, style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w700)),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: r.s(16), vertical: r.s(8)),
+                                child: Text('Cancelar',
+                                    style: TextStyle(
+                                        color: Colors.grey[500],
+                                        fontWeight: FontWeight.w700)),
                               ),
                             ),
                             GestureDetector(
                               onTap: () => Navigator.pop(ctx, true),
                               child: Container(
-                                padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: r.s(16), vertical: r.s(8)),
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
-                                    colors: [AppTheme.primaryColor, AppTheme.accentColor],
+                                    colors: [
+                                      AppTheme.primaryColor,
+                                      AppTheme.accentColor
+                                    ],
                                   ),
                                   borderRadius: BorderRadius.circular(r.s(12)),
                                 ),
-                                child: const Text(s.clearCache, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+                                child: const Text('Limpar',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w800)),
                               ),
                             ),
                           ],
@@ -740,7 +744,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(ctx),
-                              child: const Text(s.close),
+                              child: const Text('Fechar'),
                             ),
                           ],
                         ),
@@ -757,7 +761,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           final bugCtrl = TextEditingController();
                           return AlertDialog(
                             backgroundColor: context.surfaceColor,
-                            title: Text(s.reportBug,
+                            title: Text('Reportar Bug',
                                 style: TextStyle(color: context.textPrimary)),
                             content: TextField(
                               controller: bugCtrl,
@@ -777,26 +781,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(ctx),
-                                child: const Text(s.cancel),
+                                child: const Text('Cancelar'),
                               ),
                               ElevatedButton(
-                                onPressed: () async {
-                                  final text = bugCtrl.text.trim();
-                                  if (text.isEmpty) return;
+                                onPressed: () {
                                   Navigator.pop(ctx);
-                                  try {
-                                    await SupabaseService.table('flags').insert({
-                                      'reporter_id': SupabaseService.currentUserId,
-                                      'community_id': '00000000-0000-0000-0000-000000000000',
-                                      'flag_type': 'other',
-                                      'reason': '[BUG REPORT] $text',
-                                      'status': 'pending',
-                                    });
-                                  } catch (e) { debugPrint('[settings_screen.dart] $e'); }
-                                  if (!context.mounted) return;
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text('Bug reportado! Obrigado pelo feedback.'),
+                                      content: Text(
+                                          'Bug reportado! Obrigado pelo feedback.'),
                                       behavior: SnackBarBehavior.floating,
                                     ),
                                   );
@@ -804,7 +797,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppTheme.primaryColor,
                                 ),
-                                child: const Text(s.sendMessage),
+                                child: const Text('Enviar'),
                               ),
                             ],
                           );
@@ -868,9 +861,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         backgroundColor: context.surfaceColor,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(r.s(16)),
-                          side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+                          side: BorderSide(
+                              color: Colors.white.withValues(alpha: 0.05)),
                         ),
-                        title: Text(s.logout, style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
+                        title: Text('Sair',
+                            style: TextStyle(
+                                color: context.textPrimary,
+                                fontWeight: FontWeight.w800)),
                         content: Text(
                             'Tem certeza que deseja sair da sua conta?',
                             style: TextStyle(color: Colors.grey[500])),
@@ -878,26 +875,35 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           GestureDetector(
                             onTap: () => Navigator.pop(ctx, false),
                             child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
-                              child: Text(s.cancel, style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w700)),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: r.s(16), vertical: r.s(8)),
+                              child: Text('Cancelar',
+                                  style: TextStyle(
+                                      color: Colors.grey[500],
+                                      fontWeight: FontWeight.w700)),
                             ),
                           ),
                           GestureDetector(
                             onTap: () => Navigator.pop(ctx, true),
                             child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: r.s(16), vertical: r.s(8)),
                               decoration: BoxDecoration(
                                 color: AppTheme.errorColor,
                                 borderRadius: BorderRadius.circular(r.s(12)),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppTheme.errorColor.withValues(alpha: 0.3),
+                                    color: AppTheme.errorColor
+                                        .withValues(alpha: 0.3),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
                                   ),
                                 ],
                               ),
-                              child: const Text(s.logout, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+                              child: const Text('Sair',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w800)),
                             ),
                           ),
                         ],
@@ -923,7 +929,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         Icon(Icons.logout_rounded, color: AppTheme.errorColor),
                         SizedBox(width: r.s(8)),
                         Text('Sair da Conta',
-                            style: TextStyle(color: AppTheme.errorColor, fontWeight: FontWeight.w800)),
+                            style: TextStyle(
+                                color: AppTheme.errorColor,
+                                fontWeight: FontWeight.w800)),
                       ],
                     ),
                   ),
@@ -975,7 +983,11 @@ class _SettingsGroup extends StatelessWidget {
           final item = entry.value;
           return Column(
             children: [
-              if (index > 0) Divider(height: 1, indent: 52, color: Colors.white.withValues(alpha: 0.05)),
+              if (index > 0)
+                Divider(
+                    height: 1,
+                    indent: 52,
+                    color: Colors.white.withValues(alpha: 0.05)),
               item,
             ],
           );
@@ -1004,7 +1016,10 @@ class _SettingsItem extends StatelessWidget {
     return ListTile(
       leading: Icon(icon, color: AppTheme.primaryColor, size: r.s(22)),
       title: Text(title,
-          style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w700, fontSize: r.fs(14))),
+          style: TextStyle(
+              color: context.textPrimary,
+              fontWeight: FontWeight.w700,
+              fontSize: r.fs(14))),
       subtitle: subtitle != null
           ? Text(subtitle!,
               style: TextStyle(color: Colors.grey[600], fontSize: r.fs(11)))
@@ -1041,13 +1056,17 @@ class _ThemeSelectorItem extends StatelessWidget {
         color: AppTheme.primaryColor,
         size: r.s(22),
       ),
-      title: Text(s.appearance,
-          style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w700, fontSize: r.fs(14))),
+      title: Text('Aparência',
+          style: TextStyle(
+              color: context.textPrimary,
+              fontWeight: FontWeight.w700,
+              fontSize: r.fs(14))),
       subtitle: Text(
         labels[currentMode]!,
         style: TextStyle(color: Colors.grey[600], fontSize: r.fs(11)),
       ),
-      trailing: Icon(Icons.chevron_right_rounded, color: Colors.grey[600], size: r.s(20)),
+      trailing: Icon(Icons.chevron_right_rounded,
+          color: Colors.grey[600], size: r.s(20)),
       onTap: () {
         showModalBottomSheet(
           context: context,
@@ -1060,24 +1079,25 @@ class _ThemeSelectorItem extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(s.appearance,
+                Text('Aparência',
                     style: TextStyle(
                         color: context.textPrimary,
                         fontSize: r.fs(18),
                         fontWeight: FontWeight.w800)),
                 SizedBox(height: r.s(16)),
                 ...ThemeMode.values.map((mode) => ListTile(
-                  leading: Icon(icons[mode]!, color: AppTheme.primaryColor),
-                  title: Text(labels[mode]!,
-                      style: TextStyle(color: context.textPrimary)),
-                  trailing: currentMode == mode
-                      ? const Icon(Icons.check_circle_rounded, color: AppTheme.primaryColor)
-                      : null,
-                  onTap: () {
-                    onSelect(mode);
-                    Navigator.pop(ctx);
-                  },
-                )),
+                      leading: Icon(icons[mode]!, color: AppTheme.primaryColor),
+                      title: Text(labels[mode]!,
+                          style: TextStyle(color: context.textPrimary)),
+                      trailing: currentMode == mode
+                          ? const Icon(Icons.check_circle_rounded,
+                              color: AppTheme.primaryColor)
+                          : null,
+                      onTap: () {
+                        onSelect(mode);
+                        Navigator.pop(ctx);
+                      },
+                    )),
                 SizedBox(height: r.s(8)),
               ],
             ),

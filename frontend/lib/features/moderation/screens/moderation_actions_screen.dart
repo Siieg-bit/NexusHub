@@ -4,7 +4,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
-import 'package:nexus_hub/core/l10n/locale_provider.dart';
 
 /// Ações de Moderação — Tela para aplicar ações em um usuário/conteúdo.
 /// Suporta: Ban, Mute, Warn, Hide Post, Delete Post, Strike, Transfer Leader.
@@ -235,8 +234,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
             'actor_id': SupabaseService.currentUserId,
             'type': 'moderation',
             'title': 'Aviso da moderação',
-            'body':
-                'Você recebeu um aviso: ${_reasonController.text.trim()}',
+            'body': 'Você recebeu um aviso: ${_reasonController.text.trim()}',
             'community_id': widget.communityId,
           });
           break;
@@ -245,40 +243,41 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
           if (widget.targetPostId != null) {
             final now = DateTime.now().toUtc();
             final featuredUntil = _featuredDurationDays > 0
-                ? now.add(Duration(days: _featuredDurationDays)).toIso8601String()
+                ? now
+                    .add(Duration(days: _featuredDurationDays))
+                    .toIso8601String()
                 : null; // null = permanente
-            await SupabaseService.table('posts')
-                .update({
-                  'is_featured': true,
-                  'featured_at': now.toIso8601String(),
-                  'featured_by': SupabaseService.currentUserId,
-                  'featured_until': featuredUntil,
-                })
-                .eq('id', widget.targetPostId!);
+            await SupabaseService.table('posts').update({
+              'is_featured': true,
+              'featured_at': now.toIso8601String(),
+              'featured_by': SupabaseService.currentUserId,
+              'featured_until': featuredUntil,
+            }).eq('id', widget.targetPostId!);
           }
           break;
 
         case 'unfeature_post':
           if (widget.targetPostId != null) {
             await SupabaseService.table('posts')
-                .update({'is_featured': false, 'featured_at': null})
-                .eq('id', widget.targetPostId!);
+                .update({'is_featured': false, 'featured_at': null}).eq(
+                    'id', widget.targetPostId!);
           }
           break;
 
         case 'pin_post':
           if (widget.targetPostId != null) {
-            await SupabaseService.table('posts')
-                .update({'is_pinned': true, 'pinned_at': DateTime.now().toUtc().toIso8601String()})
-                .eq('id', widget.targetPostId!);
+            await SupabaseService.table('posts').update({
+              'is_pinned': true,
+              'pinned_at': DateTime.now().toUtc().toIso8601String()
+            }).eq('id', widget.targetPostId!);
           }
           break;
 
         case 'unpin_post':
           if (widget.targetPostId != null) {
             await SupabaseService.table('posts')
-                .update({'is_pinned': false, 'pinned_at': null})
-                .eq('id', widget.targetPostId!);
+                .update({'is_pinned': false, 'pinned_at': null}).eq(
+                    'id', widget.targetPostId!);
           }
           break;
 
@@ -294,7 +293,8 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
               'actor_id': SupabaseService.currentUserId,
               'type': 'moderation',
               'title': 'Ação da moderação',
-              'body': 'Você foi removido da comunidade: ${_reasonController.text.trim()}',
+              'body':
+                  'Você foi removido da comunidade: ${_reasonController.text.trim()}',
               'community_id': widget.communityId,
             });
           }
@@ -303,14 +303,14 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text(s.actionSuccess)),
+          const SnackBar(content: Text('Ação executada com sucesso')),
         );
         context.pop();
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(s.genericError)),
+          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
         );
       }
     }
@@ -330,12 +330,14 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(s.moderationAction,
-            style: TextStyle(fontWeight: FontWeight.w800, color: context.textPrimary)),
+        title: Text('Ação de Moderação',
+            style: TextStyle(
+                fontWeight: FontWeight.w800, color: context.textPrimary)),
         iconTheme: IconThemeData(color: context.textPrimary),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppTheme.primaryColor))
           : SingleChildScrollView(
               padding: EdgeInsets.all(r.s(16)),
               child: Column(
@@ -348,19 +350,21 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                       decoration: BoxDecoration(
                         color: context.surfaceColor,
                         borderRadius: BorderRadius.circular(r.s(16)),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.05)),
                       ),
                       child: Row(
                         children: [
                           CircleAvatar(
                             radius: 24,
                             backgroundColor: context.scaffoldBg,
-                            backgroundImage: _targetUser?['icon_url'] != null
+                            backgroundImage: _targetUser!['icon_url'] != null
                                 ? CachedNetworkImageProvider(
-                                    _targetUser?['icon_url'] as String? ?? '')
+                                    _targetUser!['icon_url'] as String? ?? '')
                                 : null,
-                            child: _targetUser?['icon_url'] == null
-                                ? Icon(Icons.person_rounded, color: context.textPrimary)
+                            child: _targetUser!['icon_url'] == null
+                                ? Icon(Icons.person_rounded,
+                                    color: context.textPrimary)
                                 : null,
                           ),
                           SizedBox(width: r.s(12)),
@@ -368,14 +372,15 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                _targetUser?['nickname'] as String? ??
+                                _targetUser!['nickname'] as String? ??
                                     'Usuário',
                                 style: TextStyle(
                                     color: context.textPrimary,
-                                    fontWeight: FontWeight.w700, fontSize: r.fs(16)),
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: r.fs(16)),
                               ),
                               Text(
-                                'Nível ${_targetUser?['level'] ?? 1}',
+                                'Nível ${_targetUser!['level'] ?? 1}',
                                 style: TextStyle(
                                     color: Colors.grey[500],
                                     fontSize: r.fs(12)),
@@ -389,8 +394,10 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
 
                   // Seleção de ação
                   Text('Tipo de Ação',
-                      style:
-                          TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800, fontSize: r.fs(16))),
+                      style: TextStyle(
+                          color: context.textPrimary,
+                          fontWeight: FontWeight.w800,
+                          fontSize: r.fs(16))),
                   SizedBox(height: r.s(12)),
                   ..._actions.map((action) {
                     final id = (action['id'] as String?) ?? '';
@@ -416,7 +423,8 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                         child: Row(
                           children: [
                             Icon(action['icon'] as IconData,
-                                color: Color(action['color'] as int? ?? 0), size: r.s(22)),
+                                color: Color(action['color'] as int? ?? 0),
+                                size: r.s(22)),
                             SizedBox(width: r.s(12)),
                             Expanded(
                               child: Column(
@@ -425,7 +433,10 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                                   Text(
                                     action['label'] as String? ?? '',
                                     style: TextStyle(
-                                        color: isSelected ? Color(action['color'] as int? ?? 0) : context.textPrimary,
+                                        color: isSelected
+                                            ? Color(
+                                                action['color'] as int? ?? 0)
+                                            : context.textPrimary,
                                         fontWeight: FontWeight.w700,
                                         fontSize: r.fs(14)),
                                   ),
@@ -448,12 +459,13 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                   }),
 
                   // Duração do destaque (para feature_post)
-                  if (_selectedAction == 'feature_post') ...[  
+                  if (_selectedAction == 'feature_post') ...[
                     SizedBox(height: r.s(16)),
                     Text('Duração do Destaque',
                         style: TextStyle(
                             color: context.textPrimary,
-                            fontWeight: FontWeight.w800, fontSize: r.fs(16))),
+                            fontWeight: FontWeight.w800,
+                            fontSize: r.fs(16))),
                     SizedBox(height: r.s(8)),
                     Wrap(
                       spacing: 8,
@@ -463,25 +475,29 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                           label: '1 dia',
                           hours: 24,
                           selected: _featuredDurationDays * 24,
-                          onTap: () => setState(() => _featuredDurationDays = 1),
+                          onTap: () =>
+                              setState(() => _featuredDurationDays = 1),
                         ),
                         _DurationChip(
                           label: '3 dias',
                           hours: 72,
                           selected: _featuredDurationDays * 24,
-                          onTap: () => setState(() => _featuredDurationDays = 3),
+                          onTap: () =>
+                              setState(() => _featuredDurationDays = 3),
                         ),
                         _DurationChip(
                           label: '7 dias',
                           hours: 168,
                           selected: _featuredDurationDays * 24,
-                          onTap: () => setState(() => _featuredDurationDays = 7),
+                          onTap: () =>
+                              setState(() => _featuredDurationDays = 7),
                         ),
                         _DurationChip(
                           label: 'Permanente',
                           hours: 0,
                           selected: _featuredDurationDays * 24,
-                          onTap: () => setState(() => _featuredDurationDays = 0),
+                          onTap: () =>
+                              setState(() => _featuredDurationDays = 0),
                         ),
                       ],
                     ),
@@ -494,7 +510,8 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                     Text('Duração',
                         style: TextStyle(
                             color: context.textPrimary,
-                            fontWeight: FontWeight.w800, fontSize: r.fs(16))),
+                            fontWeight: FontWeight.w800,
+                            fontSize: r.fs(16))),
                     SizedBox(height: r.s(8)),
                     Wrap(
                       spacing: 8,
@@ -544,8 +561,10 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                   // Motivo
                   SizedBox(height: r.s(16)),
                   Text('Motivo',
-                      style:
-                          TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800, fontSize: r.fs(16))),
+                      style: TextStyle(
+                          color: context.textPrimary,
+                          fontWeight: FontWeight.w800,
+                          fontSize: r.fs(16))),
                   SizedBox(height: r.s(8)),
                   TextField(
                     controller: _reasonController,
@@ -558,15 +577,18 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                       fillColor: context.surfaceColor,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(r.s(16)),
-                        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+                        borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.05)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(r.s(16)),
-                        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+                        borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.05)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(r.s(16)),
-                        borderSide: const BorderSide(color: AppTheme.primaryColor),
+                        borderSide:
+                            const BorderSide(color: AppTheme.primaryColor),
                       ),
                     ),
                   ),
@@ -638,7 +660,7 @@ class _DurationChip extends StatelessWidget {
               : context.surfaceColor,
           borderRadius: BorderRadius.circular(r.s(20)),
           border: Border.all(
-            color: isSelected 
+            color: isSelected
                 ? AppTheme.errorColor.withValues(alpha: 0.5)
                 : Colors.white.withValues(alpha: 0.05),
           ),

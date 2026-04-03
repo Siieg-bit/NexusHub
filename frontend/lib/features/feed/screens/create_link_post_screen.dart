@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -91,7 +90,9 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
           'p_raw_amount': 15,
           'p_reference_id': result['id'],
         });
-      } catch (e) { debugPrint('[create_link_post_screen.dart] $e'); }
+      } catch (e) {
+        debugPrint('[create_link_post_screen.dart] $e');
+      }
 
       if (mounted) {
         context.pop();
@@ -204,7 +205,8 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
                       Container(
                         padding: EdgeInsets.all(r.s(8)),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF2563EB).withValues(alpha: 0.15),
+                          color:
+                              const Color(0xFF2563EB).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(r.s(8)),
                         ),
                         child: Icon(Icons.link_rounded,
@@ -278,12 +280,11 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
               maxLines: 5,
               minLines: 2,
               textCapitalization: TextCapitalization.sentences,
-              style: TextStyle(
-                  color: context.textPrimary, fontSize: r.fs(15)),
+              style: TextStyle(color: context.textPrimary, fontSize: r.fs(15)),
               decoration: InputDecoration(
                 hintText: 'Descreva o link (opcional)...',
-                hintStyle: TextStyle(
-                    color: context.textSecondary, fontSize: r.fs(15)),
+                hintStyle:
+                    TextStyle(color: context.textSecondary, fontSize: r.fs(15)),
                 border: InputBorder.none,
                 counterText: '',
               ),
