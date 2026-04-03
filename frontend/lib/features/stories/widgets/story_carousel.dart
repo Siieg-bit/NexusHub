@@ -52,7 +52,7 @@ class _StoryCarouselState extends State<StoryCarousel> {
             'has_unviewed': false,
           };
         }
-        (grouped[authorId]!['stories'] as List?)?.add(story);
+        (grouped[authorId]?['stories'] as List?)?.add(story);
       }
 
       // Verificar quais foram visualizadas pelo usuário atual

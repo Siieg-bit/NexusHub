@@ -88,7 +88,10 @@ void main() async {
     DeviceFingerprintService.registerDevice();
   }
 
-  // Escutar mudanças de auth para registrar dispositivo e token FCM
+  // Escutar mudanças de auth para registrar dispositivo e token FCM.
+  // NOTA: Esta subscription é app-level (vive durante todo o ciclo de vida do app),
+  // portanto não precisa de cancel/dispose explícito.
+  // ignore: cancel_subscriptions
   Supabase.instance.client.auth.onAuthStateChange.listen((data) {
     if (data.event == AuthChangeEvent.signedIn) {
       DeviceFingerprintService.registerDevice();

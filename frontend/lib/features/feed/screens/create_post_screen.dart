@@ -101,12 +101,12 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       final bytes = await MediaUtils.compressImage(rawBytes);
 
       await SupabaseService.storage
-          .from('post-media')
+          .from('post_media')
           .uploadBinary(path, bytes);
       if (!mounted) return;
 
       final url =
-          SupabaseService.storage.from('post-media').getPublicUrl(path);
+          SupabaseService.storage.from('post_media').getPublicUrl(path);
 
       if (!mounted) return;
       setState(() => _mediaUrls.add(url));
@@ -136,12 +136,12 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       final bytes = await MediaUtils.compressImage(rawBytes);
 
       await SupabaseService.storage
-          .from('post-media')
+          .from('post_media')
           .uploadBinary(path, bytes);
       if (!mounted) return;
 
       final url =
-          SupabaseService.storage.from('post-media').getPublicUrl(path);
+          SupabaseService.storage.from('post_media').getPublicUrl(path);
 
       if (!mounted) return;
       setState(() => _coverImageUrl = url);

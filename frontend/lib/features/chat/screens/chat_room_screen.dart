@@ -934,9 +934,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       final rawBytes = await image.readAsBytes();
       final bytes = await MediaUtils.compressImage(rawBytes);
       await SupabaseService.storage
-          .from('chat-media')
+          .from('chat_media')
           .uploadBinary(path, bytes);
-      final url = SupabaseService.storage.from('chat-media').getPublicUrl(path);
+      final url = SupabaseService.storage.from('chat_media').getPublicUrl(path);
       await _sendMessage(type: 'image', mediaUrl: url, mediaType: 'image');
     } catch (e) {
       if (mounted) {
@@ -972,9 +972,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       final path = 'chat/$userId/${DateTime.now().millisecondsSinceEpoch}.$ext';
       final bytes = await video.readAsBytes();
       await SupabaseService.storage
-          .from('chat-media')
+          .from('chat_media')
           .uploadBinary(path, bytes, fileOptions: const FileOptions(contentType: 'video/mp4'));
-      final url = SupabaseService.storage.from('chat-media').getPublicUrl(path);
+      final url = SupabaseService.storage.from('chat_media').getPublicUrl(path);
       await _sendMessage(type: 'video', mediaUrl: url, mediaType: 'video');
     } catch (e) {
       if (mounted) {
@@ -1990,11 +1990,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     final fileName = 'voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
                     final storagePath = 'chat_media/${widget.threadId}/$fileName';
                     await SupabaseService.client.storage
-                        .from('media')
+                        .from('post_media')
                         .upload(storagePath, file);
                     if (_isDisposed || !mounted) return;
                     final url = SupabaseService.client.storage
-                        .from('media')
+                        .from('post_media')
                         .getPublicUrl(storagePath);
                     _sendMessage(
                       type: 'audio',

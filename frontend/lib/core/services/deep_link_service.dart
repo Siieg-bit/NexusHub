@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -18,6 +19,7 @@ class DeepLinkService {
   DeepLinkService._();
 
   static GoRouter? _router;
+  static StreamSubscription<AuthState>? _authSubscription;
 
   /// Inicializa o serviço com o router do app.
   static void init(GoRouter router) {
@@ -25,9 +27,18 @@ class DeepLinkService {
     _listenToAuthDeepLinks();
   }
 
+  /// Cancela todas as subscriptions para evitar memory leaks.
+  static void dispose() {
+    _authSubscription?.cancel();
+    _authSubscription = null;
+    _router = null;
+  }
+
   /// Escuta deep links de autenticação do Supabase (magic link, OAuth callback).
   static void _listenToAuthDeepLinks() {
-    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+    _authSubscription?.cancel();
+    _authSubscription =
+        Supabase.instance.client.auth.onAuthStateChange.listen((data) {
       final event = data.event;
       if (event == AuthChangeEvent.signedIn) {
         // Após login via deep link, navegar para home

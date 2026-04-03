@@ -158,7 +158,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
   Future<void> _loadGamificationStats() async {
     try {
       final checkIns =
-          await SupabaseService.table('check_ins').select('id').count();
+          await SupabaseService.table('checkins').select('id').count();
       _totalCheckIns = checkIns.count;
 
       final aminoPlus = await SupabaseService.table('profiles')

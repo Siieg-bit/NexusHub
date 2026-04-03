@@ -565,14 +565,14 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
       );
     }
 
-    final title = _entry!['title'] as String? ?? 'Sem título';
-    final content = _entry!['content'] as String? ?? '';
-    final coverUrl = _entry!['cover_image_url'] as String?;
+    final title = _entry?['title'] as String? ?? 'Sem título';
+    final content = _entry?['content'] as String? ?? '';
+    final coverUrl = _entry?['cover_image_url'] as String?;
     // Categoria vem do join wiki_categories(id, name)
-    final catData = _entry!['wiki_categories'] as Map<String, dynamic>?;
+    final catData = _entry?['wiki_categories'] as Map<String, dynamic>?;
     final category = catData?['name'] as String?;
-    final author = _entry!['profiles'] as Map<String, dynamic>?;
-    final infoboxData = _entry!['infobox'] as Map<String, dynamic>?;
+    final author = _entry?['profiles'] as Map<String, dynamic>?;
+    final infoboxData = _entry?['infobox'] as Map<String, dynamic>?;
 
     return Scaffold(
       backgroundColor: context.scaffoldBg,

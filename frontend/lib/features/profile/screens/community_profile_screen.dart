@@ -173,7 +173,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
     final localBannerUrl = _membership?['local_banner_url'] as String?;
     final localBio = _membership?['local_bio'] as String?;
     final joinedAt = _membership?['joined_at'] != null
-        ? DateTime.tryParse(_membership!['joined_at'] as String? ?? '')
+        ? DateTime.tryParse(_membership?['joined_at'] as String? ?? '')
         : null;
     final coins = _user?.coins ?? 0;
     final isOnline = _user?.isOnline ?? false;

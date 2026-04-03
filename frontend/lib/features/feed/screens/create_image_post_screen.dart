@@ -41,6 +41,7 @@ class _CreateImagePostScreenState
     final picker = ImagePicker();
     final images = await picker.pickMultiImage();
     if (images.isEmpty) return;
+    if (!mounted) return;
     setState(() => _isUploading = true);
     try {
       final userId = SupabaseService.currentUserId ?? 'unknown';
@@ -50,10 +51,10 @@ class _CreateImagePostScreenState
         final path =
             'posts/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
         await SupabaseService.storage
-            .from('post-media')
+            .from('post_media')
             .uploadBinary(path, bytes);
         final url = SupabaseService.storage
-            .from('post-media')
+            .from('post_media')
             .getPublicUrl(path);
         if (mounted) setState(() => _mediaUrls.add(url));
       }

@@ -354,11 +354,11 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                           CircleAvatar(
                             radius: 24,
                             backgroundColor: context.scaffoldBg,
-                            backgroundImage: _targetUser!['icon_url'] != null
+                            backgroundImage: _targetUser?['icon_url'] != null
                                 ? CachedNetworkImageProvider(
-                                    _targetUser!['icon_url'] as String? ?? '')
+                                    _targetUser?['icon_url'] as String? ?? '')
                                 : null,
-                            child: _targetUser!['icon_url'] == null
+                            child: _targetUser?['icon_url'] == null
                                 ? Icon(Icons.person_rounded, color: context.textPrimary)
                                 : null,
                           ),
@@ -367,14 +367,14 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                _targetUser!['nickname'] as String? ??
+                                _targetUser?['nickname'] as String? ??
                                     'Usuário',
                                 style: TextStyle(
                                     color: context.textPrimary,
                                     fontWeight: FontWeight.w700, fontSize: r.fs(16)),
                               ),
                               Text(
-                                'Nível ${_targetUser!['level'] ?? 1}',
+                                'Nível ${_targetUser?['level'] ?? 1}',
                                 style: TextStyle(
                                     color: Colors.grey[500],
                                     fontSize: r.fs(12)),

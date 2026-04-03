@@ -163,9 +163,9 @@ class _BlockEditorState extends State<BlockEditor> {
       final bytes = await image.readAsBytes();
       final path =
           'posts/${widget.communityId}/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
-      await SupabaseService.client.storage.from('media').uploadBinary(path, bytes);
+      await SupabaseService.client.storage.from('post_media').uploadBinary(path, bytes);
       if (!mounted) return;
-      final url = SupabaseService.client.storage.from('media').getPublicUrl(path);
+      final url = SupabaseService.client.storage.from('post_media').getPublicUrl(path);
 
       if (!mounted) return;
       setState(() {
@@ -216,9 +216,9 @@ class _BlockEditorState extends State<BlockEditor> {
       final bytes = await image.readAsBytes();
       final path =
           'posts/${widget.communityId}/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
-      await SupabaseService.client.storage.from('media').uploadBinary(path, bytes);
+      await SupabaseService.client.storage.from('post_media').uploadBinary(path, bytes);
       if (!mounted) return;
-      final url = SupabaseService.client.storage.from('media').getPublicUrl(path);
+      final url = SupabaseService.client.storage.from('post_media').getPublicUrl(path);
 
       setState(() {
         _blocks[index].imageUrl = url;

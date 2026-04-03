@@ -48,18 +48,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   bool _isBookmarked = false;
 
   /// Incrementa views_count uma única vez por abertura da tela.
+  /// Usa RPC atômica para evitar race condition (read-then-write).
   Future<void> _recordView() async {
     if (_viewRecorded) return;
     _viewRecorded = true;
     try {
-      final row = await SupabaseService.table('posts')
-          .select('views_count')
-          .eq('id', widget.postId)
-          .maybeSingle();
-      final current = (row?['views_count'] as int?) ?? 0;
-      await SupabaseService.table('posts')
-          .update({'views_count': current + 1})
-          .eq('id', widget.postId);
+      await SupabaseService.rpc('increment_post_views', params: {
+        'p_post_id': widget.postId,
+      });
     } catch (e) {
       debugPrint('[NexusHub] Erro ao registrar visualização: $e');
     }

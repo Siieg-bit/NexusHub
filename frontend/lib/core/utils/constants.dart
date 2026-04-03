@@ -75,8 +75,8 @@ class AppConstants {
   // ====================================================================
   static const String bucketAvatars = 'avatars';
   static const String bucketBanners = 'banners';
-  static const String bucketPostMedia = 'post-media';
-  static const String bucketChatMedia = 'chat-media';
+  static const String bucketPostMedia = 'post_media';
+  static const String bucketChatMedia = 'chat_media';
   static const String bucketCommunityAssets = 'community-assets';
   static const String bucketWikiMedia = 'wiki-media';
 

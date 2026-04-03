@@ -230,14 +230,101 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     if (confirm2 != true || !mounted) return;
 
+    // Reautenticação: exigir senha antes de ação destrutiva
+    final passwordCtrl = TextEditingController();
+    final reauth = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: context.surfaceColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(r.s(16)),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+        ),
+        title: Text('Confirme sua identidade',
+            style: TextStyle(
+                color: context.textPrimary, fontWeight: FontWeight.w800)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+                'Por segurança, digite sua senha para confirmar a exclusão.',
+                style: TextStyle(color: Colors.grey[500])),
+            SizedBox(height: r.s(12)),
+            TextField(
+              controller: passwordCtrl,
+              obscureText: true,
+              style: TextStyle(color: context.textPrimary),
+              decoration: InputDecoration(
+                hintText: 'Sua senha',
+                hintStyle: TextStyle(color: Colors.grey[600]),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(r.s(12)),
+                  borderSide:
+                      BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(r.s(12)),
+                  borderSide: const BorderSide(color: AppTheme.errorColor),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          GestureDetector(
+            onTap: () => Navigator.pop(ctx, false),
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                  horizontal: r.s(16), vertical: r.s(8)),
+              child: Text('Cancelar',
+                  style: TextStyle(
+                      color: Colors.grey[500], fontWeight: FontWeight.w700)),
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              if (passwordCtrl.text.isNotEmpty) {
+                Navigator.pop(ctx, true);
+              }
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                  horizontal: r.s(16), vertical: r.s(8)),
+              decoration: BoxDecoration(
+                color: AppTheme.errorColor,
+                borderRadius: BorderRadius.circular(r.s(12)),
+              ),
+              child: const Text('Confirmar',
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w800)),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (reauth != true || !mounted) return;
+
     try {
+      // Reautenticar com Supabase antes de deletar
+      final email = SupabaseService.client.auth.currentUser?.email;
+      if (email != null && passwordCtrl.text.isNotEmpty) {
+        await SupabaseService.client.auth.signInWithPassword(
+          email: email,
+          password: passwordCtrl.text,
+        );
+      }
+
       await SupabaseService.rpc('delete_user_account');
       await SupabaseService.client.auth.signOut();
       if (mounted) context.go('/login');
     } catch (e) {
       if (mounted) {
+        final errorMsg = e.toString().contains('Invalid login')
+            ? 'Senha incorreta. Tente novamente.'
+            : 'Erro ao excluir conta. Tente novamente.';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao excluir conta. Tente novamente.')),
+          SnackBar(content: Text(errorMsg)),
         );
       }
     }

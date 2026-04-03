@@ -42,7 +42,7 @@ serve(async (req: Request) => {
     const communityId = body.community_id || null;
 
     // Chamar a função RPC de check-in
-    const { data, error } = await supabase.rpc("daily_check_in", {
+    const { data, error } = await supabase.rpc("daily_checkin", {
       p_community_id: communityId,
     });
 

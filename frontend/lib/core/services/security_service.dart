@@ -3,42 +3,27 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'supabase_service.dart';
 
-/// Serviço de Segurança — HMAC SHA-256, sanitização e validação.
+/// Serviço de Segurança — sanitização, validação e helpers.
 ///
 /// Implementa:
-/// - Assinatura HMAC SHA-256 para requisições sensíveis
 /// - Sanitização de input contra XSS
 /// - Validação de dados antes de enviar ao servidor
 /// - Content Security Policy helpers
+///
+/// NOTA: Assinatura HMAC foi removida do cliente por segurança.
+/// Toda validação de integridade de requisições deve ocorrer
+/// exclusivamente no backend (Edge Functions / RPCs com SECURITY DEFINER).
+/// O cliente envia apenas o JWT do Supabase como autenticação.
 class SecurityService {
-  /// Chave secreta para HMAC (em produção, usar variável de ambiente)
-  static const String _hmacSecret = 'nexushub_hmac_secret_change_in_production';
-
-  /// Gera assinatura HMAC SHA-256 para uma payload
-  static String generateHmac(Map<String, dynamic> payload) {
-    final sortedKeys = payload.keys.toList()..sort();
-    final canonicalString = sortedKeys.map((k) => '$k=${payload[k]}').join('&');
-
-    final hmacSha256 = Hmac(sha256, utf8.encode(_hmacSecret));
-    final digest = hmacSha256.convert(utf8.encode(canonicalString));
-
-    return digest.toString();
-  }
-
-  /// Verifica se uma assinatura HMAC é válida
-  static bool verifyHmac(Map<String, dynamic> payload, String signature) {
-    final expected = generateHmac(payload);
-    return expected == signature;
-  }
-
-  /// Assina uma requisição adicionando timestamp e signature
-  static Map<String, dynamic> signRequest(Map<String, dynamic> params) {
-    final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-    final signedParams = Map<String, dynamic>.from(params);
-    signedParams['_timestamp'] = timestamp;
-    signedParams['_signature'] = generateHmac(signedParams);
-    return signedParams;
-  }
+  // ──────────────────────────────────────────────────────────────────────────
+  // HMAC REMOVIDO — A chave secreta NUNCA deve estar no código do cliente.
+  //
+  // Se precisar de assinatura de requisições, implemente no backend:
+  // 1. Crie uma Edge Function que valide o JWT e assine a operação server-side
+  // 2. Use SECURITY DEFINER nas RPCs para garantir que apenas o backend
+  //    execute operações privilegiadas
+  // 3. O auth.uid() dentro das RPCs já garante a identidade do usuário
+  // ──────────────────────────────────────────────────────────────────────────
 
   /// Sanitiza texto contra XSS (remove tags HTML perigosas)
   static String sanitizeHtml(String input) {

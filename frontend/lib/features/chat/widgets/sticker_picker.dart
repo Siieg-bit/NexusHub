@@ -137,7 +137,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
-      final res = await SupabaseService.table('favorite_stickers')
+      final res = await SupabaseService.table('user_sticker_favorites')
           .select('sticker_id, sticker_url, sticker_name')
           .eq('user_id', userId)
           .order('created_at', ascending: false);
@@ -201,7 +201,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
       final isFav = _favoriteStickerIds.contains(stickerId);
 
       if (isFav) {
-        await SupabaseService.table('favorite_stickers')
+        await SupabaseService.table('user_sticker_favorites')
             .delete()
             .eq('user_id', userId)
             .eq('sticker_id', stickerId);
@@ -220,7 +220,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
               sticker['image_url'] as String? ?? '',
           'sticker_name': sticker['name'] as String? ?? '',
         };
-        await SupabaseService.table('favorite_stickers').insert(entry);
+        await SupabaseService.table('user_sticker_favorites').insert(entry);
         if (mounted) {
           setState(() {
             _favoriteStickers.insert(0, {

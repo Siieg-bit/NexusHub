@@ -36,7 +36,7 @@ class _CommunityCheckInBarState extends ConsumerState<CommunityCheckInBar> {
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
-      final result = await SupabaseService.rpc('perform_checkin', params: {
+      final result = await SupabaseService.rpc('daily_checkin', params: {
         'p_user_id': userId,
         'p_community_id': widget.communityId,
       });

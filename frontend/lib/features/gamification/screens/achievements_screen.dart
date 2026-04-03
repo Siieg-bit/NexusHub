@@ -90,7 +90,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
     try {
       // Buscar check-ins dos últimos 12 meses
       final oneYearAgo = DateTime.now().subtract(const Duration(days: 365));
-      final checkins = await SupabaseService.table('daily_checkins')
+      final checkins = await SupabaseService.table('checkins')
           .select('checkin_date')
           .eq('user_id', userId)
           .gte('checkin_date', oneYearAgo.toIso8601String().split('T')[0])

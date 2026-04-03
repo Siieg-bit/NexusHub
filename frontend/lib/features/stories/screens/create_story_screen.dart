@@ -69,11 +69,11 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
       final path =
           'stories/${widget.communityId}/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
       await SupabaseService.client.storage
-          .from('media')
+          .from('post_media')
           .uploadBinary(path, bytes);
       if (!mounted) return;
       final url =
-          SupabaseService.client.storage.from('media').getPublicUrl(path);
+          SupabaseService.client.storage.from('post_media').getPublicUrl(path);
 
       if (!mounted) return;
       setState(() {
@@ -114,10 +114,10 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
       final path =
           'stories/${widget.communityId}/$userId/${DateTime.now().millisecondsSinceEpoch}_${video.name}';
       await SupabaseService.client.storage
-          .from('media')
+          .from('post_media')
           .uploadBinary(path, bytes, fileOptions: const FileOptions(contentType: 'video/mp4'));
       final url =
-          SupabaseService.client.storage.from('media').getPublicUrl(path);
+          SupabaseService.client.storage.from('post_media').getPublicUrl(path);
 
       // Inicializar preview do vídeo
       _videoPreviewController?.dispose();
