@@ -1,16 +1,12 @@
-import 'supabase_service.dart';
 import 'package:flutter/foundation.dart';
 
-/// Serviço de System Accounts — gerencia contas de sistema para broadcasts.
+import 'supabase_service.dart';
+
+/// Serviço de System Accounts — encapsula fluxos sistêmicos que agora são
+/// centralizados no backend via RPCs.
 ///
-/// System accounts são contas especiais que enviam mensagens oficiais,
-/// notificações de moderação, e anúncios da comunidade.
-///
-/// Tipos de system accounts:
-/// - **NexusHub Official**: Anúncios globais do app
-/// - **Community Bot**: Mensagens automáticas da comunidade
-/// - **Moderation Bot**: Notificações de ações de moderação
-/// - **Welcome Bot**: Mensagens de boas-vindas para novos membros
+/// Mantém uma API simples para o Flutter enquanto evita mutações diretas em
+/// `chat_threads`, `chat_messages` e `notifications` no cliente.
 class SystemAccountService {
   SystemAccountService._();
 
@@ -30,9 +26,7 @@ class SystemAccountService {
     }
   }
 
-  /// Envia uma mensagem de broadcast para todos os membros de uma comunidade.
-  ///
-  /// Apenas system accounts e admins podem enviar broadcasts.
+  /// Envia um broadcast comunitário por meio da RPC autoritativa do backend.
   static Future<void> sendCommunityBroadcast({
     required String communityId,
     required String title,
@@ -40,98 +34,74 @@ class SystemAccountService {
     String? imageUrl,
   }) async {
     try {
-      // Buscar o chat "announcements" da comunidade
-      final chat = await SupabaseService.table('chat_threads')
-          .select('id')
-          .eq('community_id', communityId)
-          .eq('type', 'announcements')
-          .maybeSingle();
+      final normalizedContent = imageUrl != null && imageUrl.trim().isNotEmpty
+          ? '$content\n\n$imageUrl'
+          : content;
 
-      String chatId;
-      if (chat != null) {
-        chatId = chat['id'] as String? ?? '';
-      } else {
-        // Criar chat de anúncios se não existir
-        final newChat = await SupabaseService.table('chat_threads')
-            .insert({
-              'community_id': communityId,
-              'title': 'Anúncios',
-              'type': 'announcements',
-              'host_id': globalSystemId,
-            })
-            .select('id')
-            .single();
-        chatId = newChat['id'] as String? ?? '';
-      }
-
-      // Enviar mensagem de broadcast
-      await SupabaseService.table('chat_messages').insert({
-        'thread_id': chatId,
-        'author_id': globalSystemId,
-        'content': '📢 **$title**\n\n$content',
-        'type': 'system_announcement',
-        'metadata': {
-          'title': title,
-          'image_url': imageUrl,
-          'is_broadcast': true,
+      final response = await SupabaseService.rpc(
+        'send_broadcast',
+        params: {
+          'p_title': title,
+          'p_content': normalizedContent,
+          'p_scope': 'community',
+          'p_community_id': communityId,
+          'p_action_url': '/community/$communityId',
         },
-      });
+      );
 
-      // Criar notificações para todos os membros
-      final members = await SupabaseService.table('community_members')
-          .select('user_id')
-          .eq('community_id', communityId);
+      final result = response is Map<String, dynamic>
+          ? response
+          : Map<String, dynamic>.from(response as Map);
 
-      final notifications = (members as List? ?? [])
-          .map((m) => {
-                'user_id': m['user_id'],
-                'type': 'broadcast',
-                'title': 'Broadcast',
-                'body': title,
-                'community_id': communityId,
-              })
-          .toList();
-
-      if (notifications.isNotEmpty) {
-        // Inserir em lotes de 100
-        for (var i = 0; i < notifications.length; i += 100) {
-          final batch = notifications.sublist(
-            i,
-            i + 100 > notifications.length ? notifications.length : i + 100,
-          );
-          await SupabaseService.table('notifications').insert(batch);
-        }
+      if (result['success'] != true) {
+        final error = result['error'] as String? ?? 'unknown_error';
+        throw Exception(error);
       }
     } catch (e) {
+      debugPrint('[system_account_service] Falha ao enviar broadcast: $e');
       rethrow;
     }
   }
 
-  /// Envia mensagem de boas-vindas para um novo membro.
+  /// Envia mensagem de boas-vindas via backend.
   static Future<void> sendWelcomeMessage({
     required String communityId,
     required String userId,
     required String communityName,
   }) async {
     try {
-      await SupabaseService.table('notifications').insert({
-        'user_id': userId,
-        'type': 'welcome',
-        'title': 'Bem-vindo(a)!',
-        'body': 'Bem-vindo(a) à comunidade $communityName! 🎉 '
-            'Explore os posts, participe dos chats e faça check-in diário para ganhar moedas.',
-        'community_id': communityId,
-      });
+      final response = await SupabaseService.rpc(
+        'send_system_notification',
+        params: {
+          'p_user_id': userId,
+          'p_type': 'welcome',
+          'p_title': 'Bem-vindo(a)!',
+          'p_body': 'Bem-vindo(a) à comunidade $communityName! 🎉 '
+              'Explore os posts, participe dos chats e faça check-in diário para ganhar moedas.',
+          'p_community_id': communityId,
+          'p_action_url': '/community/$communityId',
+        },
+      );
+
+      final result = response is Map<String, dynamic>
+          ? response
+          : Map<String, dynamic>.from(response as Map);
+
+      if (result['success'] != true) {
+        final error = result['error'] as String? ?? 'unknown_error';
+        throw Exception(error);
+      }
     } catch (e) {
-      debugPrint('[system_account_service] Erro: $e');
+      debugPrint('[system_account_service] Erro ao enviar boas-vindas: $e');
     }
   }
 
-  /// Envia notificação de ação de moderação.
+  /// Envia notificação de ação de moderação via backend.
   static Future<void> sendModerationNotice({
     required String userId,
     required String action,
     required String reason,
+    String? communityId,
     String? communityName,
     int? durationHours,
   }) async {
@@ -160,14 +130,29 @@ class SystemAccountService {
           content = 'Ação de moderação: $action - $reason';
       }
 
-      await SupabaseService.table('notifications').insert({
-        'user_id': userId,
-        'type': 'moderation',
-        'title': 'Ação de moderação',
-        'body': content,
-      });
+      final response = await SupabaseService.rpc(
+        'send_system_notification',
+        params: {
+          'p_user_id': userId,
+          'p_type': 'moderation',
+          'p_title': 'Ação de moderação',
+          'p_body': content,
+          if (communityId != null) 'p_community_id': communityId,
+          if (communityId != null) 'p_action_url': '/community/$communityId',
+        },
+      );
+
+      final result = response is Map<String, dynamic>
+          ? response
+          : Map<String, dynamic>.from(response as Map);
+
+      if (result['success'] != true) {
+        final error = result['error'] as String? ?? 'unknown_error';
+        throw Exception(error);
+      }
     } catch (e) {
-      debugPrint('[system_account_service] Erro: $e');
+      debugPrint(
+          '[system_account_service] Erro ao enviar aviso de moderação: $e');
     }
   }
 }

@@ -45,8 +45,7 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
   }
 
   Future<void> _reviewEntry(String entryId, String action) async {
-
-      final r = context.r;
+    final r = context.r;
     final userId = SupabaseService.currentUserId;
     if (userId == null) return;
 
@@ -67,25 +66,37 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
       }).eq('id', entryId);
 
       // Enviar notificação ao autor
-      final entry =
-          _pendingEntries.firstWhere((e) => e['id'] == entryId, orElse: () => {});
+      final entry = _pendingEntries.firstWhere((e) => e['id'] == entryId,
+          orElse: () => {});
       if (entry.isNotEmpty) {
         try {
-          await SupabaseService.table('notifications').insert({
-            'user_id': entry['author_id'],
-            'type': action == 'approve' ? 'wiki_approved' : 'wiki_rejected',
-            'title': action == 'approve'
-                ? 'Wiki aprovada!'
-                : 'Wiki precisa de alterações',
-            'body': action == 'approve'
-                ? 'Sua entrada "${entry['title']}" foi aprovada e está visível no catálogo.'
-                : 'Sua entrada "${entry['title']}" precisa de alterações: ${rejectReason ?? ""}',
-            'community_id': widget.communityId,
-            'wiki_id': entryId,
-            'action_url': '/wiki/$entryId',
-          });
+          final response = await SupabaseService.rpc(
+            'send_system_notification',
+            params: {
+              'p_user_id': entry['author_id'],
+              'p_type': action == 'approve' ? 'wiki_approved' : 'wiki_rejected',
+              'p_title': action == 'approve'
+                  ? 'Wiki aprovada!'
+                  : 'Wiki precisa de alterações',
+              'p_body': action == 'approve'
+                  ? 'Sua entrada "${entry['title']}" foi aprovada e está visível no catálogo.'
+                  : 'Sua entrada "${entry['title']}" precisa de alterações: ${rejectReason ?? ""}',
+              'p_community_id': widget.communityId,
+              'p_wiki_id': entryId,
+              'p_action_url': '/wiki/$entryId',
+            },
+          );
+
+          final result = response is Map<String, dynamic>
+              ? response
+              : Map<String, dynamic>.from(response as Map);
+
+          if (result['success'] != true) {
+            throw Exception(result['error'] ?? 'unknown_error');
+          }
         } catch (e) {
-          debugPrint('[wiki_curator_review_screen] Erro: $e');
+          debugPrint(
+              '[wiki_curator_review_screen] Erro ao notificar autor: $e');
         }
 
         // Log de moderação via RPC server-side
@@ -114,11 +125,12 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
             content: Text(action == 'approve'
                 ? 'Wiki aprovada com sucesso!'
                 : 'Wiki rejeitada'),
-            backgroundColor:
-                action == 'approve' ? AppTheme.successColor : AppTheme.errorColor,
+            backgroundColor: action == 'approve'
+                ? AppTheme.successColor
+                : AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(12))),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(r.s(12))),
           ),
         );
       }
@@ -135,14 +147,14 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
   }
 
   Future<String?> _showRejectDialog() async {
-
-      final r = context.r;
+    final r = context.r;
     final controller = TextEditingController();
     return showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: context.cardBg,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(20))),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(r.s(20))),
         title: Text('Motivo da rejeição',
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w800)),
@@ -170,7 +182,8 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
           ElevatedButton(
             onPressed: () {
               final text = controller.text.trim();
-              Navigator.pop(ctx, text.isNotEmpty ? text : 'Sem motivo especificado');
+              Navigator.pop(
+                  ctx, text.isNotEmpty ? text : 'Sem motivo especificado');
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.errorColor,
@@ -204,8 +217,7 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
             SizedBox(width: r.s(8)),
             if (_pendingEntries.isNotEmpty)
               Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: r.s(8), vertical: 2),
+                padding: EdgeInsets.symmetric(horizontal: r.s(8), vertical: 2),
                 decoration: BoxDecoration(
                   color: AppTheme.warningColor.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(r.s(12)),
@@ -224,8 +236,7 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
       ),
       body: _isLoading
           ? const Center(
-              child:
-                  CircularProgressIndicator(color: AppTheme.primaryColor))
+              child: CircularProgressIndicator(color: AppTheme.primaryColor))
           : _pendingEntries.isEmpty
               ? Center(
                   child: Column(
@@ -289,8 +300,8 @@ class _PendingWikiCard extends StatelessWidget {
     final coverUrl = entry['cover_image_url'] as String?;
     final category = entry['category'] as String?;
     final author = entry['profiles'] as Map<String, dynamic>?;
-    final createdAt =
-        DateTime.tryParse(entry['created_at'] as String? ?? '') ?? DateTime.now();
+    final createdAt = DateTime.tryParse(entry['created_at'] as String? ?? '') ??
+        DateTime.now();
 
     return GestureDetector(
       onTap: onTap,
@@ -332,7 +343,8 @@ class _PendingWikiCard extends StatelessWidget {
             // Pending badge
             Container(
               width: double.infinity,
-              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+              padding:
+                  EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
               decoration: BoxDecoration(
                 color: AppTheme.warningColor.withValues(alpha: 0.1),
                 borderRadius: coverUrl == null
@@ -351,8 +363,8 @@ class _PendingWikiCard extends StatelessWidget {
                           fontWeight: FontWeight.w700)),
                   const Spacer(),
                   Text(timeago.format(createdAt, locale: 'pt_BR'),
-                      style:
-                          TextStyle(color: context.textHint, fontSize: r.fs(11))),
+                      style: TextStyle(
+                          color: context.textHint, fontSize: r.fs(11))),
                 ],
               ),
             ),
@@ -428,11 +440,12 @@ class _PendingWikiCard extends StatelessWidget {
                           child: Container(
                             padding: EdgeInsets.symmetric(vertical: r.s(12)),
                             decoration: BoxDecoration(
-                              color: AppTheme.errorColor.withValues(alpha: 0.12),
+                              color:
+                                  AppTheme.errorColor.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(r.s(12)),
                               border: Border.all(
-                                  color:
-                                      AppTheme.errorColor.withValues(alpha: 0.3)),
+                                  color: AppTheme.errorColor
+                                      .withValues(alpha: 0.3)),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
