@@ -222,28 +222,32 @@ void main() {
     );
   }
 
-  print('\n📋 Bug #7: add_reputation — Frontend (followers_screen)');
+  print('\n📋 Bug #7: follow RPC — Frontend (followers_screen)');
   {
     final src = File('lib/features/profile/screens/followers_screen.dart').readAsStringSync();
     expect(
-      src.contains("'p_action_type': 'follow_user'"),
-      'followers_screen: Usa p_action_type (nome correto do param)',
+      src.contains("'toggle_follow_with_reputation'"),
+      'followers_screen: Usa a RPC toggle_follow_with_reputation',
     );
     expect(
-      src.contains("'p_raw_amount': 1"),
-      'followers_screen: Usa p_raw_amount (nome correto do param)',
+      src.contains("'p_community_id': '00000000-0000-0000-0000-000000000000'"),
+      'followers_screen: Envia p_community_id compatível com a RPC',
     );
     expect(
-      src.contains("'p_reference_id': widget.targetUserId"),
-      'followers_screen: Usa p_reference_id (nome correto do param)',
+      src.contains("'p_follower_id': currentUserId"),
+      'followers_screen: Envia p_follower_id corretamente',
+    );
+    expect(
+      src.contains("'p_following_id': widget.targetUserId"),
+      'followers_screen: Envia p_following_id corretamente',
     );
     expect(
       !src.contains("'p_action': 'follow'"),
-      'followers_screen: Não contém mais p_action (nome errado)',
+      'followers_screen: Não contém mais o contrato legado baseado em p_action',
     );
     expect(
       !src.contains("'p_source_id':"),
-      'followers_screen: Não contém mais p_source_id (nome errado)',
+      'followers_screen: Não contém mais o contrato legado baseado em p_source_id',
     );
   }
 

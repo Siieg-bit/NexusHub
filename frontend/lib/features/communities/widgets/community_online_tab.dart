@@ -1247,7 +1247,7 @@ class _MemberBottomSheet extends StatelessWidget {
   Future<void> _openDm(
       BuildContext context, String communityId, String targetId) async {
     try {
-      final threadId = await ref.read(dmInviteProvider).sendInvite(targetId);
+      final threadId = await DmInviteService().sendInvite(targetId);
       if (threadId == null || threadId.isEmpty) {
         throw Exception('thread_id_not_returned');
       }
