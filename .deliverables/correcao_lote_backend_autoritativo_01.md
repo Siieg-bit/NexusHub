@@ -29,9 +29,21 @@ Realizei validação estática dos arquivos Dart alterados nesta sessão usando 
 
 Também executei varreduras textuais para confirmar que **não restam `insert` diretos em `notifications` no frontend**, o que representa uma redução concreta de superfície sensível no cliente.
 
+Além da validação estática do frontend, revalidei o acesso ao projeto Supabase com o **ref correto** e apliquei no banco as migrações do lote autoritativo. O diagnóstico inicial que indicava indisponibilidade de credenciais estava incorreto: o problema real foi uma checagem feita anteriormente com o identificador do projeto digitado de forma errada. Com a correção desse ponto, a execução SQL funcionou normalmente.
+
+| Migração aplicada no Supabase | Status |
+|---|---|
+| `042_send_broadcast_rpc.sql` | Aplicada com sucesso |
+| `043_secure_moderation_actions.sql` | Aplicada com sucesso |
+| `044_secure_membership_rpcs.sql` | Aplicada com sucesso |
+| `044_fix_send_dm_invite_notification_contract.sql` | Aplicada com sucesso |
+| `045_send_system_notification_rpc.sql` | Aplicada com sucesso |
+
+Depois da aplicação, confirmei no banco a presença das funções-chave do lote, incluindo `send_system_notification`, `send_dm_invite`, `log_moderation_action`, `change_member_role` e `remove_member_secure`. Na inspeção do catálogo também apareceu a coexistência de **três assinaturas diferentes de `send_broadcast`**, sendo que a nova variante utilizada pelo frontend desta sessão está presente e disponível.
+
 ## Limitações da validação desta sessão
 
-A aplicação das novas migrações no banco **não pôde ser executada automaticamente neste ambiente**, porque as variáveis `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` não estavam disponíveis na sessão atual. Assim, a validação de backend nesta rodada ficou restrita a revisão estrutural dos SQLs, inspeção de contratos e verificação estática dos pontos consumidores no frontend.
+A parte de backend deste lote foi efetivamente aplicada e validada em nível de catálogo de funções, mas **ainda falta o smoke test funcional ponta a ponta pela interface do app**, especialmente nos fluxos de broadcast, revisão de wiki e convite DM. Em outras palavras, o endurecimento estrutural e a publicação das RPCs já ocorreram, porém ainda resta a validação operacional completa do comportamento em runtime.
 
 ## Risco residual após este lote
 
@@ -39,9 +51,9 @@ Embora este lote avance de forma importante no endurecimento arquitetural, ainda
 
 | Prioridade sugerida | Próximo item | Motivo |
 |---|---|---|
-| Alta | Aplicar e validar no Supabase as migrações 044 e 045 | Necessário para ativar as novas RPCs em ambiente real |
+| Alta | Executar smoke test ponta a ponta de broadcast, revisão de wiki e convite DM | Confirma o comportamento real dos contratos recém-publicados no banco e no app |
 | Alta | Consolidar e validar o lote já iniciado de membership/moderação/broadcast no repositório | Há outros arquivos alterados no working tree que pertencem ao mesmo ciclo de correção e precisam ser fechados com testes integrados |
-| Alta | Executar smoke test ponta a ponta de broadcast, revisão de wiki e convite DM | Confirma que os contratos corrigidos funcionam de fato no banco e na UI |
+| Média/Alta | Revisar a coexistência de múltiplas assinaturas de `send_broadcast` | Reduz ambiguidade operacional e risco de chamadas para variantes legadas |
 | Média/Alta | Continuar removendo lógica crítica residual do cliente em outras superfícies sensíveis | Aproxima o projeto de um backend realmente autoritativo |
 
 ## Conclusão
