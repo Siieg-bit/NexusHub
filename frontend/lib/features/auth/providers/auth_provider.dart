@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/models/user_model.dart';
@@ -180,11 +181,41 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  /// Login com Google OAuth.
+  /// Login com Google OAuth usando Google Sign-In nativo (Android/iOS).
+  /// Usa signInWithIdToken para evitar problemas de redirect em apps nativos.
   Future<bool> signInWithGoogle() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      await SupabaseService.auth.signInWithOAuth(OAuthProvider.google);
+      // Client ID do servidor Web (usado pelo Supabase para validar o token)
+      const webClientId =
+          '884602945431-7nn5dtr6l7d34n9iv221cii6906576et.apps.googleusercontent.com';
+
+      final googleSignIn = GoogleSignIn(serverClientId: webClientId);
+      final googleUser = await googleSignIn.signIn();
+
+      if (googleUser == null) {
+        // Usuário cancelou o login
+        state = state.copyWith(isLoading: false, error: null);
+        return false;
+      }
+
+      final googleAuth = await googleUser.authentication;
+      final idToken = googleAuth.idToken;
+      final accessToken = googleAuth.accessToken;
+
+      if (idToken == null) {
+        state = state.copyWith(
+            isLoading: false,
+            error: 'Não foi possível obter o token do Google.');
+        return false;
+      }
+
+      await SupabaseService.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: idToken,
+        accessToken: accessToken,
+      );
+
       return true;
     } catch (e) {
       state = state.copyWith(
