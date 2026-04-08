@@ -43,14 +43,51 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       return;
     }
 
+    final email = _emailController.text.trim();
     final success = await ref.read(authProvider.notifier).signUp(
-          _emailController.text.trim(),
+          email,
           _passwordController.text,
           _nicknameController.text.trim(),
         );
 
-    if (success && mounted) {
+    if (!mounted) return;
+
+    if (success) {
+      // Confirmação automática — entrar direto
       context.go('/');
+    } else {
+      // Verificar se foi erro real ou apenas aguardo de confirmação
+      final authState = ref.read(authProvider);
+      if (authState.error == null) {
+        // Nenhum erro — email de confirmação enviado com sucesso
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: Theme.of(ctx).cardColor,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16)),
+            title: const Text(
+              'Verifique seu email',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: Text(
+              'Enviamos um link de confirmação para $email.\n\n'
+              'Abra o email e clique no link para ativar sua conta.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                  context.go('/login');
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+      // Se houver erro, o widget já exibe via authState.error
     }
   }
 

@@ -162,14 +162,34 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> signUp(String email, String password, String nickname) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      await SupabaseService.auth.signUp(
+      final response = await SupabaseService.auth.signUp(
         email: email,
         password: password,
         data: {'full_name': nickname},
       );
-      state = state.copyWith(isAuthenticated: true);
-      await _loadUserProfile();
-      return true;
+
+      // Se o Supabase exige confirmação de email, a sessão retornada
+      // não terá o campo email_confirmed_at preenchido.
+      // Nesse caso NÃO autenticamos — apenas indicamos que o email
+      // de confirmação foi enviado (retornamos false com erro null).
+      final session = response.session;
+      final user = response.user;
+      final emailConfirmed = user?.emailConfirmedAt != null;
+
+      if (session != null && emailConfirmed) {
+        // Confirmação automática habilitada no Supabase (raro em produção)
+        state = state.copyWith(isAuthenticated: true);
+        await _loadUserProfile();
+        return true;
+      } else {
+        // Email de confirmação enviado — aguardar clique no link
+        state = state.copyWith(
+          isLoading: false,
+          isAuthenticated: false,
+          error: null,
+        );
+        return false;
+      }
     } on AuthException catch (e) {
       state = state.copyWith(isLoading: false, error: e.message);
       return false;
