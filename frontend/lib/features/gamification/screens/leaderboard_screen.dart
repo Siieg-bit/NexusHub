@@ -108,8 +108,13 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
 
     return Scaffold(
       backgroundColor: context.scaffoldBg,
-      body: CustomScrollView(
-        slivers: [
+      body: RefreshIndicator(
+        color: AppTheme.primaryColor,
+        onRefresh: () async {
+          ref.invalidate(leaderboardProvider(params));
+        },
+        child: CustomScrollView(
+          slivers: [
           // ── AppBar com gradiente ──
           SliverAppBar(
             expandedHeight: r.s(160),
@@ -379,12 +384,12 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
               );
             },
           ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
-
 // =============================================================================
 // WIDGET: Item do pódio
 // =============================================================================

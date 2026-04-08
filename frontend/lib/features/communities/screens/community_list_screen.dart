@@ -72,20 +72,28 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
               onAddTap: () => context.push('/coin-shop'),
             ),
             Expanded(
-              child: communitiesAsync.when(
-                loading: () => const Center(
-                  child: CircularProgressIndicator(
-                    color: AppTheme.accentColor,
-                    strokeWidth: 2.5,
-                  ),
-                ),
-                error: (error, stack) => _buildErrorState(),
-                data: (communities) {
-                  if (communities.isEmpty) {
-                    return _buildEmptyState();
-                  }
-                  return _buildCommunityList(communities);
+              child: RefreshIndicator(
+                color: AppTheme.primaryColor,
+                onRefresh: () async {
+                  setState(() => _reorderedCommunities = null);
+                  ref.invalidate(userCommunitiesProvider);
+                  ref.invalidate(checkInStatusProvider);
                 },
+                child: communitiesAsync.when(
+                  loading: () => const Center(
+                    child: CircularProgressIndicator(
+                      color: AppTheme.accentColor,
+                      strokeWidth: 2.5,
+                    ),
+                  ),
+                  error: (error, stack) => _buildErrorState(),
+                  data: (communities) {
+                    if (communities.isEmpty) {
+                      return _buildEmptyState();
+                    }
+                    return _buildCommunityList(communities);
+                  },
+                ),
               ),
             ),
           ],
