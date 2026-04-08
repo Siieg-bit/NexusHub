@@ -694,15 +694,6 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             ),
           ),
 
-        // CHECK-IN BAR
-        if (isMember && visible['check_in'] != false)
-          SliverToBoxAdapter(
-            child: CommunityCheckInBar(
-              communityId: widget.communityId,
-              themeColor: themeColor,
-            ),
-          ),
-
         // LIVE PROJECTIONS (chats públicos com projeção de tela ativa)
         if (visible['live_chats'] != false)
           SliverToBoxAdapter(

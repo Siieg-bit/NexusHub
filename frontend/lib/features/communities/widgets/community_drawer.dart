@@ -394,27 +394,6 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
             ),
           ),
 
-          // ── Ícone de busca no topo direito (Amino: círculo escuro + lupa) ──
-          Positioned(
-            top: r.s(6),
-            right: r.s(8),
-            child: GestureDetector(
-              onTap: () => _closeAndNavigate(() {
-                context.push('/community/${widget.community.id}/search');
-              }),
-              child: Container(
-                width: r.s(32),
-                height: r.s(32),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.40),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.search_rounded,
-                    color: Colors.white, size: r.s(18)),
-              ),
-            ),
-          ),
-
           // ── Conteúdo do header ─────────────────────────────────────────
           Positioned.fill(
             child: Column(
@@ -451,6 +430,28 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                 _buildCheckInMessage(r, hasCheckedIn),
                 SizedBox(height: r.s(8)),
               ],
+            ),
+          ),
+
+          // ── Ícone de busca no topo direito ───────────────────────────────
+          // Posicionado APÓS o Positioned.fill para ficar na frente do banner
+          Positioned(
+            top: r.s(6),
+            right: r.s(8),
+            child: GestureDetector(
+              onTap: () => _closeAndNavigate(() {
+                context.push('/community/${widget.community.id}/search');
+              }),
+              child: Container(
+                width: r.s(32),
+                height: r.s(32),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.40),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.search_rounded,
+                    color: Colors.white, size: r.s(18)),
+              ),
             ),
           ),
         ],
