@@ -554,50 +554,50 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         children: [
           // Círculo com "Lv" + número (estilo Amino)
           Container(
-          width: r.s(36),
-          height: r.s(36),
-          decoration: BoxDecoration(
-            color: levelColor,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.3),
-              width: 1,
-            ),
-          ),
-          child: Center(
-            child: RichText(
-              text: TextSpan(
-                children: [
-                  TextSpan(
-                    text: 'Lv',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: r.fs(9),
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  TextSpan(
-                    text: '$level',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: r.fs(13),
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ],
+            width: r.s(36),
+            height: r.s(36),
+            decoration: BoxDecoration(
+              color: levelColor,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.3),
+                width: 1,
               ),
             ),
-          ),
+            child: Center(
+              child: RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: 'Lv',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: r.fs(9),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    TextSpan(
+                      text: '$level',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: r.fs(13),
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
           SizedBox(width: r.s(4)),
           // Pill com nome do nível + barra de progresso
           Flexible(
             child: Container(
-          height: r.s(28),
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.50),
-            borderRadius: BorderRadius.circular(r.s(14)),
-          ),
+              height: r.s(28),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.50),
+                borderRadius: BorderRadius.circular(r.s(14)),
+              ),
               padding: EdgeInsets.symmetric(horizontal: r.s(8)),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
