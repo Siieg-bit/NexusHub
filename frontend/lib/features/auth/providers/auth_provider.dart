@@ -216,6 +216,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
         accessToken: accessToken,
       );
 
+      // Atualizar estado imediatamente e carregar perfil,
+      // igual ao fluxo de signInWithEmail.
+      state = state.copyWith(isAuthenticated: true);
+      await _loadUserProfile();
+
       return true;
     } catch (e) {
       state = state.copyWith(
