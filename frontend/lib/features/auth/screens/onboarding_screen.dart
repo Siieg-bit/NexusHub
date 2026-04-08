@@ -180,7 +180,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                   ),
                                   blurRadius: 30.0,
                                   spreadRadius: -5.0,
-                                  offset: const Offset(0, 8),
+                                  offset: const Offset(0.0, 8.0),
                                 ),
                               ],
                             ),
@@ -213,7 +213,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(r.s(16)),
                             child: BackdropFilter(
-                              filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                              filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
                               child: Container(
                                 decoration: BoxDecoration(
                                   color: Colors.white.withValues(alpha: 0.06),
@@ -420,7 +420,7 @@ class _NeonParticlesPainter extends CustomPainter {
       y: rng.nextDouble(),
       size: 1.0 + rng.nextDouble() * 2.5,
       speed: 0.03 + rng.nextDouble() * 0.06,
-      phase: rng.nextDouble() * math.pi * 2,
+      phase: rng.nextDouble() * math.pi * 2.0,
       colorIndex: i % 4,
     );
   });
@@ -438,11 +438,11 @@ class _NeonParticlesPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     for (final p in _particles) {
       final y = (p.y + progress * p.speed) % 1.0;
-      final x = p.x + math.sin(progress * math.pi * 2 + p.phase) * 0.02;
-      final opacity = 0.15 + math.sin(progress * math.pi * 4 + p.phase) * 0.1;
+      final x = p.x + math.sin(progress * math.pi * 2.0 + p.phase) * 0.02;
+      final opacity = 0.15 + math.sin(progress * math.pi * 4.0 + p.phase) * 0.1;
       final paint = Paint()
         ..color = _colors[p.colorIndex].withValues(alpha: opacity.clamp(0.05, 0.4))
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.0);
       canvas.drawCircle(
         Offset(x * size.width, y * size.height),
         p.size,
