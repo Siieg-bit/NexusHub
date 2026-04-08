@@ -492,27 +492,38 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
   }
 
   /// Avatar do usuário (Amino: ~75px, borda branca fina 2px)
+  /// Ao clicar, navega para o perfil do usuário na comunidade.
   Widget _buildUserAvatar(Responsive r, UserModel? user, Color themeColor) {
-    return Container(
-      width: r.s(75),
-      height: r.s(75),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.35),
-          width: 2,
+    final userId = user?.id ?? SupabaseService.currentUserId;
+    return GestureDetector(
+      onTap: userId != null
+          ? () => _closeAndNavigate(() {
+                context.push(
+                  '/community/${widget.community.id}/profile/$userId',
+                );
+              })
+          : null,
+      child: Container(
+        width: r.s(75),
+        height: r.s(75),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.35),
+            width: 2,
+          ),
+          color: themeColor.withValues(alpha: 0.4),
+          image: user?.iconUrl != null
+              ? DecorationImage(
+                  image: CachedNetworkImageProvider(user!.iconUrl!),
+                  fit: BoxFit.cover,
+                )
+              : null,
         ),
-        color: themeColor.withValues(alpha: 0.4),
-        image: user?.iconUrl != null
-            ? DecorationImage(
-                image: CachedNetworkImageProvider(user!.iconUrl!),
-                fit: BoxFit.cover,
-              )
+        child: user?.iconUrl == null
+            ? Icon(Icons.person_rounded, color: Colors.white, size: r.s(36))
             : null,
       ),
-      child: user?.iconUrl == null
-          ? Icon(Icons.person_rounded, color: Colors.white, size: r.s(36))
-          : null,
     );
   }
 
