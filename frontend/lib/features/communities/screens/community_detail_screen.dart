@@ -835,8 +835,9 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     return detailAsync.valueOrNull ?? CommunityModel(
       id: communityId,
       name: '',
-      hostId: '',
+      agentId: '',
       createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
     );
   }
 }
