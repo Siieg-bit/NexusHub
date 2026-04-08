@@ -395,12 +395,21 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
           ),
 
           // ── Conteúdo do header ─────────────────────────────────────────
+          // Layout:
+          //   [topo]  ícone de busca (32px) + padding (6px) = 44px reservados
+          //   [meio]  banner centralizado no espaço livre entre busca e avatar
+          //   [base]  avatar + nome + nível + streak
           Positioned.fill(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                // Banner retangular da comunidade no topo (como no Amino)
+                // Espaço reservado para o ícone de busca (32px + 6px top + 6px bottom)
+                SizedBox(height: r.s(44)),
+                // Espaço flexível acima do banner
+                const Spacer(flex: 1),
+                // Banner retangular centralizado entre busca e avatar
                 _buildCommunityBanner(r),
+                // Espaço flexível abaixo do banner
                 const Spacer(flex: 1),
                 // Avatar do usuário centralizado
                 _buildUserAvatar(r, user, themeColor),
@@ -434,7 +443,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
           ),
 
           // ── Ícone de busca no topo direito ───────────────────────────────
-          // Posicionado APÓS o Positioned.fill para ficar na frente do banner
+          // Posicionado APÓS o Positioned.fill para ficar sempre na frente
           Positioned(
             top: r.s(6),
             right: r.s(8),
