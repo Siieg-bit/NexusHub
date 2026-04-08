@@ -27,12 +27,16 @@ class AminoBottomNavBar extends StatelessWidget {
   /// Avatares dos membros online (até 3) para exibir no botão Online
   final List<String?> onlineAvatars;
 
+  /// Callback para abrir a sheet de membros online
+  final VoidCallback? onOnlineTap;
+
   const AminoBottomNavBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
     required this.onCreateTap,
     required this.onMenuTap,
+    this.onOnlineTap,
     this.showOnline = true,
     this.showCreate = true,
     this.onlineCount = 0,
@@ -75,18 +79,12 @@ class AminoBottomNavBar extends StatelessWidget {
           ),
           child: Row(
             children: [
-              // ── Menu ──────────────────────────────────────────────────────
+              // ── Menu (sempre abre o drawer lateral) ─────────────────────────
               _CapsuleNavItem(
-                isSelected: currentIndex == 0,
-                onTap: () {
-                  if (currentIndex == 0) {
-                    onMenuTap();
-                  } else {
-                    onTap(0);
-                  }
-                },
+                isSelected: false,
+                onTap: onMenuTap,
                 child: _NavContent(
-                  isSelected: currentIndex == 0,
+                  isSelected: false,
                   icon: Icons.menu_rounded,
                   label: 'Menu',
                 ),
@@ -96,7 +94,13 @@ class AminoBottomNavBar extends StatelessWidget {
               if (showOnline)
                 _CapsuleNavItem(
                   isSelected: currentIndex == 1,
-                  onTap: () => onTap(1),
+                  onTap: () {
+                    if (onOnlineTap != null) {
+                      onOnlineTap!();
+                    } else {
+                      onTap(1);
+                    }
+                  },
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

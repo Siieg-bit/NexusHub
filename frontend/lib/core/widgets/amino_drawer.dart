@@ -124,8 +124,43 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
       onHorizontalDragEnd: _onHorizontalDragEnd,
       child: Stack(
         children: [
-          // ── Conteúdo principal (não se move) ──────────────────────────────
+          // ── Conteúdo principal (não se move) ──────────────────────────────────
           widget.child,
+
+          // ── Handle visual na borda esquerda (indicador de puxão) ───────
+          // Visível apenas quando o drawer está fechado.
+          // Estilo Amino: barra vertical fina semi-transparente.
+          AnimatedBuilder(
+            animation: _animController,
+            builder: (context, child) {
+              if (_animController.value > 0.05) {
+                return const SizedBox.shrink();
+              }
+              return child!;
+            },
+            child: Positioned(
+              left: 0,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: Container(
+                  width: 5.0,
+                  height: 48.0,
+                  margin: const EdgeInsets.only(left: 2.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.35),
+                    borderRadius: BorderRadius.circular(3.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 4.0,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
 
           // ── Overlay escuro sobre o conteúdo quando aberto ─────────────────
           AnimatedBuilder(
