@@ -78,17 +78,33 @@ class DeepLinkService {
       // O Supabase envia links no formato:
       // nexushub://auth?code=xxx  (PKCE flow)
       // nexushub://auth#access_token=xxx&...  (implicit flow legado)
-      final code = uri.queryParameters['code'];
-      final accessToken = uri.fragment.isNotEmpty
-          ? Uri.splitQueryString(uri.fragment)['access_token']
+      //
+      // IMPORTANTE: o SDK do supabase_flutter só aceita http/https no
+      // exchangeCodeForSession / getSessionFromUrl. Por isso convertemos
+      // o scheme nexushub:// para https:// antes de passar para o SDK.
+      Uri normalizedUri = uri;
+      if (uri.scheme != 'http' && uri.scheme != 'https') {
+        // Substitui o scheme por https e usa o Supabase URL como host
+        final supabaseHost =
+            Uri.parse('https://ylvzqqvcanzzswjkqeya.supabase.co').host;
+        normalizedUri = uri.replace(
+          scheme: 'https',
+          host: supabaseHost,
+        );
+      }
+
+      final code = normalizedUri.queryParameters['code'];
+      final accessToken = normalizedUri.fragment.isNotEmpty
+          ? Uri.splitQueryString(normalizedUri.fragment)['access_token']
           : null;
-      final refreshToken = uri.fragment.isNotEmpty
-          ? Uri.splitQueryString(uri.fragment)['refresh_token']
+      final refreshToken = normalizedUri.fragment.isNotEmpty
+          ? Uri.splitQueryString(normalizedUri.fragment)['refresh_token']
           : null;
 
       if (code != null) {
-        // PKCE flow: trocar code por sessão
-        await Supabase.instance.client.auth.exchangeCodeForSession(code);
+        // PKCE flow: trocar code por sessão usando a URL normalizada
+        await Supabase.instance.client.auth
+            .exchangeCodeForSession(normalizedUri.toString());
       } else if (accessToken != null && refreshToken != null) {
         // Implicit flow legado
         await Supabase.instance.client.auth.setSession(accessToken);
