@@ -178,15 +178,16 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
             // menu com fundo escuro semi-transparente
             // ══════════════════════════════════════════════════════════════
             Expanded(
-              child: Column(
-                children: [
-                  // Header: imagem de fundo + avatar + nome + nível + streak
-                  _buildHeader(r, themeColor, hasCheckedIn, streak),
-                  // Menu principal (scrollável)
-                  Expanded(
-                    child: _buildMenuArea(r),
-                  ),
-                ],
+              child: SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
+                child: Column(
+                  children: [
+                    // Header: imagem de fundo + avatar + nome + nível + streak
+                    _buildHeader(r, themeColor, hasCheckedIn, streak),
+                    // Menu principal (sem scroll próprio)
+                    _buildMenuArea(r),
+                  ],
+                ),
               ),
             ),
           ],
@@ -405,11 +406,10 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
               children: [
                 // Espaço reservado para o ícone de busca (32px + 6px top + 6px bottom)
                 SizedBox(height: r.s(44)),
-                // Espaço flexível acima do banner
-                const Spacer(flex: 1),
-                // Banner retangular centralizado entre busca e avatar
+                SizedBox(height: r.s(6)),
+                // Banner retangular logo abaixo do botão de busca
                 _buildCommunityBanner(r),
-                // Espaço flexível abaixo do banner
+                // Espaço flexível entre banner e avatar
                 const Spacer(flex: 1),
                 // Avatar do usuário centralizado
                 _buildUserAvatar(r, user, themeColor),
@@ -419,7 +419,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                   user?.nickname ?? 'Visitante',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: r.fs(16),
+                    fontSize: r.fs(20),
                     fontWeight: FontWeight.w800,
                     shadows: const [
                       Shadow(color: Colors.black87, blurRadius: 8),
@@ -504,8 +504,8 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
               })
           : null,
       child: Container(
-        width: r.s(75),
-        height: r.s(75),
+        width: r.s(92),
+        height: r.s(92),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(
@@ -521,7 +521,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
               : null,
         ),
         child: user?.iconUrl == null
-            ? Icon(Icons.person_rounded, color: Colors.white, size: r.s(36))
+            ? Icon(Icons.person_rounded, color: Colors.white, size: r.s(44))
             : null,
       ),
     );
@@ -554,50 +554,50 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         children: [
           // Círculo com "Lv" + número (estilo Amino)
           Container(
-            width: r.s(28),
-            height: r.s(28),
-            decoration: BoxDecoration(
-              color: levelColor,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.3),
-                width: 1,
+          width: r.s(36),
+          height: r.s(36),
+          decoration: BoxDecoration(
+            color: levelColor,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.3),
+              width: 1,
+            ),
+          ),
+          child: Center(
+            child: RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: 'Lv',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: r.fs(9),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  TextSpan(
+                    text: '$level',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: r.fs(13),
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
               ),
             ),
-            child: Center(
-              child: RichText(
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text: 'Lv',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: r.fs(7),
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    TextSpan(
-                      text: '$level',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: r.fs(10),
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          ),
           ),
           SizedBox(width: r.s(4)),
           // Pill com nome do nível + barra de progresso
           Flexible(
             child: Container(
-              height: r.s(22),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.50),
-                borderRadius: BorderRadius.circular(r.s(11)),
-              ),
+          height: r.s(28),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.50),
+            borderRadius: BorderRadius.circular(r.s(14)),
+          ),
               padding: EdgeInsets.symmetric(horizontal: r.s(8)),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -762,17 +762,15 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
     return Container(
       // Fundo escuro do menu (Amino: quase opaco, mas com leve transparência)
       color: const Color(0xFF0A0A0A),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            SizedBox(height: r.s(2)),
-            _buildMainMenu(r),
-            _buildSeeMore(r),
-            if (_isStaff) _buildStaffSection(r),
-            SizedBox(height: r.s(40)),
-          ],
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(height: r.s(2)),
+          _buildMainMenu(r),
+          _buildSeeMore(r),
+          if (_isStaff) _buildStaffSection(r),
+          SizedBox(height: r.s(40)),
+        ],
       ),
     );
   }
