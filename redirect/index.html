@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NexusHub — Confirmando sua conta...</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0d0d0d;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+      padding: 24px;
+    }
+    .card {
+      max-width: 400px;
+      width: 100%;
+    }
+    .logo {
+      width: 72px;
+      height: 72px;
+      background: #22c55e;
+      border-radius: 20px;
+      margin: 0 auto 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+    }
+    h1 { font-size: 22px; font-weight: 700; margin-bottom: 12px; }
+    p  { font-size: 15px; color: #aaa; line-height: 1.6; margin-bottom: 24px; }
+    .btn {
+      display: inline-block;
+      background: #22c55e;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      padding: 14px 32px;
+      border-radius: 12px;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+    }
+    .btn:hover { background: #16a34a; }
+    .note { font-size: 13px; color: #666; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">N</div>
+    <h1 id="title">Confirmando sua conta...</h1>
+    <p id="message">Aguarde, estamos abrindo o NexusHub para você.</p>
+    <a id="open-btn" class="btn" style="display:none">Abrir NexusHub</a>
+    <p class="note" id="note"></p>
+  </div>
+
+  <script>
+    // ─────────────────────────────────────────────
+    // CONFIGURAÇÃO — altere aqui ao trocar de domínio ou nome do app
+    // ─────────────────────────────────────────────
+    const APP_SCHEME = 'nexushub';   // scheme do deep link (AndroidManifest)
+    const APP_NAME   = 'NexusHub';   // nome exibido na página
+    // ─────────────────────────────────────────────
+
+    (function () {
+      const params  = new URLSearchParams(window.location.search);
+      const hash    = window.location.hash.substring(1); // remove o #
+      const hashParams = new URLSearchParams(hash);
+
+      // Pega o code (PKCE flow) ou os tokens (implicit flow legado)
+      const code         = params.get('code');
+      const accessToken  = hashParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token');
+      const type         = params.get('type') || hashParams.get('type');
+      const errorDesc    = params.get('error_description') || hashParams.get('error_description');
+
+      const titleEl   = document.getElementById('title');
+      const msgEl     = document.getElementById('message');
+      const btnEl     = document.getElementById('open-btn');
+      const noteEl    = document.getElementById('note');
+
+      // Erro vindo do Supabase
+      if (errorDesc) {
+        titleEl.textContent = 'Link inválido';
+        msgEl.textContent   = errorDesc;
+        noteEl.textContent  = 'Tente criar a conta novamente.';
+        return;
+      }
+
+      // Monta o deep link repassando todos os parâmetros para o app
+      let deepLink;
+      if (code) {
+        deepLink = `${APP_SCHEME}://auth?code=${encodeURIComponent(code)}&type=${type || 'signup'}`;
+      } else if (accessToken) {
+        deepLink = `${APP_SCHEME}://auth#access_token=${accessToken}&refresh_token=${refreshToken || ''}&type=${type || 'signup'}`;
+      } else {
+        titleEl.textContent = 'Link inválido ou expirado';
+        msgEl.textContent   = 'Este link não contém os parâmetros necessários.';
+        noteEl.textContent  = 'Tente criar a conta novamente.';
+        return;
+      }
+
+      // Tenta abrir o app automaticamente
+      window.location.href = deepLink;
+
+      // Após 2s, se ainda estiver na página, mostra o botão manual
+      setTimeout(function () {
+        titleEl.textContent  = 'Abra o ' + APP_NAME;
+        msgEl.textContent    = 'Toque no botão abaixo para abrir o aplicativo e confirmar sua conta.';
+        btnEl.href           = deepLink;
+        btnEl.style.display  = 'inline-block';
+        noteEl.textContent   = 'Se o app não estiver instalado, faça o download primeiro.';
+      }, 2000);
+    })();
+  </script>
+</body>
+</html>
