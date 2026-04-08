@@ -88,7 +88,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       colors: [
                         _neonPink.withValues(alpha: intensity),
                         _neonPurple.withValues(alpha: intensity * 0.5),
-                        _bgBlack.withValues(alpha: 0),
+                        _bgBlack.withValues(alpha: 0.0),
                       ],
                     ),
                   ),
@@ -171,15 +171,15 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                   color: _neonPink.withValues(
                                     alpha: 0.3 + _pulseController.value * 0.25,
                                   ),
-                                  blurRadius: 20 + _pulseController.value * 10,
-                                  spreadRadius: 0,
+                                  blurRadius: 20.0 + _pulseController.value * 10.0,
+                                  spreadRadius: 0.0,
                                 ),
                                 BoxShadow(
                                   color: _neonBlue.withValues(
                                     alpha: 0.2 + _pulseController.value * 0.15,
                                   ),
-                                  blurRadius: 30,
-                                  spreadRadius: -5,
+                                  blurRadius: 30.0,
+                                  spreadRadius: -5.0,
                                   offset: const Offset(0, 8),
                                 ),
                               ],
@@ -220,7 +220,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                   borderRadius: BorderRadius.circular(r.s(16)),
                                   border: Border.all(
                                     color: _neonCyan.withValues(alpha: 0.3),
-                                    width: 1,
+                                    width: 1.0,
                                   ),
                                 ),
                                 child: TextButton(
@@ -288,18 +288,18 @@ class _GlowLogo extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: _neonPink.withValues(alpha: 0.25 + glow * 0.35),
-                blurRadius: 40 + glow * 30,
-                spreadRadius: 5 + glow * 8,
+                blurRadius: 40.0 + glow * 30.0,
+                spreadRadius: 5.0 + glow * 8.0,
               ),
               BoxShadow(
                 color: _neonCyan.withValues(alpha: 0.15 + glow * 0.25),
-                blurRadius: 25 + glow * 20,
-                spreadRadius: 0,
+                blurRadius: 25.0 + glow * 20.0,
+                spreadRadius: 0.0,
               ),
               BoxShadow(
                 color: Colors.white.withValues(alpha: 0.04 + glow * 0.06),
-                blurRadius: 15,
-                spreadRadius: -5,
+                blurRadius: 15.0,
+                spreadRadius: -5.0,
               ),
             ],
           ),
@@ -384,8 +384,8 @@ class _NeonFeatureRow extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: gradientColors.last.withValues(alpha: 0.35),
-                blurRadius: 12,
-                spreadRadius: 0,
+                blurRadius: 12.0,
+                spreadRadius: 0.0,
               ),
             ],
           ),
