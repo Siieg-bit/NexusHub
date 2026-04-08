@@ -6,23 +6,16 @@ import 'package:go_router/go_router.dart';
 import '../../../core/utils/amino_animations.dart';
 import '../../../core/utils/responsive.dart';
 
-// ============================================================================
-// CORES DA IDENTIDADE VISUAL DO NEXUSHUB
-// Extraídas da logo oficial: X neon com gradiente vermelho/rosa → azul/ciano
-// ============================================================================
-const Color _neonRed = Color(0xFFE8003A);
-const Color _neonPink = Color(0xFFFF2D78);
+// Cores extraídas da logo oficial do NexusHub
+const Color _neonRed    = Color(0xFFE8003A);
+const Color _neonPink   = Color(0xFFFF2D78);
 const Color _neonPurple = Color(0xFF8B00FF);
-const Color _neonBlue = Color(0xFF0066FF);
-const Color _neonCyan = Color(0xFF00E5FF);
-const Color _bgBlack = Color(0xFF000000);
+const Color _neonBlue   = Color(0xFF0066FF);
+const Color _neonCyan   = Color(0xFF00E5FF);
+const Color _bgBlack    = Color(0xFF000000);
 
-/// Tela de Onboarding — NexusHub com identidade visual oficial.
-/// Logo real do app com efeito glow neon animado, fundo escuro cyberpunk,
-/// gradiente vermelho/rosa → azul/ciano extraído da logo.
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
-
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
@@ -79,11 +72,11 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             child: AnimatedBuilder(
               animation: _glowController,
               builder: (context, _) {
-                final intensity = 0.06 + _glowController.value * 0.04;
+                final double intensity = 0.06 + _glowController.value * 0.04;
                 return Container(
                   decoration: BoxDecoration(
                     gradient: RadialGradient(
-                      center: const Alignment(0, -0.25),
+                      center: const Alignment(0.0, -0.25),
                       radius: 0.9,
                       colors: [
                         _neonPink.withValues(alpha: intensity),
@@ -103,12 +96,13 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               child: Column(
                 children: [
                   const Spacer(flex: 2),
-                  // Logo com glow
                   AminoAnimations.scaleIn(
-                    child: _GlowLogo(controller: _glowController, size: r.s(160)),
+                    child: _GlowLogo(
+                      controller: _glowController,
+                      size: r.s(160),
+                    ),
                   ),
                   SizedBox(height: r.s(28)),
-                  // Nome com gradiente
                   AminoAnimations.fadeIn(
                     delay: const Duration(milliseconds: 200),
                     child: ShaderMask(
@@ -142,50 +136,51 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     ),
                   ),
                   const Spacer(flex: 1),
-                  // Features
                   AminoAnimations.slideUp(
                     delay: const Duration(milliseconds: 350),
                     child: _FeaturesList(r: r),
                   ),
                   const Spacer(flex: 2),
-                  // Botões
                   AminoAnimations.slideUp(
                     delay: const Duration(milliseconds: 500),
                     child: Column(
                       children: [
-                        // Botão Criar Conta com gradiente neon
+                        // Botão Criar Conta
                         AnimatedBuilder(
                           animation: _pulseController,
-                          builder: (context, child) => Container(
-                            width: double.infinity,
-                            height: r.s(54),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [_neonRed, _neonPink, _neonPurple, _neonBlue],
-                                begin: Alignment.centerLeft,
-                                end: Alignment.centerRight,
+                          builder: (context, child) {
+                            final double pulse = _pulseController.value;
+                            return Container(
+                              width: double.infinity,
+                              height: r.s(54),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [_neonRed, _neonPink, _neonPurple, _neonBlue],
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                ),
+                                borderRadius: BorderRadius.circular(r.s(16)),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: _neonPink.withValues(
+                                      alpha: 0.3 + pulse * 0.25,
+                                    ),
+                                    blurRadius: 20.0 + pulse * 10.0,
+                                    spreadRadius: 0.0,
+                                  ),
+                                  BoxShadow(
+                                    color: _neonBlue.withValues(
+                                      alpha: 0.2 + pulse * 0.15,
+                                    ),
+                                    blurRadius: 30.0,
+                                    spreadRadius: -5.0,
+                                    offset: const Offset(0.0, 8.0),
+                                  ),
+                                ],
                               ),
-                              borderRadius: BorderRadius.circular(r.s(16)),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: _neonPink.withValues(
-                                    alpha: 0.3 + _pulseController.value * 0.25,
-                                  ),
-                                  blurRadius: 20.0 + _pulseController.value * 10.0,
-                                  spreadRadius: 0.0,
-                                ),
-                                BoxShadow(
-                                  color: _neonBlue.withValues(
-                                    alpha: 0.2 + _pulseController.value * 0.15,
-                                  ),
-                                  blurRadius: 30.0,
-                                  spreadRadius: -5.0,
-                                  offset: const Offset(0.0, 8.0),
-                                ),
-                              ],
-                            ),
-                            child: child,
-                          ),
+                              child: child,
+                            );
+                          },
                           child: Material(
                             color: Colors.transparent,
                             child: InkWell(
@@ -206,7 +201,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           ),
                         ),
                         SizedBox(height: r.s(14)),
-                        // Botão Já tenho conta (glassmorphism)
+                        // Botão Já tenho conta
                         SizedBox(
                           width: double.infinity,
                           height: r.s(54),
@@ -266,9 +261,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   }
 }
 
-// ============================================================================
 // Logo com glow neon animado
-// ============================================================================
 class _GlowLogo extends StatelessWidget {
   final AnimationController controller;
   final double size;
@@ -279,7 +272,7 @@ class _GlowLogo extends StatelessWidget {
     return AnimatedBuilder(
       animation: controller,
       builder: (context, child) {
-        final glow = controller.value;
+        final double glow = controller.value;
         return Container(
           width: size,
           height: size,
@@ -318,9 +311,7 @@ class _GlowLogo extends StatelessWidget {
   }
 }
 
-// ============================================================================
-// Lista de features com ícones neon
-// ============================================================================
+// Lista de features
 class _FeaturesList extends StatelessWidget {
   final dynamic r;
   const _FeaturesList({required this.r});
@@ -407,9 +398,7 @@ class _NeonFeatureRow extends StatelessWidget {
   }
 }
 
-// ============================================================================
 // Partículas neon flutuantes no fundo
-// ============================================================================
 class _NeonParticlesPainter extends CustomPainter {
   final double progress;
 
@@ -437,11 +426,13 @@ class _NeonParticlesPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     for (final p in _particles) {
-      final y = (p.y + progress * p.speed) % 1.0;
-      final x = p.x + math.sin(progress * math.pi * 2.0 + p.phase) * 0.02;
-      final opacity = 0.15 + math.sin(progress * math.pi * 4.0 + p.phase) * 0.1;
+      final double y = (p.y + progress * p.speed) % 1.0;
+      final double x = p.x + math.sin(progress * math.pi * 2.0 + p.phase) * 0.02;
+      final double opacity = 0.15 + math.sin(progress * math.pi * 4.0 + p.phase) * 0.1;
       final paint = Paint()
-        ..color = _colors[p.colorIndex].withValues(alpha: opacity.clamp(0.05, 0.4))
+        ..color = _colors[p.colorIndex].withValues(
+          alpha: opacity.clamp(0.05, 0.4),
+        )
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.0);
       canvas.drawCircle(
         Offset(x * size.width, y * size.height),
