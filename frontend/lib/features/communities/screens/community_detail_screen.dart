@@ -323,6 +323,14 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                       } else if (index == 4) {
                         context.push(
                             '/community/${widget.communityId}/my-profile');
+                      } else if (index == 0) {
+                        // Home: volta para a página principal com aba Destaque
+                        setState(() => _bottomIndex = 0);
+                        final destIdx = _activeTabs.indexOf('Destaque');
+                        if (destIdx >= 0 &&
+                            _tabController.index != destIdx) {
+                          _tabController.animateTo(destIdx);
+                        }
                       } else {
                         setState(() => _bottomIndex = index);
                       }
@@ -764,7 +772,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
   // ================================================================
 
   // ================================================================
-  // SHEET DE MEMBROS ONLINE (minimizável, sobreposta, com transparência)
+  // SHEET DE MEMBROS ONLINE (CommunityOnlineTab como overlay)
   // ================================================================
   void _showOnlineMembersSheet(
     BuildContext ctx,
@@ -772,34 +780,21 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     String communityId,
     String communityName,
   ) {
-    final r = ctx.r;
     showModalBottomSheet(
       context: ctx,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: 0.3),
+      barrierColor: Colors.black.withValues(alpha: 0.8),
       builder: (sheetCtx) {
         return DraggableScrollableSheet(
-          initialChildSize: 0.55,
-          minChildSize: 0.25,
-          maxChildSize: 0.85,
+          initialChildSize: 0.75,
+          minChildSize: 0.3,
+          maxChildSize: 0.92,
           expand: false,
-          builder: (_, scrollController) {
-            final onlineIds = ref
-                    .read(communityPresenceProvider(communityId))
-                    .valueOrNull ??
-                {};
-            final membersAsync =
-                ref.read(communityMembersProvider(communityId));
-            final members = membersAsync.valueOrNull ?? [];
-            final onlineMembers = members
-                .where(
-                    (m) => onlineIds.contains(m['user_id'] as String?))
-                .toList();
-
+          builder: (dragCtx, scrollController) {
             return Container(
               decoration: BoxDecoration(
-                color: const Color(0xFF1A1A2E).withValues(alpha: 0.95),
+                color: dragCtx.scaffoldBg,
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(20.0),
                 ),
@@ -809,9 +804,9 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                   // Handle de arrasto
                   Padding(
                     padding: EdgeInsets.only(
-                        top: r.s(10), bottom: r.s(6)),
+                        top: dragCtx.r.s(10), bottom: dragCtx.r.s(4)),
                     child: Container(
-                      width: r.s(40),
+                      width: dragCtx.r.s(40),
                       height: 4.0,
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.3),
@@ -819,134 +814,11 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                       ),
                     ),
                   ),
-                  // Título
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: r.s(16), vertical: r.s(8)),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: r.s(10),
-                          height: r.s(10),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF4CAF50),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        SizedBox(width: r.s(8)),
-                        Text(
-                          'Membros Online (${onlineMembers.length})',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: r.fs(16),
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const Spacer(),
-                        GestureDetector(
-                          onTap: () => Navigator.pop(sheetCtx),
-                          child: Icon(
-                            Icons.close_rounded,
-                            color: Colors.white.withValues(alpha: 0.6),
-                            size: r.s(22),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Divider(
-                    color: Colors.white.withValues(alpha: 0.1),
-                    height: 1.0,
-                  ),
-                  // Lista de membros online
+                  // Página Online completa
                   Expanded(
-                    child: onlineMembers.isEmpty
-                        ? Center(
-                            child: Text(
-                              'Nenhum membro online',
-                              style: TextStyle(
-                                color:
-                                    Colors.white.withValues(alpha: 0.5),
-                                fontSize: r.fs(14),
-                              ),
-                            ),
-                          )
-                        : ListView.builder(
-                            controller: scrollController,
-                            itemCount: onlineMembers.length,
-                            padding: EdgeInsets.symmetric(
-                                vertical: r.s(8)),
-                            itemBuilder: (_, index) {
-                              final member = onlineMembers[index];
-                              final profile = member['profiles']
-                                      as Map<String, dynamic>? ??
-                                  {};
-                              final nickname =
-                                  profile['nickname'] as String? ??
-                                      'Usuário';
-                              final iconUrl =
-                                  profile['icon_url'] as String?;
-                              final userId =
-                                  member['user_id'] as String?;
-                              final role =
-                                  member['role'] as String? ?? 'member';
-
-                              return ListTile(
-                                leading: CircleAvatar(
-                                  radius: r.s(20),
-                                  backgroundColor: Colors.grey[800],
-                                  backgroundImage: iconUrl != null
-                                      ? CachedNetworkImageProvider(
-                                          iconUrl)
-                                      : null,
-                                  child: iconUrl == null
-                                      ? Icon(Icons.person_rounded,
-                                          color: Colors.white
-                                              .withValues(alpha: 0.5),
-                                          size: r.s(20))
-                                      : null,
-                                ),
-                                title: Text(
-                                  nickname,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: r.fs(14),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  role == 'host'
-                                      ? 'Host'
-                                      : role == 'cohost'
-                                          ? 'Co-Host'
-                                          : role == 'curator'
-                                              ? 'Curador'
-                                              : 'Membro',
-                                  style: TextStyle(
-                                    color: Colors.white
-                                        .withValues(alpha: 0.4),
-                                    fontSize: r.fs(11),
-                                  ),
-                                ),
-                                trailing: Container(
-                                  width: r.s(8),
-                                  height: r.s(8),
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFF4CAF50),
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                                onTap: userId != null
-                                    ? () {
-                                        Navigator.pop(sheetCtx);
-                                        context.push(
-                                          '/community/$communityId/profile/$userId',
-                                        );
-                                      }
-                                    : null,
-                              );
-                            },
-                          ),
+                    child: CommunityOnlineTab(
+                      community: _communityForSheet(ref, communityId),
+                    ),
                   ),
                 ],
               ),
@@ -954,6 +826,17 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
           },
         );
       },
+    );
+  }
+
+  /// Obtém o CommunityModel atual para passar ao CommunityOnlineTab.
+  CommunityModel _communityForSheet(WidgetRef ref, String communityId) {
+    final detailAsync = ref.read(communityDetailProvider(communityId));
+    return detailAsync.valueOrNull ?? CommunityModel(
+      id: communityId,
+      name: '',
+      hostId: '',
+      createdAt: DateTime.now(),
     );
   }
 }

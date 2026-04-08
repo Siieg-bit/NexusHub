@@ -40,10 +40,6 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
   late Animation<Offset> _slideAnimation;
   bool _isOpen = false;
 
-  /// Largura da zona de borda esquerda que detecta swipe para abrir (px).
-  static const double _edgeDragWidth = 24.0;
-  bool _edgeDragActive = false;
-
   bool get isOpen => _isOpen;
 
   @override
@@ -86,31 +82,38 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
     }
   }
 
-  void _onHorizontalDragStart(DragStartDetails details) {
-    _edgeDragActive = !_isOpen && details.globalPosition.dx <= _edgeDragWidth;
-  }
-
-  void _onHorizontalDragUpdate(DragUpdateDetails details) {
+  // ── Drag handlers para quando o drawer já está aberto ──────────────
+  void _onOverlayDragUpdate(DragUpdateDetails details) {
     final delta = details.primaryDelta ?? 0;
-    if (_isOpen || _edgeDragActive) {
-      _animController.value += delta / widget.maxSlide;
+    _animController.value += delta / widget.maxSlide;
+  }
+
+  void _onOverlayDragEnd(DragEndDetails details) {
+    final velocity = details.primaryVelocity ?? 0;
+    if (velocity < -300) {
+      close();
+    } else if (_animController.value > 0.5) {
+      open();
+    } else {
+      close();
     }
   }
 
-  void _onHorizontalDragEnd(DragEndDetails details) {
-    if (_isOpen || _edgeDragActive) {
-      final velocity = details.primaryVelocity ?? 0;
-      if (velocity > 300) {
-        open();
-      } else if (velocity < -300) {
-        close();
-      } else if (_animController.value > 0.5) {
-        open();
-      } else {
-        close();
-      }
+  // ── Drag handlers para a zona de borda esquerda (abrir drawer) ─────
+  void _onEdgeDragUpdate(DragUpdateDetails details) {
+    final delta = details.primaryDelta ?? 0;
+    _animController.value += delta / widget.maxSlide;
+  }
+
+  void _onEdgeDragEnd(DragEndDetails details) {
+    final velocity = details.primaryVelocity ?? 0;
+    if (velocity > 300) {
+      open();
+    } else if (_animController.value > 0.5) {
+      open();
+    } else {
+      close();
     }
-    _edgeDragActive = false;
   }
 
   @override
@@ -118,30 +121,32 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
     final screenWidth = MediaQuery.of(context).size.width;
     final effectiveMaxSlide = widget.maxSlide.clamp(0.0, screenWidth * 0.92);
 
-    return GestureDetector(
-      onHorizontalDragStart: _onHorizontalDragStart,
-      onHorizontalDragUpdate: _onHorizontalDragUpdate,
-      onHorizontalDragEnd: _onHorizontalDragEnd,
-      child: Stack(
-        children: [
-          // ── Conteúdo principal (não se move) ──────────────────────────────────
-          widget.child,
+    return Stack(
+      children: [
+        // ── Conteúdo principal (não se move) ──────────────────────────────────
+        widget.child,
 
-          // ── Handle visual na borda esquerda (indicador de puxão) ───────
-          // Visível apenas quando o drawer está fechado.
-          // Estilo Amino: barra vertical fina semi-transparente.
-          AnimatedBuilder(
-            animation: _animController,
-            builder: (context, child) {
-              if (_animController.value > 0.05) {
-                return const SizedBox.shrink();
-              }
-              return child!;
-            },
-            child: Positioned(
-              left: 0,
-              top: 0,
-              bottom: 0,
+        // ── Zona de drag exclusiva na borda esquerda ─────────────────────
+        // Largura de 28px, fica por CIMA do child (tabs), então captura
+        // o drag horizontal antes das tabs. Só funciona quando fechado.
+        AnimatedBuilder(
+          animation: _animController,
+          builder: (context, child) {
+            // Só mostrar a zona de drag quando o drawer está fechado
+            if (_animController.value > 0.05) {
+              return const SizedBox.shrink();
+            }
+            return child!;
+          },
+          child: Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 28.0,
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onHorizontalDragUpdate: _onEdgeDragUpdate,
+              onHorizontalDragEnd: _onEdgeDragEnd,
               child: Center(
                 child: Container(
                   width: 5.0,
@@ -161,41 +166,44 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
               ),
             ),
           ),
+        ),
 
-          // ── Overlay escuro sobre o conteúdo quando aberto ─────────────────
-          AnimatedBuilder(
-            animation: _animController,
-            builder: (context, _) {
-              if (_animController.value == 0) return const SizedBox.shrink();
-              return GestureDetector(
-                onTap: close,
-                child: Container(
-                  color: Colors.black
-                      .withValues(alpha: 0.45 * _animController.value),
-                ),
-              );
-            },
-          ),
+        // ── Overlay escuro sobre o conteúdo quando aberto ─────────────────
+        // Também captura drag horizontal para fechar o drawer.
+        AnimatedBuilder(
+          animation: _animController,
+          builder: (context, _) {
+            if (_animController.value == 0) return const SizedBox.shrink();
+            return GestureDetector(
+              onTap: close,
+              onHorizontalDragUpdate: _onOverlayDragUpdate,
+              onHorizontalDragEnd: _onOverlayDragEnd,
+              child: Container(
+                color: Colors.black
+                    .withValues(alpha: 0.45 * _animController.value),
+              ),
+            );
+          },
+        ),
 
-          // ── Drawer (sobrepõe tudo, desliza da esquerda) ───────────────────
-          // O Material garante que o drawer herde corretamente o Theme,
-          // DefaultTextStyle e tipografia do app — sem isso os textos
-          // ficam com fonte monospace e sublinhado amarelo (estilo raw Flutter).
-          SlideTransition(
-            position: _slideAnimation,
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: SizedBox(
-                width: effectiveMaxSlide,
-                child: Material(
-                  type: MaterialType.transparency,
-                  child: widget.drawer,
-                ),
+        // ── Drawer (sobrepõe tudo, desliza da esquerda) ───────────────────
+        // O Material garante que o drawer herde corretamente o Theme,
+        // DefaultTextStyle e tipografia do app — sem isso os textos
+        // ficam com fonte monospace e sublinhado amarelo (estilo raw Flutter).
+        SlideTransition(
+          position: _slideAnimation,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: SizedBox(
+              width: effectiveMaxSlide,
+              child: Material(
+                type: MaterialType.transparency,
+                child: widget.drawer,
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

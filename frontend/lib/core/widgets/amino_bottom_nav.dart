@@ -79,14 +79,14 @@ class AminoBottomNavBar extends StatelessWidget {
           ),
           child: Row(
             children: [
-              // ── Menu (sempre abre o drawer lateral) ─────────────────────────
+              // ── Home (navega para página inicial da comunidade) ──────────
               _CapsuleNavItem(
-                isSelected: false,
-                onTap: onMenuTap,
+                isSelected: currentIndex == 0,
+                onTap: () => onTap(0),
                 child: _NavContent(
-                  isSelected: false,
-                  icon: Icons.menu_rounded,
-                  label: 'Menu',
+                  isSelected: currentIndex == 0,
+                  icon: Icons.home_rounded,
+                  label: 'Home',
                 ),
               ),
 
