@@ -10,6 +10,7 @@ import 'app_strings_it.dart';
 import 'app_strings_ja.dart';
 import 'app_strings_ko.dart';
 import 'app_strings_ru.dart';
+import 'app_strings_es.dart';
 import 'package:flutter/foundation.dart';
 
 /// Idiomas suportados pelo app.
@@ -18,6 +19,7 @@ enum AppLocale {
   en('en', 'English (US)', '🇺🇸'),
   ar('ar', 'العربية', '🇸🇦'),
   de('de', 'Deutsch', '🇩🇪'),
+  es('es', 'Español', '🇪🇸'),
   fr('fr', 'Français', '🇫🇷'),
   it('it', 'Italiano', '🇮🇹'),
   ja('ja', '日本語', '🇯🇵'),
@@ -50,6 +52,8 @@ enum AppLocale {
         return const AppStringsKo();
       case AppLocale.ru:
         return const AppStringsRu();
+      case AppLocale.es:
+        return const AppStringsEs();
     }
   }
 
