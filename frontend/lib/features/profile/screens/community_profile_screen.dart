@@ -15,6 +15,7 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/amino_bottom_nav.dart';
 import '../../communities/widgets/community_create_menu.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/providers/block_provider.dart';
 
 /// Perfil dentro de uma Comunidade — Layout 1:1 com Amino Apps.
 ///
@@ -1615,6 +1616,88 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   }
 
   // ============================================================================
+  // BLOCK / UNBLOCK
+  // ============================================================================
+  Future<void> _handleBlockToggle(bool isCurrentlyBlocked) async {
+    final s = ref.read(stringsProvider);
+    final notifier = ref.read(blockedIdsProvider.notifier);
+    if (isCurrentlyBlocked) {
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: context.surfaceColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+          ),
+          title: Text(s.unblockUser,
+              style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
+          content: Text(s.confirmUnblockUser,
+              style: TextStyle(color: Colors.grey[500])),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(s.unblock,
+                  style: const TextStyle(color: AppTheme.errorColor, fontWeight: FontWeight.w800)),
+            ),
+          ],
+        ),
+      );
+      if (confirm != true || !mounted) return;
+      final ok = await notifier.unblock(widget.userId);
+      if (!mounted) return;
+      if (ok) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(s.userUnblocked),
+          backgroundColor: context.surfaceColor,
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+    } else {
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: context.surfaceColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+          ),
+          title: Text(s.blockConfirmTitle,
+              style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
+          content: Text(s.blockConfirmMsg,
+              style: TextStyle(color: Colors.grey[500])),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(s.block,
+                  style: const TextStyle(color: AppTheme.errorColor, fontWeight: FontWeight.w800)),
+            ),
+          ],
+        ),
+      );
+      if (confirm != true || !mounted) return;
+      final ok = await notifier.block(widget.userId);
+      if (!mounted) return;
+      if (ok) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(s.blockSuccess),
+          backgroundColor: context.surfaceColor,
+          behavior: SnackBarBehavior.floating,
+        ));
+        if (mounted) context.pop();
+      }
+    }
+  }
+
+  // ============================================================================
   // OPTIONS BOTTOM SHEET
   // ============================================================================
   void _showOptions(BuildContext context) {
@@ -1643,9 +1726,20 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
               _optionTile(Icons.flag_rounded, s.report, () {
                 Navigator.pop(ctx);
               }, isDestructive: true),
-              _optionTile(Icons.block_rounded, s.block, () {
-                Navigator.pop(ctx);
-              }, isDestructive: true),
+              Consumer(
+                builder: (ctx2, ref2, _) {
+                  final isBlocked = ref2.watch(isBlockedProvider(widget.userId));
+                  return _optionTile(
+                    isBlocked ? Icons.lock_open_rounded : Icons.block_rounded,
+                    isBlocked ? s.unblockAction : s.block,
+                    () async {
+                      Navigator.pop(ctx);
+                      await _handleBlockToggle(isBlocked);
+                    },
+                    isDestructive: true,
+                  );
+                },
+              ),
             ],
             _optionTile(Icons.share_rounded, s.shareProfile, () {
               Navigator.pop(ctx);

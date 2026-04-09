@@ -5,6 +5,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/providers/block_provider.dart';
 
 /// Tela de Usuários Bloqueados — lista e gerencia bloqueios.
 class BlockedUsersScreen extends ConsumerStatefulWidget {
@@ -116,7 +117,14 @@ class _BlockedUsersScreenState extends ConsumerState<BlockedUsersScreen> {
     if (confirm != true) return;
 
     try {
-      await SupabaseService.table('blocks').delete().eq('id', blockId);
+      final blockedUserId = _blockedUsers
+          .firstWhere((b) => b['id'] == blockId, orElse: () => {})['blocked']
+          ?['id'] as String?;
+      if (blockedUserId != null) {
+        await ref.read(blockedIdsProvider.notifier).unblock(blockedUserId);
+      } else {
+        await SupabaseService.table('blocks').delete().eq('id', blockId);
+      }
       if (!mounted) return;
       setState(() {
         _blockedUsers.removeWhere((b) => b['id'] == blockId);
@@ -209,7 +217,35 @@ class _BlockedUsersScreenState extends ConsumerState<BlockedUsersScreen> {
                     ],
                   ),
                 )
-              : ListView.builder(
+              : Column(
+                children: [
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+                    padding: EdgeInsets.all(r.s(12)),
+                    decoration: BoxDecoration(
+                      color: AppTheme.errorColor.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(r.s(12)),
+                      border: Border.all(color: AppTheme.errorColor.withValues(alpha: 0.2)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_outline_rounded,
+                            color: AppTheme.errorColor, size: r.s(16)),
+                        SizedBox(width: r.s(8)),
+                        Expanded(
+                          child: Text(
+                            s.blockedUsersInfo,
+                            style: TextStyle(
+                              color: AppTheme.errorColor,
+                              fontSize: r.fs(12),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.builder(
                   padding: EdgeInsets.all(r.s(16)),
                   itemCount: _blockedUsers.length,
                   itemBuilder: (context, index) {
@@ -298,6 +334,9 @@ class _BlockedUsersScreenState extends ConsumerState<BlockedUsersScreen> {
                     );
                   },
                 ),
+                  ),
+                ],
+              ),
     );
   }
 }

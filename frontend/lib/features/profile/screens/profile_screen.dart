@@ -18,6 +18,7 @@ import '../widgets/profile_stories_tab.dart';
 import '../widgets/profile_wall_tab.dart';
 import '../widgets/profile_pinned_wikis.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/providers/block_provider.dart';
 
 // =============================================================================
 // PROFILE SCREEN — Layout fiel ao Amino Apps
@@ -678,6 +679,89 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     }
   }
 
+  Future<void> _handleBlockToggle(bool isCurrentlyBlocked) async {
+    final s = ref.read(stringsProvider);
+    final notifier = ref.read(blockedIdsProvider.notifier);
+    if (isCurrentlyBlocked) {
+      // Desbloquear
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: context.surfaceColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+          ),
+          title: Text(s.unblockUser,
+              style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
+          content: Text(s.confirmUnblockUser,
+              style: TextStyle(color: Colors.grey[500])),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(s.unblock,
+                  style: const TextStyle(color: AppTheme.errorColor, fontWeight: FontWeight.w800)),
+            ),
+          ],
+        ),
+      );
+      if (confirm != true || !mounted) return;
+      final ok = await notifier.unblock(widget.userId);
+      if (!mounted) return;
+      if (ok) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(s.userUnblocked),
+          backgroundColor: context.surfaceColor,
+          behavior: SnackBarBehavior.floating,
+        ));
+        ref.invalidate(userProfileProvider(widget.userId));
+      }
+    } else {
+      // Bloquear
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: context.surfaceColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+          ),
+          title: Text(s.blockConfirmTitle,
+              style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w800)),
+          content: Text(s.blockConfirmMsg,
+              style: TextStyle(color: Colors.grey[500])),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(s.block,
+                  style: const TextStyle(color: AppTheme.errorColor, fontWeight: FontWeight.w800)),
+            ),
+          ],
+        ),
+      );
+      if (confirm != true || !mounted) return;
+      final ok = await notifier.block(widget.userId);
+      if (!mounted) return;
+      if (ok) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(s.blockSuccess),
+          backgroundColor: context.surfaceColor,
+          behavior: SnackBarBehavior.floating,
+        ));
+        ref.invalidate(userProfileProvider(widget.userId));
+        if (mounted) context.pop();
+      }
+    }
+  }
+
   void _showUserOptions(BuildContext context, UserModel user) {
     final r = context.r;
     showModalBottomSheet(
@@ -711,9 +795,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             _optionTile(Icons.flag_rounded, s.report, () {
               Navigator.pop(ctx);
             }, isDestructive: true),
-            _optionTile(Icons.block_rounded, s.block, () {
-              Navigator.pop(ctx);
-            }, isDestructive: true),
+            Consumer(
+              builder: (ctx2, ref2, _) {
+                final isBlocked = ref2.watch(isBlockedProvider(widget.userId));
+                return _optionTile(
+                  isBlocked ? Icons.lock_open_rounded : Icons.block_rounded,
+                  isBlocked ? s.unblockAction : s.block,
+                  () async {
+                    Navigator.pop(ctx);
+                    await _handleBlockToggle(isBlocked);
+                  },
+                  isDestructive: true,
+                );
+              },
+            ),
           ],
         ),
       ),
