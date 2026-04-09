@@ -3448,4 +3448,23 @@ class AppStringsJa implements AppStrings {
   String repProgressLabel(int current, int total) => '\$current/\$total REP';
   @override
   String daysToLevelUp(int days) => '~\$days 日でレベルアップ';
+
+
+  // ── Achievements screen (layout Amino) ──
+  @override
+  String get myStatistics => 'マイ統計';
+  @override
+  String get statsUpdatedWithDelay => '数値は遅延して更新されます';
+  @override
+  String get checkInActivity => 'チェックインアクティビティ';
+  @override
+  String get minutesLabel => '分';
+  @override
+  String get last24Hours => '過去24時間';
+  @override
+  String get achievementsUnlocked => '解除された実績';
+  @override
+  String get inProgress => '進行中';
+  @override
+  String get newAchievementsUnlocked => '新しい実績が解除されました';
 }

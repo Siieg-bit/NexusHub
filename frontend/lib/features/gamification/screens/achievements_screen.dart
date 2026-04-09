@@ -1,15 +1,34 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/checkin_heatmap.dart';
+import '../../../core/widgets/level_progress_bar.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/utils/helpers.dart';
 import '../../../core/l10n/locale_provider.dart';
 
-/// Conquistas / Achievements — Badges desbloqueáveis com progresso.
+/// Conquistas / Achievements — Layout estilo Amino Apps.
+///
+/// Estrutura (de cima para baixo):
+///   1. Badge de nível (LV) + nome do nível
+///   2. Barra de progresso REP (X/Y REP)
+///   3. Texto motivacional + "Ver Todos os Rankings"
+///   4. Atividade de Check-In (heatmap)
+///   5. Minhas Estatísticas (tempo online circular)
+///   6. Conquistas desbloqueadas / Em progresso
 class AchievementsScreen extends ConsumerStatefulWidget {
   final String? userId;
-  const AchievementsScreen({super.key, this.userId});
+  final String? communityId;
+  final String? communityBannerUrl;
+
+  const AchievementsScreen({
+    super.key,
+    this.userId,
+    this.communityId,
+    this.communityBannerUrl,
+  });
 
   @override
   State<AchievementsScreen> createState() => _AchievementsScreenState();
@@ -28,9 +47,16 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
   int _currentStreak = 0;
   int _longestStreak = 0;
 
+  // Dados de nível/reputação
+  int _reputation = 0;
+  int _level = 1;
+  int _onlineMinutes = 0;
+  String? _communityBannerUrl;
+
   @override
   void initState() {
     super.initState();
+    _communityBannerUrl = widget.communityBannerUrl;
     _load();
   }
 
@@ -39,6 +65,9 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
       final userId = widget.userId ?? SupabaseService.currentUserId;
       final currentUserId = SupabaseService.currentUserId;
       if (userId == null) return;
+
+      // Carregar dados de reputação/nível do membership
+      await _loadLevelData(userId);
 
       // Validar e desbloquear conquistas automaticamente apenas
       // quando o usuário estiver visualizando o próprio perfil.
@@ -83,6 +112,9 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
       // Carregar dados de check-in para o heatmap
       await _loadCheckinHeatmap(userId);
 
+      // Carregar tempo online (últimas 24h)
+      await _loadOnlineMinutes(userId);
+
       if (!mounted) return;
       setState(() => _isLoading = false);
     } catch (e) {
@@ -90,10 +122,51 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
     }
   }
 
+  /// Carrega dados de nível e reputação do usuário.
+  Future<void> _loadLevelData(String userId) async {
+    try {
+      // Tentar carregar do membership da comunidade
+      if (widget.communityId != null) {
+        final memberRes = await SupabaseService.table('community_members')
+            .select('local_reputation, local_level')
+            .eq('user_id', userId)
+            .eq('community_id', widget.communityId!)
+            .maybeSingle();
+        if (memberRes != null) {
+          _reputation = memberRes['local_reputation'] as int? ?? 0;
+          _level = memberRes['local_level'] as int? ?? calculateLevel(_reputation);
+
+          // Também carregar banner da comunidade se não foi passado
+          if (_communityBannerUrl == null) {
+            try {
+              final comRes = await SupabaseService.table('communities')
+                  .select('banner_url')
+                  .eq('id', widget.communityId!)
+                  .single();
+              _communityBannerUrl = comRes['banner_url'] as String?;
+            } catch (_) {}
+          }
+          return;
+        }
+      }
+
+      // Fallback: carregar do perfil global
+      final profileRes = await SupabaseService.table('profiles')
+          .select('reputation, level')
+          .eq('id', userId)
+          .maybeSingle();
+      if (profileRes != null) {
+        _reputation = profileRes['reputation'] as int? ?? 0;
+        _level = profileRes['level'] as int? ?? calculateLevel(_reputation);
+      }
+    } catch (_) {
+      // Silenciar — dados de nível são opcionais
+    }
+  }
+
   /// Carrega o histórico de check-ins para o heatmap.
   Future<void> _loadCheckinHeatmap(String userId) async {
     try {
-      // Buscar check-ins dos últimos 12 meses
       final oneYearAgo = DateTime.now().subtract(const Duration(days: 365));
       final checkins = await SupabaseService.table('checkins')
           .select('checkin_date')
@@ -109,15 +182,13 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
       for (final row
           in List<Map<String, dynamic>>.from(checkins as List? ?? [])) {
         final dateStr = (row['checkin_date'] as String?) ?? '';
-        data[dateStr] = 1; // Nível 1 para check-in simples
+        data[dateStr] = 1;
 
-        // Calcular streaks
         final date = DateTime.parse(dateStr);
         if (lastDate != null) {
           final diff = date.difference(lastDate).inDays;
           if (diff == 1) {
             streak++;
-            // Aumentar nível baseado na streak
             if (streak >= 30) {
               data[dateStr] = 4;
             } else if (streak >= 14) {
@@ -144,9 +215,22 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
     }
   }
 
+  /// Carrega minutos online nas últimas 24h.
+  Future<void> _loadOnlineMinutes(String userId) async {
+    try {
+      final res = await SupabaseService.table('profiles')
+          .select('online_minutes_today')
+          .eq('id', userId)
+          .maybeSingle();
+      _onlineMinutes = (res?['online_minutes_today'] as int?) ?? 0;
+    } catch (_) {
+      _onlineMinutes = 0;
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     final unlocked =
         _allAchievements.where((a) => _unlockedIds.contains(a['id'])).toList();
@@ -171,178 +255,325 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
           ? const Center(
               child: CircularProgressIndicator(color: AppTheme.primaryColor),
             )
-          : _allAchievements.isEmpty
-              ? Center(
-                  child: Text(
-                    s.noAchievementsAvailable,
-                    style: TextStyle(color: Colors.grey[500]),
-                  ),
-                )
-              : SingleChildScrollView(
-                  padding: EdgeInsets.all(r.s(16)),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Heatmap de Check-in
-                      CheckinHeatmap(
-                        checkinData: _checkinData,
-                        totalCheckins: _totalCheckins,
-                        currentStreak: _currentStreak,
-                        longestStreak: _longestStreak,
-                      ),
-                      SizedBox(height: r.s(24)),
+          : SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: r.s(16)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(height: r.s(8)),
 
-                      if (_newlyUnlocked.isNotEmpty) ...[
-                        Container(
-                          width: double.infinity,
-                          padding: EdgeInsets.all(r.s(16)),
-                          decoration: BoxDecoration(
-                            color:
-                                AppTheme.successColor.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(r.s(16)),
-                            border: Border.all(
-                              color:
-                                  AppTheme.successColor.withValues(alpha: 0.35),
+                  // ═══════════════════════════════════════════════════════
+                  // 1. SEÇÃO DE NÍVEL (Badge + nome + barra REP + link)
+                  // ═══════════════════════════════════════════════════════
+                  LevelProgressBar(
+                    reputation: _reputation,
+                    level: _level,
+                    s: s,
+                    onLevelTap: () => context.push('/all-rankings', extra: {
+                      'level': _level,
+                      'reputation': _reputation,
+                      'bannerUrl': _communityBannerUrl,
+                    }),
+                    onViewAllRankings: () =>
+                        context.push('/all-rankings', extra: {
+                      'level': _level,
+                      'reputation': _reputation,
+                      'bannerUrl': _communityBannerUrl,
+                    }),
+                  ),
+
+                  SizedBox(height: r.s(28)),
+
+                  // ═══════════════════════════════════════════════════════
+                  // 2. ATIVIDADE DE CHECK-IN (heatmap)
+                  // ═══════════════════════════════════════════════════════
+                  Text(
+                    s.checkInActivity,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: r.fs(16),
+                      color: context.textPrimary,
+                    ),
+                  ),
+                  SizedBox(height: r.s(12)),
+                  CheckinHeatmap(
+                    checkinData: _checkinData,
+                    totalCheckins: _totalCheckins,
+                    currentStreak: _currentStreak,
+                    longestStreak: _longestStreak,
+                  ),
+
+                  SizedBox(height: r.s(28)),
+
+                  // ═══════════════════════════════════════════════════════
+                  // 3. MINHAS ESTATÍSTICAS (tempo online circular)
+                  // ═══════════════════════════════════════════════════════
+                  Text(
+                    s.myStatistics,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: r.fs(16),
+                      color: context.textPrimary,
+                    ),
+                  ),
+                  SizedBox(height: r.s(4)),
+                  Text(
+                    s.statsUpdatedWithDelay,
+                    style: TextStyle(
+                      color: context.textSecondary,
+                      fontSize: r.fs(12),
+                    ),
+                  ),
+                  SizedBox(height: r.s(16)),
+                  _buildOnlineMinutesCircle(r, context),
+
+                  SizedBox(height: r.s(28)),
+
+                  // ═══════════════════════════════════════════════════════
+                  // 4. NOVAS CONQUISTAS DESBLOQUEADAS (se houver)
+                  // ═══════════════════════════════════════════════════════
+                  if (_newlyUnlocked.isNotEmpty) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(r.s(16)),
+                      decoration: BoxDecoration(
+                        color: AppTheme.successColor.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(r.s(16)),
+                        border: Border.all(
+                          color:
+                              AppTheme.successColor.withValues(alpha: 0.35),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.emoji_events_rounded,
+                                color: AppTheme.successColor,
+                                size: r.s(22),
+                              ),
+                              SizedBox(width: r.s(10)),
+                              Expanded(
+                                child: Text(
+                                  s.newAchievementsUnlocked,
+                                  style: TextStyle(
+                                    color: context.textPrimary,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: r.fs(15),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: r.s(10)),
+                          ..._newlyUnlocked.map(
+                            (achievement) => Padding(
+                              padding: EdgeInsets.only(bottom: r.s(6)),
+                              child: Text(
+                                '• ${achievement['achievement_name'] ?? s.achievements}'
+                                '${((achievement['reward_coins'] as int?) ?? 0) > 0 ? ' · +${achievement['reward_coins']} coins' : ''}',
+                                style: TextStyle(
+                                  color: context.textSecondary,
+                                  fontSize: r.fs(13),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ),
                           ),
-                          child: Column(
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: r.s(24)),
+                  ],
+
+                  // ═══════════════════════════════════════════════════════
+                  // 5. STATS CARD (X / Y conquistas)
+                  // ═══════════════════════════════════════════════════════
+                  if (_allAchievements.isNotEmpty) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(r.s(20)),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppTheme.warningColor,
+                            AppTheme.warningColor.withValues(alpha: 0.7),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(r.s(16)),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                AppTheme.warningColor.withValues(alpha: 0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.emoji_events_rounded,
+                              color: Colors.white, size: r.s(36)),
+                          SizedBox(width: r.s(12)),
+                          Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.emoji_events_rounded,
-                                    color: AppTheme.successColor,
-                                    size: r.s(22),
-                                  ),
-                                  SizedBox(width: r.s(10)),
-                                  Expanded(
-                                    child: Text(
-                                      'Novas conquistas desbloqueadas',
-                                      style: TextStyle(
-                                        color: context.textPrimary,
-                                        fontWeight: FontWeight.w800,
-                                        fontSize: r.fs(15),
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                              Text(
+                                '${unlocked.length} / ${_allAchievements.length}',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: r.fs(28),
+                                  fontWeight: FontWeight.w800,
+                                ),
                               ),
-                              SizedBox(height: r.s(10)),
-                              ..._newlyUnlocked.map(
-                                (achievement) => Padding(
-                                  padding: EdgeInsets.only(bottom: r.s(6)),
-                                  child: Text(
-                                    '• ${achievement['achievement_name'] ?? 'Conquista'}'
-                                    '${((achievement['reward_coins'] as int?) ?? 0) > 0 ? ' · +${achievement['reward_coins']} moedas' : ''}',
-                                    style: TextStyle(
-                                      color: context.textSecondary,
-                                      fontSize: r.fs(13),
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
+                              Text(
+                                s.achievementsUnlocked,
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: r.fs(13),
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                        SizedBox(height: r.s(24)),
-                      ],
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: r.s(24)),
+                  ],
 
-                      // Stats
-                      Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.all(r.s(20)),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              AppTheme.warningColor,
-                              AppTheme.warningColor.withValues(alpha: 0.7),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(r.s(16)),
-                          boxShadow: [
-                            BoxShadow(
-                              color:
-                                  AppTheme.warningColor.withValues(alpha: 0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.emoji_events_rounded,
-                                color: Colors.white, size: r.s(36)),
-                            SizedBox(width: r.s(12)),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '${unlocked.length} / ${_allAchievements.length}',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: r.fs(28),
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                                Text(
-                                  'Conquistas desbloqueadas',
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: r.fs(13),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                  // ═══════════════════════════════════════════════════════
+                  // 6. CONQUISTAS DESBLOQUEADAS
+                  // ═══════════════════════════════════════════════════════
+                  if (unlocked.isNotEmpty) ...[
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        s.achievementsUnlocked,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: r.fs(16),
+                          color: context.textPrimary,
                         ),
                       ),
-                      SizedBox(height: r.s(24)),
+                    ),
+                    SizedBox(height: r.s(12)),
+                    ...unlocked.map((a) => _AchievementTile(
+                          achievement: a,
+                          isUnlocked: true,
+                          progress: 100,
+                        )),
+                    SizedBox(height: r.s(24)),
+                  ],
 
-                      // Desbloqueadas
-                      if (unlocked.isNotEmpty) ...[
-                        Text(
-                          'Desbloqueadas',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w800,
-                            fontSize: r.fs(16),
-                            color: context.textPrimary,
-                          ),
+                  // ═══════════════════════════════════════════════════════
+                  // 7. EM PROGRESSO
+                  // ═══════════════════════════════════════════════════════
+                  if (locked.isNotEmpty) ...[
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        s.inProgress,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: r.fs(16),
+                          color: context.textPrimary,
                         ),
-                        SizedBox(height: r.s(12)),
-                        ...unlocked.map((a) => _AchievementTile(
-                              achievement: a,
-                              isUnlocked: true,
-                              progress: 100,
-                            )),
-                        SizedBox(height: r.s(24)),
-                      ],
+                      ),
+                    ),
+                    SizedBox(height: r.s(12)),
+                    ...locked.map((a) => _AchievementTile(
+                          achievement: a,
+                          isUnlocked: false,
+                          progress: _progressMap[a['id'] as String?] ?? 0,
+                        )),
+                  ],
 
-                      // Bloqueadas
-                      if (locked.isNotEmpty) ...[
-                        Text(
-                          'Em progresso',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w800,
-                            fontSize: r.fs(16),
-                            color: context.textPrimary,
-                          ),
-                        ),
-                        SizedBox(height: r.s(12)),
-                        ...locked.map((a) => _AchievementTile(
-                              achievement: a,
-                              isUnlocked: false,
-                              progress: _progressMap[a['id'] as String?] ?? 0,
-                            )),
-                      ],
-                    ],
-                  ),
+                  SizedBox(height: r.s(32)),
+                ],
+              ),
+            ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // WIDGET: Círculo de minutos online (estilo Amino)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  Widget _buildOnlineMinutesCircle(Responsive r, BuildContext context) {
+    final s = ref.watch(stringsProvider);
+    // Normalizar para 0-1 (máximo 1440 min = 24h)
+    final progress = (_onlineMinutes / 1440).clamp(0.0, 1.0);
+
+    return SizedBox(
+      width: r.s(160),
+      height: r.s(160),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Anel de fundo
+          SizedBox(
+            width: r.s(150),
+            height: r.s(150),
+            child: CircularProgressIndicator(
+              value: 1.0,
+              strokeWidth: r.s(8),
+              color: Colors.white.withValues(alpha: 0.08),
+              strokeCap: StrokeCap.round,
+            ),
+          ),
+          // Anel de progresso
+          SizedBox(
+            width: r.s(150),
+            height: r.s(150),
+            child: CircularProgressIndicator(
+              value: progress,
+              strokeWidth: r.s(8),
+              color: const Color(0xFF00E5A0), // Verde Amino
+              backgroundColor: Colors.transparent,
+              strokeCap: StrokeCap.round,
+            ),
+          ),
+          // Texto central
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '$_onlineMinutes',
+                style: TextStyle(
+                  color: context.textPrimary,
+                  fontSize: r.fs(36),
+                  fontWeight: FontWeight.w800,
                 ),
+              ),
+              Text(
+                s.minutesLabel,
+                style: TextStyle(
+                  color: const Color(0xFF00E5A0),
+                  fontSize: r.fs(14),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                s.last24Hours,
+                style: TextStyle(
+                  color: context.textSecondary,
+                  fontSize: r.fs(11),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// WIDGET: Tile de conquista individual
+// ═══════════════════════════════════════════════════════════════════════════════
 
 class _AchievementTile extends ConsumerWidget {
   final Map<String, dynamic> achievement;
@@ -357,9 +588,8 @@ class _AchievementTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
-    final name = achievement['name'] as String? ?? 'Conquista';
+    final name = achievement['name'] as String? ?? 'Achievement';
     final description = achievement['description'] as String? ?? '';
     final reward = achievement['coin_reward'] as int? ?? 0;
     final rarity = achievement['rarity'] as String? ?? 'common';

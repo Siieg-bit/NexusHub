@@ -4258,4 +4258,23 @@ class AppStringsAr implements AppStrings {
   String repProgressLabel(int current, int total) => '\$current/\$total REP';
   @override
   String daysToLevelUp(int days) => '~\$days يوم للارتقاء بالمستوى';
+
+
+  // ── Achievements screen (layout Amino) ──
+  @override
+  String get myStatistics => 'إحصائياتي';
+  @override
+  String get statsUpdatedWithDelay => 'يتم تحديث الأرقام بتأخير';
+  @override
+  String get checkInActivity => 'نشاط تسجيل الحضور';
+  @override
+  String get minutesLabel => 'دقائق';
+  @override
+  String get last24Hours => 'آخر 24 ساعة';
+  @override
+  String get achievementsUnlocked => 'الإنجازات المفتوحة';
+  @override
+  String get inProgress => 'قيد التقدم';
+  @override
+  String get newAchievementsUnlocked => 'تم فتح إنجازات جديدة';
 }

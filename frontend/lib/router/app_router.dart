@@ -426,7 +426,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/achievements',
         name: 'achievements',
-        builder: (context, state) => const AchievementsScreen(),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return AchievementsScreen(
+            userId: extra['userId'] as String?,
+            communityId: extra['communityId'] as String?,
+            communityBannerUrl: extra['bannerUrl'] as String?,
+          );
+        },
       ),
       GoRoute(
         path: '/inventory',

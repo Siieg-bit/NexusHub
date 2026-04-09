@@ -3448,4 +3448,23 @@ class AppStringsEs implements AppStrings {
   String repProgressLabel(int current, int total) => '\$current/\$total REP';
   @override
   String daysToLevelUp(int days) => '~\$days días para subir de nivel';
+
+
+  // ── Achievements screen (layout Amino) ──
+  @override
+  String get myStatistics => 'Mis Estadísticas';
+  @override
+  String get statsUpdatedWithDelay => 'Los números se actualizan con retraso';
+  @override
+  String get checkInActivity => 'Actividad de Check-In';
+  @override
+  String get minutesLabel => 'Minutos';
+  @override
+  String get last24Hours => 'Últimas 24 Horas';
+  @override
+  String get achievementsUnlocked => 'Logros desbloqueados';
+  @override
+  String get inProgress => 'En progreso';
+  @override
+  String get newAchievementsUnlocked => 'Nuevos logros desbloqueados';
 }

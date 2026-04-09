@@ -3611,4 +3611,23 @@ aparecerá aqui';
   String repProgressLabel(int current, int total) => '\$current/\$total REP';
   @override
   String daysToLevelUp(int days) => '~\$days dias para subir de nível';
+
+
+  // ── Achievements screen (layout Amino) ──
+  @override
+  String get myStatistics => 'Minhas Estatísticas';
+  @override
+  String get statsUpdatedWithDelay => 'Números são atualizados com atraso';
+  @override
+  String get checkInActivity => 'Atividade de Check-In';
+  @override
+  String get minutesLabel => 'Minutos';
+  @override
+  String get last24Hours => 'Últimas 24 Horas';
+  @override
+  String get achievementsUnlocked => 'Conquistas desbloqueadas';
+  @override
+  String get inProgress => 'Em progresso';
+  @override
+  String get newAchievementsUnlocked => 'Novas conquistas desbloqueadas';
 }

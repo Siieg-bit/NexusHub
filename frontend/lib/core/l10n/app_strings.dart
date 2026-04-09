@@ -1801,4 +1801,14 @@ abstract class AppStrings {
   String get nextLevel;
   String get repToNextLevel;
   String daysToLevelUp(int days);
+
+  // TELA DE CONQUISTAS (layout Amino)
+  String get myStatistics;
+  String get statsUpdatedWithDelay;
+  String get checkInActivity;
+  String get minutesLabel;
+  String get last24Hours;
+  String get achievementsUnlocked;
+  String get inProgress;
+  String get newAchievementsUnlocked;
 }

@@ -4592,4 +4592,23 @@ class AppStringsRu implements AppStrings {
   String repProgressLabel(int current, int total) => '\$current/\$total REP';
   @override
   String daysToLevelUp(int days) => '~\$days дней до повышения уровня';
+
+
+  // ── Achievements screen (layout Amino) ──
+  @override
+  String get myStatistics => 'Моя статистика';
+  @override
+  String get statsUpdatedWithDelay => 'Числа обновляются с задержкой';
+  @override
+  String get checkInActivity => 'Активность чек-инов';
+  @override
+  String get minutesLabel => 'Минут';
+  @override
+  String get last24Hours => 'Последние 24 часа';
+  @override
+  String get achievementsUnlocked => 'Достижения разблокированы';
+  @override
+  String get inProgress => 'В процессе';
+  @override
+  String get newAchievementsUnlocked => 'Новые достижения разблокированы';
 }

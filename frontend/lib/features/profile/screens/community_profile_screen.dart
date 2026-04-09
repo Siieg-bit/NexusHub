@@ -578,7 +578,10 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                               children: [
                                 // Conquistas badge
                                 GestureDetector(
-                                  onTap: () => context.push('/achievements'),
+                                  onTap: () => context.push('/achievements', extra: {
+                                    'communityId': widget.communityId,
+                                    'bannerUrl': _communityBannerUrl,
+                                  }),
                                   child: Container(
                                     padding: EdgeInsets.symmetric(
                                         horizontal: r.s(12), vertical: r.s(6)),

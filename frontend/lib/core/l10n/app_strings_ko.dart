@@ -3954,4 +3954,23 @@ class AppStringsKo implements AppStrings {
   String repProgressLabel(int current, int total) => '\$current/\$total REP';
   @override
   String daysToLevelUp(int days) => '~\$days일 후 레벨업';
+
+
+  // ── Achievements screen (layout Amino) ──
+  @override
+  String get myStatistics => '내 통계';
+  @override
+  String get statsUpdatedWithDelay => '숫자는 지연되어 업데이트됩니다';
+  @override
+  String get checkInActivity => '체크인 활동';
+  @override
+  String get minutesLabel => '분';
+  @override
+  String get last24Hours => '최근 24시간';
+  @override
+  String get achievementsUnlocked => '달성한 업적';
+  @override
+  String get inProgress => '진행 중';
+  @override
+  String get newAchievementsUnlocked => '새로운 업적이 달성되었습니다';
 }
