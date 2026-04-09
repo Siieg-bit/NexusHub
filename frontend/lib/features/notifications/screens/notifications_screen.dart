@@ -208,41 +208,71 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     }
 
     final type = notification['type'] as String? ?? '';
-    final targetId = notification['post_id'] as String? ??
-        notification['community_id'] as String?;
+    final payload = _notificationData(notification);
+    final postId = notification['post_id'] as String? ?? payload['post_id'] as String?;
+    final communityId = notification['community_id'] as String? ?? payload['community_id'] as String?;
+    final actorId = notification['actor_id'] as String? ?? payload['actor_id'] as String?;
+    final chatId = payload['chat_id'] as String? ?? payload['thread_id'] as String?;
+    final userId = payload['user_id'] as String? ?? actorId;
 
     switch (type) {
       case 'like':
       case 'comment':
       case 'mention':
-        if (targetId != null) context.push('/post/$targetId');
+        if (postId != null) {
+          context.push('/post/$postId');
+        } else if (communityId != null) {
+          context.push('/community/$communityId');
+        }
         break;
       case 'follow':
-        if (targetId != null) context.push('/user/$targetId');
+        if (userId != null) {
+          context.push('/user/$userId');
+        }
         break;
       case 'community_invite':
-        final communityId = _communityIdFromNotification(notification);
-        if (communityId != null) {
-          context.push('/community/$communityId');
-        } else {
+      case 'community_update':
+        final cId = _communityIdFromNotification(notification);
+        if (cId != null) {
+          context.push('/community/$cId');
+        } else if (type == 'community_invite') {
           await _acceptCommunityInvite(notification);
         }
         break;
       case 'chat_message':
       case 'chat_mention':
-        if (targetId != null) context.push('/chat/$targetId');
+        final target = chatId ?? communityId;
+        if (target != null) context.push('/chat/$target');
         break;
       case 'dm_invite':
         context.push('/chats');
         break;
       case 'level_up':
       case 'achievement':
+      case 'check_in_streak':
         context.push('/profile');
         break;
       case 'wall_post':
-        if (targetId != null) context.push('/user/$targetId');
+        if (userId != null) {
+          context.push('/user/$userId');
+        }
+        break;
+      case 'moderation':
+      case 'strike':
+      case 'ban':
+        if (communityId != null) {
+          context.push('/community/$communityId');
+        }
         break;
       default:
+        // Fallback: tentar navegar para o recurso mais relevante
+        if (postId != null) {
+          context.push('/post/$postId');
+        } else if (communityId != null) {
+          context.push('/community/$communityId');
+        } else if (userId != null) {
+          context.push('/user/$userId');
+        }
         break;
     }
   }

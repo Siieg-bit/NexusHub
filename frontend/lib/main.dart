@@ -24,9 +24,6 @@ void main() async {
   final binding = WidgetsFlutterBinding.ensureInitialized();
 
   // ── 120Hz: Solicitar a maior taxa de atualização disponível ────────
-  // No Android, o Flutter por padrão roda a 60Hz mesmo em telas 120Hz.
-  // resamplingEnabled melhora a suavidade do toque em telas de alta
-  // taxa de atualização (90/120/144Hz).
   binding.resamplingEnabled = true;
 
   // Configurar orientação do app (não bloqueia — é rápido)
@@ -44,15 +41,9 @@ void main() async {
   );
 
   // ── Inicialização PARALELA dos serviços pesados ───────────────────
-  // Antes: cada await bloqueava o próximo → ~3-5s de tela branca.
-  // Agora: Firebase, Supabase, Cache rodam em paralelo → ~1-2s.
-  // Serviços que dependem de Supabase (Push, IAP, Ad) rodam depois.
-
   // Grupo 1: Serviços independentes (rodam em paralelo)
   await Future.wait([
-    // Firebase
     _initFirebase(),
-    // Supabase
     Supabase.initialize(
       url: AppConfig.supabaseUrl,
       anonKey: AppConfig.supabaseAnonKey,
@@ -60,12 +51,10 @@ void main() async {
         eventsPerSecond: 10,
       ),
     ),
-    // Cache Offline-First (Hive)
     _initSafe('CacheService', CacheService.init),
   ]);
 
-  // Grupo 2: Serviços que dependem de Supabase (rodam em paralelo)
-  // Estes são não-bloqueantes — o app pode abrir enquanto inicializam.
+  // Grupo 2: Serviços que dependem de Supabase (não-bloqueantes)
   unawaited(Future.wait([
     _initSafe('PushNotification', PushNotificationService.initialize),
     _initSafe('IAP', IAPService.initialize),
@@ -81,7 +70,7 @@ void main() async {
   Supabase.instance.client.auth.onAuthStateChange.listen((data) {
     if (data.event == AuthChangeEvent.signedIn) {
       DeviceFingerprintService.registerDevice();
-      PushNotificationService.initialize(); // Re-registra token FCM
+      PushNotificationService.initialize();
     }
     if (data.event == AuthChangeEvent.signedOut) {
       PushNotificationService.clearToken();
@@ -116,16 +105,113 @@ Future<void> _initSafe(String name, Future<void> Function() init) async {
   }
 }
 
-class NexusHubApp extends ConsumerWidget {
+// =============================================================================
+// NexusHubApp — StatefulConsumerWidget para gerenciar o push notification stream
+// =============================================================================
+
+class NexusHubApp extends ConsumerStatefulWidget {
   const NexusHubApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<NexusHubApp> createState() => _NexusHubAppState();
+}
+
+class _NexusHubAppState extends ConsumerState<NexusHubApp> {
+  StreamSubscription<Map<String, dynamic>>? _pushSubscription;
+
+  @override
+  void dispose() {
+    _pushSubscription?.cancel();
+    super.dispose();
+  }
+
+  /// Conecta o stream de notificações push ao router para navegação.
+  void _setupPushNotificationListener(GoRouter router) {
+    _pushSubscription?.cancel();
+    _pushSubscription =
+        PushNotificationService.notificationStream.listen((data) {
+      _handlePushNotificationTap(router, data);
+    });
+  }
+
+  /// Navega para a tela correta baseado no payload da notificação push.
+  void _handlePushNotificationTap(
+      GoRouter router, Map<String, dynamic> data) {
+    final type = data['type'] as String? ?? '';
+    final postId = data['post_id'] as String?;
+    final communityId = data['community_id'] as String?;
+    final userId = data['user_id'] as String? ?? data['actor_id'] as String?;
+    final chatId = data['chat_id'] as String? ?? data['thread_id'] as String?;
+
+    switch (type) {
+      case 'like':
+      case 'comment':
+      case 'mention':
+        if (postId != null) {
+          router.push('/post/$postId');
+        } else if (communityId != null) {
+          router.push('/community/$communityId');
+        }
+        break;
+      case 'follow':
+        if (userId != null) {
+          router.push('/user/$userId');
+        }
+        break;
+      case 'community_invite':
+      case 'community_update':
+        if (communityId != null) {
+          router.push('/community/$communityId');
+        }
+        break;
+      case 'chat_message':
+      case 'chat_mention':
+        final target = chatId ?? communityId;
+        if (target != null) router.push('/chat/$target');
+        break;
+      case 'dm_invite':
+        router.push('/chats');
+        break;
+      case 'level_up':
+      case 'achievement':
+      case 'check_in_streak':
+        router.push('/profile');
+        break;
+      case 'wall_post':
+        if (userId != null) {
+          router.push('/user/$userId');
+        }
+        break;
+      case 'moderation':
+      case 'strike':
+      case 'ban':
+        if (communityId != null) {
+          router.push('/community/$communityId');
+        }
+        break;
+      default:
+        // Fallback: tentar navegar para o recurso mais relevante
+        if (postId != null) {
+          router.push('/post/$postId');
+        } else if (communityId != null) {
+          router.push('/community/$communityId');
+        } else if (userId != null) {
+          router.push('/user/$userId');
+        }
+        break;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final router = ref.watch(appRouterProvider);
     final themeMode = ref.watch(themeProvider);
 
     // Inicializar Deep Link service com o router
     DeepLinkService.init(router);
+
+    // Conectar push notification stream ao router para navegação
+    _setupPushNotificationListener(router);
 
     // Atualizar barra de status conforme o tema
     final isDark = themeMode == ThemeMode.dark;
@@ -143,16 +229,11 @@ class NexusHubApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'NexusHub',
       debugShowCheckedModeBanner: false,
-      // Conectar o scaffoldMessengerKey do ErrorHandler para que
-      // SnackBars globais (ErrorHandler.showSuccess/showError/etc) funcionem.
       scaffoldMessengerKey: ErrorHandler.scaffoldKey,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
       routerConfig: router,
-      // ErrorBoundary agora fica DENTRO do MaterialApp, garantindo que
-      // Directionality, Theme, MediaQuery e todos os InheritedWidgets
-      // estejam sempre disponíveis — inclusive para o fallback de erro.
       builder: (context, child) {
         return ErrorBoundary(
           child: child ?? const SizedBox.shrink(),

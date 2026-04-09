@@ -402,67 +402,6 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             ),
           ),
           actions: [
-            // Claim gifts
-            GestureDetector(
-              onTap: () {
-                showModalBottomSheet(
-                  context: context,
-                  backgroundColor: context.surfaceColor,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(20)),
-                  ),
-                  builder: (ctx) => Padding(
-                    padding: EdgeInsets.all(r.s(24)),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('\uD83C\uDF81 Presentes Di\u00e1rios',
-                            style: TextStyle(
-                                color: context.textPrimary,
-                                fontSize: r.fs(18),
-                                fontWeight: FontWeight.w800)),
-                        SizedBox(height: r.s(16)),
-                        Text(
-                            'Fa\u00e7a check-in para ganhar reputa\u00e7\u00e3o e moedas!',
-                            style: TextStyle(
-                                color: Colors.grey[400], fontSize: r.fs(14))),
-                        SizedBox(height: r.s(20)),
-                        ElevatedButton(
-                          onPressed: () => Navigator.pop(ctx),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primaryColor,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(r.s(20))),
-                          ),
-                          child: const Text('Entendi'),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-              child: Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(5)),
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryColor,
-                  borderRadius: BorderRadius.circular(r.s(20)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('\uD83C\uDF81 ', style: TextStyle(fontSize: r.fs(11))),
-                    Text('Presentes',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: r.fs(10),
-                            fontWeight: FontWeight.w700)),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(width: r.s(6)),
             // Gallery
             GestureDetector(
               onTap: () {

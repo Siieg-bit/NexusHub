@@ -178,15 +178,25 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
             // menu com fundo escuro semi-transparente
             // ══════════════════════════════════════════════════════════════
             Expanded(
-              child: SingleChildScrollView(
-                physics: const ClampingScrollPhysics(),
-                child: Column(
-                  children: [
-                    // Header: imagem de fundo + avatar + nome + nível + streak
-                    _buildHeader(r, themeColor, hasCheckedIn, streak),
-                    // Menu principal (sem scroll próprio)
-                    _buildMenuArea(r),
-                  ],
+              child: RefreshIndicator(
+                color: AppTheme.primaryColor,
+                onRefresh: () async {
+                  ref.invalidate(checkInStatusProvider);
+                  ref.invalidate(userCommunitiesProvider);
+                  await Future.delayed(const Duration(milliseconds: 300));
+                },
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: ClampingScrollPhysics(),
+                  ),
+                  child: Column(
+                    children: [
+                      // Header: imagem de fundo + avatar + nome + nível + streak
+                      _buildHeader(r, themeColor, hasCheckedIn, streak),
+                      // Menu principal (sem scroll próprio)
+                      _buildMenuArea(r),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -645,104 +655,163 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // STREAK DOTS (7 dias)
-  //
-  // Amino original:
-  // - 7 dots em linha horizontal
-  // - Tamanho: ~14px cada
-  // - Feito: verde (#4CAF50) com check branco
-  // - Pendente: cinza transparente com borda cinza
-  // - O primeiro dot pode ter um badge vermelho "1"
-  // - Espaçamento: ~4px entre dots
-  // - Conectados por uma linha cinza horizontal fina
+  // STREAK DOTS (7 dias) — Design moderno
   // ═══════════════════════════════════════════════════════════════════════════
 
   Widget _buildStreakDots(Responsive r, int streak, bool hasCheckedIn) {
     const totalDots = 7;
-    final doneDots = streak.clamp(0, totalDots);
+    final doneDots = (streak % 7).clamp(0, totalDots);
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: r.s(24)),
-      child: SizedBox(
-        height: r.s(18),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // Linha horizontal conectando os dots (como no Amino)
-            Positioned(
-              left: r.s(8),
-              right: r.s(8),
-              child: Container(
-                height: 1.5,
-                color: Colors.white.withValues(alpha: 0.15),
-              ),
-            ),
-            // Dots
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(totalDots, (i) {
-                final done = i < doneDots;
-                return Padding(
-                  padding: EdgeInsets.symmetric(horizontal: r.s(3)),
-                  child: Container(
-                    width: r.s(14),
-                    height: r.s(14),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: done
-                          ? const Color(0xFF4CAF50)
-                          : Colors.grey.withValues(alpha: 0.25),
-                      border: Border.all(
-                        color: done
-                            ? const Color(0xFF4CAF50)
-                            : Colors.white.withValues(alpha: 0.20),
-                        width: 1.5,
-                      ),
-                    ),
-                    child: done
-                        ? Icon(Icons.check_rounded,
-                            color: Colors.white, size: r.s(9))
+      padding: EdgeInsets.symmetric(horizontal: r.s(16)),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(totalDots, (i) {
+          final done = i < doneDots;
+          final isNext = i == doneDots && !hasCheckedIn;
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: r.s(2)),
+            child: Column(
+              children: [
+                Container(
+                  width: r.s(22),
+                  height: r.s(22),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: done
+                        ? const Color(0xFF4CAF50)
+                        : isNext
+                            ? const Color(0xFF4CAF50).withValues(alpha: 0.20)
+                            : Colors.white.withValues(alpha: 0.08),
+                    border: isNext
+                        ? Border.all(
+                            color: const Color(0xFF4CAF50).withValues(alpha: 0.60),
+                            width: 1.5,
+                          )
+                        : done
+                            ? null
+                            : Border.all(
+                                color: Colors.white.withValues(alpha: 0.12),
+                                width: 1,
+                              ),
+                    boxShadow: done
+                        ? [
+                            BoxShadow(
+                              color: const Color(0xFF4CAF50).withValues(alpha: 0.30),
+                              blurRadius: 4,
+                              spreadRadius: 0,
+                            ),
+                          ]
                         : null,
                   ),
-                );
-              }),
+                  child: done
+                      ? Icon(Icons.check_rounded,
+                          color: Colors.white, size: r.s(12))
+                      : null,
+                ),
+                SizedBox(height: r.s(2)),
+                Text(
+                  '${i + 1}',
+                  style: TextStyle(
+                    color: done
+                        ? const Color(0xFF4CAF50)
+                        : Colors.white.withValues(alpha: 0.30),
+                    fontSize: r.fs(7),
+                    fontWeight: done ? FontWeight.w700 : FontWeight.w400,
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        }),
       ),
     );
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // MENSAGEM DE CHECK-IN
+  // BOTÃO / MENSAGEM DE CHECK-IN
   //
-  // Amino original:
-  // - TEXTO VERDE brilhante (NÃO container vermelho!)
-  // - "Check-in streak lost. Tap here to fix it!"
-  // - Fonte ~11px, verde (#4CAF50), sem fundo/container
-  // - Clicável para fazer check-in
+  // Quando o usuário NÃO fez check-in: mostra botão verde com ícone
+  // Quando já fez: mostra texto de confirmação
   // ═══════════════════════════════════════════════════════════════════════════
 
   Widget _buildCheckInMessage(Responsive r, bool hasCheckedIn) {
-    if (hasCheckedIn) return const SizedBox.shrink();
+    if (hasCheckedIn) {
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: r.s(16)),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.check_circle_rounded,
+                color: const Color(0xFF4CAF50), size: r.s(13)),
+            SizedBox(width: r.s(4)),
+            Text(
+              'Check-in feito!',
+              style: TextStyle(
+                color: const Color(0xFF4CAF50),
+                fontSize: r.fs(11),
+                fontWeight: FontWeight.w600,
+                shadows: const [
+                  Shadow(color: Colors.black54, blurRadius: 4),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
+    // Botão de check-in visível e clicável
     return GestureDetector(
       onTap: _isCheckingIn ? null : _doCheckIn,
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: r.s(16)),
-        child: Text(
-          _isCheckingIn
-              ? 'Fazendo check-in...'
-              : 'Check-in streak lost. Tap here to fix it!',
-          style: TextStyle(
-            color: const Color(0xFF4CAF50),
-            fontSize: r.fs(11),
-            fontWeight: FontWeight.w600,
-            shadows: const [
-              Shadow(color: Colors.black54, blurRadius: 4),
-            ],
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: r.s(24)),
+        padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)],
           ),
-          textAlign: TextAlign.center,
+          borderRadius: BorderRadius.circular(r.s(20)),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF4CAF50).withValues(alpha: 0.30),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_isCheckingIn)
+              SizedBox(
+                width: r.s(14),
+                height: r.s(14),
+                child: const CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              )
+            else ...
+            [
+              Icon(Icons.local_fire_department_rounded,
+                  color: Colors.white, size: r.s(14)),
+              SizedBox(width: r.s(4)),
+              Text(
+                'Fazer Check-in',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: r.fs(11),
+                  fontWeight: FontWeight.w700,
+                  shadows: const [
+                    Shadow(color: Colors.black26, blurRadius: 2),
+                  ],
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );
