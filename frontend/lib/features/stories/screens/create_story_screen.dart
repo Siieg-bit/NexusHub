@@ -57,6 +57,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
   ];
 
   Future<void> _pickImage() async {
+    final s = getStrings();
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
     if (!mounted) return;
@@ -99,6 +100,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
   }
 
   Future<void> _pickVideo() async {
+    final s = getStrings();
     final picker = ImagePicker();
     final video = await picker.pickVideo(
       source: ImageSource.gallery,
@@ -152,6 +154,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
   }
 
   Future<void> _submitStory() async {
+    final s = getStrings();
     if (_type == 'text' && _textController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

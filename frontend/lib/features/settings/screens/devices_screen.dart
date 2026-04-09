@@ -44,6 +44,7 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
   }
 
   Future<void> _revokeDevice(String deviceId) async {
+    final s = getStrings();
     final r = context.r;
     final confirm = await showDialog<bool>(
       context: context,
@@ -130,6 +131,7 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
   }
 
   Future<void> _revokeAllOthers() async {
+    final s = getStrings();
     final r = context.r;
     final confirm = await showDialog<bool>(
       context: context,

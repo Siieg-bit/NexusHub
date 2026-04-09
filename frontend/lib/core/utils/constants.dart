@@ -8,7 +8,7 @@ class AppConstants {
   // ====================================================================
   // APP INFO
   // ====================================================================
-  static const String appName = s.nexusHub;
+  static const String appName = 'NexusHub';
   static const String appVersion = '1.0.0';
   static const String appBuildNumber = '1';
 

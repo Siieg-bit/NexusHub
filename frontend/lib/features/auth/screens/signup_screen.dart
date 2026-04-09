@@ -39,7 +39,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     if (_formKey.currentState?.validate() != true) return;
     if (!_acceptedTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(s.acceptTermsToContinue)),
+        SnackBar(content: Text(s.acceptTermsToContinue)),
       );
       return;
     }

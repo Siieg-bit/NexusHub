@@ -83,6 +83,7 @@ class _EditGuidelinesScreenState extends ConsumerState<EditGuidelinesScreen>
   }
 
   Future<void> _saveGuidelines() async {
+    final s = getStrings();
     if (_isSaving) return;
     setState(() => _isSaving = true);
 
@@ -201,7 +202,7 @@ class _EditGuidelinesScreenState extends ConsumerState<EditGuidelinesScreen>
           unselectedLabelColor: Colors.grey[500],
           indicatorColor: AppTheme.primaryColor,
           dividerColor: Colors.white.withValues(alpha: 0.05),
-          tabs: const [
+          tabs: [
             Tab(text: s.editor),
             Tab(text: s.preview2),
           ],
@@ -218,6 +219,7 @@ class _EditGuidelinesScreenState extends ConsumerState<EditGuidelinesScreen>
   }
 
   Widget _buildEditorTab() {
+    final s = getStrings();
     final r = context.r;
     return Column(
       children: [
@@ -335,6 +337,7 @@ class _EditGuidelinesScreenState extends ConsumerState<EditGuidelinesScreen>
   }
 
   Widget _buildPreviewTab() {
+    final s = getStrings();
     final r = context.r;
     final text = _guidelinesController.text;
     if (text.isEmpty) {

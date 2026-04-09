@@ -1567,7 +1567,9 @@ class AppStringsJa implements AppStrings {
   @override
   String get current => '現在';
   @override
-  String get currentCacheSize => '現在のキャッシュサイズ: ...\n@override\nString get currentStreak => '現在の連続記録';
+  String get currentCacheSize => '現在のキャッシュサイズ: ...';
+  @override
+  String get currentStreak => '現在の連続記録';
   @override
   String get customizePrompt => 'あなたの体験をカスタマイズしましょう。数ステップで、';
   @override
@@ -1667,7 +1669,9 @@ class AppStringsJa implements AppStrings {
   @override
   String get generalRules => '一般ルール';
   @override
-  String get generalRulesDetails => '1. すべてのメンバーに敬意を持つこと\n@override\nString get gif => 'GIF';
+  String get generalRulesDetails => '1. すべてのメンバーに敬意を持つこと';
+  @override
+  String get gif => 'GIF';
   @override
   String get googleApple => 'Google、Apple';
   @override
@@ -1841,7 +1845,9 @@ class AppStringsJa implements AppStrings {
   @override
   String get permanentDelete => '完全に削除';
   @override
-  String get permanentDeletionNotice => 'メッセージと購入したアイテムは完全に削除されます。\n@override\nString get permanentlyDenied => '永久に拒否されました';
+  String get permanentDeletionNotice => 'メッセージと購入したアイテムは完全に削除されます。';
+  @override
+  String get permanentlyDenied => '永久に拒否されました';
   @override
   String get permissionDenied2 => '許可が拒否されました';
   @override
@@ -1893,7 +1899,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get renderFlexOverflowed => 'RenderFlexがオーバーフローしました';
   @override
-  String get reportedBy => '${reporter?['によって報告されました';
+  String get reportedBy => '...によって報告されました';
   @override
   String get requestButton => 'リクエスト';
   @override
@@ -2073,7 +2079,9 @@ class AppStringsJa implements AppStrings {
   @override
   String get wise => 'Wise';
   @override
-  String get writeGuidelines => 'ここにコミュニティガイドラインを書いてください…\n@override\nString get writeGuidelinesTab => 'エディタタブでガイドラインを書く';
+  String get writeGuidelines => 'ここにコミュニティガイドラインを書いてください…';
+  @override
+  String get writeGuidelinesTab => 'エディタタブでガイドラインを書く';
   @override
   String get writeWhatYouLike => '好きなことを書いてください…';
   @override
@@ -2401,7 +2409,9 @@ class AppStringsJa implements AppStrings {
   @override
   String get biographyLabel => '経歴';
   @override
-  String get blockedUsersCannotSeeProfile => 'ブロックされたユーザーはあなたのプロフィールを見られません\n@override\nString get blogTitleHint => 'ブログタイトル...';
+  String get blockedUsersCannotSeeProfile => 'ブロックされたユーザーはあなたのプロフィールを見られません';
+  @override
+  String get blogTitleHint => 'ブログタイトル...';
   @override
   String get bubbleLabel => 'バブル';
   @override

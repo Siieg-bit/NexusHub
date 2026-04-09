@@ -57,6 +57,7 @@ class _CoinShopScreenState extends ConsumerState<CoinShopScreen> {
   }
 
   Future<void> _purchaseCoins(CoinPackage pkg) async {
+    final s = getStrings();
     setState(() => _isPurchasing = true);
     try {
       final packages = await IAPService.getOfferings();
@@ -83,6 +84,7 @@ class _CoinShopScreenState extends ConsumerState<CoinShopScreen> {
   }
 
   Future<void> _watchAdForCoins() async {
+    final s = getStrings();
     if (!AdService.canWatchAd) {
       _showError(s.dailyAdLimitReached);
       return;
@@ -103,6 +105,7 @@ class _CoinShopScreenState extends ConsumerState<CoinShopScreen> {
   }
 
   Future<void> _restorePurchases() async {
+    final s = getStrings();
     final success = await IAPService.restorePurchases();
     if (success) {
       _showSuccess('Compras restauradas com sucesso!');
@@ -290,6 +293,7 @@ class _CoinShopScreenState extends ConsumerState<CoinShopScreen> {
   }
 
   Widget _buildAdRewardCard() {
+    final s = getStrings();
     final r = context.r;
     final remaining = AdService.remainingAdsToday;
     return Container(
@@ -373,6 +377,7 @@ class _CoinShopScreenState extends ConsumerState<CoinShopScreen> {
   }
 
   Widget _buildCoinPackageCard(CoinPackage pkg) {
+    final s = getStrings();
     final r = context.r;
     final isPopular = pkg.coins == 1200;
     return Container(
@@ -496,6 +501,7 @@ class _CoinShopScreenState extends ConsumerState<CoinShopScreen> {
   }
 
   Widget _buildAminoPlusCard() {
+    final s = getStrings();
     final r = context.r;
     return Container(
       padding: EdgeInsets.all(r.s(20)),

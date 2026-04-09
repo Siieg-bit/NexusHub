@@ -93,6 +93,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
   }
 
   Future<void> _saveSettings() async {
+    final s = getStrings();
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
@@ -121,7 +122,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text(s.settingsSaved)),
+          SnackBar(content: Text(s.settingsSaved)),
         );
       }
     } catch (e) {
@@ -193,7 +194,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                 // ============================================================
                 // PERFIL
                 // ============================================================
-                const _SectionHeader(title: s.profile),
+                _SectionHeader(title: s.profile),
                 _SettingToggle(
                   icon: Icons.public_rounded,
                   title: s.publicProfile,
@@ -256,7 +257,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                 // ============================================================
                 // COMUNICAÇÃO
                 // ============================================================
-                const _SectionHeader(title: s.communication),
+                _SectionHeader(title: s.communication),
                 _SettingToggle(
                   icon: Icons.chat_rounded,
                   title: s.directMessages,
@@ -284,7 +285,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                 // ============================================================
                 // VISIBILIDADE
                 // ============================================================
-                const _SectionHeader(title: s.visibility),
+                _SectionHeader(title: s.visibility),
                 _SettingToggle(
                   icon: Icons.groups_rounded,
                   title: s.communitiesList,
@@ -312,7 +313,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                 // ============================================================
                 // SEGUIDORES
                 // ============================================================
-                const _SectionHeader(title: s.followers),
+                _SectionHeader(title: s.followers),
                 Container(
                   padding: EdgeInsets.all(r.s(16)),
                   decoration: BoxDecoration(
@@ -361,7 +362,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                 // ============================================================
                 // DADOS
                 // ============================================================
-                const _SectionHeader(title: s.data),
+                _SectionHeader(title: s.data),
                 Container(
                   decoration: BoxDecoration(
                     color: context.surfaceColor,

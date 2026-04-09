@@ -54,14 +54,14 @@ void main() async {
         eventsPerSecond: 10,
       ),
     ),
-    _initSafe(s.cacheService, CacheService.init),
+    _initSafe('cacheService', CacheService.init),
   ]);
 
   // Grupo 2: Serviços que dependem de Supabase (não-bloqueantes)
   unawaited(Future.wait([
-    _initSafe(s.pushNotification, PushNotificationService.initialize),
-    _initSafe(s.iap, IAPService.initialize),
-    _initSafe(s.adService, AdService.initialize),
+    _initSafe('pushNotification', PushNotificationService.initialize),
+    _initSafe('iap', IAPService.initialize),
+    _initSafe('adService', AdService.initialize),
   ]));
 
   // Registrar device fingerprint se usuário já estiver logado

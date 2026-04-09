@@ -45,6 +45,7 @@ class _BlockedUsersScreenState extends ConsumerState<BlockedUsersScreen> {
   }
 
   Future<void> _unblockUser(String blockId, String nickname) async {
+    final s = getStrings();
     final r = context.r;
     final confirm = await showDialog<bool>(
       context: context,

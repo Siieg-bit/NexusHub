@@ -30,6 +30,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _exportData() async {
+    final s = getStrings();
     final r = context.r;
     showDialog(
       context: context,
@@ -111,6 +112,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _deleteAccount() async {
+    final s = getStrings();
     final r = context.r;
     final confirm1 = await showDialog<bool>(
       context: context,
@@ -519,7 +521,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 GestureDetector(
                   onTap: () {
                     if (_profile != null) {
-                      context.push('/user/${_profile!['ids.closingBracket);
+                      context.push('/user/${_profile!["id"]}');
                     }
                   },
                   child: Container(

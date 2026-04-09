@@ -2024,7 +2024,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get renderFlexOverflowed => 'RenderFlex transbordou';
   @override
-  String get reportedBy => 'Reportado por ${reporter?[';
+  String get reportedBy => 'Reportado por ...';
   @override
   String get requestButton => 'Solicitar';
   @override

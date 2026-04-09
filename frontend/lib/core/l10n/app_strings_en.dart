@@ -1970,7 +1970,7 @@ class AppStringsEn implements AppStrings {
   @override
   String get renderFlexOverflowed => 'RenderFlex overflowed';
   @override
-  String get reportedBy => 'Reported by ${reporter?[';
+  String get reportedBy => 'Reported by ...';
   @override
   String get requestButton => 'Request';
   @override

@@ -201,7 +201,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           child: ListTile(
             contentPadding:
                 EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
-            onTap: () => context.push('/community/${c['ids.closingBracket),
+            onTap: () => context.push('/community/${c["id"]}'),
             leading: Container(
               width: r.s(48),
               height: r.s(48),
@@ -262,7 +262,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           child: ListTile(
             contentPadding:
                 EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
-            onTap: () => context.push('/user/${u['ids.closingBracket),
+            onTap: () => context.push('/user/${u["id"]}'),
             leading: CosmeticAvatar(
               userId: u['id'] as String?,
               avatarUrl: u['icon_url'] as String?,
@@ -313,7 +313,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           child: ListTile(
             contentPadding:
                 EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
-            onTap: () => context.push('/post/${p['ids.closingBracket),
+            onTap: () => context.push('/post/${p["id"]}'),
             leading: Container(
               width: r.s(48),
               height: r.s(48),

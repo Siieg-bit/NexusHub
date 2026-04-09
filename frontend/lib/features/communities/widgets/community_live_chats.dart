@@ -321,7 +321,7 @@ class _CommunityLiveChatsState extends ConsumerState<CommunityLiveChats> {
                 return GestureDetector(
                   onLongPress: () => _showContextMenu(context, chat),
                   child: AminoAnimations.cardPress(
-                    onTap: () => context.push('/chat/${chat['ids.closingBracket),
+                    onTap: () => context.push('/chat/${chat["id"]}'),
                     child: Container(
                       width: r.s(150),
                       margin: EdgeInsets.only(right: r.s(8)),

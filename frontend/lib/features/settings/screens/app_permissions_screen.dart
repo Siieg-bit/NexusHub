@@ -79,6 +79,7 @@ class _AppPermissionsScreenState extends ConsumerState<AppPermissionsScreen>
   }
 
   Future<void> _requestPermission(_PermissionInfo info) async {
+    final s = getStrings();
     final status = await info.permission.request();
     if (status.isPermanentlyDenied) {
       if (mounted) {

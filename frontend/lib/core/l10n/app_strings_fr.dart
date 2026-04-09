@@ -2129,7 +2129,7 @@ class AppStringsFr implements AppStrings {
   @override
   String get renderFlexOverflowed => 'RenderFlex débordé';
   @override
-  String get reportedBy => 'Signalé par ${reporter?[';
+  String get reportedBy => 'Signalé par ...';
   @override
   String get requestButton => 'Demander';
   @override

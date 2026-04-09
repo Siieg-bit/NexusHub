@@ -44,6 +44,7 @@ class _CreatePublicChatScreenState
   }
 
   Future<void> _createChat() async {
+    final s = getStrings();
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isCreating = true);

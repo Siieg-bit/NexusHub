@@ -206,7 +206,7 @@ class _AdminReportsScreenState extends ConsumerState<AdminReportsScreen>
           labelColor: AppTheme.primaryColor,
           unselectedLabelColor: Colors.grey[600],
           indicatorColor: AppTheme.primaryColor,
-          tabs: const [
+          tabs: [
             Tab(text: 'Uso'),
             Tab(text: s.moderation),
             Tab(text: s.gamification),
@@ -227,6 +227,7 @@ class _AdminReportsScreenState extends ConsumerState<AdminReportsScreen>
   }
 
   Widget _buildUsageTab(Responsive r) {
+    final s = getStrings();
     return SingleChildScrollView(
       padding: EdgeInsets.all(r.s(16)),
       child: Column(
@@ -269,6 +270,7 @@ class _AdminReportsScreenState extends ConsumerState<AdminReportsScreen>
   }
 
   Widget _buildModerationTab(Responsive r) {
+    final s = getStrings();
     return SingleChildScrollView(
       padding: EdgeInsets.all(r.s(16)),
       child: Column(
@@ -303,6 +305,7 @@ class _AdminReportsScreenState extends ConsumerState<AdminReportsScreen>
   }
 
   Widget _buildGamificationTab(Responsive r) {
+    final s = getStrings();
     return SingleChildScrollView(
       padding: EdgeInsets.all(r.s(16)),
       child: Column(
@@ -356,6 +359,7 @@ class _AdminReportsScreenState extends ConsumerState<AdminReportsScreen>
   }
 
   Widget _buildFlagTile(Map<String, dynamic> flag, Responsive r) {
+    final s = getStrings();
     final status = flag['status'] as String? ?? 'pending';
     final reason = flag['reason'] as String? ?? s.noReason;
     final createdAt = flag['created_at'] as String?;

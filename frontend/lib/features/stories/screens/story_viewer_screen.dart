@@ -176,6 +176,7 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
   }
 
   Future<void> _sendReaction(String reaction) async {
+    final s = getStrings();
     try {
       final story = widget.stories[_currentIndex];
       final userId = SupabaseService.currentUserId;
@@ -203,6 +204,7 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
   }
 
   String _timeAgo(String? dateStr) {
+    final s = getStrings();
     if (dateStr == null) return '';
     final date = DateTime.tryParse(dateStr);
     if (date == null) return '';

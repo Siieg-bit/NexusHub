@@ -66,6 +66,7 @@ class _EditCommunityProfileScreenState
   }
 
   Future<String?> _uploadImage(String folder) async {
+    final s = getStrings();
     final r = context.r;
     final picker = ImagePicker();
     final image = await picker.pickImage(
@@ -115,6 +116,7 @@ class _EditCommunityProfileScreenState
   }
 
   Future<void> _save() async {
+    final s = getStrings();
     setState(() => _isSaving = true);
 
     try {
@@ -388,7 +390,7 @@ class _EditCommunityProfileScreenState
                   // ══════════════════════════════════════════════════════
                   // BIO LOCAL
                   // ══════════════════════════════════════════════════════
-                  const _SectionLabel(text: s.bioInCommunity),
+                  _SectionLabel(text: s.bioInCommunity),
                   SizedBox(height: r.s(8)),
                   _AminoTextField(
                     controller: _bioController,

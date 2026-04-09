@@ -230,7 +230,7 @@ class _WikiListScreenState extends ConsumerState<WikiListScreen> {
                               return _WikiEntryCard(
                                 entry: entry,
                                 onTap: () =>
-                                    context.push('/wiki/${entry['ids.closingBracket),
+                                    context.push('/wiki/${entry["id"]}'),
                               );
                             },
                           ),
@@ -483,6 +483,7 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
   }
 
   Future<void> _togglePinToProfile() async {
+    final s = getStrings();
     final r = context.r;
     final userId = SupabaseService.currentUserId;
     if (userId == null) return;
@@ -951,10 +952,11 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
   }
 
   Future<void> _submit() async {
+    final s = getStrings();
     final r = context.r;
     if (_titleController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(s.titleRequired)),
+        SnackBar(content: Text(s.titleRequired)),
       );
       return;
     }

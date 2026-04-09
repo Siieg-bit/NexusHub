@@ -795,7 +795,7 @@ class _MemberRow extends ConsumerWidget {
                   ),
                   SizedBox(height: r.s(2)),
                   Text(
-                    s.levelLabel(level, levelTitle(level)),
+                    s.levelLabel,
                     style: TextStyle(
                       color: AppTheme.getLevelColor(level),
                       fontSize: r.fs(11),
@@ -1000,6 +1000,7 @@ void _showMemberSheet(
   Map<String, dynamic> member,
   Set<String> onlineUserIds,
 ) {
+  final s = getStrings();
   final p = member['profiles'] as Map<String, dynamic>? ?? {};
   final nickname = p['nickname'] as String? ?? s.user;
   final avatarUrl = p['icon_url'] as String?;

@@ -18,7 +18,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// Cor inativa: cinza translúcido.
 /// Fundo: azul-marinho escuro com blur, sem borda branca visível.
 /// O ícone ativo tem um leve glow ciano por trás.
-class ShellScreen extends StatelessWidget {
+class ShellScreen extends ConsumerWidget {
   final Widget child;
   const ShellScreen({super.key, required this.child});
 
@@ -49,7 +49,7 @@ class ShellScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final selectedIndex = _getSelectedIndex(context);
 
@@ -122,7 +122,7 @@ class ShellScreen extends StatelessWidget {
 // ==============================================================================
 // NAV ITEM — Estilo Amino: ativo = ciano (#00BCD4) com glow, inativo = cinza
 // ==============================================================================
-class _AminoNavItem extends StatelessWidget {
+class _AminoNavItem extends ConsumerWidget {
   final IconData icon;
   final IconData activeIcon;
   final String label;
@@ -140,7 +140,7 @@ class _AminoNavItem extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     // Amino: ativo = ciano brilhante, inativo = cinza claro translúcido
     final color = isSelected

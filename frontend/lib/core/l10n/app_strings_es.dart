@@ -1909,7 +1909,7 @@ class AppStringsEs implements AppStrings {
   @override
   String get renderFlexOverflowed => 'RenderFlex desbordado';
   @override
-  String get reportedBy => 'Reportado por ${reporter?[';
+  String get reportedBy => 'Reportado por ...';
   @override
   String get requestButton => 'Solicitar';
   @override

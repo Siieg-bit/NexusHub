@@ -146,7 +146,7 @@ class _ModerationActionsScreenState extends ConsumerState<ModerationActionsScree
   Future<void> _executeAction() async {
     if (_reasonController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(s.informActionReason)),
+        SnackBar(content: Text(s.informActionReason)),
       );
       return;
     }
@@ -305,7 +305,7 @@ class _ModerationActionsScreenState extends ConsumerState<ModerationActionsScree
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text(s.actionExecutedSuccess)),
+          SnackBar(content: Text(s.actionExecutedSuccess)),
         );
         context.pop();
       }

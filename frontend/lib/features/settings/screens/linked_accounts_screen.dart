@@ -53,6 +53,7 @@ class _LinkedAccountsScreenState extends ConsumerState<LinkedAccountsScreen> {
   }
 
   Future<void> _linkProvider(OAuthProvider provider) async {
+    final s = getStrings();
     setState(() => _isLinking = true);
     try {
       final res = await SupabaseService.client.auth.getLinkIdentityUrl(
@@ -86,6 +87,7 @@ class _LinkedAccountsScreenState extends ConsumerState<LinkedAccountsScreen> {
   }
 
   Future<void> _unlinkProvider(String provider) async {
+    final s = getStrings();
     if (_identities.length <= 1) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

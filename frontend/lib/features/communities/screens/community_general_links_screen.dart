@@ -55,6 +55,7 @@ class _CommunityGeneralLinksScreenState
   }
 
   Future<void> _addOrEditLink({Map<String, dynamic>? existing}) async {
+    final s = getStrings();
     final titleCtrl =
         TextEditingController(text: existing?['title'] as String? ?? '');
     final urlCtrl =
@@ -204,6 +205,7 @@ class _CommunityGeneralLinksScreenState
   }
 
   Future<void> _deleteLink(Map<String, dynamic> link) async {
+    final s = getStrings();
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -421,6 +423,7 @@ class _CommunityGeneralLinksScreenState
   }
 
   Widget _buildEmptyState(Responsive r) {
+    final s = getStrings();
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

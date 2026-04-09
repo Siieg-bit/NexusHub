@@ -135,9 +135,10 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
   }
 
   Future<void> _createGroupChat() async {
+    final s = getStrings();
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(s.enterGroupName)),
+        SnackBar(content: Text(s.enterGroupName)),
       );
       return;
     }
@@ -282,6 +283,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
   // STEP INDICATOR
   // ==========================================================================
   Widget _buildStepIndicator() {
+    final s = getStrings();
     final r = context.r;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: r.s(24), vertical: r.s(16)),
@@ -365,6 +367,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
   // STEP 0: SELECIONAR COMUNIDADE
   // ==========================================================================
   Widget _buildCommunityStep() {
+    final s = getStrings();
     final r = context.r;
     if (_isLoadingCommunities) {
       return const Center(
@@ -481,6 +484,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
   // STEP 1: INFO DO GRUPO (nome, descricao, imagem, publico/privado)
   // ==========================================================================
   Widget _buildInfoStep() {
+    final s = getStrings();
     final r = context.r;
     return ListView(
       padding: EdgeInsets.all(r.s(16)),
@@ -657,7 +661,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
           onTap: () {
             if (_nameController.text.trim().isEmpty) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text(s.enterGroupName)),
+                SnackBar(content: Text(s.enterGroupName)),
               );
               return;
             }
@@ -699,6 +703,7 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
   // STEP 2: SELECIONAR MEMBROS
   // ==========================================================================
   Widget _buildMembersStep() {
+    final s = getStrings();
     final r = context.r;
     return Column(
       children: [

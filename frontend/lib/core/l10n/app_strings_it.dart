@@ -2761,7 +2761,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get renderFlexOverflowed => 'RenderFlex traboccato';
   @override
-  String get reportedBy => 'Segnalato da ${reporter?[';
+  String get reportedBy => 'Segnalato da ...';
   @override
   String get requestButton => 'Richiedi';
   @override

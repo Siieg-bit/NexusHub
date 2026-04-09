@@ -489,13 +489,13 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
               Navigator.pop(ctx);
               if (amount <= 0 || targetAminoId.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text(s.invalidData)),
+                  SnackBar(content: Text(s.invalidData)),
                 );
                 return;
               }
               if (amount > _coins) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text(s.insufficientBalance)),
+                  SnackBar(content: Text(s.insufficientBalance)),
                 );
                 return;
               }
@@ -629,7 +629,7 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
                 if (targetAminoId.isEmpty) return;
                 if (selectedAmount > _coins) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text(s.insufficientBalance)),
+                    SnackBar(content: Text(s.insufficientBalance)),
                   );
                   return;
                 }

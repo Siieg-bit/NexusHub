@@ -45,7 +45,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
   int _totalPosts = 0;
   int _totalChats = 0;
 
-  final _tabs = const [s.modules, s.access, s.visual, s.home2, 'Stats'];
+  final _tabs = ['Módulos', 'Acesso', 'Visual', 'Home', 'Stats'];
 
   @override
   void initState() {

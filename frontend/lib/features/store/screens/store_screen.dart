@@ -24,7 +24,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
   int _userCoins = 0;
 
   // Amino original: tabs com ícones
-  final _tabs = const [s.everyone, 'Frames', s.bubbles, s.stickers, s.backgrounds];
+  final _tabs = ['Todos', 'Frames', 'Bubbles', 'Stickers', 'Backgrounds'];
   final _tabIcons = const [
     Icons.storefront_rounded,
     Icons.face_rounded,
@@ -74,6 +74,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
   }
 
   Future<void> _purchaseItem(Map<String, dynamic> item) async {
+    final s = getStrings();
     final r = context.r;
     final price = item['price'] as int? ?? 0;
     if (_userCoins < price) {
@@ -419,6 +420,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
   }
 
   Widget _buildItemGrid(List<Map<String, dynamic>> items) {
+    final s = getStrings();
     final r = context.r;
     if (items.isEmpty) {
       return Center(
@@ -757,6 +759,7 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard>
   }
 
   String _getTypeLabel(String type) {
+    final s = getStrings();
     switch (type) {
       case 'avatar_frame':
         return 'Frame';

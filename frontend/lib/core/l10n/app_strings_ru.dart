@@ -3735,7 +3735,7 @@ class AppStringsRu implements AppStrings {
   @override
   String get renderFlexOverflowed => 'Переполнение RenderFlex';
   @override
-  String get reportedBy => 'Жалоба от ${reporter?[';
+  String get reportedBy => 'Жалоба от ...';
   @override
   String get requestButton => 'Запрос';
   @override

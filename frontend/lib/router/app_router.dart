@@ -595,7 +595,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final extra = state.extra as Map<String, dynamic>? ?? {};
           return CommunitySearchScreen(
             communityId: state.pathParameters['communityId']!,
-            communityName: extra['communityName'] as String? ?? s.community2,
+            communityName: extra['communityName'] as String? ?? 'Community',
           );
         },
       ),

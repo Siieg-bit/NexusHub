@@ -2313,7 +2313,7 @@ class AppStringsDe implements AppStrings {
   @override
   String get renderFlexOverflowed => 'RenderFlex übergelaufen';
   @override
-  String get reportedBy => 'Gemeldet von ${reporter?[';
+  String get reportedBy => 'Gemeldet von ...';
   @override
   String get requestButton => 'Anfragen';
   @override

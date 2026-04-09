@@ -3581,7 +3581,7 @@ class AppStringsAr implements AppStrings {
   @override
   String get renderFlexOverflowed => 'تجاوز RenderFlex';
   @override
-  String get reportedBy => 'تم الإبلاغ بواسطة ${reporter?[';
+  String get reportedBy => 'تم الإبلاغ بواسطة ...';
   @override
   String get requestButton => 'طلب';
   @override

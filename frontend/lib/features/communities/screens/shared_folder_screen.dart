@@ -37,7 +37,7 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
   bool _isUploading = false;
 
   // Filtros
-  static const _tabs = [s.everyone, s.images, s.videos, s.files];
+  static const _tabs = ['Todos', 'Imagens', 'Vídeos', 'Arquivos'];
 
   @override
   void initState() {
@@ -120,6 +120,7 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
   }
 
   Future<void> _uploadFile() async {
+    final s = getStrings();
     final r = context.r;
     final choice = await showModalBottomSheet<String>(
       context: context,
@@ -280,6 +281,7 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
   }
 
   Future<void> _deleteFile(String fileId) async {
+    final s = getStrings();
     final r = context.r;
     final confirm = await showDialog<bool>(
       context: context,
@@ -331,6 +333,7 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
   }
 
   String _timeAgo(String? dateStr) {
+    final s = getStrings();
     if (dateStr == null) return '';
     final date = DateTime.tryParse(dateStr);
     if (date == null) return '';
@@ -664,6 +667,7 @@ class _ImageTile extends ConsumerWidget {
   }
 
   void _showOptions(BuildContext context) {
+    final s = getStrings();
     final currentUserId = SupabaseService.currentUserId;
     final uploaderId = file['uploader_id'] as String?;
     final canDelete = currentUserId == uploaderId;

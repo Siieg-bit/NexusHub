@@ -47,6 +47,7 @@ class _WikiCuratorReviewScreenState extends ConsumerState<WikiCuratorReviewScree
   }
 
   Future<void> _reviewEntry(String entryId, String action) async {
+    final s = getStrings();
     final r = context.r;
     final userId = SupabaseService.currentUserId;
     if (userId == null) return;
@@ -149,6 +150,7 @@ class _WikiCuratorReviewScreenState extends ConsumerState<WikiCuratorReviewScree
   }
 
   Future<String?> _showRejectDialog() async {
+    final s = getStrings();
     final r = context.r;
     final controller = TextEditingController();
     return showDialog<String>(
@@ -273,7 +275,7 @@ class _WikiCuratorReviewScreenState extends ConsumerState<WikiCuratorReviewScree
                         entry: entry,
                         onApprove: () => _reviewEntry(entry['id'], 'approve'),
                         onReject: () => _reviewEntry(entry['id'], 'reject'),
-                        onTap: () => context.push('/wiki/${entry['ids.closingBracket),
+                        onTap: () => context.push('/wiki/${entry["id"]}'),
                       );
                     },
                   ),

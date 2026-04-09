@@ -220,7 +220,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
           unselectedLabelColor: context.textSecondary,
           labelStyle:
               TextStyle(fontSize: r.fs(13), fontWeight: FontWeight.w700),
-          tabs: const [
+          tabs: [
             Tab(text: s.posts),
             Tab(text: s.members),
             Tab(text: s.wiki),
@@ -330,6 +330,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
   // TAB: POSTS
   // ─────────────────────────────────────────────
   Widget _buildPostsTab(Responsive r) {
+    final s = getStrings();
     return Column(
       children: [
         // Barra de filtros
@@ -355,6 +356,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
   }
 
   Widget _buildPostFilters(Responsive r) {
+    final s = getStrings();
     return Container(
       height: r.s(44),
       padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(6)),
@@ -393,6 +395,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
   }
 
   void _showSortDialog(Responsive r) {
+    final s = getStrings();
     showModalBottomSheet(
       context: context,
       backgroundColor: context.cardBg,
@@ -451,6 +454,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
   }
 
   void _showTypeDialog(Responsive r) {
+    final s = getStrings();
     showModalBottomSheet(
       context: context,
       backgroundColor: context.cardBg,
@@ -502,7 +506,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
     final thumbnailUrl = post['thumbnail_url'] as String?;
 
     return InkWell(
-      onTap: () => context.push('/post/${post['ids.closingBracket),
+      onTap: () => context.push('/post/${post["id"]}'),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
         decoration: BoxDecoration(
@@ -593,6 +597,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
   // TAB: MEMBROS
   // ─────────────────────────────────────────────
   Widget _buildMembersTab(Responsive r) {
+    final s = getStrings();
     return _query.isEmpty
         ? _buildEmptySearch(r, s.searchCommunityMembers)
         : _isSearching
@@ -609,12 +614,13 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
   }
 
   Widget _buildMemberTile(Responsive r, Map<String, dynamic> member) {
+    final s = getStrings();
     final nickname = member['nickname'] as String? ?? '';
     final level = member['level'] as int? ?? 1;
     final reputation = member['reputation'] as int? ?? 0;
 
     return InkWell(
-      onTap: () => context.push('/user/${member['ids.closingBracket),
+      onTap: () => context.push('/user/${member["id"]}'),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
         decoration: BoxDecoration(
@@ -663,6 +669,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
   // TAB: WIKI
   // ─────────────────────────────────────────────
   Widget _buildWikiTab(Responsive r) {
+    final s = getStrings();
     return _query.isEmpty
         ? _buildEmptySearch(r, s.searchWikiArticles)
         : _isSearching
@@ -687,7 +694,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
 
     return InkWell(
       onTap: () =>
-          context.push('/community/${widget.communityId}/wiki/${wiki['ids.closingBracket),
+          context.push('/community/${widget.communityId}/wiki/${wiki["id"]}'),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
         decoration: BoxDecoration(
@@ -752,6 +759,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
   // ESTADOS VAZIOS
   // ─────────────────────────────────────────────
   Widget _buildEmptySearch(Responsive r, String message) {
+    final s = getStrings();
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,

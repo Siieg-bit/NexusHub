@@ -1157,7 +1157,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
           ...List.generate(_userPosts.length, (index) {
             final post = _userPosts[index];
             return GestureDetector(
-              onTap: () => context.push('/post/${post['ids.closingBracket),
+              onTap: () => context.push('/post/${post["id"]}'),
               child: Container(
                 margin: EdgeInsets.fromLTRB(r.s(16), r.s(6), r.s(16), r.s(6)),
                 padding: EdgeInsets.all(r.s(16)),
@@ -1546,7 +1546,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text(s.anErrorOccurredTryAgain)),
+          SnackBar(content: Text(s.anErrorOccurredTryAgain)),
         );
       }
     }
@@ -1609,7 +1609,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text(s.anErrorOccurredTryAgain)),
+          SnackBar(content: Text(s.anErrorOccurredTryAgain)),
         );
       }
     }

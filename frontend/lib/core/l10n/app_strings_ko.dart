@@ -2987,7 +2987,7 @@ class AppStringsKo implements AppStrings {
   @override
   String get renderFlexOverflowed => 'RenderFlex 오버플로우됨';
   @override
-  String get reportedBy => '보고자 ${reporter?[';
+  String get reportedBy => '보고자 ...';
   @override
   String get requestButton => '요청';
   @override

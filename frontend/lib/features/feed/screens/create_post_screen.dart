@@ -397,7 +397,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               final content = _contentController.text.trim();
               if (title.isEmpty && content.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text(s.nothingToSave)),
+                  SnackBar(content: Text(s.nothingToSave)),
                 );
                 return;
               }

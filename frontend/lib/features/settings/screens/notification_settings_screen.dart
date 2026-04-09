@@ -93,6 +93,7 @@ class _NotificationSettingsScreenState
   }
 
   Future<void> _saveSettings() async {
+    final s = getStrings();
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
@@ -121,7 +122,7 @@ class _NotificationSettingsScreenState
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text(s.settingsSaved)),
+          SnackBar(content: Text(s.settingsSaved)),
         );
       }
     } catch (e) {
@@ -319,7 +320,7 @@ class _NotificationSettingsScreenState
                     onChanged: (v) => setState(() => _pushMentions = v),
                   ),
                   SizedBox(height: r.s(24)),
-                  const _SectionTitle(title: s.chat),
+                  _SectionTitle(title: s.chat),
                   _NotifToggle(
                     icon: Icons.chat_rounded,
                     title: 'Mensagens',
@@ -346,7 +347,7 @@ class _NotificationSettingsScreenState
                     onChanged: (v) => setState(() => _pushCommunityInvites = v),
                   ),
                   SizedBox(height: r.s(24)),
-                  const _SectionTitle(title: s.gamification),
+                  _SectionTitle(title: s.gamification),
                   _NotifToggle(
                     icon: Icons.emoji_events_rounded,
                     title: s.achievements,
@@ -364,7 +365,7 @@ class _NotificationSettingsScreenState
                     onChanged: (v) => setState(() => _pushLevelUp = v),
                   ),
                   SizedBox(height: r.s(24)),
-                  const _SectionTitle(title: s.moderation),
+                  _SectionTitle(title: s.moderation),
                   _NotifToggle(
                     icon: Icons.gavel_rounded,
                     title: s.moderationActionsTitle,
@@ -380,7 +381,7 @@ class _NotificationSettingsScreenState
                 // ============================================================
                 // PAUSAR NOTIFICAÇÕES
                 // ============================================================
-                const _SectionTitle(title: s.pauseNotifications2),
+                _SectionTitle(title: s.pauseNotifications2),
                 Container(
                   margin: EdgeInsets.only(bottom: r.s(12)),
                   padding: EdgeInsets.all(r.s(16)),

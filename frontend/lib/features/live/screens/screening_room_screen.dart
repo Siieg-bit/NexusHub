@@ -257,6 +257,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
   }
 
   Future<void> _showAddVideoDialog() async {
+    final s = getStrings();
     final r = context.r;
     final urlController = TextEditingController();
     final titleController = TextEditingController();
@@ -502,6 +503,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
   }
 
   Widget _buildVideoArea() {
+    final s = getStrings();
     final r = context.r;
     if (_currentVideoUrl == null || _currentVideoUrl!.isEmpty) {
       return Container(
@@ -811,6 +813,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
   }
 
   Widget _buildChatInput() {
+    final s = getStrings();
     final r = context.r;
     return Container(
       padding: EdgeInsets.fromLTRB(r.s(12), r.s(8), r.s(12), r.s(8)),
