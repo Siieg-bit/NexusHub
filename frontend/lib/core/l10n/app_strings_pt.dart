@@ -468,7 +468,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get currentPassword => 'Senha atual';
   @override
-  String get emailHint => 'Email';
+  String get emailHint => 'E-mail';
   @override
   String get enterYourEmail => 'Informe seu email';
   @override
@@ -574,7 +574,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get sendCoinsToThisChat => 'Envie moedas para este chat';
   @override
-  String get speaker => 'Speaker';
+  String get speaker => 'Alto-falante';
   @override
   String get stickersLabel => 'Figurinhas';
   @override
@@ -780,7 +780,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get music => 'Música';
   @override
-  String get nicknameHint => 'Nickname';
+  String get nicknameHint => 'Apelido';
   @override
   String get noFiles => 'Nenhum arquivo';
   @override
@@ -1589,7 +1589,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get artTheft => 'Art Theft';
   @override
-  String get audio2 => 'Audio';
+  String get audio2 => 'Áudio';
   @override
   String get authError => 'Erro de autenticação: ${error.message}';
   @override
@@ -1688,7 +1688,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get coverImageUrl => 'URL da imagem de capa';
   @override
-  String get curator2 => 'Curator';
+  String get curator2 => 'Curador';
   @override
   String get currencyBrl => 'BRL';
   @override
@@ -1730,7 +1730,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get describeGroup => 'Descreva o grupo...';
   @override
-  String get descriptionOptional => 'Descricao (opcional)';
+  String get descriptionOptional => 'Descrição (opcional)';
   @override
   String get descriptionOptional2 => 'Descrição (opcional)';
   @override
@@ -1825,7 +1825,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get iap => 'IAP';
   @override
-  String get image2 => 'Image';
+  String get image2 => 'Imagem';
   @override
   String get inappropriateContent2 => 'Conteúdo Impróprio';
   @override
@@ -1855,7 +1855,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get lastSevenDays => 'Últimos 7 dias';
   @override
-  String get leader2 => 'Leader';
+  String get leader2 => 'Líder';
   @override
   String get levelLabel => 'Nível $level';
   @override
@@ -2005,7 +2005,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get prepareDataFile => 'Vamos preparar um arquivo com todos os seus dados (perfil, posts, comentários, mensagens). ';
   @override
-  String get preview2 => 'Preview';
+  String get preview2 => 'Prévia';
   @override
   String get profileLevel => 'Nível ${_profile?[';
   @override
@@ -2184,7 +2184,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get verifyEmailBeforeLogin => 'Confirme seu email antes de fazer login.';
   @override
-  String get video => 'Video';
+  String get video => 'Vídeo';
   @override
   String get videoCallAndPhotoUpload => 'Necessária para chamadas de vídeo e envio de fotos';
   @override
@@ -3226,7 +3226,7 @@ aparecerá aqui';
   @override
   String get liveChats2 => 'Chats ao Vivo';
   @override
-  String get checkInLabel => 'Check-In';
+  String get checkInLabel => 'Check-in';
   @override
   String get startConversation2 => 'Comece a conversa!';
   @override
@@ -3328,7 +3328,7 @@ aparecerá aqui';
   @override
   String get rotate => 'Girar';
   @override
-  String get grid2 => 'Grid';
+  String get grid2 => 'Grade';
   @override
   String get galleryImage => 'Imagem da Galeria';
   @override
@@ -3532,19 +3532,19 @@ aparecerá aqui';
   @override
   String pollQuestion(String question) => '📊 \$question';
   @override
-  String get pinnedLabel => '📌 Pinned';
+  String get pinnedLabel => '📌 Fixado';
   @override
-  String get externalLink => 'External Link';
+  String get externalLink => 'Link Externo';
   @override
-  String get pollOptionsLabel => 'Poll Options';
+  String get pollOptionsLabel => 'Opções da Enquete';
   @override
-  String get quizQuestionsLabel => 'Quiz Questions';
+  String get quizQuestionsLabel => 'Perguntas do Quiz';
   @override
-  String get optionLabel => 'Option';
+  String get optionLabel => 'Opção';
   @override
-  String optionN(int n) => 'Option \$n';
+  String optionN(int n) => 'Opção \$n';
   @override
-  String questionN(int n) => 'Question \$n';
+  String questionN(int n) => 'Pergunta \$n';
   @override
   String amountCoins(int amount) => '\$amount coins';
 }
