@@ -4194,4 +4194,68 @@ class AppStringsAr implements AppStrings {
   String questionN(int n) => 'السؤال \$n';
   @override
   String amountCoins(int amount) => '\$amount عملات';
+
+  // SISTEMA DE NÍVEIS — Nomes dos 20 níveis
+  @override
+  String get levelTitleNovice => 'مبتدئ';
+  @override
+  String get levelTitleBeginner => 'مستجد';
+  @override
+  String get levelTitleApprentice => 'متدرب';
+  @override
+  String get levelTitleExplorer => 'مستكشف';
+  @override
+  String get levelTitleWarrior => 'محارب';
+  @override
+  String get levelTitleVeteran => 'محنك';
+  @override
+  String get levelTitleSpecialist => 'متخصص';
+  @override
+  String get levelTitleMaster => 'أستاذ';
+  @override
+  String get levelTitleGrandMaster => 'أستاذ كبير';
+  @override
+  String get levelTitleChampion => 'بطل';
+  @override
+  String get levelTitleHero => 'بطل خارق';
+  @override
+  String get levelTitleGuardian => 'حارس';
+  @override
+  String get levelTitleSentinel => 'حارس أمين';
+  @override
+  String get levelTitleLegendary => 'أسطوري';
+  @override
+  String get levelTitleMythical => 'خرافي';
+  @override
+  String get levelTitleDivine => 'إلهي';
+  @override
+  String get levelTitleCelestial => 'سماوي';
+  @override
+  String get levelTitleTranscendent => 'متسامي';
+  @override
+  String get levelTitleSupreme => 'أعلى';
+  @override
+  String get levelTitleUltimate => 'مطلق';
+  @override
+  String get allRankings => 'جميع التصنيفات';
+  @override
+  String get viewAllRankings => 'عرض جميع التصنيفات';
+  @override
+  String get beActiveMemberMsg => 'كونك عضوًا نشطًا في هذا المجتمع يساعدك على كسب السمعة والارتقاء بالمستوى!';
+  @override
+  String get levelMaxReached => 'تم الوصول إلى المستوى الأقصى!';
+  @override
+  String get currentLevel => 'المستوى الحالي';
+  @override
+  String get nextLevel => 'المستوى التالي';
+  @override
+  String get repToNextLevel => 'السمعة للمستوى التالي';
+
+  // TELA DE RANKINGS / NÍVEL
+  @override
+  String reputationPointsLabel(int points) => '\$points نقاط سمعة';
+  @override
+  String repProgressLabel(int current, int total) => '\$current/\$total REP';
+  @override
+  String daysToLevelUp(int days) => '~\$days يوم للارتقاء بالمستوى';
 }

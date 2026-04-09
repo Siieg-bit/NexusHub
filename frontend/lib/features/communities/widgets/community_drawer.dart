@@ -435,8 +435,16 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
               overflow: TextOverflow.ellipsis,
             ),
             SizedBox(height: r.s(4)),
-            // Badge de nível + barra de reputação
-            if (user != null) _buildLevelBadge(r, user),
+            // Badge de nível + barra de reputação (clicável: abre rankings)
+            if (user != null)
+              GestureDetector(
+                onTap: () => context.push('/all-rankings', extra: {
+                  'level': user.level,
+                  'reputation': user.reputation,
+                  'bannerUrl': widget.community.bannerUrl,
+                }),
+                child: _buildLevelBadge(r, user),
+              ),
             SizedBox(height: r.s(8)),
             // Streak dots (7 dias)
             _buildStreakDots(r, streak, hasCheckedIn),
@@ -546,8 +554,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
     final reputation = user.reputation;
     final levelColor = AppTheme.getLevelColor(level);
     final levelName = levelTitle(level);
-    final repForNextLevel = 100 * (level + 1);
-    final repProgress = (reputation % repForNextLevel) / repForNextLevel;
+    final repProgress = levelProgress(reputation);
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: r.s(30)),

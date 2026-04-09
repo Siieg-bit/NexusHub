@@ -55,6 +55,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   int _followersCount = 0;
   int _followingCount = 0;
   String _communityName = '';
+  String? _communityBannerUrl;
 
   bool get _isOwnProfile => widget.userId == SupabaseService.currentUserId;
 
@@ -77,10 +78,11 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
       // Nome da comunidade
       try {
         final communityRes = await SupabaseService.table('communities')
-            .select('name')
+            .select('name, banner_url')
             .eq('id', widget.communityId)
             .single();
         _communityName = communityRes['name'] as String? ?? '';
+        _communityBannerUrl = communityRes['banner_url'] as String?;
       } catch (e) {
         debugPrint('[community_profile_screen.dart] $e');
       }
@@ -364,59 +366,67 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                           SizedBox(height: r.s(6)),
 
                           // Level badge — dois containers separados: [lv13] [Best Wizzard]
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // Badge roxo/azul com "lv" + número
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: r.s(8), vertical: r.s(4)),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.getLevelColor(level),
-                                  borderRadius: BorderRadius.circular(r.s(14)),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      'lv',
-                                      style: TextStyle(
-                                        color: Colors.white
-                                            .withValues(alpha: 0.85),
-                                        fontSize: r.fs(10),
-                                        fontWeight: FontWeight.w600,
+                          // Clicável: abre tela de todos os rankings
+                          GestureDetector(
+                            onTap: () => context.push('/all-rankings', extra: {
+                              'level': level,
+                              'reputation': reputation,
+                              'bannerUrl': _communityBannerUrl,
+                            }),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Badge roxo/azul com "lv" + número
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: r.s(8), vertical: r.s(4)),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.getLevelColor(level),
+                                    borderRadius: BorderRadius.circular(r.s(14)),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        'lv',
+                                        style: TextStyle(
+                                          color: Colors.white
+                                              .withValues(alpha: 0.85),
+                                          fontSize: r.fs(10),
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
-                                    ),
-                                    Text(
-                                      '$level',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: r.fs(14),
-                                        fontWeight: FontWeight.w900,
+                                      Text(
+                                        '$level',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: r.fs(14),
+                                          fontWeight: FontWeight.w900,
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              SizedBox(width: r.s(6)),
-                              // Badge cinza escuro com título do level
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: r.s(10), vertical: r.s(4)),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[800],
-                                  borderRadius: BorderRadius.circular(r.s(14)),
-                                ),
-                                child: Text(
-                                  title,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: r.fs(12),
-                                    fontWeight: FontWeight.w700,
+                                    ],
                                   ),
                                 ),
-                              ),
-                            ],
+                                SizedBox(width: r.s(6)),
+                                // Badge cinza escuro com título do level
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: r.s(10), vertical: r.s(4)),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[800],
+                                    borderRadius: BorderRadius.circular(r.s(14)),
+                                  ),
+                                  child: Text(
+                                    title,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: r.fs(12),
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
 
                           // Role badge (Líder/Curador) separado

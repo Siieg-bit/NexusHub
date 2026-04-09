@@ -3384,4 +3384,68 @@ class AppStringsJa implements AppStrings {
   String get typeMessageHint => 'メッセージを入力してください...';
   @override
   String get noGifFound => 'GIFが見つかりません';
+
+  // SISTEMA DE NÍVEIS — Nomes dos 20 níveis
+  @override
+  String get levelTitleNovice => '初心者';
+  @override
+  String get levelTitleBeginner => '見習い';
+  @override
+  String get levelTitleApprentice => '弟子';
+  @override
+  String get levelTitleExplorer => '探検家';
+  @override
+  String get levelTitleWarrior => '戦士';
+  @override
+  String get levelTitleVeteran => 'ベテラン';
+  @override
+  String get levelTitleSpecialist => 'スペシャリスト';
+  @override
+  String get levelTitleMaster => 'マスター';
+  @override
+  String get levelTitleGrandMaster => 'グランドマスター';
+  @override
+  String get levelTitleChampion => 'チャンピオン';
+  @override
+  String get levelTitleHero => 'ヒーロー';
+  @override
+  String get levelTitleGuardian => 'ガーディアン';
+  @override
+  String get levelTitleSentinel => 'センチネル';
+  @override
+  String get levelTitleLegendary => 'レジェンド';
+  @override
+  String get levelTitleMythical => 'ミシカル';
+  @override
+  String get levelTitleDivine => 'ディバイン';
+  @override
+  String get levelTitleCelestial => 'セレスティアル';
+  @override
+  String get levelTitleTranscendent => 'トランセンデント';
+  @override
+  String get levelTitleSupreme => 'スプリーム';
+  @override
+  String get levelTitleUltimate => 'アルティメット';
+  @override
+  String get allRankings => '全ランキング';
+  @override
+  String get viewAllRankings => '全ランキングを見る';
+  @override
+  String get beActiveMemberMsg => 'このコミュニティの活発なメンバーになると、評判を獲得してレベルアップできます！';
+  @override
+  String get levelMaxReached => '最大レベルに到達しました！';
+  @override
+  String get currentLevel => '現在のレベル';
+  @override
+  String get nextLevel => '次のレベル';
+  @override
+  String get repToNextLevel => '次のレベルまでの評判';
+
+  // TELA DE RANKINGS / NÍVEL
+  @override
+  String reputationPointsLabel(int points) => '\$points 評判ポイント';
+  @override
+  String repProgressLabel(int current, int total) => '\$current/\$total REP';
+  @override
+  String daysToLevelUp(int days) => '~\$days 日でレベルアップ';
 }

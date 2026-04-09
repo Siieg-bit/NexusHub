@@ -32,6 +32,7 @@ import '../features/gamification/screens/leaderboard_screen.dart';
 import '../features/gamification/screens/wallet_screen.dart';
 import '../features/gamification/screens/achievements_screen.dart';
 import '../features/gamification/screens/inventory_screen.dart';
+import '../features/gamification/screens/all_rankings_screen.dart';
 import '../features/moderation/screens/flag_center_screen.dart';
 import '../features/moderation/screens/admin_panel_screen.dart';
 import '../features/moderation/screens/moderation_actions_screen.dart';
@@ -431,6 +432,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/inventory',
         name: 'inventory',
         builder: (context, state) => const InventoryScreen(),
+      ),
+      GoRoute(
+        path: '/all-rankings',
+        name: 'allRankings',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return AllRankingsScreen(
+            currentLevel: extra['level'] as int? ?? 1,
+            currentReputation: extra['reputation'] as int? ?? 0,
+            communityBannerUrl: extra['bannerUrl'] as String?,
+          );
+        },
       ),
 
       // ====================================================================

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../l10n/locale_provider.dart';
+import '../l10n/app_strings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Utilitários e helpers do aplicativo.
@@ -153,29 +154,58 @@ int clampDailyReputation(int earnedToday, int amount) {
 }
 
 /// Nome do nível para exibição (títulos temáticos).
+/// Usa strings i18n para tradução automática.
 String levelTitle(int level) {
-    final s = getStrings();
-  const titles = [
-    'Novato', // 1
-    'Iniciante', // 2
-    s.apprentice, // 3
-    'Explorador', // 4
-    s.adventurer, // 5
-    'Guerreiro', // 6
-    'Veterano', // 7
-    'Especialista', // 8
-    'Mestre', // 9
-    'Grão-Mestre', // 10
-    'Campeão', // 11
-    'Herói', // 12
-    'Guardião', // 13
-    'Sentinela', // 14
-    s.legendary, // 15
-    s.mythical, // 16
-    'Divino', // 17
-    'Celestial', // 18
-    'Transcendente', // 19
-    'Supremo', // 20
+  final s = getStrings();
+  final titles = [
+    s.levelTitleNovice,        // 1
+    s.levelTitleBeginner,      // 2
+    s.levelTitleApprentice,    // 3
+    s.levelTitleExplorer,      // 4
+    s.levelTitleWarrior,       // 5
+    s.levelTitleVeteran,       // 6
+    s.levelTitleSpecialist,    // 7
+    s.levelTitleMaster,        // 8
+    s.levelTitleGrandMaster,   // 9
+    s.levelTitleChampion,      // 10
+    s.levelTitleHero,          // 11
+    s.levelTitleGuardian,      // 12
+    s.levelTitleSentinel,      // 13
+    s.levelTitleLegendary,     // 14
+    s.levelTitleMythical,      // 15
+    s.levelTitleDivine,        // 16
+    s.levelTitleCelestial,     // 17
+    s.levelTitleTranscendent,  // 18
+    s.levelTitleSupreme,       // 19
+    s.levelTitleUltimate,      // 20
+  ];
+  final idx = (level - 1).clamp(0, titles.length - 1);
+  return titles[idx];
+}
+
+/// Retorna o título do nível usando AppStrings diretamente (para widgets com ref).
+String levelTitleFromStrings(AppStrings s, int level) {
+  final titles = [
+    s.levelTitleNovice,
+    s.levelTitleBeginner,
+    s.levelTitleApprentice,
+    s.levelTitleExplorer,
+    s.levelTitleWarrior,
+    s.levelTitleVeteran,
+    s.levelTitleSpecialist,
+    s.levelTitleMaster,
+    s.levelTitleGrandMaster,
+    s.levelTitleChampion,
+    s.levelTitleHero,
+    s.levelTitleGuardian,
+    s.levelTitleSentinel,
+    s.levelTitleLegendary,
+    s.levelTitleMythical,
+    s.levelTitleDivine,
+    s.levelTitleCelestial,
+    s.levelTitleTranscendent,
+    s.levelTitleSupreme,
+    s.levelTitleUltimate,
   ];
   final idx = (level - 1).clamp(0, titles.length - 1);
   return titles[idx];

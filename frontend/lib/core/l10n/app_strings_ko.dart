@@ -3890,4 +3890,68 @@ class AppStringsKo implements AppStrings {
   String questionN(int n) => '질문 \$n';
   @override
   String amountCoins(int amount) => '\$amount 코인';
+
+  // SISTEMA DE NÍVEIS — Nomes dos 20 níveis
+  @override
+  String get levelTitleNovice => '초보자';
+  @override
+  String get levelTitleBeginner => '입문자';
+  @override
+  String get levelTitleApprentice => '견습생';
+  @override
+  String get levelTitleExplorer => '탐험가';
+  @override
+  String get levelTitleWarrior => '전사';
+  @override
+  String get levelTitleVeteran => '베테랑';
+  @override
+  String get levelTitleSpecialist => '전문가';
+  @override
+  String get levelTitleMaster => '마스터';
+  @override
+  String get levelTitleGrandMaster => '그랜드 마스터';
+  @override
+  String get levelTitleChampion => '챔피언';
+  @override
+  String get levelTitleHero => '영웅';
+  @override
+  String get levelTitleGuardian => '수호자';
+  @override
+  String get levelTitleSentinel => '파수꾼';
+  @override
+  String get levelTitleLegendary => '전설';
+  @override
+  String get levelTitleMythical => '신화';
+  @override
+  String get levelTitleDivine => '신성';
+  @override
+  String get levelTitleCelestial => '천상';
+  @override
+  String get levelTitleTranscendent => '초월자';
+  @override
+  String get levelTitleSupreme => '최고';
+  @override
+  String get levelTitleUltimate => '궁극';
+  @override
+  String get allRankings => '전체 랭킹';
+  @override
+  String get viewAllRankings => '전체 랭킹 보기';
+  @override
+  String get beActiveMemberMsg => '이 커뮤니티의 활발한 멤버가 되면 평판을 얻고 레벨업할 수 있습니다!';
+  @override
+  String get levelMaxReached => '최대 레벨에 도달했습니다!';
+  @override
+  String get currentLevel => '현재 레벨';
+  @override
+  String get nextLevel => '다음 레벨';
+  @override
+  String get repToNextLevel => '다음 레벨까지 필요한 평판';
+
+  // TELA DE RANKINGS / NÍVEL
+  @override
+  String reputationPointsLabel(int points) => '\$points 평판 포인트';
+  @override
+  String repProgressLabel(int current, int total) => '\$current/\$total REP';
+  @override
+  String daysToLevelUp(int days) => '~\$days일 후 레벨업';
 }

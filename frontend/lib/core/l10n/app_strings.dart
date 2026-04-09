@@ -1767,4 +1767,38 @@ abstract class AppStrings {
   String optionN(int n);
   String questionN(int n);
   String amountCoins(int amount);
+
+  // SISTEMA DE NÍVEIS — Nomes dos 20 níveis
+  String get levelTitleNovice;       // 1
+  String get levelTitleBeginner;     // 2
+  String get levelTitleApprentice;   // 3
+  String get levelTitleExplorer;     // 4
+  String get levelTitleWarrior;      // 5
+  String get levelTitleVeteran;      // 6
+  String get levelTitleSpecialist;   // 7
+  String get levelTitleMaster;       // 8
+  String get levelTitleGrandMaster;  // 9
+  String get levelTitleChampion;     // 10
+  String get levelTitleHero;         // 11
+  String get levelTitleGuardian;     // 12
+  String get levelTitleSentinel;     // 13
+  String get levelTitleLegendary;    // 14
+  String get levelTitleMythical;     // 15
+  String get levelTitleDivine;       // 16
+  String get levelTitleCelestial;    // 17
+  String get levelTitleTranscendent; // 18
+  String get levelTitleSupreme;      // 19
+  String get levelTitleUltimate;     // 20
+
+  // TELA DE RANKINGS / NÍVEL
+  String get allRankings;
+  String get viewAllRankings;
+  String reputationPointsLabel(int points);
+  String repProgressLabel(int current, int total);
+  String get beActiveMemberMsg;
+  String get levelMaxReached;
+  String get currentLevel;
+  String get nextLevel;
+  String get repToNextLevel;
+  String daysToLevelUp(int days);
 }

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
 import '../utils/responsive.dart';
+import '../utils/helpers.dart';
 import '../l10n/locale_provider.dart';
 
 /// Dialog fullscreen de Level Up estilo Amino Apps.
@@ -52,29 +53,7 @@ class LevelUpDialog {
   }
 
   static String _getTitleForLevel(int level) {
-    const titles = {
-      1: 'Novato',
-      2: 'Iniciante',
-      3: s.apprentice,
-      4: 'Explorador',
-      5: s.adventurer,
-      6: s.contributor,
-      7: s.regular,
-      8: s.dedicated,
-      9: s.active,
-      10: 'Veterano',
-      11: s.expert,
-      12: 'Mestre',
-      13: s.guru,
-      14: s.wise,
-      15: s.legendary,
-      16: s.mythical,
-      17: 'Divino',
-      18: 'Celestial',
-      19: 'Transcendente',
-      20: 'Supremo',
-    };
-    return titles[level] ?? s.levelLabel;
+    return levelTitle(level);
   }
 }
 

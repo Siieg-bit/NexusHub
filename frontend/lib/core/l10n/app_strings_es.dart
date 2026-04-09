@@ -3384,4 +3384,68 @@ class AppStringsEs implements AppStrings {
   String questionN(int n) => 'Pregunta \$n';
   @override
   String amountCoins(int amount) => '\$amount monedas';
+
+  // SISTEMA DE NÍVEIS — Nomes dos 20 níveis
+  @override
+  String get levelTitleNovice => 'Novato';
+  @override
+  String get levelTitleBeginner => 'Principiante';
+  @override
+  String get levelTitleApprentice => 'Aprendiz';
+  @override
+  String get levelTitleExplorer => 'Explorador';
+  @override
+  String get levelTitleWarrior => 'Guerrero';
+  @override
+  String get levelTitleVeteran => 'Veterano';
+  @override
+  String get levelTitleSpecialist => 'Especialista';
+  @override
+  String get levelTitleMaster => 'Maestro';
+  @override
+  String get levelTitleGrandMaster => 'Gran Maestro';
+  @override
+  String get levelTitleChampion => 'Campeón';
+  @override
+  String get levelTitleHero => 'Héroe';
+  @override
+  String get levelTitleGuardian => 'Guardián';
+  @override
+  String get levelTitleSentinel => 'Centinela';
+  @override
+  String get levelTitleLegendary => 'Legendario';
+  @override
+  String get levelTitleMythical => 'Mítico';
+  @override
+  String get levelTitleDivine => 'Divino';
+  @override
+  String get levelTitleCelestial => 'Celestial';
+  @override
+  String get levelTitleTranscendent => 'Trascendente';
+  @override
+  String get levelTitleSupreme => 'Supremo';
+  @override
+  String get levelTitleUltimate => 'Definitivo';
+  @override
+  String get allRankings => 'Todos los Rankings';
+  @override
+  String get viewAllRankings => 'Ver Todos los Rankings';
+  @override
+  String get beActiveMemberMsg => '¡Ser un miembro activo de esta Comunidad te ayuda a ganar reputación y subir de nivel!';
+  @override
+  String get levelMaxReached => '¡Nivel máximo alcanzado!';
+  @override
+  String get currentLevel => 'Nivel Actual';
+  @override
+  String get nextLevel => 'Siguiente Nivel';
+  @override
+  String get repToNextLevel => 'Reputación para el siguiente nivel';
+
+  // TELA DE RANKINGS / NÍVEL
+  @override
+  String reputationPointsLabel(int points) => '\$points Puntos de Reputación';
+  @override
+  String repProgressLabel(int current, int total) => '\$current/\$total REP';
+  @override
+  String daysToLevelUp(int days) => '~\$days días para subir de nivel';
 }
