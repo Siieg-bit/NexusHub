@@ -3505,4 +3505,35 @@ class AppStringsIt implements AppStrings {
   String get tapToAddBio => 'Tocca qui per aggiungere la tua biografia!';
   @override
   String memberSinceLabel(String month, int year, int days) => 'Membro dal $month $year ($days giorni)';
+  // DRAWER MENU ITEMS
+  @override
+  String get drawerExit => 'Esci';
+  @override
+  String get drawerMyChats => 'Le Mie Chat';
+  @override
+  String get drawerPublicChatrooms => 'Chat Pubbliche';
+  @override
+  String get drawerLeaderboards => 'Classifiche';
+  @override
+  String get drawerMembers => 'Membri';
+  @override
+  String get drawerEditCommunity => 'Modifica Comunità';
+  @override
+  String get drawerFlagCenter => 'Centro Segnalazioni';
+  @override
+  String get drawerStatistics => 'Statistiche';
+  @override
+  String get drawerVisitor => 'Visitatore';
+  @override
+  String get drawerLvLabel => 'Lv';
+  // LEADERBOARD
+  @override
+  String get thisWeek => 'Questa Settimana';
+  @override
+  String lvBadge(int level) => 'Lv.$level';
+  // LEAVE COMMUNITY CONFIRM
+  @override
+  String leaveCommunityConfirmMsg(String communityName) => 'Sei sicuro di voler lasciare "$communityName"? Potrai rientrare in seguito.';
+  @override
+  String dayLabel(int n) => 'G$n';
 }

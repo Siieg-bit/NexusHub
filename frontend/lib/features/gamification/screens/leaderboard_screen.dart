@@ -8,6 +8,7 @@ import '../../../core/utils/helpers.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/l10n/app_strings.dart';
 
 // =============================================================================
 // PROVIDERS
@@ -65,10 +66,10 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
   late AnimationController _podiumController;
   late Animation<double> _podiumAnimation;
 
-  static const _periods = [
+  List<(String, String)> _getPeriods(AppStrings s) => [
     ('all', s.general),
     ('month', s.thisMonth),
-    ('week', 'Esta Semana'),
+    ('week', s.thisWeek),
   ];
 
   @override
@@ -187,7 +188,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
               padding:
                   EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
               child: Row(
-                children: _periods.map((p) {
+                children: _getPeriods(s).map((p) {
                   final isSelected = _period == p.$1;
                   return Expanded(
                     child: GestureDetector(

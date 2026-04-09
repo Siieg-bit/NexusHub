@@ -3650,4 +3650,35 @@ aparecerá aqui';
   String get tapToAddBio => 'Clique aqui para adicionar sua biografia!';
   @override
   String memberSinceLabel(String month, int year, int days) => 'Membro desde $month $year ($days dias)';
+  // DRAWER MENU ITEMS
+  @override
+  String get drawerExit => 'Sair';
+  @override
+  String get drawerMyChats => 'Meus Chats';
+  @override
+  String get drawerPublicChatrooms => 'Salas Públicas';
+  @override
+  String get drawerLeaderboards => 'Ranking';
+  @override
+  String get drawerMembers => 'Membros';
+  @override
+  String get drawerEditCommunity => 'Editar Comunidade';
+  @override
+  String get drawerFlagCenter => 'Central de Denúncias';
+  @override
+  String get drawerStatistics => 'Estatísticas';
+  @override
+  String get drawerVisitor => 'Visitante';
+  @override
+  String get drawerLvLabel => 'Nv';
+  // LEADERBOARD
+  @override
+  String get thisWeek => 'Esta Semana';
+  @override
+  String lvBadge(int level) => 'Nv.$level';
+  // LEAVE COMMUNITY CONFIRM
+  @override
+  String leaveCommunityConfirmMsg(String communityName) => 'Tem certeza que deseja sair de "$communityName"? Você poderá entrar novamente depois.';
+  @override
+  String dayLabel(int n) => 'D$n';
 }

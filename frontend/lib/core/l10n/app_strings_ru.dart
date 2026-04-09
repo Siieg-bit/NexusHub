@@ -4631,4 +4631,35 @@ class AppStringsRu implements AppStrings {
   String get tapToAddBio => 'Нажмите здесь, чтобы добавить биографию!';
   @override
   String memberSinceLabel(String month, int year, int days) => 'Участник с $month $year ($days дней)';
+  // DRAWER MENU ITEMS
+  @override
+  String get drawerExit => 'Выйти';
+  @override
+  String get drawerMyChats => 'Мои чаты';
+  @override
+  String get drawerPublicChatrooms => 'Публичные чаты';
+  @override
+  String get drawerLeaderboards => 'Рейтинги';
+  @override
+  String get drawerMembers => 'Участники';
+  @override
+  String get drawerEditCommunity => 'Редактировать сообщество';
+  @override
+  String get drawerFlagCenter => 'Центр жалоб';
+  @override
+  String get drawerStatistics => 'Статистика';
+  @override
+  String get drawerVisitor => 'Гость';
+  @override
+  String get drawerLvLabel => 'Ур';
+  // LEADERBOARD
+  @override
+  String get thisWeek => 'На этой неделе';
+  @override
+  String lvBadge(int level) => 'Ур.$level';
+  // LEAVE COMMUNITY CONFIRM
+  @override
+  String leaveCommunityConfirmMsg(String communityName) => 'Вы уверены, что хотите покинуть "$communityName"? Вы сможете вернуться позже.';
+  @override
+  String dayLabel(int n) => 'Д$n';
 }

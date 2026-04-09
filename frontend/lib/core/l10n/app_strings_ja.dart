@@ -3487,4 +3487,35 @@ class AppStringsJa implements AppStrings {
   String get tapToAddBio => 'ここをタップして自己紹介を追加！';
   @override
   String memberSinceLabel(String month, int year, int days) => '$month $year年から（$days日間）';
+  // DRAWER MENU ITEMS
+  @override
+  String get drawerExit => '退出';
+  @override
+  String get drawerMyChats => 'マイチャット';
+  @override
+  String get drawerPublicChatrooms => 'パブリックチャット';
+  @override
+  String get drawerLeaderboards => 'ランキング';
+  @override
+  String get drawerMembers => 'メンバー';
+  @override
+  String get drawerEditCommunity => 'コミュニティを編集';
+  @override
+  String get drawerFlagCenter => '報告センター';
+  @override
+  String get drawerStatistics => '統計';
+  @override
+  String get drawerVisitor => 'ゲスト';
+  @override
+  String get drawerLvLabel => 'Lv';
+  // LEADERBOARD
+  @override
+  String get thisWeek => '今週';
+  @override
+  String lvBadge(int level) => 'Lv.$level';
+  // LEAVE COMMUNITY CONFIRM
+  @override
+  String leaveCommunityConfirmMsg(String communityName) => '"$communityName"を退出しますか？後で再参加できます。';
+  @override
+  String dayLabel(int n) => '${n}日';
 }

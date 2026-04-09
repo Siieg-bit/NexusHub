@@ -4297,4 +4297,35 @@ class AppStringsAr implements AppStrings {
   String get tapToAddBio => 'انقر هنا لإضافة سيرتك الذاتية!';
   @override
   String memberSinceLabel(String month, int year, int days) => 'عضو منذ $month $year ($days يوم)';
+  // DRAWER MENU ITEMS
+  @override
+  String get drawerExit => 'خروج';
+  @override
+  String get drawerMyChats => 'محادثاتي';
+  @override
+  String get drawerPublicChatrooms => 'غرف الدردشة العامة';
+  @override
+  String get drawerLeaderboards => 'لوحة المتصدرين';
+  @override
+  String get drawerMembers => 'الأعضاء';
+  @override
+  String get drawerEditCommunity => 'تعديل المجتمع';
+  @override
+  String get drawerFlagCenter => 'مركز الإبلاغ';
+  @override
+  String get drawerStatistics => 'الإحصائيات';
+  @override
+  String get drawerVisitor => 'زائر';
+  @override
+  String get drawerLvLabel => 'مس';
+  // LEADERBOARD
+  @override
+  String get thisWeek => 'هذا الأسبوع';
+  @override
+  String lvBadge(int level) => 'مس.$level';
+  // LEAVE COMMUNITY CONFIRM
+  @override
+  String leaveCommunityConfirmMsg(String communityName) => 'هل أنت متأكد أنك تريد مغادرة "$communityName"؟ يمكنك الانضمام مرة أخرى لاحقاً.';
+  @override
+  String dayLabel(int n) => 'ي$n';
 }

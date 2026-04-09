@@ -1826,4 +1826,22 @@ abstract class AppStrings {
   String get tapToAddBio;
   // MEMBER SINCE (parametrized)
   String memberSinceLabel(String month, int year, int days);
+  // DRAWER MENU ITEMS
+  String get drawerExit;
+  String get drawerMyChats;
+  String get drawerPublicChatrooms;
+  String get drawerLeaderboards;
+  String get drawerMembers;
+  String get drawerEditCommunity;
+  String get drawerFlagCenter;
+  String get drawerStatistics;
+  String get drawerVisitor;
+  String get drawerLvLabel;
+  // LEADERBOARD
+  String get thisWeek;
+  String lvBadge(int level);
+  // LEAVE COMMUNITY CONFIRM
+  String leaveCommunityConfirmMsg(String communityName);
+  // STREAK DAY LABEL
+  String dayLabel(int n);
 }

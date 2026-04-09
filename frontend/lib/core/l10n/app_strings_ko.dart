@@ -3993,4 +3993,35 @@ class AppStringsKo implements AppStrings {
   String get tapToAddBio => '여기를 탭하여 소개를 추가하세요!';
   @override
   String memberSinceLabel(String month, int year, int days) => '$month $year년부터 ($days일)';
+  // DRAWER MENU ITEMS
+  @override
+  String get drawerExit => '나가기';
+  @override
+  String get drawerMyChats => '내 채팅';
+  @override
+  String get drawerPublicChatrooms => '공개 채팅방';
+  @override
+  String get drawerLeaderboards => '리더보드';
+  @override
+  String get drawerMembers => '멤버';
+  @override
+  String get drawerEditCommunity => '커뮤니티 편집';
+  @override
+  String get drawerFlagCenter => '신고 센터';
+  @override
+  String get drawerStatistics => '통계';
+  @override
+  String get drawerVisitor => '방문자';
+  @override
+  String get drawerLvLabel => 'Lv';
+  // LEADERBOARD
+  @override
+  String get thisWeek => '이번 주';
+  @override
+  String lvBadge(int level) => 'Lv.$level';
+  // LEAVE COMMUNITY CONFIRM
+  @override
+  String leaveCommunityConfirmMsg(String communityName) => '"$communityName"을(를) 떠나시겠습니까? 나중에 다시 참여할 수 있습니다.';
+  @override
+  String dayLabel(int n) => '${n}일';
 }
