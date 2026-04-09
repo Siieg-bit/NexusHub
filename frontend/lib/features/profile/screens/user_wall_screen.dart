@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
@@ -5,9 +6,10 @@ import 'package:timeago/timeago.dart' as timeago;
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Mural do Usuário (The Wall) — Mensagens públicas no perfil, estilo Amino.
-class UserWallScreen extends StatefulWidget {
+class UserWallScreen extends ConsumerStatefulWidget {
   final String userId;
   const UserWallScreen({super.key, required this.userId});
 
@@ -15,7 +17,7 @@ class UserWallScreen extends StatefulWidget {
   State<UserWallScreen> createState() => _UserWallScreenState();
 }
 
-class _UserWallScreenState extends State<UserWallScreen> {
+class _UserWallScreenState extends ConsumerState<UserWallScreen> {
   List<Map<String, dynamic>> _messages = [];
   bool _isLoading = true;
   final _messageController = TextEditingController();
@@ -60,7 +62,7 @@ class _UserWallScreenState extends State<UserWallScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
+          SnackBar(content: Text(s.anErrorOccurredTryAgain)),
         );
       }
     } finally {
@@ -75,7 +77,7 @@ class _UserWallScreenState extends State<UserWallScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
+          SnackBar(content: Text(s.anErrorOccurredTryAgain)),
         );
       }
     }
@@ -88,7 +90,8 @@ class _UserWallScreenState extends State<UserWallScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final isOwnWall = widget.userId == SupabaseService.currentUserId;
 
@@ -98,7 +101,7 @@ class _UserWallScreenState extends State<UserWallScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: IconThemeData(color: context.textPrimary),
-        title: Text(isOwnWall ? 'Meu Mural' : 'Mural',
+        title: Text(isOwnWall ? 'Meu Mural' : s.wall,
             style: TextStyle(
               fontWeight: FontWeight.w800,
               color: context.textPrimary,
@@ -122,7 +125,7 @@ class _UserWallScreenState extends State<UserWallScreen> {
                             Icon(Icons.dashboard_rounded,
                                 size: r.s(64), color: Colors.grey[600]),
                             SizedBox(height: r.s(16)),
-                            Text('Nenhuma mensagem no mural',
+                            Text(s.noWallMessages,
                                 style: TextStyle(color: Colors.grey[500])),
                           ],
                         ),
@@ -202,7 +205,7 @@ class _UserWallScreenState extends State<UserWallScreen> {
                                           children: [
                                             Text(
                                               author?['nickname'] as String? ??
-                                                  'Anônimo',
+                                                  s.anonymous,
                                               style: TextStyle(
                                                   fontWeight: FontWeight.w700,
                                                   color: context.textPrimary,
@@ -277,7 +280,7 @@ class _UserWallScreenState extends State<UserWallScreen> {
                       controller: _messageController,
                       style: TextStyle(color: context.textPrimary),
                       decoration: InputDecoration(
-                        hintText: 'Escreva no mural...',
+                        hintText: s.writeOnTheWall,
                         border: InputBorder.none,
                         hintStyle: TextStyle(
                           color: Colors.grey[500],

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/utils/amino_animations.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Tela de Onboarding — réplica fiel do Amino Apps.
 /// Fundo escuro com gradiente animado, logo centralizado, botões translúcidos.
@@ -36,6 +37,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       body: AnimatedBuilder(
@@ -101,7 +103,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       ),
                       SizedBox(height: r.s(24)),
                       Text(
-                        'NexusHub',
+                        s.nexusHub,
                         style: TextStyle(
                           color: context.textPrimary,
                           fontSize: r.fs(36),
@@ -132,19 +134,19 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       _FeatureRow(
                         icon: Icons.groups_rounded,
                         color: AppTheme.primaryColor,
-                        text: 'Milhares de comunidades para explorar',
+                        text: s.thousandsOfCommunities,
                       ),
                       SizedBox(height: r.s(16)),
                       _FeatureRow(
                         icon: Icons.chat_bubble_rounded,
                         color: AppTheme.accentColor,
-                        text: 'Chat em tempo real com seus amigos',
+                        text: s.realTimeChat,
                       ),
                       SizedBox(height: r.s(16)),
                       _FeatureRow(
                         icon: Icons.auto_awesome_rounded,
                         color: AppTheme.aminoMagenta,
-                        text: 'Personalize seu perfil e suba de nível',
+                        text: s.customizeProfile,
                       ),
                     ],
                   ),
@@ -207,7 +209,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                                child: const Text('Já tenho conta'),
+                                child: Text(s.alreadyHaveAccountShort),
                               ),
                             ),
                           ),
@@ -223,7 +225,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 AminoAnimations.fadeIn(
                   delay: const Duration(milliseconds: 600),
                   child: Text(
-                    'Ao continuar, você concorda com os Termos de Uso\ne Política de Privacidade.',
+                    s.agreeTermsAndPrivacy,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: context.textHint,
@@ -256,6 +258,7 @@ class _FeatureRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Row(
       children: [

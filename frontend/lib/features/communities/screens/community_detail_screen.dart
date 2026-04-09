@@ -23,6 +23,7 @@ import '../widgets/community_feed_tab.dart';
 import '../widgets/community_online_tab.dart';
 import '../widgets/community_chat_tab.dart';
 import '../widgets/community_create_menu.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // MAIN SCREEN — Estilo Amino Apps
@@ -50,7 +51,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
   @override
   void initState() {
     super.initState();
-    _activeTabs = ['Regras', 'Destaque', 'Recentes', 'Chats'];
+    _activeTabs = [s.guidelines, s.featured, s.latest, s.chats];
     _tabController = TabController(length: _activeTabs.length, vsync: this);
     _tabController.index = 1; // Featured como padrão
 
@@ -78,10 +79,10 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
 
     final visible = layout['sections_visible'] as Map<String, dynamic>? ?? {};
     final tabs = <String>[];
-    if (visible['guidelines'] != false) tabs.add('Regras');
-    if (visible['featured_posts'] != false) tabs.add('Destaque');
-    if (visible['latest_feed'] != false) tabs.add('Recentes');
-    if (visible['public_chats'] != false) tabs.add('Chats Públicos');
+    if (visible['guidelines'] != false) tabs.add(s.guidelines);
+    if (visible['featured_posts'] != false) tabs.add(s.featured);
+    if (visible['latest_feed'] != false) tabs.add(s.latest);
+    if (visible['public_chats'] != false) tabs.add(s.publicChatsLabel);
 
     // Guard: se a lista de tabs não mudou, não recriar o controller
     if (tabs.length == _activeTabs.length && _listEquals(tabs, _activeTabs))
@@ -96,8 +97,8 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
 
       final oldController = _tabController;
       final newController = TabController(length: tabs.length, vsync: this);
-      if (tabs.contains('Destaque')) {
-        newController.index = tabs.indexOf('Destaque');
+      if (tabs.contains(s.featured)) {
+        newController.index = tabs.indexOf(s.featured);
       }
 
       setState(() {
@@ -170,7 +171,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Você entrou na comunidade!'),
+            content: Text(s.joinedCommunity),
             backgroundColor: AppTheme.primaryColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -181,7 +182,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
+          SnackBar(content: Text(s.anErrorOccurredTryAgain)),
         );
       }
     }
@@ -189,6 +190,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final communityAsync =
         ref.watch(communityDetailProvider(widget.communityId));
@@ -326,7 +328,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                       } else if (index == 0) {
                         // Home: volta para a página principal com aba Destaque
                         setState(() => _bottomIndex = 0);
-                        final destIdx = _activeTabs.indexOf('Destaque');
+                        final destIdx = _activeTabs.indexOf(s.featured);
                         if (destIdx >= 0 &&
                             _tabController.index != destIdx) {
                           _tabController.animateTo(destIdx);
@@ -350,7 +352,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                           borderRadius: BorderRadius.circular(r.s(16))),
                       icon: Icon(Icons.group_add_rounded,
                           color: Colors.white, size: r.s(20)),
-                      label: Text('Entrar',
+                      label: Text(s.login,
                           style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w700,
@@ -572,7 +574,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                                             BorderRadius.circular(r.s(12)),
                                       ),
                                       child: Text(
-                                        'Ranking',
+                                        s.ranking,
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontSize: r.fs(9),
@@ -631,7 +633,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                     Expanded(
                       child: Text(
                         welcomeBanner['text'] as String? ??
-                            'Bem-vindo à comunidade!',
+                            s.welcomeToCommunity,
                         style: TextStyle(
                           color: context.textPrimary,
                           fontSize: r.fs(13),
@@ -684,15 +686,15 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
               controller: _tabController,
               children: _activeTabs.map((tab) {
                 switch (tab) {
-                  case 'Regras':
+                  case s.guidelines:
                     return CommunityGuidelinesTab(community: community);
-                  case 'Destaque':
+                  case s.featured:
                     return CommunityFeedTab(
                         communityId: widget.communityId, isFeatured: true);
-                  case 'Recentes':
+                  case s.latest:
                     return CommunityFeedTab(
                         communityId: widget.communityId, isFeatured: false);
-                  case 'Chats':
+                  case s.chats:
                     return CommunityChatTab(communityId: widget.communityId);
                   default:
                     return const SizedBox.shrink();
@@ -700,7 +702,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
               }).toList(),
             )
           : Center(
-              child: Text('Nenhuma seção habilitada',
+              child: Text(s.noSectionsEnabled,
                   style: TextStyle(color: context.textSecondary)),
             ),
     );
@@ -724,7 +726,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     showGeneralDialog(
       context: ctx,
       barrierDismissible: true,
-      barrierLabel: 'Online',
+      barrierLabel: s.online,
       barrierColor: Colors.black.withValues(alpha: 0.8),
       transitionDuration: const Duration(milliseconds: 300),
       transitionBuilder: (_, anim, __, child) {

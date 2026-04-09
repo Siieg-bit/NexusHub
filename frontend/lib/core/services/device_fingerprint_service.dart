@@ -1,6 +1,7 @@
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'supabase_service.dart';
+import '../../core/l10n/locale_provider.dart';
 
 /// Serviço de Device Fingerprinting — registra e atualiza dispositivos.
 /// Baseado na tabela device_fingerprints do schema v5.
@@ -66,15 +67,15 @@ class DeviceFingerprintService {
 
     if (kIsWeb) {
       deviceType = 'web';
-      deviceName = 'Navegador Web';
-      os = 'Web';
-      browser = 'Browser'; // Em produção, usar package:web para detectar
+      deviceName = s.webBrowser;
+      os = s.web;
+      browser = s.browser; // Em produção, usar package:web para detectar
     } else {
       try {
         if (Platform.isAndroid) {
           deviceType = 'android';
-          deviceName = 'Android';
-          os = 'Android ${Platform.operatingSystemVersion}';
+          deviceName = s.android;
+          os = s.androidVersion;
         } else if (Platform.isIOS) {
           deviceType = 'ios';
           deviceName = 'iPhone/iPad';
@@ -85,21 +86,21 @@ class DeviceFingerprintService {
           os = 'macOS ${Platform.operatingSystemVersion}';
         } else if (Platform.isWindows) {
           deviceType = 'desktop';
-          deviceName = 'Windows';
-          os = 'Windows ${Platform.operatingSystemVersion}';
+          deviceName = s.windows;
+          os = s.windowsVersion;
         } else if (Platform.isLinux) {
           deviceType = 'desktop';
-          deviceName = 'Linux';
-          os = 'Linux ${Platform.operatingSystemVersion}';
+          deviceName = s.linux;
+          os = s.linuxVersion;
         } else {
           deviceType = 'unknown';
-          deviceName = 'Dispositivo';
+          deviceName = s.device;
           os = Platform.operatingSystem;
         }
       } catch (_) {
         deviceType = 'unknown';
-        deviceName = 'Dispositivo';
-        os = 'Desconhecido';
+        deviceName = s.device;
+        os = s.unknown;
       }
     }
 
@@ -115,7 +116,7 @@ class DeviceFingerprintService {
   /// Em produção, usar package:device_info_plus para dados mais precisos.
   static String _generateFingerprint(Map<String, String> info) {
     final raw =
-        '${info['device_type']}_${info['os']}_${info['browser']}_${info['device_name']}';
+        '${info['device_type']}_${info['os']}_${info['browser']}_${info['device_names.closingBracket;
     // Simple hash
     var hash = 0;
     for (var i = 0; i < raw.length; i++) {

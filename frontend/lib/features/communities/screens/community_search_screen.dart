@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -6,10 +7,11 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Tela de busca dentro de uma comunidade específica.
 /// Permite pesquisar posts, membros e wiki com filtros e autocomplete.
-class CommunitySearchScreen extends StatefulWidget {
+class CommunitySearchScreen extends ConsumerStatefulWidget {
   final String communityId;
   final String communityName;
 
@@ -23,7 +25,7 @@ class CommunitySearchScreen extends StatefulWidget {
   State<CommunitySearchScreen> createState() => _CommunitySearchScreenState();
 }
 
-class _CommunitySearchScreenState extends State<CommunitySearchScreen>
+class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _searchController = TextEditingController();
@@ -197,7 +199,8 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -218,9 +221,9 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
           labelStyle:
               TextStyle(fontSize: r.fs(13), fontWeight: FontWeight.w700),
           tabs: const [
-            Tab(text: 'Posts'),
-            Tab(text: 'Membros'),
-            Tab(text: 'Wiki'),
+            Tab(text: s.posts),
+            Tab(text: s.members),
+            Tab(text: s.wiki),
           ],
         ),
       ),
@@ -339,7 +342,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
                       child: CircularProgressIndicator(
                           color: AppTheme.primaryColor))
                   : _posts.isEmpty
-                      ? _buildNoResults(r, 'Nenhum post encontrado')
+                      ? _buildNoResults(r, s.noPostFound)
                       : ListView.builder(
                           padding: EdgeInsets.symmetric(vertical: r.s(8)),
                           itemCount: _posts.length,
@@ -360,10 +363,10 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
           // Filtro de ordenação
           _FilterChip(
             label: _postFilter == 'recent'
-                ? 'Recentes'
+                ? s.latest
                 : _postFilter == 'popular'
                     ? 'Populares'
-                    : 'Mais antigos',
+                    : s.oldest,
             icon: Icons.sort_rounded,
             onTap: () => _showSortDialog(r),
             r: r,
@@ -372,14 +375,14 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
           // Filtro de tipo
           _FilterChip(
             label: _postType == 'all'
-                ? 'Todos'
+                ? s.everyone
                 : _postType == 'text'
-                    ? 'Texto'
+                    ? s.text
                     : _postType == 'image'
-                        ? 'Imagem'
+                        ? s.image
                         : _postType == 'poll'
-                            ? 'Poll'
-                            : 'Quiz',
+                            ? s.poll2
+                            : s.quiz,
             icon: Icons.filter_list_rounded,
             onTap: () => _showTypeDialog(r),
             r: r,
@@ -402,14 +405,14 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Ordenar por',
+            Text(s.sortBy,
                 style: TextStyle(
                     color: context.textPrimary,
                     fontSize: r.fs(16),
                     fontWeight: FontWeight.w800)),
             SizedBox(height: r.s(12)),
             _SortOption(
-              label: 'Mais recentes',
+              label: s.mostRecent,
               icon: Icons.access_time_rounded,
               selected: _postFilter == 'recent',
               onTap: () {
@@ -420,7 +423,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
               r: r,
             ),
             _SortOption(
-              label: 'Mais populares',
+              label: s.mostPopular,
               icon: Icons.trending_up_rounded,
               selected: _postFilter == 'popular',
               onTap: () {
@@ -431,7 +434,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
               r: r,
             ),
             _SortOption(
-              label: 'Mais antigos',
+              label: s.oldest,
               icon: Icons.history_rounded,
               selected: _postFilter == 'oldest',
               onTap: () {
@@ -460,18 +463,18 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Tipo de post',
+            Text(s.postType,
                 style: TextStyle(
                     color: context.textPrimary,
                     fontSize: r.fs(16),
                     fontWeight: FontWeight.w800)),
             SizedBox(height: r.s(12)),
             for (final type in [
-              ('all', 'Todos', Icons.apps_rounded),
-              ('text', 'Texto', Icons.article_rounded),
-              ('image', 'Imagem', Icons.image_rounded),
-              ('poll', 'Poll', Icons.poll_rounded),
-              ('quiz', 'Quiz', Icons.quiz_rounded),
+              ('all', s.everyone, Icons.apps_rounded),
+              ('text', s.text, Icons.article_rounded),
+              ('image', s.image, Icons.image_rounded),
+              ('poll', s.poll2, Icons.poll_rounded),
+              ('quiz', s.quiz, Icons.quiz_rounded),
             ])
               _SortOption(
                 label: type.$2,
@@ -499,7 +502,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
     final thumbnailUrl = post['thumbnail_url'] as String?;
 
     return InkWell(
-      onTap: () => context.push('/post/${post['id']}'),
+      onTap: () => context.push('/post/${post['ids.closingBracket),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
         decoration: BoxDecoration(
@@ -591,12 +594,12 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
   // ─────────────────────────────────────────────
   Widget _buildMembersTab(Responsive r) {
     return _query.isEmpty
-        ? _buildEmptySearch(r, 'Busque membros desta comunidade')
+        ? _buildEmptySearch(r, s.searchCommunityMembers)
         : _isSearching
             ? const Center(
                 child: CircularProgressIndicator(color: AppTheme.primaryColor))
             : _members.isEmpty
-                ? _buildNoResults(r, 'Nenhum membro encontrado')
+                ? _buildNoResults(r, s.noMemberFound)
                 : ListView.builder(
                     padding: EdgeInsets.symmetric(vertical: r.s(8)),
                     itemCount: _members.length,
@@ -611,7 +614,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
     final reputation = member['reputation'] as int? ?? 0;
 
     return InkWell(
-      onTap: () => context.push('/user/${member['id']}'),
+      onTap: () => context.push('/user/${member['ids.closingBracket),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
         decoration: BoxDecoration(
@@ -641,7 +644,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
                   ),
                   SizedBox(height: r.s(2)),
                   Text(
-                    'Nível $level • $reputation rep',
+                    s.levelAndRep(level, reputation),
                     style: TextStyle(
                         color: context.textSecondary, fontSize: r.fs(12)),
                   ),
@@ -661,7 +664,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
   // ─────────────────────────────────────────────
   Widget _buildWikiTab(Responsive r) {
     return _query.isEmpty
-        ? _buildEmptySearch(r, 'Busque artigos wiki desta comunidade')
+        ? _buildEmptySearch(r, s.searchWikiArticles)
         : _isSearching
             ? const Center(
                 child: CircularProgressIndicator(color: AppTheme.primaryColor))
@@ -684,7 +687,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
 
     return InkWell(
       onTap: () =>
-          context.push('/community/${widget.communityId}/wiki/${wiki['id']}'),
+          context.push('/community/${widget.communityId}/wiki/${wiki['ids.closingBracket),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
         decoration: BoxDecoration(
@@ -731,7 +734,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
                   if (author != null) ...[
                     SizedBox(height: r.s(4)),
                     Text(
-                      'por ${author['nickname']}',
+                      'por ${author['nicknames.closingBracket,
                       style: TextStyle(
                           color: context.textHint, fontSize: r.fs(11)),
                     ),
@@ -768,7 +771,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Buscas recentes',
+                    s.recentSearches,
                     style: TextStyle(
                       color: context.textPrimary,
                       fontSize: r.fs(13),
@@ -839,7 +842,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen>
 // WIDGETS AUXILIARES
 // ─────────────────────────────────────────────
 
-class _FilterChip extends StatelessWidget {
+class _FilterChip extends ConsumerWidget {
   final String label;
   final IconData icon;
   final VoidCallback onTap;
@@ -853,7 +856,8 @@ class _FilterChip extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -888,7 +892,7 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
-class _SortOption extends StatelessWidget {
+class _SortOption extends ConsumerWidget {
   final String label;
   final IconData icon;
   final bool selected;
@@ -904,7 +908,8 @@ class _SortOption extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     return ListTile(
       dense: true,
       leading: Icon(icon,
@@ -927,14 +932,15 @@ class _SortOption extends StatelessWidget {
   }
 }
 
-class _PostTypeBadge extends StatelessWidget {
+class _PostTypeBadge extends ConsumerWidget {
   final String type;
   final Responsive r;
 
   const _PostTypeBadge({required this.type, required this.r});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final (icon, color) = switch (type) {
       'image' => (Icons.image_rounded, Colors.blue),
       'poll' => (Icons.poll_rounded, Colors.orange),

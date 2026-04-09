@@ -155,9 +155,9 @@ String levelTitle(int level) {
   const titles = [
     'Novato', // 1
     'Iniciante', // 2
-    'Aprendiz', // 3
+    s.apprentice, // 3
     'Explorador', // 4
-    'Aventureiro', // 5
+    s.adventurer, // 5
     'Guerreiro', // 6
     'Veterano', // 7
     'Especialista', // 8
@@ -167,8 +167,8 @@ String levelTitle(int level) {
     'Herói', // 12
     'Guardião', // 13
     'Sentinela', // 14
-    'Lendário', // 15
-    'Mítico', // 16
+    s.legendary, // 15
+    s.mythical, // 16
     'Divino', // 17
     'Celestial', // 18
     'Transcendente', // 19

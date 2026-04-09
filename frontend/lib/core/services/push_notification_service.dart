@@ -108,31 +108,31 @@ class PushNotificationService {
       AndroidNotificationChannel(
         'nexushub_default',
         'Geral',
-        description: 'Notificações gerais do NexusHub',
+        description: s.generalNotifications,
         importance: Importance.defaultImportance,
       ),
       AndroidNotificationChannel(
         'nexushub_chat',
         'Mensagens',
-        description: 'Notificações de novas mensagens',
+        description: s.newMessageNotifications,
         importance: Importance.high,
       ),
       AndroidNotificationChannel(
         'nexushub_social',
         'Social',
-        description: 'Curtidas, comentários e seguidores',
+        description: s.likesCommentsFollowers,
         importance: Importance.defaultImportance,
       ),
       AndroidNotificationChannel(
         'nexushub_community',
         'Comunidades',
-        description: 'Atualizações das suas comunidades',
+        description: s.communityUpdates,
         importance: Importance.defaultImportance,
       ),
       AndroidNotificationChannel(
         'nexushub_moderation',
-        'Moderação',
-        description: 'Alertas de moderação',
+        s.moderationLabel,
+        description: s.moderationAlerts,
         importance: Importance.high,
       ),
     ];

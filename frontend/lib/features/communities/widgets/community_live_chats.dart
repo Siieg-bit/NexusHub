@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +8,7 @@ import '../../../core/models/community_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/amino_animations.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // LIVE CHATROOMS SECTION — Estilo Amino (horizontal scroll cards)
@@ -14,7 +16,7 @@ import '../../../core/utils/responsive.dart';
 // Long press abre menu contextual: Fixar / Apagar.
 // =============================================================================
 
-class CommunityLiveChats extends StatefulWidget {
+class CommunityLiveChats extends ConsumerStatefulWidget {
   final String communityId;
   final CommunityModel community;
 
@@ -28,7 +30,7 @@ class CommunityLiveChats extends StatefulWidget {
   State<CommunityLiveChats> createState() => _CommunityLiveChatsState();
 }
 
-class _CommunityLiveChatsState extends State<CommunityLiveChats> {
+class _CommunityLiveChatsState extends ConsumerState<CommunityLiveChats> {
   List<Map<String, dynamic>> _chats = [];
   bool _loading = true;
 
@@ -112,7 +114,7 @@ class _CommunityLiveChatsState extends State<CommunityLiveChats> {
         setState(() => _chats.removeWhere((c) => c['id'] == chat['id']));
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(wasDeleted ? 'Chat excluído.' : 'Você saiu do chat.'),
+            content: Text(wasDeleted ? s.chatDeletedMsg : s.leftChat),
             backgroundColor: AppTheme.primaryColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -123,7 +125,7 @@ class _CommunityLiveChatsState extends State<CommunityLiveChats> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Erro ao executar ação. Tente novamente.'),
+            content: Text(s.errorExecutingActionRetry),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -161,7 +163,7 @@ class _CommunityLiveChatsState extends State<CommunityLiveChats> {
               ),
               // Título do chat
               Text(
-                chat['title'] as String? ?? 'Chat',
+                chat['title'] as String? ?? s.chat,
                 style: TextStyle(
                   color: context.textPrimary,
                   fontWeight: FontWeight.w700,
@@ -184,7 +186,7 @@ class _CommunityLiveChatsState extends State<CommunityLiveChats> {
               _menuTile(
                 r,
                 isHost ? Icons.delete_rounded : Icons.exit_to_app_rounded,
-                isHost ? 'Apagar Chat' : 'Sair do Chat',
+                isHost ? 'Apagar Chat' : s.leaveChatTitle,
                 () {
                   Navigator.pop(ctx);
                   _confirmAction(context, chat, isHost);
@@ -209,20 +211,20 @@ class _CommunityLiveChatsState extends State<CommunityLiveChats> {
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(r.s(16))),
         title: Text(
-          isDelete ? 'Apagar Chat' : 'Sair do Chat',
+          isDelete ? 'Apagar Chat' : s.leaveChatTitle,
           style: TextStyle(
               color: context.textPrimary, fontWeight: FontWeight.w700),
         ),
         content: Text(
           isDelete
-              ? 'Tem certeza que deseja apagar este chat? Esta ação não pode ser desfeita.'
-              : 'Tem certeza que deseja sair deste chat?',
+              ? s.confirmDeleteChat
+              : s.confirmLeaveChat,
           style: TextStyle(color: Colors.grey[400], fontSize: r.fs(14)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
+            child: Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
           ),
           TextButton(
             onPressed: () async {
@@ -230,7 +232,7 @@ class _CommunityLiveChatsState extends State<CommunityLiveChats> {
               await _leaveOrDeleteChat(chat);
             },
             child: Text(
-              isDelete ? 'Apagar' : 'Sair',
+              isDelete ? s.deleteAction : s.logout,
               style: TextStyle(
                   color: AppTheme.errorColor, fontWeight: FontWeight.w700),
             ),
@@ -274,7 +276,8 @@ class _CommunityLiveChatsState extends State<CommunityLiveChats> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
 
     if (_loading || _chats.isEmpty) return const SizedBox.shrink();
@@ -294,7 +297,7 @@ class _CommunityLiveChatsState extends State<CommunityLiveChats> {
                     color: AppTheme.primaryColor, size: r.s(16)),
                 SizedBox(width: r.s(6)),
                 Text(
-                  'Chats Públicos',
+                  s.publicChatsLabel,
                   style: TextStyle(
                     color: context.textPrimary,
                     fontSize: r.fs(13),
@@ -318,7 +321,7 @@ class _CommunityLiveChatsState extends State<CommunityLiveChats> {
                 return GestureDetector(
                   onLongPress: () => _showContextMenu(context, chat),
                   child: AminoAnimations.cardPress(
-                    onTap: () => context.push('/chat/${chat['id']}'),
+                    onTap: () => context.push('/chat/${chat['ids.closingBracket),
                     child: Container(
                       width: r.s(150),
                       margin: EdgeInsets.only(right: r.s(8)),
@@ -411,7 +414,7 @@ class _CommunityLiveChatsState extends State<CommunityLiveChats> {
                           Padding(
                             padding: EdgeInsets.all(r.s(8)),
                             child: Text(
-                              chat['title'] as String? ?? 'Chat',
+                              chat['title'] as String? ?? s.chat,
                               style: TextStyle(
                                   color: context.textPrimary,
                                   fontSize: r.fs(11),

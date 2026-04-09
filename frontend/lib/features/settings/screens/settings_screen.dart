@@ -42,14 +42,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           children: [
             Icon(Icons.download_rounded, color: AppTheme.primaryColor),
             SizedBox(width: r.s(8)),
-            Text('Exportar Dados',
+            Text(s.exportData2,
                 style: TextStyle(
                     color: context.textPrimary, fontWeight: FontWeight.w800)),
           ],
         ),
         content: Text(
-            'Vamos preparar um arquivo com todos os seus dados (perfil, posts, comentários, mensagens). '
-            'Você receberá uma notificação quando estiver pronto.',
+            s.prepareDataFile
+            s.notificationWhenReady,
             style: TextStyle(color: Colors.grey[500])),
         actions: [
           GestureDetector(
@@ -57,7 +57,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             child: Container(
               padding:
                   EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
-              child: Text('Cancelar',
+              child: Text(s.cancel,
                   style: TextStyle(
                       color: Colors.grey[500], fontWeight: FontWeight.w700)),
             ),
@@ -71,14 +71,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                         content: Text(
-                            'Solicitação enviada! Você receberá uma notificação.')),
+                            s.requestSentNotification)),
                   );
                 }
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                        content: Text('Ocorreu um erro. Tente novamente.')),
+                        content: Text(s.anErrorOccurredTryAgain)),
                   );
                 }
               }
@@ -99,7 +99,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ],
               ),
-              child: const Text('Solicitar',
+              child: Text(s.requestButton,
                   style: TextStyle(
                       color: Colors.white, fontWeight: FontWeight.w800)),
             ),
@@ -123,15 +123,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           children: [
             Icon(Icons.warning_rounded, color: AppTheme.errorColor),
             SizedBox(width: r.s(8)),
-            Text('Excluir Conta',
+            Text(s.deleteAccount2,
                 style: TextStyle(
                     color: context.textPrimary, fontWeight: FontWeight.w800)),
           ],
         ),
         content: Text(
-            'Esta ação é IRREVERSÍVEL. Todos os seus dados, posts, comentários, '
+            s.irreversibleActionWarning
             'mensagens e itens comprados serão permanentemente deletados.\n\n'
-            'Tem certeza que deseja continuar?',
+            s.confirmContinue,
             style: TextStyle(color: Colors.grey[500])),
         actions: [
           GestureDetector(
@@ -139,7 +139,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             child: Container(
               padding:
                   EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
-              child: Text('Cancelar',
+              child: Text(s.cancel,
                   style: TextStyle(
                       color: Colors.grey[500], fontWeight: FontWeight.w700)),
             ),
@@ -160,7 +160,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ],
               ),
-              child: const Text('Sim, excluir',
+              child: Text(s.yesDelete,
                   style: TextStyle(
                       color: Colors.white, fontWeight: FontWeight.w800)),
             ),
@@ -181,21 +181,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           borderRadius: BorderRadius.circular(r.s(16)),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
-        title: Text('Confirmação Final',
+        title: Text(s.finalConfirmation,
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w800)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-                'Digite "EXCLUIR" para confirmar a exclusão permanente da sua conta.',
+                s.typeDeleteConfirm,
                 style: TextStyle(color: Colors.grey[500])),
             SizedBox(height: r.s(12)),
             TextField(
               controller: confirmCtrl,
               style: TextStyle(color: context.textPrimary),
               decoration: InputDecoration(
-                hintText: 'EXCLUIR',
+                hintText: s.deleteButton,
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(r.s(12)),
@@ -216,14 +216,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             child: Container(
               padding:
                   EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
-              child: Text('Cancelar',
+              child: Text(s.cancel,
                   style: TextStyle(
                       color: Colors.grey[500], fontWeight: FontWeight.w700)),
             ),
           ),
           GestureDetector(
             onTap: () {
-              if (confirmCtrl.text.trim() == 'EXCLUIR') {
+              if (confirmCtrl.text.trim() == s.deleteButton) {
                 Navigator.pop(ctx, true);
               }
             },
@@ -241,7 +241,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ],
               ),
-              child: const Text('Excluir Permanentemente',
+              child: Text(s.permanentDelete,
                   style: TextStyle(
                       color: Colors.white, fontWeight: FontWeight.w800)),
             ),
@@ -258,19 +258,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('Confirme sua senha'),
+          title: Text(s.confirmYourPassword),
           content: TextField(
             controller: passwordCtrl,
             obscureText: true,
-            decoration: const InputDecoration(hintText: 'Senha atual'),
+            decoration: const InputDecoration(hintText: s.currentPassword),
           ),
           actions: [
             TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Cancelar')),
+                child: Text(s.cancel)),
             TextButton(
                 onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Confirmar')),
+                child: Text(s.confirm)),
           ],
         ),
       );
@@ -283,7 +283,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       } catch (_) {
         if (mounted)
           ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text('Senha incorreta')));
+              .showSnackBar(const SnackBar(content: Text(s.incorrectPassword)));
         return;
       }
       await SupabaseService.rpc('delete_user_account');
@@ -292,7 +292,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao excluir conta. Tente novamente.')),
+          SnackBar(content: Text(s.deleteAccountError)),
         );
       }
     }
@@ -319,13 +319,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text('Configurações',
+        title: Text(s.settings,
             style: TextStyle(
                 fontWeight: FontWeight.w800, color: context.textPrimary)),
         iconTheme: IconThemeData(color: context.textPrimary),
@@ -342,7 +343,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 GestureDetector(
                   onTap: () {
                     if (_profile != null) {
-                      context.push('/user/${_profile!['id']}');
+                      context.push('/user/${_profile!['ids.closingBracket);
                     }
                   },
                   child: Container(
@@ -393,14 +394,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                _profile?['nickname'] as String? ?? 'Usuário',
+                                _profile?['nickname'] as String? ?? s.user,
                                 style: TextStyle(
                                     color: context.textPrimary,
                                     fontWeight: FontWeight.w800,
                                     fontSize: r.fs(16)),
                               ),
                               Text(
-                                'Nível ${_profile?['level'] ?? 1}',
+                                s.profileLevellevel'] ?? 1}',
                                 style: TextStyle(
                                     color: Colors.grey[500],
                                     fontSize: r.fs(12),
@@ -420,7 +421,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // ============================================================
                 // CONTA
                 // ============================================================
-                const _SectionLabel(title: 'Conta'),
+                const _SectionLabel(title: s.account),
                 _SettingsGroup(items: [
                   _SettingsItem(
                     icon: Icons.person_rounded,
@@ -429,7 +430,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   _SettingsItem(
                     icon: Icons.email_rounded,
-                    title: 'Email e Senha',
+                    title: s.emailAndPassword,
                     subtitle:
                         SupabaseService.client.auth.currentUser?.email ?? '',
                     onTap: () {
@@ -443,13 +444,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           );
                           return AlertDialog(
                             backgroundColor: context.surfaceColor,
-                            title: Text('Alterar Email',
+                            title: Text(s.changeEmail,
                                 style: TextStyle(color: context.textPrimary)),
                             content: TextField(
                               controller: emailCtrl,
                               style: TextStyle(color: context.textPrimary),
                               decoration: InputDecoration(
-                                hintText: 'Novo email',
+                                hintText: s.newEmail,
                                 hintStyle: TextStyle(color: Colors.grey[600]),
                                 filled: true,
                                 fillColor: context.scaffoldBg,
@@ -462,7 +463,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(ctx),
-                                child: const Text('Cancelar'),
+                                child: Text(s.cancel),
                               ),
                               ElevatedButton(
                                 onPressed: () async {
@@ -490,7 +491,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                           .showSnackBar(
                                         SnackBar(
                                           content: Text(
-                                              'Ocorreu um erro. Tente novamente.'),
+                                              s.anErrorOccurredTryAgain),
                                           behavior: SnackBarBehavior.floating,
                                         ),
                                       );
@@ -500,7 +501,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppTheme.primaryColor,
                                 ),
-                                child: const Text('Salvar'),
+                                child: Text(s.save),
                               ),
                             ],
                           );
@@ -511,7 +512,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   _SettingsItem(
                     icon: Icons.link_rounded,
                     title: 'Contas Vinculadas',
-                    subtitle: 'Google, Apple',
+                    subtitle: s.googleApple,
                     onTap: () => context.push('/settings/linked-accounts'),
                   ),
                 ]),
@@ -520,16 +521,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // ============================================================
                 // PREFERÊNCIAS
                 // ============================================================
-                const _SectionLabel(title: 'Preferências'),
+                const _SectionLabel(title: s.preferences),
                 _SettingsGroup(items: [
                   _SettingsItem(
                     icon: Icons.notifications_rounded,
-                    title: 'Notificações',
+                    title: s.notifications,
                     onTap: () => context.push('/settings/notifications'),
                   ),
                   _SettingsItem(
                     icon: Icons.lock_rounded,
-                    title: 'Privacidade',
+                    title: s.privacy,
                     onTap: () => context.push('/settings/privacy'),
                   ),
                   _ThemeSelectorItem(
@@ -539,7 +540,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   _SettingsItem(
                     icon: Icons.language_rounded,
-                    title: 'Idioma',
+                    title: s.language,
                     subtitle: ref.watch(localeProvider).label,
                     onTap: () {
                       final currentLocale = ref.read(localeProvider);
@@ -555,7 +556,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text('Idioma',
+                              Text(s.language,
                                   style: TextStyle(
                                       color: context.textPrimary,
                                       fontSize: r.fs(18),
@@ -580,7 +581,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                           .showSnackBar(
                                         SnackBar(
                                           content: Text(
-                                              'Idioma alterado para ${locale.label}'),
+                                              s.languageChanged),
                                           behavior: SnackBarBehavior.floating,
                                         ),
                                       );
@@ -594,8 +595,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   _SettingsItem(
                     icon: Icons.cleaning_services_rounded,
-                    title: 'Limpar Cache',
-                    subtitle: 'Liberar espaço de armazenamento',
+                    title: s.clearCache2,
+                    subtitle: s.freeUpStorage,
                     onTap: () async {
                       final size = CacheService.getFormattedCacheSize();
                       final confirm = await showDialog<bool>(
@@ -612,7 +613,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               Icon(Icons.cleaning_services_rounded,
                                   color: AppTheme.accentColor),
                               SizedBox(width: r.s(8)),
-                              Text('Limpar Cache',
+                              Text(s.clearCache2,
                                   style: TextStyle(
                                       color: context.textPrimary,
                                       fontWeight: FontWeight.w800)),
@@ -620,7 +621,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           ),
                           content: Text(
                             'Tamanho atual do cache: $size\n\n'
-                            'Isso vai limpar dados temporários salvos localmente. '
+                            s.clearTempDataDesc
                             'Seus dados na nuvem não serão afetados.',
                             style: TextStyle(color: Colors.grey[500]),
                           ),
@@ -630,7 +631,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               child: Container(
                                 padding: EdgeInsets.symmetric(
                                     horizontal: r.s(16), vertical: r.s(8)),
-                                child: Text('Cancelar',
+                                child: Text(s.cancel,
                                     style: TextStyle(
                                         color: Colors.grey[500],
                                         fontWeight: FontWeight.w700)),
@@ -650,7 +651,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   ),
                                   borderRadius: BorderRadius.circular(r.s(12)),
                                 ),
-                                child: const Text('Limpar',
+                                child: Text(s.clear,
                                     style: TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.w800)),
@@ -664,7 +665,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Cache limpo com sucesso!'),
+                              content: Text(s.cacheCleared2),
                               behavior: SnackBarBehavior.floating,
                             ),
                           );
@@ -678,21 +679,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // ============================================================
                 // GAMIFICAÇÃO
                 // ============================================================
-                const _SectionLabel(title: 'Gamificação'),
+                const _SectionLabel(title: s.gamification),
                 _SettingsGroup(items: [
                   _SettingsItem(
                     icon: Icons.account_balance_wallet_rounded,
-                    title: 'Carteira',
+                    title: s.wallet,
                     onTap: () => context.push('/wallet'),
                   ),
                   _SettingsItem(
                     icon: Icons.emoji_events_rounded,
-                    title: 'Conquistas',
+                    title: s.achievements,
                     onTap: () => context.push('/achievements'),
                   ),
                   _SettingsItem(
                     icon: Icons.inventory_2_rounded,
-                    title: 'Inventário',
+                    title: s.inventory,
                     onTap: () => context.push('/inventory'),
                   ),
                 ]),
@@ -701,22 +702,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // ============================================================
                 // SEGURANÇA
                 // ============================================================
-                const _SectionLabel(title: 'Segurança'),
+                const _SectionLabel(title: s.security),
                 _SettingsGroup(items: [
                   _SettingsItem(
                     icon: Icons.block_rounded,
-                    title: 'Usuários Bloqueados',
+                    title: s.blockedUsers2,
                     onTap: () => context.push('/settings/blocked-users'),
                   ),
                   _SettingsItem(
                     icon: Icons.security_rounded,
-                    title: 'Permissões do App',
-                    subtitle: 'Câmera, microfone, notificações',
+                    title: s.appPermissions2,
+                    subtitle: s.cameraPermissionsDesc,
                     onTap: () => context.push('/settings/permissions'),
                   ),
                   _SettingsItem(
                     icon: Icons.devices_rounded,
-                    title: 'Dispositivos Conectados',
+                    title: s.connectedDevices,
                     onTap: () => context.push('/settings/devices'),
                   ),
                 ]),
@@ -729,13 +730,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 _SettingsGroup(items: [
                   _SettingsItem(
                     icon: Icons.help_rounded,
-                    title: 'Central de Ajuda',
+                    title: s.helpCenter,
                     onTap: () {
                       showDialog(
                         context: context,
                         builder: (ctx) => AlertDialog(
                           backgroundColor: context.surfaceColor,
-                          title: Text('Central de Ajuda',
+                          title: Text(s.helpCenter,
                               style: TextStyle(color: context.textPrimary)),
                           content: Text(
                             'Para suporte, entre em contato:\n\n\u2022 Email: suporte@nexushub.app\n\u2022 Discord: discord.gg/nexushub\n\u2022 FAQ: nexushub.app/faq',
@@ -744,7 +745,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(ctx),
-                              child: const Text('Fechar'),
+                              child: Text(s.close),
                             ),
                           ],
                         ),
@@ -753,7 +754,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   _SettingsItem(
                     icon: Icons.bug_report_rounded,
-                    title: 'Reportar Bug',
+                    title: s.reportBug,
                     onTap: () {
                       showDialog(
                         context: context,
@@ -761,14 +762,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           final bugCtrl = TextEditingController();
                           return AlertDialog(
                             backgroundColor: context.surfaceColor,
-                            title: Text('Reportar Bug',
+                            title: Text(s.reportBug,
                                 style: TextStyle(color: context.textPrimary)),
                             content: TextField(
                               controller: bugCtrl,
                               maxLines: 5,
                               style: TextStyle(color: context.textPrimary),
                               decoration: InputDecoration(
-                                hintText: 'Descreva o bug encontrado...',
+                                hintText: s.describeBugHint,
                                 hintStyle: TextStyle(color: Colors.grey[600]),
                                 filled: true,
                                 fillColor: context.scaffoldBg,
@@ -781,7 +782,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(ctx),
-                                child: const Text('Cancelar'),
+                                child: Text(s.cancel),
                               ),
                               ElevatedButton(
                                 onPressed: () {
@@ -797,7 +798,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppTheme.primaryColor,
                                 ),
-                                child: const Text('Enviar'),
+                                child: Text(s.send),
                               ),
                             ],
                           );
@@ -807,12 +808,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   _SettingsItem(
                     icon: Icons.privacy_tip_rounded,
-                    title: 'Política de Privacidade',
+                    title: s.privacyPolicyTitle,
                     onTap: () => context.push('/settings/privacy-policy'),
                   ),
                   _SettingsItem(
                     icon: Icons.gavel_rounded,
-                    title: 'Termos de Uso',
+                    title: s.termsOfUse,
                     onTap: () => context.push('/settings/terms-of-use'),
                   ),
                   _SettingsItem(
@@ -822,7 +823,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     onTap: () {
                       showAboutDialog(
                         context: context,
-                        applicationName: 'NexusHub',
+                        applicationName: s.nexusHub,
                         applicationVersion: '1.0.0',
                         applicationLegalese:
                             '© 2025 NexusHub. Todos os direitos reservados.',
@@ -835,16 +836,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // ============================================================
                 // DADOS
                 // ============================================================
-                const _SectionLabel(title: 'Dados'),
+                const _SectionLabel(title: s.data),
                 _SettingsGroup(items: [
                   _SettingsItem(
                     icon: Icons.download_rounded,
-                    title: 'Exportar Meus Dados',
+                    title: s.exportMyData,
                     onTap: () => _exportData(),
                   ),
                   _SettingsItem(
                     icon: Icons.delete_forever_rounded,
-                    title: 'Excluir Conta',
+                    title: s.deleteAccount2,
                     onTap: () => _deleteAccount(),
                   ),
                 ]),
@@ -864,7 +865,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           side: BorderSide(
                               color: Colors.white.withValues(alpha: 0.05)),
                         ),
-                        title: Text('Sair',
+                        title: Text(s.logout,
                             style: TextStyle(
                                 color: context.textPrimary,
                                 fontWeight: FontWeight.w800)),
@@ -877,7 +878,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             child: Container(
                               padding: EdgeInsets.symmetric(
                                   horizontal: r.s(16), vertical: r.s(8)),
-                              child: Text('Cancelar',
+                              child: Text(s.cancel,
                                   style: TextStyle(
                                       color: Colors.grey[500],
                                       fontWeight: FontWeight.w700)),
@@ -900,7 +901,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   ),
                                 ],
                               ),
-                              child: const Text('Sair',
+                              child: Text(s.logout,
                                   style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w800)),
@@ -928,7 +929,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       children: [
                         Icon(Icons.logout_rounded, color: AppTheme.errorColor),
                         SizedBox(width: r.s(8)),
-                        Text('Sair da Conta',
+                        Text(s.logOutAction,
                             style: TextStyle(
                                 color: AppTheme.errorColor,
                                 fontWeight: FontWeight.w800)),
@@ -949,6 +950,7 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Padding(
       padding: EdgeInsets.only(bottom: r.s(8)),
@@ -970,6 +972,7 @@ class _SettingsGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       decoration: BoxDecoration(
@@ -1012,6 +1015,7 @@ class _SettingsItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return ListTile(
       leading: Icon(icon, color: AppTheme.primaryColor, size: r.s(22)),
@@ -1039,6 +1043,7 @@ class _ThemeSelectorItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final labels = {
       ThemeMode.light: 'Claro',
@@ -1056,7 +1061,7 @@ class _ThemeSelectorItem extends StatelessWidget {
         color: AppTheme.primaryColor,
         size: r.s(22),
       ),
-      title: Text('Aparência',
+      title: Text(s.appearance,
           style: TextStyle(
               color: context.textPrimary,
               fontWeight: FontWeight.w700,
@@ -1079,7 +1084,7 @@ class _ThemeSelectorItem extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('Aparência',
+                Text(s.appearance,
                     style: TextStyle(
                         color: context.textPrimary,
                         fontSize: r.fs(18),

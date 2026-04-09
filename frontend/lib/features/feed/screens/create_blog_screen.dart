@@ -6,6 +6,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../widgets/block_editor.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // CREATE BLOG SCREEN — Editor de post tipo "Blog" (texto rico com blocos)
@@ -39,7 +40,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('O título é obrigatório'),
+          content: Text(s.titleRequired),
           backgroundColor: AppTheme.errorColor,
         ),
       );
@@ -48,7 +49,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
     setState(() => _isSubmitting = true);
     try {
       final userId = SupabaseService.currentUserId;
-      if (userId == null) throw Exception('Não autenticado');
+      if (userId == null) throw Exception(s.notAuthenticated);
 
       // Ler o texto dos blocos ANTES de qualquer await para evitar
       // acesso a controllers já disposed após context.pop().
@@ -88,7 +89,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Blog publicado com sucesso!'),
+            content: Text(s.blogPublishedSuccess),
             backgroundColor: AppTheme.successColor,
           ),
         );
@@ -98,7 +99,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
         setState(() => _isSubmitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao publicar. Tente novamente.'),
+            content: Text(s.errorPublishing2),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -108,13 +109,14 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         title: Text(
-          'Novo Blog',
+          s.newBlog,
           style: TextStyle(
               color: context.textPrimary,
               fontSize: r.fs(17),
@@ -142,15 +144,15 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
             itemBuilder: (_) => [
               PopupMenuItem(
                   value: 'public',
-                  child: Text('Público',
+                  child: Text(s.publicLabel,
                       style: TextStyle(color: context.textPrimary))),
               PopupMenuItem(
                   value: 'followers',
-                  child: Text('Seguidores',
+                  child: Text(s.followers,
                       style: TextStyle(color: context.textPrimary))),
               PopupMenuItem(
                   value: 'private',
-                  child: Text('Privado',
+                  child: Text(s.privateLabel,
                       style: TextStyle(color: context.textPrimary))),
             ],
           ),
@@ -164,7 +166,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
                         strokeWidth: 2, color: AppTheme.primaryColor),
                   )
                 : Text(
-                    'Publicar',
+                    s.publish,
                     style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontSize: r.fs(14),
@@ -189,7 +191,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
                   fontSize: r.fs(22),
                   fontWeight: FontWeight.w700),
               decoration: InputDecoration(
-                hintText: 'Título do blog...',
+                hintText: s.blogTitleHint,
                 hintStyle: TextStyle(
                     color: context.textSecondary,
                     fontSize: r.fs(22),

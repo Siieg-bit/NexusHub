@@ -10,6 +10,7 @@ import '../widgets/crosspost_picker.dart';
 import '../../../core/utils/responsive.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/draft_provider.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Editor rico de criação de posts — estilo Amino Apps.
 /// Suporta os 9 tipos exatos do Amino:
@@ -70,13 +71,13 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   String? _musicTitle;
 
   static const _postTypes = [
-    _PostTypeOption('normal', 'Blog', Icons.article_rounded),
-    _PostTypeOption('image', 'Imagem', Icons.image_rounded),
-    _PostTypeOption('poll', 'Enquete', Icons.poll_rounded),
-    _PostTypeOption('quiz', 'Quiz', Icons.quiz_rounded),
+    _PostTypeOption('normal', s.blog, Icons.article_rounded),
+    _PostTypeOption('image', s.image, Icons.image_rounded),
+    _PostTypeOption('poll', s.poll, Icons.poll_rounded),
+    _PostTypeOption('quiz', s.quiz, Icons.quiz_rounded),
     _PostTypeOption('qa', 'Q&A', Icons.question_answer_rounded),
-    _PostTypeOption('link', 'Link', Icons.link_rounded),
-    _PostTypeOption('crosspost', 'Crosspost', Icons.share_rounded),
+    _PostTypeOption('link', s.link, Icons.link_rounded),
+    _PostTypeOption('crosspost', s.crosspost, Icons.share_rounded),
     _PostTypeOption('repost', 'Repost', Icons.repeat_rounded),
     _PostTypeOption('external', 'Externo', Icons.open_in_new_rounded),
   ];
@@ -113,7 +114,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro no upload. Tente novamente.'),
+            content: Text(s.errorUploadTryAgain),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -147,7 +148,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro no upload. Tente novamente.'),
+            content: Text(s.errorUploadTryAgain),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -161,7 +162,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         _selectedType != 'image') {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Preencha o título ou conteúdo'),
+          content: Text(s.fillTitleOrContent),
           backgroundColor: AppTheme.errorColor,
         ),
       );
@@ -172,7 +173,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     if (_selectedType == 'crosspost' && _crosspostCommunity == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Selecione a comunidade destino para o crosspost'),
+          content: Text(s.selectCrosspostCommunity),
           backgroundColor: AppTheme.errorColor,
         ),
       );
@@ -183,7 +184,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
     try {
       final userId = SupabaseService.currentUserId;
-      if (userId == null) throw Exception('Não autenticado');
+      if (userId == null) throw Exception(s.notAuthenticated);
 
       final contentText = _useBlogEditor
           ? _contentBlocks
@@ -293,7 +294,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Post criado com sucesso!'),
+            content: Text(s.postCreatedSuccess),
             backgroundColor: AppTheme.successColor,
           ),
         );
@@ -302,7 +303,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ocorreu um erro. Tente novamente.'),
+            content: Text(s.anErrorOccurredTryAgain),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -357,6 +358,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -382,7 +384,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           IconButton(
             icon: Icon(Icons.drafts_rounded,
                 color: context.textSecondary, size: r.s(22)),
-            tooltip: 'Rascunhos',
+            tooltip: s.drafts,
             onPressed: () => context.push('/drafts'),
           ),
           // Botão de salvar como rascunho
@@ -395,7 +397,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               final content = _contentController.text.trim();
               if (title.isEmpty && content.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Nada para salvar')),
+                  const SnackBar(content: Text(s.nothingToSave)),
                 );
                 return;
               }
@@ -417,7 +419,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Erro ao salvar. Tente novamente.')),
+                    SnackBar(content: Text(s.errorSavingTryAgain)),
                   );
                 }
               }
@@ -551,7 +553,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                                 Icon(Icons.add_photo_alternate_rounded,
                                     color: Colors.grey[600], size: r.s(28)),
                                 SizedBox(height: r.s(4)),
-                                Text('Adicionar Capa',
+                                Text(s.addCover,
                                     style: TextStyle(
                                         color: Colors.grey[600],
                                         fontSize: r.fs(11))),
@@ -571,7 +573,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                       color: context.textPrimary,
                     ),
                     decoration: InputDecoration(
-                      hintText: 'Título...',
+                      hintText: s.titleHint,
                       border: InputBorder.none,
                       hintStyle: TextStyle(
                           color: Colors.grey[700], fontWeight: FontWeight.w700),
@@ -646,7 +648,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                         color: Colors.grey[300],
                       ),
                       decoration: InputDecoration(
-                        hintText: 'Escreva seu conteúdo aqui...',
+                        hintText: s.writeContentHere,
                         border: InputBorder.none,
                         hintStyle: TextStyle(color: Colors.grey[700]),
                         contentPadding: EdgeInsets.zero,
@@ -677,7 +679,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                         .copyWith(dividerColor: Colors.transparent),
                     child: ExpansionTile(
                       tilePadding: EdgeInsets.zero,
-                      title: Text('Opções Avançadas',
+                      title: Text(s.advancedOptions,
                           style: TextStyle(
                               fontSize: r.fs(13),
                               color: Colors.grey[500],
@@ -708,7 +710,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                                   Icon(Icons.lock_outline_rounded,
                                       size: r.s(16), color: Colors.grey[600]),
                                   SizedBox(width: r.s(8)),
-                                  Text('Visibilidade',
+                                  Text(s.visibility,
                                       style: TextStyle(
                                           fontSize: r.fs(13),
                                           color: Colors.grey[400],
@@ -719,12 +721,12 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                               Wrap(
                                 spacing: r.s(8),
                                 children: [
-                                  _visibilityChip('public', 'Público',
+                                  _visibilityChip('public', s.publicLabel,
                                       Icons.public_rounded),
-                                  _visibilityChip('followers', 'Seguidores',
+                                  _visibilityChip('followers', s.followers,
                                       Icons.people_rounded),
                                   _visibilityChip(
-                                      'private', 'Privado', Icons.lock_rounded),
+                                      'private', s.privateLabel, Icons.lock_rounded),
                                 ],
                               ),
                             ],
@@ -763,8 +765,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                                 SizedBox(width: r.s(8)),
                                 Text(
                                   _commentsBlocked
-                                      ? 'Comentários bloqueados'
-                                      : 'Permitir comentários',
+                                      ? s.commentsBlocked
+                                      : s.allowComments,
                                   style: TextStyle(
                                     fontSize: r.fs(13),
                                     color: _commentsBlocked
@@ -936,7 +938,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 Icon(Icons.add_rounded,
                     size: r.s(16), color: AppTheme.primaryColor),
                 SizedBox(width: r.s(6)),
-                Text('Adicionar Opção',
+                Text(s.addOptionLabel,
                     style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontSize: r.fs(13),
@@ -1087,7 +1089,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 Icon(Icons.add_rounded,
                     size: r.s(16), color: AppTheme.primaryColor),
                 SizedBox(width: r.s(6)),
-                Text('Adicionar Pergunta',
+                Text(s.addQuestion2,
                     style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontSize: r.fs(13),
@@ -1226,14 +1228,14 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _ToolbarButton(Icons.image_rounded, 'Image', _pickImage),
-            _ToolbarButton(Icons.gif_rounded, 'GIF', () async {
+            _ToolbarButton(Icons.image_rounded, s.image2, _pickImage),
+            _ToolbarButton(Icons.gif_rounded, s.gif, () async {
               final url = await GiphyPicker.show(context);
               if (url != null && mounted) {
                 setState(() => _gifUrl = url);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                      content: Text('GIF adicionado ao post!'),
+                      content: Text(s.gifAddedToPost),
                       behavior: SnackBarBehavior.floating),
                 );
               }
@@ -1245,7 +1247,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 () => _wrapSelection('**', '**')),
             _ToolbarButton(Icons.format_italic_rounded, 'Italic',
                 () => _wrapSelection('_', '_')),
-            _ToolbarButton(Icons.format_strikethrough_rounded, 'Strike',
+            _ToolbarButton(Icons.format_strikethrough_rounded, s.strike,
                 () => _wrapSelection('~~', '~~')),
           ],
         ),
@@ -1275,7 +1277,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Adicionar Música',
+            Text(s.addMusicAction,
                 style: TextStyle(
                     fontSize: r.fs(18),
                     fontWeight: FontWeight.w800,
@@ -1285,7 +1287,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               controller: titleCtrl,
               style: TextStyle(color: context.textPrimary),
               decoration: InputDecoration(
-                hintText: 'Nome da música (ex: Artist - Song)',
+                hintText: s.songNameHint,
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 filled: true,
                 fillColor: context.cardBg,
@@ -1302,7 +1304,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               controller: urlCtrl,
               style: TextStyle(color: context.textPrimary),
               decoration: InputDecoration(
-                hintText: 'URL do arquivo de áudio (.mp3, .ogg)',
+                hintText: s.audioFileUrl,
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 filled: true,
                 fillColor: context.cardBg,
@@ -1331,14 +1333,14 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                   if (_musicUrl != null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                          content: Text('Música adicionada ao post!'),
+                          content: Text(s.musicAddedToPost),
                           behavior: SnackBarBehavior.floating),
                     );
                   }
                 },
                 style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryColor),
-                child: const Text('Confirmar'),
+                child: Text(s.confirm),
               ),
             ),
           ],
@@ -1384,6 +1386,7 @@ class _ToolbarButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Tooltip(
       message: tooltip,

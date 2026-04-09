@@ -11,6 +11,7 @@ import '../../../core/utils/helpers.dart';
 import '../providers/community_shared_providers.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/amino_drawer.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // COMMUNITY DRAWER — Réplica fiel do painel lateral do Amino Apps
@@ -105,14 +106,14 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         HapticFeedback.mediumImpact();
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
-              'Check-in feito! Sequência: $streak dia${streak > 1 ? 's' : ''} (+$coins moedas)'),
+              s.checkInStreakMsg(streak, coins)),
           backgroundColor: AppTheme.accentColor,
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 2),
         ));
       } else if (data != null && data['error'] == 'already_checked_in') {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Você já fez check-in hoje nesta comunidade!'),
+          content: Text(s.alreadyCheckedInCommunity),
           backgroundColor: Colors.orange,
           behavior: SnackBarBehavior.floating,
           duration: Duration(seconds: 2),
@@ -121,7 +122,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: const Text('Erro no check-in. Tente novamente.'),
+          content: Text(s.errorCheckIn),
           backgroundColor: AppTheme.errorColor,
           behavior: SnackBarBehavior.floating,
         ));
@@ -151,6 +152,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final themeColor = _parseColor(widget.community.themeColor);
     final checkInStatus = ref.watch(checkInStatusProvider);
@@ -768,7 +770,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                   color: Colors.white, size: r.s(14)),
               SizedBox(width: r.s(4)),
               Text(
-                'Fazer Check-in',
+                s.doCheckIn2,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: r.fs(11),
@@ -833,7 +835,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         _AminoDrawerTile(
           icon: Icons.home_rounded,
           iconColor: const Color(0xFF42A5F5),
-          label: 'Home',
+          label: s.home2,
           onTap: () => _closeAndNavigate(() {}),
         ),
         _AminoDrawerTile(
@@ -869,7 +871,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         _AminoDrawerTile(
           icon: Icons.auto_stories_rounded,
           iconColor: const Color(0xFF9C27B0),
-          label: 'Wiki',
+          label: s.wiki,
           onTap: () => _closeAndNavigate(() {
             context.push('/community/${widget.community.id}/wiki');
           }),
@@ -885,7 +887,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         _AminoDrawerTile(
           icon: Icons.amp_stories_rounded,
           iconColor: const Color(0xFF7B1FA2),
-          label: 'Stories',
+          label: s.stories,
           onTap: () => _closeAndNavigate(() {
             context.push('/profile/${SupabaseService.currentUserId}');
           }),
@@ -1048,6 +1050,7 @@ class _AminoDrawerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: onTap,

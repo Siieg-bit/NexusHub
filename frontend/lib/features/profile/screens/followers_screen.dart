@@ -1,12 +1,14 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Tela de Seguidores / Seguindo — Lista de conexões sociais.
-class FollowersScreen extends StatefulWidget {
+class FollowersScreen extends ConsumerStatefulWidget {
   final String userId;
   final bool showFollowers; // true = seguidores, false = seguindo
 
@@ -20,7 +22,7 @@ class FollowersScreen extends StatefulWidget {
   State<FollowersScreen> createState() => _FollowersScreenState();
 }
 
-class _FollowersScreenState extends State<FollowersScreen>
+class _FollowersScreenState extends ConsumerState<FollowersScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   List<Map<String, dynamic>> _followers = [];
@@ -75,7 +77,8 @@ class _FollowersScreenState extends State<FollowersScreen>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
@@ -83,7 +86,7 @@ class _FollowersScreenState extends State<FollowersScreen>
         elevation: 0,
         iconTheme: IconThemeData(color: context.textPrimary),
         title: Text(
-          'Conexões',
+          s.connections,
           style: TextStyle(
             fontWeight: FontWeight.w800,
             color: context.textPrimary,
@@ -122,7 +125,7 @@ class _FollowersScreenState extends State<FollowersScreen>
     if (list.isEmpty) {
       return Center(
         child: Text(
-          'Nenhuma conexão',
+          s.noConnections,
           style: TextStyle(color: Colors.grey[500]),
         ),
       );
@@ -143,7 +146,7 @@ class _FollowersScreenState extends State<FollowersScreen>
           final item = list[index];
           final profile = item['profiles'] as Map<String, dynamic>? ?? item;
           final userId = profile['id'] as String?;
-          final nickname = profile['nickname'] as String? ?? 'Usuário';
+          final nickname = profile['nickname'] as String? ?? s.user;
           final avatarUrl = profile['icon_url'] as String?;
           final level = profile['level'] as int? ?? 1;
 
@@ -175,7 +178,7 @@ class _FollowersScreenState extends State<FollowersScreen>
                 ),
               ),
               subtitle: Text(
-                'Nível $level',
+                s.levelLabel,
                 style: TextStyle(
                   color: Colors.grey[500],
                   fontSize: r.fs(12),
@@ -190,7 +193,7 @@ class _FollowersScreenState extends State<FollowersScreen>
   }
 }
 
-class _FollowButton extends StatefulWidget {
+class _FollowButton extends ConsumerStatefulWidget {
   final String targetUserId;
   const _FollowButton({required this.targetUserId});
 
@@ -198,7 +201,7 @@ class _FollowButton extends StatefulWidget {
   State<_FollowButton> createState() => _FollowButtonState();
 }
 
-class _FollowButtonState extends State<_FollowButton> {
+class _FollowButtonState extends ConsumerState<_FollowButton> {
   bool _isFollowing = false;
   bool _isLoading = true;
 
@@ -255,7 +258,7 @@ class _FollowButtonState extends State<_FollowButton> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ocorreu um erro. Tente novamente.',
+            content: Text(s.anErrorOccurredTryAgain,
                 style: TextStyle(color: context.textPrimary)),
             backgroundColor: AppTheme.errorColor,
           ),
@@ -265,7 +268,8 @@ class _FollowButtonState extends State<_FollowButton> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     if (_isLoading || widget.targetUserId == SupabaseService.currentUserId) {
       return const SizedBox.shrink();
@@ -297,7 +301,7 @@ class _FollowButtonState extends State<_FollowButton> {
                 ],
         ),
         child: Text(
-          _isFollowing ? 'Seguindo' : 'Seguir',
+          _isFollowing ? s.following : s.follow,
           style: TextStyle(
             fontSize: r.fs(12),
             fontWeight: FontWeight.w700,

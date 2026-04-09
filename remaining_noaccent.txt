@@ -1,0 +1,208 @@
+#RRGGBB
+$amount
+$amount coins
+$amount coins transferidos!
+$commentsCount
+$error
+$likesCount
+$memberCount members
+$nickname desbloqueado
+$reaction enviado!
+$selectedAmount props enviados!
+$streak dia${streak > 1 ? 
+$totalVotes votos
+${(pct * 100).toStringAsFixed(0)}%
+${_formatCount(widget.community.postsCount)} posts
+${_post.commentsCount} respostas
+${_post.tipsTotal}
+${item[
+${message.mediaDuration}s
++$_coinsEarned Moedas
++$_xpEarned XP
++$rewardCoins moedas!
+1 dia
+1h
+24h
+3 dias
+30 dias
+6h
+7 dias
+A
+Adicionar Capa
+Adicionar Pergunta
+Adicionar legenda...
+Adicione contexto ou detalhes (opcional)...
+Amino ID
+Apenas Convite
+Arquivo enviado com sucesso!
+Banner / Capa
+Banner de Boas-Vindas
+Barra Inferior
+Blog publicado com sucesso!
+Broadcast enviado!
+Buscar Usu\u00e1rio
+Buscar chat...
+Buscar em ${widget.communityName}...
+Busque por comunidades, pessoas ou posts
+Carrossel
+Central de Ajuda
+Chat Privado
+Chat em Grupo
+Chats ao Vivo
+Check-In
+Comece a conversa!
+Como funciona
+Compartilhar Link
+Configura\u00e7\u00f5es Globais
+Conta $provider desvinculada.
+Copiado!
+Copiar Link
+Criar Screening Room
+Criar\nComunidade
+Custo: $selectedAmount coins
+Deixe vazio para usar a bio global
+Deixe vazio para usar o global
+Deletar
+Deletar Post
+Descreva o bug encontrado...
+Descreva o link (opcional)...
+Destaques
+Detalhes adicionais (opcional)...
+Diga algo...
+Digite a mensagem...
+Digite a pergunta...
+Edit Community
+Editar Mensagem
+Editar Post
+Editar mensagem...
+English
+Enquete criada com sucesso!
+Entrada\nWiki
+Entrar no Chat
+Entre em uma comunidade e comece a conversar!
+Enviando imagem...
+Enviar Broadcast
+Enviar Gorjeta
+Enviar Props
+Erro ao carregar posts
+Erro ao criar comunidade. Tente novamente.
+Erro ao criar enquete. Tente novamente.
+Erro ao criar quiz. Tente novamente.
+Erro ao criar sala. Tente novamente.
+Erro ao desvincular. Tente novamente.
+Erro ao encaminhar. Tente novamente.
+Erro ao publicar. Tente novamente.
+Erro na compra: $e
+Erro no check-in. Tente novamente.
+Erro: $error
+Escreva algo para o story
+Escreva aqui...
+Escreva uma legenda...
+Estilo dos Destaques
+Ex: Clique aqui
+Excluir Chat
+Excluir rascunho?
+Exibe contagem de online na bottom bar
+External Link
+Fazer Check-in
+Feed Recente
+Flag Center
+Flags Pendentes
+Fundo do Chat
+GIF adicionado ao post!
+Girar
+Grid
+Imagem da Galeria
+Images
+Iniciar conversa com um usu\u00e1rio
+Inserir Link
+Leaderboards
+Link ao clicar (opcional)
+Link compartilhado com sucesso!
+Link copiado!
+Link removido.
+Loja de\nCoins
+Lv.$level ${levelTitle(level)}
+Mais antigos
+Mais populares
+Mais recentes
+Members
+Membros Total
+Membros do Chat
+Mensagem de Boas-Vindas
+Mensagens Fixadas
+My Chats
+Nada para salvar
+Nenhum GIF encontrado
+Nenhum item dispon\u00edvel
+Nenhum membro
+Nenhum post encontrado
+Nenhuma mensagem no mural
+Nome da Comunidade *
+Nome da sala
+Novos Membros (7d)
+Oculta
+Ocultar Post
+Option
+Option ${oi + 1}
+Ordenar por
+Ou digite um valor...
+Perfil atualizado com sucesso!
+Perfil da comunidade atualizado!
+Pergunta & Resposta
+Pergunta publicada com sucesso!
+Poll Options
+Post atualizado!
+Post criado com sucesso!
+Post deletado
+Post ocultado do seu feed
+Post publicado com sucesso!
+Powered by GIPHY
+Privado
+Procurar Meus Chats
+Public Chatrooms
+Q
+Question ${qi + 1}
+Quiz Questions
+Quiz criado com sucesso!
+Ranking\nGlobal
+Recompensas
+Relat\u00f3rios
+Reparar (50 moedas)
+Reportar
+Reportar Bug
+Sair da Conta
+Sair do Chat
+Saldo atual: ${_formatCoins(_coins)} coins
+Saved Posts
+Segure para favoritar
+Selecione a comunidade destino para o crosspost
+Selecione uma comunidade
+Selecione uma imagem
+Shared Folder
+Sorteio
+Statistics
+Story
+Tagline
+Tem certeza que deseja sair deste chat?
+Tente a sorte por moedas extras!
+Texto do banner (ex: Bem-vindo!)
+Tipo de post
+Tirar Foto
+Toque para adicionar imagem
+Type the question...
+URL da imagem do banner
+URL da imagem do banner (opcional)
+URL personalizada do fundo...
+Um banner customizado exibido no topo da home.
+Ver Tudo
+Voc\u00ea saiu de "${community.name}".
+\uD83D\uDCCA $question
+ex: gamer_pro_2026
+https://
+https://...
+ou
+日本語
+한국어
+📌 Pinned
+😊

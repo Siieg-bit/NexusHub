@@ -17,6 +17,7 @@ import '../widgets/profile_linked_communities.dart';
 import '../widgets/profile_stories_tab.dart';
 import '../widgets/profile_wall_tab.dart';
 import '../widgets/profile_pinned_wikis.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // PROFILE SCREEN — Layout fiel ao Amino Apps
@@ -51,6 +52,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final profileAsync = ref.watch(userProfileProvider(widget.userId));
     final equippedAsync = ref.watch(equippedItemsProvider(widget.userId));
@@ -83,7 +85,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               Icon(Icons.error_outline_rounded,
                   size: r.s(48), color: Colors.grey[700]),
               SizedBox(height: r.s(12)),
-              Text('Erro ao carregar perfil',
+              Text(s.errorLoadingProfile,
                   style:
                       TextStyle(color: Colors.grey[500], fontSize: r.fs(15))),
               SizedBox(height: r.s(16)),
@@ -96,7 +98,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     color: AppTheme.primaryColor,
                     borderRadius: BorderRadius.circular(r.s(8)),
                   ),
-                  child: const Text('Tentar novamente',
+                  child: Text(s.retry,
                       style: TextStyle(
                           color: Colors.white, fontWeight: FontWeight.w600)),
                 ),
@@ -198,7 +200,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         Clipboard.setData(ClipboardData(text: link));
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Link do perfil copiado!'),
+                            content: Text(s.profileLinkCopied),
                             behavior: SnackBarBehavior.floating,
                           ),
                         );
@@ -290,8 +292,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                     ),
                                     child: Text(
                                       user.isFollowing == true
-                                          ? 'Seguindo'
-                                          : 'Seguir',
+                                          ? s.following
+                                          : s.follow,
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.w700,
@@ -517,7 +519,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                 borderRadius: BorderRadius.circular(r.s(6)),
                               ),
                               child: Text(
-                                'Amino+',
+                                s.aminoPlus,
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w900,
@@ -609,7 +611,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       indicatorWeight: 3,
                       indicatorSize: TabBarIndicatorSize.label,
                       tabs: const [
-                        Tab(text: 'Stories'),
+                        Tab(text: s.stories),
                         Tab(text: 'Wall'),
                       ],
                     ),
@@ -702,14 +704,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               Navigator.pop(ctx);
               context.push('/user/${widget.userId}/wall');
             }),
-            _optionTile(Icons.people_rounded, 'Seguidores', () {
+            _optionTile(Icons.people_rounded, s.followers, () {
               Navigator.pop(ctx);
               context.push('/user/${widget.userId}/followers');
             }),
-            _optionTile(Icons.flag_rounded, 'Denunciar', () {
+            _optionTile(Icons.flag_rounded, s.report, () {
               Navigator.pop(ctx);
             }, isDestructive: true),
-            _optionTile(Icons.block_rounded, 'Bloquear', () {
+            _optionTile(Icons.block_rounded, s.block, () {
               Navigator.pop(ctx);
             }, isDestructive: true),
           ],

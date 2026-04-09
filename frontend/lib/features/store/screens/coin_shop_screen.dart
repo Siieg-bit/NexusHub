@@ -1,20 +1,22 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../../core/services/iap_service.dart';
 import '../../../core/services/ad_service.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Tela de Compra de Moedas — Estilo Amino original.
 /// Header azul celeste com moeda dourada, corpo claro com pacotes de moedas.
-class CoinShopScreen extends StatefulWidget {
+class CoinShopScreen extends ConsumerStatefulWidget {
   const CoinShopScreen({super.key});
 
   @override
   State<CoinShopScreen> createState() => _CoinShopScreenState();
 }
 
-class _CoinShopScreenState extends State<CoinShopScreen> {
+class _CoinShopScreenState extends ConsumerState<CoinShopScreen> {
   int _userCoins = 0;
   bool _isLoading = true;
   bool _isPurchasing = false;
@@ -59,12 +61,12 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
     try {
       final packages = await IAPService.getOfferings();
       if (packages.isEmpty) {
-        _showError('Ofertas não disponíveis no momento');
+        _showError(s.offersNotAvailable);
         return;
       }
       final target = packages.where((p) => p.id == pkg.id);
       if (target.isEmpty) {
-        _showError('Pacote não encontrado');
+        _showError(s.packageNotFound);
         return;
       }
       final success = await IAPService.purchaseCoinPackage(target.first);
@@ -82,7 +84,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
 
   Future<void> _watchAdForCoins() async {
     if (!AdService.canWatchAd) {
-      _showError('Limite diário de anúncios atingido. Tente amanhã!');
+      _showError(s.dailyAdLimitReached);
       return;
     }
     setState(() => _isWatchingAd = true);
@@ -93,7 +95,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
         setState(() => _userCoins += 5);
         _showSuccess('+5 moedas ganhas!');
       } else {
-        _showError('Anúncio não disponível no momento');
+        _showError(s.adNotAvailable);
       }
     } finally {
       if (mounted) setState(() => _isWatchingAd = false);
@@ -105,7 +107,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
     if (success) {
       _showSuccess('Compras restauradas com sucesso!');
     } else {
-      _showError('Erro ao restaurar compras');
+      _showError(s.errorRestoringPurchases);
     }
   }
 
@@ -128,7 +130,8 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
@@ -319,7 +322,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Assistir Anúncio',
+                  s.watchAdAction,
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: r.fs(14),
@@ -328,7 +331,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Ganhe 5 moedas grátis ($remaining restantes)',
+                  s.freeCoinsRemaining(remaining),
                   style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
                 ),
               ],
@@ -355,7 +358,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                           strokeWidth: 2, color: Colors.white),
                     )
                   : Text(
-                      'Assistir',
+                      s.watchAction,
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
@@ -448,7 +451,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                 if (pkg.coins >= 1200) ...[
                   const SizedBox(height: 2),
                   Text(
-                    'Melhor custo-benefício!',
+                    s.bestValue,
                     style: TextStyle(
                       color: Color(0xFFFF9800),
                       fontSize: r.fs(11),
@@ -527,7 +530,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
               ),
               SizedBox(width: r.s(10)),
               Text(
-                'Amino+',
+                s.aminoPlus,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: r.fs(20),
@@ -555,11 +558,11 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
             ],
           ),
           SizedBox(height: r.s(12)),
-          _aminoPlusBenefit('Sem anúncios'),
-          _aminoPlusBenefit('Badge exclusiva no perfil'),
+          _aminoPlusBenefit(s.noAds),
+          _aminoPlusBenefit(s.exclusiveBadge),
           _aminoPlusBenefit('Chat bubbles premium'),
-          _aminoPlusBenefit('200 moedas/mês grátis'),
-          _aminoPlusBenefit('Acesso antecipado a novidades'),
+          _aminoPlusBenefit(s.freeCoinsMonth),
+          _aminoPlusBenefit(s.earlyAccess),
           SizedBox(height: r.s(16)),
           if (!IAPService.isAminoPlus)
             GestureDetector(
@@ -576,12 +579,12 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                             setState(() {});
                           } else {
                             _showError(
-                                'Não foi possível processar a assinatura.');
+                                s.couldNotProcessSubscription);
                           }
                         }
                       } catch (e) {
                         if (mounted)
-                          _showError('Ocorreu um erro. Tente novamente.');
+                          _showError(s.anErrorOccurredTryAgain);
                       } finally {
                         if (mounted) setState(() => _isPurchasing = false);
                       }
@@ -595,7 +598,7 @@ class _CoinShopScreenState extends State<CoinShopScreen> {
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  'Assinar por R\$ 14,90/mês',
+                  s.subscribePrice,
                   style: TextStyle(
                     color: Color(0xFFFF6B35),
                     fontWeight: FontWeight.w800,

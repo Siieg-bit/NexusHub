@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // CREATE QUIZ SCREEN — Quiz interativo com perguntas e respostas corretas
@@ -76,7 +77,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('O título do quiz é obrigatório'),
+          content: Text(s.quizTitleRequired),
           backgroundColor: AppTheme.errorColor,
         ),
       );
@@ -88,7 +89,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
     if (validQuestions.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Adicione pelo menos uma pergunta'),
+          content: Text(s.addAtLeastOneQuestion),
           backgroundColor: AppTheme.errorColor,
         ),
       );
@@ -98,7 +99,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
     setState(() => _isSubmitting = true);
     try {
       final userId = SupabaseService.currentUserId;
-      if (userId == null) throw Exception('Não autenticado');
+      if (userId == null) throw Exception(s.notAuthenticated);
 
       // Montar perguntas com opções como JSON para a RPC
       final questions = validQuestions
@@ -126,7 +127,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Quiz criado com sucesso!'),
+            content: Text(s.quizCreatedSuccess),
             backgroundColor: AppTheme.successColor,
           ),
         );
@@ -136,7 +137,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
         setState(() => _isSubmitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao criar quiz. Tente novamente.'),
+            content: Text(s.errorCreatingQuiz),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -146,13 +147,14 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         title: Text(
-          'Novo Quiz',
+          s.newQuiz,
           style: TextStyle(
               color: context.textPrimary,
               fontSize: r.fs(17),
@@ -179,15 +181,15 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
             itemBuilder: (_) => [
               PopupMenuItem(
                   value: 'public',
-                  child: Text('Público',
+                  child: Text(s.publicLabel,
                       style: TextStyle(color: context.textPrimary))),
               PopupMenuItem(
                   value: 'followers',
-                  child: Text('Seguidores',
+                  child: Text(s.followers,
                       style: TextStyle(color: context.textPrimary))),
               PopupMenuItem(
                   value: 'private',
-                  child: Text('Privado',
+                  child: Text(s.privateLabel,
                       style: TextStyle(color: context.textPrimary))),
             ],
           ),
@@ -201,7 +203,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                         strokeWidth: 2, color: AppTheme.primaryColor),
                   )
                 : Text(
-                    'Publicar',
+                    s.publish,
                     style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontSize: r.fs(14),
@@ -231,15 +233,15 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
             ),
             SizedBox(height: r.s(20)),
             // Título
-            _buildLabel('Título do Quiz', r),
+            _buildLabel(s.quizTitle, r),
             SizedBox(height: r.s(8)),
             _buildTextField(
                 controller: _titleController,
-                hint: 'Ex: Quanto você sabe sobre Naruto?',
+                hint: s.quizExampleHint,
                 maxLength: 120,
                 r: r),
             SizedBox(height: r.s(16)),
-            _buildLabel('Descrição (opcional)', r),
+            _buildLabel(s.descriptionOptional2, r),
             SizedBox(height: r.s(8)),
             _buildTextField(
                 controller: _descriptionController,
@@ -279,7 +281,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                   icon: Icon(Icons.add_rounded,
                       color: AppTheme.primaryColor, size: r.s(18)),
                   label: Text(
-                    'Adicionar pergunta',
+                    s.addQuestion,
                     style: TextStyle(
                         color: AppTheme.primaryColor, fontSize: r.fs(14)),
                   ),
@@ -337,7 +339,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
             textCapitalization: TextCapitalization.sentences,
             style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
             decoration: InputDecoration(
-              hintText: 'Digite a pergunta...',
+              hintText: s.typeQuestionHint,
               hintStyle:
                   TextStyle(color: context.textSecondary, fontSize: r.fs(14)),
               filled: true,
@@ -358,7 +360,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
           ),
           SizedBox(height: r.s(10)),
           Text(
-            'Opções (marque a correta)',
+            s.optionsMarkCorrect,
             style: TextStyle(
                 color: context.textSecondary,
                 fontSize: r.fs(12),
@@ -403,7 +405,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                       style: TextStyle(
                           color: context.textPrimary, fontSize: r.fs(13)),
                       decoration: InputDecoration(
-                        hintText: 'Opção ${oi + 1}',
+                        hintText: s.optionNumber(oi + 1),
                         hintStyle: TextStyle(
                             color: context.textSecondary, fontSize: r.fs(13)),
                         filled: true,

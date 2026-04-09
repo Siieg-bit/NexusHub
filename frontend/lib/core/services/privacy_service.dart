@@ -98,13 +98,13 @@ class PrivacyService {
   static String levelLabel(int level) {
     switch (level) {
       case 1:
-        return 'Público';
+        return s.publicLabel;
       case 2:
         return 'Membros da comunidade';
       case 3:
-        return 'Apenas amigos';
+        return s.friendsOnly;
       default:
-        return 'Público';
+        return s.publicLabel;
     }
   }
 

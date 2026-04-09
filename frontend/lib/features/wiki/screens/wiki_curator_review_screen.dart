@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -6,10 +7,11 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Tela de revisão de Wikis pendentes — estilo Amino Apps.
 /// Apenas curadores e leaders podem acessar.
-class WikiCuratorReviewScreen extends StatefulWidget {
+class WikiCuratorReviewScreen extends ConsumerStatefulWidget {
   final String communityId;
   const WikiCuratorReviewScreen({super.key, required this.communityId});
 
@@ -18,7 +20,7 @@ class WikiCuratorReviewScreen extends StatefulWidget {
       _WikiCuratorReviewScreenState();
 }
 
-class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
+class _WikiCuratorReviewScreenState extends ConsumerState<WikiCuratorReviewScreen> {
   List<Map<String, dynamic>> _pendingEntries = [];
   bool _isLoading = true;
 
@@ -76,11 +78,11 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
               'p_user_id': entry['author_id'],
               'p_type': action == 'approve' ? 'wiki_approved' : 'wiki_rejected',
               'p_title': action == 'approve'
-                  ? 'Wiki aprovada!'
-                  : 'Wiki precisa de alterações',
+                  ? s.wikiApproved
+                  : s.wikiNeedsChanges,
               'p_body': action == 'approve'
-                  ? 'Sua entrada "${entry['title']}" foi aprovada e está visível no catálogo.'
-                  : 'Sua entrada "${entry['title']}" precisa de alterações: ${rejectReason ?? ""}',
+                  ? s.entryApprovedMsg(entry['title'] as String? ?? '')
+                  : s.entryNeedsChanges(entry['title'] as String? ?? '', rejectReason ?? ''),
               'p_community_id': widget.communityId,
               'p_wiki_id': entryId,
               'p_action_url': '/wiki/$entryId',
@@ -107,8 +109,8 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
             'p_target_wiki_id': entryId,
             'p_target_user_id': entry['author_id'],
             'p_reason': action == 'approve'
-                ? 'Wiki aprovada'
-                : rejectReason ?? 'Rejeitada',
+                ? s.wikiApprovedStatus
+                : rejectReason ?? s.rejected2,
           });
         } catch (e) {
           debugPrint('[wiki_curator_review_screen] Erro: $e');
@@ -123,8 +125,8 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(action == 'approve'
-                ? 'Wiki aprovada com sucesso!'
-                : 'Wiki rejeitada'),
+                ? s.wikiApprovalSuccess
+                : s.wikiRejected),
             backgroundColor: action == 'approve'
                 ? AppTheme.successColor
                 : AppTheme.errorColor,
@@ -138,7 +140,7 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ocorreu um erro. Tente novamente.'),
+            content: Text(s.anErrorOccurredTryAgain),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -155,7 +157,7 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
         backgroundColor: context.cardBg,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(r.s(20))),
-        title: Text('Motivo da rejeição',
+        title: Text(s.rejectionReason,
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w800)),
         content: TextField(
@@ -163,7 +165,7 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
           style: TextStyle(color: context.textPrimary),
           maxLines: 3,
           decoration: InputDecoration(
-            hintText: 'Descreva o que precisa ser corrigido...',
+            hintText: s.describeCorrections,
             hintStyle: TextStyle(color: context.textSecondary),
             filled: true,
             fillColor: context.surfaceColor,
@@ -176,14 +178,14 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancelar',
+            child: Text(s.cancel,
                 style: TextStyle(color: context.textSecondary)),
           ),
           ElevatedButton(
             onPressed: () {
               final text = controller.text.trim();
               Navigator.pop(
-                  ctx, text.isNotEmpty ? text : 'Sem motivo especificado');
+                  ctx, text.isNotEmpty ? text : s.noReasonSpecified);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.errorColor,
@@ -191,7 +193,7 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
                   borderRadius: BorderRadius.circular(r.s(12))),
             ),
             child:
-                const Text('Rejeitar', style: TextStyle(color: Colors.white)),
+                Text(s.reject, style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -199,7 +201,8 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -209,7 +212,7 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
         iconTheme: IconThemeData(color: context.textPrimary),
         title: Row(
           children: [
-            Text('Revisão de Wiki',
+            Text(s.wikiReview,
                 style: TextStyle(
                     fontWeight: FontWeight.w800,
                     color: context.textPrimary,
@@ -246,13 +249,13 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
                           size: r.s(64),
                           color: AppTheme.successColor.withValues(alpha: 0.5)),
                       SizedBox(height: r.s(16)),
-                      Text('Nenhuma wiki pendente',
+                      Text(s.noPendingWiki,
                           style: TextStyle(
                               color: context.textSecondary,
                               fontSize: r.fs(16),
                               fontWeight: FontWeight.w600)),
                       SizedBox(height: r.s(8)),
-                      Text('Todas as submissões foram revisadas.',
+                      Text(s.allSubmissionsReviewed,
                           style: TextStyle(
                               color: context.textHint, fontSize: r.fs(14))),
                     ],
@@ -270,7 +273,7 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
                         entry: entry,
                         onApprove: () => _reviewEntry(entry['id'], 'approve'),
                         onReject: () => _reviewEntry(entry['id'], 'reject'),
-                        onTap: () => context.push('/wiki/${entry['id']}'),
+                        onTap: () => context.push('/wiki/${entry['ids.closingBracket),
                       );
                     },
                   ),
@@ -279,7 +282,7 @@ class _WikiCuratorReviewScreenState extends State<WikiCuratorReviewScreen> {
   }
 }
 
-class _PendingWikiCard extends StatelessWidget {
+class _PendingWikiCard extends ConsumerWidget {
   final Map<String, dynamic> entry;
   final VoidCallback onApprove;
   final VoidCallback onReject;
@@ -293,9 +296,10 @@ class _PendingWikiCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
-    final title = entry['title'] as String? ?? 'Sem titulo';
+    final title = entry['title'] as String? ?? s.noTitle;
     final content = entry['content'] as String? ?? '';
     final coverUrl = entry['cover_image_url'] as String?;
     final category = entry['category'] as String?;
@@ -356,7 +360,7 @@ class _PendingWikiCard extends StatelessWidget {
                   Icon(Icons.pending_actions_rounded,
                       size: r.s(16), color: AppTheme.warningColor),
                   SizedBox(width: r.s(6)),
-                  Text('Pendente de revisao',
+                  Text(s.pendingReview2,
                       style: TextStyle(
                           color: AppTheme.warningColor,
                           fontSize: r.fs(12),
@@ -421,7 +425,7 @@ class _PendingWikiCard extends StatelessWidget {
                         ),
                         SizedBox(width: r.s(8)),
                         Text(
-                          author['nickname'] as String? ?? 'Anonimo',
+                          author['nickname'] as String? ?? s.anonymous2,
                           style: TextStyle(
                               color: context.textSecondary,
                               fontSize: r.fs(13),
@@ -453,7 +457,7 @@ class _PendingWikiCard extends StatelessWidget {
                                 Icon(Icons.close_rounded,
                                     size: r.s(18), color: AppTheme.errorColor),
                                 SizedBox(width: r.s(6)),
-                                Text('Rejeitar',
+                                Text(s.reject,
                                     style: TextStyle(
                                         color: AppTheme.errorColor,
                                         fontWeight: FontWeight.w700,
@@ -492,7 +496,7 @@ class _PendingWikiCard extends StatelessWidget {
                                 Icon(Icons.check_rounded,
                                     size: r.s(18), color: Colors.white),
                                 SizedBox(width: r.s(6)),
-                                Text('Aprovar',
+                                Text(s.approve,
                                     style: TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.w700,

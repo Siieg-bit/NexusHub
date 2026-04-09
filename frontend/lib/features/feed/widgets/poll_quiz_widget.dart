@@ -1,14 +1,16 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/models/post_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Widget de Enquete (Poll) para uso no PostDetailScreen.
 ///
 /// Renderiza as opções de votação com barras de progresso,
 /// percentuais e feedback visual após votar — estilo Amino.
-class PollDetailWidget extends StatefulWidget {
+class PollDetailWidget extends ConsumerStatefulWidget {
   final PostModel post;
   final VoidCallback? onVoted;
 
@@ -18,7 +20,7 @@ class PollDetailWidget extends StatefulWidget {
   State<PollDetailWidget> createState() => _PollDetailWidgetState();
 }
 
-class _PollDetailWidgetState extends State<PollDetailWidget> {
+class _PollDetailWidgetState extends ConsumerState<PollDetailWidget> {
   int? _selectedOption;
   bool _hasVoted = false;
   List<Map<String, dynamic>> _options = [];
@@ -179,7 +181,8 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     if (_options.isEmpty) {
       // Fallback para pollData inline
@@ -209,7 +212,7 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
                   size: r.s(18), color: AppTheme.accentColor),
               SizedBox(width: r.s(8)),
               Text(
-                'Enquete',
+                s.poll,
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: r.fs(14),
@@ -233,7 +236,7 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
             final opt = _options[i];
             final text = (opt['text'] as String?) ??
                 (opt['option_text'] as String?) ??
-                'Opção ${i + 1}';
+                s.optionNumber(i + 1);
             final votes =
                 (opt['votes_count'] as int?) ?? (opt['votes'] as int?) ?? 0;
             final pct = _totalVotes > 0 ? votes / _totalVotes : 0.0;
@@ -347,7 +350,7 @@ class _PollDetailWidgetState extends State<PollDetailWidget> {
 ///
 /// Renderiza perguntas com opções, feedback de certo/errado
 /// e score final — estilo Amino.
-class QuizDetailWidget extends StatefulWidget {
+class QuizDetailWidget extends ConsumerStatefulWidget {
   final PostModel post;
   final VoidCallback? onCompleted;
 
@@ -357,7 +360,7 @@ class QuizDetailWidget extends StatefulWidget {
   State<QuizDetailWidget> createState() => _QuizDetailWidgetState();
 }
 
-class _QuizDetailWidgetState extends State<QuizDetailWidget> {
+class _QuizDetailWidgetState extends ConsumerState<QuizDetailWidget> {
   int _currentQuestion = 0;
   int _score = 0;
   bool _answered = false;
@@ -453,7 +456,8 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     if (_questions.isEmpty) return const SizedBox.shrink();
 
@@ -601,7 +605,7 @@ class _QuizDetailWidgetState extends State<QuizDetailWidget> {
           final optText = opt is Map
               ? ((opt['option_text'] as String?) ??
                   (opt['text'] as String?) ??
-                  'Opção ${i + 1}')
+                  s.optionNumber(i + 1))
               : opt.toString();
           final isCorrect = i == correctIndex;
           final isSelected = _selectedOption == i;

@@ -8,6 +8,7 @@ import '../../../core/utils/amino_animations.dart';
 import '../../../core/services/supabase_service.dart';
 import '../providers/auth_provider.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Tela de login — visual Amino Apps (fundo escuro, inputs arredondados, verde).
 class LoginScreen extends ConsumerStatefulWidget {
@@ -45,6 +46,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final authState = ref.watch(authProvider);
 
@@ -95,7 +97,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                       SizedBox(height: r.s(8)),
                       Text(
-                        'Faça login para continuar',
+                        s.logInToContinue,
                         style: TextStyle(
                           color: context.textSecondary,
                           fontSize: r.fs(15),
@@ -112,13 +114,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   delay: const Duration(milliseconds: 100),
                   child: _AminoTextField(
                     controller: _emailController,
-                    hint: 'Email',
+                    hint: s.emailHint,
                     icon: Icons.email_outlined,
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
                       if (value == null || value.isEmpty)
-                        return 'Informe seu email';
-                      if (!value.contains('@')) return 'Email inválido';
+                        return s.enterYourEmail;
+                      if (!value.contains('@')) return s.invalidEmail;
                       return null;
                     },
                   ),
@@ -131,7 +133,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   delay: const Duration(milliseconds: 150),
                   child: _AminoTextField(
                     controller: _passwordController,
-                    hint: 'Senha',
+                    hint: s.password,
                     icon: Icons.lock_outline_rounded,
                     obscureText: _obscurePassword,
                     suffixIcon: GestureDetector(
@@ -147,8 +149,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty)
-                        return 'Informe sua senha';
-                      if (value.length < 6) return 'Mínimo 6 caracteres';
+                        return s.enterYourPassword;
+                      if (value.length < 6) return s.minimum6Characters;
                       return null;
                     },
                   ),
@@ -165,7 +167,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       if (email.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Digite seu email primeiro'),
+                            content: Text(s.enterYourEmailFirst),
                             behavior: SnackBarBehavior.floating,
                           ),
                         );
@@ -187,7 +189,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    child: const Text('Esqueceu a senha?'),
+                    child: Text(s.forgotPassword),
                   ),
                 ),
 
@@ -253,7 +255,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 color: Colors.white,
                               ),
                             )
-                          : const Text('Entrar'),
+                          : Text(s.login),
                     ),
                   ),
                 ),
@@ -271,7 +273,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: r.s(16)),
-                      child: Text('ou',
+                      child: Text(s.orLabel,
                           style: TextStyle(
                               color: context.textHint, fontSize: r.fs(13))),
                     ),
@@ -370,13 +372,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('Não tem conta? ',
+                      Text(s.dontHaveAccount2,
                           style: TextStyle(
                               color: context.textSecondary,
                               fontSize: r.fs(14))),
                       GestureDetector(
                         onTap: () => context.go('/signup'),
-                        child: Text('Criar conta',
+                        child: Text(s.createAccount,
                             style: TextStyle(
                               color: AppTheme.primaryColor,
                               fontWeight: FontWeight.w700,
@@ -422,6 +424,7 @@ class _AminoTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return TextFormField(
       controller: controller,

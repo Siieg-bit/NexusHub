@@ -1,14 +1,16 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Picker de comunidade destino para Crosspost — estilo Amino.
 ///
 /// Mostra uma lista das comunidades que o usuário é membro,
 /// permitindo selecionar a comunidade destino para o crosspost.
-class CrosspostPicker extends StatefulWidget {
+class CrosspostPicker extends ConsumerStatefulWidget {
   /// ID da comunidade de origem (será excluída da lista).
   final String currentCommunityId;
 
@@ -29,7 +31,7 @@ class CrosspostPicker extends StatefulWidget {
   State<CrosspostPicker> createState() => _CrosspostPickerState();
 }
 
-class _CrosspostPickerState extends State<CrosspostPicker> {
+class _CrosspostPickerState extends ConsumerState<CrosspostPicker> {
   List<Map<String, dynamic>> _communities = [];
   bool _loading = true;
   String? _loadError;
@@ -78,7 +80,8 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       margin: EdgeInsets.symmetric(vertical: r.s(8)),
@@ -110,7 +113,7 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
                 GestureDetector(
                   onTap: () => _showCommunityPicker(),
                   child: Text(
-                    'Alterar',
+                    s.change,
                     style: TextStyle(
                       color: AppTheme.accentColor,
                       fontWeight: FontWeight.w600,
@@ -169,7 +172,7 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  community['name'] as String? ?? 'Comunidade',
+                  community['name'] as String? ?? s.community,
                   style: TextStyle(
                     color: context.textPrimary,
                     fontWeight: FontWeight.w700,
@@ -294,7 +297,7 @@ class _CrosspostPickerState extends State<CrosspostPicker> {
                                   _loadCommunities();
                                 },
                                 icon: const Icon(Icons.refresh_rounded),
-                                label: const Text('Tentar novamente'),
+                                label: Text(s.retry),
                               ),
                             ],
                           ),

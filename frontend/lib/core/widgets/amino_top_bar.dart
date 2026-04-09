@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/app_theme.dart';
+import '../l10n/locale_provider.dart';
 import '../utils/responsive.dart';
 
 /// Top Bar do Amino original — réplica pixel-perfect.
@@ -14,11 +16,11 @@ import '../utils/responsive.dart';
 ///   - Separação de cor nítida, sem gap
 ///   - Altura: 26px, borderRadius: 13px
 ///
-/// Barra de busca: fundo translúcido, lupa à esquerda, "Search" placeholder,
-/// dropdown "EN ▼" à direita.
+/// Barra de busca: fundo translúcido, lupa à esquerda, placeholder localizado,
+/// dropdown com idioma atual à direita.
 ///
 /// Sino: branco com badge vermelho (dot para 1-9, número para 10+).
-class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
+class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
   final String? avatarUrl;
   final String? username;
   final int coins;
@@ -46,8 +48,11 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(50);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final r = context.r;
+    final s = ref.watch(stringsProvider);
+    final currentLocale = ref.watch(localeProvider);
+
     return SafeArea(
       bottom: false,
       child: Container(
@@ -62,7 +67,7 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
             SizedBox(width: r.s(8)),
 
             // ── Barra de Busca (flex) ──
-            _buildSearchBar(context),
+            _buildSearchBar(context, ref, s, currentLocale),
 
             SizedBox(width: r.s(8)),
 
@@ -124,8 +129,9 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   /// Barra de busca — pill arredondada, fundo translúcido branco 8%.
-  /// Esquerda: lupa + "Search". Direita: "EN" + seta dropdown.
-  Widget _buildSearchBar(BuildContext context) {
+  /// Esquerda: lupa + placeholder localizado. Direita: código do idioma atual + seta dropdown.
+  Widget _buildSearchBar(
+      BuildContext context, WidgetRef ref, AppStrings s, AppLocale currentLocale) {
     final r = context.r;
     return Expanded(
       child: Container(
@@ -152,7 +158,7 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
                     SizedBox(width: r.s(6)),
                     Expanded(
                       child: Text(
-                        'Search',
+                        s.search,
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.35),
                           fontSize: r.fs(13),
@@ -167,7 +173,7 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
             // ── Chip de idioma (separado, com seu próprio GestureDetector) ──
             GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: () => _showLanguagePopup(context),
+              onTap: () => _showLanguagePopup(context, ref, currentLocale),
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: r.s(4), vertical: 2),
                 decoration: BoxDecoration(
@@ -178,7 +184,7 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'EN',
+                      currentLocale.code.toUpperCase(),
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.65),
                         fontSize: r.fs(10),
@@ -200,8 +206,9 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
-  /// Popup de seleção de idioma — exibe opções disponíveis.
-  void _showLanguagePopup(BuildContext context) {
+  /// Popup de seleção de idioma — exibe opções disponíveis e aplica a troca.
+  void _showLanguagePopup(
+      BuildContext context, WidgetRef ref, AppLocale currentLocale) {
     final r = context.r;
     final RenderBox box = context.findRenderObject() as RenderBox;
     final offset = box.localToGlobal(Offset.zero);
@@ -217,31 +224,37 @@ class AminoTopBar extends StatelessWidget implements PreferredSizeWidget {
       color: const Color(0xFF1E2A3A),
       shape:
           RoundedRectangleBorder(borderRadius: BorderRadius.circular(r.s(10))),
-      items: [
-        PopupMenuItem(
-          value: 'pt',
-          child: Text('Português (BR)',
-              style: TextStyle(color: Colors.white, fontSize: r.fs(13))),
-        ),
-        PopupMenuItem(
-          value: 'en',
-          child: Text('English',
-              style: TextStyle(color: Colors.white, fontSize: r.fs(13))),
-        ),
-      ],
-    ).then((value) {
-      if (value != null) {
-        debugPrint('[AminoTopBar] Language selected: $value');
-        // A troca real de locale será conectada ao localeProvider na Fase 4 (L10n).
-        // Por ora, registra a seleção e mostra feedback visual.
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content:
-                Text(value == 'pt' ? 'Idioma: Português' : 'Language: English'),
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 1),
+      items: AppLocale.values.map((locale) {
+        final isSelected = locale == currentLocale;
+        return PopupMenuItem<String>(
+          value: locale.code,
+          child: Row(
+            children: [
+              Text(
+                locale.flag,
+                style: TextStyle(fontSize: r.fs(16)),
+              ),
+              SizedBox(width: r.s(8)),
+              Expanded(
+                child: Text(
+                  locale.label,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: r.fs(13),
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+                  ),
+                ),
+              ),
+              if (isSelected)
+                Icon(Icons.check_rounded, color: Colors.white, size: r.s(16)),
+            ],
           ),
         );
+      }).toList(),
+    ).then((value) {
+      if (value != null && value != currentLocale.code) {
+        final newLocale = AppLocale.fromCode(value);
+        ref.read(localeProvider.notifier).setLocale(newLocale);
       }
     });
   }

@@ -15,6 +15,7 @@ import '../../../core/providers/notification_provider.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/providers/dm_invite_provider.dart';
 import '../widgets/dm_invite_card.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Provider para "Meus chats" — lista pessoal do usuário.
 /// Retorna apenas threads com membership ativo (status != 'left').
@@ -114,6 +115,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final chatsAsync = ref.watch(chatListProvider);
     final communitiesAsync = ref.watch(chatCommunitiesProvider);
@@ -142,7 +144,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text('Novo Chat',
+                        Text(s.newChatTitle,
                             style: TextStyle(
                                 color: context.textPrimary,
                                 fontSize: r.fs(18),
@@ -160,7 +162,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                             child: const Icon(Icons.person_add_rounded,
                                 color: AppTheme.primaryColor),
                           ),
-                          title: Text('Chat Privado',
+                          title: Text(s.privateChatLabel,
                               style: TextStyle(
                                   color: context.textPrimary,
                                   fontWeight: FontWeight.w600)),
@@ -184,7 +186,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                             child: const Icon(Icons.group_add_rounded,
                                 color: AppTheme.accentColor),
                           ),
-                          title: Text('Chat em Grupo',
+                          title: Text(s.groupChatLabel,
                               style: TextStyle(
                                   color: context.textPrimary,
                                   fontWeight: FontWeight.w600)),
@@ -233,7 +235,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                           isSelected: _selectedSidebarIndex == 0,
                           onTap: () =>
                               setState(() => _selectedSidebarIndex = 0),
-                          tooltip: 'Recente',
+                          tooltip: s.recent,
                         ),
 
                         SizedBox(height: r.s(8)),
@@ -244,7 +246,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                           isSelected: _selectedSidebarIndex == 1,
                           onTap: () =>
                               setState(() => _selectedSidebarIndex = 1),
-                          tooltip: 'Global',
+                          tooltip: s.global,
                           badgeCount: 0,
                         ),
 
@@ -327,7 +329,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                             Icon(Icons.error_outline_rounded,
                                 size: r.s(48), color: context.textHint),
                             SizedBox(height: r.s(12)),
-                            Text('Erro ao carregar chats',
+                            Text(s.errorLoadingChats,
                                 style: TextStyle(
                                     color: context.textSecondary,
                                     fontSize: r.fs(14))),
@@ -410,7 +412,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                           color: AppTheme.accentColor, size: r.s(16)),
                       SizedBox(width: r.s(6)),
                       Text(
-                        'Convites pendentes',
+                        s.pendingInvites,
                         style: TextStyle(
                           color: AppTheme.accentColor,
                           fontSize: r.fs(13),
@@ -453,7 +455,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
         Padding(
           padding: EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16), r.s(12)),
           child: Text(
-            'Recomendados',
+            s.recommended,
             style: TextStyle(
               fontSize: r.fs(18),
               fontWeight: FontWeight.w700,
@@ -520,8 +522,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                         ),
                         child: Text(
                           [
-                            'Anime',
-                            'K-Pop',
+                            s.interestAnime,
+                            s.interestKpop,
                             'Gaming',
                             'Art',
                             'Music'
@@ -538,9 +540,9 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                         [
                           'Chat Geral da Comunidade',
                           'Bate-papo Livre',
-                          'Discussões e Debates',
+                          s.discussionsAndDebates,
                           'Compartilhe sua Arte',
-                          'Recomendações Musicais',
+                          s.musicRecommendations,
                         ][index % 5],
                         style: TextStyle(
                           color: Colors.white,
@@ -596,13 +598,13 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                   size: r.s(36), color: context.textHint),
             ),
             SizedBox(height: r.s(16)),
-            Text('Nenhum chat ainda',
+            Text(s.noChatsYet,
                 style: TextStyle(
                     color: context.textPrimary,
                     fontSize: r.fs(16),
                     fontWeight: FontWeight.w600)),
             SizedBox(height: r.s(8)),
-            Text('Entre em uma comunidade e comece a conversar!',
+            Text(s.joinCommunityStartChat,
                 style:
                     TextStyle(color: context.textSecondary, fontSize: r.fs(13)),
                 textAlign: TextAlign.center),
@@ -653,6 +655,7 @@ class _SidebarIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: onTap,
@@ -737,6 +740,7 @@ class _SidebarCommunityIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: onTap,
@@ -838,7 +842,7 @@ class _AminoChatTile extends ConsumerWidget {
                 size: r.s(22),
               ),
               title: Text(
-                isPinned ? 'Desafixar do topo' : 'Fixar no topo',
+                isPinned ? s.unpinFromTop : s.pinToTop,
                 style:
                     TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
               ),
@@ -884,10 +888,10 @@ class _AminoChatTile extends ConsumerWidget {
               ),
               title: Text(
                 chatRoom.type == 'dm'
-                    ? 'Apagar conversa'
+                    ? s.deleteConversation
                     : chatRoom.type == 'group'
-                        ? 'Sair do grupo'
-                        : 'Sair do chat',
+                        ? s.leaveGroup
+                        : s.leaveChat,
                 style:
                     TextStyle(color: AppTheme.errorColor, fontSize: r.fs(14)),
               ),
@@ -911,9 +915,9 @@ class _AminoChatTile extends ConsumerWidget {
                     ),
                     content: Text(
                       chatRoom.type == 'dm'
-                          ? 'A conversa será removida da sua lista.'
+                          ? s.conversationRemovedFromList
                           : chatRoom.type == 'group'
-                              ? 'Para voltar, você precisará de um novo convite.'
+                              ? s.needNewInvite
                               : 'Você poderá entrar novamente depois.',
                       style: TextStyle(
                           color: context.textSecondary, fontSize: r.fs(13)),
@@ -921,7 +925,7 @@ class _AminoChatTile extends ConsumerWidget {
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.of(dCtx).pop(false),
-                        child: Text('Cancelar',
+                        child: Text(s.cancel,
                             style: TextStyle(
                                 color: context.textSecondary,
                                 fontSize: r.fs(13))),
@@ -929,7 +933,7 @@ class _AminoChatTile extends ConsumerWidget {
                       TextButton(
                         onPressed: () => Navigator.of(dCtx).pop(true),
                         child: Text(
-                          chatRoom.type == 'dm' ? 'Apagar' : 'Sair',
+                          chatRoom.type == 'dm' ? s.deleteAction : s.logout,
                           style: TextStyle(
                               color: AppTheme.errorColor,
                               fontWeight: FontWeight.w700,
@@ -953,8 +957,8 @@ class _AminoChatTile extends ConsumerWidget {
                         content: Text(chatRoom.type == 'dm'
                             ? 'Conversa apagada.'
                             : chatRoom.type == 'group'
-                                ? 'Você saiu do grupo.'
-                                : 'Você saiu do chat.'),
+                                ? s.leftGroup
+                                : s.leftChat),
                         backgroundColor: AppTheme.primaryColor,
                         behavior: SnackBarBehavior.floating,
                       ),
@@ -985,6 +989,7 @@ class _AminoChatTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final hasUnread = chatRoom.unreadCount > 0;
     final isPinned = chatRoom.isPinnedByUser;
@@ -1054,7 +1059,7 @@ class _AminoChatTile extends ConsumerWidget {
                   ),
                   SizedBox(height: r.s(3)),
                   Text(
-                    chatRoom.lastMessagePreview ?? 'Sem mensagens',
+                    chatRoom.lastMessagePreview ?? s.noMessages,
                     style: TextStyle(
                       color:
                           hasUnread ? context.textSecondary : context.textHint,

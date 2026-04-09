@@ -8,6 +8,7 @@ import '../../../core/widgets/level_up_dialog.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/utils/helpers.dart'; // ReputationRewards
 import '../providers/community_shared_providers.dart'; // checkInStatusProvider
+import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // CHECK-IN BAR — Design moderno com gradiente, ícone animado e streak visual
@@ -83,7 +84,7 @@ class _CommunityCheckInBarState extends ConsumerState<CommunityCheckInBar>
           }
         }
       } else {
-        final error = result?['error'] ?? 'Erro desconhecido';
+        final error = result?['error'] ?? s.unknownError;
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text('$error'),
@@ -95,7 +96,7 @@ class _CommunityCheckInBarState extends ConsumerState<CommunityCheckInBar>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Ocorreu um erro. Tente novamente.'),
+          content: Text(s.anErrorOccurredTryAgain),
           backgroundColor: AppTheme.errorColor,
           behavior: SnackBarBehavior.floating,
         ));
@@ -107,6 +108,7 @@ class _CommunityCheckInBarState extends ConsumerState<CommunityCheckInBar>
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final checkInStatus = ref.watch(checkInStatusProvider);
     final statusMap = checkInStatus.valueOrNull ?? {};
@@ -144,7 +146,7 @@ class _CommunityCheckInBarState extends ConsumerState<CommunityCheckInBar>
                   color: const Color(0xFFFF6B35), size: r.s(20)),
               SizedBox(width: r.s(6)),
               Text(
-                'Check-in Diário',
+                s.dailyCheckIn2,
                 style: TextStyle(
                   color: context.textPrimary,
                   fontSize: r.fs(15),
@@ -202,7 +204,7 @@ class _CommunityCheckInBarState extends ConsumerState<CommunityCheckInBar>
                         children: [
                           Icon(Icons.check_circle_rounded, size: r.s(18)),
                           SizedBox(width: r.s(6)),
-                          const Text('Fazer Check-in'),
+                          Text(s.doCheckIn2),
                         ],
                       ),
               ),

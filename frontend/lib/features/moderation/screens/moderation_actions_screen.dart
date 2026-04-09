@@ -1,13 +1,15 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Ações de Moderação — Tela para aplicar ações em um usuário/conteúdo.
 /// Suporta: Ban, Mute, Warn, Hide Post, Delete Post, Strike, Transfer Leader.
-class ModerationActionsScreen extends StatefulWidget {
+class ModerationActionsScreen extends ConsumerStatefulWidget {
   final String communityId;
   final String? targetUserId;
   final String? targetPostId;
@@ -24,7 +26,7 @@ class ModerationActionsScreen extends StatefulWidget {
       _ModerationActionsScreenState();
 }
 
-class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
+class _ModerationActionsScreenState extends ConsumerState<ModerationActionsScreen> {
   Map<String, dynamic>? _targetUser;
   bool _isLoading = true;
   final _reasonController = TextEditingController();
@@ -35,52 +37,52 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
   static const _actions = [
     {
       'id': 'warn',
-      'label': 'Avisar',
+      'label': s.warn,
       'icon': Icons.warning_rounded,
       'color': 0xFFFFA726,
-      'description': 'Enviar um aviso ao usuário',
+      'description': s.sendWarning,
     },
     {
       'id': 'mute',
-      'label': 'Silenciar',
+      'label': s.mute,
       'icon': Icons.volume_off_rounded,
       'color': 0xFF42A5F5,
-      'description': 'Impedir o usuário de postar/comentar temporariamente',
+      'description': s.temporarilyPreventUser,
     },
     {
       'id': 'hide_post',
-      'label': 'Ocultar Post',
+      'label': s.hidePost,
       'icon': Icons.visibility_off_rounded,
       'color': 0xFF78909C,
-      'description': 'Ocultar o post sem deletá-lo',
+      'description': s.hidePostDesc,
     },
     {
       'id': 'delete_post',
-      'label': 'Deletar Post',
+      'label': s.deletePost2,
       'icon': Icons.delete_rounded,
       'color': 0xFFEF5350,
       'description': 'Remover permanentemente o post',
     },
     {
       'id': 'strike',
-      'label': 'Strike',
+      'label': s.strike,
       'icon': Icons.gavel_rounded,
       'color': 0xFFFF7043,
-      'description': 'Aplicar um strike (3 strikes = ban automático)',
+      'description': s.applyStrikeDesc,
     },
     {
       'id': 'ban',
-      'label': 'Banir',
+      'label': s.ban,
       'icon': Icons.block_rounded,
       'color': 0xFFF44336,
-      'description': 'Banir o usuário da comunidade',
+      'description': s.banUserFromCommunity,
     },
     {
       'id': 'unban',
-      'label': 'Desbanir',
+      'label': s.unban,
       'icon': Icons.check_circle_rounded,
       'color': 0xFF66BB6A,
-      'description': 'Remover o ban do usuário',
+      'description': s.removeUserBan,
     },
     {
       'id': 'feature_post',
@@ -101,21 +103,21 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
       'label': 'Fixar Post',
       'icon': Icons.push_pin_rounded,
       'color': 0xFF26A69A,
-      'description': 'Fixar o post no topo do feed (máx 3 fixados)',
+      'description': s.pinPostDesc,
     },
     {
       'id': 'unpin_post',
       'label': 'Desafixar Post',
       'icon': Icons.push_pin_outlined,
       'color': 0xFF78909C,
-      'description': 'Remover a fixação do post',
+      'description': s.unpinPost,
     },
     {
       'id': 'kick',
-      'label': 'Expulsar',
+      'label': s.kick,
       'icon': Icons.exit_to_app_rounded,
       'color': 0xFFFF5722,
-      'description': 'Remover o usuário da comunidade (pode voltar a entrar)',
+      'description': s.removeUserDesc,
     },
   ];
 
@@ -144,7 +146,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
   Future<void> _executeAction() async {
     if (_reasonController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Informe o motivo da ação')),
+        const SnackBar(content: Text(s.informActionReason)),
       );
       return;
     }
@@ -233,8 +235,8 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
             'user_id': widget.targetUserId,
             'actor_id': SupabaseService.currentUserId,
             'type': 'moderation',
-            'title': 'Aviso da moderação',
-            'body': 'Você recebeu um aviso: ${_reasonController.text.trim()}',
+            'title': s.moderationWarning,
+            'body': s.receivedWarning(_reasonController.text.trim()),
             'community_id': widget.communityId,
           });
           break;
@@ -292,9 +294,9 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
               'user_id': widget.targetUserId,
               'actor_id': SupabaseService.currentUserId,
               'type': 'moderation',
-              'title': 'Ação da moderação',
+              'title': s.moderationActionLabel,
               'body':
-                  'Você foi removido da comunidade: ${_reasonController.text.trim()}',
+                  s.removedFromCommunity(_reasonController.text.trim()),
               'community_id': widget.communityId,
             });
           }
@@ -303,14 +305,14 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ação executada com sucesso')),
+          const SnackBar(content: Text(s.actionExecutedSuccess)),
         );
         context.pop();
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
+          SnackBar(content: Text(s.anErrorOccurredTryAgain)),
         );
       }
     }
@@ -323,14 +325,15 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text('Ação de Moderação',
+        title: Text(s.moderationActionTitle,
             style: TextStyle(
                 fontWeight: FontWeight.w800, color: context.textPrimary)),
         iconTheme: IconThemeData(color: context.textPrimary),
@@ -373,14 +376,14 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                             children: [
                               Text(
                                 _targetUser?['nickname'] as String? ??
-                                    'Usuário',
+                                    s.user,
                                 style: TextStyle(
                                     color: context.textPrimary,
                                     fontWeight: FontWeight.w700,
                                     fontSize: r.fs(16)),
                               ),
                               Text(
-                                'Nível ${_targetUser?['level'] ?? 1}',
+                                s.levelLabel(_targetUser?['level'] as int? ?? 1),
                                 style: TextStyle(
                                     color: Colors.grey[500],
                                     fontSize: r.fs(12)),
@@ -393,7 +396,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                   SizedBox(height: r.s(20)),
 
                   // Seleção de ação
-                  Text('Tipo de Ação',
+                  Text(s.actionType,
                       style: TextStyle(
                           color: context.textPrimary,
                           fontWeight: FontWeight.w800,
@@ -461,7 +464,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                   // Duração do destaque (para feature_post)
                   if (_selectedAction == 'feature_post') ...[
                     SizedBox(height: r.s(16)),
-                    Text('Duração do Destaque',
+                    Text(s.highlightDuration,
                         style: TextStyle(
                             color: context.textPrimary,
                             fontWeight: FontWeight.w800,
@@ -472,28 +475,28 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                       runSpacing: 8,
                       children: [
                         _DurationChip(
-                          label: '1 dia',
+                          label: s.oneDay,
                           hours: 24,
                           selected: _featuredDurationDays * 24,
                           onTap: () =>
                               setState(() => _featuredDurationDays = 1),
                         ),
                         _DurationChip(
-                          label: '3 dias',
+                          label: s.threeDays,
                           hours: 72,
                           selected: _featuredDurationDays * 24,
                           onTap: () =>
                               setState(() => _featuredDurationDays = 3),
                         ),
                         _DurationChip(
-                          label: '7 dias',
+                          label: s.sevenDays,
                           hours: 168,
                           selected: _featuredDurationDays * 24,
                           onTap: () =>
                               setState(() => _featuredDurationDays = 7),
                         ),
                         _DurationChip(
-                          label: 'Permanente',
+                          label: s.permanent,
                           hours: 0,
                           selected: _featuredDurationDays * 24,
                           onTap: () =>
@@ -507,7 +510,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                   if (_selectedAction == 'ban' ||
                       _selectedAction == 'mute') ...[
                     SizedBox(height: r.s(16)),
-                    Text('Duração',
+                    Text(s.duration,
                         style: TextStyle(
                             color: context.textPrimary,
                             fontWeight: FontWeight.w800,
@@ -518,37 +521,37 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                       runSpacing: 8,
                       children: [
                         _DurationChip(
-                          label: '1h',
+                          label: s.oneHour,
                           hours: 1,
                           selected: _banDurationHours,
                           onTap: () => setState(() => _banDurationHours = 1),
                         ),
                         _DurationChip(
-                          label: '6h',
+                          label: s.sixHours,
                           hours: 6,
                           selected: _banDurationHours,
                           onTap: () => setState(() => _banDurationHours = 6),
                         ),
                         _DurationChip(
-                          label: '24h',
+                          label: s.twentyFourHours,
                           hours: 24,
                           selected: _banDurationHours,
                           onTap: () => setState(() => _banDurationHours = 24),
                         ),
                         _DurationChip(
-                          label: '7 dias',
+                          label: s.sevenDays,
                           hours: 168,
                           selected: _banDurationHours,
                           onTap: () => setState(() => _banDurationHours = 168),
                         ),
                         _DurationChip(
-                          label: '30 dias',
+                          label: s.thirtyDays,
                           hours: 720,
                           selected: _banDurationHours,
                           onTap: () => setState(() => _banDurationHours = 720),
                         ),
                         _DurationChip(
-                          label: 'Permanente',
+                          label: s.permanent,
                           hours: 87600,
                           selected: _banDurationHours,
                           onTap: () =>
@@ -560,7 +563,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
 
                   // Motivo
                   SizedBox(height: r.s(16)),
-                  Text('Motivo',
+                  Text(s.reason,
                       style: TextStyle(
                           color: context.textPrimary,
                           fontWeight: FontWeight.w800,
@@ -571,7 +574,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                     maxLines: 3,
                     style: TextStyle(color: context.textPrimary),
                     decoration: InputDecoration(
-                      hintText: 'Descreva o motivo da ação...',
+                      hintText: s.describeActionReason,
                       hintStyle: TextStyle(color: Colors.grey[600]),
                       filled: true,
                       fillColor: context.surfaceColor,
@@ -617,7 +620,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
                       ),
                       alignment: Alignment.center,
                       child: Text(
-                        'Executar Ação',
+                        s.executeAction2,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: r.fs(16),
@@ -633,7 +636,7 @@ class _ModerationActionsScreenState extends State<ModerationActionsScreen> {
   }
 }
 
-class _DurationChip extends StatelessWidget {
+class _DurationChip extends ConsumerWidget {
   final String label;
   final int hours;
   final int selected;
@@ -647,7 +650,8 @@ class _DurationChip extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final isSelected = selected == hours;
     return GestureDetector(

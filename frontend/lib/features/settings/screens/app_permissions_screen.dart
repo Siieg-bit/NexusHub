@@ -1,17 +1,19 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Tela de Permissões do App — exibe e gerencia permissões de sistema.
-class AppPermissionsScreen extends StatefulWidget {
+class AppPermissionsScreen extends ConsumerStatefulWidget {
   const AppPermissionsScreen({super.key});
 
   @override
   State<AppPermissionsScreen> createState() => _AppPermissionsScreenState();
 }
 
-class _AppPermissionsScreenState extends State<AppPermissionsScreen>
+class _AppPermissionsScreenState extends ConsumerState<AppPermissionsScreen>
     with WidgetsBindingObserver {
   Map<Permission, PermissionStatus> _statuses = {};
 
@@ -19,32 +21,32 @@ class _AppPermissionsScreenState extends State<AppPermissionsScreen>
     _PermissionInfo(
       permission: Permission.camera,
       icon: Icons.camera_alt_rounded,
-      title: 'Câmera',
-      description: 'Necessária para chamadas de vídeo e envio de fotos',
+      title: s.camera,
+      description: s.videoCallAndPhotoUpload,
     ),
     _PermissionInfo(
       permission: Permission.microphone,
       icon: Icons.mic_rounded,
-      title: 'Microfone',
-      description: 'Necessário para chamadas de voz e gravação de áudio',
+      title: s.microphone,
+      description: s.voiceCallAndAudioRecording,
     ),
     _PermissionInfo(
       permission: Permission.notification,
       icon: Icons.notifications_rounded,
-      title: 'Notificações',
-      description: 'Receba alertas de mensagens, curtidas e comentários',
+      title: s.notifications,
+      description: s.messageLikeCommentAlerts,
     ),
     _PermissionInfo(
       permission: Permission.photos,
       icon: Icons.photo_library_rounded,
-      title: 'Fotos e Mídia',
-      description: 'Necessário para enviar imagens da galeria',
+      title: s.photosAndMedia,
+      description: s.sendGalleryImages,
     ),
     _PermissionInfo(
       permission: Permission.storage,
       icon: Icons.folder_rounded,
-      title: 'Armazenamento',
-      description: 'Necessário para salvar arquivos e mídia',
+      title: s.storage,
+      description: s.saveFilesAndMedia,
     ),
   ];
 
@@ -84,26 +86,26 @@ class _AppPermissionsScreenState extends State<AppPermissionsScreen>
           context: context,
           builder: (ctx) => AlertDialog(
             backgroundColor: context.surfaceColor,
-            title: Text('Permissão negada',
+            title: Text(s.permissionDenied2,
                 style: TextStyle(
                     color: context.textPrimary, fontWeight: FontWeight.w700)),
             content: Text(
-              'A permissão de ${info.title} foi negada permanentemente. '
-              'Abra as configurações do sistema para habilitá-la.',
+              s.permissionPermanentlyDenied
+              s.openSystemSettings,
               style: TextStyle(color: context.textSecondary),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
                 child:
-                    Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
+                    Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
               ),
               TextButton(
                 onPressed: () {
                   Navigator.pop(ctx);
                   openAppSettings();
                 },
-                child: const Text('Abrir Configurações',
+                child: Text(s.openSettings,
                     style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontWeight: FontWeight.w700)),
@@ -118,14 +120,15 @@ class _AppPermissionsScreenState extends State<AppPermissionsScreen>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text('Permissões do App',
+        title: Text(s.appPermissions2,
             style: TextStyle(
                 fontWeight: FontWeight.w800, color: context.textPrimary)),
         iconTheme: IconThemeData(color: context.textPrimary),
@@ -149,7 +152,7 @@ class _AppPermissionsScreenState extends State<AppPermissionsScreen>
                 SizedBox(width: r.s(10)),
                 Expanded(
                   child: Text(
-                    'Gerencie as permissões que o NexusHub precisa para funcionar corretamente.',
+                    s.managePermissions,
                     style: TextStyle(
                         color: context.textSecondary, fontSize: r.fs(12)),
                   ),
@@ -199,10 +202,10 @@ class _AppPermissionsScreenState extends State<AppPermissionsScreen>
                     SizedBox(height: r.s(2)),
                     Text(
                       isGranted
-                          ? 'Permitido'
+                          ? s.allowed
                           : isDenied
-                              ? 'Negado permanentemente'
-                              : 'Não solicitado',
+                              ? s.permanentlyDenied
+                              : s.notRequested,
                       style: TextStyle(
                         color: isGranted
                             ? Colors.green[400]
@@ -236,7 +239,7 @@ class _AppPermissionsScreenState extends State<AppPermissionsScreen>
                                   borderRadius: BorderRadius.circular(r.s(8))),
                             ),
                             child: Text(
-                              isDenied ? 'Configurações' : 'Permitir',
+                              isDenied ? s.settings : s.allow,
                               style: TextStyle(
                                   color: AppTheme.primaryColor,
                                   fontSize: r.fs(12),

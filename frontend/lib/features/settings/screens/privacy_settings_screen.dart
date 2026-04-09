@@ -1,19 +1,21 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Configurações de Privacidade — Controles de quem pode ver perfil, enviar DM, etc.
 /// Réplica 1:1 das opções de privacidade do Amino.
-class PrivacySettingsScreen extends StatefulWidget {
+class PrivacySettingsScreen extends ConsumerStatefulWidget {
   const PrivacySettingsScreen({super.key});
 
   @override
   State<PrivacySettingsScreen> createState() => _PrivacySettingsScreenState();
 }
 
-class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
+class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
   bool _isLoading = true;
 
   // Configurações de privacidade
@@ -119,20 +121,21 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Configurações salvas!')),
+          const SnackBar(content: Text(s.settingsSaved)),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
+          SnackBar(content: Text(s.anErrorOccurredTryAgain)),
         );
       }
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -140,7 +143,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
-          'Privacidade',
+          s.privacy,
           style: TextStyle(
             fontWeight: FontWeight.w800,
             color: context.textPrimary,
@@ -170,7 +173,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
               ),
               alignment: Alignment.center,
               child: Text(
-                'Salvar',
+                s.save,
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
@@ -190,10 +193,10 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                 // ============================================================
                 // PERFIL
                 // ============================================================
-                const _SectionHeader(title: 'Perfil'),
+                const _SectionHeader(title: s.profile),
                 _SettingToggle(
                   icon: Icons.public_rounded,
-                  title: 'Perfil Público',
+                  title: s.publicProfile,
                   subtitle: 'Qualquer pessoa pode ver seu perfil',
                   value: _profilePublic,
                   onChanged: (v) => setState(() => _profilePublic = v),
@@ -201,7 +204,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                 _SettingToggle(
                   icon: Icons.circle,
                   title: 'Status Online',
-                  subtitle: 'Mostrar quando você está online',
+                  subtitle: s.showWhenOnline,
                   value: _showOnlineStatus,
                   onChanged: (v) => setState(() => _showOnlineStatus = v),
                 ),
@@ -229,21 +232,21 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                 _SettingToggle(
                   icon: Icons.visibility_off_rounded,
                   title: 'Modo Fantasma',
-                  subtitle: 'Apareça como offline para todos os usuários',
+                  subtitle: s.appearOfflineDesc,
                   value: _isGhostMode,
                   onChanged: (v) => setState(() => _isGhostMode = v),
                 ),
                 _SettingToggle(
                   icon: Icons.chat_bubble_outline_rounded,
                   title: 'Desabilitar novos chats',
-                  subtitle: 'Impede que novos usuários iniciem conversas',
+                  subtitle: s.preventNewUsersConversations,
                   value: _disableIncomingChats,
                   onChanged: (v) => setState(() => _disableIncomingChats = v),
                 ),
                 _SettingToggle(
                   icon: Icons.comments_disabled_rounded,
-                  title: 'Desabilitar comentários no perfil',
-                  subtitle: 'Ninguém pode comentar no seu mural',
+                  title: s.disableProfileComments,
+                  subtitle: s.noOneCanCommentWall,
                   value: _disableProfileComments,
                   onChanged: (v) => setState(() => _disableProfileComments = v),
                 ),
@@ -253,25 +256,25 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                 // ============================================================
                 // COMUNICAÇÃO
                 // ============================================================
-                const _SectionHeader(title: 'Comunicação'),
+                const _SectionHeader(title: s.communication),
                 _SettingToggle(
                   icon: Icons.chat_rounded,
-                  title: 'Mensagens Diretas',
-                  subtitle: 'Permitir que outros enviem DMs',
+                  title: s.directMessages,
+                  subtitle: s.allowOthersToSendDms,
                   value: _allowDMs,
                   onChanged: (v) => setState(() => _allowDMs = v),
                 ),
                 _SettingToggle(
                   icon: Icons.group_add_rounded,
-                  title: 'Convites para Chat',
-                  subtitle: 'Permitir convites para chats em grupo',
+                  title: s.chatInvitations,
+                  subtitle: s.allowGroupChatInvitations,
                   value: _allowChatInvites,
                   onChanged: (v) => setState(() => _allowChatInvites = v),
                 ),
                 _SettingToggle(
                   icon: Icons.alternate_email_rounded,
-                  title: 'Menções',
-                  subtitle: 'Permitir que outros mencionem você',
+                  title: s.mentions,
+                  subtitle: s.allowMentions,
                   value: _allowMentions,
                   onChanged: (v) => setState(() => _allowMentions = v),
                 ),
@@ -281,25 +284,25 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                 // ============================================================
                 // VISIBILIDADE
                 // ============================================================
-                const _SectionHeader(title: 'Visibilidade'),
+                const _SectionHeader(title: s.visibility),
                 _SettingToggle(
                   icon: Icons.groups_rounded,
-                  title: 'Lista de Comunidades',
-                  subtitle: 'Mostrar comunidades que você participa',
+                  title: s.communitiesList,
+                  subtitle: s.showParticipatedCommunities,
                   value: _showCommunitiesList,
                   onChanged: (v) => setState(() => _showCommunitiesList = v),
                 ),
                 _SettingToggle(
                   icon: Icons.people_rounded,
-                  title: 'Lista de Seguidores',
-                  subtitle: 'Mostrar seus seguidores/seguindo',
+                  title: s.followersList,
+                  subtitle: s.showFollowersFollowing,
                   value: _showFollowersList,
                   onChanged: (v) => setState(() => _showFollowersList = v),
                 ),
                 _SettingToggle(
                   icon: Icons.search_rounded,
-                  title: 'Busca por Nome',
-                  subtitle: 'Permitir que encontrem você por nome',
+                  title: s.searchByName,
+                  subtitle: s.allowFindByName,
                   value: _allowSearchByName,
                   onChanged: (v) => setState(() => _allowSearchByName = v),
                 ),
@@ -309,7 +312,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                 // ============================================================
                 // SEGUIDORES
                 // ============================================================
-                const _SectionHeader(title: 'Seguidores'),
+                const _SectionHeader(title: s.followers),
                 Container(
                   padding: EdgeInsets.all(r.s(16)),
                   decoration: BoxDecoration(
@@ -323,7 +326,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Quem pode te seguir',
+                        s.whoCanFollow,
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: r.fs(14),
@@ -332,19 +335,19 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                       ),
                       SizedBox(height: r.s(12)),
                       _RadioOption(
-                        label: 'Todos',
+                        label: s.everyone,
                         value: 'everyone',
                         groupValue: _whoCanFollow,
                         onChanged: (v) => setState(() => _whoCanFollow = v!),
                       ),
                       _RadioOption(
-                        label: 'Apenas quem eu sigo de volta',
+                        label: s.onlyFollowBack,
                         value: 'mutual',
                         groupValue: _whoCanFollow,
                         onChanged: (v) => setState(() => _whoCanFollow = v!),
                       ),
                       _RadioOption(
-                        label: 'Ninguém',
+                        label: s.nobody,
                         value: 'nobody',
                         groupValue: _whoCanFollow,
                         onChanged: (v) => setState(() => _whoCanFollow = v!),
@@ -358,7 +361,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                 // ============================================================
                 // DADOS
                 // ============================================================
-                const _SectionHeader(title: 'Dados'),
+                const _SectionHeader(title: s.data),
                 Container(
                   decoration: BoxDecoration(
                     color: context.surfaceColor,
@@ -373,14 +376,14 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                         leading: const Icon(Icons.download_rounded,
                             color: AppTheme.primaryColor),
                         title: Text(
-                          'Exportar Meus Dados',
+                          s.exportMyData,
                           style: TextStyle(
                             color: context.textPrimary,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
                         subtitle: Text(
-                          'Baixar uma cópia dos seus dados',
+                          s.downloadDataCopy,
                           style: TextStyle(
                             fontSize: r.fs(12),
                             color: Colors.grey[500],
@@ -391,7 +394,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                         onTap: () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                                content: Text('Exportação em desenvolvimento')),
+                                content: Text(s.exportInProgress)),
                           );
                         },
                       ),
@@ -402,7 +405,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                         leading:
                             Icon(Icons.block_rounded, color: Colors.grey[500]),
                         title: Text(
-                          'Usuários Bloqueados',
+                          s.blockedUsers2,
                           style: TextStyle(
                             color: context.textPrimary,
                             fontWeight: FontWeight.w700,
@@ -421,7 +424,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                         leading: const Icon(Icons.delete_forever_rounded,
                             color: AppTheme.errorColor),
                         title: const Text(
-                          'Excluir Conta',
+                          s.deleteAccount2,
                           style: TextStyle(
                             color: AppTheme.errorColor,
                             fontWeight: FontWeight.w700,
@@ -439,21 +442,21 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                                 ),
                               ),
                               title: Text(
-                                'Excluir Conta',
+                                s.deleteAccount2,
                                 style: TextStyle(
                                   color: context.textPrimary,
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
                               content: Text(
-                                'Tem certeza? Esta ação é irreversível e todos os seus dados serão apagados.',
+                                s.confirmDeletion,
                                 style: TextStyle(color: Colors.grey[500]),
                               ),
                               actions: [
                                 TextButton(
                                   onPressed: () => Navigator.pop(ctx),
                                   child: Text(
-                                    'Cancelar',
+                                    s.cancel,
                                     style: TextStyle(color: Colors.grey[500]),
                                   ),
                                 ),
@@ -476,7 +479,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               Text(
-                                                  'Digite "EXCLUIR" para confirmar:',
+                                                  s.typeDeleteToConfirm,
                                                   style: TextStyle(
                                                       color: Colors.grey[400])),
                                               SizedBox(height: r.s(12)),
@@ -485,7 +488,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                                                 style: TextStyle(
                                                     color: context.textPrimary),
                                                 decoration: InputDecoration(
-                                                  hintText: 'EXCLUIR',
+                                                  hintText: s.deleteButton,
                                                   hintStyle: TextStyle(
                                                       color: Colors.grey[600]),
                                                   filled: true,
@@ -504,17 +507,17 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                                             TextButton(
                                               onPressed: () =>
                                                   Navigator.pop(ctx2),
-                                              child: const Text('Cancelar'),
+                                              child: Text(s.cancel),
                                             ),
                                             ElevatedButton(
                                               onPressed: () async {
                                                 if (confirmCtrl.text.trim() !=
-                                                    'EXCLUIR') {
+                                                    s.deleteButton) {
                                                   ScaffoldMessenger.of(context)
                                                       .showSnackBar(
                                                     const SnackBar(
                                                       content: Text(
-                                                          'Digite EXCLUIR para confirmar'),
+                                                          s.typeDeleteToConfirmAlt),
                                                       behavior: SnackBarBehavior
                                                           .floating,
                                                     ),
@@ -539,7 +542,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                                                         .showSnackBar(
                                                       SnackBar(
                                                         content: Text(
-                                                            'Ocorreu um erro. Tente novamente.'),
+                                                            s.anErrorOccurredTryAgain),
                                                         behavior:
                                                             SnackBarBehavior
                                                                 .floating,
@@ -553,7 +556,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                                                     AppTheme.errorColor,
                                               ),
                                               child: const Text(
-                                                  'Excluir Permanentemente'),
+                                                  s.permanentDelete),
                                             ),
                                           ],
                                         );
@@ -577,7 +580,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                                       ],
                                     ),
                                     child: const Text(
-                                      'Excluir',
+                                      s.delete,
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.w700,
@@ -600,12 +603,13 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
   }
 }
 
-class _SectionHeader extends StatelessWidget {
+class _SectionHeader extends ConsumerWidget {
   final String title;
   const _SectionHeader({required this.title});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Padding(
       padding: EdgeInsets.only(bottom: r.s(12)),
@@ -621,7 +625,7 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-class _SettingToggle extends StatelessWidget {
+class _SettingToggle extends ConsumerWidget {
   final IconData icon;
   final String title;
   final String subtitle;
@@ -637,7 +641,8 @@ class _SettingToggle extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       margin: EdgeInsets.only(bottom: r.s(8)),
@@ -697,7 +702,7 @@ class _SettingToggle extends StatelessWidget {
   }
 }
 
-class _RadioOption extends StatelessWidget {
+class _RadioOption extends ConsumerWidget {
   final String label;
   final String value;
   final String groupValue;
@@ -711,7 +716,8 @@ class _RadioOption extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Theme(
       data: Theme.of(context).copyWith(

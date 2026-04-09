@@ -1,11 +1,13 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Diálogo de denúncia — permite reportar posts, comentários, mensagens ou usuários.
 /// Categorias: Bullying, Art Theft, Conteúdo Impróprio, Spam, Off-Topic, Outro.
-class ReportDialog extends StatefulWidget {
+class ReportDialog extends ConsumerStatefulWidget {
   final String communityId;
   final String? targetPostId;
   final String? targetCommentId;
@@ -50,7 +52,7 @@ class ReportDialog extends StatefulWidget {
   State<ReportDialog> createState() => _ReportDialogState();
 }
 
-class _ReportDialogState extends State<ReportDialog> {
+class _ReportDialogState extends ConsumerState<ReportDialog> {
   String? _selectedType;
   final _reasonController = TextEditingController();
   bool _isSubmitting = false;
@@ -58,19 +60,19 @@ class _ReportDialogState extends State<ReportDialog> {
   static const _flagTypes = [
     {
       'id': 'bullying',
-      'label': 'Bullying / Assédio',
+      'label': s.bullyingHarassment,
       'icon': Icons.person_off_rounded,
       'color': 0xFFF44336,
     },
     {
       'id': 'art_theft',
-      'label': 'Art Theft / Plágio',
+      'label': s.artTheftPlagiarism,
       'icon': Icons.palette_rounded,
       'color': 0xFFFF9800,
     },
     {
       'id': 'inappropriate_content',
-      'label': 'Conteúdo Impróprio',
+      'label': s.inappropriateContent2,
       'icon': Icons.no_adult_content_rounded,
       'color': 0xFF9C27B0,
     },
@@ -82,25 +84,25 @@ class _ReportDialogState extends State<ReportDialog> {
     },
     {
       'id': 'off_topic',
-      'label': 'Off-Topic',
+      'label': s.offTopic,
       'icon': Icons.topic_rounded,
       'color': 0xFF2196F3,
     },
     {
       'id': 'impersonation',
-      'label': 'Falsidade Ideológica',
+      'label': s.identityFraud,
       'icon': Icons.masks_rounded,
       'color': 0xFF607D8B,
     },
     {
       'id': 'self_harm',
-      'label': 'Autolesão / Suicídio',
+      'label': s.selfHarmSuicide,
       'icon': Icons.health_and_safety_rounded,
       'color': 0xFFE91E63,
     },
     {
       'id': 'other',
-      'label': 'Outro',
+      'label': s.other,
       'icon': Icons.more_horiz_rounded,
       'color': 0xFF9E9E9E,
     },
@@ -109,7 +111,7 @@ class _ReportDialogState extends State<ReportDialog> {
   Future<void> _submit() async {
     if (_selectedType == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Selecione o tipo de denúncia')),
+        const SnackBar(content: Text(s.selectReportType)),
       );
       return;
     }
@@ -134,7 +136,7 @@ class _ReportDialogState extends State<ReportDialog> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Denúncia enviada. Obrigado por reportar!'),
+            content: Text(s.reportSubmittedThanks),
             backgroundColor: AppTheme.successColor,
           ),
         );
@@ -142,7 +144,7 @@ class _ReportDialogState extends State<ReportDialog> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
+          SnackBar(content: Text(s.anErrorOccurredTryAgain)),
         );
       }
     } finally {
@@ -157,7 +159,8 @@ class _ReportDialogState extends State<ReportDialog> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Padding(
       padding: EdgeInsets.only(
@@ -182,12 +185,12 @@ class _ReportDialogState extends State<ReportDialog> {
           ),
           SizedBox(height: r.s(16)),
           Text(
-            'Reportar Conteúdo',
+            s.reportContentTitle,
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: r.fs(18)),
           ),
           SizedBox(height: r.s(4)),
           Text(
-            'Selecione o motivo da denúncia',
+            s.selectReportReason,
             style: TextStyle(color: context.textSecondary, fontSize: r.fs(13)),
           ),
           SizedBox(height: r.s(16)),
@@ -241,7 +244,7 @@ class _ReportDialogState extends State<ReportDialog> {
             controller: _reasonController,
             maxLines: 2,
             decoration: InputDecoration(
-              hintText: 'Detalhes adicionais (opcional)...',
+              hintText: s.additionalDetailsHint,
               filled: true,
               fillColor: context.cardBg,
               border: OutlineInputBorder(
@@ -271,7 +274,7 @@ class _ReportDialogState extends State<ReportDialog> {
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white),
                     )
-                  : Text('Enviar Denúncia',
+                  : Text(s.submitReport,
                       style: TextStyle(
                           fontWeight: FontWeight.bold, fontSize: r.fs(15))),
             ),

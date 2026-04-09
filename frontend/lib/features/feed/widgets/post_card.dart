@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -11,10 +12,11 @@ import '../../../core/utils/amino_animations.dart';
 import 'block_content_renderer.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Card de post no feed — estilo Amino Apps (web-preview).
 /// Suporta todos os 9 tipos de post com renderização interativa.
-class PostCard extends StatefulWidget {
+class PostCard extends ConsumerStatefulWidget {
   final PostModel post;
   final VoidCallback? onLike;
   final bool showCommunity;
@@ -30,7 +32,7 @@ class PostCard extends StatefulWidget {
   State<PostCard> createState() => _PostCardState();
 }
 
-class _PostCardState extends State<PostCard>
+class _PostCardState extends ConsumerState<PostCard>
     with SingleTickerProviderStateMixin {
   late PostModel _post;
   int? _selectedPollOption;
@@ -125,7 +127,8 @@ class _PostCardState extends State<PostCard>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return AminoAnimations.cardPress(
       onTap: () => context.push('/post/${_post.id}'),
@@ -307,7 +310,7 @@ class _PostCardState extends State<PostCard>
                   children: [
                     Flexible(
                       child: Text(
-                        _post.author?.nickname ?? 'Usuário',
+                        _post.author?.nickname ?? s.user,
                         style: TextStyle(
                           color: context.textPrimary,
                           fontWeight: FontWeight.w600,
@@ -399,7 +402,7 @@ class _PostCardState extends State<PostCard>
                   Icon(Icons.star_rounded,
                       size: r.s(10), color: AppTheme.warningColor),
                   SizedBox(width: 2),
-                  Text('Destaque',
+                  Text(s.featured,
                       style: TextStyle(
                           color: AppTheme.warningColor,
                           fontSize: r.fs(8),
@@ -450,7 +453,7 @@ class _PostCardState extends State<PostCard>
         children: [
           ...List.generate(options.length, (i) {
             final opt = options[i] as Map<String, dynamic>;
-            final text = opt['text'] as String? ?? 'Opção ${i + 1}';
+            final text = opt['text'] as String? ?? s.optionNumber(i + 1);
             final votes = (opt['votes'] as int?) ?? 0;
             final pct = totalVotes > 0 ? votes / totalVotes : 0.0;
             final isSelected = _selectedPollOption == i;
@@ -497,7 +500,7 @@ class _PostCardState extends State<PostCard>
           if (_selectedPollOption != null)
             Padding(
               padding: EdgeInsets.only(top: r.s(4)),
-              child: Text('$totalVotes votos',
+              child: Text(s.totalVotesLabel(totalVotes),
                   style:
                       TextStyle(color: Colors.grey[600], fontSize: r.fs(10))),
             ),
@@ -514,7 +517,7 @@ class _PostCardState extends State<PostCard>
     final questions = (quizData['questions'] as List<dynamic>?) ?? [];
     if (questions.isEmpty) return const SizedBox.shrink();
     final q = questions[0] as Map<String, dynamic>;
-    final qText = q['text'] as String? ?? 'Pergunta';
+    final qText = q['text'] as String? ?? s.question;
     final opts = (q['options'] as List<dynamic>?) ?? [];
     final correctIndex = q['correct_index'] as int? ?? 0;
 
@@ -535,7 +538,7 @@ class _PostCardState extends State<PostCard>
                 Icon(Icons.quiz_rounded,
                     size: r.s(14), color: AppTheme.accentColor),
                 SizedBox(width: r.s(6)),
-                Text('Quiz',
+                Text(s.quiz,
                     style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: r.fs(11),
@@ -556,7 +559,7 @@ class _PostCardState extends State<PostCard>
                     color: context.textPrimary)),
             SizedBox(height: r.s(8)),
             ...List.generate(opts.length, (i) {
-              final optText = opts[i] as String? ?? 'Opção ${i + 1}';
+              final optText = opts[i] as String? ?? s.optionNumber(i + 1);
               final isCorrect = i == correctIndex;
               final isSelected = _selectedQuizOption == i;
               Color bgColor = context.cardBg;
@@ -640,12 +643,12 @@ class _PostCardState extends State<PostCard>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Pergunta & Resposta',
+                  Text(s.questionAndAnswer,
                       style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: r.fs(11),
                           color: Color(0xFF3F51B5))),
-                  Text('${_post.commentsCount} respostas',
+                  Text(s.postCommentsCountReplies(_post.commentsCount),
                       style: TextStyle(
                           fontSize: r.fs(10), color: Colors.grey[600])),
                 ],
@@ -752,7 +755,7 @@ class _PostCardState extends State<PostCard>
   Widget _buildCrosspostBanner() {
     final r = context.r;
     final isRepost = _post.type == 'repost';
-    final label = isRepost ? 'Repost' : 'Crosspost';
+    final label = isRepost ? 'Repost' : s.crosspost;
     final icon = isRepost ? Icons.repeat_rounded : Icons.share_rounded;
     final color = isRepost ? const Color(0xFF607D8B) : const Color(0xFF9C27B0);
     final originId = _post.originalCommunityId;
@@ -871,7 +874,7 @@ class _PostCardState extends State<PostCard>
 
           // Comment button
           Semantics(
-            label: 'Ver ${_post.commentsCount} comentários',
+            label: s.viewCommentsCount(_post.commentsCount),
             button: true,
             child: GestureDetector(
               onTap: () => context.push('/post/${_post.id}'),
@@ -942,21 +945,21 @@ class _PostCardState extends State<PostCard>
   String get _typeLabel {
     switch (_post.type) {
       case 'poll':
-        return 'Enquete';
+        return s.poll;
       case 'quiz':
-        return 'Quiz';
+        return s.quiz;
       case 'qa':
         return 'Q&A';
       case 'link':
-        return 'Link';
+        return s.link;
       case 'external':
         return 'Externo';
       case 'crosspost':
-        return 'Crosspost';
+        return s.crosspost;
       case 'repost':
         return 'Repost';
       case 'image':
-        return 'Imagem';
+        return s.image;
       default:
         return _post.type;
     }

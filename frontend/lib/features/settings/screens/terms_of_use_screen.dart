@@ -1,10 +1,12 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Tela de Termos de Uso do NexusHub.
-class TermsOfUseScreen extends StatelessWidget {
+class TermsOfUseScreen extends ConsumerWidget {
   const TermsOfUseScreen({super.key});
 
   static const _content = '''
@@ -138,7 +140,8 @@ Para dúvidas sobre estes Termos:
 ''';
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -147,7 +150,7 @@ Para dúvidas sobre estes Termos:
         elevation: 0,
         iconTheme: IconThemeData(color: context.textPrimary),
         title: Text(
-          'Termos de Uso',
+          s.termsOfUse,
           style: TextStyle(
             fontWeight: FontWeight.w800,
             color: context.textPrimary,

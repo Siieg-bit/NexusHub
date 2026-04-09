@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +7,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/models/message_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// ============================================================================
 /// MESSAGE BUBBLE (suporta todos os 19+ tipos) — Estilo Amino
@@ -14,7 +16,7 @@ import '../../../core/utils/responsive.dart';
 /// principal e isolar a lógica de renderização de mensagens.
 /// ============================================================================
 
-class MessageBubble extends StatelessWidget {
+class MessageBubble extends ConsumerWidget {
   final MessageModel message;
   final bool isMe;
   final bool showAvatar;
@@ -29,7 +31,8 @@ class MessageBubble extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     // System messages
     if (message.isSystemMessage) {
@@ -313,7 +316,7 @@ class MessageBubble extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Audio',
+              Text(s.audio2,
                   style: TextStyle(
                       color: textColor,
                       fontSize: r.fs(13),
@@ -348,7 +351,7 @@ class MessageBubble extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Audio',
+              Text(s.audio2,
                   style: TextStyle(color: textColor, fontSize: r.fs(13))),
               if (message.mediaDuration != null)
                 Text('${message.mediaDuration}s',
@@ -484,7 +487,7 @@ class MessageBubble extends StatelessWidget {
         final content = message.content!;
         final questionMatch =
             RegExp(r'"question":"([^"]*)"').firstMatch(content);
-        final question = questionMatch?.group(1) ?? 'Enquete';
+        final question = questionMatch?.group(1) ?? s.poll;
         final optionsMatch = RegExp(r'"options":\[(.*?)\]').firstMatch(content);
         final optionsStr = optionsMatch?.group(1) ?? '';
         final options = RegExp(r'"([^"]*)"')
@@ -555,7 +558,7 @@ class MessageBubble extends StatelessWidget {
 
     // File attachment
     if (type == 'file') {
-      final fileName = message.content ?? 'Arquivo';
+      final fileName = message.content ?? s.file;
       return Container(
         padding: EdgeInsets.all(r.s(10)),
         decoration: BoxDecoration(
@@ -579,7 +582,7 @@ class MessageBubble extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis),
                   if (message.mediaUrl != null)
-                    Text('Toque para baixar',
+                    Text(s.tapToDownload,
                         style: TextStyle(
                             color: textColor.withValues(alpha: 0.6),
                             fontSize: r.fs(11))),
@@ -602,7 +605,7 @@ class MessageBubble extends StatelessWidget {
               Icon(Icons.forward_rounded,
                   color: textColor.withValues(alpha: 0.5), size: r.s(14)),
               SizedBox(width: r.s(4)),
-              Text('Encaminhada',
+              Text(s.forwarded,
                   style: TextStyle(
                       color: textColor.withValues(alpha: 0.5),
                       fontSize: r.fs(11),
@@ -639,7 +642,7 @@ class MessageBubble extends StatelessWidget {
           children: [
             Icon(Icons.person_rounded, color: textColor, size: r.s(16)),
             SizedBox(width: r.s(8)),
-            Text('Perfil compartilhado',
+            Text(s.sharedProfile,
                 style: TextStyle(
                     color: textColor,
                     fontSize: r.fs(13),
@@ -665,7 +668,7 @@ class MessageBubble extends StatelessWidget {
 // MEDIA OPTION ITEM — Estilo Amino
 // ============================================================================
 
-class MediaOptionItem extends StatelessWidget {
+class MediaOptionItem extends ConsumerWidget {
   final IconData icon;
   final String label;
   final Color color;
@@ -680,7 +683,8 @@ class MediaOptionItem extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: onTap,

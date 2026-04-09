@@ -1,0 +1,356 @@
+
+  // AUTH (NOVOS)
+  @override
+  String get account => 'Conta';
+  @override
+  String get checkYourEmail => 'Verifique seu email';
+  @override
+  String get confirmYourPassword => 'Confirme sua senha';
+  @override
+  String get createAPassword => 'Crie uma senha';
+  @override
+  String get currentPassword => 'Senha atual';
+  @override
+  String get email2 => 'Email';
+  @override
+  String get enterYourEmail => 'Informe seu email';
+  @override
+  String get incorrectPassword => 'Senha incorreta';
+  @override
+  String get logIn => 'Fazer login';
+  @override
+  String get passwordsDoNotMatch => 'As senhas não coincidem';
+  @override
+  String get sessionExpiredPleaseLogInAgain => 'Sessão expirada. Faça login novamente.';
+
+  // COMUNIDADES (NOVOS)
+  @override
+  String get access => 'Acesso';
+  @override
+  String get community => 'Comunidade';
+  @override
+  String get createCommunity2 => 'Criar Comunidade';
+  @override
+  String get modules => 'Módulos';
+  @override
+  String get myCommunities2 => 'Minhas Comunidades';
+  @override
+  String get noCommunitiesFound => 'Nenhuma comunidade encontrada';
+  @override
+  String get noPostsInThisCommunity => 'Nenhum post nesta comunidade';
+  @override
+  String get recommendedCommunities => 'Comunidades Recomendadas';
+  @override
+  String get visual => 'Visual';
+
+  // POSTS / FEED (NOVOS)
+  @override
+  String get addOption => 'Adicionar opção';
+  @override
+  String get addQuestion => 'Adicionar pergunta';
+  @override
+  String get blog => 'Blog';
+  @override
+  String get createPoll => 'Criar Enquete';
+  @override
+  String get divider => 'Divisor';
+  @override
+  String get drafts => 'Rascunhos';
+  @override
+  String get list => 'Lista';
+  @override
+  String get listed => 'Listada';
+  @override
+  String get newBlog => 'Novo Blog';
+  @override
+  String get newPoll => 'Nova Enquete';
+  @override
+  String get newQuiz => 'Novo Quiz';
+  @override
+  String get noSavedPosts => 'Nenhum post salvo';
+  @override
+  String get poll => 'Enquete';
+  @override
+  String get post => 'Post';
+  @override
+  String get question => 'Pergunta';
+  @override
+  String get quiz => 'Quiz';
+  @override
+  String get savedPosts => 'Posts Salvos';
+  @override
+  String get savedPostsArePrivate => 'Posts salvos são privados';
+  @override
+  String get tapTheBookmarkIconOnPostsToSaveThem => 'Toque no ícone de bookmark nos posts para salvá-los';
+
+  // CHAT (NOVOS)
+  @override
+  String get camera => 'Câmera';
+  @override
+  String get chat => 'Chat';
+  @override
+  String get end => 'Encerrar';
+  @override
+  String get errorLoadingChats => 'Erro ao carregar chats';
+  @override
+  String get errorOpeningChatTryAgain => 'Erro ao abrir chat. Tente novamente.';
+  @override
+  String get errorPinningMessage => 'Erro ao fixar mensagem';
+  @override
+  String get leaveChat => 'Sair do chat';
+  @override
+  String get messagePinned => 'Mensagem fixada';
+  @override
+  String get mic => 'Mic';
+  @override
+  String get muted => 'Mudo';
+  @override
+  String get noMessages => 'Sem mensagens';
+  @override
+  String get onlyTheHostCanPinMessages => 'Apenas o host pode fixar mensagens';
+  @override
+  String get pendingInvites => 'Convites pendentes';
+  @override
+  String get sendCoinsToThisChat => 'Envie moedas para este chat';
+  @override
+  String get speaker => 'Speaker';
+  @override
+  String get stickers2 => 'Figurinhas';
+  @override
+  String get switch => 'Trocar';
+  @override
+  String get thisUserDoesNotAcceptDirectMessages => 'Este usuário não aceita mensagens diretas.';
+  @override
+  String get thisUserOnlyAcceptsMessagesFromAllowedProfiles => 'Este usuário só aceita mensagens de perfis permitidos.';
+  @override
+  String get youCannotOpenAChatWithYourself => 'Você não pode abrir um chat consigo mesmo.';
+
+  // PERFIL (NOVOS)
+  @override
+  String get chooseANickname => 'Escolha um nickname';
+  @override
+  String get errorLoadingProfile => 'Erro ao carregar perfil';
+  @override
+  String get following2 => 'Seguindo!';
+  @override
+  String get nickname2 => 'Nickname';
+  @override
+  String get profileLinkCopied => 'Link do perfil copiado!';
+  @override
+  String get removeBanner => 'Remover banner';
+  @override
+  String get shareProfile => 'Compartilhar Perfil';
+  @override
+  String get unfollowed => 'Deixou de seguir';
+  @override
+  String get writeOnTheWall => 'Escreva no mural...';
+
+  // WIKI (NOVOS)
+  @override
+  String get entryType => 'Tipo de Entrada';
+  @override
+  String get myWikiEntries => 'Minhas Entradas Wiki';
+
+  // MODERAÇÃO (NOVOS)
+  @override
+  String get noPendingReports => 'Nenhuma denúncia pendente';
+  @override
+  String get reports => 'Denúncias';
+  @override
+  String get spam => 'Spam';
+
+  // CONFIGURAÇÕES (NOVOS)
+  @override
+  String get appearance => 'Aparência';
+  @override
+  String get noBlockedUsers => 'Nenhum usuário bloqueado';
+  @override
+  String get primaryLanguage => 'Idioma Principal';
+  @override
+  String get privacyPolicy2 => 'Política de Privacidade';
+  @override
+  String get security => 'Segurança';
+  @override
+  String get themeColor => 'Cor do Tema';
+
+  // GAMIFICAÇÃO (NOVOS)
+  @override
+  String get insufficientBalance => 'Saldo insuficiente';
+  @override
+  String get inventory => 'Inventário';
+  @override
+  String get ranking => 'Ranking';
+  @override
+  String get wallet => 'Carteira';
+
+  // LOJA (NOVOS)
+  @override
+  String get backgrounds => 'Fundos';
+  @override
+  String get buy => 'Comprar';
+  @override
+  String get errorRestoringPurchases => 'Erro ao restaurar compras';
+  @override
+  String get store => 'Loja';
+  @override
+  String get untitled => 'Sem título';
+
+  // STORIES (NOVOS)
+  @override
+  String get storyPublished => 'Story publicado!';
+
+  // TEMPO / MESES (NOVOS)
+  @override
+  String get april => 'abril';
+  @override
+  String get august => 'agosto';
+  @override
+  String get december => 'dezembro';
+  @override
+  String get february => 'fevereiro';
+  @override
+  String get january => 'janeiro';
+  @override
+  String get july => 'julho';
+  @override
+  String get june => 'junho';
+  @override
+  String get march => 'março';
+  @override
+  String get may => 'maio';
+  @override
+  String get november => 'novembro';
+  @override
+  String get now => 'agora';
+  @override
+  String get october => 'outubro';
+  @override
+  String get september => 'setembro';
+  @override
+  String get today2 => 'Hoje';
+
+  // ERROS (NOVOS)
+  @override
+  String get anErrorOccurredTryAgain => 'Ocorreu um erro. Tente novamente.';
+  @override
+  String get errorLoadingNotifications => 'Erro ao carregar notificações';
+  @override
+  String get unknownError => 'Erro desconhecido';
+
+  // GERAL (NOVOS)
+  @override
+  String get accept => 'Aceitar';
+  @override
+  String get active => 'Ativo';
+  @override
+  String get anonymous => 'Anônimo';
+  @override
+  String get apple => 'Apple';
+  @override
+  String get apply => 'Aplicar';
+  @override
+  String get bold => 'Negrito';
+  @override
+  String get connected => 'Conectado';
+  @override
+  String get connections => 'Conexões';
+  @override
+  String get continue => 'Continuar';
+  @override
+  String get copy => 'Copiar';
+  @override
+  String get couldNotStartAConversationWithThisUser => 'Não foi possível iniciar conversa com este usuário.';
+  @override
+  String get create => 'Criar';
+  @override
+  String get decline => 'Recusar';
+  @override
+  String get delete2 => 'Apagar';
+  @override
+  String get deleteConversation => 'Apagar conversa';
+  @override
+  String get deleteFile => 'Excluir arquivo';
+  @override
+  String get editor => 'Editor';
+  @override
+  String get everyone => 'Todos';
+  @override
+  String get files => 'Arquivos';
+  @override
+  String get general => 'Geral';
+  @override
+  String get global => 'Global';
+  @override
+  String get google => 'Google';
+  @override
+  String get history => 'Histórico';
+  @override
+  String get image => 'Imagem';
+  @override
+  String get images => 'Imagens';
+  @override
+  String get italic => 'Itálico';
+  @override
+  String get less => 'Menos';
+  @override
+  String get link => 'Link';
+  @override
+  String get minimum6Characters => 'Mínimo 6 caracteres';
+  @override
+  String get more => 'Mais';
+  @override
+  String get music => 'Música';
+  @override
+  String get noFiles => 'Nenhum arquivo';
+  @override
+  String get noItems => 'Nenhum item';
+  @override
+  String get nobody => 'Ninguém';
+  @override
+  String get offline => 'Offline';
+  @override
+  String get open => 'Aberta';
+  @override
+  String get open2 => 'Abrir';
+  @override
+  String get other => 'Outro';
+  @override
+  String get pinToTop => 'Fixar no topo';
+  @override
+  String get preview => 'Prévia';
+  @override
+  String get recent => 'Recente';
+  @override
+  String get recommended => 'Recomendados';
+  @override
+  String get refresh => 'Atualizar';
+  @override
+  String get remove => 'Remover';
+  @override
+  String get selectAnAmount => 'Selecione um valor';
+  @override
+  String get send => 'Enviar';
+  @override
+  String get sharedFolder => 'Pasta compartilhada';
+  @override
+  String get sharedScreenWillAppearHere => 'Tela compartilhada aparecerá aqui';
+  @override
+  String get strikethrough => 'Tachado';
+  @override
+  String get termsOfUse => 'Termos de Uso';
+  @override
+  String get text => 'Texto';
+  @override
+  String get unblock => 'Desbloquear';
+  @override
+  String get unpinFromTop => 'Desafixar do topo';
+  @override
+  String get user => 'Usuário';
+  @override
+  String get videos => 'Vídeos';
+  @override
+  String get visibility => 'Visibilidade';
+  @override
+  String get yesDelete => 'Sim, excluir';
+  @override
+  String get you => 'Você';

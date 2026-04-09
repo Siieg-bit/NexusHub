@@ -1,8 +1,10 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // COMMUNITY CREATE MENU — Bottom sheet grid estilo Amino Apps
@@ -46,7 +48,7 @@ class _CreateItem {
 }
 
 // ─── Sheet principal ──────────────────────────────────────────────────────────
-class _CommunityCreateMenuSheet extends StatelessWidget {
+class _CommunityCreateMenuSheet extends ConsumerWidget {
   final String communityId;
   final String communityName;
 
@@ -58,7 +60,7 @@ class _CommunityCreateMenuSheet extends StatelessWidget {
   List<_CreateItem> _buildItems() {
     return [
       _CreateItem(
-        label: 'Story',
+        label: s.storyLabel,
         icon: Icons.auto_awesome_rounded,
         color: const Color(0xFF7C3AED),
         onTap: (ctx) {
@@ -67,7 +69,7 @@ class _CommunityCreateMenuSheet extends StatelessWidget {
         },
       ),
       _CreateItem(
-        label: 'Pergunta',
+        label: s.question,
         icon: Icons.help_rounded,
         color: const Color(0xFFEA580C),
         onTap: (ctx) {
@@ -76,7 +78,7 @@ class _CommunityCreateMenuSheet extends StatelessWidget {
         },
       ),
       _CreateItem(
-        label: 'Chat\nPúblico',
+        label: s.chatPublicNewline,
         icon: Icons.chat_bubble_rounded,
         color: const Color(0xFF16A34A),
         onTap: (ctx) {
@@ -88,7 +90,7 @@ class _CommunityCreateMenuSheet extends StatelessWidget {
         },
       ),
       _CreateItem(
-        label: 'Imagem',
+        label: s.image,
         icon: Icons.image_rounded,
         color: const Color(0xFFE11D48),
         onTap: (ctx) {
@@ -97,7 +99,7 @@ class _CommunityCreateMenuSheet extends StatelessWidget {
         },
       ),
       _CreateItem(
-        label: 'Link',
+        label: s.link,
         icon: Icons.link_rounded,
         color: const Color(0xFF2563EB),
         onTap: (ctx) {
@@ -106,7 +108,7 @@ class _CommunityCreateMenuSheet extends StatelessWidget {
         },
       ),
       _CreateItem(
-        label: 'Quiz',
+        label: s.quiz,
         icon: Icons.checklist_rounded,
         color: const Color(0xFFDB2777),
         onTap: (ctx) {
@@ -115,7 +117,7 @@ class _CommunityCreateMenuSheet extends StatelessWidget {
         },
       ),
       _CreateItem(
-        label: 'Enquete',
+        label: s.poll,
         icon: Icons.bar_chart_rounded,
         color: const Color(0xFF0891B2),
         onTap: (ctx) {
@@ -124,7 +126,7 @@ class _CommunityCreateMenuSheet extends StatelessWidget {
         },
       ),
       _CreateItem(
-        label: 'Entrada\nWiki',
+        label: s.wikiEntryNewline,
         icon: Icons.menu_book_rounded,
         color: const Color(0xFFD97706),
         onTap: (ctx) {
@@ -133,7 +135,7 @@ class _CommunityCreateMenuSheet extends StatelessWidget {
         },
       ),
       _CreateItem(
-        label: 'Blog',
+        label: s.blog,
         icon: Icons.article_rounded,
         color: const Color(0xFF0D9488),
         onTap: (ctx) {
@@ -142,7 +144,7 @@ class _CommunityCreateMenuSheet extends StatelessWidget {
         },
       ),
       _CreateItem(
-        label: 'Rascunhos',
+        label: s.drafts,
         icon: Icons.inbox_rounded,
         color: const Color(0xFF4338CA),
         onTap: (ctx) {
@@ -154,7 +156,8 @@ class _CommunityCreateMenuSheet extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final items = _buildItems();
 
@@ -183,7 +186,7 @@ class _CommunityCreateMenuSheet extends StatelessWidget {
             child: Row(
               children: [
                 Text(
-                  'Criar',
+                  s.create,
                   style: TextStyle(
                     color: context.textPrimary,
                     fontSize: r.fs(18),
@@ -228,7 +231,7 @@ class _CommunityCreateMenuSheet extends StatelessWidget {
 }
 
 // ─── Tile individual ─────────────────────────────────────────────────────────
-class _CreateItemTile extends StatelessWidget {
+class _CreateItemTile extends ConsumerWidget {
   final _CreateItem item;
 
   /// Contexto do sheet (necessário para Navigator.pop e context.push)
@@ -237,7 +240,8 @@ class _CreateItemTile extends StatelessWidget {
   const _CreateItemTile({required this.item, required this.sheetContext});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: () => item.onTap(sheetContext),

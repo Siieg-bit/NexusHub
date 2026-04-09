@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -5,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Shared Folder — Pasta Compartilhada da Comunidade.
 ///
@@ -18,7 +20,7 @@ import '../../../core/utils/responsive.dart';
 ///   - Filtros: Todos, Imagens, Vídeos, Arquivos
 ///   - Contador de itens e espaço usado
 ///   - Opção de download e delete (para uploader/mods)
-class SharedFolderScreen extends StatefulWidget {
+class SharedFolderScreen extends ConsumerStatefulWidget {
   final String communityId;
   const SharedFolderScreen({super.key, required this.communityId});
 
@@ -26,7 +28,7 @@ class SharedFolderScreen extends StatefulWidget {
   State<SharedFolderScreen> createState() => _SharedFolderScreenState();
 }
 
-class _SharedFolderScreenState extends State<SharedFolderScreen>
+class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   bool _isLoading = true;
@@ -35,7 +37,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
   bool _isUploading = false;
 
   // Filtros
-  static const _tabs = ['Todos', 'Imagens', 'Vídeos', 'Arquivos'];
+  static const _tabs = [s.everyone, s.images, s.videos, s.files];
 
   @override
   void initState() {
@@ -151,25 +153,25 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
             SizedBox(height: r.s(20)),
             _UploadOption(
               icon: Icons.photo_library_rounded,
-              label: 'Imagem da Galeria',
+              label: s.galleryImage,
               color: const Color(0xFF4CAF50),
               onTap: () => Navigator.pop(ctx, 'gallery_image'),
             ),
             _UploadOption(
               icon: Icons.camera_alt_rounded,
-              label: 'Tirar Foto',
+              label: s.takePhoto2,
               color: const Color(0xFF2196F3),
               onTap: () => Navigator.pop(ctx, 'camera'),
             ),
             _UploadOption(
               icon: Icons.videocam_rounded,
-              label: 'Vídeo da Galeria',
+              label: s.galleryVideo,
               color: const Color(0xFFE91E63),
               onTap: () => Navigator.pop(ctx, 'gallery_video'),
             ),
             _UploadOption(
               icon: Icons.attach_file_rounded,
-              label: 'Arquivo',
+              label: s.file,
               color: const Color(0xFFFF9800),
               onTap: () => Navigator.pop(ctx, 'file'),
             ),
@@ -256,7 +258,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Arquivo enviado com sucesso!'),
+            content: Text(s.fileSentSuccess),
             backgroundColor: AppTheme.successColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -266,7 +268,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro no upload. Tente novamente.'),
+            content: Text(s.errorUploadTryAgain),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -285,7 +287,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
         backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(r.s(16))),
-        title: Text('Excluir arquivo',
+        title: Text(s.deleteFile,
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w700)),
         content: const Text('Tem certeza que deseja excluir este arquivo?',
@@ -294,7 +296,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
               child:
-                  Text('Cancelar', style: TextStyle(color: Colors.grey[500]))),
+                  Text(s.cancel, style: TextStyle(color: Colors.grey[500]))),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
@@ -302,7 +304,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(r.s(10))),
             ),
-            child: const Text('Excluir',
+            child: Text(s.delete,
                 style: TextStyle(
                     color: Colors.white, fontWeight: FontWeight.w700)),
           ),
@@ -333,15 +335,16 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
     final date = DateTime.tryParse(dateStr);
     if (date == null) return '';
     final diff = DateTime.now().difference(date);
-    if (diff.inDays > 30) return '${diff.inDays ~/ 30}m atrás';
-    if (diff.inDays > 0) return '${diff.inDays}d atrás';
-    if (diff.inHours > 0) return '${diff.inHours}h atrás';
-    if (diff.inMinutes > 0) return '${diff.inMinutes}min atrás';
-    return 'agora';
+    if (diff.inDays > 30) return s.timeAgoMonthsShort(diff.inDays ~/ 30);
+    if (diff.inDays > 0) return s.timeAgoDaysShort(diff.inDays);
+    if (diff.inHours > 0) return s.timeAgoHoursShort(diff.inHours);
+    if (diff.inMinutes > 0) return s.timeAgoMinutesShort(diff.inMinutes);
+    return s.now;
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -405,7 +408,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
                             color: Colors.grey[700], size: r.s(64)),
                         SizedBox(height: r.s(12)),
                         Text(
-                          'Nenhum arquivo',
+                          s.noFiles,
                           style: TextStyle(
                               color: Colors.grey[600],
                               fontSize: r.fs(16),
@@ -521,7 +524,7 @@ class _SharedFolderScreenState extends State<SharedFolderScreen>
 // WIDGETS AUXILIARES
 // ═══════════════════════════════════════════════════════════════
 
-class _UploadOption extends StatelessWidget {
+class _UploadOption extends ConsumerWidget {
   final IconData icon;
   final String label;
   final Color color;
@@ -535,7 +538,8 @@ class _UploadOption extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: onTap,
@@ -575,18 +579,19 @@ class _UploadOption extends StatelessWidget {
   }
 }
 
-class _ImageTile extends StatelessWidget {
+class _ImageTile extends ConsumerWidget {
   final Map<String, dynamic> file;
   final VoidCallback onDelete;
 
   const _ImageTile({required this.file, required this.onDelete});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final url = file['file_url'] as String? ?? '';
     final uploaderName =
-        (file['profiles'] as Map?)?['username'] as String? ?? 'Anônimo';
+        (file['profiles'] as Map?)?['username'] as String? ?? s.anonymous;
 
     return GestureDetector(
       onTap: () => _showFullImage(context, url),
@@ -677,7 +682,7 @@ class _ImageTile extends StatelessWidget {
               ListTile(
                 leading: const Icon(Icons.delete_rounded,
                     color: AppTheme.errorColor),
-                title: const Text('Excluir',
+                title: Text(s.delete,
                     style: TextStyle(color: AppTheme.errorColor)),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -687,7 +692,7 @@ class _ImageTile extends StatelessWidget {
             ListTile(
               leading: Icon(Icons.close_rounded, color: Colors.grey[500]),
               title:
-                  Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
+                  Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
               onTap: () => Navigator.pop(ctx),
             ),
           ],
@@ -697,7 +702,7 @@ class _ImageTile extends StatelessWidget {
   }
 }
 
-class _FileTile extends StatelessWidget {
+class _FileTile extends ConsumerWidget {
   final Map<String, dynamic> file;
   final String Function(int?) formatSize;
   final String Function(String?) timeAgo;
@@ -730,13 +735,14 @@ class _FileTile extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
-    final name = file['file_name'] as String? ?? 'Arquivo';
+    final name = file['file_name'] as String? ?? s.file;
     final mimeType = file['file_type'] as String?;
     final size = file['file_size'] as int?;
     final uploaderName =
-        (file['profiles'] as Map?)?['username'] as String? ?? 'Anônimo';
+        (file['profiles'] as Map?)?['username'] as String? ?? s.anonymous;
     final createdAt = file['created_at'] as String?;
     final color = _colorForType(mimeType);
 

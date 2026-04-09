@@ -1,5 +1,7 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
+import '../l10n/locale_provider.dart';
 
 /// Error Boundary global — captura erros de widgets filhos e exibe
 /// uma tela de fallback amigável em vez de crashar o app.
@@ -13,7 +15,7 @@ import '../../config/app_theme.dart';
 /// Este widget deve ficar DENTRO do [MaterialApp] (via `builder`) para
 /// herdar automaticamente [Directionality], [Theme], [MediaQuery] e
 /// demais InheritedWidgets. Nunca o coloque acima do [MaterialApp].
-class ErrorBoundary extends StatefulWidget {
+class ErrorBoundary extends ConsumerStatefulWidget {
   final Widget child;
   final Widget? fallback;
 
@@ -27,7 +29,7 @@ class ErrorBoundary extends StatefulWidget {
   State<ErrorBoundary> createState() => _ErrorBoundaryState();
 }
 
-class _ErrorBoundaryState extends State<ErrorBoundary> {
+class _ErrorBoundaryState extends ConsumerState<ErrorBoundary> {
   Object? _error;
   StackTrace? _stackTrace;
 
@@ -38,8 +40,8 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
   /// Esses erros NÃO devem travar a tela — são avisos de layout.
   static bool _isLayoutOverflow(FlutterErrorDetails details) {
     final summary = details.exceptionAsString();
-    return summary.contains('RenderFlex overflowed') ||
-        summary.contains('A RenderFlex') ||
+    return summary.contains(s.renderFlexOverflowed) ||
+        summary.contains(s.renderFlex) ||
         summary.contains('overflowed by') ||
         (details.exception is FlutterError &&
             (details.exception as FlutterError).message.contains('overflowed'));
@@ -62,7 +64,7 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
             '║  ${details.exceptionAsString().split('\n').first.padRight(56)}║\n'
             '║                                                          ║\n'
             '║  Corrija adicionando Expanded, Flexible ou overflow:     ║\n'
-            '║  TextOverflow.ellipsis no widget de texto responsável.   ║\n'
+            s.textOverflowHint
             '╚══════════════════════════════════════════════════════════╝\n',
           );
           return true;
@@ -106,7 +108,8 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     if (_error != null) {
       return widget.fallback ??
           _DefaultErrorFallback(
@@ -120,7 +123,7 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
 }
 
 /// Tela de fallback padrão exibida quando ocorre um erro não tratado.
-class _DefaultErrorFallback extends StatelessWidget {
+class _DefaultErrorFallback extends ConsumerWidget {
   final Object error;
   final StackTrace? stackTrace;
   final VoidCallback onRetry;
@@ -132,7 +135,8 @@ class _DefaultErrorFallback extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBg,
       body: SafeArea(
@@ -156,7 +160,7 @@ class _DefaultErrorFallback extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               const Text(
-                'Algo deu errado',
+                s.somethingWentWrong,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 22,
@@ -166,7 +170,7 @@ class _DefaultErrorFallback extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Ocorreu um erro inesperado. Tente novamente ou reinicie o app.',
+                s.unexpectedError,
                 style: TextStyle(
                   color: Colors.grey[400],
                   fontSize: 14,
@@ -187,7 +191,7 @@ class _DefaultErrorFallback extends StatelessWidget {
                   onPressed: onRetry,
                   icon: const Icon(Icons.refresh_rounded, color: Colors.white),
                   label: const Text(
-                    'Tentar novamente',
+                    s.retry,
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
@@ -201,7 +205,7 @@ class _DefaultErrorFallback extends StatelessWidget {
               if (const bool.fromEnvironment('dart.vm.product') == false)
                 ExpansionTile(
                   title: Text(
-                    'Detalhes do erro',
+                    s.errorDetails,
                     style: TextStyle(color: Colors.grey[500], fontSize: 13),
                   ),
                   children: [

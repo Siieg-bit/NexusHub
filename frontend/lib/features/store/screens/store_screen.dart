@@ -1,20 +1,22 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Tela Store — Loja de itens virtuais (Avatar Frames, Chat Bubbles, Sticker Packs).
 /// Design fiel ao Amino Apps: header azul celeste com moeda dourada, banner Amino+.
-class StoreScreen extends StatefulWidget {
+class StoreScreen extends ConsumerStatefulWidget {
   const StoreScreen({super.key});
 
   @override
   State<StoreScreen> createState() => _StoreScreenState();
 }
 
-class _StoreScreenState extends State<StoreScreen>
+class _StoreScreenState extends ConsumerState<StoreScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   List<Map<String, dynamic>> _items = [];
@@ -22,7 +24,7 @@ class _StoreScreenState extends State<StoreScreen>
   int _userCoins = 0;
 
   // Amino original: tabs com ícones
-  final _tabs = const ['Todos', 'Frames', 'Bolhas', 'Stickers', 'Fundos'];
+  final _tabs = const [s.everyone, 'Frames', s.bubbles, s.stickers, s.backgrounds];
   final _tabIcons = const [
     Icons.storefront_rounded,
     Icons.face_rounded,
@@ -125,7 +127,8 @@ class _StoreScreenState extends State<StoreScreen>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -160,7 +163,7 @@ class _StoreScreenState extends State<StoreScreen>
                       child: Row(
                         children: [
                           Text(
-                            'Loja',
+                            s.store,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: r.fs(20),
@@ -320,7 +323,7 @@ class _StoreScreenState extends State<StoreScreen>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Amino+',
+                                  s.aminoPlus,
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w800,
@@ -345,7 +348,7 @@ class _StoreScreenState extends State<StoreScreen>
                               borderRadius: BorderRadius.circular(r.s(20)),
                             ),
                             child: Text(
-                              'Assinar',
+                              s.subscribe,
                               style: TextStyle(
                                 color: Color(0xFFFF8C00),
                                 fontWeight: FontWeight.w800,
@@ -491,7 +494,7 @@ class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
 // =============================================================================
 // STORE ITEM CARD — Estilo Amino
 // =============================================================================
-class _StoreItemCard extends StatefulWidget {
+class _StoreItemCard extends ConsumerStatefulWidget {
   final Map<String, dynamic> item;
   final VoidCallback onPurchase;
 
@@ -501,7 +504,7 @@ class _StoreItemCard extends StatefulWidget {
   State<_StoreItemCard> createState() => _StoreItemCardState();
 }
 
-class _StoreItemCardState extends State<_StoreItemCard>
+class _StoreItemCardState extends ConsumerState<_StoreItemCard>
     with SingleTickerProviderStateMixin {
   late AnimationController _shimmerController;
 
@@ -521,7 +524,8 @@ class _StoreItemCardState extends State<_StoreItemCard>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final price = widget.item['price'] as int? ?? 0;
     final name = widget.item['name'] as String? ?? 'Item';
@@ -757,9 +761,9 @@ class _StoreItemCardState extends State<_StoreItemCard>
       case 'avatar_frame':
         return 'Frame';
       case 'chat_bubble':
-        return 'Bolha';
+        return s.bubble;
       case 'sticker_pack':
-        return 'Sticker';
+        return s.sticker;
       case 'profile_background':
         return 'Fundo';
       default:

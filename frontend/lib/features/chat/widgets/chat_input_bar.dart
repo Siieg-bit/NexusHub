@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Barra de input de mensagem do chat — estilo Amino.
 ///
@@ -34,6 +35,7 @@ class ChatInputBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       padding: EdgeInsets.fromLTRB(r.s(8), r.s(8), r.s(8), r.s(8)),
@@ -79,7 +81,7 @@ class ChatInputBar extends StatelessWidget {
                         style: TextStyle(
                             color: context.textPrimary, fontSize: r.fs(14)),
                         decoration: InputDecoration(
-                          hintText: 'Message...',
+                          hintText: s.messagePlaceholder,
                           hintStyle: TextStyle(
                               color: Colors.grey[600], fontSize: r.fs(14)),
                           border: InputBorder.none,

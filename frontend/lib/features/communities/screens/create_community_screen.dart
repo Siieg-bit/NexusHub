@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Tela para criação de nova comunidade.
 class CreateCommunityScreen extends ConsumerStatefulWidget {
@@ -74,9 +75,9 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
         final error = response['error'] as String? ?? 'unknown';
         final message = switch (error) {
           'unauthenticated' =>
-            'Você precisa estar logado para criar uma comunidade.',
-          'name_required' => 'O nome da comunidade é obrigatório.',
-          _ => 'Erro ao criar comunidade. Tente novamente.',
+            s.needLoginToCreateCommunity,
+          'name_required' => s.communityNameRequired,
+          _ => s.errorCreatingCommunity,
         };
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(message)),
@@ -89,7 +90,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao criar comunidade. Tente novamente.')),
+          SnackBar(content: Text(s.errorCreatingCommunity)),
         );
       }
     } finally {
@@ -107,6 +108,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -115,7 +117,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
         elevation: 0,
         iconTheme: IconThemeData(color: context.textPrimary),
         title: Text(
-          'Criar Comunidade',
+          s.createCommunityTitle,
           style: TextStyle(
             color: context.textPrimary,
             fontWeight: FontWeight.w800,
@@ -152,7 +154,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                       ),
                     )
                   : const Text(
-                      'Criar',
+                      s.create,
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
@@ -195,14 +197,14 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
               // Nome
               _buildTextField(
                 controller: _nameController,
-                label: 'Nome da Comunidade *',
+                label: s.communityNameRequired2,
                 hint: 'Ex: Anime Brasil, K-Pop Universe...',
                 icon: Icons.groups_rounded,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Nome é obrigatório';
+                    return s.nameRequired;
                   }
-                  if (value.trim().length < 3) return 'Mínimo 3 caracteres';
+                  if (value.trim().length < 3) return s.min3Chars;
                   return null;
                 },
               ),
@@ -211,7 +213,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
               // Tagline
               _buildTextField(
                 controller: _taglineController,
-                label: 'Tagline',
+                label: s.taglineLabel,
                 hint: 'Uma frase curta sobre a comunidade',
                 icon: Icons.short_text_rounded,
                 maxLength: 100,
@@ -221,7 +223,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
               // Descrição
               _buildTextField(
                 controller: _descriptionController,
-                label: 'Descrição',
+                label: s.communityDescription,
                 hint: 'Descreva sua comunidade em detalhes...',
                 icon: Icons.description_rounded,
                 maxLines: 4,
@@ -231,7 +233,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
 
               // Cor do tema
               Text(
-                'Cor do Tema',
+                s.themeColor,
                 style: TextStyle(
                   color: context.textPrimary,
                   fontSize: r.fs(16),
@@ -290,7 +292,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
 
               // Idioma
               Text(
-                'Idioma Principal',
+                s.primaryLanguage,
                 style: TextStyle(
                   color: context.textPrimary,
                   fontSize: r.fs(16),
@@ -322,9 +324,9 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                   ),
                   items: const [
                     DropdownMenuItem(
-                        value: 'pt-BR', child: Text('Português (Brasil)')),
+                        value: 'pt-BR', child: Text(s.portugueseBrazil)),
                     DropdownMenuItem(value: 'en', child: Text('English')),
-                    DropdownMenuItem(value: 'es', child: Text('Español')),
+                    DropdownMenuItem(value: 'es', child: Text(s.spanishLang)),
                     DropdownMenuItem(value: 'ja', child: Text('日本語')),
                     DropdownMenuItem(value: 'ko', child: Text('한국어')),
                   ],

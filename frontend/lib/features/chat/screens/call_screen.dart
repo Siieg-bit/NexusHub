@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
@@ -6,6 +7,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/call_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// ============================================================================
 /// CallScreen — UI de chamada com Agora.io RTC real.
@@ -19,7 +21,7 @@ import '../../../core/utils/responsive.dart';
 /// - Suporte a Voice Chat, Video Chat e Screening Room
 /// ============================================================================
 
-class CallScreen extends StatefulWidget {
+class CallScreen extends ConsumerStatefulWidget {
   final CallSession session;
 
   const CallScreen({super.key, required this.session});
@@ -37,7 +39,7 @@ class CallScreen extends StatefulWidget {
   State<CallScreen> createState() => _CallScreenState();
 }
 
-class _CallScreenState extends State<CallScreen> {
+class _CallScreenState extends ConsumerState<CallScreen> {
   List<Map<String, dynamic>> _participants = [];
   Set<int> _remoteUsers = {};
   Map<int, double> _audioLevels = {};
@@ -135,7 +137,8 @@ class _CallScreenState extends State<CallScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final isVideo = widget.session.type == CallType.video;
     final isScreening = widget.session.type == CallType.screeningRoom;
@@ -299,7 +302,7 @@ class _CallScreenState extends State<CallScreen> {
                   canvas: const VideoCanvas(uid: 0),
                 ),
               )
-            : _buildAvatarPlaceholder('Você'),
+            : _buildAvatarPlaceholder(s.you),
       );
     } else {
       // Mostrar vídeos remotos
@@ -368,7 +371,7 @@ class _CallScreenState extends State<CallScreen> {
   Widget _buildParticipantTile(Map<String, dynamic> participant) {
     final r = context.r;
     final profile = participant['profiles'] as Map<String, dynamic>?;
-    final nickname = profile?['nickname'] as String? ?? 'Usuário';
+    final nickname = profile?['nickname'] as String? ?? s.user;
     final iconUrl = profile?['icon_url'] as String?;
 
     // Detectar se está falando via audio levels do Agora
@@ -447,7 +450,7 @@ class _CallScreenState extends State<CallScreen> {
                 ),
               ),
               SizedBox(width: r.s(4)),
-              Text('Conectado',
+              Text(s.connected,
                   style:
                       TextStyle(color: Colors.grey[500], fontSize: r.fs(11))),
             ],
@@ -525,7 +528,7 @@ class _CallScreenState extends State<CallScreen> {
                       color: Colors.white.withValues(alpha: 0.24),
                       size: r.s(48)),
                   SizedBox(height: r.s(8)),
-                  Text('Tela compartilhada aparecerá aqui',
+                  Text(s.sharedScreenWillAppearHere,
                       style: TextStyle(color: Colors.grey[500])),
                 ],
               ),
@@ -542,7 +545,7 @@ class _CallScreenState extends State<CallScreen> {
         children: [
           _ControlButton(
             icon: _isMuted ? Icons.mic_off_rounded : Icons.mic_rounded,
-            label: _isMuted ? 'Mudo' : 'Mic',
+            label: _isMuted ? s.muted : s.mic,
             isActive: !_isMuted,
             onTap: _toggleMute,
           ),
@@ -550,7 +553,7 @@ class _CallScreenState extends State<CallScreen> {
             icon: _isSpeakerOn
                 ? Icons.volume_up_rounded
                 : Icons.volume_off_rounded,
-            label: 'Speaker',
+            label: s.speaker,
             isActive: _isSpeakerOn,
             onTap: _toggleSpeaker,
           ),
@@ -559,20 +562,20 @@ class _CallScreenState extends State<CallScreen> {
               icon: _isCameraOn
                   ? Icons.videocam_rounded
                   : Icons.videocam_off_rounded,
-              label: 'Câmera',
+              label: s.camera,
               isActive: _isCameraOn,
               onTap: _toggleCamera,
             ),
             _ControlButton(
               icon: Icons.cameraswitch_rounded,
-              label: 'Trocar',
+              label: s.switchCamera,
               isActive: true,
               onTap: _switchCamera,
             ),
           ],
           _ControlButton(
             icon: Icons.call_end_rounded,
-            label: 'Encerrar',
+            label: s.end,
             isActive: false,
             isEnd: true,
             onTap: _endCall,
@@ -584,13 +587,14 @@ class _CallScreenState extends State<CallScreen> {
 }
 
 /// Barra animada de nível de áudio
-class _AudioLevelBar extends StatelessWidget {
+class _AudioLevelBar extends ConsumerWidget {
   final double level; // 0.0 a 1.0
 
   const _AudioLevelBar({required this.level});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -613,7 +617,7 @@ class _AudioLevelBar extends StatelessWidget {
   }
 }
 
-class _ControlButton extends StatelessWidget {
+class _ControlButton extends ConsumerWidget {
   final IconData icon;
   final String label;
   final bool isActive;
@@ -629,7 +633,8 @@ class _ControlButton extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: onTap,

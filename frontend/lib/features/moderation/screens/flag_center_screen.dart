@@ -1,12 +1,14 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Flag Center — Centro de denúncias para Leaders/Curators.
 /// Permite revisar denúncias (Art Theft, Bullying, etc.) e tomar ações.
-class FlagCenterScreen extends StatefulWidget {
+class FlagCenterScreen extends ConsumerStatefulWidget {
   final String communityId;
   const FlagCenterScreen({super.key, required this.communityId});
 
@@ -14,7 +16,7 @@ class FlagCenterScreen extends StatefulWidget {
   State<FlagCenterScreen> createState() => _FlagCenterScreenState();
 }
 
-class _FlagCenterScreenState extends State<FlagCenterScreen>
+class _FlagCenterScreenState extends ConsumerState<FlagCenterScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   List<Map<String, dynamic>> _pendingFlags = [];
@@ -63,7 +65,7 @@ class _FlagCenterScreenState extends State<FlagCenterScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
+          SnackBar(content: Text(s.anErrorOccurredTryAgain)),
         );
       }
     }
@@ -76,7 +78,8 @@ class _FlagCenterScreenState extends State<FlagCenterScreen>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
@@ -97,8 +100,8 @@ class _FlagCenterScreenState extends State<FlagCenterScreen>
           indicatorColor: AppTheme.primaryColor,
           dividerColor: Colors.white.withValues(alpha: 0.05),
           tabs: [
-            Tab(text: 'Pendentes (${_pendingFlags.length})'),
-            const Tab(text: 'Resolvidas'),
+            Tab(text: s.pendingFlagsCount),
+            Tab(text: s.resolved2),
           ],
         ),
       ),
@@ -134,8 +137,8 @@ class _FlagCenterScreenState extends State<FlagCenterScreen>
             SizedBox(height: r.s(16)),
             Text(
               isPending
-                  ? 'Nenhuma denúncia pendente'
-                  : 'Nenhuma denúncia resolvida',
+                  ? s.noPendingReports
+                  : s.noResolvedReports,
               style: TextStyle(
                 color: Colors.grey[500],
                 fontSize: r.fs(16),
@@ -168,7 +171,7 @@ class _FlagCenterScreenState extends State<FlagCenterScreen>
   }
 }
 
-class _FlagCard extends StatelessWidget {
+class _FlagCard extends ConsumerWidget {
   final Map<String, dynamic> flag;
   final bool isPending;
   final VoidCallback onApprove;
@@ -201,22 +204,23 @@ class _FlagCard extends StatelessWidget {
   String _flagTypeLabel(String type) {
     switch (type) {
       case 'bullying':
-        return 'Bullying';
+        return s.bullying;
       case 'art_theft':
-        return 'Art Theft';
+        return s.artTheft;
       case 'inappropriate_content':
-        return 'Conteúdo Impróprio';
+        return s.inappropriateContent2;
       case 'spam':
-        return 'Spam';
+        return s.spam;
       case 'off_topic':
-        return 'Off-Topic';
+        return s.offTopic;
       default:
-        return 'Outro';
+        return s.other;
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final type = flag['type'] as String? ?? 'other';
     final reason = flag['reason'] as String? ?? '';
@@ -286,7 +290,7 @@ class _FlagCard extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    status == 'approved' ? 'Aprovada' : 'Rejeitada',
+                    status == 'approved' ? s.approved2 : s.rejected2,
                     style: TextStyle(
                       color: status == 'approved'
                           ? AppTheme.primaryColor
@@ -310,7 +314,7 @@ class _FlagCard extends StatelessWidget {
               SizedBox(width: r.s(12)),
               Expanded(
                 child: Text(
-                  'Reportado por ${reporter?['nickname'] ?? 'Anônimo'}',
+                  s.reportedBynickname'] ?? s.anonymousLabel}',
                   style: TextStyle(
                     color: Colors.grey[500],
                     fontSize: r.fs(13),
@@ -350,7 +354,7 @@ class _FlagCard extends StatelessWidget {
                       ),
                       alignment: Alignment.center,
                       child: Text(
-                        'Rejeitar',
+                        s.reject,
                         style: TextStyle(
                           color: Colors.grey[500],
                           fontWeight: FontWeight.w700,
@@ -386,7 +390,7 @@ class _FlagCard extends StatelessWidget {
                       ),
                       alignment: Alignment.center,
                       child: Text(
-                        'Tomar Ação',
+                        s.takeAction,
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,

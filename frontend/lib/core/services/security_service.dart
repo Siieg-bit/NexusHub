@@ -52,29 +52,29 @@ class SecurityService {
 
   /// Valida um nome de usuário
   static String? validateUsername(String username) {
-    if (username.length < 3) return 'Mínimo 3 caracteres';
-    if (username.length > 24) return 'Máximo 24 caracteres';
+    if (username.length < 3) return s.min3Chars;
+    if (username.length > 24) return s.max24Chars;
     if (!RegExp(r'^[a-zA-Z0-9_.-]+$').hasMatch(username)) {
-      return 'Apenas letras, números, _, . e -';
+      return s.usernameCharsAllowed;
     }
     // Palavras proibidas
     final banned = ['admin', 'moderator', 'nexushub', 'system', 'support'];
     if (banned.any((w) => username.toLowerCase().contains(w))) {
-      return 'Nome de usuário não permitido';
+      return s.usernameNotAllowed;
     }
     return null;
   }
 
   /// Valida uma bio/descrição
   static String? validateBio(String bio) {
-    if (bio.length > 500) return 'Máximo 500 caracteres';
+    if (bio.length > 500) return s.max500Chars;
     return null;
   }
 
   /// Valida conteúdo de post
   static String? validatePostContent(String content) {
-    if (content.trim().isEmpty) return 'Conteúdo não pode estar vazio';
-    if (content.length > 10000) return 'Máximo 10.000 caracteres';
+    if (content.trim().isEmpty) return s.contentCannotBeEmpty;
+    if (content.length > 10000) return s.max10000Chars;
     return null;
   }
 

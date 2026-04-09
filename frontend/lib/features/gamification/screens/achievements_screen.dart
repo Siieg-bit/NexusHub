@@ -1,11 +1,13 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/checkin_heatmap.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Conquistas / Achievements — Badges desbloqueáveis com progresso.
-class AchievementsScreen extends StatefulWidget {
+class AchievementsScreen extends ConsumerStatefulWidget {
   final String? userId;
   const AchievementsScreen({super.key, this.userId});
 
@@ -13,7 +15,7 @@ class AchievementsScreen extends StatefulWidget {
   State<AchievementsScreen> createState() => _AchievementsScreenState();
 }
 
-class _AchievementsScreenState extends State<AchievementsScreen> {
+class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
   bool _isLoading = true;
   List<Map<String, dynamic>> _allAchievements = [];
   Set<String> _unlockedIds = {};
@@ -143,7 +145,8 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final unlocked =
         _allAchievements.where((a) => _unlockedIds.contains(a['id'])).toList();
@@ -157,7 +160,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
         elevation: 0,
         iconTheme: IconThemeData(color: context.textPrimary),
         title: Text(
-          'Conquistas',
+          s.achievements,
           style: TextStyle(
             fontWeight: FontWeight.w800,
             color: context.textPrimary,
@@ -171,7 +174,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
           : _allAchievements.isEmpty
               ? Center(
                   child: Text(
-                    'Nenhuma conquista disponível',
+                    s.noAchievementsAvailable,
                     style: TextStyle(color: Colors.grey[500]),
                   ),
                 )
@@ -341,7 +344,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
   }
 }
 
-class _AchievementTile extends StatelessWidget {
+class _AchievementTile extends ConsumerWidget {
   final Map<String, dynamic> achievement;
   final bool isUnlocked;
   final int progress;
@@ -353,7 +356,8 @@ class _AchievementTile extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final name = achievement['name'] as String? ?? 'Conquista';
     final description = achievement['description'] as String? ?? '';

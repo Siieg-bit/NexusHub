@@ -1,13 +1,15 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Tela de gerenciamento de Links Gerais da comunidade.
 /// Permite que líderes/agentes adicionem, editem, reordenem e removam
 /// links customizáveis exibidos na seção "General" do drawer.
-class CommunityGeneralLinksScreen extends StatefulWidget {
+class CommunityGeneralLinksScreen extends ConsumerStatefulWidget {
   final String communityId;
   const CommunityGeneralLinksScreen({
     super.key,
@@ -20,7 +22,7 @@ class CommunityGeneralLinksScreen extends StatefulWidget {
 }
 
 class _CommunityGeneralLinksScreenState
-    extends State<CommunityGeneralLinksScreen> {
+    extends ConsumerState<CommunityGeneralLinksScreen> {
   List<Map<String, dynamic>> _links = [];
   bool _isLoading = true;
   bool _isSaving = false;
@@ -83,7 +85,7 @@ class _CommunityGeneralLinksScreenState
                 controller: titleCtrl,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  labelText: 'Título',
+                  labelText: s.title,
                   labelStyle: TextStyle(color: Colors.grey[400]),
                   filled: true,
                   fillColor: Colors.white.withValues(alpha: 0.05),
@@ -121,7 +123,7 @@ class _CommunityGeneralLinksScreenState
                 builder: (_, active, __) => SwitchListTile(
                   value: active,
                   onChanged: (v) => isActive.value = v,
-                  title: const Text('Ativo',
+                  title: Text(s.active,
                       style: TextStyle(color: Colors.white70)),
                   activeColor: AppTheme.accentColor,
                   contentPadding: EdgeInsets.zero,
@@ -133,7 +135,7 @@ class _CommunityGeneralLinksScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Cancelar', style: TextStyle(color: Colors.grey[400])),
+            child: Text(s.cancel, style: TextStyle(color: Colors.grey[400])),
           ),
           ElevatedButton(
             onPressed: () {
@@ -141,7 +143,7 @@ class _CommunityGeneralLinksScreenState
                   urlCtrl.text.trim().isEmpty) {
                 ScaffoldMessenger.of(ctx).showSnackBar(
                   const SnackBar(
-                    content: Text('Preencha título e URL'),
+                    content: Text(s.fillTitleAndUrl),
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
@@ -156,7 +158,7 @@ class _CommunityGeneralLinksScreenState
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            child: const Text('Salvar'),
+            child: Text(s.save),
           ),
         ],
       ),
@@ -218,7 +220,7 @@ class _CommunityGeneralLinksScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Cancelar', style: TextStyle(color: Colors.grey[400])),
+            child: Text(s.cancel, style: TextStyle(color: Colors.grey[400])),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -229,7 +231,7 @@ class _CommunityGeneralLinksScreenState
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            child: const Text('Remover'),
+            child: Text(s.remove),
           ),
         ],
       ),
@@ -247,7 +249,7 @@ class _CommunityGeneralLinksScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Link removido.'),
+            content: Text(s.linkRemoved2),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -290,7 +292,8 @@ class _CommunityGeneralLinksScreenState
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBg,
@@ -348,7 +351,7 @@ class _CommunityGeneralLinksScreenState
                       SizedBox(width: r.s(10)),
                       Expanded(
                         child: Text(
-                          'Esses links aparecem na seção "General" do menu lateral da comunidade. Arraste para reordenar.',
+                          s.linksInGeneralSection,
                           style: TextStyle(
                             color: Colors.white70,
                             fontSize: r.fs(12),
@@ -434,7 +437,7 @@ class _CommunityGeneralLinksScreenState
           ),
           SizedBox(height: r.s(8)),
           Text(
-            'Adicione links úteis para os membros\nda sua comunidade.',
+            s.addUsefulLinks,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.grey[600],
@@ -451,7 +454,7 @@ class _CommunityGeneralLinksScreenState
 // WIDGET: Tile de link com drag handle, toggle, editar e deletar
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _LinkTile extends StatelessWidget {
+class _LinkTile extends ConsumerWidget {
   final Map<String, dynamic> link;
   final bool isActive;
   final VoidCallback onEdit;
@@ -468,7 +471,8 @@ class _LinkTile extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       margin: EdgeInsets.only(bottom: r.s(8)),

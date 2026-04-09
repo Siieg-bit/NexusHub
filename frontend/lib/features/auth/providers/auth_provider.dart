@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/services/presence_service.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Estado de autenticação do app.
 class AuthState {
@@ -132,7 +133,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } catch (e) {
       // Mesmo se o perfil falhar, a sessão é válida
       state = state.copyWith(
-          isLoading: false, error: 'Erro ao carregar perfil. Tente novamente.');
+          isLoading: false, error: s.errorLoadingProfileRetry);
     }
   }
 
@@ -153,7 +154,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } catch (e) {
       state = state.copyWith(
           isLoading: false,
-          error: 'Ocorreu um erro inesperado. Tente novamente.');
+          error: s.unexpectedErrorRetry);
       return false;
     }
   }
@@ -196,7 +197,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } catch (e) {
       state = state.copyWith(
           isLoading: false,
-          error: 'Ocorreu um erro inesperado. Tente novamente.');
+          error: s.unexpectedErrorRetry);
       return false;
     }
   }
@@ -226,7 +227,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       if (idToken == null) {
         state = state.copyWith(
             isLoading: false,
-            error: 'Não foi possível obter o token do Google.');
+            error: s.googleTokenError);
         return false;
       }
 
@@ -245,7 +246,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } catch (e) {
       state = state.copyWith(
           isLoading: false,
-          error: 'Erro no login com Google. Tente novamente.');
+          error: s.errorGoogleLogin);
       return false;
     }
   }
@@ -258,7 +259,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       return true;
     } catch (e) {
       state = state.copyWith(
-          isLoading: false, error: 'Erro no login com Apple. Tente novamente.');
+          isLoading: false, error: s.errorAppleLogin);
       return false;
     }
   }
@@ -275,7 +276,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await SupabaseService.auth.signOut();
       state = const AuthState();
     } catch (e) {
-      state = state.copyWith(error: 'Erro ao sair. Tente novamente.');
+      state = state.copyWith(error: s.errorLoggingOut);
     }
   }
 

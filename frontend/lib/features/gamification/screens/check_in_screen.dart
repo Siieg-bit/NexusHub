@@ -6,6 +6,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Tela de check-in diário com gamificação — Estilo Amino Apps.
 class CheckInScreen extends ConsumerStatefulWidget {
@@ -142,7 +143,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ocorreu um erro. Tente novamente.'),
+            content: Text(s.anErrorOccurredTryAgain),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -179,7 +180,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                    data['message'] as String? ?? 'Você já fez check-in hoje!'),
+                    data['message'] as String? ?? s.alreadyCheckedInToday),
                 backgroundColor: AppTheme.warningColor,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
@@ -193,7 +194,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ocorreu um erro. Tente novamente.'),
+            content: Text(s.anErrorOccurredTryAgain),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -208,6 +209,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -219,7 +221,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
               color: context.textPrimary, size: r.s(20)),
           onPressed: () => context.pop(),
         ),
-        title: Text('Check-in Diário',
+        title: Text(s.dailyCheckIn2,
             style: TextStyle(
                 fontWeight: FontWeight.w800,
                 fontSize: r.fs(18),
@@ -259,7 +261,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             // STREAK COUNTER
             // ================================================================
             Text(
-              _checkedIn ? 'Check-in Completo!' : 'Check-in Diário',
+              _checkedIn ? s.checkInComplete : s.dailyCheckIn2,
               style: TextStyle(
                   fontWeight: FontWeight.w800,
                   fontSize: r.fs(24),
@@ -268,8 +270,8 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             SizedBox(height: r.s(8)),
             Text(
               _checkedIn
-                  ? 'Dia $_consecutiveDays de sequência!'
-                  : 'Faça check-in para ganhar recompensas',
+                  ? s.dayOfStreak(_consecutiveDays)
+                  : s.checkInForRewards,
               style: TextStyle(color: Colors.grey[500], fontSize: r.fs(14)),
             ),
 
@@ -323,7 +325,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                 ),
                 child: Column(
                   children: [
-                    Text('Recompensas',
+                    Text(s.rewards,
                         style: TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: r.fs(16),
@@ -334,7 +336,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                       children: [
                         _RewardItem(
                           icon: Icons.star_rounded,
-                          label: '+$_xpEarned XP',
+                          label: s.xpEarnedLabel(_xpEarned),
                           color: AppTheme.primaryColor,
                         ),
                         Container(
@@ -344,7 +346,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                         ),
                         _RewardItem(
                           icon: Icons.monetization_on_rounded,
-                          label: '+$_coinsEarned Moedas',
+                          label: s.coinsEarnedLabel(_coinsEarned),
                           color: AppTheme.warningColor,
                         ),
                       ],
@@ -394,7 +396,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                               Icon(Icons.local_fire_department_rounded,
                                   color: Colors.white, size: r.s(22)),
                               SizedBox(width: r.s(8)),
-                              Text('Fazer Check-in',
+                              Text(s.doCheckIn2,
                                   style: TextStyle(
                                       fontSize: r.fs(17),
                                       fontWeight: FontWeight.w800,
@@ -435,7 +437,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Como funciona',
+                  Text(s.howItWorks,
                       style: TextStyle(
                           fontWeight: FontWeight.w700,
                           color: context.textPrimary)),
@@ -443,16 +445,16 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                   _InfoRow(
                       icon: Icons.calendar_today_rounded,
                       text:
-                          'Faça check-in todos os dias para manter sua sequência'),
+                          s.checkInKeepStreak),
                   _InfoRow(
                       icon: Icons.trending_up_rounded,
-                      text: 'Sequência maior = mais XP e moedas'),
+                      text: s.higherStreakDesc),
                   _InfoRow(
                       icon: Icons.star_rounded,
-                      text: '7 dias consecutivos = bônus especial!'),
+                      text: s.consecutiveDaysBonus),
                   _InfoRow(
                       icon: Icons.warning_amber_rounded,
-                      text: 'Perca um dia e a sequência volta para 1'),
+                      text: s.streakResetsDesc),
                 ],
               ),
             ),
@@ -517,7 +519,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
               Icon(Icons.casino_rounded,
                   color: AppTheme.warningColor, size: r.s(20)),
               SizedBox(width: r.s(8)),
-              Text('Sorteio',
+              Text(s.luckyDraw,
                   style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: r.fs(16),
@@ -526,14 +528,14 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
           ),
           SizedBox(height: r.s(10)),
           if (_luckyDrawUsed && _luckyDrawPrize > 0)
-            Text('Você ganhou $_luckyDrawPrize moedas extras!',
+            Text(s.wonExtraCoins(_luckyDrawPrize),
                 style: const TextStyle(
                     color: AppTheme.primaryColor, fontWeight: FontWeight.w700))
           else if (_luckyDrawUsed)
-            Text('Mais sorte na próxima vez!',
+            Text(s.betterLuckNextTime,
                 style: TextStyle(color: Colors.grey[500]))
           else ...[
-            Text('Tente a sorte por moedas extras!',
+            Text(s.tryLuckExtraCoins,
                 style: TextStyle(color: Colors.grey[500], fontSize: r.fs(13))),
             SizedBox(height: r.s(12)),
             GestureDetector(
@@ -560,7 +562,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                     Icon(Icons.casino_rounded,
                         color: Colors.white, size: r.s(18)),
                     SizedBox(width: r.s(6)),
-                    Text('Girar',
+                    Text(s.rotate,
                         style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w800,
@@ -592,7 +594,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
               Icon(Icons.build_circle_rounded,
                   color: AppTheme.errorColor, size: r.s(20)),
               SizedBox(width: r.s(8)),
-              Text('Sequência Perdida',
+              Text(s.streakLost,
                   style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: r.fs(16),
@@ -601,7 +603,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
           ),
           SizedBox(height: r.s(8)),
           Text(
-            'Você perdeu sua sequência! Gaste moedas para recuperá-la.',
+            s.streakLostRecoverMsg,
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.grey[500], fontSize: r.fs(13)),
           ),
@@ -628,7 +630,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
                   Icon(Icons.monetization_on_rounded,
                       color: Colors.white, size: r.s(16)),
                   SizedBox(width: r.s(6)),
-                  Text('Reparar (50 moedas)',
+                  Text(s.repairCoins,
                       style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
@@ -662,6 +664,7 @@ class _DayCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final bool active = isCompleted || isTodayCompleted;
 
@@ -722,6 +725,7 @@ class _RewardItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Column(
       children: [
@@ -755,6 +759,7 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Padding(
       padding: EdgeInsets.symmetric(vertical: r.s(5)),

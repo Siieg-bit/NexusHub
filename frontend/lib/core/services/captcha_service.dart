@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import '../../core/l10n/locale_provider.dart';
 
 /// Serviço de CAPTCHA — proteção anti-bot para ações sensíveis.
 ///
@@ -51,7 +52,7 @@ class CaptchaService {
           children: [
             Icon(Icons.security_rounded, color: Color(0xFF6C5CE7)),
             SizedBox(width: 8),
-            Text('Verificação de Segurança'),
+            Text(s.securityCheck),
           ],
         ),
         content: Column(
@@ -89,7 +90,7 @@ class CaptchaService {
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               decoration: const InputDecoration(
-                hintText: 'Resposta',
+                hintText: s.response,
                 border: OutlineInputBorder(),
               ),
               autofocus: true,
@@ -103,14 +104,14 @@ class CaptchaService {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar'),
+            child: Text(s.cancel2),
           ),
           ElevatedButton(
             onPressed: () {
               final userAnswer = int.tryParse(controller.text.trim());
               Navigator.pop(ctx, userAnswer == answer);
             },
-            child: const Text('Verificar'),
+            child: Text(s.verify),
           ),
         ],
       ),
@@ -145,6 +146,6 @@ class CaptchaService {
     final required = await isRequired(action);
     if (!required) return true;
 
-    return showCaptcha(context, reason: reason ?? 'Resolva para continuar');
+    return showCaptcha(context, reason: reason ?? s.solveToContinue);
   }
 }

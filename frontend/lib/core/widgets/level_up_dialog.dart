@@ -1,7 +1,9 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
 import '../utils/responsive.dart';
+import '../l10n/locale_provider.dart';
 
 /// Dialog fullscreen de Level Up estilo Amino Apps.
 ///
@@ -25,7 +27,7 @@ class LevelUpDialog {
     return showGeneralDialog(
       context: context,
       barrierDismissible: true,
-      barrierLabel: 'Level Up',
+      barrierLabel: s.levelUp2,
       barrierColor: Colors.black.withValues(alpha: 0.85),
       transitionDuration: const Duration(milliseconds: 500),
       transitionBuilder: (context, animation, secondaryAnimation, child) {
@@ -53,30 +55,30 @@ class LevelUpDialog {
     const titles = {
       1: 'Novato',
       2: 'Iniciante',
-      3: 'Aprendiz',
+      3: s.apprentice,
       4: 'Explorador',
-      5: 'Aventureiro',
-      6: 'Contribuidor',
-      7: 'Regular',
-      8: 'Dedicado',
-      9: 'Ativo',
+      5: s.adventurer,
+      6: s.contributor,
+      7: s.regular,
+      8: s.dedicated,
+      9: s.active,
       10: 'Veterano',
-      11: 'Expert',
+      11: s.expert,
       12: 'Mestre',
-      13: 'Guru',
-      14: 'Sábio',
-      15: 'Lendário',
-      16: 'Mítico',
+      13: s.guru,
+      14: s.wise,
+      15: s.legendary,
+      16: s.mythical,
       17: 'Divino',
       18: 'Celestial',
       19: 'Transcendente',
       20: 'Supremo',
     };
-    return titles[level] ?? 'Nível $level';
+    return titles[level] ?? s.levelLabel;
   }
 }
 
-class _LevelUpContent extends StatefulWidget {
+class _LevelUpContent extends ConsumerStatefulWidget {
   final int newLevel;
   final String newTitle;
 
@@ -89,7 +91,7 @@ class _LevelUpContent extends StatefulWidget {
   State<_LevelUpContent> createState() => _LevelUpContentState();
 }
 
-class _LevelUpContentState extends State<_LevelUpContent>
+class _LevelUpContentState extends ConsumerState<_LevelUpContent>
     with TickerProviderStateMixin {
   late AnimationController _glowController;
   late AnimationController _confettiController;
@@ -159,7 +161,8 @@ class _LevelUpContentState extends State<_LevelUpContent>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final levelColor = AppTheme.getLevelColor(widget.newLevel);
 
@@ -209,7 +212,7 @@ class _LevelUpContentState extends State<_LevelUpContent>
 
                     // "LEVEL UP!"
                     Text(
-                      'LEVEL UP!',
+                      s.levelUpAlert,
                       style: TextStyle(
                         fontSize: r.fs(16),
                         fontWeight: FontWeight.w800,
@@ -301,7 +304,7 @@ class _LevelUpContentState extends State<_LevelUpContent>
                     SizedBox(height: r.s(12)),
 
                     Text(
-                      'Novo título desbloqueado!',
+                      s.newTitleUnlocked,
                       style: TextStyle(
                         fontSize: r.fs(13),
                         color: context.textSecondary,
@@ -325,7 +328,7 @@ class _LevelUpContentState extends State<_LevelUpContent>
                           shadowColor: levelColor.withValues(alpha: 0.5),
                         ),
                         child: Text(
-                          'Incrível!',
+                          s.incredible,
                           style: TextStyle(
                             fontSize: r.fs(16),
                             fontWeight: FontWeight.w800,

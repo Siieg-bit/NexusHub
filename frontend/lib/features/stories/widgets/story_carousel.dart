@@ -1,16 +1,18 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../screens/story_viewer_screen.dart';
 import '../screens/create_story_screen.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Story Carousel — Carrossel horizontal de stories no topo do feed.
 ///
 /// No Amino original, stories aparecem como círculos de avatar
 /// com borda gradiente no topo do feed da comunidade.
 /// Stories não visualizadas têm borda colorida; já vistas, borda cinza.
-class StoryCarousel extends StatefulWidget {
+class StoryCarousel extends ConsumerStatefulWidget {
   final String communityId;
   const StoryCarousel({super.key, required this.communityId});
 
@@ -18,7 +20,7 @@ class StoryCarousel extends StatefulWidget {
   State<StoryCarousel> createState() => _StoryCarouselState();
 }
 
-class _StoryCarouselState extends State<StoryCarousel> {
+class _StoryCarouselState extends ConsumerState<StoryCarousel> {
   List<Map<String, dynamic>> _storyGroups = [];
   bool _isLoading = true;
 
@@ -90,7 +92,8 @@ class _StoryCarouselState extends State<StoryCarousel> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return SizedBox(
       height: r.s(100),
@@ -107,7 +110,7 @@ class _StoryCarouselState extends State<StoryCarousel> {
               scrollDirection: Axis.horizontal,
               padding:
                   EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
-              itemCount: _storyGroups.length + 1, // +1 para o botão "Criar"
+              itemCount: _storyGroups.length + 1, // +1 para o botão s.create
               itemBuilder: (ctx, i) {
                 if (i == 0) return _buildCreateButton(ctx);
                 return _buildStoryAvatar(ctx, _storyGroups[i - 1]);
@@ -149,7 +152,7 @@ class _StoryCarouselState extends State<StoryCarousel> {
             ),
             SizedBox(height: r.s(4)),
             Text(
-              'Seu Story',
+              s.yourStory,
               style: TextStyle(
                 color: context.textPrimary,
                 fontSize: r.fs(10),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/l10n/locale_provider.dart';
 // google_fonts removido — usando fonte local PlusJakartaSans de assets/fonts/
 
 /// Tema visual do NexusHub — réplica pixel-perfect do Amino Apps.
@@ -214,7 +215,7 @@ class AppTheme {
       ),
       textTheme: const TextTheme(
         displayLarge: TextStyle(
-            fontFamily: 'PlusJakartaSans',
+            fontFamily: s.plusJakartaSans,
             color: textPrimary,
             fontSize: 32,
             fontWeight: FontWeight.bold),
@@ -360,7 +361,7 @@ class AppTheme {
       ),
       textTheme: const TextTheme(
         displayLarge: TextStyle(
-            fontFamily: 'PlusJakartaSans',
+            fontFamily: s.plusJakartaSans,
             color: textPrimaryLight,
             fontSize: 32,
             fontWeight: FontWeight.bold),

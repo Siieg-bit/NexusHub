@@ -7,6 +7,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // PROVIDERS
@@ -65,8 +66,8 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
   late Animation<double> _podiumAnimation;
 
   static const _periods = [
-    ('all', 'Geral'),
-    ('month', 'Este Mês'),
+    ('all', s.general),
+    ('month', s.thisMonth),
     ('week', 'Esta Semana'),
   ];
 
@@ -99,6 +100,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final params = LeaderboardParams(
       communityId: widget.communityId,
@@ -162,7 +164,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                               color: Colors.amber, size: r.s(36)),
                           SizedBox(height: r.s(8)),
                           Text(
-                            'Ranking',
+                            s.ranking,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: r.fs(24),
@@ -276,7 +278,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Faça check-in e ganhe reputação para aparecer aqui!',
+                          s.checkInEarnReputation,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.grey[600],
@@ -413,6 +415,7 @@ class _PodiumItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final rep = data['reputation'] as int? ?? 0;
     final lvl = data['level'] as int? ?? calculateLevel(rep);
@@ -454,7 +457,7 @@ class _PodiumItem extends StatelessWidget {
 
           // Nome
           Text(
-            data['nickname'] as String? ?? 'Usuário',
+            data['nickname'] as String? ?? s.user,
             style: TextStyle(
               color: context.textPrimary,
               fontWeight: FontWeight.w700,
@@ -546,6 +549,7 @@ class _LeaderboardTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final rep = data['reputation'] as int? ?? 0;
     final lvl = data['level'] as int? ?? calculateLevel(rep);
@@ -601,7 +605,7 @@ class _LeaderboardTile extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        data['nickname'] as String? ?? 'Usuário',
+                        data['nickname'] as String? ?? s.user,
                         style: TextStyle(
                           color: context.textPrimary,
                           fontWeight: FontWeight.w700,

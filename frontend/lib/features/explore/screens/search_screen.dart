@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -5,16 +6,17 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Busca Global — Pesquisa por comunidades, usuários, posts e wiki.
-class SearchScreen extends StatefulWidget {
+class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _SearchScreenState extends State<SearchScreen>
+class _SearchScreenState extends ConsumerState<SearchScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _searchController = TextEditingController();
@@ -83,7 +85,8 @@ class _SearchScreenState extends State<SearchScreen>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -167,7 +170,7 @@ class _SearchScreenState extends State<SearchScreen>
         children: [
           Icon(Icons.search_rounded, size: r.s(64), color: Colors.grey[600]),
           SizedBox(height: r.s(16)),
-          Text('Busque por comunidades, pessoas ou posts',
+          Text(s.searchEverythingHint,
               style: TextStyle(color: Colors.grey[500], fontSize: r.fs(16))),
         ],
       ),
@@ -178,7 +181,7 @@ class _SearchScreenState extends State<SearchScreen>
     final r = context.r;
     if (_communities.isEmpty) {
       return Center(
-        child: Text('Nenhuma comunidade encontrada',
+        child: Text(s.noCommunitiesFound,
             style: TextStyle(color: Colors.grey[500])),
       );
     }
@@ -197,7 +200,7 @@ class _SearchScreenState extends State<SearchScreen>
           child: ListTile(
             contentPadding:
                 EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
-            onTap: () => context.push('/community/${c['id']}'),
+            onTap: () => context.push('/community/${c['ids.closingBracket),
             leading: Container(
               width: r.s(48),
               height: r.s(48),
@@ -239,7 +242,7 @@ class _SearchScreenState extends State<SearchScreen>
     final r = context.r;
     if (_users.isEmpty) {
       return Center(
-        child: Text('Nenhum usuário encontrado',
+        child: Text(s.noUserFound,
             style: TextStyle(color: Colors.grey[500])),
       );
     }
@@ -258,7 +261,7 @@ class _SearchScreenState extends State<SearchScreen>
           child: ListTile(
             contentPadding:
                 EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
-            onTap: () => context.push('/user/${u['id']}'),
+            onTap: () => context.push('/user/${u['ids.closingBracket),
             leading: CosmeticAvatar(
               userId: u['id'] as String?,
               avatarUrl: u['icon_url'] as String?,
@@ -272,7 +275,7 @@ class _SearchScreenState extends State<SearchScreen>
             subtitle: Padding(
               padding: EdgeInsets.only(top: r.s(4)),
               child: Text(
-                'Nível ${u['level'] ?? 1}',
+                s.levelLabel(u['level'] as int? ?? 1),
                 style: TextStyle(
                     color: AppTheme.accentColor,
                     fontSize: r.fs(13),
@@ -289,7 +292,7 @@ class _SearchScreenState extends State<SearchScreen>
     final r = context.r;
     if (_posts.isEmpty) {
       return Center(
-        child: Text('Nenhum post encontrado',
+        child: Text(s.noPostFound,
             style: TextStyle(color: Colors.grey[500])),
       );
     }
@@ -309,7 +312,7 @@ class _SearchScreenState extends State<SearchScreen>
           child: ListTile(
             contentPadding:
                 EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
-            onTap: () => context.push('/post/${p['id']}'),
+            onTap: () => context.push('/post/${p['ids.closingBracket),
             leading: Container(
               width: r.s(48),
               height: r.s(48),
@@ -320,7 +323,7 @@ class _SearchScreenState extends State<SearchScreen>
               child: Icon(Icons.article_rounded,
                   color: AppTheme.primaryColor, size: r.s(24)),
             ),
-            title: Text(p['title'] as String? ?? 'Post',
+            title: Text(p['title'] as String? ?? s.post,
                 style: TextStyle(
                     color: context.textPrimary,
                     fontWeight: FontWeight.w700,
@@ -330,7 +333,7 @@ class _SearchScreenState extends State<SearchScreen>
             subtitle: Padding(
               padding: EdgeInsets.only(top: r.s(4)),
               child: Text(
-                'por ${author?['nickname'] ?? 'Anônimo'}',
+                'por ${author?['nickname'] ?? s.anonymousLabel}',
                 style: TextStyle(color: Colors.grey[500], fontSize: r.fs(13)),
               ),
             ),

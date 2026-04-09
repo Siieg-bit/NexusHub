@@ -11,6 +11,7 @@ import '../../../core/widgets/amino_top_bar.dart';
 import '../../../core/widgets/amino_particles_bg.dart';
 import '../../../core/providers/notification_provider.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Provider para busca de comunidades.
 final searchCommunitiesProvider =
@@ -252,7 +253,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   leading: Icon(Icons.exit_to_app_rounded,
                       color: AppTheme.errorColor, size: r.s(22)),
                   title: Text(
-                    'Sair da comunidade',
+                    s.leaveCommunity,
                     style: TextStyle(
                         color: AppTheme.errorColor,
                         fontSize: r.fs(14),
@@ -282,7 +283,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(r.s(16))),
           title: Text(
-            'Sair da comunidade',
+            s.leaveCommunity,
             style:
                 TextStyle(color: ctx.textPrimary, fontWeight: FontWeight.w800),
           ),
@@ -294,11 +295,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
               child:
-                  Text('Cancelar', style: TextStyle(color: ctx.textSecondary)),
+                  Text(s.cancel, style: TextStyle(color: ctx.textSecondary)),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: Text('Sair',
+              child: Text(s.logout,
                   style: TextStyle(
                       color: AppTheme.errorColor, fontWeight: FontWeight.w700)),
             ),
@@ -345,6 +346,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -382,7 +384,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
                           // ── Minhas Comunidades ──
                           if (_myCommunities.isNotEmpty) ...[
-                            _buildSectionHeader('Minhas Comunidades'),
+                            _buildSectionHeader(s.myCommunitiesTitle),
                             SizedBox(
                               height: r.s(180),
                               child: ListView.builder(
@@ -426,7 +428,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           ],
 
                           // ── Comunidades Recomendadas ──
-                          _buildSectionHeader('Comunidades Recomendadas',
+                          _buildSectionHeader(s.recommendedCommunities,
                               onSeeAll: () => context.push('/communities')),
                           ..._recommendedCommunities.map(
                             (c) => _RecommendedCommunityTile(community: c),
@@ -588,7 +590,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                 borderRadius: BorderRadius.circular(r.s(20)),
                               ),
                               child: Text(
-                                'Entrar',
+                                s.login,
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: r.fs(12),
@@ -651,7 +653,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               onTap: onSeeAll,
               child: Row(
                 children: [
-                  Text('Ver Tudo',
+                  Text(s.seeAll2,
                       style: TextStyle(
                           color: AppTheme.accentColor,
                           fontSize: r.fs(13),
@@ -698,6 +700,7 @@ class _MyCommunityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final color = _parseColor(community.themeColor);
     return GestureDetector(
@@ -866,6 +869,7 @@ class _NewCommunityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final color = _parseColor(community.themeColor);
     return GestureDetector(
@@ -1006,6 +1010,7 @@ class _ForYouPostTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final title = post['title'] as String? ?? '';
     final content = post['content'] as String? ?? '';
@@ -1175,6 +1180,7 @@ class _RecommendedCommunityTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: () => context.push('/community/${community.id}'),
@@ -1231,7 +1237,7 @@ class _RecommendedCommunityTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(r.s(20)),
               ),
               child: Text(
-                'Entrar',
+                s.login,
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: r.fs(12),

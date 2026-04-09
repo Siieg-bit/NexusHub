@@ -10,6 +10,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/providers/notification_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // TELA DE ALERTAS — Estilo Amino Apps
@@ -67,18 +68,18 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           ),
         ),
         content: Text(
-          'Esta ação não pode ser desfeita.',
+          s.actionCannotBeUndone,
           style: TextStyle(color: context.textSecondary, fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Cancelar',
+            child: Text(s.cancel,
                 style: TextStyle(color: context.textSecondary)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Limpar',
+            child: Text(s.clear,
                 style: TextStyle(
                     color: AppTheme.errorColor, fontWeight: FontWeight.w700)),
           ),
@@ -156,7 +157,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           SnackBar(
             content: Text(
               error == 'already_member'
-                  ? 'Você já faz parte desta comunidade.'
+                  ? s.alreadyInCommunity
                   : 'Convite aceito com sucesso!',
             ),
             behavior: SnackBarBehavior.floating,
@@ -171,11 +172,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
       String message;
       if (error == 'invalid_invite_code') {
-        message = 'Este convite é inválido ou expirou.';
+        message = s.inviteInvalidOrExpired;
       } else if (error == 'not_authenticated') {
-        message = 'Faça login para aceitar o convite.';
+        message = s.loginToAcceptInvite;
       } else {
-        message = 'Não foi possível aceitar o convite agora.';
+        message = s.couldNotAcceptInvite;
       }
 
       if (!mounted) return;
@@ -189,7 +190,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Não foi possível aceitar o convite agora.'),
+          content: Text(s.couldNotAcceptInvite),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -279,6 +280,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final notifAsync = ref.watch(notificationProvider);
 
@@ -295,7 +297,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          'Alertas',
+          s.alerts,
           style: TextStyle(
             color: context.textPrimary,
             fontWeight: FontWeight.w800,
@@ -337,7 +339,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                   size: r.s(48), color: AppTheme.errorColor),
               SizedBox(height: r.s(12)),
               Text(
-                'Erro ao carregar notificações',
+                s.errorLoadingNotifications,
                 style: TextStyle(
                     color: context.textSecondary,
                     fontSize: r.fs(15),
@@ -354,7 +356,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     borderRadius: BorderRadius.circular(r.s(12)),
                   ),
                   child: Text(
-                    'Tentar novamente',
+                    s.retry,
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: r.fs(13),
@@ -398,7 +400,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                               color: context.textSecondary, size: r.s(18)),
                           SizedBox(width: r.s(10)),
                           Text(
-                            'Configurações de Notificação Push',
+                            s.pushNotificationSettings,
                             style: TextStyle(
                               color: context.textSecondary,
                               fontSize: r.fs(13),
@@ -434,7 +436,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                           ),
                           SizedBox(height: r.s(6)),
                           Text(
-                            'Quando alguém interagir com você,\naparecerá aqui',
+                            s.interactionsAppearHere,
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: Colors.grey[600],
@@ -587,12 +589,13 @@ class _NotificationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final type = data['type'] as String? ?? 'general';
     final isRead = data['is_read'] as bool? ?? false;
     final actor = data['profiles'] as Map<String, dynamic>?;
     final content =
-        data['body'] as String? ?? data['title'] as String? ?? 'Notificação';
+        data['body'] as String? ?? data['title'] as String? ?? s.notificationLabel;
     final createdAt = DateTime.tryParse(data['created_at'] as String? ?? '') ??
         DateTime.now();
 
@@ -757,7 +760,7 @@ class _NotificationTile extends StatelessWidget {
                             Text(
                               isActionLoading
                                   ? 'Aceitando...'
-                                  : 'Aceitar convite',
+                                  : s.acceptInvite,
                               style: TextStyle(
                                 color: AppTheme.primaryColor,
                                 fontSize: r.fs(12),
@@ -804,6 +807,7 @@ class _RetryBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       margin: EdgeInsets.all(r.s(16)),
@@ -820,7 +824,7 @@ class _RetryBanner extends StatelessWidget {
           SizedBox(width: r.s(10)),
           Expanded(
             child: Text(
-              'Erro ao carregar mais notificações',
+              s.errorLoadingMoreNotifications,
               style: TextStyle(
                   color: Colors.red[300],
                   fontSize: r.fs(13),
@@ -837,7 +841,7 @@ class _RetryBanner extends StatelessWidget {
                 borderRadius: BorderRadius.circular(r.s(8)),
               ),
               child: Text(
-                'Tentar novamente',
+                s.retry,
                 style: TextStyle(
                     color: Colors.red[300],
                     fontSize: r.fs(12),

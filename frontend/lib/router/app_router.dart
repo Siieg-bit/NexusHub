@@ -71,6 +71,7 @@ import '../features/feed/screens/drafts_screen.dart';
 import '../features/profile/screens/edit_community_profile_screen.dart';
 import 'shell_screen.dart';
 import '../features/stories/screens/story_viewer_screen.dart';
+import '../core/l10n/locale_provider.dart';
 
 /// Router principal do app com GoRouter.
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -574,7 +575,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final extra = state.extra as Map<String, dynamic>? ?? {};
           return CommunitySearchScreen(
             communityId: state.pathParameters['communityId']!,
-            communityName: extra['communityName'] as String? ?? 'Comunidade',
+            communityName: extra['communityName'] as String? ?? s.community2,
           );
         },
       ),

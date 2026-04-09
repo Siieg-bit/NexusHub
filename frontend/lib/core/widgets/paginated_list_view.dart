@@ -1,7 +1,9 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'shimmer_loading.dart';
 import '../utils/responsive.dart';
+import '../l10n/locale_provider.dart';
 
 /// ============================================================================
 /// PaginatedListView — Widget reutilizável de lista com paginação e infinite scroll.
@@ -30,7 +32,7 @@ import '../utils/responsive.dart';
 
 typedef FetchPage<T> = Future<List<T>> Function(int page, int pageSize);
 
-class PaginatedListView<T> extends StatefulWidget {
+class PaginatedListView<T> extends ConsumerStatefulWidget {
   final FetchPage<T> fetchPage;
   final Widget Function(BuildContext context, T item, int index) itemBuilder;
   final String emptyMessage;
@@ -55,7 +57,7 @@ class PaginatedListView<T> extends StatefulWidget {
     super.key,
     required this.fetchPage,
     required this.itemBuilder,
-    this.emptyMessage = 'Nenhum item encontrado',
+    this.emptyMessage = s.noItemsFound,
     this.emptyIcon = '📭',
     this.pageSize = 20,
     this.header,
@@ -201,7 +203,8 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     // ── First load: shimmer ──
     if (_isFirstLoad) {
@@ -285,7 +288,7 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
               SizedBox(width: r.s(10)),
               Expanded(
                 child: Text(
-                  'Erro ao carregar mais itens',
+                  s.loadMoreError,
                   style: TextStyle(
                     color: Colors.red[300],
                     fontSize: r.fs(13),
@@ -303,7 +306,7 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
                     borderRadius: BorderRadius.circular(r.s(8)),
                   ),
                   child: Text(
-                    'Tentar novamente',
+                    s.retry,
                     style: TextStyle(
                       color: Colors.red[300],
                       fontSize: r.fs(12),
@@ -362,10 +365,10 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
             Icon(Icons.error_outline_rounded,
                 size: r.s(48), color: Theme.of(context).colorScheme.error),
             SizedBox(height: r.s(16)),
-            Text('Algo deu errado',
+            Text(s.somethingWentWrong,
                 style: Theme.of(context).textTheme.titleMedium),
             SizedBox(height: r.s(8)),
-            Text(_firstLoadError ?? 'Erro desconhecido',
+            Text(_firstLoadError ?? s.unknownError,
                 textAlign: TextAlign.center,
                 style: Theme.of(context)
                     .textTheme
@@ -375,7 +378,7 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
             FilledButton.icon(
               onPressed: _loadFirstPage,
               icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Tentar novamente'),
+              label: Text(s.retry),
             ),
           ],
         ),
@@ -411,7 +414,7 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
 ///
 /// Mesmas melhorias Sprint 3D: error inline, debounce, prefetch configurável.
 /// ============================================================================
-class PaginatedGridView<T> extends StatefulWidget {
+class PaginatedGridView<T> extends ConsumerStatefulWidget {
   final FetchPage<T> fetchPage;
   final Widget Function(BuildContext context, T item, int index) itemBuilder;
   final String emptyMessage;
@@ -429,7 +432,7 @@ class PaginatedGridView<T> extends StatefulWidget {
     super.key,
     required this.fetchPage,
     required this.itemBuilder,
-    this.emptyMessage = 'Nenhum item encontrado',
+    this.emptyMessage = s.noItemsFound,
     this.pageSize = 20,
     this.crossAxisCount = 2,
     this.mainAxisSpacing = 8,
@@ -544,7 +547,8 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     if (_isFirstLoad) {
       return GridView.builder(
@@ -571,7 +575,7 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
             Icon(Icons.error_outline_rounded,
                 size: r.s(48), color: Theme.of(context).colorScheme.error),
             SizedBox(height: r.s(16)),
-            Text('Algo deu errado',
+            Text(s.somethingWentWrong,
                 style: Theme.of(context).textTheme.titleMedium),
             SizedBox(height: r.s(8)),
             FilledButton.icon(
@@ -583,7 +587,7 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
                 _loadFirstPage();
               },
               icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Tentar novamente'),
+              label: Text(s.retry),
             ),
           ],
         ),
@@ -632,7 +636,7 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
                         Icon(Icons.error_outline_rounded,
                             color: Colors.red[300], size: r.s(20)),
                         SizedBox(height: r.s(4)),
-                        Text('Toque para tentar novamente',
+                        Text(s.tapToRetry,
                             style: TextStyle(
                               color: Colors.red[300],
                               fontSize: r.fs(11),

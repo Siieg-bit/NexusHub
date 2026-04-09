@@ -1,18 +1,20 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Inventário — Itens comprados pelo usuário (Avatar Frames, Chat Bubbles, etc).
-class InventoryScreen extends StatefulWidget {
+class InventoryScreen extends ConsumerStatefulWidget {
   const InventoryScreen({super.key});
 
   @override
   State<InventoryScreen> createState() => _InventoryScreenState();
 }
 
-class _InventoryScreenState extends State<InventoryScreen>
+class _InventoryScreenState extends ConsumerState<InventoryScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   bool _isLoading = true;
@@ -20,10 +22,10 @@ class _InventoryScreenState extends State<InventoryScreen>
   Set<String> _equippedIds = {};
 
   final _tabs = const [
-    'Todos',
+    s.everyone,
     'Avatar Frames',
     'Chat Bubbles',
-    'Stickers',
+    s.stickers,
     'Backgrounds'
   ];
 
@@ -108,7 +110,7 @@ class _InventoryScreenState extends State<InventoryScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ocorreu um erro. Tente novamente.',
+            content: Text(s.anErrorOccurredTryAgain,
                 style: const TextStyle(color: Colors.white)),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
@@ -128,7 +130,8 @@ class _InventoryScreenState extends State<InventoryScreen>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
@@ -136,7 +139,7 @@ class _InventoryScreenState extends State<InventoryScreen>
         elevation: 0,
         iconTheme: IconThemeData(color: context.textPrimary),
         title: Text(
-          'Inventário',
+          s.inventory,
           style: TextStyle(
             fontWeight: FontWeight.w800,
             color: context.textPrimary,
@@ -185,7 +188,7 @@ class _InventoryScreenState extends State<InventoryScreen>
             ),
             SizedBox(height: r.s(16)),
             Text(
-              'Nenhum item',
+              s.noItems,
               style: TextStyle(
                 color: Colors.grey[500],
                 fontSize: r.fs(16),

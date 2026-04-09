@@ -128,17 +128,17 @@ class RateLimiterService {
   static String _friendlyMessage(String action) {
     switch (action) {
       case 'post_create':
-        return 'Você está postando muito rápido. Aguarde um pouco antes de criar outro post.';
+        return s.postingTooFast;
       case 'comment_create':
-        return 'Muitos comentários em pouco tempo. Aguarde um momento.';
+        return s.tooManyComments;
       case 'message_send':
         return 'Você está enviando mensagens muito rápido. Aguarde alguns segundos.';
       case 'like_toggle':
         return 'Muitas curtidas em pouco tempo. Aguarde um momento.';
       case 'report_create':
-        return 'Você já enviou muitas denúncias recentemente. Tente novamente mais tarde.';
+        return s.tooManyReports;
       case 'transfer_coins':
-        return 'Muitas transferências em pouco tempo. Aguarde antes de transferir novamente.';
+        return s.tooManyTransfers;
       case 'auth_attempt':
         return 'Muitas tentativas de login. Aguarde 5 minutos.';
       default:

@@ -10,6 +10,7 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/amino_bottom_nav.dart';
 import '../../chat/screens/chat_list_screen.dart' show chatListProvider;
 import '../widgets/community_create_menu.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // Provider: chats do usuário filtrados por comunidade
@@ -116,6 +117,7 @@ class _MyCommunityChatsScreenState
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final chatsAsync = ref.watch(communityMyChatsProvider(widget.communityId));
     final membersAsync =
@@ -263,7 +265,7 @@ class _MyCommunityChatsScreenState
                       color: Colors.white, size: r.s(16)),
                   SizedBox(width: r.s(4)),
                   Text(
-                    'Criar',
+                    s.create,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: r.fs(13),
@@ -300,7 +302,7 @@ class _MyCommunityChatsScreenState
               onChanged: (v) => setState(() => _searchQuery = v),
               style: TextStyle(color: context.textPrimary, fontSize: r.fs(13)),
               decoration: InputDecoration(
-                hintText: 'Procurar Meus Chats',
+                hintText: s.searchMyChats,
                 hintStyle:
                     TextStyle(color: context.textHint, fontSize: r.fs(13)),
                 border: InputBorder.none,
@@ -468,7 +470,7 @@ class _MyCommunityChatsScreenState
             itemBuilder: (context, index) {
               final item = favorites[index];
               final profile = item['profiles'] as Map<String, dynamic>? ?? {};
-              final nickname = profile['nickname'] as String? ?? 'Membro';
+              final nickname = profile['nickname'] as String? ?? s.member;
               final iconUrl = profile['icon_url'] as String?;
               final userId = item['following_id'] as String?;
               return GestureDetector(
@@ -542,7 +544,7 @@ class _MyCommunityChatsScreenState
             SizedBox(height: r.s(12)),
             Text(
               _searchQuery.isEmpty
-                  ? 'Você ainda não entrou em nenhum chat nesta comunidade.'
+                  ? s.noChatsJoinedYet
                   : 'Nenhum chat encontrado para "$_searchQuery".',
               style:
                   TextStyle(color: context.textSecondary, fontSize: r.fs(13)),
@@ -599,13 +601,13 @@ class _CommunityChatTile extends ConsumerWidget {
   String _typeLabel(String type) {
     switch (type) {
       case 'public':
-        return 'Chat Público';
+        return s.publicChatLabel;
       case 'group':
-        return 'Chat em Grupo';
+        return s.groupChatLabel;
       case 'dm':
         return 'Mensagem Direta';
       default:
-        return 'Chat';
+        return s.chat;
     }
   }
 
@@ -658,7 +660,7 @@ class _CommunityChatTile extends ConsumerWidget {
                 size: r.s(22),
               ),
               title: Text(
-                isPinned ? 'Desafixar do topo' : 'Fixar no topo',
+                isPinned ? s.unpinFromTop : s.pinToTop,
                 style:
                     TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
               ),
@@ -686,7 +688,7 @@ class _CommunityChatTile extends ConsumerWidget {
               leading: Icon(Icons.exit_to_app_rounded,
                   color: AppTheme.errorColor, size: r.s(22)),
               title: Text(
-                chatRoom.type == 'dm' ? 'Apagar conversa' : 'Sair do chat',
+                chatRoom.type == 'dm' ? s.deleteConversation : s.leaveChat,
                 style:
                     TextStyle(color: AppTheme.errorColor, fontSize: r.fs(14)),
               ),
@@ -708,7 +710,7 @@ class _CommunityChatTile extends ConsumerWidget {
                     ),
                     content: Text(
                       chatRoom.type == 'dm'
-                          ? 'A conversa será removida da sua lista.'
+                          ? s.conversationRemovedFromList
                           : 'Você poderá entrar novamente depois.',
                       style: TextStyle(
                           color: context.textSecondary, fontSize: r.fs(13)),
@@ -716,7 +718,7 @@ class _CommunityChatTile extends ConsumerWidget {
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.of(dCtx).pop(false),
-                        child: Text('Cancelar',
+                        child: Text(s.cancel,
                             style: TextStyle(
                                 color: context.textSecondary,
                                 fontSize: r.fs(13))),
@@ -724,7 +726,7 @@ class _CommunityChatTile extends ConsumerWidget {
                       TextButton(
                         onPressed: () => Navigator.of(dCtx).pop(true),
                         child: Text(
-                          chatRoom.type == 'dm' ? 'Apagar' : 'Sair',
+                          chatRoom.type == 'dm' ? s.deleteAction : s.logout,
                           style: TextStyle(
                               color: AppTheme.errorColor,
                               fontWeight: FontWeight.w700,
@@ -755,6 +757,7 @@ class _CommunityChatTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final hasUnread = chatRoom.unreadCount > 0;
     final isPinned = chatRoom.isPinnedByUser;
@@ -864,7 +867,7 @@ class _CommunityChatTile extends ConsumerWidget {
                   SizedBox(height: r.s(3)),
                   // Preview da última mensagem
                   Text(
-                    chatRoom.lastMessagePreview ?? 'Sem mensagens',
+                    chatRoom.lastMessagePreview ?? s.noMessages,
                     style: TextStyle(
                       color:
                           hasUnread ? context.textSecondary : context.textHint,

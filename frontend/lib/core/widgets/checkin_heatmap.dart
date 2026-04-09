@@ -1,6 +1,8 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../config/app_theme.dart';
 import '../utils/responsive.dart';
+import '../l10n/locale_provider.dart';
 
 /// Heatmap de Check-in estilo GitHub contributions / Amino Apps.
 ///
@@ -14,7 +16,7 @@ import '../utils/responsive.dart';
 ///   - Borda dourada: dia atual
 ///
 /// O grid mostra os últimos 12 meses (52 semanas) com scroll horizontal.
-class CheckinHeatmap extends StatelessWidget {
+class CheckinHeatmap extends ConsumerWidget {
   /// Mapa de datas para intensidade (0 = sem check-in, 1-4 = níveis).
   /// Formato da chave: 'yyyy-MM-dd'
   final Map<String, int> checkinData;
@@ -59,7 +61,8 @@ class CheckinHeatmap extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -125,7 +128,7 @@ class CheckinHeatmap extends StatelessWidget {
                   color: AppTheme.accentColor, size: r.s(20)),
               SizedBox(width: r.s(8)),
               Text(
-                'Histórico de Check-in',
+                s.checkInHistory,
                 style: TextStyle(
                   color: context.textPrimary,
                   fontWeight: FontWeight.w700,
@@ -202,7 +205,7 @@ class CheckinHeatmap extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('Menos',
+              Text(s.less,
                   style:
                       TextStyle(color: Colors.grey[600], fontSize: r.fs(10))),
               SizedBox(width: r.s(4)),
@@ -216,7 +219,7 @@ class CheckinHeatmap extends StatelessWidget {
               const SizedBox(width: 2),
               _HeatmapCell(color: _level4, isToday: false),
               SizedBox(width: r.s(4)),
-              Text('Mais',
+              Text(s.more,
                   style:
                       TextStyle(color: Colors.grey[600], fontSize: r.fs(10))),
             ],
@@ -230,7 +233,7 @@ class CheckinHeatmap extends StatelessWidget {
               Flexible(
                 child: _StatCard(
                   icon: Icons.local_fire_department_rounded,
-                  label: 'Streak Atual',
+                  label: s.currentStreak,
                   value: '$currentStreak dias',
                   color: AppTheme.warningColor,
                 ),
@@ -239,7 +242,7 @@ class CheckinHeatmap extends StatelessWidget {
               Flexible(
                 child: _StatCard(
                   icon: Icons.emoji_events_rounded,
-                  label: 'Maior Streak',
+                  label: s.highestStreak,
                   value: '$longestStreak dias',
                   color: const Color(0xFFFFD700),
                 ),
@@ -248,7 +251,7 @@ class CheckinHeatmap extends StatelessWidget {
               Flexible(
                 child: _StatCard(
                   icon: Icons.calendar_today_rounded,
-                  label: 'Total',
+                  label: s.total,
                   value: '$totalCheckins dias',
                   color: AppTheme.accentColor,
                 ),
@@ -277,14 +280,15 @@ class _DayData {
 }
 
 /// Célula individual do heatmap (quadrado colorido).
-class _HeatmapCell extends StatelessWidget {
+class _HeatmapCell extends ConsumerWidget {
   final Color color;
   final bool isToday;
 
   const _HeatmapCell({required this.color, required this.isToday});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       width: r.s(12),
@@ -301,7 +305,7 @@ class _HeatmapCell extends StatelessWidget {
 }
 
 /// Card de estatística compacto.
-class _StatCard extends StatelessWidget {
+class _StatCard extends ConsumerWidget {
   final IconData icon;
   final String label;
   final String value;
@@ -315,7 +319,8 @@ class _StatCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       padding: EdgeInsets.symmetric(vertical: r.s(10), horizontal: r.s(8)),

@@ -1,11 +1,13 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Tela para Leaders/Curators editarem as guidelines da comunidade.
 /// Réplica fiel do Amino Apps — editor de texto rico com preview.
-class EditGuidelinesScreen extends StatefulWidget {
+class EditGuidelinesScreen extends ConsumerStatefulWidget {
   final String communityId;
   final String? currentGuidelines;
 
@@ -19,7 +21,7 @@ class EditGuidelinesScreen extends StatefulWidget {
   State<EditGuidelinesScreen> createState() => _EditGuidelinesScreenState();
 }
 
-class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
+class _EditGuidelinesScreenState extends ConsumerState<EditGuidelinesScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late TextEditingController _guidelinesController;
@@ -29,34 +31,34 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
   // Seções pré-definidas do Amino
   static const _templateSections = [
     {
-      'title': 'Regras Gerais',
+      'title': s.generalRules,
       'icon': Icons.gavel_rounded,
       'template':
-          '1. Seja respeitoso com todos os membros\n2. Não faça spam ou flood\n3. Mantenha o conteúdo relevante à comunidade\n4. Não compartilhe informações pessoais',
+          s.defaultGuidelines,
     },
     {
-      'title': 'Conteúdo Permitido',
+      'title': s.allowedContent,
       'icon': Icons.check_circle_rounded,
       'template':
-          '• Posts relacionados ao tema da comunidade\n• Fan arts e criações originais\n• Discussões construtivas\n• Memes relacionados ao tema',
+          s.defaultAllowedContent,
     },
     {
-      'title': 'Conteúdo Proibido',
+      'title': s.prohibitedContent,
       'icon': Icons.block_rounded,
       'template':
-          '• NSFW / Conteúdo explícito\n• Bullying ou assédio\n• Roubo de arte (art theft)\n• Propaganda não autorizada\n• Conteúdo discriminatório',
+          s.defaultProhibitedContent,
     },
     {
-      'title': 'Sistema de Strikes',
+      'title': s.strikeSystem,
       'icon': Icons.warning_rounded,
       'template':
-          '• 1º Strike: Aviso formal\n• 2º Strike: Silenciamento temporário (24h)\n• 3º Strike: Ban permanente da comunidade',
+          s.defaultStrikePolicy,
     },
     {
-      'title': 'Cargos e Responsabilidades',
+      'title': s.rolesResponsibilities,
       'icon': Icons.people_rounded,
       'template':
-          '• Leader: Gerencia a comunidade e modera conteúdo\n• Curator: Auxilia na moderação e curadoria de wikis\n• Member: Participa ativamente da comunidade',
+          s.defaultRoles,
     },
   ];
 
@@ -98,7 +100,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
                 Icon(Icons.check_circle_rounded,
                     color: Colors.white, size: r.s(18)),
                 SizedBox(width: r.s(8)),
-                Text('Guidelines salvas com sucesso!'),
+                Text(s.guidelinesSaved),
               ],
             ),
             backgroundColor: AppTheme.successColor,
@@ -113,7 +115,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao salvar. Tente novamente.'),
+            content: Text(s.errorSavingTryAgain),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -136,7 +138,8 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -144,7 +147,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
-          'Editar Guidelines',
+          s.editGuidelines2,
           style: TextStyle(
             fontWeight: FontWeight.w800,
             color: context.textPrimary,
@@ -182,7 +185,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
                         ),
                       )
                     : Text(
-                        'Salvar',
+                        s.save,
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
@@ -199,8 +202,8 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
           indicatorColor: AppTheme.primaryColor,
           dividerColor: Colors.white.withValues(alpha: 0.05),
           tabs: const [
-            Tab(text: 'Editor'),
-            Tab(text: 'Preview'),
+            Tab(text: s.editor),
+            Tab(text: s.preview2),
           ],
         ),
       ),
@@ -289,7 +292,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
               ),
               decoration: InputDecoration(
                 hintText:
-                    'Escreva as guidelines da sua comunidade aqui...\n\nUse ## para títulos de seção\nUse • ou - para listas\nUse ** para negrito',
+                    s.guidelinesEditorHint,
                 hintStyle: TextStyle(
                   color: Colors.grey[600],
                   fontSize: r.fs(14),
@@ -317,7 +320,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
                 ),
               ),
               Text(
-                'Suporta formatação Markdown',
+                s.supportsMarkdown,
                 style: TextStyle(
                   color: Colors.grey[600],
                   fontSize: r.fs(11),
@@ -343,7 +346,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
                 size: r.s(64), color: Colors.grey[600]),
             SizedBox(height: r.s(16)),
             Text(
-              'Nenhum conteúdo para visualizar',
+              s.noContentToDisplay,
               style: TextStyle(
                 color: Colors.grey[500],
                 fontSize: r.fs(16),
@@ -352,7 +355,7 @@ class _EditGuidelinesScreenState extends State<EditGuidelinesScreen>
             ),
             SizedBox(height: r.s(8)),
             Text(
-              'Escreva as guidelines na aba Editor',
+              s.writeGuidelinesTab,
               style: TextStyle(
                 color: Colors.grey[600],
                 fontSize: r.fs(13),

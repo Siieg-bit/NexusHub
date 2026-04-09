@@ -7,6 +7,7 @@ import '../../../core/models/post_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../widgets/post_card.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Provider para feed global (posts de todas as comunidades do usuário).
 final globalFeedProvider = FutureProvider<List<PostModel>>((ref) async {
@@ -34,6 +35,7 @@ class GlobalFeedScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final feedAsync = ref.watch(globalFeedProvider);
 
@@ -76,7 +78,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                   ),
                   SizedBox(width: r.s(10)),
                   Text(
-                    'NexusHub',
+                    s.nexusHub,
                     style: TextStyle(
                       color: context.textPrimary,
                       fontWeight: FontWeight.w800,
@@ -91,7 +93,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                   icon: Icon(Icons.calendar_today_rounded,
                       color: context.textPrimary),
                   onPressed: () => context.push('/check-in'),
-                  tooltip: 'Check-in Diário',
+                  tooltip: s.dailyCheckIn2,
                 ),
                 // Notificações
                 IconButton(
@@ -118,31 +120,31 @@ class GlobalFeedScreen extends ConsumerWidget {
                   children: [
                     _QuickAction(
                       icon: Icons.add_circle_rounded,
-                      label: 'Criar\nComunidade',
+                      label: s.createCommunityNewline,
                       color: AppTheme.primaryColor,
                       onTap: () => context.push('/create-community'),
                     ),
                     _QuickAction(
                       icon: Icons.calendar_today_rounded,
-                      label: 'Check-in\nDiário',
+                      label: s.checkInDaily,
                       color: AppTheme.warningColor,
                       onTap: () => context.push('/check-in'),
                     ),
                     _QuickAction(
                       icon: Icons.leaderboard_rounded,
-                      label: 'Ranking\nGlobal',
+                      label: s.globalRankingNewline,
                       color: AppTheme.accentColor,
                       onTap: () => context.push('/leaderboard'),
                     ),
                     _QuickAction(
                       icon: Icons.quiz_rounded,
-                      label: 'Quiz\nDiário',
+                      label: s.quizDaily,
                       color: AppTheme.primaryColor,
                       onTap: () => context.push('/quiz'),
                     ),
                     _QuickAction(
                       icon: Icons.store_rounded,
-                      label: 'Loja de\nCoins',
+                      label: s.coinShopNewline,
                       color: AppTheme.warningColor,
                       onTap: () => context.push('/wallet'),
                     ),
@@ -161,7 +163,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Feed',
+                      s.feed,
                       style: TextStyle(
                         color: context.textPrimary,
                         fontSize: r.fs(20),
@@ -181,7 +183,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                           ),
                         ),
                         child: Text(
-                          'Atualizar',
+                          s.refresh,
                           style: TextStyle(
                             color: AppTheme.primaryColor,
                             fontWeight: FontWeight.w700,
@@ -238,7 +240,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                             ],
                           ),
                           child: const Text(
-                            'Tentar novamente',
+                            s.retry,
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w700,
@@ -260,7 +262,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                           Icon(Icons.explore_rounded,
                               size: r.s(64), color: Colors.grey[600]),
                           SizedBox(height: r.s(16)),
-                          Text('Seu feed está vazio',
+                          Text(s.feedEmpty,
                               style: TextStyle(
                                   color: context.textPrimary,
                                   fontSize: r.fs(18),
@@ -311,6 +313,7 @@ class _QuickAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: onTap,

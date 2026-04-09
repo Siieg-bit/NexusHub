@@ -1,18 +1,20 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Tela de Dispositivos Conectados — lista sessões ativas e permite revogar.
 /// Baseado na tabela device_fingerprints do schema v5.
-class DevicesScreen extends StatefulWidget {
+class DevicesScreen extends ConsumerStatefulWidget {
   const DevicesScreen({super.key});
 
   @override
   State<DevicesScreen> createState() => _DevicesScreenState();
 }
 
-class _DevicesScreenState extends State<DevicesScreen> {
+class _DevicesScreenState extends ConsumerState<DevicesScreen> {
   List<Map<String, dynamic>> _devices = [];
   bool _isLoading = true;
 
@@ -51,18 +53,18 @@ class _DevicesScreenState extends State<DevicesScreen> {
           borderRadius: BorderRadius.circular(r.s(16)),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
-        title: Text('Revogar Dispositivo',
+        title: Text(s.revokeDevice,
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w800)),
         content: Text(
-            'Isso encerrará a sessão neste dispositivo. '
-            'O usuário precisará fazer login novamente.',
+            s.revokeDeviceConfirmation
+            s.userReLogin,
             style: TextStyle(color: Colors.grey[500])),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
               child:
-                  Text('Cancelar', style: TextStyle(color: Colors.grey[500]))),
+                  Text(s.cancel, style: TextStyle(color: Colors.grey[500]))),
           GestureDetector(
             onTap: () => Navigator.pop(ctx, true),
             child: Container(
@@ -79,7 +81,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                   ),
                 ],
               ),
-              child: const Text('Revogar',
+              child: Text(s.revoke,
                   style: TextStyle(
                       color: Colors.white, fontWeight: FontWeight.w700)),
             ),
@@ -101,7 +103,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Dispositivo revogado',
+            content: Text(s.deviceRevoked,
                 style: TextStyle(color: context.textPrimary)),
             backgroundColor: context.surfaceColor,
             behavior: SnackBarBehavior.floating,
@@ -115,7 +117,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ocorreu um erro. Tente novamente.',
+            content: Text(s.anErrorOccurredTryAgain,
                 style: const TextStyle(color: Colors.white)),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
@@ -137,18 +139,18 @@ class _DevicesScreenState extends State<DevicesScreen> {
           borderRadius: BorderRadius.circular(r.s(16)),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
-        title: Text('Revogar Todos os Outros',
+        title: Text(s.revokeAllOthers,
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w800)),
         content: Text(
-            'Isso encerrará todas as sessões exceto a atual. '
-            'Todos os outros dispositivos precisarão fazer login novamente.',
+            s.revokeOtherSessions
+            s.otherDevicesReLogin,
             style: TextStyle(color: Colors.grey[500])),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
               child:
-                  Text('Cancelar', style: TextStyle(color: Colors.grey[500]))),
+                  Text(s.cancel, style: TextStyle(color: Colors.grey[500]))),
           GestureDetector(
             onTap: () => Navigator.pop(ctx, true),
             child: Container(
@@ -165,7 +167,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                   ),
                 ],
               ),
-              child: const Text('Revogar Todos',
+              child: Text(s.revokeAll,
                   style: TextStyle(
                       color: Colors.white, fontWeight: FontWeight.w700)),
             ),
@@ -182,7 +184,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Todas as outras sessões foram encerradas',
+            content: Text(s.allSessionsRevoked,
                 style: TextStyle(color: context.textPrimary)),
             backgroundColor: context.surfaceColor,
             behavior: SnackBarBehavior.floating,
@@ -196,7 +198,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ocorreu um erro. Tente novamente.',
+            content: Text(s.anErrorOccurredTryAgain,
                 style: const TextStyle(color: Colors.white)),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
@@ -224,7 +226,8 @@ class _DevicesScreenState extends State<DevicesScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -232,7 +235,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: IconThemeData(color: context.textPrimary),
-        title: Text('Dispositivos Conectados',
+        title: Text(s.connectedDevices,
             style: TextStyle(
                 fontWeight: FontWeight.w800, color: context.textPrimary)),
         actions: [
@@ -249,7 +252,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                   border: Border.all(
                       color: AppTheme.errorColor.withValues(alpha: 0.3)),
                 ),
-                child: Text('Revogar Outros',
+                child: Text(s.revokeOthers,
                     style: TextStyle(
                         color: AppTheme.errorColor,
                         fontSize: r.fs(12),
@@ -270,7 +273,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                           size: r.s(64),
                           color: Colors.grey[600]?.withValues(alpha: 0.3)),
                       SizedBox(height: r.s(16)),
-                      Text('Nenhum dispositivo registrado',
+                      Text(s.noRegisteredDevices,
                           style: TextStyle(
                               color: Colors.grey[500], fontSize: r.fs(16))),
                     ],
@@ -306,8 +309,8 @@ class _DevicesScreenState extends State<DevicesScreen> {
                             SizedBox(width: r.s(12)),
                             Expanded(
                               child: Text(
-                                'Gerencie os dispositivos conectados à sua conta. '
-                                'Revogue dispositivos que você não reconhece.',
+                                s.manageConnectedDevices
+                                s.revokeUnrecognizedDevices,
                                 style: TextStyle(
                                     fontSize: r.fs(13),
                                     color: Colors.grey[500],
@@ -323,7 +326,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                     final deviceType =
                         device['device_type'] as String? ?? 'unknown';
                     final deviceName =
-                        device['device_name'] as String? ?? 'Dispositivo';
+                        device['device_name'] as String? ?? s.device;
                     final os = device['os'] as String? ?? '';
                     final browser = device['browser'] as String? ?? '';
                     final ipAddress = device['ip_address'] as String? ?? '';
@@ -414,7 +417,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                                           borderRadius:
                                               BorderRadius.circular(r.s(20)),
                                         ),
-                                        child: Text('Atual',
+                                        child: Text(s.current,
                                             style: TextStyle(
                                                 color: Colors.white,
                                                 fontSize: r.fs(10),
@@ -434,7 +437,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                                 ),
                                 if (ipAddress.isNotEmpty) ...[
                                   const SizedBox(height: 2),
-                                  Text('IP: $ipAddress',
+                                  Text(s.ipAddress,
                                       style: TextStyle(
                                           color: Colors.grey[600],
                                           fontSize: r.fs(11))),
@@ -442,7 +445,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                                 if (lastSeen != null) ...[
                                   const SizedBox(height: 2),
                                   Text(
-                                    'Último acesso: ${lastSeen.day.toString().padLeft(2, '0')}/${lastSeen.month.toString().padLeft(2, '0')}/${lastSeen.year} ${lastSeen.hour.toString().padLeft(2, '0')}:${lastSeen.minute.toString().padLeft(2, '0')}',
+                                    s.lastAccess20')}/${lastSeen.month.toString().padLeft(2, '0')}/${lastSeen.year} ${lastSeen.hour.toString().padLeft(2, '0')}:${lastSeen.minute.toString().padLeft(2, '0')}',
                                     style: TextStyle(
                                         color: Colors.grey[600],
                                         fontSize: r.fs(11)),

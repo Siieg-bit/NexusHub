@@ -1,15 +1,17 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import 'screening_room_screen.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Tela Live — exibe Screening Rooms, Voice Chats e Video Chats ativos.
 ///
 /// No Amino original, esta tela mostra todas as salas ativas
 /// da comunidade com contagem de participantes, tipo de sala,
 /// e permite criar novas salas.
-class LiveScreen extends StatefulWidget {
+class LiveScreen extends ConsumerStatefulWidget {
   final String? communityId;
   const LiveScreen({super.key, this.communityId});
 
@@ -17,7 +19,7 @@ class LiveScreen extends StatefulWidget {
   State<LiveScreen> createState() => _LiveScreenState();
 }
 
-class _LiveScreenState extends State<LiveScreen> {
+class _LiveScreenState extends ConsumerState<LiveScreen> {
   bool _isLoading = true;
   List<Map<String, dynamic>> _activeSessions = [];
 
@@ -57,7 +59,7 @@ class _LiveScreenState extends State<LiveScreen> {
         backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(r.s(16))),
-        title: Text('Criar Screening Room',
+        title: Text(s.createScreeningRoom,
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w800)),
         content: Column(
@@ -67,7 +69,7 @@ class _LiveScreenState extends State<LiveScreen> {
               controller: titleController,
               style: TextStyle(color: context.textPrimary),
               decoration: InputDecoration(
-                hintText: 'Nome da sala',
+                hintText: s.roomName,
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 prefixIcon: const Icon(Icons.live_tv_rounded,
                     color: AppTheme.accentColor),
@@ -84,7 +86,7 @@ class _LiveScreenState extends State<LiveScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
+            child: Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, {
@@ -95,7 +97,7 @@ class _LiveScreenState extends State<LiveScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(r.s(10))),
             ),
-            child: const Text('Criar',
+            child: Text(s.create,
                 style: TextStyle(
                     color: Colors.white, fontWeight: FontWeight.w700)),
           ),
@@ -138,7 +140,7 @@ class _LiveScreenState extends State<LiveScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao criar sala. Tente novamente.'),
+            content: Text(s.errorCreatingRoom),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -193,11 +195,12 @@ class _LiveScreenState extends State<LiveScreen> {
     final diff = DateTime.now().difference(date);
     if (diff.inHours > 0) return '${diff.inHours}h';
     if (diff.inMinutes > 0) return '${diff.inMinutes}min';
-    return 'agora';
+    return s.now;
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -284,7 +287,7 @@ class _LiveScreenState extends State<LiveScreen> {
     final type = session['type'] as String? ?? 'voice';
     final color = _typeColor(type);
     final creatorProfile = session['profiles'] as Map<String, dynamic>?;
-    final creatorName = creatorProfile?['username'] as String? ?? 'Anônimo';
+    final creatorName = creatorProfile?['username'] as String? ?? s.anonymous;
     final creatorAvatar = creatorProfile?['avatar_url'] as String?;
     final participantCount =
         (session['call_participants'] as List?)?.first?['count'] as int? ?? 0;

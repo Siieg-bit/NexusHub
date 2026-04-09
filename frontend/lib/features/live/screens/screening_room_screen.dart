@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,6 +7,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/services/realtime_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Screening Room — Assistir vídeos juntos estilo Amino.
 ///
@@ -22,7 +24,7 @@ import '../../../core/utils/responsive.dart';
 /// - Chat em tempo real via Supabase Realtime
 /// - Lista de espectadores
 /// - Controles do host
-class ScreeningRoomScreen extends StatefulWidget {
+class ScreeningRoomScreen extends ConsumerStatefulWidget {
   final String threadId;
   final String? callSessionId;
 
@@ -36,7 +38,7 @@ class ScreeningRoomScreen extends StatefulWidget {
   State<ScreeningRoomScreen> createState() => _ScreeningRoomScreenState();
 }
 
-class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
+class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
   final _chatController = TextEditingController();
   final _scrollController = ScrollController();
   final List<Map<String, dynamic>> _chatMessages = [];
@@ -265,7 +267,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
         backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(r.s(16))),
-        title: Text('Adicionar Vídeo',
+        title: Text(s.addVideoAction,
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w800)),
         content: Column(
@@ -275,7 +277,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
               controller: urlController,
               style: TextStyle(color: context.textPrimary),
               decoration: InputDecoration(
-                hintText: 'Cole o link do vídeo (YouTube, etc.)',
+                hintText: s.pasteVideoLink,
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 prefixIcon:
                     const Icon(Icons.link_rounded, color: AppTheme.accentColor),
@@ -292,7 +294,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
               controller: titleController,
               style: TextStyle(color: context.textPrimary),
               decoration: InputDecoration(
-                hintText: 'Título do vídeo (opcional)',
+                hintText: s.videoTitleOptional,
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 prefixIcon: const Icon(Icons.title_rounded,
                     color: AppTheme.accentColor),
@@ -309,7 +311,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
+            child: Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
           ),
           ElevatedButton(
             onPressed: () {
@@ -318,7 +320,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
                   'url': urlController.text.trim(),
                   'title': titleController.text.trim().isNotEmpty
                       ? titleController.text.trim()
-                      : 'Vídeo',
+                      : s.videoLabel,
                 });
               }
             },
@@ -387,7 +389,8 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
@@ -513,8 +516,8 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
               SizedBox(height: r.s(12)),
               Text(
                 _isHost
-                    ? 'Toque em + para adicionar um vídeo'
-                    : 'Aguardando o host adicionar um vídeo...',
+                    ? s.tapToAddVideo
+                    : s.waitingForHostVideo,
                 style: TextStyle(color: Colors.grey[600], fontSize: r.fs(14)),
               ),
             ],
@@ -576,7 +579,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
             left: 12,
             right: 60,
             child: Text(
-              _currentVideoTitle ?? 'Vídeo',
+              _currentVideoTitle ?? s.videoLabel,
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
@@ -832,7 +835,7 @@ class _ScreeningRoomScreenState extends State<ScreeningRoomScreen> {
                   style:
                       TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
                   decoration: InputDecoration(
-                    hintText: 'Diga algo...',
+                    hintText: s.saySomethingHint,
                     hintStyle:
                         TextStyle(color: Colors.grey[600], fontSize: r.fs(14)),
                     border: InputBorder.none,

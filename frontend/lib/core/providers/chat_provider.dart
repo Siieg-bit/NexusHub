@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_service.dart';
 import '../services/realtime_service.dart';
 import '../models/message_model.dart';
+import '../../core/l10n/locale_provider.dart';
 
 /// ============================================================================
 /// ChatProvider — State Management com AsyncNotifier para chat.
@@ -328,7 +329,7 @@ class ThreadMessagesNotifier
         final updated = [...current];
         updated[index] = updated[index].copyWith(
           type: 'system_deleted',
-          content: 'Mensagem apagada',
+          content: s.messageDeleted2,
           isDeleted: true,
         );
         state = AsyncData(updated);

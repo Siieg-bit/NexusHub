@@ -1,10 +1,12 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Tela de Política de Privacidade do NexusHub.
-class PrivacyPolicyScreen extends StatelessWidget {
+class PrivacyPolicyScreen extends ConsumerWidget {
   const PrivacyPolicyScreen({super.key});
 
   static const _content = '''
@@ -110,7 +112,8 @@ Se tiver dúvidas sobre esta Política de Privacidade, entre em contato:
 ''';
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -119,7 +122,7 @@ Se tiver dúvidas sobre esta Política de Privacidade, entre em contato:
         elevation: 0,
         iconTheme: IconThemeData(color: context.textPrimary),
         title: Text(
-          'Política de Privacidade',
+          s.privacyPolicyTitle,
           style: TextStyle(
             fontWeight: FontWeight.w800,
             color: context.textPrimary,

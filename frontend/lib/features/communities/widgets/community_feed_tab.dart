@@ -11,6 +11,7 @@ import '../../../core/utils/responsive.dart';
 import '../../feed/widgets/post_card.dart';
 import '../../stories/widgets/story_carousel.dart';
 import '../providers/community_detail_providers.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // TAB: Feed (Destaque / Recentes)
@@ -46,6 +47,7 @@ class CommunityFeedTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     if (isFeatured) {
       return _FeaturedTab(communityId: communityId, onRefresh: _onRefresh);
     }
@@ -76,6 +78,7 @@ class _FeaturedTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final pinnedAsync = ref.watch(pinnedFeedProvider(communityId));
     final featuredAsync = ref.watch(activeFeaturedFeedProvider(communityId));
@@ -124,7 +127,7 @@ class _FeaturedTab extends ConsumerWidget {
             SliverToBoxAdapter(
               child: _SectionHeader(
                 icon: Icons.star_rounded,
-                label: 'Destaques',
+                label: s.highlights,
                 accent: accent,
               ),
             ),
@@ -154,7 +157,7 @@ class _FeaturedTab extends ConsumerWidget {
           SliverToBoxAdapter(
             child: _SectionHeader(
               icon: Icons.access_time_rounded,
-              label: 'Recentes',
+              label: s.latest,
               accent: accent,
             ),
           ),
@@ -216,6 +219,7 @@ class _LatestTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final feedAsync = ref.watch(communityFeedProvider(communityId));
 
@@ -233,7 +237,7 @@ class _LatestTab extends ConsumerWidget {
           child: SizedBox(
             height: MediaQuery.of(context).size.height * 0.5,
             child: Center(
-              child: Text('Erro ao carregar posts',
+              child: Text(s.errorLoadingPosts,
                   style: TextStyle(color: context.textSecondary)),
             ),
           ),
@@ -323,6 +327,7 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Padding(
       padding: EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(8)),
@@ -359,6 +364,7 @@ class _PinnedPostRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return AminoAnimations.staggerItem(
       index: index,
@@ -415,6 +421,7 @@ class _FeaturedPostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final thumb = post.coverImageUrl ?? post.mediaUrl;
     final hasImage = thumb != null && thumb.isNotEmpty;
@@ -499,7 +506,7 @@ class _FeaturedPostCard extends StatelessWidget {
                           SizedBox(width: r.s(4)),
                           Expanded(
                             child: Text(
-                              post.author?.nickname ?? 'Usuário',
+                              post.author?.nickname ?? s.user,
                               style: TextStyle(
                                 color: context.textSecondary,
                                 fontSize: r.fs(10),
@@ -554,6 +561,7 @@ class _PlaceholderCover extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     return Container(
       color: accent.withValues(alpha: 0.15),
       child: Center(
@@ -574,6 +582,7 @@ class _DefaultAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     return Container(
       width: size,
       height: size,

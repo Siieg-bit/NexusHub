@@ -1,12 +1,14 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Giphy Picker — busca e seleciona GIFs usando a API pública do Giphy.
 /// Retorna a URL do GIF selecionado via Navigator.pop().
-class GiphyPicker extends StatefulWidget {
+class GiphyPicker extends ConsumerStatefulWidget {
   const GiphyPicker({super.key});
 
   /// Abre o picker como bottom sheet e retorna a URL do GIF selecionado.
@@ -29,14 +31,15 @@ class GiphyPicker extends StatefulWidget {
   State<GiphyPicker> createState() => _GiphyPickerState();
 }
 
-class _GiphyPickerState extends State<GiphyPicker> {
+class _GiphyPickerState extends ConsumerState<GiphyPicker> {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     return const _GiphyPickerBody();
   }
 }
 
-class _GiphyPickerBody extends StatefulWidget {
+class _GiphyPickerBody extends ConsumerStatefulWidget {
   final ScrollController? scrollController;
   const _GiphyPickerBody({this.scrollController});
 
@@ -44,7 +47,7 @@ class _GiphyPickerBody extends StatefulWidget {
   State<_GiphyPickerBody> createState() => _GiphyPickerBodyState();
 }
 
-class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
+class _GiphyPickerBodyState extends ConsumerState<_GiphyPickerBody> {
   final _searchController = TextEditingController();
   List<Map<String, dynamic>> _gifs = [];
   bool _isLoading = false;
@@ -128,7 +131,8 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       decoration: BoxDecoration(
@@ -154,7 +158,7 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
             padding: EdgeInsets.all(r.s(12)),
             child: Row(
               children: [
-                Text('GIFs',
+                Text(s.gifs,
                     style: TextStyle(
                         fontWeight: FontWeight.bold, fontSize: r.fs(18))),
                 const Spacer(),
@@ -213,7 +217,7 @@ class _GiphyPickerBodyState extends State<_GiphyPickerBody> {
                 ? const Center(child: CircularProgressIndicator())
                 : _gifs.isEmpty
                     ? Center(
-                        child: Text('Nenhum GIF encontrado',
+                        child: Text(s.noGifFound,
                             style: TextStyle(color: context.textSecondary)),
                       )
                     : GridView.builder(

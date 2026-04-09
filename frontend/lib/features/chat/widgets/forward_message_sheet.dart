@@ -115,7 +115,7 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
         setState(() => _sending = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao encaminhar. Tente novamente.'),
+            content: Text(s.errorForwarding),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -153,7 +153,7 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
             child: Row(
               children: [
                 Text(
-                  'Encaminhar para',
+                  s.forwardTo,
                   style: TextStyle(
                     color: context.textPrimary,
                     fontSize: r.fs(18),
@@ -203,7 +203,7 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
                 Expanded(
                   child: Text(
                     widget.mediaUrl != null
-                        ? '[${widget.mediaType ?? 'mídia'}]'
+                        ? '[${widget.mediaType ?? s.mediaLabel}]'
                         : (widget.messageContent.length > 60
                             ? '${widget.messageContent.substring(0, 60)}...'
                             : widget.messageContent),
@@ -224,7 +224,7 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
               controller: _searchCtrl,
               style: TextStyle(color: context.textPrimary),
               decoration: InputDecoration(
-                hintText: 'Buscar chat...',
+                hintText: s.searchChatHint,
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 prefixIcon: Icon(Icons.search_rounded, color: Colors.grey[600]),
                 filled: true,
@@ -245,7 +245,7 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
                 : _filtered.isEmpty
                     ? Center(
                         child: Text(
-                          'Nenhum chat encontrado',
+                          s.noChatFound,
                           style: TextStyle(color: Colors.grey[600]),
                         ),
                       )
@@ -303,7 +303,7 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
                             ),
                             subtitle: Text(
                               chat.type == 'dm'
-                                  ? 'Mensagem direta'
+                                  ? s.directMessage
                                   : '${chat.membersCount} membros',
                               style: TextStyle(
                                   color: Colors.grey[600], fontSize: r.fs(12)),

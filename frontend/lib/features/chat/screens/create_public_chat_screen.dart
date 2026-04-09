@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // CREATE PUBLIC CHAT SCREEN
@@ -64,7 +65,7 @@ class _CreatePublicChatScreenState
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Chat público criado!'),
+              content: Text(s.publicChatCreated),
               backgroundColor: AppTheme.primaryColor,
               behavior: SnackBarBehavior.floating,
             ),
@@ -75,10 +76,10 @@ class _CreatePublicChatScreenState
       } else {
         final error = map['error'] as String? ?? 'unknown';
         final message = switch (error) {
-          'unauthenticated' => 'Você precisa estar logado.',
-          'title_required' => 'O nome do chat é obrigatório.',
-          'not_a_member' => 'Você precisa ser membro da comunidade.',
-          _ => 'Erro ao criar chat. Tente novamente.',
+          'unauthenticated' => s.needToBeLoggedIn,
+          'title_required' => s.chatNameRequired,
+          'not_a_member' => s.mustBeCommunityMember,
+          _ => s.errorCreatingChat,
         };
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -95,13 +96,13 @@ class _CreatePublicChatScreenState
       if (mounted) {
         // Extrair mensagem legível do erro Supabase/PostgreSQL
         final errStr = e.toString();
-        String userMsg = 'Erro ao criar chat. Tente novamente.';
+        String userMsg = s.errorCreatingChat;
         if (errStr.contains('not_a_member')) {
-          userMsg = 'Você precisa ser membro da comunidade.';
+          userMsg = s.mustBeCommunityMember;
         } else if (errStr.contains('unauthenticated')) {
-          userMsg = 'Você precisa estar logado.';
+          userMsg = s.needToBeLoggedIn;
         } else if (errStr.contains('title_required')) {
-          userMsg = 'O nome do chat é obrigatório.';
+          userMsg = s.chatNameRequired;
         }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -118,12 +119,13 @@ class _CreatePublicChatScreenState
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Novo Chat Público',
+          s.newPublicChat,
           style: TextStyle(
             fontSize: r.fs(17),
             fontWeight: FontWeight.w700,
@@ -148,7 +150,7 @@ class _CreatePublicChatScreenState
                       ),
                     )
                   : Text(
-                      'Criar',
+                      s.create,
                       style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontSize: r.fs(15),
@@ -181,7 +183,7 @@ class _CreatePublicChatScreenState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Comunidade',
+                          s.community,
                           style: TextStyle(
                             color: context.textPrimary.withValues(alpha: 0.6),
                             fontSize: r.fs(11),
@@ -205,7 +207,7 @@ class _CreatePublicChatScreenState
 
             // Nome do chat
             Text(
-              'Nome do Chat',
+              s.chatName2,
               style: TextStyle(
                 color: context.textPrimary,
                 fontSize: r.fs(13),
@@ -218,7 +220,7 @@ class _CreatePublicChatScreenState
               maxLength: 50,
               textCapitalization: TextCapitalization.sentences,
               decoration: InputDecoration(
-                hintText: 'Ex: Discussão de Episódios',
+                hintText: s.exampleChatName,
                 counterText: '',
                 filled: true,
                 fillColor: context.cardBg,
@@ -234,10 +236,10 @@ class _CreatePublicChatScreenState
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'O nome do chat é obrigatório';
+                  return s.chatNameIsRequired;
                 }
                 if (value.trim().length < 3) {
-                  return 'O nome deve ter pelo menos 3 caracteres';
+                  return s.nameMinLength2;
                 }
                 return null;
               },
@@ -246,7 +248,7 @@ class _CreatePublicChatScreenState
 
             // Descrição (opcional)
             Text(
-              'Descrição (opcional)',
+              s.descriptionOptional2,
               style: TextStyle(
                 color: context.textPrimary,
                 fontSize: r.fs(13),
@@ -260,7 +262,7 @@ class _CreatePublicChatScreenState
               maxLines: 3,
               textCapitalization: TextCapitalization.sentences,
               decoration: InputDecoration(
-                hintText: 'Descreva o propósito deste chat...',
+                hintText: s.describeChatPurpose,
                 counterText: '',
                 filled: true,
                 fillColor: context.cardBg,
@@ -295,8 +297,8 @@ class _CreatePublicChatScreenState
                   SizedBox(width: r.s(8)),
                   Expanded(
                     child: Text(
-                      'Chats públicos são visíveis para todos os membros da comunidade. '
-                      'Qualquer membro pode entrar e participar.',
+                      s.publicChatsVisible
+                      s.anyMemberCanParticipate,
                       style: TextStyle(
                         color: context.textPrimary.withValues(alpha: 0.7),
                         fontSize: r.fs(12),
@@ -332,7 +334,7 @@ class _CreatePublicChatScreenState
                         ),
                       )
                     : Text(
-                        'Criar Chat Público',
+                        s.createPublicChat,
                         style: TextStyle(
                           fontSize: r.fs(15),
                           fontWeight: FontWeight.w700,

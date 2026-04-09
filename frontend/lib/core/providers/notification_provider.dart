@@ -5,6 +5,7 @@ import '../services/supabase_service.dart';
 import '../services/cache_service.dart';
 import '../services/realtime_service.dart';
 import 'package:flutter/foundation.dart';
+import '../../core/l10n/locale_provider.dart';
 
 /// ============================================================================
 /// NotificationProvider — State Management para notificações.
@@ -202,7 +203,7 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
       _page--;
       // Surfacear o erro no state para que a tela mostre retry inline
       state = AsyncData(current.copyWith(
-        loadMoreError: 'Erro ao carregar mais notificações',
+        loadMoreError: s.errorLoadingMoreNotifications,
       ));
       debugPrint('[notification_provider] loadMore error: $e');
     } finally {

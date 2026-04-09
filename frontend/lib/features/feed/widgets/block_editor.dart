@@ -1,8 +1,10 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Rich Text Block Editor — Editor de Blocos estilo Amino.
 ///
@@ -78,7 +80,7 @@ class ContentBlock {
 // BLOCK EDITOR WIDGET
 // ═══════════════════════════════════════════════════════════════
 
-class BlockEditor extends StatefulWidget {
+class BlockEditor extends ConsumerStatefulWidget {
   final List<ContentBlock> initialBlocks;
   final ValueChanged<List<ContentBlock>> onChanged;
   final String communityId;
@@ -94,7 +96,7 @@ class BlockEditor extends StatefulWidget {
   State<BlockEditor> createState() => _BlockEditorState();
 }
 
-class _BlockEditorState extends State<BlockEditor> {
+class _BlockEditorState extends ConsumerState<BlockEditor> {
   late List<ContentBlock> _blocks;
   int? _focusedBlockIndex;
   bool _isUploading = false;
@@ -182,7 +184,7 @@ class _BlockEditorState extends State<BlockEditor> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro no upload. Tente novamente.'),
+            content: Text(s.errorUploadTryAgain),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -254,7 +256,8 @@ class _BlockEditorState extends State<BlockEditor> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -312,7 +315,7 @@ class _BlockEditorState extends State<BlockEditor> {
 // BLOCO INDIVIDUAL
 // ═══════════════════════════════════════════════════════════════
 
-class _BlockWidget extends StatelessWidget {
+class _BlockWidget extends ConsumerWidget {
   final ContentBlock block;
   final int index;
   final bool isFocused;
@@ -335,7 +338,8 @@ class _BlockWidget extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: onFocus,
@@ -397,7 +401,7 @@ class _BlockWidget extends StatelessWidget {
               color: Colors.grey[300],
             ),
             decoration: InputDecoration(
-              hintText: 'Escreva aqui...',
+              hintText: s.writeHereHint,
               hintStyle: TextStyle(color: Colors.grey[700]),
               border: InputBorder.none,
               contentPadding: EdgeInsets.symmetric(vertical: r.s(8)),
@@ -419,7 +423,7 @@ class _BlockWidget extends StatelessWidget {
               height: 1.4,
             ),
             decoration: InputDecoration(
-              hintText: 'Subtítulo...',
+              hintText: s.subtitleHint,
               hintStyle: TextStyle(
                   color: Colors.grey[700], fontWeight: FontWeight.w700),
               border: InputBorder.none,
@@ -445,7 +449,7 @@ class _BlockWidget extends StatelessWidget {
                   CircularProgressIndicator(
                       color: AppTheme.accentColor, strokeWidth: 2),
                   SizedBox(height: r.s(8)),
-                  Text('Enviando imagem...',
+                  Text(s.sendingImage,
                       style: TextStyle(color: Colors.grey, fontSize: r.fs(12))),
                 ],
               ),
@@ -474,7 +478,7 @@ class _BlockWidget extends StatelessWidget {
                         color: AppTheme.accentColor.withValues(alpha: 0.6),
                         size: r.s(32)),
                     SizedBox(height: r.s(4)),
-                    Text('Toque para adicionar imagem',
+                    Text(s.tapToAddImage,
                         style: TextStyle(
                             color: Colors.grey[600], fontSize: r.fs(12))),
                   ],
@@ -541,7 +545,7 @@ class _BlockWidget extends StatelessWidget {
 // BARRA DE ADICIONAR BLOCO
 // ═══════════════════════════════════════════════════════════════
 
-class _AddBlockBar extends StatelessWidget {
+class _AddBlockBar extends ConsumerWidget {
   final VoidCallback onAddText;
   final VoidCallback onAddImage;
   final VoidCallback onAddDivider;
@@ -555,7 +559,8 @@ class _AddBlockBar extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       padding: EdgeInsets.symmetric(vertical: r.s(8), horizontal: r.s(4)),
@@ -569,25 +574,25 @@ class _AddBlockBar extends StatelessWidget {
         children: [
           _AddBlockButton(
             icon: Icons.text_fields_rounded,
-            label: 'Texto',
+            label: s.text,
             color: const Color(0xFF4CAF50),
             onTap: onAddText,
           ),
           _AddBlockButton(
             icon: Icons.image_rounded,
-            label: 'Imagem',
+            label: s.image,
             color: const Color(0xFF2196F3),
             onTap: onAddImage,
           ),
           _AddBlockButton(
             icon: Icons.title_rounded,
-            label: 'Título',
+            label: s.title,
             color: const Color(0xFFFF9800),
             onTap: onAddHeading,
           ),
           _AddBlockButton(
             icon: Icons.horizontal_rule_rounded,
-            label: 'Divisor',
+            label: s.divider,
             color: const Color(0xFF9C27B0),
             onTap: onAddDivider,
           ),
@@ -597,7 +602,7 @@ class _AddBlockBar extends StatelessWidget {
   }
 }
 
-class _AddBlockButton extends StatelessWidget {
+class _AddBlockButton extends ConsumerWidget {
   final IconData icon;
   final String label;
   final Color color;
@@ -611,7 +616,8 @@ class _AddBlockButton extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: onTap,
@@ -641,7 +647,7 @@ class _AddBlockButton extends StatelessWidget {
   }
 }
 
-class _MiniAction extends StatelessWidget {
+class _MiniAction extends ConsumerWidget {
   final IconData icon;
   final Color color;
   final VoidCallback onTap;
@@ -653,7 +659,8 @@ class _MiniAction extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: onTap,
@@ -669,13 +676,14 @@ class _MiniAction extends StatelessWidget {
 // BLOCK CONTENT RENDERER — Para renderizar blocos na visualização
 // ═══════════════════════════════════════════════════════════════
 
-class BlockContentRenderer extends StatelessWidget {
+class BlockContentRenderer extends ConsumerWidget {
   final List<dynamic> blocks;
 
   const BlockContentRenderer({super.key, required this.blocks});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     if (blocks.isEmpty) return const SizedBox.shrink();
 

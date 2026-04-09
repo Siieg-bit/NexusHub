@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -5,6 +6,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/models/message_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Ações disponíveis ao fazer long-press em uma mensagem.
 enum ChatMessageAction {
@@ -24,7 +26,7 @@ enum ChatMessageAction {
 /// execute a lógica correspondente.
 ///
 /// Extraído de chat_room_screen.dart para isolar a UI de ações.
-class ChatMessageActionsSheet extends StatelessWidget {
+class ChatMessageActionsSheet extends ConsumerWidget {
   final MessageModel message;
   final void Function(String emoji) onReaction;
   final String? hostId;
@@ -39,7 +41,8 @@ class ChatMessageActionsSheet extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final isMe = message.authorId == SupabaseService.currentUserId;
     final isTextType = message.type == 'text' || message.type == 'share_url';
@@ -89,17 +92,17 @@ class ChatMessageActionsSheet extends StatelessWidget {
           ),
           SizedBox(height: r.s(16)),
           // Responder
-          _actionTile(context, r, Icons.reply_rounded, 'Responder', () {
+          _actionTile(context, r, Icons.reply_rounded, s.reply, () {
             Navigator.pop(context, ChatMessageAction.reply);
           }),
           // Copiar
-          _actionTile(context, r, Icons.copy_rounded, 'Copiar', () {
+          _actionTile(context, r, Icons.copy_rounded, s.copy, () {
             Clipboard.setData(ClipboardData(text: message.content ?? ''));
             Navigator.pop(context, ChatMessageAction.copy);
           }),
           // Editar (só autor + só texto)
           if (isMe && isTextType)
-            _actionTile(context, r, Icons.edit_rounded, 'Editar', () {
+            _actionTile(context, r, Icons.edit_rounded, s.edit, () {
               Navigator.pop(context, ChatMessageAction.edit);
             }),
           // Encaminhar
@@ -126,7 +129,7 @@ class ChatMessageActionsSheet extends StatelessWidget {
             }, isDestructive: true),
           // Denunciar (só para mensagens de outros)
           if (!isMe)
-            _actionTile(context, r, Icons.flag_rounded, 'Denunciar', () {
+            _actionTile(context, r, Icons.flag_rounded, s.report, () {
               Navigator.pop(context, ChatMessageAction.report);
             }, isDestructive: true),
         ],

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:badges/badges.dart' as badges;
 import '../config/app_theme.dart';
+import '../core/l10n/locale_provider.dart';
 
 /// Bottom Navigation Bar Global — réplica pixel-perfect do Amino Apps.
 ///
@@ -48,6 +49,7 @@ class ShellScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final selectedIndex = _getSelectedIndex(context);
 
     return Scaffold(
@@ -76,7 +78,7 @@ class ShellScreen extends StatelessWidget {
                     _AminoNavItem(
                       icon: Icons.edit_outlined,
                       activeIcon: Icons.edit,
-                      label: 'Descubra',
+                      label: s.discover,
                       isSelected: selectedIndex == 0,
                       onTap: () => _onItemTapped(context, 0),
                     ),
@@ -92,7 +94,7 @@ class ShellScreen extends StatelessWidget {
                     _AminoNavItem(
                       icon: Icons.chat_bubble_outline_rounded,
                       activeIcon: Icons.chat_bubble_rounded,
-                      label: 'Chats',
+                      label: s.chats2,
                       isSelected: selectedIndex == 2,
                       onTap: () => _onItemTapped(context, 2),
                       badgeCount: 0,
@@ -101,7 +103,7 @@ class ShellScreen extends StatelessWidget {
                     _AminoNavItem(
                       icon: Icons.store_mall_directory_outlined,
                       activeIcon: Icons.store_mall_directory,
-                      label: 'Loja',
+                      label: s.shop,
                       isSelected: selectedIndex == 3,
                       onTap: () => _onItemTapped(context, 3),
                     ),
@@ -138,6 +140,7 @@ class _AminoNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     // Amino: ativo = ciano brilhante, inativo = cinza claro translúcido
     final color = isSelected
         ? AppTheme.accentColor // #00BCD4 ciano

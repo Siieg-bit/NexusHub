@@ -1,6 +1,8 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../utils/responsive.dart';
+import '../l10n/locale_provider.dart';
 
 /// AminoBottomNavBar — Floating capsule bottom nav estilo Amino Apps.
 ///
@@ -14,7 +16,7 @@ import '../utils/responsive.dart';
 ///   - Container flutuante, fundo escuro semi-transparente (#1A1A2E ~92%)
 ///   - Bordas arredondadas (cápsula), sombra suave
 ///   - Usado como bottomNavigationBar do Scaffold (extendBody: true)
-class AminoBottomNavBar extends StatelessWidget {
+class AminoBottomNavBar extends ConsumerWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
   final VoidCallback onCreateTap;
@@ -45,7 +47,8 @@ class AminoBottomNavBar extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
 
     return SafeArea(
@@ -86,7 +89,7 @@ class AminoBottomNavBar extends StatelessWidget {
                 child: _NavContent(
                   isSelected: currentIndex == 0,
                   icon: Icons.home_rounded,
-                  label: 'Home',
+                  label: s.home2,
                 ),
               ),
 
@@ -112,7 +115,7 @@ class AminoBottomNavBar extends StatelessWidget {
                       ),
                       SizedBox(height: r.s(2)),
                       Text(
-                        onlineCount > 0 ? '$onlineCount' : 'Online',
+                        onlineCount > 0 ? '$onlineCount' : s.online,
                         style: TextStyle(
                           color: currentIndex == 1
                               ? Colors.white
@@ -204,7 +207,7 @@ class AminoBottomNavBar extends StatelessWidget {
                     ),
                     SizedBox(height: r.s(2)),
                     Text(
-                      'Chats',
+                      s.chats,
                       style: TextStyle(
                         color: currentIndex == 3
                             ? Colors.white
@@ -284,13 +287,14 @@ class AminoBottomNavBar extends StatelessWidget {
 // FAB flutuante para páginas internas (perfil, chats, wiki...)
 // Substitui o nav completo quando o usuário está em uma sub-página.
 // ─────────────────────────────────────────────────────────────────────────────
-class AminoCommunityFab extends StatelessWidget {
+class AminoCommunityFab extends ConsumerWidget {
   final VoidCallback onTap;
 
   const AminoCommunityFab({super.key, required this.onTap});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return FloatingActionButton(
       onPressed: onTap,
@@ -305,7 +309,7 @@ class AminoCommunityFab extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 // Item genérico da cápsula
 // ─────────────────────────────────────────────────────────────────────────────
-class _CapsuleNavItem extends StatelessWidget {
+class _CapsuleNavItem extends ConsumerWidget {
   final bool isSelected;
   final VoidCallback onTap;
   final Widget child;
@@ -317,7 +321,8 @@ class _CapsuleNavItem extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Expanded(
       child: GestureDetector(
@@ -342,7 +347,7 @@ class _CapsuleNavItem extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 // Conteúdo padrão de um item (ícone + label)
 // ─────────────────────────────────────────────────────────────────────────────
-class _NavContent extends StatelessWidget {
+class _NavContent extends ConsumerWidget {
   final bool isSelected;
   final IconData icon;
   final String label;
@@ -354,7 +359,8 @@ class _NavContent extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -383,7 +389,7 @@ class _NavContent extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 // Stack de avatares dos membros online (estilo Amino)
 // ─────────────────────────────────────────────────────────────────────────────
-class _OnlineAvatarStack extends StatelessWidget {
+class _OnlineAvatarStack extends ConsumerWidget {
   final List<String?> avatars;
   final int count;
   final double size;
@@ -397,7 +403,8 @@ class _OnlineAvatarStack extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final visible = avatars.take(3).toList();
 

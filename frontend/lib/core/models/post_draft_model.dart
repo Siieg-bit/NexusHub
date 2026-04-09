@@ -77,7 +77,7 @@ class PostDraftModel {
           ? '${content!.substring(0, 80)}...'
           : content!;
     }
-    return 'Rascunho sem título';
+    return s.untitledDraft;
   }
 
   PostDraftModel copyWith({

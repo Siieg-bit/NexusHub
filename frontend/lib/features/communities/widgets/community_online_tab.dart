@@ -12,6 +12,7 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/providers/presence_provider.dart';
 import '../../../core/providers/dm_invite_provider.dart';
 import '../providers/community_detail_providers.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // COMMUNITY ONLINE TAB — Estilo Amino Apps
@@ -35,6 +36,7 @@ class _CommunityOnlineTabState extends ConsumerState<CommunityOnlineTab> {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final communityId = widget.community.id;
 
@@ -139,6 +141,7 @@ class _HappeningSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
 
     return Container(
@@ -311,6 +314,7 @@ class _MembersOnlineSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
 
     final onlineMembers = members.where((m) {
@@ -379,7 +383,7 @@ class _MembersOnlineSection extends StatelessWidget {
                 itemBuilder: (context, i) {
                   final m = onlineMembers[i];
                   final p = m['profiles'] as Map<String, dynamic>? ?? {};
-                  final nickname = p['nickname'] as String? ?? 'Usuário';
+                  final nickname = p['nickname'] as String? ?? s.user;
                   final avatarUrl = p['icon_url'] as String?;
                   final userId = p['id'] as String? ?? m['user_id'] as String?;
 
@@ -470,6 +474,7 @@ class _BrowsingSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
 
     final onlineMembers = members.where((m) {
@@ -578,6 +583,7 @@ class _AllMembersSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final communityId = community.id;
 
@@ -686,9 +692,10 @@ class _MemberRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final p = member['profiles'] as Map<String, dynamic>? ?? {};
-    final nickname = p['nickname'] as String? ?? 'Usuário';
+    final nickname = p['nickname'] as String? ?? s.user;
     final avatarUrl = p['icon_url'] as String?;
     final userId = p['id'] as String? ?? member['user_id'] as String?;
     final role = member['role'] as String? ?? 'member';
@@ -879,6 +886,7 @@ class _FollowButtonState extends State<_FollowButton> {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final currentUserId = SupabaseService.currentUserId;
     if (currentUserId == widget.targetUserId || widget.targetUserId.isEmpty) {
@@ -935,6 +943,7 @@ class _AvatarStack extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final visible = avatars.take(3).toList();
     if (visible.isEmpty) return const SizedBox.shrink();
     final overlap = size * 0.35;
@@ -992,7 +1001,7 @@ void _showMemberSheet(
   Set<String> onlineUserIds,
 ) {
   final p = member['profiles'] as Map<String, dynamic>? ?? {};
-  final nickname = p['nickname'] as String? ?? 'Usuário';
+  final nickname = p['nickname'] as String? ?? s.user;
   final avatarUrl = p['icon_url'] as String?;
   final userId = p['id'] as String? ?? member['user_id'] as String?;
   final isOnline = userId != null && onlineUserIds.contains(userId);
@@ -1033,6 +1042,7 @@ class _MemberBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
 
     return Container(
@@ -1106,7 +1116,7 @@ class _MemberBottomSheet extends StatelessWidget {
 
           // Status
           Text(
-            isOnline ? 'Currently Online' : 'Offline',
+            isOnline ? 'Currently Online' : s.offline,
             style: TextStyle(
               color: isOnline
                   ? AppTheme.onlineColor
@@ -1218,17 +1228,17 @@ class _MemberBottomSheet extends StatelessWidget {
     } catch (e) {
       if (context.mounted) {
         final err = e.toString();
-        String message = 'Erro ao abrir chat. Tente novamente.';
+        String message = s.errorOpeningChatTryAgain;
 
-        if (err.contains('Não é possível enviar DM para si mesmo')) {
-          message = 'Você não pode abrir um chat consigo mesmo.';
-        } else if (err.contains('não aceita mensagens diretas')) {
-          message = 'Este usuário não aceita mensagens diretas.';
-        } else if (err.contains('só aceita DMs')) {
-          message = 'Este usuário só aceita mensagens de perfis permitidos.';
+        if (err.contains(s.cannotDmYourself)) {
+          message = s.youCannotOpenAChatWithYourself;
+        } else if (err.contains(s.doesNotAcceptDMs)) {
+          message = s.thisUserDoesNotAcceptDirectMessages;
+        } else if (err.contains(s.onlyAcceptsDMs)) {
+          message = s.thisUserOnlyAcceptsMessagesFromAllowedProfiles;
         } else if (err
-            .contains('Não é possível enviar mensagem para este usuário')) {
-          message = 'Não foi possível iniciar conversa com este usuário.';
+            .contains(s.cannotMessageUser)) {
+          message = s.couldNotStartAConversationWithThisUser;
         }
 
         ScaffoldMessenger.of(context).showSnackBar(

@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -5,6 +6,7 @@ import 'package:video_player/video_player.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Create Story Screen — Criação de stories estilo Amino/Instagram.
 ///
@@ -12,7 +14,7 @@ import '../../../core/utils/responsive.dart';
 ///   - image: foto da galeria com texto overlay opcional
 ///   - text: texto puro com background colorido
 ///   - video: vídeo curto (placeholder para futura implementação)
-class CreateStoryScreen extends StatefulWidget {
+class CreateStoryScreen extends ConsumerStatefulWidget {
   final String communityId;
   const CreateStoryScreen({super.key, required this.communityId});
 
@@ -20,7 +22,7 @@ class CreateStoryScreen extends StatefulWidget {
   State<CreateStoryScreen> createState() => _CreateStoryScreenState();
 }
 
-class _CreateStoryScreenState extends State<CreateStoryScreen> {
+class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
   String _type = 'text'; // text, image, video
   final _textController = TextEditingController();
   String? _mediaUrl;
@@ -87,7 +89,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro no upload. Tente novamente.'),
+            content: Text(s.errorUploadTryAgain),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -140,7 +142,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro no upload. Tente novamente.'),
+            content: Text(s.errorUploadTryAgain),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -153,7 +155,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
     if (_type == 'text' && _textController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Escreva algo para o story'),
+          content: Text(s.writeStoryHint),
           backgroundColor: AppTheme.errorColor,
         ),
       );
@@ -162,7 +164,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
     if (_type == 'image' && _mediaUrl == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Selecione uma imagem'),
+          content: Text(s.selectImage2),
           backgroundColor: AppTheme.errorColor,
         ),
       );
@@ -173,7 +175,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
 
     try {
       final userId = SupabaseService.currentUserId;
-      if (userId == null) throw Exception('Não autenticado');
+      if (userId == null) throw Exception(s.notAuthenticated);
 
       // RPC atômica: cria story + reputação + validação de membro
       await SupabaseService.rpc('create_story', params: {
@@ -192,7 +194,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Story publicado!'),
+            content: Text(s.storyPublished),
             backgroundColor: AppTheme.successColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -202,7 +204,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ocorreu um erro. Tente novamente.'),
+            content: Text(s.anErrorOccurredTryAgain),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -220,7 +222,8 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: Colors.black,
@@ -267,7 +270,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                                   strokeWidth: 2, color: Colors.white),
                             )
                           : Text(
-                              'Publicar',
+                              s.publish,
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w700,
@@ -287,7 +290,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
               child: Row(
                 children: [
                   _TypeChip(
-                    label: 'Texto',
+                    label: s.text,
                     icon: Icons.text_fields_rounded,
                     isSelected: _type == 'text',
                     onTap: () => setState(() {
@@ -297,7 +300,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                   ),
                   SizedBox(width: r.s(8)),
                   _TypeChip(
-                    label: 'Imagem',
+                    label: s.image,
                     icon: Icons.image_rounded,
                     isSelected: _type == 'image',
                     onTap: () {
@@ -310,7 +313,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                   ),
                   SizedBox(width: r.s(8)),
                   _TypeChip(
-                    label: 'Vídeo',
+                    label: s.videoLabel,
                     icon: Icons.videocam_rounded,
                     isSelected: _type == 'video',
                     onTap: () => _pickVideo(),
@@ -372,7 +375,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                               height: 1.4,
                             ),
                             decoration: InputDecoration(
-                              hintText: 'Escreva algo...',
+                              hintText: s.writePost,
                               hintStyle: TextStyle(
                                   color: Colors.white38, fontSize: r.fs(22)),
                               border: InputBorder.none,
@@ -402,7 +405,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                               fontSize: r.fs(14),
                             ),
                             decoration: const InputDecoration(
-                              hintText: 'Adicionar legenda...',
+                              hintText: s.addCaptionHint,
                               hintStyle: TextStyle(color: Colors.white54),
                               border: InputBorder.none,
                               isDense: true,
@@ -475,7 +478,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
   }
 }
 
-class _TypeChip extends StatelessWidget {
+class _TypeChip extends ConsumerWidget {
   final String label;
   final IconData icon;
   final bool isSelected;
@@ -489,7 +492,8 @@ class _TypeChip extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: onTap,

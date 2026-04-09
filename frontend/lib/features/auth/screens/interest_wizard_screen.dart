@@ -1,22 +1,24 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Wizard de seleção de interesses em 4 passos, inspirado no Amino Apps.
 /// Passo 1: Boas-vindas e avatar
 /// Passo 2: Definir Amino ID
 /// Passo 3: Selecionar categorias de interesse
 /// Passo 4: Comunidades sugeridas
-class InterestWizardScreen extends StatefulWidget {
+class InterestWizardScreen extends ConsumerStatefulWidget {
   const InterestWizardScreen({super.key});
 
   @override
   State<InterestWizardScreen> createState() => _InterestWizardScreenState();
 }
 
-class _InterestWizardScreenState extends State<InterestWizardScreen> {
+class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
   final _pageController = PageController();
   int _currentStep = 0;
   final _aminoIdController = TextEditingController();
@@ -26,34 +28,34 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
 
   static const _interestCategories = [
     _InterestItem(
-        'Anime & Mangá', Icons.movie_filter_rounded, Color(0xFFE91E63)),
-    _InterestItem('K-Pop', Icons.music_note_rounded, Color(0xFF9C27B0)),
-    _InterestItem('Jogos', Icons.sports_esports_rounded, Color(0xFF4CAF50)),
-    _InterestItem('Arte & Design', Icons.palette_rounded, Color(0xFFFF9800)),
-    _InterestItem('Moda', Icons.checkroom_rounded, Color(0xFFE040FB)),
+        s.animeManga, Icons.movie_filter_rounded, Color(0xFFE91E63)),
+    _InterestItem(s.interestKpop, Icons.music_note_rounded, Color(0xFF9C27B0)),
+    _InterestItem(s.games, Icons.sports_esports_rounded, Color(0xFF4CAF50)),
+    _InterestItem(s.artDesign, Icons.palette_rounded, Color(0xFFFF9800)),
+    _InterestItem(s.interestFashion, Icons.checkroom_rounded, Color(0xFFE040FB)),
     _InterestItem(
-        'Livros & Escrita', Icons.menu_book_rounded, Color(0xFF795548)),
-    _InterestItem('Filmes & Séries', Icons.theaters_rounded, Color(0xFFF44336)),
-    _InterestItem('Música', Icons.headphones_rounded, Color(0xFF2196F3)),
-    _InterestItem('Fotografia', Icons.camera_alt_rounded, Color(0xFF607D8B)),
-    _InterestItem('Ciência', Icons.science_rounded, Color(0xFF00BCD4)),
-    _InterestItem('Esportes', Icons.fitness_center_rounded, Color(0xFFFF5722)),
-    _InterestItem('Tecnologia', Icons.computer_rounded, Color(0xFF3F51B5)),
+        s.booksWriting, Icons.menu_book_rounded, Color(0xFF795548)),
+    _InterestItem(s.moviesSeries, Icons.theaters_rounded, Color(0xFFF44336)),
+    _InterestItem(s.music, Icons.headphones_rounded, Color(0xFF2196F3)),
+    _InterestItem(s.interestPhotography, Icons.camera_alt_rounded, Color(0xFF607D8B)),
+    _InterestItem(s.interestScience, Icons.science_rounded, Color(0xFF00BCD4)),
+    _InterestItem(s.interestSports, Icons.fitness_center_rounded, Color(0xFFFF5722)),
+    _InterestItem(s.interestTechnology, Icons.computer_rounded, Color(0xFF3F51B5)),
     _InterestItem(
-        'Cosplay', Icons.face_retouching_natural_rounded, Color(0xFFFF4081)),
+        s.interestCosplay, Icons.face_retouching_natural_rounded, Color(0xFFFF4081)),
     _InterestItem(
-        'Espiritualidade', Icons.self_improvement_rounded, Color(0xFF8BC34A)),
-    _InterestItem('Culinária', Icons.restaurant_rounded, Color(0xFFFFEB3B)),
-    _InterestItem('Pets & Animais', Icons.pets_rounded, Color(0xFF009688)),
-    _InterestItem('Viagem', Icons.flight_rounded, Color(0xFF03A9F4)),
-    _InterestItem('Terror', Icons.dark_mode_rounded, Color(0xFF424242)),
-    _InterestItem('Memes & Humor', Icons.sentiment_very_satisfied_rounded,
+        s.interestSpirituality, Icons.self_improvement_rounded, Color(0xFF8BC34A)),
+    _InterestItem(s.interestCooking, Icons.restaurant_rounded, Color(0xFFFFEB3B)),
+    _InterestItem(s.petsAnimals, Icons.pets_rounded, Color(0xFF009688)),
+    _InterestItem(s.interestTravel, Icons.flight_rounded, Color(0xFF03A9F4)),
+    _InterestItem(s.interestHorror, Icons.dark_mode_rounded, Color(0xFF424242)),
+    _InterestItem(s.memesHumor, Icons.sentiment_very_satisfied_rounded,
         Color(0xFFFFC107)),
-    _InterestItem('Idiomas', Icons.translate_rounded, Color(0xFF673AB7)),
-    _InterestItem('Faça Você Mesmo', Icons.handyman_rounded, Color(0xFFCDDC39)),
-    _InterestItem('Quadrinhos', Icons.auto_stories_rounded, Color(0xFFFF6F00)),
-    _InterestItem('Dança', Icons.nightlife_rounded, Color(0xFFD500F9)),
-    _InterestItem('Natureza', Icons.park_rounded, Color(0xFF4CAF50)),
+    _InterestItem(s.interestLanguages, Icons.translate_rounded, Color(0xFF673AB7)),
+    _InterestItem(s.diy, Icons.handyman_rounded, Color(0xFFCDDC39)),
+    _InterestItem(s.interestComics, Icons.auto_stories_rounded, Color(0xFFFF6F00)),
+    _InterestItem(s.interestDance, Icons.nightlife_rounded, Color(0xFFD500F9)),
+    _InterestItem(s.interestNature, Icons.park_rounded, Color(0xFF4CAF50)),
   ];
 
   void _nextStep() {
@@ -112,7 +114,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao salvar. Tente novamente.')),
+          SnackBar(content: Text(s.errorSavingTryAgain)),
         );
       }
     } finally {
@@ -129,7 +131,8 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       body: SafeArea(
@@ -175,7 +178,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
               else
                 SizedBox(width: r.s(20)),
               Text(
-                'Passo ${_currentStep + 1} de 4',
+                s.stepProgress,
                 style: TextStyle(
                   color: Colors.grey[500],
                   fontSize: r.fs(14),
@@ -185,7 +188,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
               GestureDetector(
                 onTap: () => context.go('/'),
                 child: Text(
-                  'Pular',
+                  s.skip,
                   style: TextStyle(
                       color: AppTheme.primaryColor,
                       fontSize: r.fs(14),
@@ -240,7 +243,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
           ),
           SizedBox(height: r.s(32)),
           Text(
-            'Bem-vindo ao NexusHub!',
+            s.welcomeMessage,
             style: TextStyle(
               color: context.textPrimary,
               fontSize: r.fs(28),
@@ -250,8 +253,8 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
           ),
           SizedBox(height: r.s(16)),
           Text(
-            'Vamos personalizar sua experiência. Em poucos passos, '
-            'você estará conectado com comunidades incríveis!',
+            s.customizePrompt
+            s.connectedWithCommunities,
             style: TextStyle(
               color: Colors.grey[500],
               fontSize: r.fs(16),
@@ -261,7 +264,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
           ),
           SizedBox(height: r.s(16)),
           Text(
-            'Adicione uma bio para que outros membros te conheçam:',
+            s.addBioDesc,
             style: TextStyle(
               color: Colors.grey[600],
               fontSize: r.fs(14),
@@ -275,7 +278,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
             maxLength: 200,
             style: TextStyle(color: context.textPrimary),
             decoration: InputDecoration(
-              hintText: 'Conte um pouco sobre você...',
+              hintText: s.tellAboutYourself,
               hintStyle: TextStyle(color: Colors.grey[600]),
               counterStyle: TextStyle(color: Colors.grey[600]),
               filled: true,
@@ -298,7 +301,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
           ),
           SizedBox(height: r.s(40)),
           _buildCustomButton(
-            text: 'Vamos Começar!',
+            text: s.letsGo,
             onTap: _nextStep,
           ),
         ],
@@ -342,8 +345,8 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
           ),
           SizedBox(height: r.s(12)),
           Text(
-            'Seu ID único é como outros membros vão te encontrar. '
-            'Escolha algo memorável!',
+            s.yourUniqueIdDesc
+            s.chooseSomethingMemorable,
             style: TextStyle(
               color: Colors.grey[500],
               fontSize: r.fs(16),
@@ -392,7 +395,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
           ),
           SizedBox(height: r.s(40)),
           _buildCustomButton(
-            text: 'Continuar',
+            text: s.continueAction,
             onTap: _nextStep,
           ),
         ],
@@ -524,7 +527,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
         Padding(
           padding: EdgeInsets.all(r.s(20)),
           child: _buildCustomButton(
-            text: 'Continuar',
+            text: s.continueAction,
             onTap: _selectedInterests.length >= 3 ? _nextStep : null,
           ),
         ),
@@ -569,7 +572,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
           SizedBox(height: r.s(12)),
           Text(
             'Seus interesses foram salvos. Agora vamos encontrar '
-            'as melhores comunidades para você!',
+            s.bestCommunitiesForYou,
             style: TextStyle(
               color: Colors.grey[500],
               fontSize: r.fs(16),
@@ -625,7 +628,7 @@ class _InterestWizardScreenState extends State<InterestWizardScreen> {
           GestureDetector(
             onTap: () => context.go('/'),
             child: Text(
-              'Pular por enquanto',
+              s.skipForNow,
               style: TextStyle(
                 color: AppTheme.primaryColor,
                 fontSize: r.fs(14),

@@ -1,18 +1,20 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Tela de Contas Vinculadas — Google, Apple e outros provedores OAuth.
-class LinkedAccountsScreen extends StatefulWidget {
+class LinkedAccountsScreen extends ConsumerStatefulWidget {
   const LinkedAccountsScreen({super.key});
 
   @override
   State<LinkedAccountsScreen> createState() => _LinkedAccountsScreenState();
 }
 
-class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
+class _LinkedAccountsScreenState extends ConsumerState<LinkedAccountsScreen> {
   bool _isLoading = true;
   List<Map<String, dynamic>> _identities = [];
   bool _isLinking = false;
@@ -62,7 +64,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Conta ${provider.name} vinculada com sucesso!'),
+            content: Text(s.accountLinked),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -72,7 +74,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content:
-                Text('Erro ao vincular ${provider.name}. Tente novamente.'),
+                Text(s.linkProviderError),
             behavior: SnackBarBehavior.floating,
             backgroundColor: AppTheme.errorColor,
           ),
@@ -87,7 +89,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
     if (_identities.length <= 1) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Não é possível desvincular a única forma de login.'),
+          content: Text(s.cannotUnlinkLastLogin),
           behavior: SnackBarBehavior.floating,
           backgroundColor: AppTheme.errorColor,
         ),
@@ -99,16 +101,16 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: context.surfaceColor,
-        title: Text('Desvincular conta',
+        title: Text(s.unlinkAccount,
             style: TextStyle(color: context.textPrimary)),
         content: Text(
-          'Tem certeza que deseja desvincular sua conta $provider?',
+          s.confirmUnlinkAccount,
           style: TextStyle(color: Colors.grey[400]),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar'),
+            child: Text(s.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -141,7 +143,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Conta $provider desvinculada.'),
+            content: Text(s.providerUnlinked(provider)),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -150,7 +152,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao desvincular. Tente novamente.'),
+            content: Text(s.errorUnlinking),
             behavior: SnackBarBehavior.floating,
             backgroundColor: AppTheme.errorColor,
           ),
@@ -162,7 +164,8 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -194,7 +197,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
                 SizedBox(height: r.s(24)),
                 _ProviderTile(
                   provider: 'google',
-                  label: 'Google',
+                  label: s.google,
                   icon: Icons.g_mobiledata_rounded,
                   isLinked: _isProviderLinked('google'),
                   isLoading: _isLinking,
@@ -204,7 +207,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
                 SizedBox(height: r.s(12)),
                 _ProviderTile(
                   provider: 'apple',
-                  label: 'Apple',
+                  label: s.apple,
                   icon: Icons.apple_rounded,
                   isLinked: _isProviderLinked('apple'),
                   isLoading: _isLinking,
@@ -217,7 +220,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
   }
 }
 
-class _ProviderTile extends StatelessWidget {
+class _ProviderTile extends ConsumerWidget {
   final String provider;
   final String label;
   final IconData icon;
@@ -237,7 +240,8 @@ class _ProviderTile extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       padding: EdgeInsets.all(r.s(16)),
@@ -262,7 +266,7 @@ class _ProviderTile extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  isLinked ? 'Vinculado' : 'Não vinculado',
+                  isLinked ? 'Vinculado' : s.notLinked,
                   style: TextStyle(
                     color: isLinked ? Colors.green : Colors.grey[500],
                     fontSize: r.fs(12),

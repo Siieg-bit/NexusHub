@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -13,6 +14,7 @@ import '../../../core/widgets/amino_custom_title.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/amino_bottom_nav.dart';
 import '../../communities/widgets/community_create_menu.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Perfil dentro de uma Comunidade — Layout 1:1 com Amino Apps.
 ///
@@ -23,7 +25,7 @@ import '../../communities/widgets/community_create_menu.dart';
 ///   Bio com "Membro desde..." + seta para expandir
 ///   Tabs: Posts | Mural | Posts Salvos
 ///   FAB roxo para criar publicação (apenas próprio perfil)
-class CommunityProfileScreen extends StatefulWidget {
+class CommunityProfileScreen extends ConsumerStatefulWidget {
   final String userId;
   final String communityId;
 
@@ -37,7 +39,7 @@ class CommunityProfileScreen extends StatefulWidget {
   State<CommunityProfileScreen> createState() => _CommunityProfileScreenState();
 }
 
-class _CommunityProfileScreenState extends State<CommunityProfileScreen>
+class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   UserModel? _user;
@@ -154,7 +156,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     if (_isInitialLoading) {
       return Scaffold(
@@ -182,7 +185,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
     final coins = _user?.coins ?? 0;
     final isOnline = _user?.isOnline ?? false;
     final isPremium = _user?.isPremium ?? false;
-    final displayName = localNickname ?? _user?.nickname ?? 'Usuário';
+    final displayName = localNickname ?? _user?.nickname ?? s.user;
     final displayAvatar = localIconUrl ?? _user?.iconUrl;
     final displayBanner = localBannerUrl ?? _user?.bannerUrl;
     final displayBio = localBio ?? _user?.bio ?? '';
@@ -190,9 +193,9 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
     // Título do cargo (role title)
     String? roleTitle;
     if (role == 'leader' || role == 'agent') {
-      roleTitle = 'Líder';
+      roleTitle = s.leader;
     } else if (role == 'curator') {
-      roleTitle = 'Curador';
+      roleTitle = s.curator;
     }
 
     // Altura do FlexibleSpaceBar: varia conforme conteúdo
@@ -254,7 +257,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                     ),
                     SizedBox(width: r.s(5)),
                     Text(
-                      isOnline ? 'Online' : 'Offline',
+                      isOnline ? s.online : s.offline,
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: r.fs(13),
@@ -473,7 +476,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                         size: r.s(14), color: Colors.white),
                                     SizedBox(width: r.s(6)),
                                     Text(
-                                      'Editar',
+                                      s.edit,
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.w700,
@@ -507,7 +510,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                                 TextStyle(fontSize: r.fs(14))),
                                         SizedBox(width: r.s(6)),
                                         Text(
-                                          'Seguir',
+                                          s.follow,
                                           style: TextStyle(
                                             color: Colors.white,
                                             fontWeight: FontWeight.w700,
@@ -543,7 +546,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                             color: Colors.grey[300]),
                                         SizedBox(width: r.s(6)),
                                         Text(
-                                          'Chat',
+                                          s.chat,
                                           style: TextStyle(
                                             color: Colors.grey[200],
                                             fontWeight: FontWeight.w700,
@@ -587,8 +590,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                                         SizedBox(width: r.s(4)),
                                         Text(
                                           streak > 0
-                                              ? '$streak Dias na Sequência'
-                                              : 'Conquistas',
+                                              ? s.streakDaysLabel(streak)
+                                              : s.achievements,
                                           style: TextStyle(
                                             color: Colors.white,
                                             fontSize: r.fs(11),
@@ -725,7 +728,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'Reputação',
+                            s.reputation,
                             style: TextStyle(
                                 color: Colors.grey[500],
                                 fontSize: r.fs(12),
@@ -751,7 +754,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Seguindo',
+                              s.following,
                               style: TextStyle(
                                   color: Colors.grey[500],
                                   fontSize: r.fs(12),
@@ -778,7 +781,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Seguidores',
+                              s.followers,
                               style: TextStyle(
                                   color: Colors.grey[500],
                                   fontSize: r.fs(12),
@@ -817,7 +820,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                       textBaseline: TextBaseline.alphabetic,
                       children: [
                         Text(
-                          'Biografia',
+                          s.biography,
                           style: TextStyle(
                             color: context.textPrimary,
                             fontSize: r.fs(18),
@@ -925,7 +928,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                       child: Text(
                           'Mural${_wallComments.isNotEmpty ? ' ${_wallComments.length}' : ''}'),
                     ),
-                    const Tab(text: 'Posts Salvos'),
+                    Tab(text: s.savedPosts),
                   ],
                 ),
               ),
@@ -985,7 +988,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                   ),
                   SizedBox(width: r.s(12)),
                   Text(
-                    'Criar nova publicação',
+                    s.createNewPost,
                     style: TextStyle(
                       color: context.textPrimary,
                       fontSize: r.fs(15),
@@ -1007,7 +1010,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
               child: Row(
                 children: [
                   Text(
-                    'Minhas Entradas Wiki',
+                    s.myWikiEntries,
                     style: TextStyle(
                       color: context.textPrimary,
                       fontSize: r.fs(16),
@@ -1059,7 +1062,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                 final wikiIndex = _isOwnProfile ? index - 1 : index;
                 final wiki = _wikiEntries[wikiIndex];
                 final coverUrl = wiki['cover_image_url'] as String?;
-                final wikiTitle = wiki['title'] as String? ?? 'Wiki';
+                final wikiTitle = wiki['title'] as String? ?? s.wiki;
                 final wikiId = wiki['id'] as String?;
                 return GestureDetector(
                   onTap: () {
@@ -1128,7 +1131,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                   Icon(Icons.article_outlined,
                       size: r.s(48), color: Colors.grey[700]),
                   SizedBox(height: r.s(12)),
-                  Text('Nenhum post nesta comunidade',
+                  Text(s.noPostsInThisCommunity,
                       style: TextStyle(
                           color: Colors.grey[500],
                           fontWeight: FontWeight.w600)),
@@ -1140,7 +1143,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           ...List.generate(_userPosts.length, (index) {
             final post = _userPosts[index];
             return GestureDetector(
-              onTap: () => context.push('/post/${post['id']}'),
+              onTap: () => context.push('/post/${post['ids.closingBracket),
               child: Container(
                 margin: EdgeInsets.fromLTRB(r.s(16), r.s(6), r.s(16), r.s(6)),
                 padding: EdgeInsets.all(r.s(16)),
@@ -1241,7 +1244,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                   style:
                       TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
                   decoration: InputDecoration(
-                    hintText: 'Escreva no mural...',
+                    hintText: s.writeOnTheWall,
                     hintStyle:
                         TextStyle(color: Colors.grey[600], fontSize: r.fs(14)),
                     filled: true,
@@ -1275,7 +1278,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
         Expanded(
           child: _wallComments.isEmpty
               ? Center(
-                  child: Text('Nenhum comentário no mural',
+                  child: Text(s.noWallComments,
                       style: TextStyle(color: Colors.grey[500])),
                 )
               : ListView.builder(
@@ -1324,7 +1327,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  comment.author?.nickname ?? 'Anônimo',
+                                  comment.author?.nickname ?? s.anonymous,
                                   style: TextStyle(
                                       color: context.textPrimary,
                                       fontWeight: FontWeight.w700,
@@ -1371,7 +1374,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
             Icon(Icons.lock_outline_rounded,
                 size: r.s(48), color: Colors.grey[700]),
             SizedBox(height: r.s(12)),
-            Text('Posts salvos são privados',
+            Text(s.savedPostsArePrivate,
                 style: TextStyle(
                     color: Colors.grey[500], fontWeight: FontWeight.w600)),
           ],
@@ -1387,12 +1390,12 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
             Icon(Icons.bookmark_outline_rounded,
                 size: r.s(48), color: Colors.grey[700]),
             SizedBox(height: r.s(12)),
-            Text('Nenhum post salvo',
+            Text(s.noSavedPosts,
                 style: TextStyle(
                     color: Colors.grey[500], fontWeight: FontWeight.w600)),
             SizedBox(height: r.s(6)),
             Text(
-              'Toque no ícone de bookmark nos posts para salvá-los',
+              s.tapTheBookmarkIconOnPostsToSaveThem,
               style: TextStyle(color: Colors.grey[600], fontSize: r.fs(12)),
             ),
           ],
@@ -1439,7 +1442,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        post['title'] as String? ?? 'Sem título',
+                        post['title'] as String? ?? s.untitled,
                         style: TextStyle(
                           color: context.textPrimary,
                           fontWeight: FontWeight.w700,
@@ -1450,7 +1453,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                       ),
                       SizedBox(height: r.s(4)),
                       Text(
-                        'por ${author?['nickname'] ?? 'Usuário'}',
+                        'por ${author?['nickname'] ?? s.user}',
                         style: TextStyle(
                             color: Colors.grey[500], fontSize: r.fs(12)),
                       ),
@@ -1522,14 +1525,14 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(isNowFollowing ? 'Seguindo!' : 'Deixou de seguir')),
+              content: Text(isNowFollowing ? s.followingNow : s.unfollowed)),
         );
       }
       _loadProfile();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
+          const SnackBar(content: Text(s.anErrorOccurredTryAgain)),
         );
       }
     }
@@ -1547,17 +1550,17 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
     } catch (e) {
       if (mounted) {
         final err = e.toString();
-        String message = 'Erro ao abrir chat. Tente novamente.';
+        String message = s.errorOpeningChatTryAgain;
 
-        if (err.contains('Não é possível enviar DM para si mesmo')) {
-          message = 'Você não pode abrir um chat consigo mesmo.';
-        } else if (err.contains('não aceita mensagens diretas')) {
-          message = 'Este usuário não aceita mensagens diretas.';
-        } else if (err.contains('só aceita DMs')) {
-          message = 'Este usuário só aceita mensagens de perfis permitidos.';
+        if (err.contains(s.cannotDmYourself)) {
+          message = s.youCannotOpenAChatWithYourself;
+        } else if (err.contains(s.doesNotAcceptDMs)) {
+          message = s.thisUserDoesNotAcceptDirectMessages;
+        } else if (err.contains(s.onlyAcceptsDMs)) {
+          message = s.thisUserOnlyAcceptsMessagesFromAllowedProfiles;
         } else if (err
-            .contains('Não é possível enviar mensagem para este usuário')) {
-          message = 'Não foi possível iniciar conversa com este usuário.';
+            .contains(s.cannotMessageUser)) {
+          message = s.couldNotStartAConversationWithThisUser;
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1592,7 +1595,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
+          const SnackBar(content: Text(s.anErrorOccurredTryAgain)),
         );
       }
     }
@@ -1624,14 +1627,14 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
               ),
             ),
             if (!_isOwnProfile) ...[
-              _optionTile(Icons.flag_rounded, 'Denunciar', () {
+              _optionTile(Icons.flag_rounded, s.report, () {
                 Navigator.pop(ctx);
               }, isDestructive: true),
-              _optionTile(Icons.block_rounded, 'Bloquear', () {
+              _optionTile(Icons.block_rounded, s.block, () {
                 Navigator.pop(ctx);
               }, isDestructive: true),
             ],
-            _optionTile(Icons.share_rounded, 'Compartilhar Perfil', () {
+            _optionTile(Icons.share_rounded, s.shareProfile, () {
               Navigator.pop(ctx);
               final link =
                   'https://nexushub.app/community/${widget.communityId}/profile/${widget.userId}';
@@ -1639,7 +1642,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: const Text('Link do perfil copiado!'),
+                    content: Text(s.profileLinkCopied),
                     backgroundColor: AppTheme.primaryColor,
                     behavior: SnackBarBehavior.floating,
                   ),
@@ -1697,18 +1700,18 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
 
   String _memberSinceText(DateTime joinedAt) {
     const months = [
-      'janeiro',
-      'fevereiro',
-      'março',
-      'abril',
-      'maio',
-      'junho',
-      'julho',
-      'agosto',
-      'setembro',
-      'outubro',
-      'novembro',
-      'dezembro'
+      s.january,
+      s.february,
+      s.march,
+      s.april,
+      s.may,
+      s.june,
+      s.july,
+      s.august,
+      s.september,
+      s.october,
+      s.november,
+      s.december
     ];
     final days = DateTime.now().difference(joinedAt).inDays;
     return 'Membro desde ${months[joinedAt.month - 1]} ${joinedAt.year} ($days dias)';

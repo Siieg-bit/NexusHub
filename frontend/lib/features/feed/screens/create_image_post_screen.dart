@@ -7,6 +7,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/media_utils.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // CREATE IMAGE POST SCREEN — Post com galeria de imagens
@@ -59,7 +60,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Erro no upload. Tente novamente.'),
+            content: Text(s.errorUploadTryAgain),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -73,7 +74,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
     if (_mediaUrls.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Adicione pelo menos uma imagem'),
+          content: Text(s.addAtLeastOneImage),
           backgroundColor: AppTheme.errorColor,
         ),
       );
@@ -82,7 +83,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
     setState(() => _isSubmitting = true);
     try {
       final userId = SupabaseService.currentUserId;
-      if (userId == null) throw Exception('Não autenticado');
+      if (userId == null) throw Exception(s.notAuthenticated);
 
       final result = await SupabaseService.table('posts')
           .insert({
@@ -118,7 +119,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Post publicado com sucesso!'),
+            content: Text(s.postPublishedSuccess),
             backgroundColor: AppTheme.successColor,
           ),
         );
@@ -128,7 +129,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
         setState(() => _isSubmitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao publicar. Tente novamente.'),
+            content: Text(s.errorPublishing2),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -138,6 +139,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -171,15 +173,15 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
             itemBuilder: (_) => [
               PopupMenuItem(
                   value: 'public',
-                  child: Text('Público',
+                  child: Text(s.publicLabel,
                       style: TextStyle(color: context.textPrimary))),
               PopupMenuItem(
                   value: 'followers',
-                  child: Text('Seguidores',
+                  child: Text(s.followers,
                       style: TextStyle(color: context.textPrimary))),
               PopupMenuItem(
                   value: 'private',
-                  child: Text('Privado',
+                  child: Text(s.privateLabel,
                       style: TextStyle(color: context.textPrimary))),
             ],
           ),
@@ -193,7 +195,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
                         strokeWidth: 2, color: AppTheme.primaryColor),
                   )
                 : Text(
-                    'Publicar',
+                    s.publish,
                     style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontSize: r.fs(14),
@@ -221,7 +223,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
                   fontSize: r.fs(18),
                   fontWeight: FontWeight.w600),
               decoration: InputDecoration(
-                hintText: 'Título (opcional)...',
+                hintText: s.titleOptionalHint,
                 hintStyle:
                     TextStyle(color: context.textSecondary, fontSize: r.fs(18)),
                 border: InputBorder.none,
@@ -239,7 +241,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
               textCapitalization: TextCapitalization.sentences,
               style: TextStyle(color: context.textPrimary, fontSize: r.fs(15)),
               decoration: InputDecoration(
-                hintText: 'Escreva uma legenda...',
+                hintText: s.writeCaptionHint,
                 hintStyle:
                     TextStyle(color: context.textSecondary, fontSize: r.fs(15)),
                 border: InputBorder.none,

@@ -1,0 +1,1374 @@
+{
+  "DefaultFirebaseOptions have not been configured for web - ": {
+    "en": "Default Firebase options have not been configured for web - ",
+    "key": "defaultFirebaseOptionsWebNotConfigured"
+  },
+  "DefaultFirebaseOptions have not been configured for ios - ": {
+    "en": "Default Firebase options have not been configured for iOS - ",
+    "key": "defaultFirebaseOptionsIosNotConfigured"
+  },
+  "DefaultFirebaseOptions have not been configured for macos - ": {
+    "en": "Default Firebase options have not been configured for macOS - ",
+    "key": "defaultFirebaseOptionsMacosNotConfigured"
+  },
+  "DefaultFirebaseOptions have not been configured for windows - ": {
+    "en": "Default Firebase options have not been configured for Windows - ",
+    "key": "defaultFirebaseOptionsWindowsNotConfigured"
+  },
+  "DefaultFirebaseOptions have not been configured for linux - ": {
+    "en": "Default Firebase options have not been configured for Linux - ",
+    "key": "defaultFirebaseOptionsLinuxNotConfigured"
+  },
+  "DefaultFirebaseOptions are not supported for this platform.": {
+    "en": "Default Firebase options are not supported for this platform.",
+    "key": "defaultFirebaseOptionsNotSupported"
+  },
+  "AIzaSyAVrtW0plFDgkxfZCDE-FrKzNbKGb0ev1k": {
+    "en": "AIzaSyAVrtW0plFDgkxfZCDE-FrKzNbKGb0ev1k",
+    "key": "apiKey"
+  },
+  "CacheService": {
+    "en": "Cache Service",
+    "key": "cacheService"
+  },
+  "PushNotification": {
+    "en": "Push Notification",
+    "key": "pushNotification"
+  },
+  "IAP": {
+    "en": "In-App Purchase",
+    "key": "iap"
+  },
+  "AdService": {
+    "en": "Ad Service",
+    "key": "adService"
+  },
+  "NexusHub": {
+    "en": "Nexus Hub",
+    "key": "nexusHub"
+  },
+  "Conecte-se com suas comunidades favoritas": {
+    "en": "Connect with your favorite communities",
+    "key": "connectWithYourCommunities"
+  },
+  "PlusJakartaSans": {
+    "en": "Plus Jakarta Sans",
+    "key": "plusJakartaSans"
+  },
+  "Chat": {
+    "en": "Chat",
+    "key": "chat2"
+  },
+  "Rascunho sem título": {
+    "en": "Untitled Draft",
+    "key": "untitledDraft"
+  },
+  "Usuário": {
+    "en": "User",
+    "key": "user2"
+  },
+  "Mensagem apagada": {
+    "en": "Message deleted",
+    "key": "messageDeleted2"
+  },
+  "Erro ao carregar mais notificações": {
+    "en": "Error loading more notifications",
+    "key": "errorLoadingMoreNotifications"
+  },
+  "BRL": {
+    "en": "BRL",
+    "key": "currencyBrl"
+  },
+  "Agora: Joined channel ${connection.channelId} in ${elapsed}ms": {
+    "en": "Now: Joined channel ${connection.channelId} in ${elapsed}ms",
+    "key": "joinedChannelInMs"
+  },
+  "Verificação de Segurança": {
+    "en": "Security Check",
+    "key": "securityCheck"
+  },
+  "Resposta": {
+    "en": "Response",
+    "key": "response"
+  },
+  "Cancelar": {
+    "en": "Cancel",
+    "key": "cancel2"
+  },
+  "Verificar": {
+    "en": "Verify",
+    "key": "verify"
+  },
+  "Resolva para continuar": {
+    "en": "Solve to continue",
+    "key": "solveToContinue"
+  },
+  "Navegador Web": {
+    "en": "Web Browser",
+    "key": "webBrowser"
+  },
+  "Web": {
+    "en": "Web",
+    "key": "web"
+  },
+  "Browser": {
+    "en": "Browser",
+    "key": "browser"
+  },
+  "Android": {
+    "en": "Android",
+    "key": "android"
+  },
+  "Android ${Platform.operatingSystemVersion}": {
+    "en": "Android ${Platform.operatingSystemVersion}",
+    "key": "androidVersion"
+  },
+  "Windows": {
+    "en": "Windows",
+    "key": "windows"
+  },
+  "Windows ${Platform.operatingSystemVersion}": {
+    "en": "Windows ${Platform.operatingSystemVersion}",
+    "key": "windowsVersion"
+  },
+  "Linux": {
+    "en": "Linux",
+    "key": "linux"
+  },
+  "Linux ${Platform.operatingSystemVersion}": {
+    "en": "Linux ${Platform.operatingSystemVersion}",
+    "key": "linuxVersion"
+  },
+  "Dispositivo": {
+    "en": "Device",
+    "key": "device"
+  },
+  "Desconhecido": {
+    "en": "Unknown",
+    "key": "unknown"
+  },
+  "Sem conexão com a internet. Verifique sua rede.": {
+    "en": "No internet connection. Please check your network.",
+    "key": "noInternetConnection"
+  },
+  "A operação demorou muito. Tente novamente.": {
+    "en": "The operation took too long. Please try again.",
+    "key": "operationTimeout"
+  },
+  "Você não tem permissão para realizar esta ação.": {
+    "en": "You do not have permission to perform this action.",
+    "key": "noPermission"
+  },
+  "Algo deu errado. Tente novamente.": {
+    "en": "Something went wrong. Please try again.",
+    "key": "somethingWentWrong2"
+  },
+  "Email ou senha incorretos.": {
+    "en": "Incorrect email or password.",
+    "key": "incorrectEmailOrPassword"
+  },
+  "Confirme seu email antes de fazer login.": {
+    "en": "Please verify your email before logging in.",
+    "key": "verifyEmailBeforeLogin"
+  },
+  "Este email já está cadastrado.": {
+    "en": "This email is already registered.",
+    "key": "emailAlreadyRegistered"
+  },
+  "Senha muito fraca. Use pelo menos 8 caracteres com letras e números.": {
+    "en": "Password too weak. Use at least 8 characters with letters and numbers.",
+    "key": "weakPassword"
+  },
+  "Muitas tentativas. Aguarde alguns minutos.": {
+    "en": "Too many attempts. Please wait a few minutes.",
+    "key": "tooManyAttempts"
+  },
+  "Email inválido.": {
+    "en": "Invalid email.",
+    "key": "invalidEmail2"
+  },
+  "Sua sessão expirou. Faça login novamente.": {
+    "en": "Your session has expired. Please log in again.",
+    "key": "sessionExpired2"
+  },
+  "Erro de autenticação: ${error.message}": {
+    "en": "Authentication error: ${error.message}",
+    "key": "authError"
+  },
+  "Este nickname já está em uso.": {
+    "en": "This nickname is already in use.",
+    "key": "nicknameInUse"
+  },
+  "As senhas não coincidem": {
+    "en": "Passwords do not match",
+    "key": "passwordsDoNotMatch2"
+  },
+  "Nickname é obrigatório": {
+    "en": "Nickname is required",
+    "key": "nicknameRequired"
+  },
+  "Nickname deve ter no mínimo 3 caracteres": {
+    "en": "Nickname must be at least 3 characters",
+    "key": "nicknameMinLength"
+  },
+  "Nickname deve ter no máximo 20 caracteres": {
+    "en": "Nickname must be at most 20 characters",
+    "key": "nicknameMaxLength"
+  },
+  "Nickname pode conter apenas letras, números e _": {
+    "en": "Nickname can only contain letters, numbers, and _",
+    "key": "nicknameValidChars"
+  },
+  "Nome da comunidade é obrigatório": {
+    "en": "Community name is required",
+    "key": "communityNameRequired"
+  },
+  "Nome deve ter no mínimo 3 caracteres": {
+    "en": "Name must be at least 3 characters",
+    "key": "nameMinLength"
+  },
+  "Nome deve ter no máximo 50 caracteres": {
+    "en": "Name must be at most 50 characters",
+    "key": "nameMaxLength"
+  },
+  "URL inválida": {
+    "en": "Invalid URL",
+    "key": "invalidUrl"
+  },
+  "Valor é obrigatório": {
+    "en": "Value is required",
+    "key": "valueRequired"
+  },
+  "Deve ser um número positivo": {
+    "en": "Must be a positive number",
+    "key": "positiveNumber"
+  },
+  "Deve ser entre $min e $max": {
+    "en": "Must be between $min and $max",
+    "key": "valueRange"
+  },
+  "Home": {
+    "en": "Home",
+    "key": "home2"
+  },
+  "Foto de perfil": {
+    "en": "Profile picture",
+    "key": "profilePicture"
+  },
+  "Histórico de Check-in": {
+    "en": "Check-in History",
+    "key": "checkInHistory"
+  },
+  "Streak Atual": {
+    "en": "Current Streak",
+    "key": "currentStreak"
+  },
+  "Maior Streak": {
+    "en": "Highest Streak",
+    "key": "highestStreak"
+  },
+  "Total": {
+    "en": "Total",
+    "key": "total"
+  },
+  "RenderFlex overflowed": {
+    "en": "RenderFlex overflowed",
+    "key": "renderFlexOverflowed"
+  },
+  "A RenderFlex": {
+    "en": "A RenderFlex",
+    "key": "renderFlex"
+  },
+  "║  TextOverflow.ellipsis no widget de texto responsável.   ║\n": {
+    "en": "║  TextOverflow.ellipsis in the responsible text widget.   ║\n",
+    "key": "textOverflowEllipsis"
+  },
+  "Ocorreu um erro inesperado. Tente novamente ou reinicie o app.": {
+    "en": "An unexpected error occurred. Please try again or restart the app.",
+    "key": "unexpectedError"
+  },
+  "Detalhes do erro": {
+    "en": "Error details",
+    "key": "errorDetails"
+  },
+  "Level Up": {
+    "en": "Level Up",
+    "key": "levelUp2"
+  },
+  "Contribuidor": {
+    "en": "Contributor",
+    "key": "contributor"
+  },
+  "Regular": {
+    "en": "Regular",
+    "key": "regular"
+  },
+  "Dedicado": {
+    "en": "Dedicated",
+    "key": "dedicated"
+  },
+  "Expert": {
+    "en": "Expert",
+    "key": "expert"
+  },
+  "Guru": {
+    "en": "Guru",
+    "key": "guru"
+  },
+  "Sábio": {
+    "en": "Wise",
+    "key": "wise"
+  },
+  "Nível $level": {
+    "en": "Level $level",
+    "key": "levelLabel"
+  },
+  "LEVEL UP!": {
+    "en": "LEVEL UP!",
+    "key": "levelUpAlert"
+  },
+  "Novo título desbloqueado!": {
+    "en": "New title unlocked!",
+    "key": "newTitleUnlocked"
+  },
+  "Incrível!": {
+    "en": "Incredible!",
+    "key": "incredible"
+  },
+  "Nenhum item encontrado": {
+    "en": "No items found",
+    "key": "noItemsFound"
+  },
+  "Erro ao carregar mais itens": {
+    "en": "Error loading more items",
+    "key": "loadMoreError"
+  },
+  "Toque para tentar novamente": {
+    "en": "Tap to try again",
+    "key": "tapToRetry"
+  },
+  "Ocorreu um erro inesperado. Tente novamente.": {
+    "en": "An unexpected error occurred. Please try again.",
+    "key": "unexpectedErrorRetry"
+  },
+  "Não foi possível obter o token do Google.": {
+    "en": "Could not obtain Google token.",
+    "key": "googleTokenError"
+  },
+  "Anime & Mangá": {
+    "en": "Anime & Manga",
+    "key": "animeManga"
+  },
+  "Jogos": {
+    "en": "Games",
+    "key": "games"
+  },
+  "Arte & Design": {
+    "en": "Art & Design",
+    "key": "artDesign"
+  },
+  "Livros & Escrita": {
+    "en": "Books & Writing",
+    "key": "booksWriting"
+  },
+  "Filmes & Séries": {
+    "en": "Movies & Series",
+    "key": "moviesSeries"
+  },
+  "Pets & Animais": {
+    "en": "Pets & Animals",
+    "key": "petsAnimals"
+  },
+  "Memes & Humor": {
+    "en": "Memes & Humor",
+    "key": "memesHumor"
+  },
+  "Faça Você Mesmo": {
+    "en": "Do It Yourself",
+    "key": "diy"
+  },
+  "Passo ${_currentStep + 1} de 4": {
+    "en": "Step ${_currentStep + 1} of 4",
+    "key": "stepProgress"
+  },
+  "Bem-vindo ao NexusHub!": {
+    "en": "Welcome to NexusHub!",
+    "key": "welcomeMessage"
+  },
+  "Vamos personalizar sua experiência. Em poucos passos, ": {
+    "en": "Let's customize your experience. In a few steps, ",
+    "key": "customizePrompt"
+  },
+  "Grupo criado com sucesso!": {
+    "en": "Group created successfully!",
+    "key": "groupCreatedSuccessfully"
+  },
+  "Selecione a comunidade para o grupo:": {
+    "en": "Select the community for the group:",
+    "key": "selectCommunityForGroup"
+  },
+  "Adicionar capa (opcional)": {
+    "en": "Add cover (optional)",
+    "key": "addCoverOptional"
+  },
+  "Nome do Grupo *": {
+    "en": "Group Name *",
+    "key": "groupName2"
+  },
+  "Ex: Fan Club do Anime": {
+    "en": "E.g.: Anime Fan Club",
+    "key": "exampleGroupName"
+  },
+  "Descricao (opcional)": {
+    "en": "Description (optional)",
+    "key": "descriptionOptional"
+  },
+  "Descreva o grupo...": {
+    "en": "Describe the group...",
+    "key": "describeGroup"
+  },
+  "Chat Publico": {
+    "en": "Public Chat",
+    "key": "publicChat"
+  },
+  "Qualquer membro da comunidade pode entrar": {
+    "en": "Any community member can join",
+    "key": "anyMemberCanJoin"
+  },
+  "Apenas membros convidados podem entrar": {
+    "en": "Only invited members can join",
+    "key": "invitedMembersOnly"
+  },
+  "Comunidade: $_selectedCommunityName": {
+    "en": "Community: $_selectedCommunityName",
+    "key": "communityLabel"
+  },
+  "Alterar": {
+    "en": "Change",
+    "key": "change"
+  },
+  "Selecionar Membros": {
+    "en": "Select Members",
+    "key": "selectMembers2"
+  },
+  "Limpar": {
+    "en": "Clear",
+    "key": "clear"
+  },
+  "Usuario": {
+    "en": "User",
+    "key": "user3"
+  },
+  "Leader": {
+    "en": "Leader",
+    "key": "leader2"
+  },
+  "Curator": {
+    "en": "Curator",
+    "key": "curator2"
+  },
+  "Chat público criado!": {
+    "en": "Public chat created!",
+    "key": "publicChatCreated"
+  },
+  "O nome do chat é obrigatório.": {
+    "en": "The chat name is required.",
+    "key": "chatNameRequired"
+  },
+  "Você precisa ser membro da comunidade.": {
+    "en": "You need to be a community member.",
+    "key": "mustBeCommunityMember"
+  },
+  "Novo Chat Público": {
+    "en": "New Public Chat",
+    "key": "newPublicChat"
+  },
+  "Nome do Chat": {
+    "en": "Chat Name",
+    "key": "chatName2"
+  },
+  "Ex: Discussão de Episódios": {
+    "en": "E.g.: Episode Discussion",
+    "key": "exampleChatName"
+  },
+  "O nome do chat é obrigatório": {
+    "en": "The chat name is required",
+    "key": "chatNameIsRequired"
+  },
+  "O nome deve ter pelo menos 3 caracteres": {
+    "en": "The name must be at least 3 characters",
+    "key": "nameMinLength2"
+  },
+  "Descrição (opcional)": {
+    "en": "Description (optional)",
+    "key": "descriptionOptional2"
+  },
+  "Descreva o propósito deste chat...": {
+    "en": "Describe the purpose of this chat...",
+    "key": "describeChatPurpose"
+  },
+  "Chats públicos são visíveis para todos os membros da comunidade. ": {
+    "en": "Public chats are visible to all community members.",
+    "key": "publicChatsVisible"
+  },
+  "Qualquer membro pode entrar e participar.": {
+    "en": "Any member can join and participate.",
+    "key": "anyMemberCanParticipate"
+  },
+  "Amino+": {
+    "en": "Amino+",
+    "key": "aminoPlus"
+  },
+  "Sequência de Check-in": {
+    "en": "Check-in Sequence",
+    "key": "checkInSequence"
+  },
+  "Recorde: $maxStreak dias": {
+    "en": "Record: $maxStreak days",
+    "key": "maxStreakRecord"
+  },
+  "Total: $checkInDays check-ins": {
+    "en": "Total: $checkInDays check-ins",
+    "key": "totalCheckIns"
+  },
+  "Seg": {
+    "en": "Mon",
+    "key": "monday"
+  },
+  "Ter": {
+    "en": "Tue",
+    "key": "tuesday"
+  },
+  "Qua": {
+    "en": "Wed",
+    "key": "wednesday"
+  },
+  "Qui": {
+    "en": "Thu",
+    "key": "thursday"
+  },
+  "Sex": {
+    "en": "Fri",
+    "key": "friday"
+  },
+  "Sáb": {
+    "en": "Sat",
+    "key": "saturday"
+  },
+  "Dom": {
+    "en": "Sun",
+    "key": "sunday"
+  },
+  "Message...": {
+    "en": "Message...",
+    "key": "messagePlaceholder"
+  },
+  "Image": {
+    "en": "Image",
+    "key": "image2"
+  },
+  "GIF": {
+    "en": "GIF",
+    "key": "gif"
+  },
+  "Sticker": {
+    "en": "Sticker",
+    "key": "sticker"
+  },
+  "Audio": {
+    "en": "Audio",
+    "key": "audio2"
+  },
+  "Poll": {
+    "en": "Poll",
+    "key": "poll2"
+  },
+  "Tip": {
+    "en": "Tip",
+    "key": "tip"
+  },
+  "Voice": {
+    "en": "Voice",
+    "key": "voice"
+  },
+  "Video": {
+    "en": "Video",
+    "key": "video"
+  },
+  "Screening": {
+    "en": "Screening",
+    "key": "screening"
+  },
+  "Gamificação": {
+    "en": "Gamification",
+    "key": "gamification"
+  },
+  "Últimos 7 dias": {
+    "en": "Last 7 days",
+    "key": "lastSevenDays"
+  },
+  "Banidos": {
+    "en": "Banned",
+    "key": "bannedUsers"
+  },
+  "Posts totais": {
+    "en": "Total posts",
+    "key": "totalPosts"
+  },
+  "Posts hoje": {
+    "en": "Posts today",
+    "key": "postsToday"
+  },
+  "Mensagens totais": {
+    "en": "Total messages",
+    "key": "totalMessages"
+  },
+  "Mensagens hoje": {
+    "en": "Messages today",
+    "key": "messagesToday"
+  },
+  "Ativas": {
+    "en": "Active",
+    "key": "active2"
+  },
+  "Pendentes": {
+    "en": "Pending",
+    "key": "pending2"
+  },
+  "Resolvidas": {
+    "en": "Resolved",
+    "key": "resolved2"
+  },
+  "Usuários banidos": {
+    "en": "Banned users",
+    "key": "bannedUsersCount"
+  },
+  "Denúncias Recentes": {
+    "en": "Recent Reports",
+    "key": "recentReports"
+  },
+  "Nenhuma denúncia recente": {
+    "en": "No recent reports",
+    "key": "noRecentReports"
+  },
+  "Economia": {
+    "en": "Economy",
+    "key": "economy"
+  },
+  "Coins em circulação": {
+    "en": "Coins in circulation",
+    "key": "coinsInCirculation"
+  },
+  "Assinantes Amino+": {
+    "en": "Amino+ Subscribers",
+    "key": "aminoPlusSubscribers"
+  },
+  "Check-ins totais": {
+    "en": "Total check-ins",
+    "key": "totalCheckIns2"
+  },
+  "Taxa de Monetização": {
+    "en": "Monetization Rate",
+    "key": "monetizationRate"
+  },
+  "Taxa Amino+": {
+    "en": "Amino+ Rate",
+    "key": "aminoPlusRate"
+  },
+  "Coins por usuário (média)": {
+    "en": "Coins per user (average)",
+    "key": "coinsPerUserAverage"
+  },
+  "Sem motivo": {
+    "en": "No reason",
+    "key": "noReason"
+  },
+  "Regras Gerais": {
+    "en": "General Rules",
+    "key": "generalRules"
+  },
+  "1. Seja respeitoso com todos os membros\n2. Não faça spam ou flood\n3. Mantenha o conteúdo relevante à comunidade\n4. Não compartilhe informações pessoais": {
+    "en": "1. Be respectful to all members\n2. Do not spam or flood\n3. Keep content relevant to the community\n4. Do not share personal information",
+    "key": "generalRulesDetails"
+  },
+  "Conteúdo Permitido": {
+    "en": "Allowed Content",
+    "key": "allowedContent"
+  },
+  "• Posts relacionados ao tema da comunidade\n• Fan arts e criações originais\n• Discussões construtivas\n• Memes relacionados ao tema": {
+    "en": "• Posts related to the community theme\n• Fan arts and original creations\n• Constructive discussions\n• Memes related to the theme",
+    "key": "allowedContentDetails"
+  },
+  "Conteúdo Proibido": {
+    "en": "Prohibited Content",
+    "key": "prohibitedContent"
+  },
+  "• NSFW / Conteúdo explícito\n• Bullying ou assédio\n• Roubo de arte (art theft)\n• Propaganda não autorizada\n• Conteúdo discriminatório": {
+    "en": "• NSFW / Explicit content\n• Bullying or harassment\n• Art theft\n• Unauthorized advertising\n• Discriminatory content",
+    "key": "prohibitedContentDetails"
+  },
+  "Sistema de Strikes": {
+    "en": "Strike System",
+    "key": "strikeSystem"
+  },
+  "• 1º Strike: Aviso formal\n• 2º Strike: Silenciamento temporário (24h)\n• 3º Strike: Ban permanente da comunidade": {
+    "en": "• 1st Strike: Formal warning\n• 2nd Strike: Temporary mute (24h)\n• 3rd Strike: Permanent ban from the community",
+    "key": "strikeSystemDetails"
+  },
+  "Cargos e Responsabilidades": {
+    "en": "Roles and Responsibilities",
+    "key": "rolesResponsibilities"
+  },
+  "• Leader: Gerencia a comunidade e modera conteúdo\n• Curator: Auxilia na moderação e curadoria de wikis\n• Member: Participa ativamente da comunidade": {
+    "en": "• Leader: Manages the community and moderates content\n• Curator: Assists in moderation and wiki curation\n• Member: Actively participates in the community",
+    "key": "rolesResponsibilitiesDetails"
+  },
+  "Guidelines salvas com sucesso!": {
+    "en": "Guidelines saved successfully!",
+    "key": "guidelinesSaved"
+  },
+  "Editar Guidelines": {
+    "en": "Edit Guidelines",
+    "key": "editGuidelines2"
+  },
+  "Preview": {
+    "en": "Preview",
+    "key": "preview2"
+  },
+  "Escreva as guidelines da sua comunidade aqui...\n\nUse ## para títulos de seção\nUse • ou - para listas\nUse ** para negrito": {
+    "en": "Write your community guidelines here...\n\nUse ## for section titles\nUse • or - for lists\nUse ** for bold",
+    "key": "writeGuidelines"
+  },
+  "Suporta formatação Markdown": {
+    "en": "Supports Markdown formatting",
+    "key": "supportsMarkdown"
+  },
+  "Nenhum conteúdo para visualizar": {
+    "en": "No content to display",
+    "key": "noContentToDisplay"
+  },
+  "Escreva as guidelines na aba Editor": {
+    "en": "Write guidelines in the Editor tab",
+    "key": "writeGuidelinesTab"
+  },
+  "Pendentes (${_pendingFlags.length})": {
+    "en": "Pending (${_pendingFlags.length})",
+    "key": "pendingFlagsCount"
+  },
+  "Nenhuma denúncia resolvida": {
+    "en": "No reports resolved",
+    "key": "noResolvedReports"
+  },
+  "Bullying": {
+    "en": "Bullying",
+    "key": "bullying"
+  },
+  "Art Theft": {
+    "en": "Art Theft",
+    "key": "artTheft"
+  },
+  "Conteúdo Impróprio": {
+    "en": "Inappropriate Content",
+    "key": "inappropriateContent2"
+  },
+  "Off-Topic": {
+    "en": "Off-Topic",
+    "key": "offTopic"
+  },
+  "Aprovada": {
+    "en": "Approved",
+    "key": "approved2"
+  },
+  "Rejeitada": {
+    "en": "Rejected",
+    "key": "rejected2"
+  },
+  "Reportado por ${reporter?[": {
+    "en": "Reported by ${reporter?[",
+    "key": "reportedBy"
+  },
+  "Tomar Ação": {
+    "en": "Take Action",
+    "key": "takeAction"
+  },
+  "Enviar um aviso ao usuário": {
+    "en": "Send warning to user",
+    "key": "sendWarning"
+  },
+  "Impedir o usuário de postar/comentar temporariamente": {
+    "en": "Temporarily prevent user from posting/commenting",
+    "key": "temporarilyPreventUser"
+  },
+  "Erro ao carregar stories.": {
+    "en": "Error loading stories.",
+    "key": "errorLoadingStories"
+  },
+  "Nenhum story ainda": {
+    "en": "No stories yet",
+    "key": "noStoriesYet"
+  },
+  "Failed to load data.": {
+    "en": "Failed to load data.",
+    "key": "failedToLoadData"
+  },
+  "Necessária para chamadas de vídeo e envio de fotos": {
+    "en": "Required for video calls and sending photos",
+    "key": "videoCallAndPhotoUpload"
+  },
+  "Microfone": {
+    "en": "Microphone",
+    "key": "microphone"
+  },
+  "Necessário para chamadas de voz e gravação de áudio": {
+    "en": "Required for voice calls and audio recording",
+    "key": "voiceCallAndAudioRecording"
+  },
+  "Receba alertas de mensagens, curtidas e comentários": {
+    "en": "Receive alerts for messages, likes, and comments",
+    "key": "messageLikeCommentAlerts"
+  },
+  "Fotos e Mídia": {
+    "en": "Photos and Media",
+    "key": "photosAndMedia"
+  },
+  "Necessário para enviar imagens da galeria": {
+    "en": "Required to send gallery images",
+    "key": "sendGalleryImages"
+  },
+  "Armazenamento": {
+    "en": "Storage",
+    "key": "storage"
+  },
+  "Necessário para salvar arquivos e mídia": {
+    "en": "Required to save files and media",
+    "key": "saveFilesAndMedia"
+  },
+  "Permissão negada": {
+    "en": "Permission denied",
+    "key": "permissionDenied2"
+  },
+  "A permissão de ${info.title} foi negada permanentemente. ": {
+    "en": "The permission for ${info.title} has been permanently denied.",
+    "key": "permissionPermanentlyDenied"
+  },
+  "Abra as configurações do sistema para habilitá-la.": {
+    "en": "Open system settings to enable it.",
+    "key": "openSystemSettings"
+  },
+  "Abrir Configurações": {
+    "en": "Open Settings",
+    "key": "openSettings"
+  },
+  "Permissões do App": {
+    "en": "App Permissions",
+    "key": "appPermissions2"
+  },
+  "Gerencie as permissões que o NexusHub precisa para funcionar corretamente.": {
+    "en": "Manage the permissions NexusHub needs to function properly.",
+    "key": "managePermissions"
+  },
+  "Permitido": {
+    "en": "Allowed",
+    "key": "allowed"
+  },
+  "Negado permanentemente": {
+    "en": "Permanently denied",
+    "key": "permanentlyDenied"
+  },
+  "Não solicitado": {
+    "en": "Not requested",
+    "key": "notRequested"
+  },
+  "Permitir": {
+    "en": "Allow",
+    "key": "allow"
+  },
+  "Desbloquear Usuário": {
+    "en": "Unblock User",
+    "key": "unblockUser"
+  },
+  "Deseja desbloquear $nickname?": {
+    "en": "Do you want to unblock $nickname?",
+    "key": "confirmUnblockUser"
+  },
+  "Usuários Bloqueados": {
+    "en": "Blocked Users",
+    "key": "blockedUsers2"
+  },
+  "Usuários bloqueados não podem ver seu perfil\n nem enviar mensagens para você.": {
+    "en": "Blocked users cannot view your profile\n or send messages to you.",
+    "key": "blockedUsersInfo"
+  },
+  "Bloqueado em ${blockedAt.day}/${blockedAt.month}/${blockedAt.year}": {
+    "en": "Blocked on ${blockedAt.day}/${blockedAt.month}/${blockedAt.year}",
+    "key": "blockedOnDate"
+  },
+  "Revogar Dispositivo": {
+    "en": "Revoke Device",
+    "key": "revokeDevice"
+  },
+  "Isso encerrará a sessão neste dispositivo. ": {
+    "en": "This will log out your session on this device.",
+    "key": "revokeDeviceConfirmation"
+  },
+  "O usuário precisará fazer login novamente.": {
+    "en": "The user will need to log in again.",
+    "key": "userReLogin"
+  },
+  "Revogar": {
+    "en": "Revoke",
+    "key": "revoke"
+  },
+  "Dispositivo revogado": {
+    "en": "Device revoked",
+    "key": "deviceRevoked"
+  },
+  "Revogar Todos os Outros": {
+    "en": "Revoke All Others",
+    "key": "revokeAllOthers"
+  },
+  "Isso encerrará todas as sessões exceto a atual. ": {
+    "en": "This will log out all other sessions except the current one.",
+    "key": "revokeOtherSessions"
+  },
+  "Todos os outros dispositivos precisarão fazer login novamente.": {
+    "en": "All other devices will need to log in again.",
+    "key": "otherDevicesReLogin"
+  },
+  "Revogar Todos": {
+    "en": "Revoke All",
+    "key": "revokeAll"
+  },
+  "Todas as outras sessões foram encerradas": {
+    "en": "All other sessions have been logged out",
+    "key": "allSessionsRevoked"
+  },
+  "Dispositivos Conectados": {
+    "en": "Connected Devices",
+    "key": "connectedDevices"
+  },
+  "Revogar Outros": {
+    "en": "Revoke Others",
+    "key": "revokeOthers"
+  },
+  "Nenhum dispositivo registrado": {
+    "en": "No registered devices",
+    "key": "noRegisteredDevices"
+  },
+  "Gerencie os dispositivos conectados à sua conta. ": {
+    "en": "Manage devices connected to your account.",
+    "key": "manageConnectedDevices"
+  },
+  "Revogue dispositivos que você não reconhece.": {
+    "en": "Revoke devices you do not recognize.",
+    "key": "revokeUnrecognizedDevices"
+  },
+  "Atual": {
+    "en": "Current",
+    "key": "current"
+  },
+  "IP: $ipAddress": {
+    "en": "IP: $ipAddress",
+    "key": "ipAddress"
+  },
+  "Último acesso: ${lastSeen.day.toString().padLeft(2, ": {
+    "en": "Last access: ${lastSeen.day}/${lastSeen.month}/${lastSeen.year}",
+    "key": "lastAccess2"
+  },
+  "Conta ${provider.name} vinculada com sucesso!": {
+    "en": "Account ${provider.name} linked successfully!",
+    "key": "accountLinked"
+  },
+  "Erro ao vincular ${provider.name}. Tente novamente.": {
+    "en": "Error linking ${provider.name}. Please try again.",
+    "key": "linkProviderError"
+  },
+  "Não é possível desvincular a única forma de login.": {
+    "en": "Cannot unlink the only login method.",
+    "key": "cannotUnlinkLastLogin"
+  },
+  "Desvincular conta": {
+    "en": "Unlink Account",
+    "key": "unlinkAccount"
+  },
+  "Tem certeza que deseja desvincular sua conta $provider?": {
+    "en": "Are you sure you want to unlink your $provider account?",
+    "key": "confirmUnlinkAccount"
+  },
+  "Mensagens Diretas": {
+    "en": "Direct Messages",
+    "key": "directMessages"
+  },
+  "Permitir que outros enviem DMs": {
+    "en": "Allow others to send DMs",
+    "key": "allowOthersToSendDms"
+  },
+  "Convites para Chat": {
+    "en": "Chat Invitations",
+    "key": "chatInvitations"
+  },
+  "Permitir convites para chats em grupo": {
+    "en": "Allow group chat invitations",
+    "key": "allowGroupChatInvitations"
+  },
+  "Permitir que outros mencionem você": {
+    "en": "Allow others to mention you",
+    "key": "allowMentions"
+  },
+  "Lista de Comunidades": {
+    "en": "Communities List",
+    "key": "communitiesList"
+  },
+  "Mostrar comunidades que você participa": {
+    "en": "Show communities you participate in",
+    "key": "showParticipatedCommunities"
+  },
+  "Lista de Seguidores": {
+    "en": "Followers List",
+    "key": "followersList"
+  },
+  "Mostrar seus seguidores/seguindo": {
+    "en": "Show your followers/following",
+    "key": "showFollowersFollowing"
+  },
+  "Busca por Nome": {
+    "en": "Search by Name",
+    "key": "searchByName"
+  },
+  "Permitir que encontrem você por nome": {
+    "en": "Allow others to find you by name",
+    "key": "allowFindByName"
+  },
+  "Quem pode te seguir": {
+    "en": "Who can follow you",
+    "key": "whoCanFollow"
+  },
+  "Apenas quem eu sigo de volta": {
+    "en": "Only those I follow back",
+    "key": "onlyFollowBack"
+  },
+  "Dados": {
+    "en": "Data",
+    "key": "data"
+  },
+  "Exportar Meus Dados": {
+    "en": "Export My Data",
+    "key": "exportMyData"
+  },
+  "Baixar uma cópia dos seus dados": {
+    "en": "Download a copy of your data",
+    "key": "downloadDataCopy"
+  },
+  "Exportação em desenvolvimento": {
+    "en": "Export in progress",
+    "key": "exportInProgress"
+  },
+  "Excluir Conta": {
+    "en": "Delete Account",
+    "key": "deleteAccount2"
+  },
+  "Tem certeza? Esta ação é irreversível e todos os seus dados serão apagados.": {
+    "en": "Are you sure? This action is irreversible and all your data will be deleted.",
+    "key": "confirmDeletion"
+  },
+  "Confirmar Exclus\u0000e3o": {
+    "en": "Confirm Deletion",
+    "key": "confirmDeletionButton"
+  },
+  "Digite \"EXCLUIR\" para confirmar:": {
+    "en": "Type \"DELETE\" to confirm:",
+    "key": "typeDeleteToConfirm"
+  },
+  "EXCLUIR": {
+    "en": "DELETE",
+    "key": "deleteButton"
+  },
+  "Digite EXCLUIR para confirmar": {
+    "en": "Type DELETE to confirm",
+    "key": "typeDeleteToConfirmAlt"
+  },
+  "Excluir Permanentemente": {
+    "en": "Permanently Delete",
+    "key": "permanentDelete"
+  },
+  "Exportar Dados": {
+    "en": "Export Data",
+    "key": "exportData2"
+  },
+  "Vamos preparar um arquivo com todos os seus dados (perfil, posts, comentários, mensagens). ": {
+    "en": "We will prepare a file with all your data (profile, posts, comments, messages).",
+    "key": "prepareDataFile"
+  },
+  "Você receberá uma notificação quando estiver pronto.": {
+    "en": "You will receive a notification when it's ready.",
+    "key": "notificationWhenReady"
+  },
+  "Solicitação enviada! Você receberá uma notificação.": {
+    "en": "Request sent! You will receive a notification.",
+    "key": "requestSentNotification"
+  },
+  "Solicitar": {
+    "en": "Request",
+    "key": "requestButton"
+  },
+  "Esta ação é IRREVERSÍVEL. Todos os seus dados, posts, comentários, ": {
+    "en": "This action is IRREVERSIBLE. All your data, posts, comments, ",
+    "key": "irreversibleActionWarning"
+  },
+  "mensagens e itens comprados serão permanentemente deletados.\n\n": {
+    "en": "messages and purchased items will be permanently deleted.\n\n",
+    "key": "permanentDeletionNotice"
+  },
+  "Tem certeza que deseja continuar?": {
+    "en": "Are you sure you want to continue?",
+    "key": "confirmContinue"
+  },
+  "Confirmação Final": {
+    "en": "Final Confirmation",
+    "key": "finalConfirmation"
+  },
+  "Digite \"EXCLUIR\" para confirmar a exclusão permanente da sua conta.": {
+    "en": "Type \"DELETE\" to confirm permanent deletion of your account.",
+    "key": "typeDeleteConfirm"
+  },
+  "Erro ao excluir conta. Tente novamente.": {
+    "en": "Error deleting account. Please try again.",
+    "key": "deleteAccountError"
+  },
+  "Nível ${_profile?[": {
+    "en": "Level ${_profile?[",
+    "key": "profileLevel"
+  },
+  "Email e Senha": {
+    "en": "Email and Password",
+    "key": "emailAndPassword"
+  },
+  "Alterar Email": {
+    "en": "Change Email",
+    "key": "changeEmail"
+  },
+  "Novo email": {
+    "en": "New email",
+    "key": "newEmail"
+  },
+  "Email de confirma\u0000e7\u0000e3o enviado!": {
+    "en": "Confirmation email sent!",
+    "key": "confirmationEmailSent"
+  },
+  "Google, Apple": {
+    "en": "Google, Apple",
+    "key": "googleApple"
+  },
+  "Prefer\u0000eancias": {
+    "en": "Preferences",
+    "key": "preferences"
+  },
+  "Idioma alterado para ${locale.label}": {
+    "en": "Language changed to ${locale.label}",
+    "key": "languageChanged"
+  },
+  "Limpar Cache": {
+    "en": "Clear Cache",
+    "key": "clearCache2"
+  },
+  "Liberar espa\u0000e7o de armazenamento": {
+    "en": "Free up storage space",
+    "key": "freeStorage"
+  },
+  "Tamanho atual do cache: $size\n\n": {
+    "en": "Current cache size: $size\n\n",
+    "key": "currentCacheSize"
+  },
+  "Isso vai limpar dados tempor\u0000e1rios salvos localmente. ": {
+    "en": "This will clear locally saved temporary data. ",
+    "key": "clearTempData"
+  },
+  "Seus dados na nuvem n\u0000e3o ser\u0000e3o afetados.": {
+    "en": "Your cloud data will not be affected.",
+    "key": "cloudDataUnaffected"
+  },
+  "Cache limpo com sucesso!": {
+    "en": "Cache cleared successfully!",
+    "key": "cacheCleared2"
+  },
+  "C\u0000e2mera, microfone, notifica\u0000e7\u0000f5es": {
+    "en": "Camera, microphone, notifications",
+    "key": "cameraMicrophoneNotifications"
+  },
+  "FF$h": {
+    "en": "FF$h",
+    "key": "ffH"
+  },
+  "Seu Story": {
+    "en": "Your Story",
+    "key": "yourStory"
+  },
+  "Wiki aprovada!": {
+    "en": "Wiki approved!",
+    "key": "wikiApproved"
+  },
+  "Wiki precisa de alterações": {
+    "en": "Wiki needs changes",
+    "key": "wikiNeedsChanges"
+  },
+  "Sua entrada \"${entry[\"": {
+    "en": "Your entry \"${entry[\"",
+    "key": "yourEntry"
+  },
+  "]}": {
+    "en": "]}",
+    "key": "closingBracket"
+  },
+  "Wiki aprovada": {
+    "en": "Wiki approved",
+    "key": "wikiApprovedStatus"
+  },
+  "Wiki aprovada com sucesso!": {
+    "en": "Wiki successfully approved!",
+    "key": "wikiApprovalSuccess"
+  },
+  "Wiki rejeitada": {
+    "en": "Wiki rejected",
+    "key": "wikiRejected"
+  },
+  "Motivo da rejeição": {
+    "en": "Rejection reason",
+    "key": "rejectionReason"
+  },
+  "Descreva o que precisa ser corrigido...": {
+    "en": "Describe what needs to be corrected...",
+    "key": "describeCorrections"
+  },
+  "Sem motivo especificado": {
+    "en": "No reason specified",
+    "key": "noReasonSpecified"
+  },
+  "Revisão de Wiki": {
+    "en": "Wiki review",
+    "key": "wikiReview"
+  },
+  "Nenhuma wiki pendente": {
+    "en": "No pending wiki",
+    "key": "noPendingWiki"
+  },
+  "Todas as submissões foram revisadas.": {
+    "en": "All submissions have been reviewed.",
+    "key": "allSubmissionsReviewed"
+  },
+  "Sem titulo": {
+    "en": "No title",
+    "key": "noTitle"
+  },
+  "Pendente de revisao": {
+    "en": "Pending review",
+    "key": "pendingReview2"
+  },
+  "Anonimo": {
+    "en": "Anonymous",
+    "key": "anonymous2"
+  },
+  "Catálogo": {
+    "en": "Catalog",
+    "key": "catalog"
+  },
+  "Buscar no catálogo...": {
+    "en": "Search in catalog...",
+    "key": "searchCatalog"
+  },
+  "Nenhuma entrada encontrada": {
+    "en": "No entries found",
+    "key": "noEntriesFound"
+  },
+  "Wiki fixada no seu perfil!": {
+    "en": "Wiki pinned to your profile!",
+    "key": "wikiPinned"
+  },
+  "Wiki removida do perfil": {
+    "en": "Wiki removed from profile",
+    "key": "wikiRemoved"
+  },
+  "Entrada não encontrada": {
+    "en": "Entry not found",
+    "key": "entryNotFound"
+  },
+  "Por ${author[": {
+    "en": "By ${author[",
+    "key": "byAuthor"
+  },
+  "Minha Avaliação": {
+    "en": "My Rating",
+    "key": "myRating"
+  },
+  "Média: ${_avgRating.toStringAsFixed(1)} ($_totalRatings avaliações)": {
+    "en": "Average: ${_avgRating.toStringAsFixed(1)} ($_totalRatings ratings)",
+    "key": "averageRating"
+  },
+  "Escreva o que você gosta...": {
+    "en": "Write what you like...",
+    "key": "writeWhatYouLike"
+  },
+  "Título é obrigatório": {
+    "en": "Title is required",
+    "key": "titleRequired"
+  },
+  "Entrada enviada para revisão dos curadores!": {
+    "en": "Entry sent for curator review!",
+    "key": "entrySentForReview"
+  },
+  "Nova Entrada Wiki": {
+    "en": "New Wiki Entry",
+    "key": "newWikiEntry"
+  },
+  "URL da imagem de capa": {
+    "en": "Cover image URL",
+    "key": "coverImageUrl"
+  },
+  "Nenhuma categoria dispon\u0000vel": {
+    "en": "No categories available",
+    "key": "noCategoriesAvailable"
+  },
+  "Selecione a categoria": {
+    "en": "Select category",
+    "key": "selectCategory"
+  },
+  "Título da entrada...": {
+    "en": "Entry title...",
+    "key": "entryTitle"
+  },
+  "Conteúdo detalhado...": {
+    "en": "Detailed content...",
+    "key": "detailedContent"
+  },
+  "Infobox": {
+    "en": "Infobox",
+    "key": "infobox"
+  },
+  "Campo": {
+    "en": "Field",
+    "key": "field"
+  },
+  "Valor": {
+    "en": "Value",
+    "key": "value"
+  },
+  "Comunidade": {
+    "en": "Community",
+    "key": "community2"
+  },
+  "Sess\u00003 de chamada inv\u00001lida": {
+    "en": "Invalid call session",
+    "key": "invalidCallSession"
+  },
+  "Descubra": {
+    "en": "Discover",
+    "key": "discover"
+  },
+  "Chats": {
+    "en": "Chats",
+    "key": "chats2"
+  },
+  "Loja": {
+    "en": "Shop",
+    "key": "shop"
+  }
+}

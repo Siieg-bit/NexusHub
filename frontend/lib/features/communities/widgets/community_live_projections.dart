@@ -6,6 +6,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/amino_animations.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // LIVE PROJECTIONS SECTION
@@ -61,6 +62,7 @@ class _CommunityLiveProjectionsState extends State<CommunityLiveProjections> {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     if (_loading || _projections.isEmpty) return const SizedBox.shrink();
 
     final r = context.r;
@@ -134,7 +136,7 @@ class _CommunityLiveProjectionsState extends State<CommunityLiveProjections> {
                 final membersCount = chat['members_count'] as int? ?? 0;
 
                 return AminoAnimations.cardPress(
-                  onTap: () => context.push('/chat/${chat['id']}'),
+                  onTap: () => context.push('/chat/${chat['ids.closingBracket),
                   child: Container(
                     width: r.s(160),
                     margin: EdgeInsets.only(right: r.s(8)),
@@ -250,7 +252,7 @@ class _CommunityLiveProjectionsState extends State<CommunityLiveProjections> {
                         Padding(
                           padding: EdgeInsets.all(r.s(8)),
                           child: Text(
-                            chat['title'] as String? ?? 'Projeção',
+                            chat['title'] as String? ?? s.projection,
                             style: TextStyle(
                                 color: context.textPrimary,
                                 fontSize: r.fs(11),

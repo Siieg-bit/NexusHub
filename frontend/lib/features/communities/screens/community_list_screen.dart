@@ -12,6 +12,7 @@ import '../../../core/widgets/amino_particles_bg.dart';
 import '../../../core/providers/notification_provider.dart';
 import '../../../core/utils/responsive.dart';
 import '../providers/community_shared_providers.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 class CommunityListScreen extends ConsumerStatefulWidget {
   final bool isExplore;
@@ -55,6 +56,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final communitiesAsync = ref.watch(userCommunitiesProvider);
     // Observar status de check-in para rebuild automático
     ref.watch(checkInStatusProvider);
@@ -123,7 +125,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
             Padding(
               padding: EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16), r.s(8)),
               child: Text(
-                'Minhas Comunidades',
+                s.myCommunitiesTitle,
                 style: TextStyle(
                   fontSize: r.fs(20),
                   fontWeight: FontWeight.w800,
@@ -348,7 +350,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                   leading: Icon(Icons.exit_to_app_rounded,
                       color: AppTheme.errorColor, size: r.s(22)),
                   title: Text(
-                    'Sair da comunidade',
+                    s.leaveCommunity,
                     style: TextStyle(
                         color: AppTheme.errorColor,
                         fontSize: r.fs(14),
@@ -390,7 +392,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(r.s(16))),
           title: Text(
-            'Sair da comunidade',
+            s.leaveCommunity,
             style:
                 TextStyle(color: ctx.textPrimary, fontWeight: FontWeight.w800),
           ),
@@ -402,11 +404,11 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
               child:
-                  Text('Cancelar', style: TextStyle(color: ctx.textSecondary)),
+                  Text(s.cancel, style: TextStyle(color: ctx.textSecondary)),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: Text('Sair',
+              child: Text(s.logout,
                   style: TextStyle(
                       color: AppTheme.errorColor, fontWeight: FontWeight.w700)),
             ),
@@ -471,7 +473,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
             ),
             SizedBox(height: r.s(6)),
             Text(
-              'Explore e entre em comunidades para começar!',
+              s.exploreCommunities,
               style: TextStyle(
                 color: context.textSecondary,
                 fontSize: r.fs(13),
@@ -528,7 +530,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                 borderRadius: BorderRadius.circular(r.s(16)),
               ),
               child: Text(
-                'Tentar novamente',
+                s.retry,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: r.fs(13),
@@ -610,7 +612,7 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'Check-in feito! Sequência: $streak dia${streak > 1 ? 's' : ''} (+$coins moedas)',
+                s.checkInStreakMsg(streak, coins),
               ),
               backgroundColor: AppTheme.accentColor,
               behavior: SnackBarBehavior.floating,
@@ -620,7 +622,7 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
         } else if (data != null && data['error'] == 'already_checked_in') {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Você já fez check-in hoje nesta comunidade!'),
+              content: Text(s.alreadyCheckedInCommunity),
               backgroundColor: Colors.orange,
               behavior: SnackBarBehavior.floating,
               duration: Duration(seconds: 2),
@@ -632,7 +634,7 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro no check-in. Tente novamente.'),
+            content: Text(s.errorCheckIn),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -645,6 +647,7 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final color = _parseColor(widget.community.themeColor);
     final checkInStatus = ref.watch(checkInStatusProvider);
@@ -898,6 +901,7 @@ class _JoinCommunityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: onTap,
@@ -994,7 +998,7 @@ class _CommunityPreviewSheetState
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'Check-in feito! Sequência: $streak dia${streak > 1 ? 's' : ''} (+$coins moedas)',
+                s.checkInStreakMsg(streak, coins),
               ),
               backgroundColor: AppTheme.accentColor,
               behavior: SnackBarBehavior.floating,
@@ -1004,7 +1008,7 @@ class _CommunityPreviewSheetState
         } else if (data != null && data['error'] == 'already_checked_in') {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Você já fez check-in hoje nesta comunidade!'),
+              content: Text(s.alreadyCheckedInCommunity),
               backgroundColor: Colors.orange,
               behavior: SnackBarBehavior.floating,
               duration: Duration(seconds: 2),
@@ -1016,7 +1020,7 @@ class _CommunityPreviewSheetState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro no check-in. Tente novamente.'),
+            content: Text(s.errorCheckIn),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -1029,6 +1033,7 @@ class _CommunityPreviewSheetState
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final color = _parseColor(widget.community.themeColor);
     final checkInStatus = ref.watch(checkInStatusProvider);
@@ -1245,7 +1250,7 @@ class _CommunityPreviewSheetState
                         borderRadius: BorderRadius.circular(r.s(8)),
                       ),
                       child: Text(
-                        'Abrir',
+                        s.openAction,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: r.fs(14),
@@ -1337,6 +1342,7 @@ class _StatChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: r.s(8), vertical: r.s(4)),

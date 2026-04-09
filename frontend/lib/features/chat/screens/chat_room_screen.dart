@@ -26,6 +26,7 @@ import '../widgets/chat_message_actions.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/utils/media_utils.dart';
 import 'chat_list_screen.dart' show chatListProvider, chatCommunitiesProvider;
+import '../../../core/l10n/locale_provider.dart';
 
 /// =============================================================================
 /// ChatRoomScreen — Tela principal de chat.
@@ -332,7 +333,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Fundo do Chat',
+              Text(s.chatBackground,
                   style: TextStyle(
                       fontSize: r.fs(18),
                       fontWeight: FontWeight.w800,
@@ -384,7 +385,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 style:
                     TextStyle(color: context.textPrimary, fontSize: r.fs(13)),
                 decoration: InputDecoration(
-                  hintText: 'URL personalizada do fundo...',
+                  hintText: s.customBgUrlHint,
                   hintStyle: TextStyle(color: Colors.grey[600]),
                   filled: true,
                   fillColor: context.cardBg,
@@ -413,7 +414,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     await _saveChatBackground(url);
                     if (ctx.mounted) Navigator.pop(ctx);
                   },
-                  child: Text('Aplicar',
+                  child: Text(s.apply,
                       style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
@@ -611,7 +612,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Sessão expirada. Faça login novamente.'),
+            content: Text(s.sessionExpiredPleaseLogInAgain),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -632,7 +633,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content:
-                Text('Não foi possível confirmar sua participação neste chat.'),
+                Text(s.couldNotConfirmParticipation),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -689,14 +690,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       debugPrint('[ChatRoom] Send message error: $e');
       if (mounted) {
         // Mostrar mensagem de erro mais específica
-        String errorMsg = 'Erro ao enviar. Tente novamente.';
+        String errorMsg = s.errorSendingTryAgain;
         final errorStr = e.toString();
         if (errorStr.contains('not a member')) {
           errorMsg =
-              'Você não é membro deste chat. Tente sair e entrar novamente.';
+              s.notMemberChatRetry;
           _membershipConfirmed = false; // Resetar para re-tentar join
         } else if (errorStr.contains('null') || errorStr.contains('session')) {
-          errorMsg = 'Sessão expirada. Faça login novamente.';
+          errorMsg = s.sessionExpiredPleaseLogInAgain;
         }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -764,21 +765,21 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            Text('Configurações do Chat',
+            Text(s.chatSettingsTitle,
                 style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: r.fs(16),
                     color: context.textPrimary)),
             SizedBox(height: r.s(16)),
-            _settingsTile(r, Icons.wallpaper_rounded, 'Fundo do Chat', () {
+            _settingsTile(r, Icons.wallpaper_rounded, s.chatBackground, () {
               Navigator.pop(ctx);
               _showBackgroundPicker();
             }),
-            _settingsTile(r, Icons.notifications_rounded, 'Notificações', () {
+            _settingsTile(r, Icons.notifications_rounded, s.notifications, () {
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Configurações de notificação em breve!'),
+                  content: Text(s.notificationSettingsComingSoon),
                   backgroundColor: AppTheme.primaryColor,
                   behavior: SnackBarBehavior.floating,
                 ),
@@ -809,7 +810,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 _settingsTile(
                   r,
                   Icons.delete_rounded,
-                  'Excluir Chat',
+                  s.deleteChatTitle,
                   () {
                     Navigator.pop(ctx);
                     _deleteChatConfirm();
@@ -869,22 +870,22 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(r.s(16))),
-        title: Text('Sair do Chat',
+        title: Text(s.leaveChatTitle,
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w700)),
-        content: Text('Tem certeza que deseja sair deste chat?',
+        content: Text(s.confirmLeaveChat,
             style: TextStyle(color: Colors.grey[400], fontSize: r.fs(14))),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
+            child: Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
           ),
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
               await _leaveChat();
             },
-            child: Text('Sair',
+            child: Text(s.logout,
                 style: TextStyle(
                     color: AppTheme.errorColor, fontWeight: FontWeight.w700)),
           ),
@@ -913,7 +914,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             (result as Map<String, dynamic>?)?['deleted'] == true;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(wasDeleted ? 'Chat excluído.' : 'Você saiu do chat.'),
+            content: Text(wasDeleted ? s.chatDeletedMsg : s.leftChat),
             backgroundColor: AppTheme.primaryColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -925,7 +926,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Erro ao sair do chat. Tente novamente.'),
+            content: Text(s.errorLeavingChat),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -949,7 +950,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         }
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Chat excluído.'),
+            content: Text(s.chatDeletedMsg),
             backgroundColor: AppTheme.primaryColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -961,7 +962,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Erro ao excluir o chat. Tente novamente.'),
+            content: Text(s.errorDeletingChat),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -978,23 +979,23 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(r.s(16))),
-        title: Text('Excluir Chat',
+        title: Text(s.deleteChatTitle,
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w700)),
         content: Text(
-            'Tem certeza que deseja excluir este chat? Esta ação não pode ser desfeita.',
+            s.confirmDeleteChat2,
             style: TextStyle(color: Colors.grey[400], fontSize: r.fs(14))),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
+            child: Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
           ),
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
               await _deleteChat();
             },
-            child: Text('Excluir',
+            child: Text(s.delete,
                 style: TextStyle(
                     color: AppTheme.errorColor, fontWeight: FontWeight.w700)),
           ),
@@ -1025,7 +1026,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro no upload. Tente novamente.'),
+            content: Text(s.errorUploadTryAgain),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -1062,7 +1063,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro no upload do vídeo. Tente novamente.'),
+            content: Text(s.errorVideoUpload),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -1101,8 +1102,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.toString().contains('host')
-                ? 'Apenas o host pode fixar mensagens'
-                : 'Erro ao fixar mensagem'),
+                ? s.onlyTheHostCanPinMessages
+                : s.errorPinningMessage),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -1157,12 +1158,12 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Enviar Gorjeta',
+                      Text(s.sendTip,
                           style: TextStyle(
                               color: context.textPrimary,
                               fontWeight: FontWeight.w800,
                               fontSize: r.fs(18))),
-                      Text('Envie moedas para este chat',
+                      Text(s.sendCoinsToThisChat,
                           style: TextStyle(
                               color: Colors.grey, fontSize: r.fs(13))),
                     ],
@@ -1226,7 +1227,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   selectedAmount = int.tryParse(val);
                 }),
                 decoration: InputDecoration(
-                  hintText: 'Ou digite um valor...',
+                  hintText: s.orTypeValue,
                   hintStyle: TextStyle(color: Colors.grey[600]),
                   prefixIcon: Icon(Icons.edit_rounded,
                       color: AppTheme.warningColor, size: r.s(18)),
@@ -1264,7 +1265,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         Text(
                           selectedAmount != null && selectedAmount! > 0
                               ? 'Enviar $selectedAmount moedas'
-                              : 'Selecione um valor',
+                              : s.selectAnAmount,
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w700,
@@ -1309,14 +1310,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           backgroundColor: context.surfaceColor,
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(r.s(16))),
-          title: Text('Criar Enquete',
+          title: Text(s.createPoll,
               style: TextStyle(
                   color: context.textPrimary, fontWeight: FontWeight.w700)),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _dialogInput(questionCtrl, 'Pergunta'),
+                _dialogInput(questionCtrl, s.question),
                 SizedBox(height: r.s(8)),
                 ...List.generate(
                     optionCtrls.length,
@@ -1336,7 +1337,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         Icon(Icons.add_rounded,
                             size: r.s(16), color: AppTheme.primaryColor),
                         SizedBox(width: r.s(4)),
-                        Text('Adicionar Opção',
+                        Text(s.addOptionLabel,
                             style: TextStyle(
                                 color: AppTheme.primaryColor,
                                 fontSize: r.fs(13),
@@ -1351,7 +1352,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           actions: [
             TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: Text('Cancelar',
+                child: Text(s.cancel,
                     style: TextStyle(color: Colors.grey[500]))),
             ElevatedButton(
               onPressed: () {
@@ -1376,7 +1377,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(r.s(10))),
               ),
-              child: const Text('Enviar',
+              child: Text(s.send,
                   style: TextStyle(
                       color: Colors.white, fontWeight: FontWeight.w700)),
             ),
@@ -1400,7 +1401,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(r.s(16))),
-        title: Text('Compartilhar Link',
+        title: Text(s.shareLinkTitle,
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w700)),
         content:
@@ -1409,7 +1410,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           TextButton(
               onPressed: () => Navigator.pop(ctx),
               child:
-                  Text('Cancelar', style: TextStyle(color: Colors.grey[500]))),
+                  Text(s.cancel, style: TextStyle(color: Colors.grey[500]))),
           ElevatedButton(
             onPressed: () {
               final url = linkCtrl.text;
@@ -1422,7 +1423,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(r.s(10))),
             ),
-            child: const Text('Enviar',
+            child: Text(s.send,
                 style: TextStyle(
                     color: Colors.white, fontWeight: FontWeight.w700)),
           ),
@@ -1466,7 +1467,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         backgroundColor: context.surfaceColor,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(r.s(16))),
-        title: Text('Editar Mensagem',
+        title: Text(s.editMessage,
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w700)),
         content: Container(
@@ -1480,7 +1481,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             autofocus: true,
             style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
             decoration: InputDecoration(
-              hintText: 'Editar mensagem...',
+              hintText: s.editMessageHint,
               hintStyle: TextStyle(color: Colors.grey[700], fontSize: r.fs(14)),
               border: InputBorder.none,
               contentPadding:
@@ -1496,7 +1497,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               Navigator.pop(ctx);
               editController.dispose();
             },
-            child: Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
+            child: Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -1523,7 +1524,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Erro ao editar. Tente novamente.'),
+                        content: Text(s.errorEditingTryAgain),
                         backgroundColor: AppTheme.errorColor,
                       ),
                     );
@@ -1537,7 +1538,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(r.s(10))),
             ),
-            child: const Text('Salvar',
+            child: Text(s.save,
                 style: TextStyle(
                     color: Colors.white, fontWeight: FontWeight.w700)),
           ),
@@ -1571,7 +1572,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       case ChatMessageAction.copy:
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Copiado!'),
+            content: Text(s.copiedMsg),
             backgroundColor: AppTheme.primaryColor,
           ),
         );
@@ -1604,7 +1605,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Erro ao apagar. Tente novamente.'),
+                content: Text(s.errorDeletingTryAgain),
                 backgroundColor: AppTheme.errorColor,
               ),
             );
@@ -1622,7 +1623,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               setState(() {
                 _messages[idx] = _messages[idx].copyWith(
                   type: 'system_deleted',
-                  content: 'Mensagem apagada',
+                  content: s.messageDeleted,
                   isDeleted: true,
                 );
               });
@@ -1632,7 +1633,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Erro ao apagar. Tente novamente.'),
+                content: Text(s.errorDeletingTryAgain),
                 backgroundColor: AppTheme.errorColor,
               ),
             );
@@ -1642,7 +1643,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       case ChatMessageAction.report:
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Denúncia enviada. Obrigado!'),
+            content: Text(s.reportSubmittedThankYou),
             backgroundColor: AppTheme.primaryColor,
           ),
         );
@@ -1677,7 +1678,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            Text('Mensagens Fixadas',
+            Text(s.pinnedMessages,
                 style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: r.fs(16),
@@ -1708,9 +1709,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final currentUserId = SupabaseService.currentUserId;
-    final threadTitle = _threadInfo?['title'] as String? ?? 'Chat';
+    final threadTitle = _threadInfo?['title'] as String? ?? s.chat;
     final threadType = _threadInfo?['type'] as String? ?? 'group';
     final memberCount = (_threadInfo?['member_count'] ??
             _threadInfo?['members_count']) as int? ??
@@ -1822,13 +1824,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               }
             },
             itemBuilder: (ctx) => [
-              _buildPopupItem(r, 'members', Icons.people_rounded, 'Membros'),
+              _buildPopupItem(r, 'members', Icons.people_rounded, s.members),
               _buildPopupItem(
-                  r, 'settings', Icons.settings_rounded, 'Configurações'),
+                  r, 'settings', Icons.settings_rounded, s.settings),
               _buildPopupItem(
-                  r, 'background', Icons.wallpaper_rounded, 'Fundo do Chat'),
+                  r, 'background', Icons.wallpaper_rounded, s.chatBackground),
               _buildPopupItem(
-                  r, 'leave', Icons.exit_to_app_rounded, 'Sair do Chat',
+                  r, 'leave', Icons.exit_to_app_rounded, s.leaveChatTitle,
                   isDestructive: true),
             ],
           ),
@@ -1903,7 +1905,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       Expanded(
                         child: Text(
                           _pinnedMessages.first['content'] as String? ??
-                              'Mensagem fixada',
+                              s.messagePinned,
                           style: TextStyle(
                               fontSize: r.fs(12), color: Colors.grey[400]),
                           maxLines: 1,
@@ -1939,13 +1941,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                     size: r.s(32), color: Colors.grey[700]),
                               ),
                               SizedBox(height: r.s(16)),
-                              Text('Nenhuma mensagem ainda',
+                              Text(s.noMessagesYet,
                                   style: TextStyle(
                                       color: Colors.grey[400],
                                       fontSize: r.fs(15),
                                       fontWeight: FontWeight.w600)),
                               SizedBox(height: r.s(6)),
-                              Text('Comece a conversa!',
+                              Text(s.startConversation2,
                                   style: TextStyle(
                                       color: Colors.grey[600],
                                       fontSize: r.fs(12))),
@@ -2015,7 +2017,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       Expanded(
                         child: Text(
                           isPublic
-                              ? 'Você não é membro deste chat.'
+                              ? s.notMemberChat
                               : 'Acesso restrito. Aguarde um convite.',
                           style: TextStyle(
                               color: Colors.grey[400], fontSize: r.fs(13)),
@@ -2051,7 +2053,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
                                         const SnackBar(
-                                          content: Text('Você entrou no chat!'),
+                                          content: Text(s.joinedChat),
                                           backgroundColor:
                                               AppTheme.primaryColor,
                                           behavior: SnackBarBehavior.floating,
@@ -2067,7 +2069,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                           .showSnackBar(
                                         const SnackBar(
                                           content: Text(
-                                              'Erro ao entrar no chat. Tente novamente.'),
+                                              s.errorJoiningChat),
                                           backgroundColor: AppTheme.errorColor,
                                           behavior: SnackBarBehavior.floating,
                                         ),
@@ -2089,7 +2091,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                   child: const CircularProgressIndicator(
                                       strokeWidth: 2, color: Colors.white),
                                 )
-                              : Text('Entrar no Chat',
+                              : Text(s.joinChat,
                                   style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w700,
@@ -2135,7 +2137,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content:
-                                Text('Erro ao enviar áudio. Tente novamente.'),
+                                Text(s.errorSendingAudio),
                             backgroundColor: AppTheme.errorColor,
                             behavior: SnackBarBehavior.floating,
                           ),
@@ -2184,7 +2186,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     recentTabBehavior: RecentTabBehavior.RECENT,
                     recentsLimit: 20,
                     noRecents: Text(
-                      'Nenhum emoji recente',
+                      s.noRecentEmoji,
                       style: TextStyle(color: Colors.grey[500], fontSize: 12),
                     ),
                   ),
@@ -2251,13 +2253,13 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           context: context,
           builder: (ctx) => AlertDialog(
             backgroundColor: context.surfaceColor,
-            title: Text('Nomear link',
+            title: Text(s.nameLink,
                 style: TextStyle(
                     color: context.textPrimary, fontWeight: FontWeight.w700)),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('Dê um nome ao link (opcional):',
+                Text(s.nameLinkOptional,
                     style:
                         TextStyle(color: context.textSecondary, fontSize: 13)),
                 const SizedBox(height: 8),
@@ -2266,7 +2268,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   autofocus: true,
                   style: TextStyle(color: context.textPrimary),
                   decoration: InputDecoration(
-                    hintText: 'Ex: Clique aqui',
+                    hintText: s.clickHereExample,
                     hintStyle: TextStyle(color: Colors.grey[600]),
                     border: const OutlineInputBorder(),
                   ),
@@ -2277,7 +2279,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
                 child:
-                    Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
+                    Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
               ),
               TextButton(
                 onPressed: () {
@@ -2290,7 +2292,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                   );
                   Navigator.pop(ctx);
                 },
-                child: const Text('Confirmar',
+                child: Text(s.confirm,
                     style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontWeight: FontWeight.w700)),
@@ -2419,6 +2421,7 @@ class _ChatMembersSheetState extends State<_ChatMembersSheet> {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Column(
       children: [
@@ -2435,7 +2438,7 @@ class _ChatMembersSheetState extends State<_ChatMembersSheet> {
           padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
           child: Row(
             children: [
-              Text('Membros do Chat',
+              Text(s.chatMembers,
                   style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: r.fs(16),
@@ -2454,7 +2457,7 @@ class _ChatMembersSheetState extends State<_ChatMembersSheet> {
                       color: AppTheme.primaryColor, strokeWidth: 2))
               : _members.isEmpty
                   ? Center(
-                      child: Text('Nenhum membro encontrado',
+                      child: Text(s.noMemberFound,
                           style: TextStyle(
                               color: Colors.grey[500], fontSize: r.fs(13))),
                     )
@@ -2467,7 +2470,7 @@ class _ChatMembersSheetState extends State<_ChatMembersSheet> {
                         final profile =
                             member['profiles'] as Map<String, dynamic>? ?? {};
                         final nickname =
-                            profile['nickname'] as String? ?? 'Usuário';
+                            profile['nickname'] as String? ?? s.user;
                         final iconUrl = profile['icon_url'] as String?;
                         final role = member['role'] as String?;
 

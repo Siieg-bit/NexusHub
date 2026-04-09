@@ -79,7 +79,7 @@ class Validators {
       [String? message]) {
     return (value) {
       if (value != password) {
-        return message ?? 'As senhas não coincidem';
+        return message ?? s.passwordsDoNotMatch2;
       }
       return null;
     };
@@ -89,16 +89,16 @@ class Validators {
   static String? Function(String?) nickname([String? message]) {
     return (value) {
       if (value == null || value.trim().isEmpty) {
-        return 'Nickname é obrigatório';
+        return s.nicknameRequired;
       }
       if (value.trim().length < 3) {
-        return 'Nickname deve ter no mínimo 3 caracteres';
+        return s.nicknameMinLength;
       }
       if (value.trim().length > 20) {
-        return 'Nickname deve ter no máximo 20 caracteres';
+        return s.nicknameMaxLength;
       }
       if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(value.trim())) {
-        return 'Nickname pode conter apenas letras, números e _';
+        return s.nicknameValidChars;
       }
       return null;
     };
@@ -108,13 +108,13 @@ class Validators {
   static String? Function(String?) communityName([String? message]) {
     return (value) {
       if (value == null || value.trim().isEmpty) {
-        return 'Nome da comunidade é obrigatório';
+        return s.communityNameRequired;
       }
       if (value.trim().length < 3) {
-        return 'Nome deve ter no mínimo 3 caracteres';
+        return s.nameMinLength;
       }
       if (value.trim().length > 50) {
-        return 'Nome deve ter no máximo 50 caracteres';
+        return s.nameMaxLength;
       }
       return null;
     };
@@ -128,7 +128,7 @@ class Validators {
         r'^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$',
       );
       if (!regex.hasMatch(value.trim())) {
-        return message ?? 'URL inválida';
+        return message ?? s.invalidUrl;
       }
       return null;
     };
@@ -138,11 +138,11 @@ class Validators {
   static String? Function(String?) positiveInt([String? message]) {
     return (value) {
       if (value == null || value.trim().isEmpty) {
-        return message ?? 'Valor é obrigatório';
+        return message ?? s.valueRequired;
       }
       final n = int.tryParse(value.trim());
       if (n == null || n <= 0) {
-        return message ?? 'Deve ser um número positivo';
+        return message ?? s.positiveNumber;
       }
       return null;
     };
@@ -153,11 +153,11 @@ class Validators {
       [String? message]) {
     return (value) {
       if (value == null || value.trim().isEmpty) {
-        return 'Valor é obrigatório';
+        return s.valueRequired;
       }
       final n = int.tryParse(value.trim());
       if (n == null || n < min || n > max) {
-        return message ?? 'Deve ser entre $min e $max';
+        return message ?? s.valueRange;
       }
       return null;
     };

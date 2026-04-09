@@ -1,19 +1,21 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Carteira / Minha Carteira — Estilo Amino original.
 /// Header azul celeste brilhante com moeda dourada, corpo claro/branco.
 /// Sem misturar XP/Nível. Foco financeiro: saldo, assinaturas, histórico, loja.
-class WalletScreen extends StatefulWidget {
+class WalletScreen extends ConsumerStatefulWidget {
   const WalletScreen({super.key});
 
   @override
   State<WalletScreen> createState() => _WalletScreenState();
 }
 
-class _WalletScreenState extends State<WalletScreen> {
+class _WalletScreenState extends ConsumerState<WalletScreen> {
   int _coins = 0;
   bool _isLoading = true;
   List<Map<String, dynamic>> _transactions = [];
@@ -67,7 +69,8 @@ class _WalletScreenState extends State<WalletScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       // Corpo com fundo cinza claro (estilo Amino original)
@@ -118,7 +121,7 @@ class _WalletScreenState extends State<WalletScreen> {
                               TextButton(
                                 onPressed: () => context.push('/coin-shop'),
                                 child: Text(
-                                  'Comprar',
+                                  s.buy,
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w600,
@@ -208,7 +211,7 @@ class _WalletScreenState extends State<WalletScreen> {
                         _WalletMenuTile(
                           icon: Icons.card_membership_rounded,
                           iconColor: const Color(0xFF4CAF50),
-                          title: 'Assinaturas',
+                          title: s.subscriptions,
                           subtitle: 'Gerencie seu Amino+',
                           onTap: () => context.push('/store'),
                         ),
@@ -217,7 +220,7 @@ class _WalletScreenState extends State<WalletScreen> {
                         _WalletMenuTile(
                           icon: Icons.history_rounded,
                           iconColor: const Color(0xFF2196F3),
-                          title: 'Histórico',
+                          title: s.history,
                           subtitle: '${_transactions.length} transações',
                           onTap: () => _showHistory(),
                         ),
@@ -235,8 +238,8 @@ class _WalletScreenState extends State<WalletScreen> {
                         _WalletMenuTile(
                           icon: Icons.volunteer_activism_rounded,
                           iconColor: const Color(0xFFE91E63),
-                          title: 'Enviar Props',
-                          subtitle: 'Reconheça um membro',
+                          title: s.sendProps,
+                          subtitle: s.recognizeMember,
                           onTap: () => _showPropsDialog(),
                         ),
 
@@ -331,7 +334,7 @@ class _WalletScreenState extends State<WalletScreen> {
             ),
             SizedBox(height: r.s(16)),
             Text(
-              'Histórico de Transações',
+              s.transactionHistory,
               style: TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: r.fs(16),
@@ -342,7 +345,7 @@ class _WalletScreenState extends State<WalletScreen> {
             Expanded(
               child: _transactions.isEmpty
                   ? Center(
-                      child: Text('Nenhuma transação ainda',
+                      child: Text(s.noTransactionsYet,
                           style: TextStyle(color: Colors.grey[500])),
                     )
                   : ListView.separated(
@@ -437,7 +440,7 @@ class _WalletScreenState extends State<WalletScreen> {
               controller: userIdCtrl,
               style: const TextStyle(color: Color(0xFF333333)),
               decoration: InputDecoration(
-                labelText: 'Amino ID do destinatário',
+                labelText: s.recipientAminoId,
                 labelStyle: TextStyle(color: Colors.grey[500]),
                 prefixIcon:
                     const Icon(Icons.person_rounded, color: Color(0xFF00AAFF)),
@@ -478,7 +481,7 @@ class _WalletScreenState extends State<WalletScreen> {
           TextButton(
               onPressed: () => Navigator.pop(ctx),
               child:
-                  Text('Cancelar', style: TextStyle(color: Colors.grey[500]))),
+                  Text(s.cancel, style: TextStyle(color: Colors.grey[500]))),
           GestureDetector(
             onTap: () async {
               final amount = int.tryParse(amountCtrl.text) ?? 0;
@@ -486,13 +489,13 @@ class _WalletScreenState extends State<WalletScreen> {
               Navigator.pop(ctx);
               if (amount <= 0 || targetAminoId.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Dados inválidos')),
+                  const SnackBar(content: Text(s.invalidData)),
                 );
                 return;
               }
               if (amount > _coins) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Saldo insuficiente')),
+                  const SnackBar(content: Text(s.insufficientBalance)),
                 );
                 return;
               }
@@ -506,14 +509,14 @@ class _WalletScreenState extends State<WalletScreen> {
                 await _loadWallet();
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('$amount coins transferidos!')),
+                    SnackBar(content: Text(s.amountCoinsTransferred(amount))),
                   );
                 }
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                        content: Text('Ocorreu um erro. Tente novamente.')),
+                        content: Text(s.anErrorOccurredTryAgain)),
                   );
                 }
               }
@@ -555,7 +558,7 @@ class _WalletScreenState extends State<WalletScreen> {
             children: [
               Icon(Icons.volunteer_activism_rounded, color: Color(0xFFE91E63)),
               SizedBox(width: r.s(8)),
-              Text('Enviar Props',
+              Text(s.sendProps,
                   style: TextStyle(
                       color: Color(0xFF333333), fontWeight: FontWeight.w800)),
             ],
@@ -567,7 +570,7 @@ class _WalletScreenState extends State<WalletScreen> {
                 controller: userIdCtrl,
                 style: const TextStyle(color: Color(0xFF333333)),
                 decoration: InputDecoration(
-                  labelText: 'Amino ID do usuário',
+                  labelText: s.userAminoId,
                   labelStyle: TextStyle(color: Colors.grey[500]),
                   prefixIcon: const Icon(Icons.person_rounded,
                       color: Color(0xFF00AAFF)),
@@ -609,7 +612,7 @@ class _WalletScreenState extends State<WalletScreen> {
                 }).toList(),
               ),
               SizedBox(height: r.s(8)),
-              Text('Custo: $selectedAmount coins',
+              Text(s.costCoinsLabel(selectedAmount),
                   style:
                       TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
             ],
@@ -617,7 +620,7 @@ class _WalletScreenState extends State<WalletScreen> {
           actions: [
             TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: Text('Cancelar',
+                child: Text(s.cancel,
                     style: TextStyle(color: Colors.grey[500]))),
             GestureDetector(
               onTap: () async {
@@ -626,7 +629,7 @@ class _WalletScreenState extends State<WalletScreen> {
                 if (targetAminoId.isEmpty) return;
                 if (selectedAmount > _coins) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Saldo insuficiente')),
+                    const SnackBar(content: Text(s.insufficientBalance)),
                   );
                   return;
                 }
@@ -641,14 +644,14 @@ class _WalletScreenState extends State<WalletScreen> {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                          content: Text('$selectedAmount props enviados!')),
+                          content: Text(s.propsAmountSent(selectedAmount))),
                     );
                   }
                 } catch (e) {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                          content: Text('Ocorreu um erro. Tente novamente.')),
+                          content: Text(s.anErrorOccurredTryAgain)),
                     );
                   }
                 }
@@ -662,7 +665,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   ),
                   borderRadius: BorderRadius.circular(r.s(20)),
                 ),
-                child: const Text('Enviar',
+                child: Text(s.send,
                     style: TextStyle(
                         color: Colors.white, fontWeight: FontWeight.w700)),
               ),
@@ -677,7 +680,7 @@ class _WalletScreenState extends State<WalletScreen> {
 // =============================================================================
 // WALLET MENU TILE — Item de menu estilo Amino (fundo branco, ícone colorido)
 // =============================================================================
-class _WalletMenuTile extends StatelessWidget {
+class _WalletMenuTile extends ConsumerWidget {
   final IconData icon;
   final Color iconColor;
   final String title;
@@ -693,7 +696,8 @@ class _WalletMenuTile extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: onTap,

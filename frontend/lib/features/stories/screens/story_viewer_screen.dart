@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -5,6 +6,7 @@ import 'package:video_player/video_player.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Story Viewer — Visualizador fullscreen de stories estilo Instagram/Amino.
 ///
@@ -15,7 +17,7 @@ import '../../../core/utils/responsive.dart';
 ///   - Auto-advance após duração
 ///   - Registro de visualização
 ///   - Reações rápidas
-class StoryViewerScreen extends StatefulWidget {
+class StoryViewerScreen extends ConsumerStatefulWidget {
   final List<Map<String, dynamic>> stories;
   final Map<String, dynamic> authorProfile;
 
@@ -29,7 +31,7 @@ class StoryViewerScreen extends StatefulWidget {
   State<StoryViewerScreen> createState() => _StoryViewerScreenState();
 }
 
-class _StoryViewerScreenState extends State<StoryViewerScreen>
+class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
     with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   late AnimationController _progressController;
@@ -188,7 +190,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('$reaction enviado!'),
+            content: Text(s.reactionSent(reaction)),
             duration: const Duration(seconds: 1),
             behavior: SnackBarBehavior.floating,
             backgroundColor: context.surfaceColor,
@@ -207,11 +209,12 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
     final diff = DateTime.now().difference(date);
     if (diff.inHours > 0) return '${diff.inHours}h';
     if (diff.inMinutes > 0) return '${diff.inMinutes}m';
-    return 'agora';
+    return s.now;
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final story = widget.stories[_currentIndex];
     final type = story['type'] as String? ?? 'image';
@@ -220,7 +223,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
     final bgColor = story['background_color'] as String? ?? '#000000';
     final username = (widget.authorProfile['nickname'] ??
             widget.authorProfile['username']) as String? ??
-        'Anônimo';
+        s.anonymous;
     final avatarUrl = (widget.authorProfile['icon_url'] ??
         widget.authorProfile['avatar_url']) as String?;
     final createdAt = story['created_at'] as String?;
@@ -525,7 +528,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen>
   Color _parseColor(String hex) {
     try {
       final h = hex.replaceFirst('#', '');
-      return Color(int.parse('FF$h', radix: 16));
+      return Color(int.parse(s.ffH, radix: 16));
     } catch (_) {
       return Colors.black;
     }

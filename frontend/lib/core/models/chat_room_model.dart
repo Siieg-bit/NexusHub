@@ -84,7 +84,7 @@ class ChatRoomModel {
       id: json['id'] as String,
       communityId: json['community_id'] as String?,
       type: json['type'] as String? ?? 'public',
-      title: json['title'] as String? ?? 'Chat',
+      title: json['title'] as String? ?? s.chat2,
       iconUrl: json['icon_url'] as String?,
       description: json['description'] as String?,
       backgroundUrl: json['background_url'] as String?,

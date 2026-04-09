@@ -8,6 +8,7 @@ import '../../../core/utils/amino_animations.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // PROVIDER: Carrega todos os membros da comunidade
@@ -37,9 +38,9 @@ class CommunityMembersScreen extends ConsumerWidget {
       case 'agent':
         return 'Agent';
       case 'leader':
-        return 'Leader';
+        return s.leader2;
       case 'curator':
-        return 'Curator';
+        return s.curator2;
       case 'moderator':
         return 'Moderator';
       default:
@@ -79,6 +80,7 @@ class CommunityMembersScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final membersAsync = ref.watch(allCommunityMembersProvider(communityId));
 
@@ -92,7 +94,7 @@ class CommunityMembersScreen extends ConsumerWidget {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          'Membros',
+          s.members,
           style: TextStyle(
             color: context.textPrimary,
             fontSize: r.fs(18),
@@ -112,7 +114,7 @@ class CommunityMembersScreen extends ConsumerWidget {
         data: (members) {
           if (members.isEmpty) {
             return Center(
-              child: Text('Nenhum membro',
+              child: Text(s.noMembers,
                   style: TextStyle(color: context.textSecondary)),
             );
           }
@@ -166,7 +168,7 @@ class CommunityMembersScreen extends ConsumerWidget {
                 // Líderes
                 if (leaders.isNotEmpty) ...[
                   _SectionHeader(
-                    title: 'LÍDERES',
+                    title: s.leadersTitle,
                     count: leaders.length,
                     color: AppTheme.errorColor,
                   ),
@@ -248,6 +250,7 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Padding(
       padding: EdgeInsets.only(left: r.s(4), bottom: r.s(8), top: r.s(4)),
@@ -301,10 +304,11 @@ class _MemberTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final profile = member['profiles'] as Map<String, dynamic>? ?? {};
     final userId = profile['id'] as String? ?? member['user_id'] as String?;
-    final nickname = profile['nickname'] as String? ?? 'Usuário';
+    final nickname = profile['nickname'] as String? ?? s.user;
     final avatarUrl = profile['icon_url'] as String?;
     final reputation = member['local_reputation'] as int? ?? 0;
     final level = member['local_level'] as int? ?? calculateLevel(reputation);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/l10n/locale_provider.dart';
 
 /// ============================================================================
 /// ErrorHandler — Tratamento padronizado de erros para o NexusHub.
@@ -111,44 +112,44 @@ class ErrorHandler {
     final msg = error.toString().toLowerCase();
 
     if (msg.contains('socketexception') || msg.contains('network')) {
-      return 'Sem conexão com a internet. Verifique sua rede.';
+      return s.noInternetConnection;
     }
     if (msg.contains('timeout')) {
-      return 'A operação demorou muito. Tente novamente.';
+      return s.operationTimeout;
     }
     if (msg.contains('permission') || msg.contains('denied')) {
-      return 'Você não tem permissão para realizar esta ação.';
+      return s.noPermission;
     }
 
-    return 'Algo deu errado. Tente novamente.';
+    return s.somethingWentWrong2;
   }
 
   static String _translateAuthError(AuthException error) {
     final msg = error.message.toLowerCase();
 
     if (msg.contains('invalid login')) {
-      return 'Email ou senha incorretos.';
+      return s.incorrectEmailOrPassword;
     }
     if (msg.contains('email not confirmed')) {
-      return 'Confirme seu email antes de fazer login.';
+      return s.verifyEmailBeforeLogin;
     }
     if (msg.contains('user already registered')) {
-      return 'Este email já está cadastrado.';
+      return s.emailAlreadyRegistered;
     }
     if (msg.contains('password') && msg.contains('weak')) {
-      return 'Senha muito fraca. Use pelo menos 8 caracteres com letras e números.';
+      return s.weakPassword;
     }
     if (msg.contains('rate limit') || msg.contains('too many')) {
-      return 'Muitas tentativas. Aguarde alguns minutos.';
+      return s.tooManyAttempts;
     }
     if (msg.contains('invalid email')) {
-      return 'Email inválido.';
+      return s.invalidEmail2;
     }
     if (msg.contains('session expired') || msg.contains('refresh_token')) {
-      return 'Sua sessão expirou. Faça login novamente.';
+      return s.sessionExpired2;
     }
 
-    return 'Erro de autenticação: ${error.message}';
+    return s.authError;
   }
 
   static String _translatePostgrestError(PostgrestException error) {
@@ -157,15 +158,15 @@ class ErrorHandler {
 
     // Unique constraint violation
     if (code == '23505') {
-      if (msg.contains('nickname')) return 'Este nickname já está em uso.';
-      if (msg.contains('email')) return 'Este email já está cadastrado.';
+      if (msg.contains('nickname')) return s.nicknameInUse;
+      if (msg.contains('email')) return s.emailAlreadyRegistered;
       if (msg.contains('community_members'))
-        return 'Você já é membro desta comunidade.';
-      return 'Este item já existe.';
+        return s.alreadyMemberCommunity;
+      return s.itemAlreadyExists;
     }
     // Foreign key violation
     if (code == '23503') {
-      return 'Referência inválida. O item pode ter sido removido.';
+      return s.invalidReference;
     }
     // Not null violation
     if (code == '23502') {
@@ -176,23 +177,23 @@ class ErrorHandler {
       if (msg.contains('coins') || msg.contains('balance')) {
         return 'Saldo insuficiente.';
       }
-      return 'Valor inválido.';
+      return s.invalidValue;
     }
     // RLS policy violation
     if (code == '42501' || msg.contains('policy')) {
-      return 'Você não tem permissão para realizar esta ação.';
+      return s.noPermission;
     }
     // Function not found
     if (code == '42883') {
-      return 'Funcionalidade temporariamente indisponível.';
+      return s.featureTemporarilyUnavailable;
     }
     // Raised exception (from RPCs)
     if (code == 'P0001') {
       // Tentar extrair mensagem amigável
       if (msg.contains('insufficient')) return 'Saldo insuficiente.';
       if (msg.contains('not a member'))
-        return 'Você não é membro desta comunidade.';
-      if (msg.contains('already')) return 'Esta ação já foi realizada.';
+        return s.notMemberCommunity;
+      if (msg.contains('already')) return s.actionAlreadyPerformed;
       if (msg.contains('rate limit')) return 'Muitas tentativas. Aguarde.';
       return error.message;
     }
@@ -207,13 +208,13 @@ class ErrorHandler {
       return 'Arquivo muito grande. Reduza o tamanho e tente novamente.';
     }
     if (msg.contains('not found')) {
-      return 'Arquivo não encontrado.';
+      return s.fileNotFoundMsg;
     }
     if (msg.contains('permission') || msg.contains('policy')) {
-      return 'Sem permissão para fazer upload neste local.';
+      return s.noUploadPermission;
     }
     if (msg.contains('mime') || msg.contains('type')) {
-      return 'Tipo de arquivo não permitido.';
+      return s.fileTypeNotAllowed;
     }
 
     return 'Erro no upload: ${error.message}';

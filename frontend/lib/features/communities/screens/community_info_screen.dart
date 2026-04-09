@@ -9,6 +9,7 @@ import '../../../core/models/community_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../providers/community_shared_providers.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// ============================================================================
 /// CommunityInfoScreen — Tela de detalhes/informações da comunidade.
@@ -116,7 +117,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
         ref.invalidate(userCommunitiesProvider);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Você entrou em "${_community?.name ?? ''}"!'),
+            content: Text(s.joinedCommunityName(_community?.name ?? '')),
             backgroundColor: AppTheme.accentColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -152,6 +153,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
 
     if (_isLoading) {
@@ -184,7 +186,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
         ),
         body: Center(
           child: Text(
-            'Comunidade não encontrada.',
+            s.communityNotFound,
             style: TextStyle(color: context.textSecondary, fontSize: r.fs(14)),
           ),
         ),
@@ -233,7 +235,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
                   Clipboard.setData(ClipboardData(text: link));
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Link copiado!'),
+                      content: Text(s.linkCopied),
                       behavior: SnackBarBehavior.floating,
                       duration: Duration(seconds: 2),
                     ),
@@ -581,7 +583,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
                       context,
                       'Tipo de acesso',
                       community.joinType == 'open'
-                          ? 'Aberta'
+                          ? s.open
                           : community.joinType == 'request'
                               ? 'Solicitar entrada'
                               : 'Somente convite'),
@@ -676,13 +678,13 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
   String _languageLabel(String code) {
     switch (code.toLowerCase()) {
       case 'pt':
-        return 'Português';
+        return s.portugueseLang;
       case 'en':
         return 'English';
       case 'es':
-        return 'Español';
+        return s.spanishLang;
       case 'fr':
-        return 'Français';
+        return s.frenchLang;
       case 'de':
         return 'Deutsch';
       case 'ja':

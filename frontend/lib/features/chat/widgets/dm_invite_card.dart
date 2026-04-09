@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/providers/dm_invite_provider.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Card que mostra um convite de DM pendente com botões aceitar/recusar.
 class DmInviteCard extends ConsumerWidget {
@@ -19,10 +20,11 @@ class DmInviteCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final thread = invite['chat_threads'] as Map<String, dynamic>? ?? {};
     final threadId = invite['thread_id'] as String? ?? '';
-    final senderName = thread['last_message_author'] as String? ?? 'Alguém';
+    final senderName = thread['last_message_author'] as String? ?? s.someone;
     final preview = thread['last_message_preview'] as String?;
 
     return Container(
@@ -100,7 +102,7 @@ class DmInviteCard extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(r.s(10))),
                     padding: EdgeInsets.symmetric(vertical: r.s(10)),
                   ),
-                  child: Text('Recusar',
+                  child: Text(s.decline,
                       style: TextStyle(
                           color: Colors.grey[400], fontSize: r.fs(13))),
                 ),
@@ -125,7 +127,7 @@ class DmInviteCard extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(r.s(10))),
                     padding: EdgeInsets.symmetric(vertical: r.s(10)),
                   ),
-                  child: const Text('Aceitar',
+                  child: Text(s.accept,
                       style: TextStyle(
                           color: Colors.white, fontWeight: FontWeight.w600)),
                 ),

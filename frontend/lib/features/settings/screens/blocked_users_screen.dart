@@ -1,18 +1,20 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Tela de Usuários Bloqueados — lista e gerencia bloqueios.
-class BlockedUsersScreen extends StatefulWidget {
+class BlockedUsersScreen extends ConsumerStatefulWidget {
   const BlockedUsersScreen({super.key});
 
   @override
   State<BlockedUsersScreen> createState() => _BlockedUsersScreenState();
 }
 
-class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
+class _BlockedUsersScreenState extends ConsumerState<BlockedUsersScreen> {
   List<Map<String, dynamic>> _blockedUsers = [];
   bool _isLoading = true;
 
@@ -52,14 +54,14 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
           side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
         title: Text(
-          'Desbloquear Usuário',
+          s.unblockUser,
           style: TextStyle(
             color: context.textPrimary,
             fontWeight: FontWeight.w800,
           ),
         ),
         content: Text(
-          'Deseja desbloquear $nickname?',
+          s.confirmUnblockUser,
           style: TextStyle(color: Colors.grey[500]),
         ),
         actions: [
@@ -72,7 +74,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                 borderRadius: BorderRadius.circular(r.s(20)),
               ),
               child: Text(
-                'Cancelar',
+                s.cancel,
                 style: TextStyle(
                   color: Colors.grey[500],
                   fontWeight: FontWeight.w700,
@@ -99,7 +101,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                 ],
               ),
               child: const Text(
-                'Desbloquear',
+                s.unblock,
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w800,
@@ -122,7 +124,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('$nickname desbloqueado',
+            content: Text(s.nicknameUnblocked(nickname),
                 style: TextStyle(color: context.textPrimary)),
             backgroundColor: context.surfaceColor,
             behavior: SnackBarBehavior.floating,
@@ -137,7 +139,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ocorreu um erro. Tente novamente.',
+            content: Text(s.anErrorOccurredTryAgain,
                 style: const TextStyle(color: Colors.white)),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
@@ -151,7 +153,8 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -160,7 +163,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
         elevation: 0,
         iconTheme: IconThemeData(color: context.textPrimary),
         title: Text(
-          'Usuários Bloqueados',
+          s.blockedUsers2,
           style: TextStyle(
             color: context.textPrimary,
             fontWeight: FontWeight.w800,
@@ -186,7 +189,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                       ),
                       SizedBox(height: r.s(16)),
                       Text(
-                        'Nenhum usuário bloqueado',
+                        s.noBlockedUsers,
                         style: TextStyle(
                           color: context.textPrimary,
                           fontSize: r.fs(18),
@@ -195,8 +198,8 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                       ),
                       SizedBox(height: r.s(8)),
                       Text(
-                        'Usuários bloqueados não podem ver seu perfil\n'
-                        'nem enviar mensagens para você.',
+                        s.blockedUsersCannotSeeProfile
+                        s.orSendMessages,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.grey[500],
@@ -214,7 +217,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                     final blocked =
                         block['blocked'] as Map<String, dynamic>? ?? {};
                     final nickname =
-                        blocked['nickname'] as String? ?? 'Usuário';
+                        blocked['nickname'] as String? ?? s.user;
                     final iconUrl = blocked['icon_url'] as String?;
                     final blockedAt = block['created_at'] != null
                         ? DateTime.tryParse(
@@ -254,7 +257,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                                 SizedBox(height: r.s(4)),
                                 if (blockedAt != null)
                                   Text(
-                                    'Bloqueado em ${blockedAt.day}/${blockedAt.month}/${blockedAt.year}',
+                                    s.blockedOnDate,
                                     style: TextStyle(
                                       color: Colors.grey[500],
                                       fontSize: r.fs(12),
@@ -281,7 +284,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                                 ),
                               ),
                               child: Text(
-                                'Desbloquear',
+                                s.unblock,
                                 style: TextStyle(
                                   color: AppTheme.errorColor,
                                   fontSize: r.fs(12),

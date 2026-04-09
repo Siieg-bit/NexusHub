@@ -7,6 +7,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/utils/amino_animations.dart';
 import '../providers/auth_provider.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Tela de cadastro — visual Amino Apps (fundo escuro, inputs arredondados, verde).
 class SignupScreen extends ConsumerStatefulWidget {
@@ -38,7 +39,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     if (_formKey.currentState?.validate() != true) return;
     if (!_acceptedTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Aceite os termos de uso para continuar')),
+        const SnackBar(content: Text(s.acceptTermsToContinue)),
       );
       return;
     }
@@ -68,11 +69,11 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16)),
             title: const Text(
-              'Verifique seu email',
+              s.checkYourEmail,
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             content: Text(
-              'Enviamos um link de confirmação para $email.\n\n'
+              s.confirmationEmailSent(email)
               'Abra o email e clique no link para ativar sua conta.',
             ),
             actions: [
@@ -93,6 +94,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final authState = ref.watch(authProvider);
 
@@ -160,13 +162,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   delay: const Duration(milliseconds: 80),
                   child: _AminoTextField(
                     controller: _nicknameController,
-                    hint: 'Nickname',
+                    hint: s.nicknameHint,
                     icon: Icons.person_outline_rounded,
                     validator: (value) {
                       if (value == null || value.isEmpty)
-                        return 'Escolha um nickname';
-                      if (value.length < 3) return 'Mínimo 3 caracteres';
-                      if (value.length > 30) return 'Máximo 30 caracteres';
+                        return s.chooseANickname;
+                      if (value.length < 3) return s.min3Chars;
+                      if (value.length > 30) return s.max30Chars;
                       return null;
                     },
                   ),
@@ -178,13 +180,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   delay: const Duration(milliseconds: 120),
                   child: _AminoTextField(
                     controller: _emailController,
-                    hint: 'Email',
+                    hint: s.emailHint,
                     icon: Icons.email_outlined,
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
                       if (value == null || value.isEmpty)
-                        return 'Informe seu email';
-                      if (!value.contains('@')) return 'Email inválido';
+                        return s.enterYourEmail;
+                      if (!value.contains('@')) return s.invalidEmail;
                       return null;
                     },
                   ),
@@ -196,7 +198,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   delay: const Duration(milliseconds: 160),
                   child: _AminoTextField(
                     controller: _passwordController,
-                    hint: 'Senha',
+                    hint: s.password,
                     icon: Icons.lock_outline_rounded,
                     obscureText: _obscurePassword,
                     suffixIcon: GestureDetector(
@@ -212,8 +214,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty)
-                        return 'Crie uma senha';
-                      if (value.length < 6) return 'Mínimo 6 caracteres';
+                        return s.createAPassword;
+                      if (value.length < 6) return s.minimum6Characters;
                       return null;
                     },
                   ),
@@ -230,7 +232,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     obscureText: true,
                     validator: (value) {
                       if (value != _passwordController.text)
-                        return 'As senhas não coincidem';
+                        return s.passwordsDoNotMatch;
                       return null;
                     },
                   ),
@@ -269,7 +271,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         SizedBox(width: r.s(10)),
                         Expanded(
                           child: Text(
-                            'Aceito os Termos de Uso e Política de Privacidade',
+                            s.acceptTermsAndPrivacy,
                             style: TextStyle(
                                 color: context.textSecondary,
                                 fontSize: r.fs(13)),
@@ -360,7 +362,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     ),
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: r.s(16)),
-                      child: Text('ou',
+                      child: Text(s.orLabel,
                           style: TextStyle(
                               color: context.textHint, fontSize: r.fs(13))),
                     ),
@@ -421,13 +423,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('Já tem conta? ',
+                      Text(s.alreadyHaveAccountQuestion,
                           style: TextStyle(
                               color: context.textSecondary,
                               fontSize: r.fs(14))),
                       GestureDetector(
                         onTap: () => context.go('/login'),
-                        child: Text('Fazer login',
+                        child: Text(s.logInAction,
                             style: TextStyle(
                               color: AppTheme.primaryColor,
                               fontWeight: FontWeight.w700,
@@ -473,6 +475,7 @@ class _AminoTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return TextFormField(
       controller: controller,

@@ -1,0 +1,3365 @@
+{
+  "keys_map": {
+    "Aberta": "open",
+    "Abrir": "openAction",
+    "Aceitar": "accept",
+    "Acesso": "access",
+    "Adicionar opção": "addOption",
+    "Adicionar pergunta": "addQuestion",
+    "Algo deu errado": "somethingWentWrong",
+    "Anônimo": "anonymous",
+    "Apagar": "deleteAction",
+    "Apagar conversa": "deleteConversation",
+    "Aparência": "appearance",
+    "Apenas o host pode fixar mensagens": "onlyTheHostCanPinMessages",
+    "Aplicar": "apply",
+    "Apple": "apple",
+    "Aprovar": "approve",
+    "Arquivos": "files",
+    "As senhas não coincidem": "passwordsDoNotMatch",
+    "Ativo": "active",
+    "Atualizar": "refresh",
+    "Avisar": "warn",
+    "Banir": "ban",
+    "Bio": "bio",
+    "Blog": "blog",
+    "Bloquear": "block",
+    "Cancelar": "cancel",
+    "Carteira": "wallet",
+    "Categorias": "categories",
+    "Chat": "chat",
+    "Chats": "chats",
+    "Comentários": "comments",
+    "Compartilhar": "share",
+    "Compartilhar Perfil": "shareProfile",
+    "Comprar": "buy",
+    "Comunidade": "community",
+    "Comunidades": "communities",
+    "Comunidades Recomendadas": "recommendedCommunities",
+    "Conectado": "connected",
+    "Conexões": "connections",
+    "Configurações": "settings",
+    "Confirmar": "confirm",
+    "Confirme sua senha": "confirmYourPassword",
+    "Conquistas": "achievements",
+    "Conta": "account",
+    "Conteúdo": "content",
+    "Continuar": "continueAction",
+    "Convites pendentes": "pendingInvites",
+    "Copiar": "copy",
+    "Cor do Tema": "themeColor",
+    "Criar": "create",
+    "Criar Comunidade": "createCommunityTitle",
+    "Criar Enquete": "createPoll",
+    "Criar conta": "createAccount",
+    "Crie uma senha": "createAPassword",
+    "Crosspost": "crosspost",
+    "Curador": "curator",
+    "Curtir": "like",
+    "Câmera": "camera",
+    "Deixou de seguir": "unfollowed",
+    "Denunciar": "report",
+    "Denúncias": "reports",
+    "Desafixar do topo": "unpinFromTop",
+    "Desbanir": "unban",
+    "Desbloquear": "unblock",
+    "Descrição": "communityDescription",
+    "Destaque": "featured",
+    "Divisor": "divider",
+    "Duração": "duration",
+    "Editar": "edit",
+    "Editor": "editor",
+    "Email": "emailHint",
+    "Encerrar": "end",
+    "Enquete": "poll",
+    "Entrar": "login",
+    "Enviar": "send",
+    "Envie moedas para este chat": "sendCoinsToThisChat",
+    "Erro ao abrir chat. Tente novamente.": "errorOpeningChatTryAgain",
+    "Erro ao carregar chats": "errorLoadingChats",
+    "Erro ao carregar notificações": "errorLoadingNotifications",
+    "Erro ao carregar perfil": "errorLoadingProfile",
+    "Erro ao fixar mensagem": "errorPinningMessage",
+    "Erro ao restaurar compras": "errorRestoringPurchases",
+    "Erro desconhecido": "unknownError",
+    "Escolha um nickname": "chooseANickname",
+    "Escreva algo...": "writePost",
+    "Escreva no mural...": "writeOnTheWall",
+    "Escreva um comentário...": "writeComment",
+    "Esqueceu a senha?": "forgotPassword",
+    "Este usuário não aceita mensagens diretas.": "thisUserDoesNotAcceptDirectMessages",
+    "Este usuário só aceita mensagens de perfis permitidos.": "thisUserOnlyAcceptsMessagesFromAllowedProfiles",
+    "Excluir": "delete",
+    "Excluir arquivo": "deleteFile",
+    "Expulsar": "kick",
+    "Fazer login": "logInAction",
+    "Fechar": "close",
+    "Feed": "feed",
+    "Figurinhas": "stickersLabel",
+    "Fixar no topo": "pinToTop",
+    "Fundos": "backgrounds",
+    "GIFs": "gifs",
+    "Geral": "general",
+    "Global": "global",
+    "Google": "google",
+    "Histórico": "history",
+    "Hoje": "todayLabel",
+    "Idioma": "language",
+    "Idioma Principal": "primaryLanguage",
+    "Imagem": "image",
+    "Imagens": "images",
+    "Informe seu email": "enterYourEmail",
+    "Inventário": "inventory",
+    "Itálico": "italic",
+    "Link": "link",
+    "Link do perfil copiado!": "profileLinkCopied",
+    "Lista": "list",
+    "Listada": "listed",
+    "Loja": "store",
+    "Líder": "leader",
+    "Mais": "more",
+    "Membro": "member",
+    "Membros": "members",
+    "Menos": "less",
+    "Mensagem fixada": "messagePinned",
+    "Mic": "mic",
+    "Minhas Comunidades": "myCommunitiesTitle",
+    "Minhas Entradas Wiki": "myWikiEntries",
+    "Moderação": "moderation",
+    "Motivo": "reason",
+    "Mudo": "muted",
+    "Mural": "wall",
+    "Mínimo 6 caracteres": "minimum6Characters",
+    "Módulos": "modules",
+    "Música": "music",
+    "Negrito": "bold",
+    "Nenhum arquivo": "noFiles",
+    "Nenhum chat ainda": "noChatsYet",
+    "Nenhum item": "noItems",
+    "Nenhum post nesta comunidade": "noPostsInThisCommunity",
+    "Nenhum post salvo": "noSavedPosts",
+    "Nenhum usuário bloqueado": "noBlockedUsers",
+    "Nenhuma comunidade encontrada": "noCommunitiesFound",
+    "Nenhuma denúncia pendente": "noPendingReports",
+    "Nickname": "nicknameHint",
+    "Ninguém": "nobody",
+    "Notificações": "notifications",
+    "Nova Enquete": "newPoll",
+    "Novo Blog": "newBlog",
+    "Novo Quiz": "newQuiz",
+    "Não foi possível iniciar conversa com este usuário.": "couldNotStartAConversationWithThisUser",
+    "O que eu gosto": "whatILike",
+    "Ocorreu um erro. Tente novamente.": "anErrorOccurredTryAgain",
+    "Offline": "offline",
+    "Online": "online",
+    "Outro": "other",
+    "Pasta compartilhada": "sharedFolder",
+    "Perfil": "profile",
+    "Pergunta": "question",
+    "Permanente": "permanent",
+    "Política de Privacidade": "privacyPolicyTitle",
+    "Post": "post",
+    "Posts": "posts",
+    "Posts Salvos": "savedPosts",
+    "Posts salvos são privados": "savedPostsArePrivate",
+    "Privacidade": "privacy",
+    "Prévia": "preview",
+    "Publicar": "publish",
+    "Quiz": "quiz",
+    "Ranking": "ranking",
+    "Rascunhos": "drafts",
+    "Recente": "recent",
+    "Recentes": "latest",
+    "Recomendados": "recommended",
+    "Recusar": "decline",
+    "Regras": "guidelines",
+    "Rejeitar": "reject",
+    "Remover": "remove",
+    "Remover banner": "removeBanner",
+    "Reputação": "reputation",
+    "Responder": "reply",
+    "Sair": "logout",
+    "Sair da comunidade": "leaveCommunity",
+    "Sair do chat": "leaveChat",
+    "Sair do grupo": "leaveGroup",
+    "Saldo insuficiente": "insufficientBalance",
+    "Salvar": "save",
+    "Seguidores": "followers",
+    "Seguindo": "following",
+    "Seguindo!": "followingNow",
+    "Seguir": "follow",
+    "Segurança": "security",
+    "Selecione um valor": "selectAnAmount",
+    "Sem mensagens": "noMessages",
+    "Sem título": "untitled",
+    "Senha": "password",
+    "Senha atual": "currentPassword",
+    "Senha incorreta": "incorrectPassword",
+    "Sessão expirada. Faça login novamente.": "sessionExpiredPleaseLogInAgain",
+    "Silenciar": "mute",
+    "Sim, excluir": "yesDelete",
+    "Spam": "spam",
+    "Speaker": "speaker",
+    "Stickers": "stickers",
+    "Stories": "stories",
+    "Story publicado!": "storyPublished",
+    "Strike": "strike",
+    "Tachado": "strikethrough",
+    "Tela compartilhada aparecerá aqui": "sharedScreenWillAppearHere",
+    "Tentar novamente": "retry",
+    "Termos de Uso": "termsOfUse",
+    "Texto": "text",
+    "Tipo de Entrada": "entryType",
+    "Todos": "everyone",
+    "Toque no ícone de bookmark nos posts para salvá-los": "tapTheBookmarkIconOnPostsToSaveThem",
+    "Trocar": "switchCamera",
+    "Título": "title",
+    "Usuário": "user",
+    "Verifique seu email": "checkYourEmail",
+    "Visibilidade": "visibility",
+    "Visual": "visual",
+    "Você": "you",
+    "Você não pode abrir um chat consigo mesmo.": "youCannotOpenAChatWithYourself",
+    "Vídeos": "videos",
+    "Wiki": "wiki",
+    "abril": "april",
+    "agora": "now",
+    "agosto": "august",
+    "dezembro": "december",
+    "fevereiro": "february",
+    "janeiro": "january",
+    "julho": "july",
+    "junho": "june",
+    "maio": "may",
+    "março": "march",
+    "novembro": "november",
+    "outubro": "october",
+    "setembro": "september"
+  },
+  "new_keys": {
+    "accept": {
+      "pt": "Aceitar",
+      "en": "Accept"
+    },
+    "access": {
+      "pt": "Acesso",
+      "en": "Access"
+    },
+    "account": {
+      "pt": "Conta",
+      "en": "Account"
+    },
+    "active": {
+      "pt": "Ativo",
+      "en": "Active"
+    },
+    "addOption": {
+      "pt": "Adicionar opção",
+      "en": "Add option"
+    },
+    "addQuestion": {
+      "pt": "Adicionar pergunta",
+      "en": "Add question"
+    },
+    "anErrorOccurredTryAgain": {
+      "pt": "Ocorreu um erro. Tente novamente.",
+      "en": "An error occurred. Try again."
+    },
+    "anonymous": {
+      "pt": "Anônimo",
+      "en": "Anonymous"
+    },
+    "appearance": {
+      "pt": "Aparência",
+      "en": "Appearance"
+    },
+    "apple": {
+      "pt": "Apple",
+      "en": "Apple"
+    },
+    "apply": {
+      "pt": "Aplicar",
+      "en": "Apply"
+    },
+    "april": {
+      "pt": "abril",
+      "en": "April"
+    },
+    "august": {
+      "pt": "agosto",
+      "en": "August"
+    },
+    "backgrounds": {
+      "pt": "Fundos",
+      "en": "Backgrounds"
+    },
+    "blog": {
+      "pt": "Blog",
+      "en": "Blog"
+    },
+    "bold": {
+      "pt": "Negrito",
+      "en": "Bold"
+    },
+    "buy": {
+      "pt": "Comprar",
+      "en": "Buy"
+    },
+    "camera": {
+      "pt": "Câmera",
+      "en": "Camera"
+    },
+    "chat": {
+      "pt": "Chat",
+      "en": "Chat"
+    },
+    "checkYourEmail": {
+      "pt": "Verifique seu email",
+      "en": "Check your email"
+    },
+    "chooseANickname": {
+      "pt": "Escolha um nickname",
+      "en": "Choose a nickname"
+    },
+    "community": {
+      "pt": "Comunidade",
+      "en": "Community"
+    },
+    "confirmYourPassword": {
+      "pt": "Confirme sua senha",
+      "en": "Confirm your password"
+    },
+    "connected": {
+      "pt": "Conectado",
+      "en": "Connected"
+    },
+    "connections": {
+      "pt": "Conexões",
+      "en": "Connections"
+    },
+    "copy": {
+      "pt": "Copiar",
+      "en": "Copy"
+    },
+    "couldNotStartAConversationWithThisUser": {
+      "pt": "Não foi possível iniciar conversa com este usuário.",
+      "en": "Could not start a conversation with this user."
+    },
+    "create": {
+      "pt": "Criar",
+      "en": "Create"
+    },
+    "createAPassword": {
+      "pt": "Crie uma senha",
+      "en": "Create a password"
+    },
+    "createPoll": {
+      "pt": "Criar Enquete",
+      "en": "Create Poll"
+    },
+    "currentPassword": {
+      "pt": "Senha atual",
+      "en": "Current Password"
+    },
+    "december": {
+      "pt": "dezembro",
+      "en": "December"
+    },
+    "decline": {
+      "pt": "Recusar",
+      "en": "Decline"
+    },
+    "deleteConversation": {
+      "pt": "Apagar conversa",
+      "en": "Delete conversation"
+    },
+    "deleteFile": {
+      "pt": "Excluir arquivo",
+      "en": "Delete file"
+    },
+    "divider": {
+      "pt": "Divisor",
+      "en": "Divider"
+    },
+    "drafts": {
+      "pt": "Rascunhos",
+      "en": "Drafts"
+    },
+    "editor": {
+      "pt": "Editor",
+      "en": "Editor"
+    },
+    "end": {
+      "pt": "Encerrar",
+      "en": "End"
+    },
+    "enterYourEmail": {
+      "pt": "Informe seu email",
+      "en": "Enter your email"
+    },
+    "entryType": {
+      "pt": "Tipo de Entrada",
+      "en": "Entry Type"
+    },
+    "errorLoadingChats": {
+      "pt": "Erro ao carregar chats",
+      "en": "Error loading chats"
+    },
+    "errorLoadingNotifications": {
+      "pt": "Erro ao carregar notificações",
+      "en": "Error loading notifications"
+    },
+    "errorLoadingProfile": {
+      "pt": "Erro ao carregar perfil",
+      "en": "Error loading profile"
+    },
+    "errorOpeningChatTryAgain": {
+      "pt": "Erro ao abrir chat. Tente novamente.",
+      "en": "Error opening chat. Try again."
+    },
+    "errorPinningMessage": {
+      "pt": "Erro ao fixar mensagem",
+      "en": "Error pinning message"
+    },
+    "errorRestoringPurchases": {
+      "pt": "Erro ao restaurar compras",
+      "en": "Error restoring purchases"
+    },
+    "everyone": {
+      "pt": "Todos",
+      "en": "Everyone"
+    },
+    "february": {
+      "pt": "fevereiro",
+      "en": "February"
+    },
+    "files": {
+      "pt": "Arquivos",
+      "en": "Files"
+    },
+    "general": {
+      "pt": "Geral",
+      "en": "General"
+    },
+    "global": {
+      "pt": "Global",
+      "en": "Global"
+    },
+    "google": {
+      "pt": "Google",
+      "en": "Google"
+    },
+    "history": {
+      "pt": "Histórico",
+      "en": "History"
+    },
+    "image": {
+      "pt": "Imagem",
+      "en": "Image"
+    },
+    "images": {
+      "pt": "Imagens",
+      "en": "Images"
+    },
+    "incorrectPassword": {
+      "pt": "Senha incorreta",
+      "en": "Incorrect password"
+    },
+    "insufficientBalance": {
+      "pt": "Saldo insuficiente",
+      "en": "Insufficient balance"
+    },
+    "inventory": {
+      "pt": "Inventário",
+      "en": "Inventory"
+    },
+    "italic": {
+      "pt": "Itálico",
+      "en": "Italic"
+    },
+    "january": {
+      "pt": "janeiro",
+      "en": "January"
+    },
+    "july": {
+      "pt": "julho",
+      "en": "July"
+    },
+    "june": {
+      "pt": "junho",
+      "en": "June"
+    },
+    "leaveChat": {
+      "pt": "Sair do chat",
+      "en": "Leave chat"
+    },
+    "less": {
+      "pt": "Menos",
+      "en": "Less"
+    },
+    "link": {
+      "pt": "Link",
+      "en": "Link"
+    },
+    "list": {
+      "pt": "Lista",
+      "en": "List"
+    },
+    "listed": {
+      "pt": "Listada",
+      "en": "Listed"
+    },
+    "march": {
+      "pt": "março",
+      "en": "March"
+    },
+    "may": {
+      "pt": "maio",
+      "en": "May"
+    },
+    "messagePinned": {
+      "pt": "Mensagem fixada",
+      "en": "Message pinned"
+    },
+    "mic": {
+      "pt": "Mic",
+      "en": "Mic"
+    },
+    "minimum6Characters": {
+      "pt": "Mínimo 6 caracteres",
+      "en": "Minimum 6 characters"
+    },
+    "modules": {
+      "pt": "Módulos",
+      "en": "Modules"
+    },
+    "more": {
+      "pt": "Mais",
+      "en": "More"
+    },
+    "music": {
+      "pt": "Música",
+      "en": "Music"
+    },
+    "muted": {
+      "pt": "Mudo",
+      "en": "Muted"
+    },
+    "myWikiEntries": {
+      "pt": "Minhas Entradas Wiki",
+      "en": "My Wiki Entries"
+    },
+    "newBlog": {
+      "pt": "Novo Blog",
+      "en": "New Blog"
+    },
+    "newPoll": {
+      "pt": "Nova Enquete",
+      "en": "New Poll"
+    },
+    "newQuiz": {
+      "pt": "Novo Quiz",
+      "en": "New Quiz"
+    },
+    "noBlockedUsers": {
+      "pt": "Nenhum usuário bloqueado",
+      "en": "No blocked users"
+    },
+    "noCommunitiesFound": {
+      "pt": "Nenhuma comunidade encontrada",
+      "en": "No communities found"
+    },
+    "noFiles": {
+      "pt": "Nenhum arquivo",
+      "en": "No files"
+    },
+    "noItems": {
+      "pt": "Nenhum item",
+      "en": "No items"
+    },
+    "noMessages": {
+      "pt": "Sem mensagens",
+      "en": "No messages"
+    },
+    "noPendingReports": {
+      "pt": "Nenhuma denúncia pendente",
+      "en": "No pending reports"
+    },
+    "noPostsInThisCommunity": {
+      "pt": "Nenhum post nesta comunidade",
+      "en": "No posts in this community"
+    },
+    "noSavedPosts": {
+      "pt": "Nenhum post salvo",
+      "en": "No saved posts"
+    },
+    "nobody": {
+      "pt": "Ninguém",
+      "en": "Nobody"
+    },
+    "november": {
+      "pt": "novembro",
+      "en": "November"
+    },
+    "now": {
+      "pt": "agora",
+      "en": "now"
+    },
+    "october": {
+      "pt": "outubro",
+      "en": "October"
+    },
+    "offline": {
+      "pt": "Offline",
+      "en": "Offline"
+    },
+    "onlyTheHostCanPinMessages": {
+      "pt": "Apenas o host pode fixar mensagens",
+      "en": "Only the host can pin messages"
+    },
+    "open": {
+      "pt": "Aberta",
+      "en": "Open"
+    },
+    "other": {
+      "pt": "Outro",
+      "en": "Other"
+    },
+    "passwordsDoNotMatch": {
+      "pt": "As senhas não coincidem",
+      "en": "Passwords do not match"
+    },
+    "pendingInvites": {
+      "pt": "Convites pendentes",
+      "en": "Pending invites"
+    },
+    "pinToTop": {
+      "pt": "Fixar no topo",
+      "en": "Pin to top"
+    },
+    "poll": {
+      "pt": "Enquete",
+      "en": "Poll"
+    },
+    "post": {
+      "pt": "Post",
+      "en": "Post"
+    },
+    "preview": {
+      "pt": "Prévia",
+      "en": "Preview"
+    },
+    "primaryLanguage": {
+      "pt": "Idioma Principal",
+      "en": "Primary Language"
+    },
+    "profileLinkCopied": {
+      "pt": "Link do perfil copiado!",
+      "en": "Profile link copied!"
+    },
+    "question": {
+      "pt": "Pergunta",
+      "en": "Question"
+    },
+    "quiz": {
+      "pt": "Quiz",
+      "en": "Quiz"
+    },
+    "ranking": {
+      "pt": "Ranking",
+      "en": "Ranking"
+    },
+    "recent": {
+      "pt": "Recente",
+      "en": "Recent"
+    },
+    "recommended": {
+      "pt": "Recomendados",
+      "en": "Recommended"
+    },
+    "recommendedCommunities": {
+      "pt": "Comunidades Recomendadas",
+      "en": "Recommended Communities"
+    },
+    "refresh": {
+      "pt": "Atualizar",
+      "en": "Refresh"
+    },
+    "remove": {
+      "pt": "Remover",
+      "en": "Remove"
+    },
+    "removeBanner": {
+      "pt": "Remover banner",
+      "en": "Remove banner"
+    },
+    "reports": {
+      "pt": "Denúncias",
+      "en": "Reports"
+    },
+    "savedPosts": {
+      "pt": "Posts Salvos",
+      "en": "Saved Posts"
+    },
+    "savedPostsArePrivate": {
+      "pt": "Posts salvos são privados",
+      "en": "Saved posts are private"
+    },
+    "security": {
+      "pt": "Segurança",
+      "en": "Security"
+    },
+    "selectAnAmount": {
+      "pt": "Selecione um valor",
+      "en": "Select an amount"
+    },
+    "send": {
+      "pt": "Enviar",
+      "en": "Send"
+    },
+    "sendCoinsToThisChat": {
+      "pt": "Envie moedas para este chat",
+      "en": "Send coins to this chat"
+    },
+    "september": {
+      "pt": "setembro",
+      "en": "September"
+    },
+    "sessionExpiredPleaseLogInAgain": {
+      "pt": "Sessão expirada. Faça login novamente.",
+      "en": "Session expired. Please log in again."
+    },
+    "shareProfile": {
+      "pt": "Compartilhar Perfil",
+      "en": "Share Profile"
+    },
+    "sharedFolder": {
+      "pt": "Pasta compartilhada",
+      "en": "Shared Folder"
+    },
+    "sharedScreenWillAppearHere": {
+      "pt": "Tela compartilhada aparecerá aqui",
+      "en": "Shared screen will appear here"
+    },
+    "spam": {
+      "pt": "Spam",
+      "en": "Spam"
+    },
+    "speaker": {
+      "pt": "Speaker",
+      "en": "Speaker"
+    },
+    "store": {
+      "pt": "Loja",
+      "en": "Store"
+    },
+    "storyPublished": {
+      "pt": "Story publicado!",
+      "en": "Story published!"
+    },
+    "strikethrough": {
+      "pt": "Tachado",
+      "en": "Strikethrough"
+    },
+    "tapTheBookmarkIconOnPostsToSaveThem": {
+      "pt": "Toque no ícone de bookmark nos posts para salvá-los",
+      "en": "Tap the bookmark icon on posts to save them"
+    },
+    "termsOfUse": {
+      "pt": "Termos de Uso",
+      "en": "Terms of Use"
+    },
+    "text": {
+      "pt": "Texto",
+      "en": "Text"
+    },
+    "themeColor": {
+      "pt": "Cor do Tema",
+      "en": "Theme Color"
+    },
+    "thisUserDoesNotAcceptDirectMessages": {
+      "pt": "Este usuário não aceita mensagens diretas.",
+      "en": "This user does not accept direct messages."
+    },
+    "thisUserOnlyAcceptsMessagesFromAllowedProfiles": {
+      "pt": "Este usuário só aceita mensagens de perfis permitidos.",
+      "en": "This user only accepts messages from allowed profiles."
+    },
+    "unblock": {
+      "pt": "Desbloquear",
+      "en": "Unblock"
+    },
+    "unfollowed": {
+      "pt": "Deixou de seguir",
+      "en": "Unfollowed"
+    },
+    "unknownError": {
+      "pt": "Erro desconhecido",
+      "en": "Unknown error"
+    },
+    "unpinFromTop": {
+      "pt": "Desafixar do topo",
+      "en": "Unpin from top"
+    },
+    "untitled": {
+      "pt": "Sem título",
+      "en": "Untitled"
+    },
+    "user": {
+      "pt": "Usuário",
+      "en": "User"
+    },
+    "videos": {
+      "pt": "Vídeos",
+      "en": "Videos"
+    },
+    "visibility": {
+      "pt": "Visibilidade",
+      "en": "Visibility"
+    },
+    "visual": {
+      "pt": "Visual",
+      "en": "Visual"
+    },
+    "wallet": {
+      "pt": "Carteira",
+      "en": "Wallet"
+    },
+    "writeOnTheWall": {
+      "pt": "Escreva no mural...",
+      "en": "Write on the wall..."
+    },
+    "yesDelete": {
+      "pt": "Sim, excluir",
+      "en": "Yes, delete"
+    },
+    "you": {
+      "pt": "Você",
+      "en": "You"
+    },
+    "youCannotOpenAChatWithYourself": {
+      "pt": "Você não pode abrir um chat consigo mesmo.",
+      "en": "You cannot open a chat with yourself."
+    },
+    "switchCamera": {
+      "pt": "Trocar",
+      "en": "Switch"
+    },
+    "continueAction": {
+      "pt": "Continuar",
+      "en": "Continue"
+    },
+    "deleteAction": {
+      "pt": "Apagar",
+      "en": "Delete"
+    },
+    "openAction": {
+      "pt": "Abrir",
+      "en": "Open"
+    },
+    "todayLabel": {
+      "pt": "Hoje",
+      "en": "Today"
+    },
+    "emailHint": {
+      "pt": "Email",
+      "en": "Email"
+    },
+    "followingNow": {
+      "pt": "Seguindo!",
+      "en": "Following!"
+    },
+    "nicknameHint": {
+      "pt": "Nickname",
+      "en": "Nickname"
+    },
+    "stickersLabel": {
+      "pt": "Figurinhas",
+      "en": "Stickers"
+    },
+    "myCommunitiesTitle": {
+      "pt": "Minhas Comunidades",
+      "en": "My Communities"
+    },
+    "createCommunityTitle": {
+      "pt": "Criar Comunidade",
+      "en": "Create Community"
+    },
+    "privacyPolicyTitle": {
+      "pt": "Política de Privacidade",
+      "en": "Privacy Policy"
+    },
+    "logInAction": {
+      "pt": "Fazer login",
+      "en": "Log in"
+    }
+  },
+  "file_strings": {
+    "/home/ubuntu/NexusHub/frontend/lib/features/auth/screens/interest_wizard_screen.dart": [
+      [
+        37,
+        "Música"
+      ],
+      [
+        395,
+        "Continuar"
+      ],
+      [
+        527,
+        "Continuar"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/auth/screens/login_screen.dart": [
+      [
+        115,
+        "Email"
+      ],
+      [
+        120,
+        "Informe seu email"
+      ],
+      [
+        134,
+        "Senha"
+      ],
+      [
+        151,
+        "Mínimo 6 caracteres"
+      ],
+      [
+        190,
+        "Esqueceu a senha?"
+      ],
+      [
+        256,
+        "Entrar"
+      ],
+      [
+        379,
+        "Criar conta"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/auth/screens/signup_screen.dart": [
+      [
+        71,
+        "Verifique seu email"
+      ],
+      [
+        163,
+        "Nickname"
+      ],
+      [
+        167,
+        "Escolha um nickname"
+      ],
+      [
+        181,
+        "Email"
+      ],
+      [
+        186,
+        "Informe seu email"
+      ],
+      [
+        199,
+        "Senha"
+      ],
+      [
+        215,
+        "Crie uma senha"
+      ],
+      [
+        216,
+        "Mínimo 6 caracteres"
+      ],
+      [
+        233,
+        "As senhas não coincidem"
+      ],
+      [
+        430,
+        "Fazer login"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/chat/screens/call_screen.dart": [
+      [
+        302,
+        "Você"
+      ],
+      [
+        371,
+        "Usuário"
+      ],
+      [
+        450,
+        "Conectado"
+      ],
+      [
+        528,
+        "Tela compartilhada aparecerá aqui"
+      ],
+      [
+        545,
+        "Mudo"
+      ],
+      [
+        545,
+        "Mic"
+      ],
+      [
+        553,
+        "Speaker"
+      ],
+      [
+        562,
+        "Câmera"
+      ],
+      [
+        568,
+        "Trocar"
+      ],
+      [
+        575,
+        "Encerrar"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/chat/screens/chat_list_screen.dart": [
+      [
+        236,
+        "Recente"
+      ],
+      [
+        247,
+        "Global"
+      ],
+      [
+        330,
+        "Erro ao carregar chats"
+      ],
+      [
+        413,
+        "Convites pendentes"
+      ],
+      [
+        456,
+        "Recomendados"
+      ],
+      [
+        599,
+        "Nenhum chat ainda"
+      ],
+      [
+        841,
+        "Desafixar do topo"
+      ],
+      [
+        841,
+        "Fixar no topo"
+      ],
+      [
+        887,
+        "Apagar conversa"
+      ],
+      [
+        889,
+        "Sair do grupo"
+      ],
+      [
+        890,
+        "Sair do chat"
+      ],
+      [
+        924,
+        "Cancelar"
+      ],
+      [
+        932,
+        "Apagar"
+      ],
+      [
+        932,
+        "Sair"
+      ],
+      [
+        1057,
+        "Sem mensagens"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/chat/screens/chat_room_screen.dart": [
+      [
+        416,
+        "Aplicar"
+      ],
+      [
+        614,
+        "Sessão expirada. Faça login novamente."
+      ],
+      [
+        699,
+        "Sessão expirada. Faça login novamente."
+      ],
+      [
+        777,
+        "Notificações"
+      ],
+      [
+        880,
+        "Cancelar"
+      ],
+      [
+        887,
+        "Sair"
+      ],
+      [
+        990,
+        "Cancelar"
+      ],
+      [
+        997,
+        "Excluir"
+      ],
+      [
+        1104,
+        "Apenas o host pode fixar mensagens"
+      ],
+      [
+        1105,
+        "Erro ao fixar mensagem"
+      ],
+      [
+        1165,
+        "Envie moedas para este chat"
+      ],
+      [
+        1267,
+        "Selecione um valor"
+      ],
+      [
+        1312,
+        "Criar Enquete"
+      ],
+      [
+        1319,
+        "Pergunta"
+      ],
+      [
+        1354,
+        "Cancelar"
+      ],
+      [
+        1379,
+        "Enviar"
+      ],
+      [
+        1412,
+        "Cancelar"
+      ],
+      [
+        1425,
+        "Enviar"
+      ],
+      [
+        1499,
+        "Cancelar"
+      ],
+      [
+        1540,
+        "Salvar"
+      ],
+      [
+        1713,
+        "Chat"
+      ],
+      [
+        1825,
+        "Membros"
+      ],
+      [
+        1827,
+        "Configurações"
+      ],
+      [
+        1906,
+        "Mensagem fixada"
+      ],
+      [
+        2280,
+        "Cancelar"
+      ],
+      [
+        2293,
+        "Confirmar"
+      ],
+      [
+        2470,
+        "Usuário"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/chat/screens/create_group_chat_screen.dart": [
+      [
+        251,
+        "Criar"
+      ],
+      [
+        288,
+        "Comunidade"
+      ],
+      [
+        292,
+        "Membros"
+      ],
+      [
+        381,
+        "Nenhuma comunidade encontrada"
+      ],
+      [
+        405,
+        "Comunidade"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/chat/screens/create_public_chat_screen.dart": [
+      [
+        151,
+        "Criar"
+      ],
+      [
+        184,
+        "Comunidade"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/chat/widgets/chat_media_sheet.dart": [
+      [
+        146,
+        "Link"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/chat/widgets/chat_message_actions.dart": [
+      [
+        92,
+        "Responder"
+      ],
+      [
+        96,
+        "Copiar"
+      ],
+      [
+        102,
+        "Editar"
+      ],
+      [
+        129,
+        "Denunciar"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/chat/widgets/dm_invite_card.dart": [
+      [
+        103,
+        "Recusar"
+      ],
+      [
+        128,
+        "Aceitar"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/chat/widgets/giphy_picker.dart": [
+      [
+        157,
+        "GIFs"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/chat/widgets/message_bubble.dart": [
+      [
+        487,
+        "Enquete"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/chat/widgets/sticker_picker.dart": [
+      [
+        169,
+        "Geral"
+      ],
+      [
+        292,
+        "Figurinhas"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/communities/screens/acm_screen.dart": [
+      [
+        46,
+        "Módulos"
+      ],
+      [
+        46,
+        "Acesso"
+      ],
+      [
+        46,
+        "Visual"
+      ],
+      [
+        193,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        244,
+        "Salvar"
+      ],
+      [
+        282,
+        "Posts"
+      ],
+      [
+        284,
+        "Chat"
+      ],
+      [
+        287,
+        "Destaque"
+      ],
+      [
+        289,
+        "Ranking"
+      ],
+      [
+        292,
+        "Pasta compartilhada"
+      ],
+      [
+        297,
+        "Categorias"
+      ],
+      [
+        340,
+        "Tipo de Entrada"
+      ],
+      [
+        344,
+        "Aberta"
+      ],
+      [
+        364,
+        "Visibilidade"
+      ],
+      [
+        368,
+        "Listada"
+      ],
+      [
+        688,
+        "Lista"
+      ],
+      [
+        917,
+        "Regras"
+      ],
+      [
+        923,
+        "Destaque"
+      ],
+      [
+        1000,
+        "Posts"
+      ],
+      [
+        1006,
+        "Chats"
+      ],
+      [
+        1011,
+        "Moderação"
+      ],
+      [
+        1038,
+        "Tipo de Entrada"
+      ],
+      [
+        1039,
+        "Visibilidade"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/communities/screens/community_detail_screen.dart": [
+      [
+        53,
+        "Regras"
+      ],
+      [
+        53,
+        "Destaque"
+      ],
+      [
+        53,
+        "Recentes"
+      ],
+      [
+        53,
+        "Chats"
+      ],
+      [
+        81,
+        "Regras"
+      ],
+      [
+        82,
+        "Destaque"
+      ],
+      [
+        83,
+        "Recentes"
+      ],
+      [
+        99,
+        "Destaque"
+      ],
+      [
+        100,
+        "Destaque"
+      ],
+      [
+        184,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        329,
+        "Destaque"
+      ],
+      [
+        353,
+        "Entrar"
+      ],
+      [
+        575,
+        "Ranking"
+      ],
+      [
+        687,
+        "Regras"
+      ],
+      [
+        689,
+        "Destaque"
+      ],
+      [
+        692,
+        "Recentes"
+      ],
+      [
+        695,
+        "Chats"
+      ],
+      [
+        727,
+        "Online"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/communities/screens/community_general_links_screen.dart": [
+      [
+        86,
+        "Título"
+      ],
+      [
+        124,
+        "Ativo"
+      ],
+      [
+        136,
+        "Cancelar"
+      ],
+      [
+        159,
+        "Salvar"
+      ],
+      [
+        221,
+        "Cancelar"
+      ],
+      [
+        232,
+        "Remover"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/communities/screens/community_info_screen.dart": [
+      [
+        584,
+        "Aberta"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/communities/screens/community_list_screen.dart": [
+      [
+        126,
+        "Minhas Comunidades"
+      ],
+      [
+        351,
+        "Sair da comunidade"
+      ],
+      [
+        393,
+        "Sair da comunidade"
+      ],
+      [
+        405,
+        "Cancelar"
+      ],
+      [
+        409,
+        "Sair"
+      ],
+      [
+        531,
+        "Tentar novamente"
+      ],
+      [
+        1248,
+        "Abrir"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/communities/screens/community_members_screen.dart": [
+      [
+        95,
+        "Membros"
+      ],
+      [
+        307,
+        "Usuário"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/communities/screens/community_search_screen.dart": [
+      [
+        221,
+        "Posts"
+      ],
+      [
+        222,
+        "Membros"
+      ],
+      [
+        223,
+        "Wiki"
+      ],
+      [
+        363,
+        "Recentes"
+      ],
+      [
+        375,
+        "Todos"
+      ],
+      [
+        377,
+        "Texto"
+      ],
+      [
+        379,
+        "Imagem"
+      ],
+      [
+        382,
+        "Quiz"
+      ],
+      [
+        470,
+        "Todos"
+      ],
+      [
+        471,
+        "Texto"
+      ],
+      [
+        472,
+        "Imagem"
+      ],
+      [
+        474,
+        "Quiz"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/communities/screens/create_community_screen.dart": [
+      [
+        118,
+        "Criar Comunidade"
+      ],
+      [
+        155,
+        "Criar"
+      ],
+      [
+        224,
+        "Descrição"
+      ],
+      [
+        234,
+        "Cor do Tema"
+      ],
+      [
+        293,
+        "Idioma Principal"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/communities/screens/my_community_chats_screen.dart": [
+      [
+        266,
+        "Criar"
+      ],
+      [
+        471,
+        "Membro"
+      ],
+      [
+        608,
+        "Chat"
+      ],
+      [
+        661,
+        "Desafixar do topo"
+      ],
+      [
+        661,
+        "Fixar no topo"
+      ],
+      [
+        689,
+        "Apagar conversa"
+      ],
+      [
+        689,
+        "Sair do chat"
+      ],
+      [
+        719,
+        "Cancelar"
+      ],
+      [
+        727,
+        "Apagar"
+      ],
+      [
+        727,
+        "Sair"
+      ],
+      [
+        867,
+        "Sem mensagens"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/communities/screens/shared_folder_screen.dart": [
+      [
+        38,
+        "Todos"
+      ],
+      [
+        38,
+        "Imagens"
+      ],
+      [
+        38,
+        "Vídeos"
+      ],
+      [
+        38,
+        "Arquivos"
+      ],
+      [
+        288,
+        "Excluir arquivo"
+      ],
+      [
+        297,
+        "Cancelar"
+      ],
+      [
+        305,
+        "Excluir"
+      ],
+      [
+        340,
+        "agora"
+      ],
+      [
+        408,
+        "Nenhum arquivo"
+      ],
+      [
+        589,
+        "Anônimo"
+      ],
+      [
+        680,
+        "Excluir"
+      ],
+      [
+        690,
+        "Cancelar"
+      ],
+      [
+        739,
+        "Anônimo"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/communities/widgets/community_chat_tab.dart": [
+      [
+        157,
+        "Chat"
+      ],
+      [
+        220,
+        "Cancelar"
+      ],
+      [
+        228,
+        "Apagar"
+      ],
+      [
+        228,
+        "Sair"
+      ],
+      [
+        535,
+        "Chat"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/communities/widgets/community_check_in_bar.dart": [
+      [
+        86,
+        "Erro desconhecido"
+      ],
+      [
+        98,
+        "Ocorreu um erro. Tente novamente."
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/communities/widgets/community_create_menu.dart": [
+      [
+        70,
+        "Pergunta"
+      ],
+      [
+        91,
+        "Imagem"
+      ],
+      [
+        100,
+        "Link"
+      ],
+      [
+        109,
+        "Quiz"
+      ],
+      [
+        118,
+        "Enquete"
+      ],
+      [
+        136,
+        "Blog"
+      ],
+      [
+        145,
+        "Rascunhos"
+      ],
+      [
+        186,
+        "Criar"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/communities/widgets/community_drawer.dart": [
+      [
+        872,
+        "Wiki"
+      ],
+      [
+        888,
+        "Stories"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/communities/widgets/community_feed_tab.dart": [
+      [
+        157,
+        "Recentes"
+      ],
+      [
+        502,
+        "Usuário"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/communities/widgets/community_live_chats.dart": [
+      [
+        164,
+        "Chat"
+      ],
+      [
+        225,
+        "Cancelar"
+      ],
+      [
+        233,
+        "Apagar"
+      ],
+      [
+        233,
+        "Sair"
+      ],
+      [
+        414,
+        "Chat"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/communities/widgets/community_online_tab.dart": [
+      [
+        382,
+        "Usuário"
+      ],
+      [
+        691,
+        "Usuário"
+      ],
+      [
+        995,
+        "Usuário"
+      ],
+      [
+        1109,
+        "Offline"
+      ],
+      [
+        1221,
+        "Erro ao abrir chat. Tente novamente."
+      ],
+      [
+        1224,
+        "Você não pode abrir um chat consigo mesmo."
+      ],
+      [
+        1226,
+        "Este usuário não aceita mensagens diretas."
+      ],
+      [
+        1228,
+        "Este usuário só aceita mensagens de perfis permitidos."
+      ],
+      [
+        1231,
+        "Não foi possível iniciar conversa com este usuário."
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/explore/screens/explore_screen.dart": [
+      [
+        255,
+        "Sair da comunidade"
+      ],
+      [
+        285,
+        "Sair da comunidade"
+      ],
+      [
+        297,
+        "Cancelar"
+      ],
+      [
+        301,
+        "Sair"
+      ],
+      [
+        385,
+        "Minhas Comunidades"
+      ],
+      [
+        429,
+        "Comunidades Recomendadas"
+      ],
+      [
+        591,
+        "Entrar"
+      ],
+      [
+        1234,
+        "Entrar"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/explore/screens/search_screen.dart": [
+      [
+        181,
+        "Nenhuma comunidade encontrada"
+      ],
+      [
+        323,
+        "Post"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/feed/screens/create_blog_screen.dart": [
+      [
+        117,
+        "Novo Blog"
+      ],
+      [
+        149,
+        "Seguidores"
+      ],
+      [
+        167,
+        "Publicar"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/feed/screens/create_image_post_screen.dart": [
+      [
+        178,
+        "Seguidores"
+      ],
+      [
+        196,
+        "Publicar"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/feed/screens/create_link_post_screen.dart": [
+      [
+        158,
+        "Seguidores"
+      ],
+      [
+        176,
+        "Publicar"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/feed/screens/create_poll_screen.dart": [
+      [
+        125,
+        "Nova Enquete"
+      ],
+      [
+        156,
+        "Seguidores"
+      ],
+      [
+        174,
+        "Publicar"
+      ],
+      [
+        205,
+        "Pergunta"
+      ],
+      [
+        325,
+        "Adicionar opção"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/feed/screens/create_post_screen.dart": [
+      [
+        73,
+        "Blog"
+      ],
+      [
+        74,
+        "Imagem"
+      ],
+      [
+        75,
+        "Enquete"
+      ],
+      [
+        76,
+        "Quiz"
+      ],
+      [
+        78,
+        "Link"
+      ],
+      [
+        79,
+        "Crosspost"
+      ],
+      [
+        305,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        385,
+        "Rascunhos"
+      ],
+      [
+        711,
+        "Visibilidade"
+      ],
+      [
+        724,
+        "Seguidores"
+      ],
+      [
+        1248,
+        "Strike"
+      ],
+      [
+        1341,
+        "Confirmar"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/feed/screens/create_question_screen.dart": [
+      [
+        139,
+        "Seguidores"
+      ],
+      [
+        157,
+        "Publicar"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/feed/screens/create_quiz_screen.dart": [
+      [
+        155,
+        "Novo Quiz"
+      ],
+      [
+        186,
+        "Seguidores"
+      ],
+      [
+        204,
+        "Publicar"
+      ],
+      [
+        282,
+        "Adicionar pergunta"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/feed/screens/drafts_screen.dart": [
+      [
+        29,
+        "Rascunhos"
+      ],
+      [
+        60,
+        "Tentar novamente"
+      ],
+      [
+        158,
+        "Cancelar"
+      ],
+      [
+        167,
+        "Excluir"
+      ],
+      [
+        232,
+        "Comunidade"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/feed/screens/global_feed_screen.dart": [
+      [
+        164,
+        "Feed"
+      ],
+      [
+        184,
+        "Atualizar"
+      ],
+      [
+        241,
+        "Tentar novamente"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/feed/screens/post_detail_screen.dart": [
+      [
+        166,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        196,
+        "Blog"
+      ],
+      [
+        196,
+        "Post"
+      ],
+      [
+        245,
+        "Cancelar"
+      ],
+      [
+        276,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        308,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        333,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        370,
+        "Editar"
+      ],
+      [
+        498,
+        "Usuário"
+      ],
+      [
+        585,
+        "Curtir"
+      ],
+      [
+        738,
+        "Comentários"
+      ],
+      [
+        883,
+        "Escreva um comentário..."
+      ],
+      [
+        939,
+        "Compartilhar"
+      ],
+      [
+        946,
+        "Curtir"
+      ],
+      [
+        954,
+        "Salvar"
+      ],
+      [
+        1032,
+        "Responder"
+      ],
+      [
+        1088,
+        "Título"
+      ],
+      [
+        1104,
+        "Conteúdo"
+      ],
+      [
+        1154,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        1314,
+        "Usuário"
+      ],
+      [
+        1374,
+        "Usuário"
+      ],
+      [
+        1385,
+        "Responder"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/feed/widgets/block_editor.dart": [
+      [
+        572,
+        "Texto"
+      ],
+      [
+        578,
+        "Imagem"
+      ],
+      [
+        584,
+        "Título"
+      ],
+      [
+        590,
+        "Divisor"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/feed/widgets/crosspost_picker.dart": [
+      [
+        172,
+        "Comunidade"
+      ],
+      [
+        297,
+        "Tentar novamente"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/feed/widgets/poll_quiz_widget.dart": [
+      [
+        212,
+        "Enquete"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/feed/widgets/post_card.dart": [
+      [
+        310,
+        "Usuário"
+      ],
+      [
+        402,
+        "Destaque"
+      ],
+      [
+        517,
+        "Pergunta"
+      ],
+      [
+        538,
+        "Quiz"
+      ],
+      [
+        755,
+        "Crosspost"
+      ],
+      [
+        945,
+        "Enquete"
+      ],
+      [
+        947,
+        "Quiz"
+      ],
+      [
+        951,
+        "Link"
+      ],
+      [
+        955,
+        "Crosspost"
+      ],
+      [
+        959,
+        "Imagem"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/gamification/screens/achievements_screen.dart": [
+      [
+        160,
+        "Conquistas"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/gamification/screens/check_in_screen.dart": [
+      [
+        145,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        196,
+        "Ocorreu um erro. Tente novamente."
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/gamification/screens/free_coins_screen.dart": [
+      [
+        263,
+        "Conquistas"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/gamification/screens/inventory_screen.dart": [
+      [
+        23,
+        "Todos"
+      ],
+      [
+        26,
+        "Stickers"
+      ],
+      [
+        111,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        139,
+        "Inventário"
+      ],
+      [
+        188,
+        "Nenhum item"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/gamification/screens/leaderboard_screen.dart": [
+      [
+        68,
+        "Geral"
+      ],
+      [
+        165,
+        "Ranking"
+      ],
+      [
+        457,
+        "Usuário"
+      ],
+      [
+        604,
+        "Usuário"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/gamification/screens/wallet_screen.dart": [
+      [
+        121,
+        "Comprar"
+      ],
+      [
+        220,
+        "Histórico"
+      ],
+      [
+        481,
+        "Cancelar"
+      ],
+      [
+        495,
+        "Saldo insuficiente"
+      ],
+      [
+        516,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        620,
+        "Cancelar"
+      ],
+      [
+        629,
+        "Saldo insuficiente"
+      ],
+      [
+        651,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        665,
+        "Enviar"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/live/screens/live_screen.dart": [
+      [
+        87,
+        "Cancelar"
+      ],
+      [
+        98,
+        "Criar"
+      ],
+      [
+        196,
+        "agora"
+      ],
+      [
+        287,
+        "Anônimo"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/live/screens/screening_room_screen.dart": [
+      [
+        312,
+        "Cancelar"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/moderation/screens/admin_panel_screen.dart": [
+      [
+        134,
+        "Comunidades"
+      ],
+      [
+        147,
+        "Posts"
+      ],
+      [
+        277,
+        "Comunidade"
+      ],
+      [
+        302,
+        "Título"
+      ],
+      [
+        338,
+        "Cancelar"
+      ],
+      [
+        379,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        389,
+        "Enviar"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/moderation/screens/admin_reports_screen.dart": [
+      [
+        198,
+        "Atualizar"
+      ],
+      [
+        208,
+        "Moderação"
+      ],
+      [
+        236,
+        "Hoje"
+      ],
+      [
+        244,
+        "Conteúdo"
+      ],
+      [
+        256,
+        "Comunidades"
+      ],
+      [
+        274,
+        "Denúncias"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/moderation/screens/edit_guidelines_screen.dart": [
+      [
+        185,
+        "Salvar"
+      ],
+      [
+        202,
+        "Editor"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/moderation/screens/flag_center_screen.dart": [
+      [
+        66,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        137,
+        "Nenhuma denúncia pendente"
+      ],
+      [
+        210,
+        "Spam"
+      ],
+      [
+        214,
+        "Outro"
+      ],
+      [
+        353,
+        "Rejeitar"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/moderation/screens/moderation_actions_screen.dart": [
+      [
+        38,
+        "Avisar"
+      ],
+      [
+        45,
+        "Silenciar"
+      ],
+      [
+        66,
+        "Strike"
+      ],
+      [
+        73,
+        "Banir"
+      ],
+      [
+        80,
+        "Desbanir"
+      ],
+      [
+        115,
+        "Expulsar"
+      ],
+      [
+        313,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        376,
+        "Usuário"
+      ],
+      [
+        496,
+        "Permanente"
+      ],
+      [
+        510,
+        "Duração"
+      ],
+      [
+        551,
+        "Permanente"
+      ],
+      [
+        563,
+        "Motivo"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/moderation/widgets/report_dialog.dart": [
+      [
+        103,
+        "Outro"
+      ],
+      [
+        145,
+        "Ocorreu um erro. Tente novamente."
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/notifications/screens/notifications_screen.dart": [
+      [
+        76,
+        "Cancelar"
+      ],
+      [
+        340,
+        "Erro ao carregar notificações"
+      ],
+      [
+        357,
+        "Tentar novamente"
+      ],
+      [
+        840,
+        "Tentar novamente"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/profile/screens/community_profile_screen.dart": [
+      [
+        185,
+        "Usuário"
+      ],
+      [
+        193,
+        "Líder"
+      ],
+      [
+        195,
+        "Curador"
+      ],
+      [
+        257,
+        "Online"
+      ],
+      [
+        257,
+        "Offline"
+      ],
+      [
+        476,
+        "Editar"
+      ],
+      [
+        510,
+        "Seguir"
+      ],
+      [
+        546,
+        "Chat"
+      ],
+      [
+        591,
+        "Conquistas"
+      ],
+      [
+        728,
+        "Reputação"
+      ],
+      [
+        754,
+        "Seguindo"
+      ],
+      [
+        781,
+        "Seguidores"
+      ],
+      [
+        928,
+        "Posts Salvos"
+      ],
+      [
+        1010,
+        "Minhas Entradas Wiki"
+      ],
+      [
+        1062,
+        "Wiki"
+      ],
+      [
+        1131,
+        "Nenhum post nesta comunidade"
+      ],
+      [
+        1244,
+        "Escreva no mural..."
+      ],
+      [
+        1327,
+        "Anônimo"
+      ],
+      [
+        1374,
+        "Posts salvos são privados"
+      ],
+      [
+        1390,
+        "Nenhum post salvo"
+      ],
+      [
+        1395,
+        "Toque no ícone de bookmark nos posts para salvá-los"
+      ],
+      [
+        1442,
+        "Sem título"
+      ],
+      [
+        1525,
+        "Seguindo!"
+      ],
+      [
+        1525,
+        "Deixou de seguir"
+      ],
+      [
+        1532,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        1550,
+        "Erro ao abrir chat. Tente novamente."
+      ],
+      [
+        1553,
+        "Você não pode abrir um chat consigo mesmo."
+      ],
+      [
+        1555,
+        "Este usuário não aceita mensagens diretas."
+      ],
+      [
+        1557,
+        "Este usuário só aceita mensagens de perfis permitidos."
+      ],
+      [
+        1560,
+        "Não foi possível iniciar conversa com este usuário."
+      ],
+      [
+        1595,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        1627,
+        "Denunciar"
+      ],
+      [
+        1630,
+        "Bloquear"
+      ],
+      [
+        1634,
+        "Compartilhar Perfil"
+      ],
+      [
+        1642,
+        "Link do perfil copiado!"
+      ],
+      [
+        1700,
+        "janeiro"
+      ],
+      [
+        1701,
+        "fevereiro"
+      ],
+      [
+        1702,
+        "março"
+      ],
+      [
+        1703,
+        "abril"
+      ],
+      [
+        1704,
+        "maio"
+      ],
+      [
+        1705,
+        "junho"
+      ],
+      [
+        1706,
+        "julho"
+      ],
+      [
+        1707,
+        "agosto"
+      ],
+      [
+        1708,
+        "setembro"
+      ],
+      [
+        1709,
+        "outubro"
+      ],
+      [
+        1710,
+        "novembro"
+      ],
+      [
+        1711,
+        "dezembro"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/profile/screens/edit_community_profile_screen.dart": [
+      [
+        153,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        215,
+        "Salvar"
+      ],
+      [
+        303,
+        "Remover banner"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/profile/screens/edit_profile_screen.dart": [
+      [
+        183,
+        "Salvar"
+      ],
+      [
+        282,
+        "Nickname"
+      ],
+      [
+        330,
+        "Bio"
+      ],
+      [
+        347,
+        "Editar"
+      ],
+      [
+        348,
+        "Prévia"
+      ],
+      [
+        438,
+        "Negrito"
+      ],
+      [
+        442,
+        "Itálico"
+      ],
+      [
+        446,
+        "Tachado"
+      ],
+      [
+        450,
+        "Link"
+      ],
+      [
+        454,
+        "Lista"
+      ],
+      [
+        529,
+        "Cancelar"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/profile/screens/followers_screen.dart": [
+      [
+        86,
+        "Conexões"
+      ],
+      [
+        146,
+        "Usuário"
+      ],
+      [
+        258,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        300,
+        "Seguindo"
+      ],
+      [
+        300,
+        "Seguir"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/profile/screens/profile_screen.dart": [
+      [
+        86,
+        "Erro ao carregar perfil"
+      ],
+      [
+        99,
+        "Tentar novamente"
+      ],
+      [
+        201,
+        "Link do perfil copiado!"
+      ],
+      [
+        293,
+        "Seguindo"
+      ],
+      [
+        294,
+        "Seguir"
+      ],
+      [
+        612,
+        "Stories"
+      ],
+      [
+        705,
+        "Seguidores"
+      ],
+      [
+        709,
+        "Denunciar"
+      ],
+      [
+        712,
+        "Bloquear"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/profile/screens/user_wall_screen.dart": [
+      [
+        63,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        78,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        101,
+        "Mural"
+      ],
+      [
+        205,
+        "Anônimo"
+      ],
+      [
+        280,
+        "Escreva no mural..."
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/profile/widgets/profile_pinned_wikis.dart": [
+      [
+        92,
+        "Wiki"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/profile/widgets/profile_wall_tab.dart": [
+      [
+        53,
+        "Escreva no mural..."
+      ],
+      [
+        179,
+        "Usuário"
+      ],
+      [
+        240,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        262,
+        "agora"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/settings/screens/app_permissions_screen.dart": [
+      [
+        22,
+        "Câmera"
+      ],
+      [
+        34,
+        "Notificações"
+      ],
+      [
+        99,
+        "Cancelar"
+      ],
+      [
+        239,
+        "Configurações"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/settings/screens/blocked_users_screen.dart": [
+      [
+        75,
+        "Cancelar"
+      ],
+      [
+        102,
+        "Desbloquear"
+      ],
+      [
+        140,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        189,
+        "Nenhum usuário bloqueado"
+      ],
+      [
+        217,
+        "Usuário"
+      ],
+      [
+        284,
+        "Desbloquear"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/settings/screens/devices_screen.dart": [
+      [
+        65,
+        "Cancelar"
+      ],
+      [
+        118,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        151,
+        "Cancelar"
+      ],
+      [
+        199,
+        "Ocorreu um erro. Tente novamente."
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/settings/screens/linked_accounts_screen.dart": [
+      [
+        111,
+        "Cancelar"
+      ],
+      [
+        197,
+        "Google"
+      ],
+      [
+        207,
+        "Apple"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/settings/screens/notification_settings_screen.dart": [
+      [
+        128,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        144,
+        "Notificações"
+      ],
+      [
+        173,
+        "Salvar"
+      ],
+      [
+        287,
+        "Comentários"
+      ],
+      [
+        319,
+        "Chat"
+      ],
+      [
+        349,
+        "Conquistas"
+      ],
+      [
+        364,
+        "Moderação"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/settings/screens/privacy_policy_screen.dart": [
+      [
+        122,
+        "Política de Privacidade"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/settings/screens/privacy_settings_screen.dart": [
+      [
+        128,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        143,
+        "Privacidade"
+      ],
+      [
+        173,
+        "Salvar"
+      ],
+      [
+        193,
+        "Perfil"
+      ],
+      [
+        284,
+        "Visibilidade"
+      ],
+      [
+        312,
+        "Seguidores"
+      ],
+      [
+        335,
+        "Todos"
+      ],
+      [
+        347,
+        "Ninguém"
+      ],
+      [
+        456,
+        "Cancelar"
+      ],
+      [
+        507,
+        "Cancelar"
+      ],
+      [
+        542,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        580,
+        "Excluir"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/settings/screens/settings_screen.dart": [
+      [
+        60,
+        "Cancelar"
+      ],
+      [
+        81,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        142,
+        "Cancelar"
+      ],
+      [
+        163,
+        "Sim, excluir"
+      ],
+      [
+        219,
+        "Cancelar"
+      ],
+      [
+        261,
+        "Confirme sua senha"
+      ],
+      [
+        265,
+        "Senha atual"
+      ],
+      [
+        270,
+        "Cancelar"
+      ],
+      [
+        273,
+        "Confirmar"
+      ],
+      [
+        286,
+        "Senha incorreta"
+      ],
+      [
+        328,
+        "Configurações"
+      ],
+      [
+        396,
+        "Usuário"
+      ],
+      [
+        423,
+        "Conta"
+      ],
+      [
+        465,
+        "Cancelar"
+      ],
+      [
+        493,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        503,
+        "Salvar"
+      ],
+      [
+        527,
+        "Notificações"
+      ],
+      [
+        532,
+        "Privacidade"
+      ],
+      [
+        542,
+        "Idioma"
+      ],
+      [
+        558,
+        "Idioma"
+      ],
+      [
+        633,
+        "Cancelar"
+      ],
+      [
+        685,
+        "Carteira"
+      ],
+      [
+        690,
+        "Conquistas"
+      ],
+      [
+        695,
+        "Inventário"
+      ],
+      [
+        704,
+        "Segurança"
+      ],
+      [
+        747,
+        "Fechar"
+      ],
+      [
+        784,
+        "Cancelar"
+      ],
+      [
+        800,
+        "Enviar"
+      ],
+      [
+        810,
+        "Política de Privacidade"
+      ],
+      [
+        815,
+        "Termos de Uso"
+      ],
+      [
+        867,
+        "Sair"
+      ],
+      [
+        880,
+        "Cancelar"
+      ],
+      [
+        903,
+        "Sair"
+      ],
+      [
+        1059,
+        "Aparência"
+      ],
+      [
+        1082,
+        "Aparência"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/settings/screens/terms_of_use_screen.dart": [
+      [
+        150,
+        "Termos de Uso"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/store/screens/coin_shop_screen.dart": [
+      [
+        108,
+        "Erro ao restaurar compras"
+      ],
+      [
+        584,
+        "Ocorreu um erro. Tente novamente."
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/store/screens/store_screen.dart": [
+      [
+        25,
+        "Todos"
+      ],
+      [
+        25,
+        "Stickers"
+      ],
+      [
+        25,
+        "Fundos"
+      ],
+      [
+        163,
+        "Loja"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/stories/screens/create_story_screen.dart": [
+      [
+        195,
+        "Story publicado!"
+      ],
+      [
+        205,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        270,
+        "Publicar"
+      ],
+      [
+        290,
+        "Texto"
+      ],
+      [
+        300,
+        "Imagem"
+      ],
+      [
+        375,
+        "Escreva algo..."
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/stories/screens/story_viewer_screen.dart": [
+      [
+        210,
+        "agora"
+      ],
+      [
+        223,
+        "Anônimo"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/stories/widgets/story_carousel.dart": [
+      [
+        110,
+        "Criar"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/wiki/screens/wiki_curator_review_screen.dart": [
+      [
+        141,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        179,
+        "Cancelar"
+      ],
+      [
+        194,
+        "Rejeitar"
+      ],
+      [
+        456,
+        "Rejeitar"
+      ],
+      [
+        495,
+        "Aprovar"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/features/wiki/screens/wiki_screen.dart": [
+      [
+        186,
+        "Todos"
+      ],
+      [
+        305,
+        "Sem título"
+      ],
+      [
+        575,
+        "Sem título"
+      ],
+      [
+        778,
+        "O que eu gosto"
+      ],
+      [
+        871,
+        "Anônimo"
+      ],
+      [
+        996,
+        "Ocorreu um erro. Tente novamente."
+      ],
+      [
+        1069,
+        "Publicar"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/core/widgets/amino_bottom_nav.dart": [
+      [
+        115,
+        "Online"
+      ],
+      [
+        207,
+        "Chats"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/core/widgets/checkin_heatmap.dart": [
+      [
+        205,
+        "Menos"
+      ],
+      [
+        219,
+        "Mais"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/core/widgets/error_boundary.dart": [
+      [
+        159,
+        "Algo deu errado"
+      ],
+      [
+        190,
+        "Tentar novamente"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/core/widgets/level_up_dialog.dart": [
+      [
+        62,
+        "Ativo"
+      ]
+    ],
+    "/home/ubuntu/NexusHub/frontend/lib/core/widgets/paginated_list_view.dart": [
+      [
+        306,
+        "Tentar novamente"
+      ],
+      [
+        365,
+        "Algo deu errado"
+      ],
+      [
+        368,
+        "Erro desconhecido"
+      ],
+      [
+        378,
+        "Tentar novamente"
+      ],
+      [
+        574,
+        "Algo deu errado"
+      ],
+      [
+        586,
+        "Tentar novamente"
+      ]
+    ]
+  }
+}

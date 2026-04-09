@@ -135,7 +135,7 @@ class SystemAccountService {
         params: {
           'p_user_id': userId,
           'p_type': 'moderation',
-          'p_title': 'Ação de moderação',
+          'p_title': s.moderationActionLower,
           'p_body': content,
           if (communityId != null) 'p_community_id': communityId,
           if (communityId != null) 'p_action_url': '/community/$communityId',

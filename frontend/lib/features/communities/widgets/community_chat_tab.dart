@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +8,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/amino_animations.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // TAB: Chats Públicos — Grid 2 colunas estilo Amino
@@ -14,7 +16,7 @@ import '../../../core/utils/responsive.dart';
 // Long press → menu contextual: Fixar / Apagar.
 // =============================================================================
 
-class CommunityChatTab extends StatefulWidget {
+class CommunityChatTab extends ConsumerStatefulWidget {
   final String communityId;
 
   const CommunityChatTab({super.key, required this.communityId});
@@ -23,7 +25,7 @@ class CommunityChatTab extends StatefulWidget {
   State<CommunityChatTab> createState() => _CommunityChatTabState();
 }
 
-class _CommunityChatTabState extends State<CommunityChatTab> {
+class _CommunityChatTabState extends ConsumerState<CommunityChatTab> {
   List<Map<String, dynamic>> _chats = [];
   bool _isLoading = true;
 
@@ -88,7 +90,7 @@ class _CommunityChatTabState extends State<CommunityChatTab> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Erro ao alterar fixação.'),
+            content: Text(s.errorChangingPin),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -107,7 +109,7 @@ class _CommunityChatTabState extends State<CommunityChatTab> {
         setState(() => _chats.removeWhere((c) => c['id'] == chat['id']));
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(wasDeleted ? 'Chat excluído.' : 'Você saiu do chat.'),
+            content: Text(wasDeleted ? s.chatDeletedMsg : s.leftChat),
             backgroundColor: AppTheme.primaryColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -117,7 +119,7 @@ class _CommunityChatTabState extends State<CommunityChatTab> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Erro ao executar ação. Tente novamente.'),
+            content: Text(s.errorExecutingActionRetry),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -154,7 +156,7 @@ class _CommunityChatTabState extends State<CommunityChatTab> {
                 ),
               ),
               Text(
-                chat['title'] as String? ?? 'Chat',
+                chat['title'] as String? ?? s.chat,
                 style: TextStyle(
                   color: context.textPrimary,
                   fontWeight: FontWeight.w700,
@@ -179,7 +181,7 @@ class _CommunityChatTabState extends State<CommunityChatTab> {
                 context,
                 r,
                 isHost ? Icons.delete_rounded : Icons.exit_to_app_rounded,
-                isHost ? 'Apagar Chat' : 'Sair do Chat',
+                isHost ? 'Apagar Chat' : s.leaveChatTitle,
                 () {
                   Navigator.pop(ctx);
                   _confirmAction(context, chat, isHost);
@@ -204,20 +206,20 @@ class _CommunityChatTabState extends State<CommunityChatTab> {
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(r.s(16))),
         title: Text(
-          isDelete ? 'Apagar Chat' : 'Sair do Chat',
+          isDelete ? 'Apagar Chat' : s.leaveChatTitle,
           style: TextStyle(
               color: context.textPrimary, fontWeight: FontWeight.w700),
         ),
         content: Text(
           isDelete
-              ? 'Tem certeza que deseja apagar este chat? Esta ação não pode ser desfeita.'
-              : 'Tem certeza que deseja sair deste chat?',
+              ? s.confirmDeleteChat
+              : s.confirmLeaveChat,
           style: TextStyle(color: Colors.grey[400], fontSize: r.fs(14)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
+            child: Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
           ),
           TextButton(
             onPressed: () async {
@@ -225,7 +227,7 @@ class _CommunityChatTabState extends State<CommunityChatTab> {
               await _leaveOrDeleteChat(chat);
             },
             child: Text(
-              isDelete ? 'Apagar' : 'Sair',
+              isDelete ? s.deleteAction : s.logout,
               style: TextStyle(
                   color: AppTheme.errorColor, fontWeight: FontWeight.w700),
             ),
@@ -285,7 +287,8 @@ class _CommunityChatTabState extends State<CommunityChatTab> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
 
     if (_isLoading) {
@@ -313,7 +316,7 @@ class _CommunityChatTabState extends State<CommunityChatTab> {
                         size: r.s(52), color: context.textHint),
                     SizedBox(height: r.s(14)),
                     Text(
-                      'Nenhum chat público ainda.',
+                      s.noPublicChatsYet,
                       style: TextStyle(
                           color: context.textPrimary,
                           fontSize: r.fs(15),
@@ -321,7 +324,7 @@ class _CommunityChatTabState extends State<CommunityChatTab> {
                     ),
                     SizedBox(height: r.s(6)),
                     Text(
-                      'Use o botão + para criar um!',
+                      s.useButtonToCreate,
                       style: TextStyle(
                           color: Colors.grey[600], fontSize: r.fs(13)),
                     ),
@@ -353,7 +356,7 @@ class _CommunityChatTabState extends State<CommunityChatTab> {
           final chat = _chats[index];
           return _ChatCard(
             chat: chat,
-            onTap: () => context.push('/chat/${chat['id']}'),
+            onTap: () => context.push('/chat/${chat['ids.closingBracket),
             onLongPress: () => _showContextMenu(context, chat),
             formatTime: _formatTime,
           );
@@ -366,7 +369,7 @@ class _CommunityChatTabState extends State<CommunityChatTab> {
 // =============================================================================
 // CARD INDIVIDUAL — estilo Amino
 // =============================================================================
-class _ChatCard extends StatelessWidget {
+class _ChatCard extends ConsumerWidget {
   final Map<String, dynamic> chat;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
@@ -380,7 +383,8 @@ class _ChatCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final isPinned = chat['is_pinned'] as bool? ?? false;
     final membersCount = chat['members_count'] as int? ?? 0;
@@ -532,7 +536,7 @@ class _ChatCard extends StatelessWidget {
                       children: [
                         // Título
                         Text(
-                          chat['title'] as String? ?? 'Chat',
+                          chat['title'] as String? ?? s.chat,
                           style: TextStyle(
                             color: context.textPrimary,
                             fontSize: r.fs(12),

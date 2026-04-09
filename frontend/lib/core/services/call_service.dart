@@ -5,6 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'supabase_service.dart';
 import 'realtime_service.dart';
+import '../../core/l10n/locale_provider.dart';
 
 /// ============================================================================
 /// CallService — Gerencia chamadas de voz, vídeo e screening room.
@@ -140,7 +141,7 @@ class CallService {
     _engine!.registerEventHandler(RtcEngineEventHandler(
       onJoinChannelSuccess: (connection, elapsed) {
         debugPrint(
-            'Agora: Joined channel ${connection.channelId} in ${elapsed}ms');
+            s.joinedChannelInMs);
       },
       onUserJoined: (connection, remoteUid, elapsed) {
         debugPrint('Agora: Remote user $remoteUid joined');

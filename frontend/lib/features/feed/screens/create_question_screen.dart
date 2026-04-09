@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // CREATE QUESTION SCREEN — Post tipo Q&A (pergunta aberta para a comunidade)
@@ -37,7 +38,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
     if (question.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('A pergunta é obrigatória'),
+          content: Text(s.questionRequired),
           backgroundColor: AppTheme.errorColor,
         ),
       );
@@ -47,7 +48,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
     setState(() => _isSubmitting = true);
     try {
       final userId = SupabaseService.currentUserId;
-      if (userId == null) throw Exception('Não autenticado');
+      if (userId == null) throw Exception(s.notAuthenticated);
 
       final result = await SupabaseService.table('posts')
           .insert({
@@ -79,7 +80,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Pergunta publicada com sucesso!'),
+            content: Text(s.questionPublishedSuccess),
             backgroundColor: AppTheme.successColor,
           ),
         );
@@ -89,7 +90,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
         setState(() => _isSubmitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao publicar. Tente novamente.'),
+            content: Text(s.errorPublishing2),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -99,6 +100,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -132,15 +134,15 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
             itemBuilder: (_) => [
               PopupMenuItem(
                   value: 'public',
-                  child: Text('Público',
+                  child: Text(s.publicLabel,
                       style: TextStyle(color: context.textPrimary))),
               PopupMenuItem(
                   value: 'followers',
-                  child: Text('Seguidores',
+                  child: Text(s.followers,
                       style: TextStyle(color: context.textPrimary))),
               PopupMenuItem(
                   value: 'private',
-                  child: Text('Privado',
+                  child: Text(s.privateLabel,
                       style: TextStyle(color: context.textPrimary))),
             ],
           ),
@@ -154,7 +156,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
                         strokeWidth: 2, color: AppTheme.primaryColor),
                   )
                 : Text(
-                    'Publicar',
+                    s.publish,
                     style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontSize: r.fs(14),
@@ -185,7 +187,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
             SizedBox(height: r.s(8)),
             Center(
               child: Text(
-                'Pergunte à comunidade',
+                s.askCommunity,
                 style:
                     TextStyle(color: context.textSecondary, fontSize: r.fs(13)),
               ),
@@ -203,7 +205,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
                   fontSize: r.fs(20),
                   fontWeight: FontWeight.w600),
               decoration: InputDecoration(
-                hintText: 'O que você quer saber?',
+                hintText: s.whatDoYouWantToKnow,
                 hintStyle: TextStyle(
                     color: context.textSecondary,
                     fontSize: r.fs(20),
@@ -222,7 +224,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
               textCapitalization: TextCapitalization.sentences,
               style: TextStyle(color: context.textPrimary, fontSize: r.fs(15)),
               decoration: InputDecoration(
-                hintText: 'Adicione contexto ou detalhes (opcional)...',
+                hintText: s.addContextHint,
                 hintStyle:
                     TextStyle(color: context.textSecondary, fontSize: r.fs(15)),
                 border: InputBorder.none,

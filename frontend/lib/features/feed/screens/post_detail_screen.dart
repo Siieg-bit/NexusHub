@@ -15,6 +15,7 @@ import '../widgets/poll_quiz_widget.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../moderation/widgets/report_dialog.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Provider para comentários de um post.
 final postCommentsProvider =
@@ -79,7 +80,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text('Você precisa estar logado para comentar.')),
+              content: Text(s.needLoginToComment)),
         );
       }
       return;
@@ -163,7 +164,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
+          SnackBar(content: Text(s.anErrorOccurredTryAgain)),
         );
       }
     }
@@ -174,7 +175,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     Clipboard.setData(ClipboardData(text: link));
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Link copiado!'),
+        content: Text(s.linkCopied),
         behavior: SnackBarBehavior.floating,
         duration: Duration(seconds: 2),
       ),
@@ -183,6 +184,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final postAsync = ref.watch(postDetailProvider(widget.postId));
     final commentsAsync = ref.watch(postCommentsProvider(widget.postId));
@@ -193,7 +195,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
-          postAsync.valueOrNull?.type == 'blog' ? 'Blog' : 'Post',
+          postAsync.valueOrNull?.type == 'blog' ? s.blog : s.post,
           style: TextStyle(
             fontWeight: FontWeight.w800,
             color: context.textPrimary,
@@ -231,23 +233,23 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(r.s(16)),
                       ),
-                      title: Text('Deletar Post',
+                      title: Text(s.deletePost2,
                           style: TextStyle(
                               color: context.textPrimary,
                               fontWeight: FontWeight.w700)),
                       content: Text(
-                        'Tem certeza que deseja deletar este post? Esta ação não pode ser desfeita.',
+                        s.confirmDeletePost,
                         style: TextStyle(color: context.textSecondary),
                       ),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(ctx, false),
-                          child: Text('Cancelar',
+                          child: Text(s.cancel,
                               style: TextStyle(color: Colors.grey[500])),
                         ),
                         TextButton(
                           onPressed: () => Navigator.pop(ctx, true),
-                          child: const Text('Deletar',
+                          child: Text(s.deleteAction2,
                               style: TextStyle(
                                   color: AppTheme.errorColor,
                                   fontWeight: FontWeight.w700)),
@@ -262,7 +264,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Post deletado'),
+                            content: Text(s.postDeleted2),
                             behavior: SnackBarBehavior.floating,
                           ),
                         );
@@ -273,7 +275,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                               content:
-                                  Text('Ocorreu um erro. Tente novamente.')),
+                                  Text(s.anErrorOccurredTryAgain)),
                         );
                       }
                     }
@@ -305,7 +307,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   } catch (e) {
                     if (mounted)
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('Ocorreu um erro. Tente novamente.')));
+                          content: Text(s.anErrorOccurredTryAgain)));
                   }
                   break;
                 case 'hide':
@@ -320,7 +322,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       if (mounted) {
                         ScaffoldMessenger.of(context)
                             .showSnackBar(const SnackBar(
-                          content: Text('Post ocultado do seu feed'),
+                          content: Text(s.postHiddenFromFeed),
                           behavior: SnackBarBehavior.floating,
                           duration: Duration(seconds: 2),
                         ));
@@ -330,7 +332,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   } catch (e) {
                     if (mounted)
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('Ocorreu um erro. Tente novamente.')));
+                          content: Text(s.anErrorOccurredTryAgain)));
                   }
                   break;
               }
@@ -346,7 +348,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     Icon(Icons.link_rounded,
                         size: r.s(18), color: context.textSecondary),
                     SizedBox(width: r.s(10)),
-                    Text('Copiar Link',
+                    Text(s.copyLink,
                         style: TextStyle(color: context.textPrimary)),
                   ]),
                 ),
@@ -356,7 +358,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     Icon(Icons.flag_rounded,
                         size: r.s(18), color: Colors.orange),
                     SizedBox(width: r.s(10)),
-                    Text('Reportar',
+                    Text(s.reportAction,
                         style: TextStyle(color: context.textPrimary)),
                   ]),
                 ),
@@ -367,7 +369,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       Icon(Icons.edit_rounded,
                           size: r.s(18), color: AppTheme.primaryColor),
                       SizedBox(width: r.s(10)),
-                      Text('Editar',
+                      Text(s.edit,
                           style: TextStyle(color: context.textPrimary)),
                     ]),
                   ),
@@ -398,7 +400,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       Icon(Icons.visibility_off_rounded,
                           size: r.s(18), color: Colors.grey),
                       SizedBox(width: r.s(10)),
-                      Text('Ocultar Post',
+                      Text(s.hidePost,
                           style: TextStyle(color: context.textPrimary)),
                     ]),
                   ),
@@ -409,7 +411,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       Icon(Icons.delete_rounded,
                           size: r.s(18), color: AppTheme.errorColor),
                       SizedBox(width: r.s(10)),
-                      Text('Deletar',
+                      Text(s.deleteAction2,
                           style: TextStyle(color: AppTheme.errorColor)),
                     ]),
                   ),
@@ -431,7 +433,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         data: (post) {
           if (post == null) {
             return Center(
-              child: Text('Post não encontrado.',
+              child: Text(s.postNotFoundMsg,
                   style: TextStyle(color: context.textSecondary)),
             );
           }
@@ -495,7 +497,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                       children: [
                                         Flexible(
                                           child: Text(
-                                            post.author?.nickname ?? 'Usuário',
+                                            post.author?.nickname ?? s.user,
                                             style: TextStyle(
                                               fontWeight: FontWeight.w700,
                                               color: context.textPrimary,
@@ -582,7 +584,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                       ),
                                       SizedBox(width: r.s(5)),
                                       Text(
-                                        'Curtir',
+                                        s.like,
                                         style: TextStyle(
                                           color: post.isLiked
                                               ? AppTheme.errorColor
@@ -711,7 +713,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                   size: r.s(14), color: Colors.grey[600]),
                               SizedBox(width: r.s(4)),
                               Text(
-                                '${post.viewsCount} visualizações',
+                                s.viewsCountLabel(post.viewsCount),
                                 style: TextStyle(
                                     color: Colors.grey[600],
                                     fontSize: r.fs(12)),
@@ -735,7 +737,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           child: Row(
                             children: [
                               Text(
-                                'Comentários',
+                                s.comments,
                                 style: TextStyle(
                                   fontSize: r.fs(15),
                                   fontWeight: FontWeight.w700,
@@ -773,7 +775,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                           BorderRadius.circular(r.s(20)),
                                     ),
                                     child: Text(
-                                      'Diga algo...',
+                                      s.saySomethingHint,
                                       style: TextStyle(
                                         color: Colors.grey[500],
                                         fontSize: r.fs(14),
@@ -820,7 +822,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                           color: Colors.grey[400]),
                                       SizedBox(height: r.s(8)),
                                       Text(
-                                        'Nenhum comentário',
+                                        s.noComments,
                                         style: TextStyle(
                                             color: Colors.grey[500],
                                             fontSize: r.fs(14)),
@@ -880,7 +882,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                   color: context.textPrimary,
                                   fontSize: r.fs(14)),
                               decoration: InputDecoration(
-                                hintText: 'Escreva um comentário...',
+                                hintText: s.writeComment,
                                 hintStyle: TextStyle(color: Colors.grey[500]),
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.symmetric(
@@ -936,14 +938,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     children: [
                       _BottomBarButton(
                         icon: Icons.share_outlined,
-                        label: 'Compartilhar',
+                        label: s.share,
                         onTap: _sharePost,
                       ),
                       _BottomBarButton(
                         icon: post.isLiked
                             ? Icons.favorite_rounded
                             : Icons.favorite_border_rounded,
-                        label: 'Curtir',
+                        label: s.like,
                         color: post.isLiked ? AppTheme.errorColor : null,
                         onTap: _toggleLike,
                       ),
@@ -951,13 +953,13 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         icon: _isBookmarked
                             ? Icons.bookmark_rounded
                             : Icons.bookmark_border_rounded,
-                        label: 'Salvar',
+                        label: s.save,
                         color: _isBookmarked ? AppTheme.primaryColor : null,
                         onTap: _toggleBookmark,
                       ),
                       _BottomBarButton(
                         icon: Icons.arrow_forward_rounded,
-                        label: 'Próximo Post',
+                        label: s.nextPost,
                         onTap: () {
                           // Navegar para o próximo post do feed
                           context.pop();
@@ -1007,14 +1009,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Pergunta & Resposta',
+                Text(s.questionAndAnswer,
                     style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: r.fs(14),
                         color: const Color(0xFF3F51B5))),
                 const SizedBox(height: 2),
                 Text(
-                  'Responda nos comentários abaixo • ${post.commentsCount} respostas',
+                  s.replyInComments(post.commentsCount),
                   style: TextStyle(fontSize: r.fs(12), color: Colors.grey[500]),
                 ),
               ],
@@ -1029,7 +1031,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 color: const Color(0xFF3F51B5),
                 borderRadius: BorderRadius.circular(r.s(20)),
               ),
-              child: Text('Responder',
+              child: Text(s.reply,
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: r.fs(12),
@@ -1065,7 +1067,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           children: [
             Row(
               children: [
-                Text('Editar Post',
+                Text(s.editPost,
                     style: TextStyle(
                         fontSize: r.fs(18),
                         fontWeight: FontWeight.w800,
@@ -1085,7 +1087,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   fontSize: r.fs(15),
                   fontWeight: FontWeight.w700),
               decoration: InputDecoration(
-                hintText: 'Título',
+                hintText: s.title,
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 filled: true,
                 fillColor: context.cardBg,
@@ -1101,7 +1103,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
               maxLines: 6,
               decoration: InputDecoration(
-                hintText: 'Conteúdo',
+                hintText: s.content,
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 filled: true,
                 fillColor: context.cardBg,
@@ -1138,7 +1140,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Post atualizado!'),
+                          content: Text(s.postUpdated),
                           behavior: SnackBarBehavior.floating,
                         ),
                       );
@@ -1149,16 +1151,16 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         SnackBar(
                           content: Text(
                             e.toString().contains(
-                                    'Post não encontrado ou sem permissão')
-                                ? 'Você não tem permissão para editar este post.'
-                                : 'Ocorreu um erro. Tente novamente.',
+                                    s.postNotFoundOrNoPermission)
+                                ? s.noPermissionEditPost
+                                : s.anErrorOccurredTryAgain,
                           ),
                         ),
                       );
                     }
                   }
                 },
-                child: Text('Salvar Alterações',
+                child: Text(s.saveChangesAction,
                     style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
@@ -1190,6 +1192,7 @@ class _BottomBarButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final effectiveColor = color ?? Colors.grey[600]!;
     return Expanded(
@@ -1289,6 +1292,7 @@ class _CommentTileState extends State<_CommentTile> {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final comment = widget.comment;
     return Padding(
@@ -1311,7 +1315,7 @@ class _CommentTileState extends State<_CommentTile> {
                   children: [
                     Flexible(
                       child: Text(
-                        comment.author?.nickname ?? 'Usuário',
+                        comment.author?.nickname ?? s.user,
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: r.fs(14),
@@ -1371,7 +1375,7 @@ class _CommentTileState extends State<_CommentTile> {
                     GestureDetector(
                       onTap: () {
                         final authorName =
-                            widget.comment.author?.nickname ?? 'Usuário';
+                            widget.comment.author?.nickname ?? s.user;
                         if (widget.commentController != null) {
                           widget.commentController!.text = '@$authorName ';
                           widget.commentController!.selection =
@@ -1382,7 +1386,7 @@ class _CommentTileState extends State<_CommentTile> {
                         widget.commentFocusNode?.requestFocus();
                       },
                       child: Text(
-                        'Responder',
+                        s.reply,
                         style: TextStyle(
                           color: Colors.grey[500],
                           fontSize: r.fs(12),

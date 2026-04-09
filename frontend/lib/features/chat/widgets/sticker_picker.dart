@@ -1,13 +1,15 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Sticker Picker — carrega sticker packs da store e permite seleção.
 /// Retorna um Map com {sticker_id, sticker_url} via Navigator.pop().
 /// Long-press em qualquer sticker adiciona/remove dos favoritos.
-class StickerPicker extends StatefulWidget {
+class StickerPicker extends ConsumerStatefulWidget {
   final String? communityId;
   const StickerPicker({super.key, this.communityId});
 
@@ -34,14 +36,15 @@ class StickerPicker extends StatefulWidget {
   State<StickerPicker> createState() => _StickerPickerState();
 }
 
-class _StickerPickerState extends State<StickerPicker> {
+class _StickerPickerState extends ConsumerState<StickerPicker> {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     return _StickerPickerBody(communityId: widget.communityId);
   }
 }
 
-class _StickerPickerBody extends StatefulWidget {
+class _StickerPickerBody extends ConsumerStatefulWidget {
   final String? communityId;
   final ScrollController? scrollController;
   const _StickerPickerBody({this.communityId, this.scrollController});
@@ -50,7 +53,7 @@ class _StickerPickerBody extends StatefulWidget {
   State<_StickerPickerBody> createState() => _StickerPickerBodyState();
 }
 
-class _StickerPickerBodyState extends State<_StickerPickerBody>
+class _StickerPickerBodyState extends ConsumerState<_StickerPickerBody>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   List<Map<String, dynamic>> _packs = [];
@@ -166,7 +169,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
 
       final packs = <String, List<Map<String, dynamic>>>{};
       for (final item in items) {
-        final pack = item['category'] as String? ?? 'Geral';
+        final pack = item['category'] as String? ?? s.general;
         packs.putIfAbsent(pack, () => []);
         packs[pack]!.add(item);
       }
@@ -244,7 +247,7 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
-              isFav ? 'Removido dos favoritos' : 'Adicionado aos favoritos'),
+              isFav ? 'Removido dos favoritos' : s.addedToFavorites),
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 1),
         ));
@@ -261,7 +264,8 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       decoration: BoxDecoration(
@@ -289,11 +293,11 @@ class _StickerPickerBodyState extends State<_StickerPickerBody>
                   padding: EdgeInsets.all(r.s(12)),
                   child: Row(
                     children: [
-                      Text('Figurinhas',
+                      Text(s.stickersLabel,
                           style: TextStyle(
                               fontWeight: FontWeight.bold, fontSize: r.fs(18))),
                       const Spacer(),
-                      Text('Segure para favoritar',
+                      Text(s.holdToFavorite,
                           style: TextStyle(
                               fontSize: r.fs(11),
                               color: context.textSecondary)),

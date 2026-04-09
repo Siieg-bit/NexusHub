@@ -1,17 +1,19 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Tela de Relatórios do Admin — estatísticas reais de uso e moderação.
-class AdminReportsScreen extends StatefulWidget {
+class AdminReportsScreen extends ConsumerStatefulWidget {
   const AdminReportsScreen({super.key});
 
   @override
   State<AdminReportsScreen> createState() => _AdminReportsScreenState();
 }
 
-class _AdminReportsScreenState extends State<AdminReportsScreen>
+class _AdminReportsScreenState extends ConsumerState<AdminReportsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   bool _isLoading = true;
@@ -178,7 +180,8 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -187,7 +190,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
         elevation: 0,
         iconTheme: IconThemeData(color: context.textPrimary),
         title: Text(
-          'Relatórios',
+          s.reportsLabel,
           style: TextStyle(
               color: context.textPrimary, fontWeight: FontWeight.w800),
         ),
@@ -195,7 +198,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
           IconButton(
             icon: Icon(Icons.refresh_rounded, color: context.textPrimary),
             onPressed: _loadAll,
-            tooltip: 'Atualizar',
+            tooltip: s.refresh,
           ),
         ],
         bottom: TabBar(
@@ -205,8 +208,8 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
           indicatorColor: AppTheme.primaryColor,
           tabs: const [
             Tab(text: 'Uso'),
-            Tab(text: 'Moderação'),
-            Tab(text: 'Gamificação'),
+            Tab(text: s.moderation),
+            Tab(text: s.gamification),
           ],
         ),
       ),
@@ -229,35 +232,35 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionTitle('Usuários', r),
+          _sectionTitle(s.usersLabel, r),
           _statsGrid([
-            _StatData('Total', _totalUsers.toString(), Icons.people_rounded,
+            _StatData(s.total, _totalUsers.toString(), Icons.people_rounded,
                 AppTheme.primaryColor),
-            _StatData('Hoje', _newUsersToday.toString(),
+            _StatData(s.todayLabel, _newUsersToday.toString(),
                 Icons.person_add_rounded, Colors.green),
-            _StatData('Últimos 7 dias', _newUsersWeek.toString(),
+            _StatData(s.lastSevenDays, _newUsersWeek.toString(),
                 Icons.trending_up_rounded, Colors.orange),
-            _StatData('Banidos', _bannedUsers.toString(), Icons.block_rounded,
+            _StatData(s.bannedUsers, _bannedUsers.toString(), Icons.block_rounded,
                 Colors.red),
           ], r),
           SizedBox(height: r.s(20)),
-          _sectionTitle('Conteúdo', r),
+          _sectionTitle(s.content, r),
           _statsGrid([
-            _StatData('Posts totais', _totalPosts.toString(),
+            _StatData(s.totalPosts, _totalPosts.toString(),
                 Icons.article_rounded, AppTheme.accentColor),
-            _StatData('Posts hoje', _postsToday.toString(),
+            _StatData(s.postsToday, _postsToday.toString(),
                 Icons.post_add_rounded, Colors.teal),
-            _StatData('Mensagens totais', _totalMessages.toString(),
+            _StatData(s.totalMessages, _totalMessages.toString(),
                 Icons.chat_rounded, Colors.purple),
-            _StatData('Mensagens hoje', _messagesToday.toString(),
+            _StatData(s.messagesToday, _messagesToday.toString(),
                 Icons.message_rounded, Colors.indigo),
           ], r),
           SizedBox(height: r.s(20)),
-          _sectionTitle('Comunidades', r),
+          _sectionTitle(s.communities, r),
           _statsGrid([
-            _StatData('Total', _totalCommunities.toString(),
+            _StatData(s.total, _totalCommunities.toString(),
                 Icons.groups_rounded, Colors.amber),
-            _StatData('Ativas', _activeCommunities.toString(),
+            _StatData(s.active2, _activeCommunities.toString(),
                 Icons.check_circle_rounded, Colors.green),
           ], r),
         ],
@@ -271,24 +274,24 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionTitle('Denúncias', r),
+          _sectionTitle(s.reports, r),
           _statsGrid([
-            _StatData('Total', _totalFlags.toString(), Icons.flag_rounded,
+            _StatData(s.total, _totalFlags.toString(), Icons.flag_rounded,
                 Colors.orange),
-            _StatData('Pendentes', _pendingFlags.toString(),
+            _StatData(s.pending2, _pendingFlags.toString(),
                 Icons.pending_rounded, Colors.red),
-            _StatData('Resolvidas', _resolvedFlags.toString(),
+            _StatData(s.resolved2, _resolvedFlags.toString(),
                 Icons.check_circle_rounded, Colors.green),
-            _StatData('Usuários banidos', _bannedUsers.toString(),
+            _StatData(s.bannedUsersCount, _bannedUsers.toString(),
                 Icons.block_rounded, Colors.red[900]!),
           ], r),
           SizedBox(height: r.s(20)),
-          _sectionTitle('Denúncias Recentes', r),
+          _sectionTitle(s.recentReports, r),
           if (_recentFlags.isEmpty)
             Center(
               child: Padding(
                 padding: EdgeInsets.all(r.s(24)),
-                child: Text('Nenhuma denúncia recente',
+                child: Text(s.noRecentReports,
                     style: TextStyle(color: Colors.grey[600])),
               ),
             )
@@ -305,17 +308,17 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionTitle('Economia', r),
+          _sectionTitle(s.economy, r),
           _statsGrid([
-            _StatData('Coins em circulação', _totalCoinsCirculating.toString(),
+            _StatData(s.coinsInCirculation, _totalCoinsCirculating.toString(),
                 Icons.monetization_on_rounded, Colors.amber),
-            _StatData('Assinantes Amino+', _aminoPlusUsers.toString(),
+            _StatData(s.aminoPlusSubscribers, _aminoPlusUsers.toString(),
                 Icons.star_rounded, AppTheme.primaryColor),
-            _StatData('Check-ins totais', _totalCheckIns.toString(),
+            _StatData(s.totalCheckIns2, _totalCheckIns.toString(),
                 Icons.calendar_today_rounded, Colors.teal),
           ], r),
           SizedBox(height: r.s(20)),
-          _sectionTitle('Taxa de Monetização', r),
+          _sectionTitle(s.monetizationRate, r),
           Container(
             padding: EdgeInsets.all(r.s(16)),
             decoration: BoxDecoration(
@@ -325,7 +328,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
             child: Column(
               children: [
                 _buildRateRow(
-                  'Taxa Amino+',
+                  s.aminoPlusRate,
                   _totalUsers > 0
                       ? (_aminoPlusUsers / _totalUsers * 100).toStringAsFixed(1)
                       : '0.0',
@@ -335,7 +338,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
                 ),
                 SizedBox(height: r.s(12)),
                 _buildRateRow(
-                  'Coins por usuário (média)',
+                  s.coinsPerUserAverage,
                   _totalUsers > 0
                       ? (_totalCoinsCirculating / _totalUsers)
                           .toStringAsFixed(0)
@@ -354,7 +357,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen>
 
   Widget _buildFlagTile(Map<String, dynamic> flag, Responsive r) {
     final status = flag['status'] as String? ?? 'pending';
-    final reason = flag['reason'] as String? ?? 'Sem motivo';
+    final reason = flag['reason'] as String? ?? s.noReason;
     final createdAt = flag['created_at'] as String?;
     final date =
         createdAt != null ? DateTime.tryParse(createdAt)?.toLocal() : null;

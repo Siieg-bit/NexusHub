@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // CREATE POLL SCREEN — Enquete com múltiplas opções
@@ -55,7 +56,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('A pergunta da enquete é obrigatória'),
+          content: Text(s.pollQuestionRequired),
           backgroundColor: AppTheme.errorColor,
         ),
       );
@@ -66,7 +67,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
     if (validOptions.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Adicione pelo menos 2 opções'),
+          content: Text(s.addAtLeast2Options),
           backgroundColor: AppTheme.errorColor,
         ),
       );
@@ -76,7 +77,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
     setState(() => _isSubmitting = true);
     try {
       final userId = SupabaseService.currentUserId;
-      if (userId == null) throw Exception('Não autenticado');
+      if (userId == null) throw Exception(s.notAuthenticated);
 
       // Montar opções da enquete como JSON
       final pollOpts =
@@ -96,7 +97,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Enquete criada com sucesso!'),
+            content: Text(s.pollCreatedSuccess),
             backgroundColor: AppTheme.successColor,
           ),
         );
@@ -106,7 +107,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
         setState(() => _isSubmitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao criar enquete. Tente novamente.'),
+            content: Text(s.errorCreatingPoll),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -116,13 +117,14 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         title: Text(
-          'Nova Enquete',
+          s.newPoll,
           style: TextStyle(
               color: context.textPrimary,
               fontSize: r.fs(17),
@@ -149,15 +151,15 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
             itemBuilder: (_) => [
               PopupMenuItem(
                   value: 'public',
-                  child: Text('Público',
+                  child: Text(s.publicLabel,
                       style: TextStyle(color: context.textPrimary))),
               PopupMenuItem(
                   value: 'followers',
-                  child: Text('Seguidores',
+                  child: Text(s.followers,
                       style: TextStyle(color: context.textPrimary))),
               PopupMenuItem(
                   value: 'private',
-                  child: Text('Privado',
+                  child: Text(s.privateLabel,
                       style: TextStyle(color: context.textPrimary))),
             ],
           ),
@@ -171,7 +173,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
                         strokeWidth: 2, color: AppTheme.primaryColor),
                   )
                 : Text(
-                    'Publicar',
+                    s.publish,
                     style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontSize: r.fs(14),
@@ -202,7 +204,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
             SizedBox(height: r.s(20)),
             // Pergunta
             Text(
-              'Pergunta',
+              s.question,
               style: TextStyle(
                   color: context.textPrimary,
                   fontSize: r.fs(13),
@@ -211,7 +213,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
             SizedBox(height: r.s(8)),
             _buildField(
               controller: _titleController,
-              hint: 'Ex: Qual é o melhor anime da temporada?',
+              hint: s.pollExampleHint,
               maxLength: 200,
               maxLines: 3,
               r: r,
@@ -219,7 +221,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
             SizedBox(height: r.s(16)),
             // Descrição
             Text(
-              'Descrição (opcional)',
+              s.descriptionOptional2,
               style: TextStyle(
                   color: context.textPrimary,
                   fontSize: r.fs(13),
@@ -238,7 +240,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
             Row(
               children: [
                 Text(
-                  'Opções',
+                  s.optionsLabel,
                   style: TextStyle(
                       color: context.textPrimary,
                       fontSize: r.fs(13),
@@ -284,7 +286,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
                         style: TextStyle(
                             color: context.textPrimary, fontSize: r.fs(14)),
                         decoration: InputDecoration(
-                          hintText: 'Opção ${i + 1}',
+                          hintText: s.optionNumber(i + 1),
                           hintStyle: TextStyle(
                               color: context.textSecondary, fontSize: r.fs(14)),
                           filled: true,
@@ -322,7 +324,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
                 icon: Icon(Icons.add_rounded,
                     color: AppTheme.primaryColor, size: r.s(18)),
                 label: Text(
-                  'Adicionar opção',
+                  s.addOption,
                   style: TextStyle(
                       color: AppTheme.primaryColor, fontSize: r.fs(14)),
                 ),

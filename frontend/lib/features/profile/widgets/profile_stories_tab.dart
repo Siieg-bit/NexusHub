@@ -6,6 +6,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
 import '../providers/profile_providers.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // STORIES TAB — Stories reais do usuário (tabela stories, NÃO posts)
@@ -17,6 +18,7 @@ class ProfileStoriesTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final storiesAsync = ref.watch(userStoriesProvider(userId));
 
@@ -29,7 +31,7 @@ class ProfileStoriesTab extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('Erro ao carregar stories.',
+            Text(s.errorLoadingStories,
                 style: TextStyle(color: Colors.grey[500])),
             SizedBox(height: r.s(12)),
             GestureDetector(
@@ -49,7 +51,7 @@ class ProfileStoriesTab extends ConsumerWidget {
                 Icon(Icons.auto_stories_outlined,
                     size: r.s(48), color: Colors.grey[700]),
                 SizedBox(height: r.s(12)),
-                Text('Nenhum story ainda',
+                Text(s.noStoriesYet,
                     style: TextStyle(
                         color: Colors.grey[500], fontWeight: FontWeight.w600)),
               ],

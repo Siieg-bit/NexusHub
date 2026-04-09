@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../config/app_theme.dart';
+import '../../core/l10n/locale_provider.dart';
 
 /// Widget de Avatar com Frame decorativo — réplica pixel-perfect do Amino.
 ///
@@ -48,6 +49,7 @@ class AvatarWithFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     // O frame precisa de espaço extra ao redor do avatar para as
     // decorações que vazam a borda. No Amino, o frame é ~40% maior.
     final frameSize = size * 1.4;
@@ -166,7 +168,7 @@ class AvatarWithFrame extends StatelessWidget {
     );
     if (onTap != null) {
       return Semantics(
-        label: 'Foto de perfil',
+        label: s.profilePicture,
         button: true,
         child: widget,
       );

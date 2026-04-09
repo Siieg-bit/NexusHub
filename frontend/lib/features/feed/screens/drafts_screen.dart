@@ -7,12 +7,14 @@ import '../../../config/app_theme.dart';
 import '../../../core/models/post_draft_model.dart';
 import '../../../core/providers/draft_provider.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 class DraftsScreen extends ConsumerWidget {
   const DraftsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final draftsAsync = ref.watch(postDraftsProvider);
 
@@ -26,7 +28,7 @@ class DraftsScreen extends ConsumerWidget {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          'Rascunhos',
+          s.drafts,
           style: TextStyle(
             color: context.textPrimary,
             fontWeight: FontWeight.w700,
@@ -57,7 +59,7 @@ class DraftsScreen extends ConsumerWidget {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(r.s(10))),
                 ),
-                child: const Text('Tentar novamente',
+                child: Text(s.retry,
                     style: TextStyle(color: Colors.white)),
               ),
             ],
@@ -82,7 +84,7 @@ class DraftsScreen extends ConsumerWidget {
                   ),
                   SizedBox(height: r.s(8)),
                   Text(
-                    'Seus rascunhos de posts aparecerão aqui',
+                    s.postDraftsAppearHere,
                     style: TextStyle(
                       color: Colors.grey[600],
                       fontSize: r.fs(13),
@@ -123,6 +125,7 @@ class _DraftCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final dateStr = DateFormat('dd/MM/yyyy HH:mm').format(draft.updatedAt);
 
@@ -146,16 +149,16 @@ class _DraftCard extends ConsumerWidget {
             backgroundColor: context.surfaceColor,
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(r.s(16))),
-            title: Text('Excluir rascunho?',
+            title: Text(s.deleteDraftQuestion,
                 style: TextStyle(
                     color: context.textPrimary, fontWeight: FontWeight.w700)),
-            content: Text('Esta ação não pode ser desfeita.',
+            content: Text(s.actionCannotBeUndone,
                 style: TextStyle(color: Colors.grey[400], fontSize: r.fs(14))),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
                 child:
-                    Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
+                    Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.pop(ctx, true),
@@ -164,7 +167,7 @@ class _DraftCard extends ConsumerWidget {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(r.s(10))),
                 ),
-                child: const Text('Excluir',
+                child: Text(s.delete,
                     style: TextStyle(color: Colors.white)),
               ),
             ],
@@ -229,7 +232,7 @@ class _DraftCard extends ConsumerWidget {
                         color: Colors.grey[600], size: r.s(14)),
                     SizedBox(width: r.s(4)),
                     Text(
-                      'Comunidade',
+                      s.community,
                       style: TextStyle(
                         color: Colors.grey[600],
                         fontSize: r.fs(12),

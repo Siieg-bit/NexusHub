@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -5,13 +6,14 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 // ============================================================================
 // WIKI LIST SCREEN
 // ============================================================================
 
 /// Catálogo / Wiki — lista de entradas da wiki de uma comunidade.
-class WikiListScreen extends StatefulWidget {
+class WikiListScreen extends ConsumerStatefulWidget {
   final String communityId;
   const WikiListScreen({super.key, required this.communityId});
 
@@ -19,7 +21,7 @@ class WikiListScreen extends StatefulWidget {
   State<WikiListScreen> createState() => _WikiListScreenState();
 }
 
-class _WikiListScreenState extends State<WikiListScreen> {
+class _WikiListScreenState extends ConsumerState<WikiListScreen> {
   List<Map<String, dynamic>> _entries = [];
   List<Map<String, dynamic>> _categoryList = []; // {id, name}
   String? _selectedCategoryId;
@@ -79,14 +81,15 @@ class _WikiListScreenState extends State<WikiListScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: context.scaffoldBg,
         elevation: 0,
-        title: Text('Catálogo',
+        title: Text(s.catalog,
             style: TextStyle(
                 fontWeight: FontWeight.w800,
                 color: context.textPrimary,
@@ -160,7 +163,7 @@ class _WikiListScreenState extends State<WikiListScreen> {
                       onChanged: (_) => setState(() {}),
                       style: TextStyle(color: context.textPrimary),
                       decoration: InputDecoration(
-                        hintText: 'Buscar no catálogo...',
+                        hintText: s.searchCatalog,
                         hintStyle: TextStyle(color: context.textSecondary),
                         prefixIcon: Icon(Icons.search_rounded,
                             size: r.s(20), color: context.textSecondary),
@@ -183,7 +186,7 @@ class _WikiListScreenState extends State<WikiListScreen> {
                         padding: EdgeInsets.symmetric(horizontal: r.s(16)),
                         children: [
                           _CategoryChip(
-                            label: 'Todos',
+                            label: s.everyone,
                             isSelected: _selectedCategoryId == null,
                             onTap: () =>
                                 setState(() => _selectedCategoryId = null),
@@ -205,7 +208,7 @@ class _WikiListScreenState extends State<WikiListScreen> {
                             children: [
                               SizedBox(height: r.s(100)),
                               Center(
-                                child: Text('Nenhuma entrada encontrada',
+                                child: Text(s.noEntriesFound,
                                     style: TextStyle(
                                         color: context.textSecondary)),
                               ),
@@ -227,7 +230,7 @@ class _WikiListScreenState extends State<WikiListScreen> {
                               return _WikiEntryCard(
                                 entry: entry,
                                 onTap: () =>
-                                    context.push('/wiki/${entry['id']}'),
+                                    context.push('/wiki/${entry['ids.closingBracket),
                               );
                             },
                           ),
@@ -239,7 +242,7 @@ class _WikiListScreenState extends State<WikiListScreen> {
   }
 }
 
-class _CategoryChip extends StatelessWidget {
+class _CategoryChip extends ConsumerWidget {
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
@@ -251,7 +254,8 @@ class _CategoryChip extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: onTap,
@@ -293,16 +297,17 @@ class _CategoryChip extends StatelessWidget {
   }
 }
 
-class _WikiEntryCard extends StatelessWidget {
+class _WikiEntryCard extends ConsumerWidget {
   final Map<String, dynamic> entry;
   final VoidCallback onTap;
 
   const _WikiEntryCard({required this.entry, required this.onTap});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
-    final title = entry['title'] as String? ?? 'Sem título';
+    final title = entry['title'] as String? ?? s.untitled;
     final imageUrl = entry['cover_image_url'] as String?;
     // Categoria vem do join wiki_categories(id, name)
     final catData = entry['wiki_categories'] as Map<String, dynamic>?;
@@ -392,7 +397,7 @@ class _WikiEntryCard extends StatelessWidget {
 // WIKI DETAIL SCREEN
 // ============================================================================
 
-class WikiDetailScreen extends StatefulWidget {
+class WikiDetailScreen extends ConsumerStatefulWidget {
   final String wikiId;
   const WikiDetailScreen({super.key, required this.wikiId});
 
@@ -400,7 +405,7 @@ class WikiDetailScreen extends StatefulWidget {
   State<WikiDetailScreen> createState() => _WikiDetailScreenState();
 }
 
-class _WikiDetailScreenState extends State<WikiDetailScreen> {
+class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
   Map<String, dynamic>? _entry;
   bool _isLoading = true;
   int _userRating = 0;
@@ -494,8 +499,8 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(isNowBookmarked
-                ? 'Wiki fixada no seu perfil!'
-                : 'Wiki removida do perfil'),
+                ? s.wikiPinned
+                : s.wikiRemoved),
             backgroundColor:
                 isNowBookmarked ? AppTheme.primaryColor : context.surfaceColor,
             behavior: SnackBarBehavior.floating,
@@ -546,7 +551,8 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     if (_isLoading) {
       return Scaffold(
@@ -567,12 +573,12 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
           iconTheme: IconThemeData(color: context.textPrimary),
         ),
         body: Center(
-            child: Text('Entrada não encontrada',
+            child: Text(s.entryNotFound,
                 style: TextStyle(color: context.textSecondary))),
       );
     }
 
-    final title = _entry?['title'] as String? ?? 'Sem título';
+    final title = _entry?['title'] as String? ?? s.untitled;
     final content = _entry?['content'] as String? ?? '';
     final coverUrl = _entry?['cover_image_url'] as String?;
     // Categoria vem do join wiki_categories(id, name)
@@ -665,7 +671,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Informações',
+                          Text(s.information,
                               style: TextStyle(
                                   fontWeight: FontWeight.w800,
                                   fontSize: r.fs(16),
@@ -719,7 +725,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                         ),
                         SizedBox(width: r.s(10)),
                         Text(
-                          'Por ${author['nickname'] ?? 'Anônimo'}',
+                          s.byAuthornickname'] ?? s.anonymous}',
                           style: TextStyle(
                               color: context.textSecondary, fontSize: r.fs(14)),
                         ),
@@ -730,7 +736,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                   SizedBox(height: r.s(24)),
                   Divider(color: Colors.white.withValues(alpha: 0.05)),
                   SizedBox(height: r.s(12)),
-                  Text('Minha Avaliação',
+                  Text(s.myRating,
                       style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: r.fs(18),
@@ -766,7 +772,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                   ),
                   SizedBox(height: r.s(6)),
                   Text(
-                    'Média: ${_avgRating.toStringAsFixed(1)} ($_totalRatings avaliações)',
+                    s.averageRating,
                     style: TextStyle(
                         color: context.textSecondary, fontSize: r.fs(13)),
                   ),
@@ -775,7 +781,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                   SizedBox(height: r.s(24)),
                   Divider(color: Colors.white.withValues(alpha: 0.05)),
                   SizedBox(height: r.s(12)),
-                  Text('O que eu gosto',
+                  Text(s.whatILike,
                       style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: r.fs(18),
@@ -788,7 +794,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                           controller: _whatILikeController,
                           style: TextStyle(color: context.textPrimary),
                           decoration: InputDecoration(
-                            hintText: 'Escreva o que você gosta...',
+                            hintText: s.writeWhatYouLike,
                             hintStyle: TextStyle(color: context.textSecondary),
                             filled: true,
                             fillColor: context.surfaceColor,
@@ -868,7 +874,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  profile?['nickname'] ?? 'Anônimo',
+                                  profile?['nickname'] ?? s.anonymous,
                                   style: TextStyle(
                                       fontWeight: FontWeight.w700,
                                       fontSize: r.fs(14),
@@ -902,7 +908,7 @@ class _WikiDetailScreenState extends State<WikiDetailScreen> {
 // CREATE WIKI SCREEN
 // ============================================================================
 
-class CreateWikiScreen extends StatefulWidget {
+class CreateWikiScreen extends ConsumerStatefulWidget {
   final String communityId;
   const CreateWikiScreen({super.key, required this.communityId});
 
@@ -910,7 +916,7 @@ class CreateWikiScreen extends StatefulWidget {
   State<CreateWikiScreen> createState() => _CreateWikiScreenState();
 }
 
-class _CreateWikiScreenState extends State<CreateWikiScreen> {
+class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
   final _coverUrlController = TextEditingController();
@@ -948,7 +954,7 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
     final r = context.r;
     if (_titleController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Título é obrigatório')),
+        const SnackBar(content: Text(s.titleRequired)),
       );
       return;
     }
@@ -957,7 +963,7 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
 
     try {
       final userId = SupabaseService.currentUserId;
-      if (userId == null) throw Exception('Não autenticado');
+      if (userId == null) throw Exception(s.notAuthenticated);
 
       final infobox = <String, dynamic>{};
       for (final f in _infoboxFields) {
@@ -982,7 +988,7 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Entrada enviada para revisão dos curadores!'),
+            content: Text(s.entrySentForReview),
             backgroundColor: AppTheme.primaryColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -993,7 +999,7 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
+          SnackBar(content: Text(s.anErrorOccurredTryAgain)),
         );
       }
     } finally {
@@ -1013,7 +1019,8 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -1021,7 +1028,7 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
         backgroundColor: context.scaffoldBg,
         elevation: 0,
         iconTheme: IconThemeData(color: context.textPrimary),
-        title: Text('Nova Entrada Wiki',
+        title: Text(s.newWikiEntry,
             style: TextStyle(
                 fontWeight: FontWeight.w800,
                 color: context.textPrimary,
@@ -1066,7 +1073,7 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: context.textPrimary),
                     )
-                  : Text('Publicar',
+                  : Text(s.publish,
                       style: TextStyle(
                           color: context.textPrimary,
                           fontWeight: FontWeight.w700,
@@ -1084,7 +1091,7 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
               controller: _coverUrlController,
               style: TextStyle(color: context.textPrimary),
               decoration: InputDecoration(
-                hintText: 'URL da imagem de capa',
+                hintText: s.coverImageUrl,
                 hintStyle: TextStyle(color: context.textSecondary),
                 prefixIcon: Icon(Icons.image_rounded,
                     size: r.s(20), color: context.textSecondary),
@@ -1126,7 +1133,7 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
                       decoration: InputDecoration(
                         hintText: _categories.isEmpty
                             ? 'Nenhuma categoria dispon\u00edvel'
-                            : 'Selecione a categoria',
+                            : s.selectCategory,
                         hintStyle: TextStyle(color: context.textSecondary),
                         prefixIcon: Icon(Icons.category_rounded,
                             size: r.s(20), color: context.textSecondary),
@@ -1154,7 +1161,7 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
                   fontWeight: FontWeight.w800,
                   color: context.textPrimary),
               decoration: InputDecoration(
-                hintText: 'Título da entrada...',
+                hintText: s.entryTitle,
                 border: InputBorder.none,
                 hintStyle: TextStyle(color: context.textSecondary),
               ),
@@ -1164,7 +1171,7 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
               style: TextStyle(
                   fontSize: r.fs(16), height: 1.6, color: context.textPrimary),
               decoration: InputDecoration(
-                hintText: 'Conteúdo detalhado...',
+                hintText: s.detailedContent,
                 border: InputBorder.none,
                 hintStyle: TextStyle(color: context.textSecondary),
               ),
@@ -1178,7 +1185,7 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
             ),
             Row(
               children: [
-                Text('Infobox',
+                Text(s.infobox,
                     style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: r.fs(18),
@@ -1209,7 +1216,7 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
                         Icon(Icons.add_rounded,
                             size: r.s(18), color: AppTheme.primaryColor),
                         SizedBox(width: r.s(6)),
-                        Text('Campo',
+                        Text(s.field,
                             style: TextStyle(
                                 color: AppTheme.primaryColor,
                                 fontWeight: FontWeight.w700)),
@@ -1232,7 +1239,7 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
                         controller: f.keyController,
                         style: TextStyle(color: context.textPrimary),
                         decoration: InputDecoration(
-                          hintText: 'Campo',
+                          hintText: s.field,
                           hintStyle: TextStyle(color: context.textSecondary),
                           filled: true,
                           fillColor: context.surfaceColor,
@@ -1253,7 +1260,7 @@ class _CreateWikiScreenState extends State<CreateWikiScreen> {
                         controller: f.valueController,
                         style: TextStyle(color: context.textPrimary),
                         decoration: InputDecoration(
-                          hintText: 'Valor',
+                          hintText: s.value,
                           hintStyle: TextStyle(color: context.textSecondary),
                           filled: true,
                           fillColor: context.surfaceColor,

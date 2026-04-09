@@ -1,13 +1,15 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/models/community_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// ACM — Amino Community Manager.
 /// Gerenciamento de módulos (JSONB), Join Types, customização visual,
 /// home layout e estatísticas.
-class AcmScreen extends StatefulWidget {
+class AcmScreen extends ConsumerStatefulWidget {
   final String communityId;
   const AcmScreen({super.key, required this.communityId});
 
@@ -15,7 +17,7 @@ class AcmScreen extends StatefulWidget {
   State<AcmScreen> createState() => _AcmScreenState();
 }
 
-class _AcmScreenState extends State<AcmScreen>
+class _AcmScreenState extends ConsumerState<AcmScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   CommunityModel? _community;
@@ -43,7 +45,7 @@ class _AcmScreenState extends State<AcmScreen>
   int _totalPosts = 0;
   int _totalChats = 0;
 
-  final _tabs = const ['Módulos', 'Acesso', 'Visual', 'Home', 'Stats'];
+  final _tabs = const [s.modules, s.access, s.visual, s.home2, 'Stats'];
 
   @override
   void initState() {
@@ -179,7 +181,7 @@ class _AcmScreenState extends State<AcmScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Configurações salvas!'),
+            content: Text(s.settingsSaved),
             backgroundColor: AppTheme.primaryColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -190,7 +192,7 @@ class _AcmScreenState extends State<AcmScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
+          SnackBar(content: Text(s.anErrorOccurredTryAgain)),
         );
       }
     }
@@ -211,7 +213,8 @@ class _AcmScreenState extends State<AcmScreen>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -241,7 +244,7 @@ class _AcmScreenState extends State<AcmScreen>
                   ),
                 ],
               ),
-              child: const Text('Salvar',
+              child: Text(s.save,
                   style: TextStyle(
                       fontWeight: FontWeight.w800, color: Colors.white)),
             ),
@@ -279,23 +282,23 @@ class _AcmScreenState extends State<AcmScreen>
     final r = context.r;
     final modules = [
       _ModuleItem(
-          'post', 'Posts', Icons.article_rounded, 'Permitir criação de posts'),
+          'post', s.posts, Icons.article_rounded, 'Permitir criação de posts'),
       _ModuleItem(
-          'chat', 'Chat', Icons.chat_rounded, 'Habilitar chats na comunidade'),
+          'chat', s.chat, Icons.chat_rounded, 'Habilitar chats na comunidade'),
       _ModuleItem('catalog', 'Catálogo (Wiki)', Icons.auto_stories_rounded,
-          'Habilitar wiki/catálogo'),
-      _ModuleItem('featured', 'Destaque', Icons.star_rounded,
-          'Permitir destaque de conteúdo'),
-      _ModuleItem('ranking', 'Ranking', Icons.leaderboard_rounded,
+          s.enableWikiCatalog),
+      _ModuleItem('featured', s.featured, Icons.star_rounded,
+          s.allowContentHighlight),
+      _ModuleItem('ranking', s.ranking, Icons.leaderboard_rounded,
           'Habilitar leaderboard'),
       _ModuleItem('sharedFolder', 'Pasta Compartilhada',
-          Icons.folder_shared_rounded, 'Pasta compartilhada'),
+          Icons.folder_shared_rounded, s.sharedFolder),
       _ModuleItem('influencer', 'Influenciador', Icons.verified_rounded,
           'Sistema de influenciadores'),
       _ModuleItem('externalContent', 'Conteúdo Externo', Icons.link_rounded,
           'Permitir links externos'),
-      _ModuleItem('topicCategories', 'Categorias', Icons.category_rounded,
-          'Categorias de tópicos'),
+      _ModuleItem('topicCategories', s.categories, Icons.category_rounded,
+          s.topicCategories),
     ];
 
     return ListView.builder(
@@ -337,55 +340,55 @@ class _AcmScreenState extends State<AcmScreen>
     return ListView(
       padding: EdgeInsets.all(r.s(16)),
       children: [
-        Text('Tipo de Entrada', style: Theme.of(context).textTheme.titleLarge),
+        Text(s.entryType, style: Theme.of(context).textTheme.titleLarge),
         SizedBox(height: r.s(12)),
         _AccessOption(
           icon: Icons.public_rounded,
-          label: 'Aberta',
+          label: s.open,
           description: 'Qualquer pessoa pode entrar',
           isSelected: _joinType == 'open',
           onTap: () => setState(() => _joinType = 'open'),
         ),
         _AccessOption(
           icon: Icons.how_to_reg_rounded,
-          label: 'Requer Aprovação',
-          description: 'Novos membros precisam de aprovação',
+          label: s.requiresApproval,
+          description: s.newMembersNeedApproval,
           isSelected: _joinType == 'request',
           onTap: () => setState(() => _joinType = 'request'),
         ),
         _AccessOption(
           icon: Icons.mail_rounded,
-          label: 'Apenas Convite',
+          label: s.inviteOnly,
           description: 'Somente por convite de membros',
           isSelected: _joinType == 'invite',
           onTap: () => setState(() => _joinType = 'invite'),
         ),
         SizedBox(height: r.s(32)),
-        Text('Visibilidade', style: Theme.of(context).textTheme.titleLarge),
+        Text(s.visibility, style: Theme.of(context).textTheme.titleLarge),
         SizedBox(height: r.s(12)),
         _AccessOption(
           icon: Icons.visibility_rounded,
-          label: 'Listada',
+          label: s.listed,
           description: 'Aparece na busca e no Discover',
           isSelected: _listedStatus == 'listed',
           onTap: () => setState(() => _listedStatus = 'listed'),
         ),
         _AccessOption(
           icon: Icons.visibility_off_rounded,
-          label: 'Não Listada',
-          description: 'Acessível apenas por link direto',
+          label: s.unlistedLabel,
+          description: s.accessibleByDirectLink,
           isSelected: _listedStatus == 'unlisted',
           onTap: () => setState(() => _listedStatus = 'unlisted'),
         ),
         _AccessOption(
           icon: Icons.block_rounded,
-          label: 'Oculta',
-          description: 'Completamente invisível',
+          label: s.hiddenLabel,
+          description: s.completelyInvisible,
           isSelected: _listedStatus == 'none',
           onTap: () => setState(() => _listedStatus = 'none'),
         ),
         SizedBox(height: r.s(32)),
-        Text('Mensagem de Boas-Vindas',
+        Text(s.welcomeMessage2,
             style: Theme.of(context).textTheme.titleLarge),
         SizedBox(height: r.s(12)),
         TextField(
@@ -416,7 +419,7 @@ class _AcmScreenState extends State<AcmScreen>
     return ListView(
       padding: EdgeInsets.all(r.s(16)),
       children: [
-        Text('Customização Visual',
+        Text(s.visualCustomization,
             style: Theme.of(context).textTheme.titleLarge),
         SizedBox(height: r.s(16)),
 
@@ -547,7 +550,7 @@ class _AcmScreenState extends State<AcmScreen>
                 children: [
                   Icon(Icons.image_rounded, color: AppTheme.primaryColor),
                   SizedBox(width: r.s(12)),
-                  Text('Ícone da Comunidade',
+                  Text(s.communityIcon,
                       style: TextStyle(fontWeight: FontWeight.w600)),
                 ],
               ),
@@ -573,7 +576,7 @@ class _AcmScreenState extends State<AcmScreen>
                 controller: TextEditingController(text: _iconUrl),
                 onChanged: (v) => setState(() => _iconUrl = v),
                 decoration: InputDecoration(
-                  hintText: 'URL da imagem do ícone',
+                  hintText: s.iconImageUrl,
                   prefixIcon: Icon(Icons.link_rounded, size: r.s(18)),
                   filled: true,
                   fillColor: context.scaffoldBg,
@@ -606,7 +609,7 @@ class _AcmScreenState extends State<AcmScreen>
                 children: [
                   Icon(Icons.panorama_rounded, color: AppTheme.primaryColor),
                   SizedBox(width: r.s(12)),
-                  Text('Banner / Capa',
+                  Text(s.bannerCover,
                       style: TextStyle(fontWeight: FontWeight.w600)),
                 ],
               ),
@@ -630,7 +633,7 @@ class _AcmScreenState extends State<AcmScreen>
                 controller: TextEditingController(text: _bannerUrl),
                 onChanged: (v) => setState(() => _bannerUrl = v),
                 decoration: InputDecoration(
-                  hintText: 'URL da imagem do banner',
+                  hintText: s.bannerImageUrl,
                   prefixIcon: Icon(Icons.link_rounded, size: r.s(18)),
                   filled: true,
                   fillColor: context.scaffoldBg,
@@ -666,10 +669,10 @@ class _AcmScreenState extends State<AcmScreen>
       padding: EdgeInsets.all(r.s(16)),
       children: [
         // ---- SEÇÕES VISÍVEIS ----
-        Text('Seções da Página Inicial',
+        Text(s.homePageSections,
             style: Theme.of(context).textTheme.titleLarge),
         SizedBox(height: r.s(6)),
-        Text('Escolha quais seções serão exibidas na home da comunidade.',
+        Text(s.chooseSections,
             style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
         SizedBox(height: r.s(16)),
 
@@ -678,14 +681,14 @@ class _AcmScreenState extends State<AcmScreen>
         SizedBox(height: r.s(24)),
 
         // ---- TIPO DE DESTAQUE ----
-        Text('Estilo dos Destaques',
+        Text(s.highlightsStyle,
             style: Theme.of(context).textTheme.titleLarge),
         SizedBox(height: r.s(12)),
         Row(
           children: [
             _FeaturedStyleOption(
               icon: Icons.list_rounded,
-              label: 'Lista',
+              label: s.list,
               isSelected: featuredType == 'list',
               onTap: () {
                 setState(() => _homeLayout['featured_type'] = 'list');
@@ -694,7 +697,7 @@ class _AcmScreenState extends State<AcmScreen>
             SizedBox(width: r.s(8)),
             _FeaturedStyleOption(
               icon: Icons.grid_view_rounded,
-              label: 'Grid',
+              label: s.grid2,
               isSelected: featuredType == 'grid',
               onTap: () {
                 setState(() => _homeLayout['featured_type'] = 'grid');
@@ -703,7 +706,7 @@ class _AcmScreenState extends State<AcmScreen>
             SizedBox(width: r.s(8)),
             _FeaturedStyleOption(
               icon: Icons.view_carousel_rounded,
-              label: 'Carrossel',
+              label: s.carousel,
               isSelected: featuredType == 'carousel',
               onTap: () {
                 setState(() => _homeLayout['featured_type'] = 'carousel');
@@ -715,10 +718,10 @@ class _AcmScreenState extends State<AcmScreen>
         SizedBox(height: r.s(24)),
 
         // ---- WELCOME BANNER ----
-        Text('Banner de Boas-Vindas',
+        Text(s.welcomeBanner,
             style: Theme.of(context).textTheme.titleLarge),
         SizedBox(height: r.s(6)),
-        Text('Um banner customizado exibido no topo da home.',
+        Text(s.customBannerDesc,
             style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
         SizedBox(height: r.s(12)),
 
@@ -754,7 +757,7 @@ class _AcmScreenState extends State<AcmScreen>
                     _homeLayout['welcome_banner'] = welcomeBanner;
                   },
                   decoration: InputDecoration(
-                    hintText: 'Texto do banner (ex: Bem-vindo!)',
+                    hintText: s.bannerTextHint,
                     prefixIcon: Icon(Icons.text_fields_rounded, size: r.s(18)),
                     filled: true,
                     fillColor: context.scaffoldBg,
@@ -775,7 +778,7 @@ class _AcmScreenState extends State<AcmScreen>
                     _homeLayout['welcome_banner'] = welcomeBanner;
                   },
                   decoration: InputDecoration(
-                    hintText: 'URL da imagem do banner (opcional)',
+                    hintText: s.bannerImageUrlOptional,
                     prefixIcon: Icon(Icons.image_rounded, size: r.s(18)),
                     filled: true,
                     fillColor: context.scaffoldBg,
@@ -796,7 +799,7 @@ class _AcmScreenState extends State<AcmScreen>
                     _homeLayout['welcome_banner'] = welcomeBanner;
                   },
                   decoration: InputDecoration(
-                    hintText: 'Link ao clicar (opcional)',
+                    hintText: s.linkOnClick,
                     prefixIcon: Icon(Icons.link_rounded, size: r.s(18)),
                     filled: true,
                     fillColor: context.scaffoldBg,
@@ -816,9 +819,9 @@ class _AcmScreenState extends State<AcmScreen>
         SizedBox(height: r.s(24)),
 
         // ---- BOTTOM BAR ----
-        Text('Barra Inferior', style: Theme.of(context).textTheme.titleLarge),
+        Text(s.bottomBar, style: Theme.of(context).textTheme.titleLarge),
         SizedBox(height: r.s(6)),
-        Text('Configure a barra de navegação inferior da comunidade.',
+        Text(s.configureBottomNav,
             style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
         SizedBox(height: r.s(12)),
 
@@ -835,7 +838,7 @@ class _AcmScreenState extends State<AcmScreen>
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Mostrar Membros Online',
                     style: TextStyle(fontWeight: FontWeight.w500)),
-                subtitle: Text('Exibe contagem de online na bottom bar',
+                subtitle: Text(s.showOnlineCount,
                     style:
                         TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
                 value: bottomBar['show_online_count'] as bool? ?? true,
@@ -849,9 +852,9 @@ class _AcmScreenState extends State<AcmScreen>
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Mostrar Botão Criar (+)',
+                title: Text(s.showCreateButton,
                     style: TextStyle(fontWeight: FontWeight.w500)),
-                subtitle: Text('Botão central para criar posts',
+                subtitle: Text(s.centralButtonCreatePosts,
                     style:
                         TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
                 value: bottomBar['show_create_button'] as bool? ?? true,
@@ -878,7 +881,7 @@ class _AcmScreenState extends State<AcmScreen>
               });
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Text('Layout resetado para o padrão'),
+                  content: Text(s.layoutResetToDefault),
                   backgroundColor: AppTheme.warningColor,
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
@@ -887,7 +890,7 @@ class _AcmScreenState extends State<AcmScreen>
               );
             },
             icon: Icon(Icons.restore_rounded, color: Colors.grey[500]),
-            label: Text('Resetar para Padrão',
+            label: Text(s.resetToDefault,
                 style: TextStyle(color: Colors.grey[500])),
           ),
         ),
@@ -902,38 +905,38 @@ class _AcmScreenState extends State<AcmScreen>
       _SectionToggle(
         key: 'check_in',
         icon: Icons.check_circle_rounded,
-        label: 'Check-In',
-        description: 'Barra de check-in diário com streak',
+        label: s.checkInLabel,
+        description: s.dailyCheckInBarDesc,
       ),
       _SectionToggle(
         key: 'live_chats',
         icon: Icons.live_tv_rounded,
-        label: 'Chats ao Vivo',
+        label: s.liveChats2,
         description: 'Carrossel horizontal de chatrooms ativos',
       ),
       _SectionToggle(
         key: 'guidelines',
         icon: Icons.gavel_rounded,
-        label: 'Regras',
+        label: s.guidelines,
         description: 'Aba de regras/guidelines da comunidade',
       ),
       _SectionToggle(
         key: 'featured_posts',
         icon: Icons.star_rounded,
-        label: 'Destaque',
-        description: 'Aba de posts em destaque',
+        label: s.featured,
+        description: s.featuredPostsTab,
       ),
       _SectionToggle(
         key: 'latest_feed',
         icon: Icons.new_releases_rounded,
-        label: 'Feed Recente',
-        description: 'Aba de posts mais recentes',
+        label: s.recentFeed,
+        description: s.recentPostsTab,
       ),
       _SectionToggle(
         key: 'public_chats',
         icon: Icons.chat_bubble_rounded,
-        label: 'Chats Públicos',
-        description: 'Aba de chats públicos da comunidade',
+        label: s.publicChatsLabel,
+        description: s.communityPublicChatsTab,
       ),
     ];
 
@@ -980,50 +983,50 @@ class _AcmScreenState extends State<AcmScreen>
       child: ListView(
         padding: EdgeInsets.all(r.s(16)),
         children: [
-          Text('Estatísticas da Comunidade',
+          Text(s.communityStatistics,
               style: Theme.of(context).textTheme.titleLarge),
           SizedBox(height: r.s(16)),
           _StatCard(
             icon: Icons.people_rounded,
-            label: 'Membros Total',
+            label: s.totalMembers2,
             value: _community?.membersCount.toString() ?? '0',
             color: AppTheme.primaryColor,
           ),
           _StatCard(
             icon: Icons.person_add_rounded,
-            label: 'Novos Membros (7d)',
+            label: s.newMembers7d,
             value: _newMembers7d.toString(),
             color: AppTheme.successColor,
           ),
           _StatCard(
             icon: Icons.article_rounded,
-            label: 'Posts',
+            label: s.posts,
             value: _totalPosts.toString(),
             color: AppTheme.accentColor,
           ),
           _StatCard(
             icon: Icons.chat_rounded,
-            label: 'Chats',
+            label: s.chats,
             value: _totalChats.toString(),
             color: const Color(0xFF00BCD4),
           ),
           SizedBox(height: r.s(24)),
-          Text('Moderação', style: Theme.of(context).textTheme.titleMedium),
+          Text(s.moderation, style: Theme.of(context).textTheme.titleMedium),
           SizedBox(height: r.s(12)),
           _StatCard(
             icon: Icons.flag_rounded,
-            label: 'Denúncias Pendentes',
+            label: s.pendingReports,
             value: _pendingFlags.toString(),
             color: AppTheme.errorColor,
           ),
           _StatCard(
             icon: Icons.gavel_rounded,
-            label: 'Ações de Moderação (30d)',
+            label: s.moderationActions30d,
             value: _modActions30d.toString(),
             color: AppTheme.warningColor,
           ),
           SizedBox(height: r.s(24)),
-          Text('Configuração Atual',
+          Text(s.currentConfiguration,
               style: Theme.of(context).textTheme.titleMedium),
           SizedBox(height: r.s(12)),
           Container(
@@ -1035,11 +1038,11 @@ class _AcmScreenState extends State<AcmScreen>
             ),
             child: Column(
               children: [
-                _InfoRow('Tipo de Entrada', _joinType.toUpperCase()),
-                _InfoRow('Visibilidade', _listedStatus.toUpperCase()),
+                _InfoRow(s.entryType, _joinType.toUpperCase()),
+                _InfoRow(s.visibility, _listedStatus.toUpperCase()),
                 _InfoRow('Cor Tema', _themeColor),
                 _InfoRow(
-                    'Módulos Ativos',
+                    s.activeModules,
                     _config.entries
                         .where((e) => e.value == true)
                         .length
@@ -1078,7 +1081,7 @@ class _SectionToggle {
   });
 }
 
-class _FeaturedStyleOption extends StatelessWidget {
+class _FeaturedStyleOption extends ConsumerWidget {
   final IconData icon;
   final String label;
   final bool isSelected;
@@ -1092,7 +1095,8 @@ class _FeaturedStyleOption extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Expanded(
       child: GestureDetector(
@@ -1133,7 +1137,7 @@ class _FeaturedStyleOption extends StatelessWidget {
   }
 }
 
-class _AccessOption extends StatelessWidget {
+class _AccessOption extends ConsumerWidget {
   final IconData icon;
   final String label;
   final String description;
@@ -1149,7 +1153,8 @@ class _AccessOption extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: onTap,
@@ -1203,7 +1208,7 @@ class _AccessOption extends StatelessWidget {
   }
 }
 
-class _StatCard extends StatelessWidget {
+class _StatCard extends ConsumerWidget {
   final IconData icon;
   final String label;
   final String value;
@@ -1217,7 +1222,8 @@ class _StatCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       margin: EdgeInsets.only(bottom: r.s(8)),
@@ -1257,13 +1263,14 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-class _InfoRow extends StatelessWidget {
+class _InfoRow extends ConsumerWidget {
   final String label;
   final String value;
   const _InfoRow(this.label, this.value);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Padding(
       padding: EdgeInsets.symmetric(vertical: r.s(6)),

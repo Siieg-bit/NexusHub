@@ -1,10 +1,12 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Configurações de Notificações — Controles granulares de push e in-app.
-class NotificationSettingsScreen extends StatefulWidget {
+class NotificationSettingsScreen extends ConsumerStatefulWidget {
   const NotificationSettingsScreen({super.key});
 
   @override
@@ -13,7 +15,7 @@ class NotificationSettingsScreen extends StatefulWidget {
 }
 
 class _NotificationSettingsScreenState
-    extends State<NotificationSettingsScreen> {
+    extends ConsumerState<NotificationSettingsScreen> {
   bool _isLoading = true;
 
   // Push notifications
@@ -119,20 +121,21 @@ class _NotificationSettingsScreenState
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Configurações salvas!')),
+          const SnackBar(content: Text(s.settingsSaved)),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
+          SnackBar(content: Text(s.anErrorOccurredTryAgain)),
         );
       }
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -141,7 +144,7 @@ class _NotificationSettingsScreenState
         elevation: 0,
         iconTheme: IconThemeData(color: context.textPrimary),
         title: Text(
-          'Notificações',
+          s.notifications,
           style: TextStyle(
             fontWeight: FontWeight.w800,
             color: context.textPrimary,
@@ -170,7 +173,7 @@ class _NotificationSettingsScreenState
               ),
               alignment: Alignment.center,
               child: Text(
-                'Salvar',
+                s.save,
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
@@ -228,7 +231,7 @@ class _NotificationSettingsScreenState
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Notificações Push',
+                              s.pushNotifications2,
                               style: TextStyle(
                                 fontWeight: FontWeight.w800,
                                 fontSize: r.fs(16),
@@ -269,8 +272,8 @@ class _NotificationSettingsScreenState
                     icon: Icons.favorite_rounded,
                     title: 'Curtidas',
                     subtitle: _onlyFriendsLikes
-                        ? 'Apenas de amigos'
-                        : 'Quando alguém curte seu post',
+                        ? s.fromFriendsOnly
+                        : s.whenSomeoneLikes,
                     value: _pushLikes,
                     color: const Color(0xFFE91E63),
                     onChanged: (v) => setState(() => _pushLikes = v),
@@ -284,10 +287,10 @@ class _NotificationSettingsScreenState
                   ),
                   _NotifToggle(
                     icon: Icons.comment_rounded,
-                    title: 'Comentários',
+                    title: s.comments,
                     subtitle: _onlyFriendsComments
-                        ? 'Apenas de amigos'
-                        : 'Quando alguém comenta no seu post',
+                        ? s.fromFriendsOnly
+                        : s.whenSomeoneComments,
                     value: _pushComments,
                     color: AppTheme.primaryColor,
                     onChanged: (v) => setState(() => _pushComments = v),
@@ -302,26 +305,26 @@ class _NotificationSettingsScreenState
                   _NotifToggle(
                     icon: Icons.person_add_rounded,
                     title: 'Novos Seguidores',
-                    subtitle: 'Quando alguém começa a te seguir',
+                    subtitle: s.whenSomeoneFollows,
                     value: _pushFollows,
                     color: AppTheme.accentColor,
                     onChanged: (v) => setState(() => _pushFollows = v),
                   ),
                   _NotifToggle(
                     icon: Icons.alternate_email_rounded,
-                    title: 'Menções',
-                    subtitle: 'Quando alguém menciona você',
+                    title: s.mentions,
+                    subtitle: s.whenSomeoneMentions,
                     value: _pushMentions,
                     color: const Color(0xFF00BCD4),
                     onChanged: (v) => setState(() => _pushMentions = v),
                   ),
                   SizedBox(height: r.s(24)),
-                  const _SectionTitle(title: 'Chat'),
+                  const _SectionTitle(title: s.chat),
                   _NotifToggle(
                     icon: Icons.chat_rounded,
                     title: 'Mensagens',
                     subtitle: _onlyFriendsMessages
-                        ? 'Apenas de amigos'
+                        ? s.fromFriendsOnly
                         : 'Novas mensagens no chat',
                     value: _pushChatMessages,
                     color: AppTheme.primaryColor,
@@ -343,10 +346,10 @@ class _NotificationSettingsScreenState
                     onChanged: (v) => setState(() => _pushCommunityInvites = v),
                   ),
                   SizedBox(height: r.s(24)),
-                  const _SectionTitle(title: 'Gamificação'),
+                  const _SectionTitle(title: s.gamification),
                   _NotifToggle(
                     icon: Icons.emoji_events_rounded,
-                    title: 'Conquistas',
+                    title: s.achievements,
                     subtitle: 'Quando desbloqueia uma conquista',
                     value: _pushAchievements,
                     color: AppTheme.warningColor,
@@ -354,18 +357,18 @@ class _NotificationSettingsScreenState
                   ),
                   _NotifToggle(
                     icon: Icons.arrow_upward_rounded,
-                    title: 'Subiu de Nível',
-                    subtitle: 'Quando sobe de nível',
+                    title: s.leveledUp,
+                    subtitle: s.whenLevelUp,
                     value: _pushLevelUp,
                     color: const Color(0xFF9C27B0),
                     onChanged: (v) => setState(() => _pushLevelUp = v),
                   ),
                   SizedBox(height: r.s(24)),
-                  const _SectionTitle(title: 'Moderação'),
+                  const _SectionTitle(title: s.moderation),
                   _NotifToggle(
                     icon: Icons.gavel_rounded,
-                    title: 'Ações de Moderação',
-                    subtitle: 'Avisos, strikes e ações sobre seu conteúdo',
+                    title: s.moderationActionsTitle,
+                    subtitle: s.warningsStrikesActions,
                     value: _pushModeration,
                     color: AppTheme.errorColor,
                     onChanged: (v) => setState(() => _pushModeration = v),
@@ -377,7 +380,7 @@ class _NotificationSettingsScreenState
                 // ============================================================
                 // PAUSAR NOTIFICAÇÕES
                 // ============================================================
-                const _SectionTitle(title: 'Pausar Notificações'),
+                const _SectionTitle(title: s.pauseNotifications2),
                 Container(
                   margin: EdgeInsets.only(bottom: r.s(12)),
                   padding: EdgeInsets.all(r.s(16)),
@@ -411,7 +414,7 @@ class _NotificationSettingsScreenState
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Não Perturbe',
+                                Text(s.doNotDisturb,
                                     style: TextStyle(
                                         fontWeight: FontWeight.w700,
                                         fontSize: r.fs(15),
@@ -419,8 +422,8 @@ class _NotificationSettingsScreenState
                                 SizedBox(height: r.s(4)),
                                 Text(
                                   _pauseAllUntil && _pauseUntilDate != null
-                                      ? 'Pausado até ${_pauseUntilDate!.day}/${_pauseUntilDate!.month} às ${_pauseUntilDate!.hour.toString().padLeft(2, '0')}:${_pauseUntilDate!.minute.toString().padLeft(2, '0')}'
-                                      : 'Pausar todas as notificações temporariamente',
+                                      ? s.pausedUntil('${_pauseUntilDate!.day}/${_pauseUntilDate!.month} ${_pauseUntilDate!.hour.toString().padLeft(2, "0")}:${_pauseUntilDate!.minute.toString().padLeft(2, "0")}')
+                                      : s.pauseNotifications,
                                   style: TextStyle(
                                       color: Colors.grey[500],
                                       fontSize: r.fs(13)),
@@ -470,15 +473,15 @@ class _NotificationSettingsScreenState
                 _NotifToggle(
                   icon: Icons.volume_up_rounded,
                   title: 'Sons',
-                  subtitle: 'Sons de notificação dentro do app',
+                  subtitle: s.notificationSoundsInApp,
                   value: _inAppSounds,
                   color: (Colors.grey[500] ?? Colors.grey),
                   onChanged: (v) => setState(() => _inAppSounds = v),
                 ),
                 _NotifToggle(
                   icon: Icons.vibration_rounded,
-                  title: 'Vibração',
-                  subtitle: 'Vibrar ao receber notificações',
+                  title: s.vibration,
+                  subtitle: s.vibrateOnNotifications,
                   value: _inAppVibration,
                   color: (Colors.grey[500] ?? Colors.grey),
                   onChanged: (v) => setState(() => _inAppVibration = v),
@@ -490,12 +493,13 @@ class _NotificationSettingsScreenState
   }
 }
 
-class _SectionTitle extends StatelessWidget {
+class _SectionTitle extends ConsumerWidget {
   final String title;
   const _SectionTitle({required this.title});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Padding(
       padding: EdgeInsets.only(bottom: r.s(12), left: r.s(4)),
@@ -512,7 +516,7 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
-class _NotifToggle extends StatelessWidget {
+class _NotifToggle extends ConsumerWidget {
   final IconData icon;
   final String title;
   final String subtitle;
@@ -531,7 +535,8 @@ class _NotifToggle extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       margin: EdgeInsets.only(bottom: r.s(12)),
@@ -597,13 +602,14 @@ class _NotifToggle extends StatelessWidget {
 }
 
 /// Chip compacto para filtrar notificações apenas de amigos.
-class _FriendsOnlyChip extends StatelessWidget {
+class _FriendsOnlyChip extends ConsumerWidget {
   final bool value;
   final ValueChanged<bool> onChanged;
   const _FriendsOnlyChip({required this.value, required this.onChanged});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     return GestureDetector(
       onTap: () => onChanged(!value),
       child: AnimatedContainer(
@@ -630,7 +636,7 @@ class _FriendsOnlyChip extends StatelessWidget {
             ),
             const SizedBox(width: 4),
             Text(
-              'Apenas amigos',
+              s.friendsOnly,
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,

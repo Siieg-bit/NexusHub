@@ -1,18 +1,20 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/services/ad_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Tela "Ganhar Moedas Grátis" — Estilo Amino original.
 /// Header azul celeste com saldo, corpo claro com cards de atividades.
-class FreeCoinsScreen extends StatefulWidget {
+class FreeCoinsScreen extends ConsumerStatefulWidget {
   const FreeCoinsScreen({super.key});
 
   @override
   State<FreeCoinsScreen> createState() => _FreeCoinsScreenState();
 }
 
-class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
+class _FreeCoinsScreenState extends ConsumerState<FreeCoinsScreen> {
   int _balance = 0;
   int _adsWatchedToday = 0;
   static const int _maxAdsPerDay = 10;
@@ -79,7 +81,7 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('+$rewardCoins moedas!',
+              content: Text(s.rewardCoinsLabel(rewardCoins),
                   style: const TextStyle(color: Colors.white)),
               backgroundColor: const Color(0xFF4CAF50),
             ),
@@ -90,7 +92,7 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao carregar anúncio. Tente novamente.',
+            content: Text(s.errorLoadingAd,
                 style: const TextStyle(color: Colors.white)),
             backgroundColor: const Color(0xFFE53935),
           ),
@@ -102,7 +104,8 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
@@ -213,12 +216,12 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
               padding: EdgeInsets.all(r.s(16)),
               children: [
                 // Assistir Anúncios
-                _SectionTitle(title: 'Assistir Anúncios'),
+                _SectionTitle(title: s.watchAdsAction),
                 SizedBox(height: r.s(8)),
                 _EarningCard(
                   icon: Icons.play_circle_filled_rounded,
                   iconColor: const Color(0xFFE53935),
-                  title: 'Assistir Vídeo',
+                  title: s.watchVideoAction,
                   subtitle: '$_adsWatchedToday/$_maxAdsPerDay assistidos hoje',
                   reward: '+5',
                   onTap: _adsWatchedToday < _maxAdsPerDay ? _watchAd : null,
@@ -227,40 +230,40 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
                 SizedBox(height: r.s(20)),
 
                 // Atividades Diárias
-                _SectionTitle(title: 'Atividades Diárias'),
+                _SectionTitle(title: s.dailyActivities),
                 SizedBox(height: r.s(8)),
                 const _EarningCard(
                   icon: Icons.calendar_today_rounded,
                   iconColor: Color(0xFF2196F3),
-                  title: 'Check-in Diário',
-                  subtitle: 'Faça check-in todos os dias',
+                  title: s.dailyCheckIn2,
+                  subtitle: s.checkInEveryDay,
                   reward: '+5-25',
                 ),
                 const _EarningCard(
                   icon: Icons.edit_rounded,
                   iconColor: Color(0xFF4CAF50),
                   title: 'Criar um Post',
-                  subtitle: 'Publique conteúdo na comunidade',
+                  subtitle: s.publishContentCommunity,
                   reward: '+3',
                 ),
                 const _EarningCard(
                   icon: Icons.comment_rounded,
                   iconColor: Color(0xFF00BCD4),
                   title: 'Comentar em Posts',
-                  subtitle: 'Participe das discussões',
+                  subtitle: s.joinDiscussions,
                   reward: '+1',
                 ),
                 const _EarningCard(
                   icon: Icons.quiz_rounded,
                   iconColor: Color(0xFFFF9800),
                   title: 'Responder Quiz',
-                  subtitle: 'Acerte quizzes da comunidade',
+                  subtitle: s.getCommunityQuizzes,
                   reward: '+2',
                 ),
                 SizedBox(height: r.s(20)),
 
                 // Conquistas
-                _SectionTitle(title: 'Conquistas'),
+                _SectionTitle(title: s.achievements),
                 SizedBox(height: r.s(8)),
                 const _EarningCard(
                   icon: Icons.emoji_events_rounded,
@@ -279,8 +282,8 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
                 const _EarningCard(
                   icon: Icons.trending_up_rounded,
                   iconColor: Color(0xFF2196F3),
-                  title: 'Subir de Nível',
-                  subtitle: 'Ganhe moedas ao subir de nível',
+                  title: s.levelUpAction,
+                  subtitle: s.earnCoinsLevelUp,
                   reward: '+20',
                 ),
                 SizedBox(height: r.s(24)),
@@ -293,12 +296,13 @@ class _FreeCoinsScreenState extends State<FreeCoinsScreen> {
   }
 }
 
-class _SectionTitle extends StatelessWidget {
+class _SectionTitle extends ConsumerWidget {
   final String title;
   const _SectionTitle({required this.title});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Text(
       title,
@@ -311,7 +315,7 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
-class _EarningCard extends StatelessWidget {
+class _EarningCard extends ConsumerWidget {
   final IconData icon;
   final Color iconColor;
   final String title;
@@ -331,7 +335,8 @@ class _EarningCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       margin: EdgeInsets.only(bottom: r.s(8)),

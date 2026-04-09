@@ -2,6 +2,7 @@
 // ignore_for_file: type=lint
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
+import 'core/l10n/locale_provider.dart';
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
@@ -18,7 +19,7 @@ class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
       throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
+        s.defaultFirebaseOptionsWebNotConfigured
         'you can reconfigure this by running the FlutterFire CLI again.',
       );
     }
@@ -27,33 +28,33 @@ class DefaultFirebaseOptions {
         return android;
       case TargetPlatform.iOS:
         throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
+          s.defaultFirebaseOptionsIosNotConfigured
           'you can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.macOS:
         throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
+          s.defaultFirebaseOptionsMacosNotConfigured
           'you can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.windows:
         throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
+          s.defaultFirebaseOptionsWindowsNotConfigured
           'you can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.linux:
         throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for linux - '
+          s.defaultFirebaseOptionsLinuxNotConfigured
           'you can reconfigure this by running the FlutterFire CLI again.',
         );
       default:
         throw UnsupportedError(
-          'DefaultFirebaseOptions are not supported for this platform.',
+          s.defaultFirebaseOptionsNotSupported,
         );
     }
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyAVrtW0plFDgkxfZCDE-FrKzNbKGb0ev1k',
+    apiKey: s.apiKey,
     appId: '1:884602945431:android:784997bcf65af896e20ed2',
     messagingSenderId: '884602945431',
     projectId: 'aminexus-8dabd',

@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
@@ -5,12 +6,13 @@ import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // PINNED WIKIS SECTION — Wikis fixadas no perfil (via bookmarks.wiki_id)
 // =============================================================================
 
-class ProfilePinnedWikis extends StatefulWidget {
+class ProfilePinnedWikis extends ConsumerStatefulWidget {
   final String userId;
   const ProfilePinnedWikis({super.key, required this.userId});
 
@@ -18,7 +20,7 @@ class ProfilePinnedWikis extends StatefulWidget {
   State<ProfilePinnedWikis> createState() => _ProfilePinnedWikisState();
 }
 
-class _ProfilePinnedWikisState extends State<ProfilePinnedWikis> {
+class _ProfilePinnedWikisState extends ConsumerState<ProfilePinnedWikis> {
   List<Map<String, dynamic>> _pinnedWikis = [];
   bool _isLoading = true;
 
@@ -52,7 +54,8 @@ class _ProfilePinnedWikisState extends State<ProfilePinnedWikis> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     if (_isLoading) return const SizedBox.shrink();
     if (_pinnedWikis.isEmpty) return const SizedBox.shrink();
@@ -89,7 +92,7 @@ class _ProfilePinnedWikisState extends State<ProfilePinnedWikis> {
               itemBuilder: (context, index) {
                 final bookmark = _pinnedWikis[index];
                 final wiki = bookmark['wiki_entries'] as Map<String, dynamic>;
-                final title = wiki['title'] as String? ?? 'Wiki';
+                final title = wiki['title'] as String? ?? s.wiki;
                 final coverUrl = wiki['cover_image_url'] as String?;
                 final category = wiki['category'] as String?;
                 final wikiId = wiki['id'] as String?;

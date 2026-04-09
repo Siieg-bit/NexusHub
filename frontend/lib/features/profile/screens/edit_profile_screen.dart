@@ -9,6 +9,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/services/media_upload_service.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Tela de edição de perfil do usuário com Rich Bio Editor.
 class EditProfileScreen extends ConsumerStatefulWidget {
@@ -83,7 +84,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Perfil atualizado com sucesso!')),
+          const SnackBar(content: Text(s.profileUpdatedSuccess)),
         );
         context.pop();
       }
@@ -92,7 +93,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                'Erro ao salvar: ${e.toString().contains('duplicate') ? 'Esse Amino ID já está em uso.' : 'Tente novamente.'}'),
+                'Erro ao salvar: ${e.toString().contains('duplicate') ? s.aminoIdInUse : s.tryAgainGeneric}'),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -149,6 +150,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final user = ref.watch(currentUserProvider);
 
@@ -180,7 +182,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                     ),
                   )
                 : const Text(
-                    'Salvar',
+                    s.save,
                     style: TextStyle(
                       color: AppTheme.primaryColor,
                       fontWeight: FontWeight.w800,
@@ -279,13 +281,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
               // Nickname
               _buildTextField(
                 controller: _nicknameController,
-                label: 'Nickname',
+                label: s.nicknameHint,
                 icon: Icons.person_outlined,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Obrigatório';
+                    return s.requiredField;
                   }
-                  if (value.trim().length < 3) return 'Mínimo 3 caracteres';
+                  if (value.trim().length < 3) return s.min3Chars;
                   return null;
                 },
               ),
@@ -294,9 +296,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
               // Amino ID
               _buildTextField(
                 controller: _aminoIdController,
-                label: 'Amino ID',
+                label: s.aminoId,
                 icon: Icons.alternate_email_rounded,
-                hintText: 'Seu identificador único',
+                hintText: s.uniqueIdentifier,
               ),
               SizedBox(height: r.s(16)),
 
@@ -327,7 +329,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                 Icon(Icons.edit_note_rounded,
                     color: AppTheme.primaryColor, size: r.s(20)),
                 SizedBox(width: r.s(8)),
-                Text('Bio',
+                Text(s.bio,
                     style:
                         TextStyle(color: Colors.grey[500], fontSize: r.fs(14))),
                 const Spacer(),
@@ -344,8 +346,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                         fontSize: r.fs(12), fontWeight: FontWeight.w700),
                     dividerHeight: 0,
                     tabs: const [
-                      Tab(text: 'Editar'),
-                      Tab(text: 'Prévia'),
+                      Tab(text: s.edit),
+                      Tab(text: s.preview),
                     ],
                   ),
                 ),
@@ -373,7 +375,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                       TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
                   decoration: InputDecoration(
                     hintText:
-                        'Escreva sua bio... Use **negrito**, *itálico*, ~~tachado~~',
+                        s.writeBioHint,
                     hintStyle:
                         TextStyle(color: Colors.grey[600], fontSize: r.fs(13)),
                     border: InputBorder.none,
@@ -391,7 +393,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                       final text = value.text.trim();
                       if (text.isEmpty) {
                         return Text(
-                          'Nenhum conteúdo ainda...',
+                          s.noContentYet,
                           style: TextStyle(
                               color: Colors.grey[600],
                               fontStyle: FontStyle.italic,
@@ -435,23 +437,23 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
     final buttons = [
       _FormatButton(
           icon: Icons.format_bold,
-          tooltip: 'Negrito',
+          tooltip: s.bold,
           onTap: () => _applyFormat('**', '**')),
       _FormatButton(
           icon: Icons.format_italic,
-          tooltip: 'Itálico',
+          tooltip: s.italic,
           onTap: () => _applyFormat('*', '*')),
       _FormatButton(
           icon: Icons.format_strikethrough,
-          tooltip: 'Tachado',
+          tooltip: s.strikethrough,
           onTap: () => _applyFormat('~~', '~~')),
       _FormatButton(
           icon: Icons.link_rounded,
-          tooltip: 'Link',
+          tooltip: s.link,
           onTap: () => _showLinkDialog()),
       _FormatButton(
           icon: Icons.format_list_bulleted_rounded,
-          tooltip: 'Lista',
+          tooltip: s.list,
           onTap: () => _applyFormat('\n- ', '', placeholder: 'item')),
     ];
 
@@ -494,7 +496,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: context.surfaceColor,
-        title: Text('Inserir Link',
+        title: Text(s.insertLink2,
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w700)),
         content: Column(
@@ -526,7 +528,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancelar', style: TextStyle(color: Colors.grey[500])),
+            child: Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
           ),
           TextButton(
             onPressed: () {

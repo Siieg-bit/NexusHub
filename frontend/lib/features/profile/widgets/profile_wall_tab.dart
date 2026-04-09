@@ -8,6 +8,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/profile_providers.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // WALL TAB — Mural de mensagens
@@ -25,6 +26,7 @@ class ProfileWallTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     final wallAsync = ref.watch(userWallProvider(userId));
     final isOwnWall = userId == SupabaseService.currentUserId;
@@ -50,7 +52,7 @@ class ProfileWallTab extends ConsumerWidget {
                   style:
                       TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
                   decoration: InputDecoration(
-                    hintText: 'Escreva no mural...',
+                    hintText: s.writeOnTheWall,
                     hintStyle:
                         TextStyle(color: Colors.grey[600], fontSize: r.fs(14)),
                     border: InputBorder.none,
@@ -86,7 +88,7 @@ class ProfileWallTab extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Failed to load data.',
+                  Text(s.failedToLoadData,
                       style: TextStyle(color: Colors.grey[500])),
                   SizedBox(height: r.s(12)),
                   GestureDetector(
@@ -100,7 +102,7 @@ class ProfileWallTab extends ConsumerWidget {
             data: (messages) {
               if (messages.isEmpty) {
                 return Center(
-                  child: Text('Nenhum comentário no mural',
+                  child: Text(s.noWallComments,
                       style: TextStyle(color: Colors.grey[500])),
                 );
               }
@@ -176,7 +178,7 @@ class ProfileWallTab extends ConsumerWidget {
                                   children: [
                                     Text(
                                       profile['nickname'] as String? ??
-                                          'Usuário',
+                                          s.user,
                                       style: TextStyle(
                                         color: context.textPrimary,
                                         fontWeight: FontWeight.w700,
@@ -237,7 +239,7 @@ class ProfileWallTab extends ConsumerWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ocorreu um erro. Tente novamente.')),
+          SnackBar(content: Text(s.anErrorOccurredTryAgain)),
         );
       }
     }
@@ -259,6 +261,6 @@ class ProfileWallTab extends ConsumerWidget {
     if (diff.inDays > 0) return '${diff.inDays}d';
     if (diff.inHours > 0) return '${diff.inHours}h';
     if (diff.inMinutes > 0) return '${diff.inMinutes}min';
-    return 'agora';
+    return s.now;
   }
 }

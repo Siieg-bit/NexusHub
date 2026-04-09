@@ -20,6 +20,7 @@ import 'core/services/cache_service.dart';
 import 'core/services/analytics_service.dart';
 import 'core/services/error_handler.dart';
 import 'core/widgets/error_boundary.dart';
+import 'core/l10n/locale_provider.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -53,14 +54,14 @@ void main() async {
         eventsPerSecond: 10,
       ),
     ),
-    _initSafe('CacheService', CacheService.init),
+    _initSafe(s.cacheService, CacheService.init),
   ]);
 
   // Grupo 2: Serviços que dependem de Supabase (não-bloqueantes)
   unawaited(Future.wait([
-    _initSafe('PushNotification', PushNotificationService.initialize),
-    _initSafe('IAP', IAPService.initialize),
-    _initSafe('AdService', AdService.initialize),
+    _initSafe(s.pushNotification, PushNotificationService.initialize),
+    _initSafe(s.iap, IAPService.initialize),
+    _initSafe(s.adService, AdService.initialize),
   ]));
 
   // Registrar device fingerprint se usuário já estiver logado
@@ -206,8 +207,10 @@ class _NexusHubAppState extends ConsumerState<NexusHubApp> {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final router = ref.watch(appRouterProvider);
     final themeMode = ref.watch(themeProvider);
+    final currentLocale = ref.watch(localeProvider);
 
     // Inicializar Deep Link service com o router
     DeepLinkService.init(router);
@@ -229,12 +232,14 @@ class _NexusHubAppState extends ConsumerState<NexusHubApp> {
     );
 
     return MaterialApp.router(
-      title: 'NexusHub',
+      title: s.nexusHub,
       debugShowCheckedModeBanner: false,
       scaffoldMessengerKey: ErrorHandler.scaffoldKey,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
+      locale: Locale(currentLocale.code),
+      supportedLocales: AppLocale.values.map((l) => Locale(l.code)),
       routerConfig: router,
       builder: (context, child) {
         return ErrorBoundary(

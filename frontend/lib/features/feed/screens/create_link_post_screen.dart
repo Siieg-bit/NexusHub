@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // CREATE LINK POST SCREEN — Post com URL externa
@@ -46,7 +47,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('O título é obrigatório'),
+          content: Text(s.titleRequired),
           backgroundColor: AppTheme.errorColor,
         ),
       );
@@ -55,7 +56,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
     if (url.isEmpty || !_isValidUrl(url)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Insira um link válido (https://...)'),
+          content: Text(s.enterValidLink),
           backgroundColor: AppTheme.errorColor,
         ),
       );
@@ -65,7 +66,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
     setState(() => _isSubmitting = true);
     try {
       final userId = SupabaseService.currentUserId;
-      if (userId == null) throw Exception('Não autenticado');
+      if (userId == null) throw Exception(s.notAuthenticated);
 
       final result = await SupabaseService.table('posts')
           .insert({
@@ -98,7 +99,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Link compartilhado com sucesso!'),
+            content: Text(s.linkSharedSuccess),
             backgroundColor: AppTheme.successColor,
           ),
         );
@@ -108,7 +109,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
         setState(() => _isSubmitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao publicar. Tente novamente.'),
+            content: Text(s.errorPublishing2),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -118,13 +119,14 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         title: Text(
-          'Compartilhar Link',
+          s.shareLinkTitle,
           style: TextStyle(
               color: context.textPrimary,
               fontSize: r.fs(17),
@@ -151,15 +153,15 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
             itemBuilder: (_) => [
               PopupMenuItem(
                   value: 'public',
-                  child: Text('Público',
+                  child: Text(s.publicLabel,
                       style: TextStyle(color: context.textPrimary))),
               PopupMenuItem(
                   value: 'followers',
-                  child: Text('Seguidores',
+                  child: Text(s.followers,
                       style: TextStyle(color: context.textPrimary))),
               PopupMenuItem(
                   value: 'private',
-                  child: Text('Privado',
+                  child: Text(s.privateLabel,
                       style: TextStyle(color: context.textPrimary))),
             ],
           ),
@@ -173,7 +175,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
                         strokeWidth: 2, color: AppTheme.primaryColor),
                   )
                 : Text(
-                    'Publicar',
+                    s.publish,
                     style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontSize: r.fs(14),
@@ -262,7 +264,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
                   fontSize: r.fs(20),
                   fontWeight: FontWeight.w700),
               decoration: InputDecoration(
-                hintText: 'Título do post...',
+                hintText: s.postTitleHint,
                 hintStyle: TextStyle(
                     color: context.textSecondary,
                     fontSize: r.fs(20),
@@ -282,7 +284,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
               textCapitalization: TextCapitalization.sentences,
               style: TextStyle(color: context.textPrimary, fontSize: r.fs(15)),
               decoration: InputDecoration(
-                hintText: 'Descreva o link (opcional)...',
+                hintText: s.describeLinkHint,
                 hintStyle:
                     TextStyle(color: context.textSecondary, fontSize: r.fs(15)),
                 border: InputBorder.none,

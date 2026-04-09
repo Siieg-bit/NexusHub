@@ -1,8 +1,10 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Editar Perfil da Comunidade — estilo Amino Apps.
 ///
@@ -13,7 +15,7 @@ import '../../../core/utils/responsive.dart';
 ///   - Banner local
 ///
 /// No Amino, cada comunidade pode ter um perfil diferente.
-class EditCommunityProfileScreen extends StatefulWidget {
+class EditCommunityProfileScreen extends ConsumerStatefulWidget {
   final String communityId;
   const EditCommunityProfileScreen({super.key, required this.communityId});
 
@@ -23,7 +25,7 @@ class EditCommunityProfileScreen extends StatefulWidget {
 }
 
 class _EditCommunityProfileScreenState
-    extends State<EditCommunityProfileScreen> {
+    extends ConsumerState<EditCommunityProfileScreen> {
   final _nicknameController = TextEditingController();
   final _bioController = TextEditingController();
   String? _localIconUrl;
@@ -89,7 +91,7 @@ class _EditCommunityProfileScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro no upload. Tente novamente.'),
+            content: Text(s.errorUploadTryAgain),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -117,7 +119,7 @@ class _EditCommunityProfileScreenState
 
     try {
       final userId = SupabaseService.currentUserId;
-      if (userId == null) throw Exception('Não autenticado');
+      if (userId == null) throw Exception(s.notAuthenticated);
 
       final updates = <String, dynamic>{};
 
@@ -138,7 +140,7 @@ class _EditCommunityProfileScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Perfil da comunidade atualizado!'),
+            content: Text(s.communityProfileUpdated),
             backgroundColor: AppTheme.successColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -150,7 +152,7 @@ class _EditCommunityProfileScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ocorreu um erro. Tente novamente.'),
+            content: Text(s.anErrorOccurredTryAgain),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -168,7 +170,8 @@ class _EditCommunityProfileScreenState
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -212,7 +215,7 @@ class _EditCommunityProfileScreenState
                         ),
                       )
                     : Text(
-                        'Salvar',
+                        s.save,
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
@@ -300,7 +303,7 @@ class _EditCommunityProfileScreenState
                       child: TextButton(
                         onPressed: () => setState(() => _localBannerUrl = null),
                         child: Text(
-                          'Remover banner',
+                          s.removeBanner,
                           style: TextStyle(
                             color: AppTheme.errorColor,
                             fontSize: r.fs(12),
@@ -376,7 +379,7 @@ class _EditCommunityProfileScreenState
                   SizedBox(height: r.s(8)),
                   _AminoTextField(
                     controller: _nicknameController,
-                    hintText: 'Deixe vazio para usar o global',
+                    hintText: s.leaveEmptyGlobal,
                     maxLength: 24,
                   ),
 
@@ -385,11 +388,11 @@ class _EditCommunityProfileScreenState
                   // ══════════════════════════════════════════════════════
                   // BIO LOCAL
                   // ══════════════════════════════════════════════════════
-                  const _SectionLabel(text: 'Bio nesta comunidade'),
+                  const _SectionLabel(text: s.bioInCommunity),
                   SizedBox(height: r.s(8)),
                   _AminoTextField(
                     controller: _bioController,
-                    hintText: 'Deixe vazio para usar a bio global',
+                    hintText: s.leaveEmptyBio,
                     maxLines: 5,
                     maxLength: 500,
                   ),
@@ -415,8 +418,8 @@ class _EditCommunityProfileScreenState
                         SizedBox(width: r.s(10)),
                         Expanded(
                           child: Text(
-                            'Estas configurações se aplicam apenas a esta comunidade. '
-                            'Campos vazios usarão seu perfil global.',
+                            s.settingsApplyOnlyCommunity
+                            s.emptyFieldsGlobal,
                             style: TextStyle(
                               color: context.textSecondary,
                               fontSize: r.fs(12),
@@ -440,12 +443,13 @@ class _EditCommunityProfileScreenState
 // WIDGETS AUXILIARES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-class _SectionLabel extends StatelessWidget {
+class _SectionLabel extends ConsumerWidget {
   final String text;
   const _SectionLabel({required this.text});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Text(
       text.toUpperCase(),
@@ -459,7 +463,7 @@ class _SectionLabel extends StatelessWidget {
   }
 }
 
-class _AminoTextField extends StatelessWidget {
+class _AminoTextField extends ConsumerWidget {
   final TextEditingController controller;
   final String hintText;
   final int maxLines;
@@ -473,7 +477,8 @@ class _AminoTextField extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return TextField(
       controller: controller,

@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import 'nine_slice_bubble.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 export '../../../core/widgets/avatar_with_frame.dart';
 
 /// Custom Chat Bubble com suporte a frames equipáveis — estilo Amino Apps.
@@ -63,6 +64,7 @@ class ChatBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     // Se tem frame de imagem, usar o frame
     if (bubbleFrameUrl != null && bubbleFrameUrl!.isNotEmpty) {
       return _buildFramedBubble(context);
@@ -239,6 +241,7 @@ class AminoPlusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       height: height,
@@ -255,7 +258,7 @@ class AminoPlusBadge extends StatelessWidget {
           Icon(Icons.add_rounded, size: height * 0.65, color: Colors.white),
           const SizedBox(width: 2),
           Text(
-            'Amino+',
+            s.aminoPlus,
             style: TextStyle(
               color: Colors.white,
               fontSize: height * 0.55,
@@ -284,6 +287,7 @@ class StreakBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       padding: EdgeInsets.all(r.s(12)),
@@ -312,7 +316,7 @@ class StreakBar extends StatelessWidget {
               ),
               SizedBox(width: r.s(6)),
               Text(
-                'Sequência de Check-in',
+                s.checkInSequence,
                 style: TextStyle(
                   color: currentStreak > 0
                       ? context.textPrimary
@@ -324,7 +328,7 @@ class StreakBar extends StatelessWidget {
               const Spacer(),
               if (maxStreak > 0)
                 Text(
-                  'Recorde: $maxStreak dias',
+                  s.maxStreakRecord,
                   style: TextStyle(
                     color: Colors.grey[600],
                     fontSize: r.fs(11),
@@ -400,7 +404,7 @@ class StreakBar extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  'Total: $checkInDays check-ins',
+                  s.totalCheckIns,
                   style: TextStyle(
                     color: Colors.grey[600],
                     fontSize: r.fs(11),
@@ -415,7 +419,7 @@ class StreakBar extends StatelessWidget {
   }
 
   String _dayLabel(int index) {
-    const days = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+    const days = [s.monday, s.tuesday, s.wednesday, s.thursday, s.friday, s.saturday, s.sunday];
     final today = DateTime.now().weekday - 1; // 0 = Monday
     final dayIndex = (today - (6 - index)) % 7;
     return days[dayIndex < 0 ? dayIndex + 7 : dayIndex];

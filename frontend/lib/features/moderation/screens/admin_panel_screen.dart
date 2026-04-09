@@ -1,19 +1,21 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Painel de Administração Global — Team Amino.
 /// Visão geral de todas as comunidades, usuários e ações de moderação.
-class AdminPanelScreen extends StatefulWidget {
+class AdminPanelScreen extends ConsumerStatefulWidget {
   const AdminPanelScreen({super.key});
 
   @override
   State<AdminPanelScreen> createState() => _AdminPanelScreenState();
 }
 
-class _AdminPanelScreenState extends State<AdminPanelScreen>
+class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   bool _isLoading = true;
@@ -71,7 +73,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
@@ -92,7 +95,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           dividerColor: Colors.transparent,
           tabs: const [
             Tab(text: 'Overview'),
-            Tab(text: 'Ações'),
+            Tab(text: s.actionsLabel),
             Tab(text: 'Ferramentas'),
           ],
         ),
@@ -122,7 +125,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
             Expanded(
               child: _StatCard(
                 icon: Icons.people_rounded,
-                label: 'Usuários',
+                label: s.usersLabel,
                 value: _totalUsers.toString(),
                 color: AppTheme.primaryColor,
               ),
@@ -131,7 +134,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
             Expanded(
               child: _StatCard(
                 icon: Icons.groups_rounded,
-                label: 'Comunidades',
+                label: s.communities,
                 value: _totalCommunities.toString(),
                 color: AppTheme.accentColor,
               ),
@@ -144,7 +147,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
             Expanded(
               child: _StatCard(
                 icon: Icons.article_rounded,
-                label: 'Posts',
+                label: s.posts,
                 value: _totalPosts.toString(),
                 color: AppTheme.successColor,
               ),
@@ -153,7 +156,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
             Expanded(
               child: _StatCard(
                 icon: Icons.flag_rounded,
-                label: 'Flags Pendentes',
+                label: s.pendingFlags,
                 value: _pendingFlags.toString(),
                 color: AppTheme.errorColor,
               ),
@@ -169,7 +172,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
     if (_recentActions.isEmpty) {
       return Center(
         child: Text(
-          'Nenhuma ação de moderação registrada',
+          s.noModerationActions,
           style: TextStyle(color: Colors.grey[500]),
         ),
       );
@@ -206,7 +209,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      action['action'] as String? ?? 'Ação',
+                      action['action'] as String? ?? s.actionLabel,
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: r.fs(15),
@@ -258,13 +261,13 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
           backgroundColor: context.surfaceColor,
-          title: Text('Enviar Broadcast',
+          title: Text(s.sendBroadcast,
               style: TextStyle(color: context.textPrimary)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                  'Esta mensagem será enviada para todos os membros da comunidade.',
+                  s.messageToAllMembers,
                   style:
                       TextStyle(color: Colors.grey[400], fontSize: r.fs(13))),
               SizedBox(height: r.s(12)),
@@ -274,7 +277,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                 dropdownColor: context.surfaceColor,
                 style: TextStyle(color: context.textPrimary),
                 decoration: InputDecoration(
-                  labelText: 'Comunidade',
+                  labelText: s.community,
                   labelStyle: TextStyle(color: Colors.grey[500]),
                   filled: true,
                   fillColor: context.scaffoldBg,
@@ -299,7 +302,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                 controller: titleCtrl,
                 style: TextStyle(color: context.textPrimary),
                 decoration: InputDecoration(
-                  labelText: 'Título',
+                  labelText: s.title,
                   labelStyle: TextStyle(color: Colors.grey[500]),
                   filled: true,
                   fillColor: context.scaffoldBg,
@@ -316,7 +319,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                 maxLines: 4,
                 style: TextStyle(color: context.textPrimary),
                 decoration: InputDecoration(
-                  hintText: 'Digite a mensagem...',
+                  hintText: s.typeMessageHint,
                   hintStyle: TextStyle(color: Colors.grey[600]),
                   filled: true,
                   fillColor: context.scaffoldBg,
@@ -335,7 +338,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                 msgCtrl.dispose();
                 Navigator.pop(ctx);
               },
-              child: const Text('Cancelar'),
+              child: Text(s.cancel),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -344,7 +347,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                     selectedCommunityId!.isEmpty) {
                   ScaffoldMessenger.of(ctx).showSnackBar(
                     const SnackBar(
-                      content: Text('Selecione uma comunidade'),
+                      content: Text(s.selectCommunity2),
                       behavior: SnackBarBehavior.floating,
                     ),
                   );
@@ -364,7 +367,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Broadcast enviado!'),
+                        content: Text(s.broadcastSent),
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
@@ -376,7 +379,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Ocorreu um erro. Tente novamente.'),
+                        content: Text(s.anErrorOccurredTryAgain),
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
@@ -386,7 +389,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryColor,
               ),
-              child: const Text('Enviar'),
+              child: Text(s.send),
             ),
           ],
         ),
@@ -403,8 +406,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
       children: [
         _ToolItem(
           icon: Icons.broadcast_on_personal_rounded,
-          label: 'Enviar Broadcast',
-          description: 'Enviar mensagem para todos os usuários',
+          label: s.sendBroadcast,
+          description: s.sendMessageToAll,
           onTap: () {
             _showBroadcastDialog(context);
           },
@@ -432,7 +435,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
   }
 }
 
-class _StatCard extends StatelessWidget {
+class _StatCard extends ConsumerWidget {
   final IconData icon;
   final String label;
   final String value;
@@ -446,7 +449,8 @@ class _StatCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       padding: EdgeInsets.all(r.s(20)),
@@ -499,7 +503,7 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-class _ToolItem extends StatelessWidget {
+class _ToolItem extends ConsumerWidget {
   final IconData icon;
   final String label;
   final String description;
@@ -513,7 +517,8 @@ class _ToolItem extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+      final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: onTap,

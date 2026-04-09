@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart' as path;
 import 'supabase_service.dart';
+import '../../core/l10n/locale_provider.dart';
 
 /// ============================================================================
 /// MediaUploadService — Upload de mídia para Supabase Storage.
@@ -137,7 +138,7 @@ class MediaUploadService {
           ),
           IOSUiSettings(
             title: 'Recortar Imagem',
-            cancelButtonTitle: 'Cancelar',
+            cancelButtonTitle: s.cancel2,
             doneButtonTitle: 'Pronto',
             aspectRatioLockEnabled: aspectRatio != null,
           ),
@@ -161,7 +162,7 @@ class MediaUploadService {
   }) async {
     try {
       final userId = SupabaseService.currentUserId;
-      if (userId == null) throw Exception('Usuário não autenticado');
+      if (userId == null) throw Exception(s.userNotAuthenticated);
 
       final ext = path.extension(file.path).toLowerCase();
       final fileName = '${_uuid.v4()}$ext';
