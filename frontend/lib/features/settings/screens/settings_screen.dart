@@ -49,9 +49,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     color: context.textPrimary, fontWeight: FontWeight.w800)),
           ],
         ),
-        content: Text(
-            s.prepareDataFile
-            s.notificationWhenReady,
+        content: Text('${s.prepareDataFile}\n${s.notificationWhenReady}',
             style: TextStyle(color: Colors.grey[500])),
         actions: [
           GestureDetector(
@@ -131,10 +129,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     color: context.textPrimary, fontWeight: FontWeight.w800)),
           ],
         ),
-        content: Text(
-            s.irreversibleActionWarning
-            'mensagens e itens comprados serão permanentemente deletados.\n\n'
-            s.confirmContinue,
+        content: Text('${s.irreversibleActionWarning}\nmensagens e itens comprados serão permanentemente deletados.\n\n${s.confirmContinue}',
             style: TextStyle(color: Colors.grey[500])),
         actions: [
           GestureDetector(
@@ -723,10 +718,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                       fontWeight: FontWeight.w800)),
                             ],
                           ),
-                          content: Text(
-                            'Tamanho atual do cache: $size\n\n'
-                            s.clearTempDataDesc
-                            'Seus dados na nuvem não serão afetados.',
+                          content: Text('Tamanho atual do cache: $size\n\n${s.clearTempDataDesc}\nSeus dados na nuvem não serão afetados.',
                             style: TextStyle(color: Colors.grey[500]),
                           ),
                           actions: [
@@ -1068,12 +1060,12 @@ class _SectionLabel extends StatelessWidget {
   }
 }
 
-class _SettingsGroup extends StatelessWidget {
+class _SettingsGroup extends ConsumerWidget {
   final List<Widget> items;
   const _SettingsGroup({required this.items});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
@@ -1098,11 +1090,7 @@ class _SettingsGroup extends StatelessWidget {
           );
         }).toList(),
       ),
-    );
-  }
-}
-
-class _SettingsItem extends StatelessWidget {
+class _SettingsItem extends ConsumerWidget {
   final IconData icon;
   final String title;
   final String? subtitle;
@@ -1116,7 +1104,7 @@ class _SettingsItem extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return ListTile(
@@ -1133,18 +1121,14 @@ class _SettingsItem extends StatelessWidget {
       trailing: Icon(Icons.chevron_right_rounded,
           color: Colors.grey[600], size: r.s(20)),
       onTap: onTap,
-    );
-  }
-}
-
-class _ThemeSelectorItem extends StatelessWidget {
+class _ThemeSelectorItem extends ConsumerWidget {
   final ThemeMode currentMode;
   final ValueChanged<ThemeMode> onSelect;
 
   const _ThemeSelectorItem({required this.currentMode, required this.onSelect});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     final labels = {
@@ -1210,6 +1194,10 @@ class _ThemeSelectorItem extends StatelessWidget {
             ),
           ),
         );
+      },
+    );
+  }
+}    );
       },
     );
   }

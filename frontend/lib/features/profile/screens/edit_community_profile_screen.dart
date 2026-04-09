@@ -420,8 +420,7 @@ class _EditCommunityProfileScreenState
                         SizedBox(width: r.s(10)),
                         Expanded(
                           child: Text(
-                            s.settingsApplyOnlyCommunity
-                            s.emptyFieldsGlobal,
+                            '${s.settingsApplyOnlyCommunity}\n${s.emptyFieldsGlobal}',
                             style: TextStyle(
                               color: context.textSecondary,
                               fontSize: r.fs(12),

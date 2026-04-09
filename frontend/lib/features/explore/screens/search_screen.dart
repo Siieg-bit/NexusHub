@@ -164,6 +164,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }
 
   Widget _buildEmptyState() {
+    final s = getStrings();
     final r = context.r;
     return Center(
       child: Column(
@@ -179,6 +180,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }
 
   Widget _buildCommunityResults() {
+    final s = getStrings();
     final r = context.r;
     if (_communities.isEmpty) {
       return Center(
@@ -240,6 +242,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }
 
   Widget _buildUserResults() {
+    final s = getStrings();
     final r = context.r;
     if (_users.isEmpty) {
       return Center(
@@ -290,6 +293,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }
 
   Widget _buildPostResults() {
+    final s = getStrings();
     final r = context.r;
     if (_posts.isEmpty) {
       return Center(

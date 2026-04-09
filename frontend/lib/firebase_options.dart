@@ -21,33 +21,28 @@ class DefaultFirebaseOptions {
     if (kIsWeb) {
       final s = getStrings();
       throw UnsupportedError(
-        s.defaultFirebaseOptionsWebNotConfigured
-        'you can reconfigure this by running the FlutterFire CLI again.',
+        '${s.defaultFirebaseOptionsWebNotConfigured}\nyou can reconfigure this by running the FlutterFire CLI again.',
       );
     }
+    final s = getStrings();
     switch (defaultTargetPlatform) {
-      final s = getStrings();
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
         throw UnsupportedError(
-          s.defaultFirebaseOptionsIosNotConfigured
-          'you can reconfigure this by running the FlutterFire CLI again.',
+          '${s.defaultFirebaseOptionsIosNotConfigured}\nyou can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.macOS:
         throw UnsupportedError(
-          s.defaultFirebaseOptionsMacosNotConfigured
-          'you can reconfigure this by running the FlutterFire CLI again.',
+          '${s.defaultFirebaseOptionsMacosNotConfigured}\nyou can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.windows:
         throw UnsupportedError(
-          s.defaultFirebaseOptionsWindowsNotConfigured
-          'you can reconfigure this by running the FlutterFire CLI again.',
+          '${s.defaultFirebaseOptionsWindowsNotConfigured}\nyou can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.linux:
         throw UnsupportedError(
-          s.defaultFirebaseOptionsLinuxNotConfigured
-          'you can reconfigure this by running the FlutterFire CLI again.',
+          '${s.defaultFirebaseOptionsLinuxNotConfigured}\nyou can reconfigure this by running the FlutterFire CLI again.',
         );
       default:
         throw UnsupportedError(

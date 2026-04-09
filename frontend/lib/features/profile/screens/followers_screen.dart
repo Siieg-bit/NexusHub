@@ -121,6 +121,7 @@ class _FollowersScreenState extends ConsumerState<FollowersScreen>
   }
 
   Widget _buildList(List<Map<String, dynamic>> list, String profileKey) {
+    final s = getStrings();
     final r = context.r;
     if (list.isEmpty) {
       return Center(
@@ -234,6 +235,7 @@ class _FollowButtonState extends ConsumerState<_FollowButton> {
   }
 
   Future<void> _toggleFollow() async {
+    final s = getStrings();
     try {
       final currentUserId = SupabaseService.currentUserId;
       if (currentUserId == null) return;

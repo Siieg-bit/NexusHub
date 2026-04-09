@@ -763,6 +763,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   }
 
   void _showUserOptions(BuildContext context, UserModel user) {
+    final s = getStrings();
     final r = context.r;
     showModalBottomSheet(
       context: context,

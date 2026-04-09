@@ -76,6 +76,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
   }
 
   Future<void> _toggleEquip(Map<String, dynamic> item) async {
+    final s = getStrings();
     final r = context.r;
     final itemId = (item['id'] as String?) ?? '';
     final isEquipped = _equippedIds.contains(itemId);
@@ -175,6 +176,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
   }
 
   Widget _buildGrid(List<Map<String, dynamic>> items) {
+    final s = getStrings();
     final r = context.r;
     if (items.isEmpty) {
       return Center(

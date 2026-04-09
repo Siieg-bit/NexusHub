@@ -61,6 +61,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
   }
 
   Future<void> _saveProfile() async {
+    final s = getStrings();
     if ((_formKey.currentState?.validate() != true)) return;
 
     setState(() => _isLoading = true);
@@ -327,6 +328,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
   }
 
   Widget _buildRichBioEditor(Responsive r) {
+    final s = getStrings();
     return Container(
       decoration: BoxDecoration(
         color: context.surfaceColor,
@@ -449,6 +451,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
   }
 
   Widget _buildFormatToolbar(Responsive r) {
+    final s = getStrings();
     final buttons = [
       _FormatButton(
           icon: Icons.format_bold,
@@ -505,6 +508,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
   }
 
   void _showLinkDialog() {
+    final s = getStrings();
     final urlCtrl = TextEditingController();
     final labelCtrl = TextEditingController();
     showDialog(

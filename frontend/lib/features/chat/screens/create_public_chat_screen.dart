@@ -298,8 +298,7 @@ class _CreatePublicChatScreenState
                   SizedBox(width: r.s(8)),
                   Expanded(
                     child: Text(
-                      s.publicChatsVisible
-                      s.anyMemberCanParticipate,
+                      '${s.publicChatsVisible}\n${s.anyMemberCanParticipate}',
                       style: TextStyle(
                         color: context.textPrimary.withValues(alpha: 0.7),
                         fontSize: r.fs(12),

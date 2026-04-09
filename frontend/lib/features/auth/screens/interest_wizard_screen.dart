@@ -253,8 +253,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
           ),
           SizedBox(height: r.s(16)),
           Text(
-            s.customizePrompt
-            s.connectedWithCommunities,
+            '${s.customizePrompt}\n${s.connectedWithCommunities}',
             style: TextStyle(
               color: Colors.grey[500],
               fontSize: r.fs(16),
@@ -345,8 +344,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
           ),
           SizedBox(height: r.s(12)),
           Text(
-            s.yourUniqueIdDesc
-            s.chooseSomethingMemorable,
+            '${s.yourUniqueIdDesc}\n${s.chooseSomethingMemorable}',
             style: TextStyle(
               color: Colors.grey[500],
               fontSize: r.fs(16),

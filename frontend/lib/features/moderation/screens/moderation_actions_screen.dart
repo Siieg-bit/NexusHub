@@ -144,6 +144,7 @@ class _ModerationActionsScreenState extends ConsumerState<ModerationActionsScree
   }
 
   Future<void> _executeAction() async {
+    final s = getStrings();
     if (_reasonController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(s.informActionReason)),

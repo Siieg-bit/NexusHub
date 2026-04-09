@@ -54,6 +54,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   }
 
   Future<void> _confirmClearAll() async {
+    final s = getStrings();
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -113,6 +114,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   }
 
   Future<void> _acceptCommunityInvite(Map<String, dynamic> notification) async {
+    final s = getStrings();
     final notificationId = notification['id'] as String?;
     final inviteCode = _inviteCodeFromNotification(notification);
     final fallbackCommunityId = _communityIdFromNotification(notification);

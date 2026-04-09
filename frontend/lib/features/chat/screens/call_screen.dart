@@ -283,6 +283,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
 
   /// Grid de vídeo real via Agora
   Widget _buildVideoGrid() {
+    final s = getStrings();
     final r = context.r;
     if (CallService.engine == null) {
       return const Center(
@@ -369,6 +370,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
   }
 
   Widget _buildParticipantTile(Map<String, dynamic> participant) {
+    final s = getStrings();
     final r = context.r;
     final profile = participant['profiles'] as Map<String, dynamic>?;
     final nickname = profile?['nickname'] as String? ?? s.user;
@@ -496,6 +498,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
   }
 
   Widget _buildScreeningArea() {
+    final s = getStrings();
     final r = context.r;
     return Container(
       margin: EdgeInsets.symmetric(horizontal: r.s(16)),
@@ -537,6 +540,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
   }
 
   Widget _buildControls(bool isVideo) {
+    final s = getStrings();
     final r = context.r;
     return Padding(
       padding: EdgeInsets.all(r.s(24)),

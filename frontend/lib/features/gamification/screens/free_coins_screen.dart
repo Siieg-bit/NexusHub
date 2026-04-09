@@ -66,6 +66,7 @@ class _FreeCoinsScreenState extends ConsumerState<FreeCoinsScreen> {
   }
 
   Future<void> _watchAd() async {
+    final s = getStrings();
     if (_adsWatchedToday >= _maxAdsPerDay || _isLoadingAd) return;
     setState(() => _isLoadingAd = true);
     try {

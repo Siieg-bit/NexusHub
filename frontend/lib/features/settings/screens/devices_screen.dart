@@ -57,9 +57,7 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
         title: Text(s.revokeDevice,
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w800)),
-        content: Text(
-            s.revokeDeviceConfirmation
-            s.userReLogin,
+        content: Text('${s.revokeDeviceConfirmation}\n${s.userReLogin}',
             style: TextStyle(color: Colors.grey[500])),
         actions: [
           TextButton(
@@ -144,9 +142,7 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
         title: Text(s.revokeAllOthers,
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w800)),
-        content: Text(
-            s.revokeOtherSessions
-            s.otherDevicesReLogin,
+        content: Text('${s.revokeOtherSessions}\n${s.otherDevicesReLogin}',
             style: TextStyle(color: Colors.grey[500])),
         actions: [
           TextButton(
@@ -310,9 +306,7 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
                             ),
                             SizedBox(width: r.s(12)),
                             Expanded(
-                              child: Text(
-                                s.manageConnectedDevices
-                                s.revokeUnrecognizedDevices,
+                              child: Text('${s.manageConnectedDevices}\n${s.revokeUnrecognizedDevices}',
                                 style: TextStyle(
                                     fontSize: r.fs(13),
                                     color: Colors.grey[500],

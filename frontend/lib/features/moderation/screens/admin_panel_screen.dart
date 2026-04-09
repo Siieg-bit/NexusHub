@@ -115,6 +115,7 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
   }
 
   Widget _buildOverviewTab() {
+    final s = getStrings();
     final r = context.r;
     return ListView(
       padding: EdgeInsets.all(r.s(16)),
@@ -168,6 +169,7 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
   }
 
   Widget _buildActionsTab() {
+    final s = getStrings();
     final r = context.r;
     if (_recentActions.isEmpty) {
       return Center(
@@ -238,6 +240,7 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
   }
 
   void _showBroadcastDialog(BuildContext context) async {
+    final s = getStrings();
     final r = context.r;
     final msgCtrl = TextEditingController();
     final titleCtrl = TextEditingController(text: 'Broadcast');
@@ -400,6 +403,7 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
   }
 
   Widget _buildToolsTab() {
+    final s = getStrings();
     final r = context.r;
     return ListView(
       padding: EdgeInsets.all(r.s(16)),

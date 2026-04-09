@@ -55,6 +55,7 @@ class _FlagCenterScreenState extends ConsumerState<FlagCenterScreen>
   }
 
   Future<void> _resolveFlag(String flagId, String action) async {
+    final s = getStrings();
     try {
       await SupabaseService.table('flags').update({
         'status': action,
@@ -202,6 +203,7 @@ class _FlagCard extends ConsumerWidget {
   }
 
   String _flagTypeLabel(String type) {
+    final s = getStrings();
     switch (type) {
       case 'bullying':
         return s.bullying;
@@ -314,7 +316,7 @@ class _FlagCard extends ConsumerWidget {
               SizedBox(width: r.s(12)),
               Expanded(
                 child: Text(
-                  s.reportedBynickname'] ?? s.anonymousLabel}',
+                  'Reportado por: ${data[\'reporter_nickname\'] ?? \'Anônimo\'}',
                   style: TextStyle(
                     color: Colors.grey[500],
                     fontSize: r.fs(13),

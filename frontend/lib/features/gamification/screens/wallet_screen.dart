@@ -308,6 +308,7 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
   // HISTÓRICO — Modal bottom sheet com transações
   // ===========================================================================
   void _showHistory() {
+    final s = getStrings();
     final r = context.r;
     showModalBottomSheet(
       context: context,
@@ -419,6 +420,7 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
   // TRANSFERIR — Dialog
   // ===========================================================================
   void _showTransferDialog() {
+    final s = getStrings();
     final r = context.r;
     final userIdCtrl = TextEditingController();
     final amountCtrl = TextEditingController();
@@ -542,6 +544,7 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
   // PROPS — Dialog
   // ===========================================================================
   void _showPropsDialog() {
+    final s = getStrings();
     final r = context.r;
     final userIdCtrl = TextEditingController();
     int selectedAmount = 10;

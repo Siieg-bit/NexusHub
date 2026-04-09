@@ -47,6 +47,7 @@ class _UserWallScreenState extends ConsumerState<UserWallScreen> {
   }
 
   Future<void> _sendMessage() async {
+    final s = getStrings();
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
 
@@ -71,6 +72,7 @@ class _UserWallScreenState extends ConsumerState<UserWallScreen> {
   }
 
   Future<void> _deleteMessage(String messageId) async {
+    final s = getStrings();
     try {
       await SupabaseService.table('comments').delete().eq('id', messageId);
       await _loadMessages();

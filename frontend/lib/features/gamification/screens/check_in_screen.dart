@@ -101,6 +101,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
   }
 
   Future<void> _repairStreak() async {
+    final s = getStrings();
     final r = context.r;
     try {
       final result =
@@ -499,6 +500,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
   }
 
   Widget _buildLuckyDrawSection() {
+    final s = getStrings();
     final r = context.r;
     return Container(
       padding: EdgeInsets.all(r.s(16)),
@@ -579,6 +581,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
   }
 
   Widget _buildStreakRepairSection() {
+    final s = getStrings();
     final r = context.r;
     return Container(
       padding: EdgeInsets.all(r.s(16)),
@@ -650,7 +653,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
 // DAY CIRCLE — Estilo Amino
 // =============================================================================
 
-class _DayCircle extends StatelessWidget {
+class _DayCircle extends ConsumerWidget {
   final String day;
   final bool isCompleted;
   final bool isToday;
@@ -664,7 +667,7 @@ class _DayCircle extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     final bool active = isCompleted || isTodayCompleted;
@@ -714,9 +717,7 @@ class _DayCircle extends StatelessWidget {
 
 // =============================================================================
 // REWARD ITEM — Estilo Amino
-// =============================================================================
-
-class _RewardItem extends StatelessWidget {
+// =================================================================class _RewardItem extends ConsumerWidget {
   final IconData icon;
   final String label;
   final Color color;
@@ -725,7 +726,7 @@ class _RewardItem extends StatelessWidget {
       {required this.icon, required this.label, required this.color});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Column(
@@ -746,20 +747,21 @@ class _RewardItem extends StatelessWidget {
       ],
     );
   }
+},
+    );
+  }
 }
 
 // =============================================================================
 // INFO ROW — Estilo Amino
-// =============================================================================
-
-class _InfoRow extends StatelessWidget {
+// ===================================================class _InfoRow extends ConsumerWidget {
   final IconData icon;
   final String text;
 
   const _InfoRow({required this.icon, required this.text});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Padding(
@@ -774,6 +776,10 @@ class _InfoRow extends StatelessWidget {
                 style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
           ),
         ],
+      ),
+    );
+  }
+}    ],
       ),
     );
   }

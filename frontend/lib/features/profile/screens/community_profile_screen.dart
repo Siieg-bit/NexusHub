@@ -965,6 +965,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   // POSTS TAB
   // ============================================================================
   Widget _buildPostsTab() {
+    final s = getStrings();
     final r = context.r;
     return ListView(
       padding: EdgeInsets.zero,
@@ -1238,6 +1239,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   // WALL TAB
   // ============================================================================
   Widget _buildWallTab() {
+    final s = getStrings();
     final r = context.r;
     return Column(
       children: [
@@ -1372,6 +1374,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   // SAVED POSTS TAB
   // ============================================================================
   Widget _buildSavedPostsTab() {
+    final s = getStrings();
     final r = context.r;
     if (!_savedPostsLoaded) {
       _loadSavedPosts();
@@ -1522,6 +1525,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   // ============================================================================
 
   Future<void> _toggleFollow(BuildContext context) async {
+    final s = getStrings();
     try {
       final currentUserId = SupabaseService.currentUserId;
       if (currentUserId == null) return;
@@ -1553,6 +1557,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   }
 
   Future<void> _openDm(BuildContext context) async {
+    final s = getStrings();
     try {
       final threadId = await DmInviteService().sendInvite(widget.userId);
       if (threadId == null || threadId.isEmpty) {
@@ -1585,6 +1590,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   }
 
   Future<void> _postWallComment() async {
+    final s = getStrings();
     final text = _wallController.text.trim();
     if (text.isEmpty) return;
     try {
@@ -1701,6 +1707,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   // OPTIONS BOTTOM SHEET
   // ============================================================================
   void _showOptions(BuildContext context) {
+    final s = getStrings();
     final r = context.r;
     showModalBottomSheet(
       context: context,
@@ -1806,7 +1813,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   }
 
   String _memberSinceText(DateTime joinedAt) {
-    const months = [
+    final s = getStrings();
+    final months = [
       s.january,
       s.february,
       s.march,

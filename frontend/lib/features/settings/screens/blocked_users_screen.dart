@@ -206,9 +206,7 @@ class _BlockedUsersScreenState extends ConsumerState<BlockedUsersScreen> {
                         ),
                       ),
                       SizedBox(height: r.s(8)),
-                      Text(
-                        s.blockedUsersCannotSeeProfile
-                        s.orSendMessages,
+                      Text('${s.blockedUsersCannotSeeProfile}\n${s.orSendMessages}',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.grey[500],

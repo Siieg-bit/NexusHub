@@ -397,7 +397,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
 // WIDGET: Item do pódio
 // =============================================================================
 
-class _PodiumItem extends StatelessWidget {
+class _PodiumItem extends ConsumerWidget {
   final int rank;
   final Map<String, dynamic> data;
   final double podiumHeight;
@@ -415,7 +415,7 @@ class _PodiumItem extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     final rep = data['reputation'] as int? ?? 0;
@@ -533,9 +533,7 @@ class _PodiumItem extends StatelessWidget {
 
 // =============================================================================
 // WIDGET: Tile da lista de ranking
-// =============================================================================
-
-class _LeaderboardTile extends StatelessWidget {
+// =================================================================class _LeaderboardTile extends ConsumerWidget {
   final Map<String, dynamic> data;
   final int rank;
 
@@ -549,7 +547,7 @@ class _LeaderboardTile extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     final rep = data['reputation'] as int? ?? 0;
@@ -691,6 +689,9 @@ class _LeaderboardTile extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+},
     );
   }
 }
