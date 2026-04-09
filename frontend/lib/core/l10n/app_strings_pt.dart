@@ -3681,4 +3681,22 @@ aparecerá aqui';
   String leaveCommunityConfirmMsg(String communityName) => 'Tem certeza que deseja sair de "$communityName"? Você poderá entrar novamente depois.';
   @override
   String dayLabel(int n) => 'D$n';
+
+  // REPOST
+  @override
+  String get repost => 'Repostar';
+  @override
+  String get repostAction => 'Republicar';
+  @override
+  String get repostSuccess => 'Republicado com sucesso!';
+  @override
+  String get repostAlreadyExists => 'Você já republicou este post.';
+  @override
+  String get repostConfirmTitle => 'Republicar post?';
+  @override
+  String get repostConfirmMsg => 'Este post aparecerá no seu perfil e no feed da comunidade como um repost.';
+  @override
+  String get repostNotificationTitle => 'Novo Repost';
+  @override
+  String repostNotificationBody(String username) => '$username republicou seu post.';
 }

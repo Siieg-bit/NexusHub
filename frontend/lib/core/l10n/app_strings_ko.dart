@@ -4024,4 +4024,22 @@ class AppStringsKo implements AppStrings {
   String leaveCommunityConfirmMsg(String communityName) => '"$communityName"을(를) 떠나시겠습니까? 나중에 다시 참여할 수 있습니다.';
   @override
   String dayLabel(int n) => '${n}일';
+
+  // REPOST
+  @override
+  String get repost => 'Repost';
+  @override
+  String get repostAction => 'Repost';
+  @override
+  String get repostSuccess => 'Successfully reposted!';
+  @override
+  String get repostAlreadyExists => 'You have already reposted this post.';
+  @override
+  String get repostConfirmTitle => 'Repost this?';
+  @override
+  String get repostConfirmMsg => 'This post will appear on your profile and the community feed as a repost.';
+  @override
+  String get repostNotificationTitle => 'New Repost';
+  @override
+  String repostNotificationBody(String username) => '$username reposted your post.';
 }

@@ -1844,4 +1844,14 @@ abstract class AppStrings {
   String leaveCommunityConfirmMsg(String communityName);
   // STREAK DAY LABEL
   String dayLabel(int n);
+
+  // REPOST
+  String get repost;
+  String get repostAction;
+  String get repostSuccess;
+  String get repostAlreadyExists;
+  String get repostConfirmTitle;
+  String get repostConfirmMsg;
+  String get repostNotificationTitle;
+  String repostNotificationBody(String username);
 }

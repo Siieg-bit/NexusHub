@@ -3668,4 +3668,22 @@ class AppStringsDe implements AppStrings {
   String leaveCommunityConfirmMsg(String communityName) => 'Möchtest du "$communityName" wirklich verlassen? Du kannst später wieder beitreten.';
   @override
   String dayLabel(int n) => 'T$n';
+
+  // REPOST
+  @override
+  String get repost => 'Repost';
+  @override
+  String get repostAction => 'Repost';
+  @override
+  String get repostSuccess => 'Successfully reposted!';
+  @override
+  String get repostAlreadyExists => 'You have already reposted this post.';
+  @override
+  String get repostConfirmTitle => 'Repost this?';
+  @override
+  String get repostConfirmMsg => 'This post will appear on your profile and the community feed as a repost.';
+  @override
+  String get repostNotificationTitle => 'New Repost';
+  @override
+  String repostNotificationBody(String username) => '$username reposted your post.';
 }
