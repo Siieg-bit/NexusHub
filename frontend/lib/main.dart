@@ -1,8 +1,5 @@
 import 'dart:async';
-import 'dart:io' show Platform;
-
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -24,13 +21,13 @@ import 'core/widgets/error_boundary.dart';
 import 'firebase_options.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final binding = WidgetsFlutterBinding.ensureInitialized();
 
   // ── 120Hz: Solicitar a maior taxa de atualização disponível ────────
   // No Android, o Flutter por padrão roda a 60Hz mesmo em telas 120Hz.
-  // GestureBinding.instance.resamplingEnabled melhora a suavidade do
-  // toque em telas de alta taxa de atualização.
-  GestureBinding.instance.resamplingEnabled = true;
+  // resamplingEnabled melhora a suavidade do toque em telas de alta
+  // taxa de atualização (90/120/144Hz).
+  binding.resamplingEnabled = true;
 
   // Configurar orientação do app (não bloqueia — é rápido)
   unawaited(SystemChrome.setPreferredOrientations([
