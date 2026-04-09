@@ -893,7 +893,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                         onTap: () => context.push(
                             '/community/${widget.communityId}/profile/edit'),
                         child: Text(
-                          'Clique aqui para adicionar sua biografia!',
+                          s.tapToAddBio,
                           style: TextStyle(
                             color: AppTheme.accentColor,
                             fontSize: r.fs(13),
@@ -902,7 +902,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                       )
                     else
                       Text(
-                        'Sem biografia',
+                        s.noBio,
                         style: TextStyle(
                             color: Colors.grey[600], fontSize: r.fs(13)),
                       ),
@@ -935,11 +935,11 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                   tabs: [
                     Tab(
                       child: Text(
-                          'Posts${_userPosts.isNotEmpty ? ' ${_userPosts.length}' : ''}'),
+                          '${s.posts}${_userPosts.isNotEmpty ? ' ${_userPosts.length}' : ''}'),
                     ),
                     Tab(
                       child: Text(
-                          'Mural${_wallComments.isNotEmpty ? ' ${_wallComments.length}' : ''}'),
+                          '${s.wall}${_wallComments.isNotEmpty ? ' ${_wallComments.length}' : ''}'),
                     ),
                     Tab(text: s.savedPosts),
                   ],
@@ -1727,7 +1727,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
       s.december
     ];
     final days = DateTime.now().difference(joinedAt).inDays;
-    return 'Membro desde ${months[joinedAt.month - 1]} ${joinedAt.year} ($days dias)';
+    return s.memberSinceLabel(months[joinedAt.month - 1], joinedAt.year, days);
   }
 }
 
