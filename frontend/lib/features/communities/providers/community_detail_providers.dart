@@ -5,6 +5,7 @@ import '../../../core/models/community_model.dart';
 import '../../../core/models/post_model.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/providers/block_provider.dart';
 
 // =============================================================================
 // PROVIDERS — Community Detail

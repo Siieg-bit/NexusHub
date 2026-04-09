@@ -7,6 +7,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/providers/block_provider.dart';
 
 /// Busca Global — Pesquisa por comunidades, usuários, posts e wiki.
 class SearchScreen extends ConsumerStatefulWidget {

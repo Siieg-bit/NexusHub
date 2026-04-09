@@ -16,6 +16,7 @@ import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../moderation/widgets/report_dialog.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/providers/block_provider.dart';
 
 /// Provider para comentários de um post.
 final postCommentsProvider =
