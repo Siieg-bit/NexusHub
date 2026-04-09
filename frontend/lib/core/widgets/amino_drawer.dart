@@ -37,7 +37,6 @@ class AminoDrawerController extends StatefulWidget {
 class AminoDrawerControllerState extends State<AminoDrawerController>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
-  late Animation<Offset> _slideAnimation;
   bool _isOpen = false;
 
   bool get isOpen => _isOpen;
@@ -49,13 +48,6 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
       vsync: this,
       duration: const Duration(milliseconds: 280),
     );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(-1.0, 0),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animController,
-      curve: Curves.easeOutCubic,
-    ));
   }
 
   @override
@@ -65,12 +57,12 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
   }
 
   void open() {
-    _animController.forward();
+    _animController.animateTo(1.0, curve: Curves.easeOutCubic);
     setState(() => _isOpen = true);
   }
 
   void close() {
-    _animController.reverse();
+    _animController.animateTo(0.0, curve: Curves.easeInCubic);
     setState(() => _isOpen = false);
   }
 
@@ -85,7 +77,9 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
   // ── Drag handlers para quando o drawer já está aberto ──────────────
   void _onOverlayDragUpdate(DragUpdateDetails details) {
     final delta = details.primaryDelta ?? 0;
-    _animController.value += delta / widget.maxSlide;
+    // Atualiza diretamente sem curva — o drag deve ser 1:1 com o dedo
+    _animController.value =
+        (_animController.value + delta / widget.maxSlide).clamp(0.0, 1.0);
   }
 
   void _onOverlayDragEnd(DragEndDetails details) {
@@ -102,7 +96,9 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
   // ── Drag handlers para a zona de borda esquerda (abrir drawer) ─────
   void _onEdgeDragUpdate(DragUpdateDetails details) {
     final delta = details.primaryDelta ?? 0;
-    _animController.value += delta / widget.maxSlide;
+    // Atualiza diretamente sem curva — o drag deve ser 1:1 com o dedo
+    _animController.value =
+        (_animController.value + delta / widget.maxSlide).clamp(0.0, 1.0);
   }
 
   void _onEdgeDragEnd(DragEndDetails details) {
@@ -180,18 +176,25 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
               onHorizontalDragEnd: _onOverlayDragEnd,
               child: Container(
                 color: Colors.black
-                    .withValues(alpha: 0.45 * _animController.value),
+                    .withValues(alpha: 0.55 * _animController.value),
               ),
             );
           },
         ),
 
         // ── Drawer (sobrepõe tudo, desliza da esquerda) ───────────────────
-        // O Material garante que o drawer herde corretamente o Theme,
-        // DefaultTextStyle e tipografia do app — sem isso os textos
-        // ficam com fonte monospace e sublinhado amarelo (estilo raw Flutter).
-        SlideTransition(
-          position: _slideAnimation,
+        // Usa AnimatedBuilder com translate manual (sem CurvedAnimation)
+        // para que a posição visual seja sempre 1:1 com _animController.value
+        // durante o drag. O easing é aplicado apenas nas chamadas open()/close().
+        AnimatedBuilder(
+          animation: _animController,
+          builder: (context, child) {
+            final offset = effectiveMaxSlide * (_animController.value - 1.0);
+            return Transform.translate(
+              offset: Offset(offset, 0),
+              child: child,
+            );
+          },
           child: Align(
             alignment: Alignment.centerLeft,
             child: SizedBox(

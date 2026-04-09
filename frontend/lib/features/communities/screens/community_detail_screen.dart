@@ -783,13 +783,14 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     showModalBottomSheet(
       context: ctx,
       isScrollControlled: true,
+      useRootNavigator: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: 0.8),
       builder: (sheetCtx) {
         return DraggableScrollableSheet(
-          initialChildSize: 0.75,
-          minChildSize: 0.3,
-          maxChildSize: 0.92,
+          initialChildSize: 0.92,
+          minChildSize: 0.5,
+          maxChildSize: 0.97,
           expand: false,
           builder: (dragCtx, scrollController) {
             return Container(
