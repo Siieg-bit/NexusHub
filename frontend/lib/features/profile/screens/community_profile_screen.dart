@@ -210,7 +210,16 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
               ),
             )
           : null,
-      body: NestedScrollView(
+      body: RefreshIndicator(
+        color: AppTheme.primaryColor,
+        backgroundColor: context.surfaceColor,
+        onRefresh: _loadProfile,
+        edgeOffset: 0,
+        displacement: 60,
+        notificationPredicate: (notification) => true,
+        child: NestedScrollView(
+          floatHeaderSlivers: true,
+          physics: const AlwaysScrollableScrollPhysics(),
           headerSliverBuilder: (context, innerBoxIsScrolled) => [
             // ================================================================
             // HEADER — Banner + Avatar + Nome + Level + Tags + Botões
@@ -929,6 +938,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
             ],
           ),
       ),
+      ),
     );
   }
 
@@ -937,12 +947,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
   // ============================================================================
   Widget _buildPostsTab() {
     final r = context.r;
-    return RefreshIndicator(
-      color: AppTheme.primaryColor,
-      backgroundColor: context.surfaceColor,
-      onRefresh: _loadProfile,
-      child: ListView(
-        physics: const AlwaysScrollableScrollPhysics(),
+    return ListView(
       padding: EdgeInsets.zero,
       children: [
         // "Criar nova publicação" button
@@ -1197,7 +1202,6 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           }),
         SizedBox(height: r.s(80)), // espaço para o FAB
       ],
-    ),
     );
   }
 
@@ -1216,11 +1220,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
   // ============================================================================
   Widget _buildWallTab() {
     final r = context.r;
-    return RefreshIndicator(
-      color: AppTheme.primaryColor,
-      backgroundColor: context.surfaceColor,
-      onRefresh: _loadProfile,
-      child: Column(
+    return Column(
       children: [
         // Input
         Container(
@@ -1346,7 +1346,6 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                 ),
         ),
       ],
-    ),
     );
   }
 
@@ -1399,13 +1398,8 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
       );
     }
 
-    return RefreshIndicator(
-      color: AppTheme.primaryColor,
-      backgroundColor: context.surfaceColor,
-      onRefresh: _loadProfile,
-      child: ListView.separated(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.all(r.s(16)),
+    return ListView.separated(
+      padding: EdgeInsets.all(r.s(16)),
       itemCount: _savedPosts.length,
       separatorBuilder: (_, __) => SizedBox(height: r.s(10)),
       itemBuilder: (context, index) {
@@ -1481,7 +1475,6 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           ),
         );
       },
-    ),
     );
   }
 
