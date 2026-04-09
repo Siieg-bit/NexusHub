@@ -3517,4 +3517,34 @@ aparecerá aqui';
   String get startConversationUser => 'Iniciar conversa com um usuário';
   @override
   String get noItemAvailableMsg => 'Nenhum item disponível';
+
+  // FINAL CLEANUP
+  @override
+  String memberCountMembers(int count) => '\$count members';
+  @override
+  String errorPurchase(String error) => 'Erro na compra: \$error';
+  @override
+  String errorGeneric(String error) => 'Erro: \$error';
+  @override
+  String currentBalanceCoins(String coins) => 'Saldo atual: \$coins coins';
+  @override
+  String leftCommunityMsg(String name) => 'Você saiu de "\$name".';
+  @override
+  String pollQuestion(String question) => '📊 \$question';
+  @override
+  String get pinnedLabel => '📌 Pinned';
+  @override
+  String get externalLink => 'External Link';
+  @override
+  String get pollOptionsLabel => 'Poll Options';
+  @override
+  String get quizQuestionsLabel => 'Quiz Questions';
+  @override
+  String get optionLabel => 'Option';
+  @override
+  String optionN(int n) => 'Option \$n';
+  @override
+  String questionN(int n) => 'Question \$n';
+  @override
+  String amountCoins(int amount) => '\$amount coins';
 }

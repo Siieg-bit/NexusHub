@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/l10n/locale_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 // google_fonts removido — usando fonte local PlusJakartaSans de assets/fonts/
 
 /// Tema visual do NexusHub — réplica pixel-perfect do Amino Apps.

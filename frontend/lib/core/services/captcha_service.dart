@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 import '../../core/l10n/locale_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Serviço de CAPTCHA — proteção anti-bot para ações sensíveis.
 ///
@@ -20,6 +21,7 @@ class CaptchaService {
   /// Exibe um dialog de CAPTCHA e retorna `true` se resolvido corretamente.
   static Future<bool> showCaptcha(BuildContext context,
       {String? reason}) async {
+    final s = getStrings();
     final a = _random.nextInt(20) + 1;
     final b = _random.nextInt(20) + 1;
     final ops = ['+', '-', '×'];

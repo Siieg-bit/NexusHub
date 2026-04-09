@@ -1760,7 +1760,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                           fontSize: r.fs(15),
                           color: context.textPrimary)),
                   if (threadType != 'dm')
-                    Text('$memberCount members',
+                    Text(s.memberCountMembers(memberCount),
                         style: TextStyle(
                             fontSize: r.fs(11), color: Colors.grey[500])),
                 ],

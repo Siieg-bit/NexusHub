@@ -3,6 +3,7 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
 import 'core/l10n/locale_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
@@ -18,12 +19,14 @@ import 'core/l10n/locale_provider.dart';
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
+      final s = getStrings();
       throw UnsupportedError(
         s.defaultFirebaseOptionsWebNotConfigured
         'you can reconfigure this by running the FlutterFire CLI again.',
       );
     }
     switch (defaultTargetPlatform) {
+      final s = getStrings();
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:

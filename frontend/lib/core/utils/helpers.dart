@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../l10n/locale_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Utilitários e helpers do aplicativo.
 
@@ -152,6 +154,7 @@ int clampDailyReputation(int earnedToday, int amount) {
 
 /// Nome do nível para exibição (títulos temáticos).
 String levelTitle(int level) {
+    final s = getStrings();
   const titles = [
     'Novato', // 1
     'Iniciante', // 2

@@ -2,6 +2,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import '../../core/l10n/locale_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Serviço centralizado de Analytics e Crash Reporting para o NexusHub.
 ///
@@ -159,6 +160,7 @@ class AnalyticsService {
   // ─── Loja & IAP ────────────────────────────────────────────────────────────
 
   static Future<void> logPurchase({
+    final s = getStrings();
     required String itemId,
     required String itemName,
     required double price,

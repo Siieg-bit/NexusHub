@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Barra de input de mensagem do chat — estilo Amino.
 ///
@@ -15,7 +16,7 @@ import '../../../core/l10n/locale_provider.dart';
 /// - [onSend]: envia a mensagem de texto
 /// - [onEmojiToggle]: alterna o emoji picker
 /// - [onTextChanged]: notifica mudanças no texto (para link detection etc.)
-class ChatInputBar extends StatelessWidget {
+class ChatInputBar extends ConsumerWidget {
   final TextEditingController controller;
   final bool isSending;
   final VoidCallback onMediaTap;
@@ -34,7 +35,7 @@ class ChatInputBar extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(

@@ -274,7 +274,7 @@ class _PostCardState extends ConsumerState<PostCard>
             ),
           ),
           if (_post.isPinned)
-            Text('📌 Pinned',
+            Text(s.pinnedLabel,
                 style: TextStyle(
                     color: Colors.yellow[600],
                     fontSize: r.fs(8),

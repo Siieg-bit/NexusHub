@@ -1,4 +1,6 @@
 /// Modelo de rascunho de post.
+import '../l10n/locale_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 class PostDraftModel {
   final String id;
   final String userId;

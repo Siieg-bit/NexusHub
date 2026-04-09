@@ -1,4 +1,6 @@
 /// Configurações globais do aplicativo NexusHub.
+import '../core/l10n/locale_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// Credenciais do Supabase configuradas para o projeto de produção.
 class AppConfig {
   AppConfig._();

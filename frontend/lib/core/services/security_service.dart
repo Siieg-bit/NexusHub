@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'supabase_service.dart';
+import '../l10n/locale_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Serviço de Segurança — sanitização e validação.
 ///
@@ -52,14 +54,17 @@ class SecurityService {
 
   /// Valida um nome de usuário
   static String? validateUsername(String username) {
+    final s = getStrings();
     if (username.length < 3) return s.min3Chars;
     if (username.length > 24) return s.max24Chars;
     if (!RegExp(r'^[a-zA-Z0-9_.-]+$').hasMatch(username)) {
+      final s = getStrings();
       return s.usernameCharsAllowed;
     }
     // Palavras proibidas
     final banned = ['admin', 'moderator', 'nexushub', 'system', 'support'];
     if (banned.any((w) => username.toLowerCase().contains(w))) {
+      final s = getStrings();
       return s.usernameNotAllowed;
     }
     return null;
@@ -67,12 +72,14 @@ class SecurityService {
 
   /// Valida uma bio/descrição
   static String? validateBio(String bio) {
+    final s = getStrings();
     if (bio.length > 500) return s.max500Chars;
     return null;
   }
 
   /// Valida conteúdo de post
   static String? validatePostContent(String content) {
+    final s = getStrings();
     if (content.trim().isEmpty) return s.contentCannotBeEmpty;
     if (content.length > 10000) return s.max10000Chars;
     return null;

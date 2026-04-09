@@ -1,4 +1,6 @@
 /// Modelo de thread de chat (sala/grupo/DM).
+import '../l10n/locale_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// Baseado no schema v5 — tabela chat_threads (ChatThread.smali).
 ///
 /// SEPARAÇÃO CONCEITUAL (Etapa 1):
@@ -80,6 +82,7 @@ class ChatRoomModel {
   });
 
   factory ChatRoomModel.fromJson(Map<String, dynamic> json) {
+    final s = getStrings();
     return ChatRoomModel(
       id: json['id'] as String,
       communityId: json['community_id'] as String?,

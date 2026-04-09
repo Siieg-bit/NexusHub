@@ -1,4 +1,6 @@
 /// ============================================================================
+import '../l10n/locale_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// Validators — Validação padronizada de formulários para o NexusHub.
 ///
 /// Todos os métodos retornam null se válido, ou String com mensagem de erro.
@@ -78,7 +80,9 @@ class Validators {
   static String? Function(String?) confirmPassword(String password,
       [String? message]) {
     return (value) {
+      final s = getStrings();
       if (value != password) {
+      final s = getStrings();
         return message ?? s.passwordsDoNotMatch2;
       }
       return null;
@@ -87,17 +91,23 @@ class Validators {
 
   /// Nickname (3-20 chars, alfanumérico + underscore)
   static String? Function(String?) nickname([String? message]) {
+    final s = getStrings();
     return (value) {
+      final s = getStrings();
       if (value == null || value.trim().isEmpty) {
+      final s = getStrings();
         return s.nicknameRequired;
       }
       if (value.trim().length < 3) {
+      final s = getStrings();
         return s.nicknameMinLength;
       }
       if (value.trim().length > 20) {
+      final s = getStrings();
         return s.nicknameMaxLength;
       }
       if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(value.trim())) {
+      final s = getStrings();
         return s.nicknameValidChars;
       }
       return null;
@@ -106,14 +116,19 @@ class Validators {
 
   /// Nome de comunidade (3-50 chars)
   static String? Function(String?) communityName([String? message]) {
+    final s = getStrings();
     return (value) {
+      final s = getStrings();
       if (value == null || value.trim().isEmpty) {
+      final s = getStrings();
         return s.communityNameRequired;
       }
       if (value.trim().length < 3) {
+      final s = getStrings();
         return s.nameMinLength;
       }
       if (value.trim().length > 50) {
+      final s = getStrings();
         return s.nameMaxLength;
       }
       return null;
@@ -122,12 +137,15 @@ class Validators {
 
   /// URL válida
   static String? Function(String?) url([String? message]) {
+    final s = getStrings();
     return (value) {
+      final s = getStrings();
       if (value == null || value.trim().isEmpty) return null; // URL é opcional
       final regex = RegExp(
         r'^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$',
       );
       if (!regex.hasMatch(value.trim())) {
+      final s = getStrings();
         return message ?? s.invalidUrl;
       }
       return null;
@@ -136,12 +154,16 @@ class Validators {
 
   /// Número inteiro positivo
   static String? Function(String?) positiveInt([String? message]) {
+    final s = getStrings();
     return (value) {
+      final s = getStrings();
       if (value == null || value.trim().isEmpty) {
+      final s = getStrings();
         return message ?? s.valueRequired;
       }
       final n = int.tryParse(value.trim());
       if (n == null || n <= 0) {
+      final s = getStrings();
         return message ?? s.positiveNumber;
       }
       return null;
@@ -152,11 +174,14 @@ class Validators {
   static String? Function(String?) numberRange(int min, int max,
       [String? message]) {
     return (value) {
+      final s = getStrings();
       if (value == null || value.trim().isEmpty) {
+      final s = getStrings();
         return s.valueRequired;
       }
       final n = int.tryParse(value.trim());
       if (n == null || n < min || n > max) {
+      final s = getStrings();
         return message ?? s.valueRange;
       }
       return null;

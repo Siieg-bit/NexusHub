@@ -76,7 +76,7 @@ class _CoinShopScreenState extends ConsumerState<CoinShopScreen> {
         _showSuccess('${pkg.coins} moedas adicionadas!');
       }
     } catch (e) {
-      _showError('Erro na compra: $e');
+      _showError(s.errorPurchase(e.toString()));
     } finally {
       if (mounted) setState(() => _isPurchasing = false);
     }

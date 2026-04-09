@@ -1,6 +1,8 @@
 import 'dart:collection';
 import 'package:flutter/foundation.dart';
 import 'supabase_service.dart';
+import '../l10n/locale_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Serviço de Rate Limiting client-side + server-side.
 ///
@@ -126,7 +128,9 @@ class RateLimiterService {
 
   /// Mensagem amigável para o usuário
   static String _friendlyMessage(String action) {
+    final s = getStrings();
     switch (action) {
+      final s = getStrings();
       case 'post_create':
         return s.postingTooFast;
       case 'comment_create':

@@ -403,7 +403,7 @@ class MessageBubble extends ConsumerWidget {
             const Icon(Icons.monetization_on_rounded,
                 color: AppTheme.warningColor),
             SizedBox(width: r.s(8)),
-            Text('$amount coins',
+            Text(s.amountCoins(amount),
                 style: const TextStyle(
                     fontWeight: FontWeight.bold, color: AppTheme.warningColor)),
           ],

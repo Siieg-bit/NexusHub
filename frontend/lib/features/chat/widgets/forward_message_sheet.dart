@@ -6,6 +6,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/models/chat_room_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/l10n/locale_provider.dart';
 
 /// Bottom sheet para encaminhar uma mensagem para um ou mais chats.
 class ForwardMessageSheet extends ConsumerStatefulWidget {
@@ -125,6 +126,7 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       height: MediaQuery.of(context).size.height * 0.75,

@@ -427,7 +427,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           ),
         ),
         error: (error, _) => Center(
-          child: Text('Erro: $error',
+          child: Text(s.errorGeneric(error),
               style: const TextStyle(color: AppTheme.errorColor)),
         ),
         data: (post) {

@@ -1751,4 +1751,20 @@ abstract class AppStrings {
   String get errorPrefix;
   String get startConversationUser;
   String get noItemAvailableMsg;
+
+  // FINAL CLEANUP
+  String memberCountMembers(int count);
+  String errorPurchase(String error);
+  String errorGeneric(String error);
+  String currentBalanceCoins(String coins);
+  String leftCommunityMsg(String name);
+  String pollQuestion(String question);
+  String get pinnedLabel;
+  String get externalLink;
+  String get pollOptionsLabel;
+  String get quizQuestionsLabel;
+  String get optionLabel;
+  String optionN(int n);
+  String questionN(int n);
+  String amountCoins(int amount);
 }

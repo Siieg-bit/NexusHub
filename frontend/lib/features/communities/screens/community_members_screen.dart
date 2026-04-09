@@ -109,7 +109,7 @@ class CommunityMembersScreen extends ConsumerWidget {
               color: AppTheme.primaryColor, strokeWidth: 2.5),
         ),
         error: (error, _) => Center(
-            child: Text('Erro: $error',
+            child: Text(s.errorGeneric(error),
                 style: TextStyle(color: context.textSecondary))),
         data: (members) {
           if (members.isEmpty) {
@@ -381,7 +381,7 @@ class _MemberTile extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 2),
-                    Text('Lv.$level ${levelTitle(level)}',
+                    Text(s.levelLabel(level, levelTitle(level)),
                         style: TextStyle(
                             color: AppTheme.getLevelColor(level),
                             fontSize: r.fs(11))),

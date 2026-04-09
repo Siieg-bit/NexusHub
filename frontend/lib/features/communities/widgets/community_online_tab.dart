@@ -795,7 +795,7 @@ class _MemberRow extends StatelessWidget {
                   ),
                   SizedBox(height: r.s(2)),
                   Text(
-                    'Lv.$level ${levelTitle(level)}',
+                    s.levelLabel(level, levelTitle(level)),
                     style: TextStyle(
                       color: AppTheme.getLevelColor(level),
                       fontSize: r.fs(11),

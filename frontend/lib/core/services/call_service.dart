@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'supabase_service.dart';
 import 'realtime_service.dart';
 import '../../core/l10n/locale_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// ============================================================================
 /// CallService — Gerencia chamadas de voz, vídeo e screening room.
@@ -130,6 +131,7 @@ class CallService {
 
   /// Inicializa o Agora RTC Engine (chamado uma vez)
   static Future<void> _initEngine() async {
+    final s = getStrings();
     if (_isEngineInitialized && _engine != null) return;
 
     _engine = createAgoraRtcEngine();
@@ -140,6 +142,7 @@ class CallService {
 
     _engine!.registerEventHandler(RtcEngineEventHandler(
       onJoinChannelSuccess: (connection, elapsed) {
+      final s = getStrings();
         debugPrint(
             s.joinedChannelInMs);
       },
@@ -177,6 +180,7 @@ class CallService {
 
   /// Solicita permissões de câmera e microfone
   static Future<bool> _requestPermissions(CallType type) async {
+    final s = getStrings();
     final permissions = <Permission>[Permission.microphone];
     if (type == CallType.video) {
       permissions.add(Permission.camera);

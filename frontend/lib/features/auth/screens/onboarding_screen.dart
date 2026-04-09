@@ -6,17 +6,18 @@ import '../../../config/app_theme.dart';
 import '../../../core/utils/amino_animations.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Tela de Onboarding — réplica fiel do Amino Apps.
 /// Fundo escuro com gradiente animado, logo centralizado, botões translúcidos.
-class OnboardingScreen extends StatefulWidget {
+class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen>
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _bgController;
 
@@ -245,7 +246,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   }
 }
 
-class _FeatureRow extends StatelessWidget {
+class _FeatureRow extends ConsumerWidget {
   final IconData icon;
   final Color color;
   final String text;
@@ -257,8 +258,7 @@ class _FeatureRow extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
     final r = context.r;
     return Row(
       children: [

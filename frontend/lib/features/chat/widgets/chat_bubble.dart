@@ -4,6 +4,7 @@ import '../../../config/app_theme.dart';
 import 'nine_slice_bubble.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 export '../../../core/widgets/avatar_with_frame.dart';
 
 /// Custom Chat Bubble com suporte a frames equipáveis — estilo Amino Apps.
@@ -14,7 +15,7 @@ export '../../../core/widgets/avatar_with_frame.dart';
 /// - Bubble com frame de imagem (9-patch style) via [CachedNetworkImage]
 /// - Cores customizáveis por role (Leader, Curator, Agent)
 /// - Tail (seta) apontando para o remetente
-class ChatBubble extends StatelessWidget {
+class ChatBubble extends ConsumerWidget {
   final Widget child;
   final bool isMine;
   final String? bubbleFrameUrl;
@@ -63,7 +64,7 @@ class ChatBubble extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     // Se tem frame de imagem, usar o frame
     if (bubbleFrameUrl != null && bubbleFrameUrl!.isNotEmpty) {
@@ -234,13 +235,13 @@ class _BubblePainter extends CustomPainter {
 // Re-exportado no topo do arquivo para manter compatibilidade.
 
 /// Badge de Amino+ para exibir ao lado do nome.
-class AminoPlusBadge extends StatelessWidget {
+class AminoPlusBadge extends ConsumerWidget {
   final double height;
 
   const AminoPlusBadge({super.key, this.height = 18});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
@@ -273,7 +274,7 @@ class AminoPlusBadge extends StatelessWidget {
 }
 
 /// Streak Bar visual para o perfil da comunidade — estilo Amino.
-class StreakBar extends StatelessWidget {
+class StreakBar extends ConsumerWidget {
   final int currentStreak;
   final int maxStreak;
   final int checkInDays;
@@ -286,7 +287,7 @@ class StreakBar extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(

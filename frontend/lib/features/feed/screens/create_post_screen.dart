@@ -894,7 +894,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           color: Colors.white.withValues(alpha: 0.05),
         ),
         SizedBox(height: r.s(12)),
-        Text('Poll Options',
+        Text(s.pollOptionsLabel,
             style: TextStyle(
                 color: Colors.grey[400],
                 fontSize: r.fs(13),
@@ -966,7 +966,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           color: Colors.white.withValues(alpha: 0.05),
         ),
         SizedBox(height: r.s(12)),
-        Text('Quiz Questions',
+        Text(s.quizQuestionsLabel,
             style: TextStyle(
                 color: Colors.grey[400],
                 fontSize: r.fs(13),
@@ -987,7 +987,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               children: [
                 Row(
                   children: [
-                    Text('Question ${qi + 1}',
+                    Text(s.questionN(qi + 1),
                         style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: r.fs(13),
@@ -1042,7 +1042,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                             style: TextStyle(
                                 fontSize: r.fs(12), color: context.textPrimary),
                             decoration: InputDecoration(
-                              hintText: 'Option ${oi + 1}',
+                              hintText: s.optionN(oi + 1),
                               hintStyle: TextStyle(
                                   color: Colors.grey[700], fontSize: r.fs(12)),
                               border: InputBorder.none,
@@ -1066,7 +1066,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                         Icon(Icons.add_rounded,
                             size: r.s(14), color: AppTheme.primaryColor),
                         SizedBox(width: r.s(4)),
-                        Text('Option',
+                        Text(s.optionLabel,
                             style: TextStyle(
                                 color: AppTheme.primaryColor,
                                 fontSize: r.fs(11),
@@ -1117,7 +1117,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           color: Colors.white.withValues(alpha: 0.05),
         ),
         SizedBox(height: r.s(12)),
-        Text('External Link',
+        Text(s.externalLink,
             style: TextStyle(
                 color: Colors.grey[400],
                 fontSize: r.fs(13),
@@ -1148,7 +1148,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           color: Colors.white.withValues(alpha: 0.05),
         ),
         SizedBox(height: r.s(12)),
-        Text('Images',
+        Text(s.imagesLabel,
             style: TextStyle(
                 color: Colors.grey[400],
                 fontSize: r.fs(13),

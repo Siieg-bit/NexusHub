@@ -432,7 +432,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
           setState(() => _reorderedCommunities = null);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Voc\u00ea saiu de "${community.name}".'),
+              content: Text(s.leftCommunityMsg(community.name)),
               backgroundColor: AppTheme.accentColor,
               behavior: SnackBarBehavior.floating,
             ),

@@ -166,7 +166,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                               style: TextStyle(
                                   color: context.textPrimary,
                                   fontWeight: FontWeight.w600)),
-                          subtitle: Text('Iniciar conversa com um usu\u00e1rio',
+                         subtitle: Text(s.startConversationUser,
                               style: TextStyle(
                                   color: Colors.grey[500], fontSize: r.fs(12))),
                           onTap: () {

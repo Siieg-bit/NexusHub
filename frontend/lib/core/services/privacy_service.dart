@@ -1,4 +1,6 @@
 import '../services/supabase_service.dart';
+import '../l10n/locale_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Serviço de Privacy Levels — implementa os 3 níveis de privacidade do Amino.
 ///
@@ -96,7 +98,9 @@ class PrivacyService {
 
   /// Labels para os níveis de privacidade.
   static String levelLabel(int level) {
+    final s = getStrings();
     switch (level) {
+      final s = getStrings();
       case 1:
         return s.publicLabel;
       case 2:

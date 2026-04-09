@@ -473,7 +473,7 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
               ),
             ),
             SizedBox(height: r.s(8)),
-            Text('Saldo atual: ${_formatCoins(_coins)} coins',
+            Text(s.currentBalanceCoins(_formatCoins(_coins)),
                 style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
           ],
         ),

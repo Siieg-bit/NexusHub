@@ -2,6 +2,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'supabase_service.dart';
 import '../../core/l10n/locale_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Serviço de Device Fingerprinting — registra e atualiza dispositivos.
 /// Baseado na tabela device_fingerprints do schema v5.
@@ -60,19 +61,23 @@ class DeviceFingerprintService {
 
   /// Coleta informações do dispositivo atual.
   static Map<String, String> _collectDeviceInfo() {
+    final s = getStrings();
     String deviceType;
     String deviceName;
     String os;
     String browser = '';
 
     if (kIsWeb) {
+      final s = getStrings();
       deviceType = 'web';
       deviceName = s.webBrowser;
       os = s.web;
       browser = s.browser; // Em produção, usar package:web para detectar
     } else {
       try {
+      final s = getStrings();
         if (Platform.isAndroid) {
+      final s = getStrings();
           deviceType = 'android';
           deviceName = s.android;
           os = s.androidVersion;

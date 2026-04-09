@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 import 'package:path/path.dart' as path;
 import 'supabase_service.dart';
 import '../../core/l10n/locale_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// ============================================================================
 /// MediaUploadService — Upload de mídia para Supabase Storage.
@@ -121,6 +122,7 @@ class MediaUploadService {
     final cropStyle = useCircleCrop ? CropStyle.circle : CropStyle.rectangle;
 
     try {
+      final s = getStrings();
       final cropped = await ImageCropper().cropImage(
         sourcePath: file.path,
         maxWidth: maxWidth,
@@ -155,12 +157,14 @@ class MediaUploadService {
 
   /// Upload de um único arquivo para Supabase Storage
   static Future<UploadResult?> uploadFile({
+    final s = getStrings();
     required File file,
     required MediaBucket bucket,
     String? customPath,
     void Function(double progress)? onProgress,
   }) async {
     try {
+      final s = getStrings();
       final userId = SupabaseService.currentUserId;
       if (userId == null) throw Exception(s.userNotAuthenticated);
 

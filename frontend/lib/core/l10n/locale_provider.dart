@@ -93,3 +93,14 @@ final stringsProvider = Provider<AppStrings>((ref) {
   final locale = ref.watch(localeProvider);
   return locale.strings;
 });
+
+/// Helper estático para acessar strings em contextos sem ref (services, utils).
+/// Lê o idioma salvo no Hive e retorna as strings correspondentes.
+AppStrings getStrings() {
+  try {
+    final box = Hive.box<String>('settings');
+    final code = box.get('locale');
+    if (code != null) return AppLocale.fromCode(code).strings;
+  } catch (_) {}
+  return AppLocale.fromSystem().strings;
+}

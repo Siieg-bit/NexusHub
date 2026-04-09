@@ -3463,4 +3463,34 @@ it will appear here';
   String get startConversationUser => 'Start conversation with a user';
   @override
   String get noItemAvailableMsg => 'No item available';
+
+  // FINAL CLEANUP
+  @override
+  String memberCountMembers(int count) => '\$count members';
+  @override
+  String errorPurchase(String error) => 'Purchase error: \$error';
+  @override
+  String errorGeneric(String error) => 'Error: \$error';
+  @override
+  String currentBalanceCoins(String coins) => 'Current balance: \$coins coins';
+  @override
+  String leftCommunityMsg(String name) => 'You left "\$name".';
+  @override
+  String pollQuestion(String question) => '📊 \$question';
+  @override
+  String get pinnedLabel => '📌 Pinned';
+  @override
+  String get externalLink => 'External Link';
+  @override
+  String get pollOptionsLabel => 'Poll Options';
+  @override
+  String get quizQuestionsLabel => 'Quiz Questions';
+  @override
+  String get optionLabel => 'Option';
+  @override
+  String optionN(int n) => 'Option \$n';
+  @override
+  String questionN(int n) => 'Question \$n';
+  @override
+  String amountCoins(int amount) => '\$amount coins';
 }

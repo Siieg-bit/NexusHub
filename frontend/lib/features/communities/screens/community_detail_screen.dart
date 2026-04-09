@@ -226,7 +226,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
         backgroundColor: context.scaffoldBg,
         appBar: AppBar(backgroundColor: context.scaffoldBg),
         body: Center(
-            child: Text('Erro: $error',
+            child: Text(s.errorGeneric(error),
                 style: TextStyle(color: context.textSecondary))),
       ),
       data: (community) {

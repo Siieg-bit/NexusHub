@@ -109,7 +109,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro na compra: $e'),
+            content: Text(s.errorPurchase(e.toString())),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -428,7 +428,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
             Icon(Icons.storefront_outlined,
                 size: r.s(48), color: Colors.grey[700]),
             SizedBox(height: r.s(12)),
-            Text('Nenhum item dispon\u00edvel',
+            Text(s.noItemAvailable,
                 style: TextStyle(
                     color: Colors.grey[500], fontWeight: FontWeight.w600)),
           ],

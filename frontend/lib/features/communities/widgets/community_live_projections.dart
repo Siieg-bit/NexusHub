@@ -7,6 +7,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/amino_animations.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // =============================================================================
 // LIVE PROJECTIONS SECTION
@@ -15,7 +16,7 @@ import '../../../core/l10n/locale_provider.dart';
 // Fica oculto quando não há projeções ativas.
 // =============================================================================
 
-class CommunityLiveProjections extends StatefulWidget {
+class CommunityLiveProjections extends ConsumerStatefulWidget {
   final String communityId;
 
   const CommunityLiveProjections({
@@ -28,7 +29,7 @@ class CommunityLiveProjections extends StatefulWidget {
       _CommunityLiveProjectionsState();
 }
 
-class _CommunityLiveProjectionsState extends State<CommunityLiveProjections> {
+class _CommunityLiveProjectionsState extends ConsumerState<CommunityLiveProjections> {
   List<Map<String, dynamic>> _projections = [];
   bool _loading = true;
 

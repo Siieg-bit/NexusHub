@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/l10n/locale_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// ============================================================================
 /// ErrorHandler — Tratamento padronizado de erros para o NexusHub.
@@ -99,6 +100,7 @@ class ErrorHandler {
   // ── Error Translation ──
 
   static String translateError(dynamic error) {
+    final s = getStrings();
     if (error is AuthException) {
       return _translateAuthError(error);
     }
@@ -112,12 +114,15 @@ class ErrorHandler {
     final msg = error.toString().toLowerCase();
 
     if (msg.contains('socketexception') || msg.contains('network')) {
+      final s = getStrings();
       return s.noInternetConnection;
     }
     if (msg.contains('timeout')) {
+      final s = getStrings();
       return s.operationTimeout;
     }
     if (msg.contains('permission') || msg.contains('denied')) {
+      final s = getStrings();
       return s.noPermission;
     }
 
@@ -125,27 +130,35 @@ class ErrorHandler {
   }
 
   static String _translateAuthError(AuthException error) {
+    final s = getStrings();
     final msg = error.message.toLowerCase();
 
     if (msg.contains('invalid login')) {
+      final s = getStrings();
       return s.incorrectEmailOrPassword;
     }
     if (msg.contains('email not confirmed')) {
+      final s = getStrings();
       return s.verifyEmailBeforeLogin;
     }
     if (msg.contains('user already registered')) {
+      final s = getStrings();
       return s.emailAlreadyRegistered;
     }
     if (msg.contains('password') && msg.contains('weak')) {
+      final s = getStrings();
       return s.weakPassword;
     }
     if (msg.contains('rate limit') || msg.contains('too many')) {
+      final s = getStrings();
       return s.tooManyAttempts;
     }
     if (msg.contains('invalid email')) {
+      final s = getStrings();
       return s.invalidEmail2;
     }
     if (msg.contains('session expired') || msg.contains('refresh_token')) {
+      final s = getStrings();
       return s.sessionExpired2;
     }
 
@@ -153,11 +166,13 @@ class ErrorHandler {
   }
 
   static String _translatePostgrestError(PostgrestException error) {
+    final s = getStrings();
     final code = error.code ?? '';
     final msg = error.message.toLowerCase();
 
     // Unique constraint violation
     if (code == '23505') {
+      final s = getStrings();
       if (msg.contains('nickname')) return s.nicknameInUse;
       if (msg.contains('email')) return s.emailAlreadyRegistered;
       if (msg.contains('community_members'))
@@ -166,6 +181,7 @@ class ErrorHandler {
     }
     // Foreign key violation
     if (code == '23503') {
+      final s = getStrings();
       return s.invalidReference;
     }
     // Not null violation
@@ -174,6 +190,7 @@ class ErrorHandler {
     }
     // Check constraint violation
     if (code == '23514') {
+      final s = getStrings();
       if (msg.contains('coins') || msg.contains('balance')) {
         return 'Saldo insuficiente.';
       }
@@ -181,14 +198,17 @@ class ErrorHandler {
     }
     // RLS policy violation
     if (code == '42501' || msg.contains('policy')) {
+      final s = getStrings();
       return s.noPermission;
     }
     // Function not found
     if (code == '42883') {
+      final s = getStrings();
       return s.featureTemporarilyUnavailable;
     }
     // Raised exception (from RPCs)
     if (code == 'P0001') {
+      final s = getStrings();
       // Tentar extrair mensagem amigável
       if (msg.contains('insufficient')) return 'Saldo insuficiente.';
       if (msg.contains('not a member'))
@@ -202,18 +222,22 @@ class ErrorHandler {
   }
 
   static String _translateStorageError(StorageException error) {
+    final s = getStrings();
     final msg = error.message.toLowerCase();
 
     if (msg.contains('payload too large') || msg.contains('file size')) {
       return 'Arquivo muito grande. Reduza o tamanho e tente novamente.';
     }
     if (msg.contains('not found')) {
+      final s = getStrings();
       return s.fileNotFoundMsg;
     }
     if (msg.contains('permission') || msg.contains('policy')) {
+      final s = getStrings();
       return s.noUploadPermission;
     }
     if (msg.contains('mime') || msg.contains('type')) {
+      final s = getStrings();
       return s.fileTypeNotAllowed;
     }
 

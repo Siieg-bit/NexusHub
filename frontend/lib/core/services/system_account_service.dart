@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 
 import 'supabase_service.dart';
+import '../l10n/locale_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Serviço de System Accounts — encapsula fluxos sistêmicos que agora são
 /// centralizados no backend via RPCs.
@@ -98,6 +100,7 @@ class SystemAccountService {
 
   /// Envia notificação de ação de moderação via backend.
   static Future<void> sendModerationNotice({
+    final s = getStrings();
     required String userId,
     required String action,
     required String reason,
@@ -106,6 +109,7 @@ class SystemAccountService {
     int? durationHours,
   }) async {
     try {
+      final s = getStrings();
       String content;
       switch (action) {
         case 'warn':
