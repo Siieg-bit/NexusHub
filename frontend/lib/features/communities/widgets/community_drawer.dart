@@ -359,17 +359,14 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
   Widget _buildHeader(
       Responsive r, Color themeColor, bool hasCheckedIn, int streak) {
     final user = widget.currentUser;
-    final screenHeight = MediaQuery.of(context).size.height;
-    // Header ocupa ~43% da tela (fiel ao Amino)
-    final headerHeight = (screenHeight * 0.43).clamp(280.0, 400.0);
 
-    return SizedBox(
-      height: headerHeight,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          // ── Fundo: imagem da comunidade cobrindo toda a área ────────────
-          Container(
+    // Sem altura fixa — o conteúdo define a altura naturalmente.
+    // O fundo (imagem + gradiente) cobre toda a área via Positioned.fill.
+    return Stack(
+      children: [
+        // ── Fundo: imagem da comunidade cobrindo toda a área ────────────
+        Positioned.fill(
+          child: Container(
             decoration: BoxDecoration(
               color: themeColor.withValues(alpha: 0.9),
               image: widget.community.bannerUrl != null
@@ -387,9 +384,11 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                       : null,
             ),
           ),
+        ),
 
-          // ── Gradiente escuro (Amino: mais transparente no topo, preto na base)
-          Container(
+        // ── Gradiente escuro ────────────────────────────────────────────
+        Positioned.fill(
+          child: Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
@@ -404,77 +403,69 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
               ),
             ),
           ),
+        ),
 
-          // ── Conteúdo do header ─────────────────────────────────────────
-          // Layout:
-          //   [topo]  ícone de busca (32px) + padding (6px) = 44px reservados
-          //   [meio]  banner centralizado no espaço livre entre busca e avatar
-          //   [base]  avatar + nome + nível + streak
-          Positioned.fill(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                // Espaço reservado para o ícone de busca (32px + 6px top + 6px bottom)
-                SizedBox(height: r.s(44)),
-                SizedBox(height: r.s(6)),
-                // Banner retangular logo abaixo do botão de busca
-                _buildCommunityBanner(r),
-                // Espaço flexível entre banner e avatar
-                const Spacer(flex: 1),
-                // Avatar do usuário centralizado
-                _buildUserAvatar(r, user, themeColor),
-                SizedBox(height: r.s(6)),
-                // Nome do usuário
-                Text(
-                  user?.nickname ?? 'Visitante',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: r.fs(20),
-                    fontWeight: FontWeight.w800,
-                    shadows: const [
-                      Shadow(color: Colors.black87, blurRadius: 8),
-                    ],
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: r.s(4)),
-                // Badge de nível + barra de reputação
-                if (user != null) _buildLevelBadge(r, user),
-                SizedBox(height: r.s(8)),
-                // Streak dots (7 dias)
-                _buildStreakDots(r, streak, hasCheckedIn),
-                SizedBox(height: r.s(4)),
-                // Mensagem de check-in (TEXTO VERDE — como no Amino!)
-                _buildCheckInMessage(r, hasCheckedIn),
-                SizedBox(height: r.s(8)),
-              ],
-            ),
-          ),
-
-          // ── Ícone de busca no topo direito ───────────────────────────────
-          // Posicionado APÓS o Positioned.fill para ficar sempre na frente
-          Positioned(
-            top: r.s(6),
-            right: r.s(8),
-            child: GestureDetector(
-              onTap: () => _closeAndNavigate(() {
-                context.push('/community/${widget.community.id}/search');
-              }),
-              child: Container(
-                width: r.s(32),
-                height: r.s(32),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.40),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.search_rounded,
-                    color: Colors.white, size: r.s(18)),
+        // ── Conteúdo do header (define a altura do Stack) ───────────────
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Espaço reservado para o ícone de busca
+            SizedBox(height: r.s(44)),
+            SizedBox(height: r.s(6)),
+            // Banner retangular logo abaixo do botão de busca
+            _buildCommunityBanner(r),
+            SizedBox(height: r.s(12)),
+            // Avatar do usuário centralizado
+            _buildUserAvatar(r, user, themeColor),
+            SizedBox(height: r.s(6)),
+            // Nome do usuário
+            Text(
+              user?.nickname ?? 'Visitante',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: r.fs(20),
+                fontWeight: FontWeight.w800,
+                shadows: const [
+                  Shadow(color: Colors.black87, blurRadius: 8),
+                ],
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            SizedBox(height: r.s(4)),
+            // Badge de nível + barra de reputação
+            if (user != null) _buildLevelBadge(r, user),
+            SizedBox(height: r.s(8)),
+            // Streak dots (7 dias)
+            _buildStreakDots(r, streak, hasCheckedIn),
+            SizedBox(height: r.s(4)),
+            // Botão de check-in (desaparece após feito)
+            _buildCheckInMessage(r, hasCheckedIn),
+            SizedBox(height: r.s(8)),
+          ],
+        ),
+
+        // ── Ícone de busca no topo direito ─────────────────────────────
+        Positioned(
+          top: r.s(6),
+          right: r.s(8),
+          child: GestureDetector(
+            onTap: () => _closeAndNavigate(() {
+              context.push('/community/${widget.community.id}/search');
+            }),
+            child: Container(
+              width: r.s(32),
+              height: r.s(32),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.40),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.search_rounded,
+                  color: Colors.white, size: r.s(18)),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

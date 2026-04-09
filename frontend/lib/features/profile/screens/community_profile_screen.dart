@@ -210,12 +210,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
               ),
             )
           : null,
-      body: RefreshIndicator(
-        color: AppTheme.primaryColor,
-        backgroundColor: context.surfaceColor,
-        onRefresh: _loadProfile,
-        child: NestedScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
+      body: NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) => [
             // ================================================================
             // HEADER — Banner + Avatar + Nome + Level + Tags + Botões
@@ -933,7 +928,6 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
               _buildSavedPostsTab(),
             ],
           ),
-        ),
       ),
     );
   }
@@ -943,7 +937,12 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
   // ============================================================================
   Widget _buildPostsTab() {
     final r = context.r;
-    return ListView(
+    return RefreshIndicator(
+      color: AppTheme.primaryColor,
+      backgroundColor: context.surfaceColor,
+      onRefresh: _loadProfile,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.zero,
       children: [
         // "Criar nova publicação" button
@@ -1198,6 +1197,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           }),
         SizedBox(height: r.s(80)), // espaço para o FAB
       ],
+    ),
     );
   }
 
@@ -1216,7 +1216,11 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
   // ============================================================================
   Widget _buildWallTab() {
     final r = context.r;
-    return Column(
+    return RefreshIndicator(
+      color: AppTheme.primaryColor,
+      backgroundColor: context.surfaceColor,
+      onRefresh: _loadProfile,
+      child: Column(
       children: [
         // Input
         Container(
@@ -1342,6 +1346,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
                 ),
         ),
       ],
+    ),
     );
   }
 
@@ -1394,8 +1399,13 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
       );
     }
 
-    return ListView.separated(
-      padding: EdgeInsets.all(r.s(16)),
+    return RefreshIndicator(
+      color: AppTheme.primaryColor,
+      backgroundColor: context.surfaceColor,
+      onRefresh: _loadProfile,
+      child: ListView.separated(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.all(r.s(16)),
       itemCount: _savedPosts.length,
       separatorBuilder: (_, __) => SizedBox(height: r.s(10)),
       itemBuilder: (context, index) {
@@ -1471,6 +1481,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
           ),
         );
       },
+    ),
     );
   }
 
