@@ -399,7 +399,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                 TextStyle(color: ctx.textPrimary, fontWeight: FontWeight.w800),
           ),
           content: Text(
-            'Tem certeza que deseja sair de "${community.name}"? Voc\u00ea poder\u00e1 entrar novamente depois.',
+            s.leaveCommunityConfirmMsg(community.name),
             style: TextStyle(color: ctx.textSecondary, fontSize: r.fs(14)),
           ),
           actions: [
@@ -594,6 +594,7 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
 
   Future<void> _doCheckIn() async {
     if (_isCheckingIn) return;
+    final s = ref.read(stringsProvider);
     setState(() => _isCheckingIn = true);
 
     try {
@@ -628,7 +629,7 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
           }
         } else if (data != null && data['error'] == 'already_checked_in') {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Text(s.alreadyCheckedInCommunity),
               backgroundColor: Colors.orange,
               behavior: SnackBarBehavior.floating,
@@ -986,6 +987,7 @@ class _CommunityPreviewSheetState
 
   Future<void> _doCheckIn() async {
     if (_isCheckingIn) return;
+    final s = ref.read(stringsProvider);
     setState(() => _isCheckingIn = true);
 
     try {
@@ -1019,7 +1021,7 @@ class _CommunityPreviewSheetState
           }
         } else if (data != null && data['error'] == 'already_checked_in') {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Text(s.alreadyCheckedInCommunity),
               backgroundColor: Colors.orange,
               behavior: SnackBarBehavior.floating,

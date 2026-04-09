@@ -55,6 +55,7 @@ class _CommunityCheckInBarState extends ConsumerState<CommunityCheckInBar>
 
   Future<void> _doCheckIn() async {
     if (_loading) return;
+    final s = ref.read(stringsProvider);
     setState(() => _loading = true);
     try {
       final userId = SupabaseService.currentUserId;
@@ -70,7 +71,6 @@ class _CommunityCheckInBarState extends ConsumerState<CommunityCheckInBar>
         final newLevel = result['new_level'] as int? ?? 0;
         HapticFeedback.mediumImpact();
         if (mounted) {
-          final s = ref.read(stringsProvider);
           ref.invalidate(checkInStatusProvider);
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(
@@ -217,7 +217,7 @@ class _CommunityCheckInBarState extends ConsumerState<CommunityCheckInBar>
 
   Widget _buildModernStreakBar(Responsive r, int streak) {
     const totalDays = 7;
-    final completedDays = streak > 0 && streak % 7 == 0 ? 7 : streak % 7;
+    final completedDays = (streak % 7 == 0 && streak > 0) ? 7 : streak % 7;
 
     return Row(
       children: List.generate(totalDays, (i) {

@@ -95,6 +95,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
 
   Future<void> _doCheckIn() async {
     if (_isCheckingIn) return;
+    final s = ref.read(stringsProvider);
     setState(() => _isCheckingIn = true);
     try {
       final result = await SupabaseService.rpc('daily_checkin', params: {
@@ -120,7 +121,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
           LevelUpDialog.show(context, newLevel: newLevel);
         }
       } else if (data != null && data['error'] == 'already_checked_in') {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(s.alreadyCheckedInCommunity),
           backgroundColor: Colors.orange,
           behavior: SnackBarBehavior.floating,
@@ -252,7 +253,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                       color: Colors.grey[500], size: r.s(18)),
                   SizedBox(height: r.s(1)),
                   Text(
-                    'Exit',
+                    s.drawerExit,
                     style: TextStyle(
                       color: Colors.grey[500],
                       fontSize: r.fs(8),
@@ -430,7 +431,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
             SizedBox(height: r.s(6)),
             // Nome do usuário
             Text(
-              user?.nickname ?? 'Visitante',
+              user?.nickname ?? s.drawerVisitor,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: r.fs(20),
@@ -447,8 +448,8 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
             if (user != null)
               GestureDetector(
                 onTap: () {
-                  final localLevel = widget.membership?['local_level'] as int? ?? user.level;
-                  final localRep = widget.membership?['local_reputation'] as int? ?? user.reputation;
+                  final localLevel = widget.membership?['local_level'] as int? ?? 0;
+                  final localRep = widget.membership?['local_reputation'] as int? ?? 0;
                   context.push('/all-rankings', extra: {
                     'level': localLevel,
                     'reputation': localRep,
@@ -564,8 +565,8 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
   Widget _buildLevelBadge(Responsive r, UserModel user) {
     final s = ref.read(stringsProvider);
     // Priorizar dados locais da comunidade (membership) sobre dados globais (user)
-    final level = widget.membership?['local_level'] as int? ?? user.level;
-    final reputation = widget.membership?['local_reputation'] as int? ?? user.reputation;
+    final level = widget.membership?['local_level'] as int? ?? 0;
+    final reputation = widget.membership?['local_reputation'] as int? ?? 0;
     final levelColor = AppTheme.getLevelColor(level);
     final levelName = levelTitleFromStrings(s, level);
     final repProgress = levelProgress(reputation);
@@ -593,7 +594,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                 text: TextSpan(
                   children: [
                     TextSpan(
-                      text: 'Lv',
+                      text: s.drawerLvLabel,
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: r.fs(9),
@@ -862,7 +863,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         _AminoDrawerTile(
           icon: Icons.chat_bubble_rounded,
           iconColor: const Color(0xFF66BB6A),
-          label: 'My Chats',
+          label: s.drawerMyChats,
           onTap: () => _closeAndNavigate(() {
             context.push(
               '/community/${widget.community.id}/my-chats',
@@ -873,7 +874,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         _AminoDrawerTile(
           icon: Icons.forum_rounded,
           iconColor: const Color(0xFF66BB6A),
-          label: 'Public Chatrooms',
+          label: s.drawerPublicChatrooms,
           onTap: () => _closeAndNavigate(() {
             context.push('/create-public-chat', extra: {
               'communityId': widget.community.id,
@@ -884,7 +885,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         _AminoDrawerTile(
           icon: Icons.leaderboard_rounded,
           iconColor: const Color(0xFF7B1FA2),
-          label: 'Leaderboards',
+          label: s.drawerLeaderboards,
           onTap: () => _closeAndNavigate(() {
             context.push('/community/${widget.community.id}/leaderboard');
           }),
@@ -969,7 +970,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         _AminoDrawerTile(
           icon: Icons.group_rounded,
           iconColor: const Color(0xFF26C6DA),
-          label: 'Members',
+          label: s.drawerMembers,
           onTap: () => _closeAndNavigate(() {
             context.push('/community/${widget.community.id}/members');
           }),
@@ -1016,7 +1017,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
           _AminoDrawerTile(
             icon: Icons.settings_rounded,
             iconColor: const Color(0xFF78909C),
-            label: 'Edit Community',
+            label: s.drawerEditCommunity,
             onTap: () => _closeAndNavigate(() {
               context.push('/community/${widget.community.id}/acm');
             }),
@@ -1024,7 +1025,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         _AminoDrawerTile(
           icon: Icons.flag_rounded,
           iconColor: AppTheme.errorColor,
-          label: 'Flag Center',
+          label: s.drawerFlagCenter,
           onTap: () => _closeAndNavigate(() {
             context.push('/community/${widget.community.id}/flags');
           }),
@@ -1032,7 +1033,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
         _AminoDrawerTile(
           icon: Icons.analytics_rounded,
           iconColor: const Color(0xFF26A69A),
-          label: 'Statistics',
+          label: s.drawerStatistics,
           onTap: () => _closeAndNavigate(() {
             context.push('/community/${widget.community.id}/acm');
           }),

@@ -156,6 +156,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
 
   Future<void> _doCheckIn() async {
     final r = context.r;
+    final s = ref.read(stringsProvider);
     setState(() => _isLoading = true);
 
     try {
@@ -167,7 +168,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
           if (!mounted) return;
           setState(() {
             _checkedIn = true;
-            _consecutiveDays = data['consecutive_days'] as int? ?? 0;
+            _consecutiveDays = data['streak'] as int? ?? 0;
             _xpEarned = data['xp_earned'] as int? ?? 0;
             _coinsEarned = data['coins_earned'] as int? ?? 0;
           });
