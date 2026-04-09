@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 /// AminoDrawer — Drawer customizado com animação de sobreposição (overlay).
@@ -6,6 +5,12 @@ import 'package:flutter/material.dart';
 /// O drawer desliza da esquerda e sobrepõe o conteúdo principal sem
 /// empurrá-lo ou redimensioná-lo. Um overlay escuro semitransparente
 /// cobre o conteúdo ao fundo quando o drawer está aberto.
+///
+/// Comportamento:
+///   - Puxar da borda esquerda (50px) para a direita → abre automaticamente
+///   - Tocar no overlay escuro → fecha
+///   - Arrastar o overlay para a esquerda → fecha
+///   - Botão de menu (toggle) → abre/fecha
 ///
 /// Uso:
 /// ```dart
@@ -47,7 +52,7 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
     super.initState();
     _animController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 280),
+      duration: const Duration(milliseconds: 300),
     );
   }
 
@@ -75,23 +80,19 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
     }
   }
 
-  // ── Drag handlers para a zona de borda (abrir) e overlay (fechar) ──
-  void _onDragUpdate(DragUpdateDetails details) {
+  // ── Drag no overlay (para fechar quando aberto) ────────────────────
+  void _onOverlayDragUpdate(DragUpdateDetails details) {
     final delta = details.primaryDelta ?? 0;
     _animController.value =
         (_animController.value + delta / widget.maxSlide).clamp(0.0, 1.0);
   }
 
-  void _onDragEnd(DragEndDetails details) {
+  void _onOverlayDragEnd(DragEndDetails details) {
     final velocity = details.primaryVelocity ?? 0;
-    if (velocity > 300) {
-      open();
-    } else if (velocity < -300) {
+    if (velocity < -200 || _animController.value < 0.5) {
       close();
-    } else if (_animController.value > 0.4) {
-      open();
     } else {
-      close();
+      open();
     }
   }
 
@@ -105,36 +106,40 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
         // ── Conteúdo principal (não se move) ──────────────────────────
         widget.child,
 
-        // ── Zona de drag na borda esquerda (abre o drawer) ───────────
-        // Usa _EdgeDragArea com EagerGestureRecognizer para SEMPRE
-        // vencer a gesture arena contra o TabBarView interno.
-        // Sem isso, o TabBarView rouba o drag horizontal e o drawer
-        // trava em ~5%.
-        // Positioned DEVE ser filho direto do Stack.
+        // ── Zona de borda esquerda (50px) — abre o drawer ────────────
+        // Ao detectar qualquer arrasto para a direita, chama open()
+        // imediatamente. Não tenta seguir o dedo pixel a pixel.
+        // Isso evita toda a competição de gestos com o TabBarView.
         Positioned(
           left: 0,
           top: 0,
           bottom: 0,
-          width: 40.0,
+          width: 50.0,
           child: AnimatedBuilder(
             animation: _animController,
             builder: (context, child) {
-              // Só mostrar quando o drawer está fechado
-              if (_animController.value > 0.05) {
+              // Esconde a zona quando o drawer já está abrindo/aberto
+              if (_animController.value > 0.01) {
                 return const SizedBox.shrink();
               }
               return child!;
             },
-            child: _EdgeDragArea(
-              onDragUpdate: _onDragUpdate,
-              onDragEnd: _onDragEnd,
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onHorizontalDragUpdate: (details) {
+                // Qualquer movimento para a direita (delta > 2) dispara open()
+                final delta = details.primaryDelta ?? 0;
+                if (delta > 2) {
+                  open();
+                }
+              },
+              child: const SizedBox.expand(),
             ),
           ),
         ),
 
         // ── Handle visual (indicador de puxão) ──────────────────────
         // Barra branca fina na borda esquerda, visível quando fechado.
-        // Positioned deve ser filho direto do Stack (não de IgnorePointer).
         Positioned(
           left: 2.0,
           top: 0,
@@ -143,7 +148,8 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
             child: AnimatedBuilder(
               animation: _animController,
               builder: (context, _) {
-                final opacity = (1.0 - _animController.value * 20.0).clamp(0.0, 1.0);
+                final opacity =
+                    (1.0 - _animController.value * 20.0).clamp(0.0, 1.0);
                 if (opacity == 0) return const SizedBox.shrink();
                 return Center(
                   child: Opacity(
@@ -170,15 +176,15 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
         ),
 
         // ── Overlay escuro sobre o conteúdo quando aberto ────────────
-        // Captura taps para fechar e drag horizontal para arrastar.
+        // Toque fecha. Arrastar para esquerda fecha com drag.
         AnimatedBuilder(
           animation: _animController,
           builder: (context, _) {
             if (_animController.value == 0) return const SizedBox.shrink();
             return GestureDetector(
               onTap: close,
-              onHorizontalDragUpdate: _onDragUpdate,
-              onHorizontalDragEnd: _onDragEnd,
+              onHorizontalDragUpdate: _onOverlayDragUpdate,
+              onHorizontalDragEnd: _onOverlayDragEnd,
               child: Container(
                 color: Colors.black
                     .withValues(alpha: 0.55 * _animController.value),
@@ -210,60 +216,5 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
         ),
       ],
     );
-  }
-}
-
-// =============================================================================
-// _EdgeDragArea — Zona de borda que SEMPRE vence a gesture arena
-// =============================================================================
-/// Widget que usa [RawGestureDetector] com [EagerGestureRecognizer] para
-/// capturar o drag horizontal imediatamente, impedindo que o [TabBarView]
-/// (ou qualquer outro widget com scroll horizontal) roube o gesto.
-class _EdgeDragArea extends StatelessWidget {
-  final GestureDragUpdateCallback onDragUpdate;
-  final GestureDragEndCallback onDragEnd;
-
-  const _EdgeDragArea({
-    required this.onDragUpdate,
-    required this.onDragEnd,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return RawGestureDetector(
-      gestures: <Type, GestureRecognizerFactory>{
-        // O EagerGestureRecognizer aceita o gesto imediatamente na arena,
-        // antes que qualquer outro recognizer (como o do TabBarView) tenha
-        // chance de competir. Isso garante que o drag na borda esquerda
-        // SEMPRE controla o drawer.
-        _EagerHorizontalDragGestureRecognizer:
-            GestureRecognizerFactoryWithHandlers<
-                _EagerHorizontalDragGestureRecognizer>(
-          () => _EagerHorizontalDragGestureRecognizer(),
-          (_EagerHorizontalDragGestureRecognizer instance) {
-            instance
-              ..onUpdate = onDragUpdate
-              ..onEnd = onDragEnd;
-          },
-        ),
-      },
-      behavior: HitTestBehavior.translucent,
-      child: const SizedBox.expand(),
-    );
-  }
-}
-
-// =============================================================================
-// _EagerHorizontalDragGestureRecognizer
-// =============================================================================
-/// Recognizer horizontal que aceita imediatamente na gesture arena.
-/// Estende [HorizontalDragGestureRecognizer] e sobrescreve [acceptGesture]
-/// para que ele sempre ganhe, mesmo contra o [TabBarView].
-class _EagerHorizontalDragGestureRecognizer
-    extends HorizontalDragGestureRecognizer {
-  @override
-  void resolve(GestureDisposition disposition) {
-    // Sempre aceita — nunca rejeita.
-    super.resolve(GestureDisposition.accepted);
   }
 }
