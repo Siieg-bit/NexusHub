@@ -13,6 +13,7 @@ import '../../../core/providers/notification_provider.dart';
 import '../../../core/utils/responsive.dart';
 import '../providers/community_shared_providers.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/widgets/level_up_dialog.dart';
 
 class CommunityListScreen extends ConsumerStatefulWidget {
   final bool isExplore;
@@ -204,7 +205,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
               padding: EdgeInsets.only(top: r.s(16), bottom: r.s(16)),
               child: Center(
                 child: Text(
-                  'Segure e arraste os cards para reordenar',
+                  s.holdAndDragToReorder,
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.35),
                     fontSize: r.fs(12),
@@ -230,7 +231,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                   ),
                   child: Center(
                     child: Text(
-                      'CRIE SUA COMUNIDADE',
+                      s.createCommunityTitle.toUpperCase(),
                       style: TextStyle(
                         color: AppTheme.accentColor,
                         fontSize: r.fs(15),
@@ -370,10 +371,11 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
   }
 
   void _showReorderMode() {
+    final s = ref.read(stringsProvider);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text(
-            'Segure e arraste os cards para reordenar suas comunidades.'),
+        content: Text(
+            s.holdAndDragToReorder),
         backgroundColor: AppTheme.accentColor,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 3),
@@ -608,6 +610,8 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
         if (data != null && data['success'] == true) {
           final streak = data['streak'] as int? ?? 1;
           final coins = data['coins_earned'] as int? ?? 0;
+          final levelUp = data['level_up'] as bool? ?? false;
+          final newLevel = data['new_level'] as int? ?? 0;
           HapticFeedback.mediumImpact();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -619,6 +623,9 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
               duration: const Duration(seconds: 2),
             ),
           );
+          if (levelUp && newLevel > 0 && mounted) {
+            LevelUpDialog.show(context, newLevel: newLevel);
+          }
         } else if (data != null && data['error'] == 'already_checked_in') {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -994,6 +1001,8 @@ class _CommunityPreviewSheetState
         if (data != null && data['success'] == true) {
           final streak = data['streak'] as int? ?? 1;
           final coins = data['coins_earned'] as int? ?? 0;
+          final levelUp = data['level_up'] as bool? ?? false;
+          final newLevel = data['new_level'] as int? ?? 0;
           HapticFeedback.mediumImpact();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -1005,6 +1014,9 @@ class _CommunityPreviewSheetState
               duration: const Duration(seconds: 2),
             ),
           );
+          if (levelUp && newLevel > 0 && mounted) {
+            LevelUpDialog.show(context, newLevel: newLevel);
+          }
         } else if (data != null && data['error'] == 'already_checked_in') {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(

@@ -3973,4 +3973,13 @@ class AppStringsKo implements AppStrings {
   String get inProgress => '진행 중';
   @override
   String get newAchievementsUnlocked => '새로운 업적이 달성되었습니다';
+
+  // CHECK-IN MESSAGES
+  @override
+  String checkInSuccessMsg(int rep, int streak) => '체크인! +$rep rep | 연속: $streak일';
+  @override
+  String plusReputationLabel(int amount) => '+$amount 평판';
+
+  @override
+  String get holdAndDragToReorder => '카드를 길게 누르고 드래그하여 재정렬';
 }

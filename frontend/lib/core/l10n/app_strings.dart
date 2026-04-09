@@ -1811,4 +1811,11 @@ abstract class AppStrings {
   String get achievementsUnlocked;
   String get inProgress;
   String get newAchievementsUnlocked;
+
+  // CHECK-IN MESSAGES
+  String checkInSuccessMsg(int rep, int streak);
+  String plusReputationLabel(int amount);
+
+  // REORDER
+  String get holdAndDragToReorder;
 }

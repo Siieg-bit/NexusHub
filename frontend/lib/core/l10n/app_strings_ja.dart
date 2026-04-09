@@ -3467,4 +3467,13 @@ class AppStringsJa implements AppStrings {
   String get inProgress => '進行中';
   @override
   String get newAchievementsUnlocked => '新しい実績が解除されました';
+
+  // CHECK-IN MESSAGES
+  @override
+  String checkInSuccessMsg(int rep, int streak) => 'チェックイン！ +$rep rep | 連続: $streak日';
+  @override
+  String plusReputationLabel(int amount) => '+$amount 評判';
+
+  @override
+  String get holdAndDragToReorder => 'カードを長押ししてドラッグして並べ替え';
 }

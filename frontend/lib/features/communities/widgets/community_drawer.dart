@@ -12,6 +12,7 @@ import '../providers/community_shared_providers.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/amino_drawer.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/widgets/level_up_dialog.dart';
 
 // =============================================================================
 // COMMUNITY DRAWER — Réplica fiel do painel lateral do Amino Apps
@@ -103,6 +104,8 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
       if (data != null && data['success'] == true) {
         final streak = data['streak'] as int? ?? 1;
         final coins = data['coins_earned'] as int? ?? 0;
+        final levelUp = data['level_up'] as bool? ?? false;
+        final newLevel = data['new_level'] as int? ?? 0;
         HapticFeedback.mediumImpact();
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
@@ -111,6 +114,9 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 2),
         ));
+        if (levelUp && newLevel > 0 && mounted) {
+          LevelUpDialog.show(context, newLevel: newLevel);
+        }
       } else if (data != null && data['error'] == 'already_checked_in') {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text(s.alreadyCheckedInCommunity),

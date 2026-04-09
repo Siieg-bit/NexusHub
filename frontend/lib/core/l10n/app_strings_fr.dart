@@ -3533,4 +3533,13 @@ class AppStringsFr implements AppStrings {
   String get inProgress => 'En cours';
   @override
   String get newAchievementsUnlocked => 'Nouveaux succès débloqués';
+
+  // CHECK-IN MESSAGES
+  @override
+  String checkInSuccessMsg(int rep, int streak) => 'Check-in ! +$rep rep | Série : $streak jours';
+  @override
+  String plusReputationLabel(int amount) => '+$amount réputation';
+
+  @override
+  String get holdAndDragToReorder => 'Maintenez et faites glisser les cartes pour réorganiser';
 }

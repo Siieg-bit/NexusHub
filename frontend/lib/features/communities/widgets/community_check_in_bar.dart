@@ -60,7 +60,6 @@ class _CommunityCheckInBarState extends ConsumerState<CommunityCheckInBar>
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
       final result = await SupabaseService.rpc('daily_checkin', params: {
-        'p_user_id': userId,
         'p_community_id': widget.communityId,
       });
       if (!mounted) return;
@@ -71,10 +70,11 @@ class _CommunityCheckInBarState extends ConsumerState<CommunityCheckInBar>
         final newLevel = result['new_level'] as int? ?? 0;
         HapticFeedback.mediumImpact();
         if (mounted) {
+          final s = ref.read(stringsProvider);
           ref.invalidate(checkInStatusProvider);
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(
-              'Check-in! +$repEarned rep | Streak: $newStreak dias',
+              s.checkInSuccessMsg(repEarned, newStreak),
             ),
             backgroundColor: AppTheme.primaryColor,
             behavior: SnackBarBehavior.floating,
@@ -157,7 +157,7 @@ class _CommunityCheckInBarState extends ConsumerState<CommunityCheckInBar>
           ),
           SizedBox(height: r.s(4)),
           Text(
-            '+${ReputationRewards.checkIn} reputação',
+            s.plusReputationLabel(ReputationRewards.checkIn),
             style: TextStyle(
               color: context.textSecondary,
               fontSize: r.fs(11),

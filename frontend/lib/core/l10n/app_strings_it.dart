@@ -3485,4 +3485,13 @@ class AppStringsIt implements AppStrings {
   String get inProgress => 'In corso';
   @override
   String get newAchievementsUnlocked => 'Nuovi traguardi sbloccati';
+
+  // CHECK-IN MESSAGES
+  @override
+  String checkInSuccessMsg(int rep, int streak) => 'Check-in! +$rep rep | Serie: $streak giorni';
+  @override
+  String plusReputationLabel(int amount) => '+$amount reputazione';
+
+  @override
+  String get holdAndDragToReorder => 'Tieni premuto e trascina le schede per riordinare';
 }

@@ -3576,4 +3576,13 @@ it will appear here';
   String get inProgress => 'In Progress';
   @override
   String get newAchievementsUnlocked => 'New achievements unlocked';
+
+  // CHECK-IN MESSAGES
+  @override
+  String checkInSuccessMsg(int rep, int streak) => 'Check-in! +$rep rep | Streak: $streak days';
+  @override
+  String plusReputationLabel(int amount) => '+$amount reputation';
+
+  @override
+  String get holdAndDragToReorder => 'Hold and drag cards to reorder';
 }

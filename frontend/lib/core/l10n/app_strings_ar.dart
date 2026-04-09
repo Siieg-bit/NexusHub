@@ -4277,4 +4277,13 @@ class AppStringsAr implements AppStrings {
   String get inProgress => 'قيد التقدم';
   @override
   String get newAchievementsUnlocked => 'تم فتح إنجازات جديدة';
+
+  // CHECK-IN MESSAGES
+  @override
+  String checkInSuccessMsg(int rep, int streak) => 'تسجيل حضور! +$rep نقطة | سلسلة: $streak يوم';
+  @override
+  String plusReputationLabel(int amount) => '+$amount سمعة';
+
+  @override
+  String get holdAndDragToReorder => 'اضغط مطولاً واسحب البطاقات لإعادة الترتيب';
 }

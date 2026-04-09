@@ -3630,4 +3630,13 @@ aparecerá aqui';
   String get inProgress => 'Em progresso';
   @override
   String get newAchievementsUnlocked => 'Novas conquistas desbloqueadas';
+
+  // CHECK-IN MESSAGES
+  @override
+  String checkInSuccessMsg(int rep, int streak) => 'Check-in! +$rep rep | Sequência: $streak dias';
+  @override
+  String plusReputationLabel(int amount) => '+$amount reputação';
+
+  @override
+  String get holdAndDragToReorder => 'Segure e arraste os cards para reordenar';
 }

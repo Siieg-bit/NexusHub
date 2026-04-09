@@ -3467,4 +3467,13 @@ class AppStringsEs implements AppStrings {
   String get inProgress => 'En progreso';
   @override
   String get newAchievementsUnlocked => 'Nuevos logros desbloqueados';
+
+  // CHECK-IN MESSAGES
+  @override
+  String checkInSuccessMsg(int rep, int streak) => '¡Check-in! +$rep rep | Racha: $streak días';
+  @override
+  String plusReputationLabel(int amount) => '+$amount reputación';
+
+  @override
+  String get holdAndDragToReorder => 'Mantén presionado y arrastra las tarjetas para reordenar';
 }

@@ -3617,4 +3617,13 @@ class AppStringsDe implements AppStrings {
   String get inProgress => 'In Bearbeitung';
   @override
   String get newAchievementsUnlocked => 'Neue Erfolge freigeschaltet';
+
+  // CHECK-IN MESSAGES
+  @override
+  String checkInSuccessMsg(int rep, int streak) => 'Check-in! +$rep Rep | Serie: $streak Tage';
+  @override
+  String plusReputationLabel(int amount) => '+$amount Reputation';
+
+  @override
+  String get holdAndDragToReorder => 'Halten und ziehen Sie die Karten zum Neuordnen';
 }

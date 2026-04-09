@@ -4611,4 +4611,13 @@ class AppStringsRu implements AppStrings {
   String get inProgress => 'В процессе';
   @override
   String get newAchievementsUnlocked => 'Новые достижения разблокированы';
+
+  // CHECK-IN MESSAGES
+  @override
+  String checkInSuccessMsg(int rep, int streak) => 'Чек-ин! +$rep реп | Серия: $streak дней';
+  @override
+  String plusReputationLabel(int amount) => '+$amount репутации';
+
+  @override
+  String get holdAndDragToReorder => 'Удерживайте и перетащите карточки для изменения порядка';
 }
