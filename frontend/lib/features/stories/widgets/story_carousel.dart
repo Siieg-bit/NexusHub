@@ -17,7 +17,7 @@ class StoryCarousel extends ConsumerStatefulWidget {
   const StoryCarousel({super.key, required this.communityId});
 
   @override
-  State<StoryCarousel> createState() => _StoryCarouselState();
+  ConsumerState<StoryCarousel> createState() => _StoryCarouselState();
 }
 
 class _StoryCarouselState extends ConsumerState<StoryCarousel> {
@@ -92,7 +92,7 @@ class _StoryCarouselState extends ConsumerState<StoryCarousel> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return SizedBox(

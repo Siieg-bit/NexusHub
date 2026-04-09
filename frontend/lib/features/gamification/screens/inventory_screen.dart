@@ -11,7 +11,7 @@ class InventoryScreen extends ConsumerStatefulWidget {
   const InventoryScreen({super.key});
 
   @override
-  State<InventoryScreen> createState() => _InventoryScreenState();
+  ConsumerState<InventoryScreen> createState() => _InventoryScreenState();
 }
 
 class _InventoryScreenState extends ConsumerState<InventoryScreen>
@@ -131,7 +131,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     return Scaffold(
       backgroundColor: context.scaffoldBg,

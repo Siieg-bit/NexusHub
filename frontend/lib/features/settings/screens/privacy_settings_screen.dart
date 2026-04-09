@@ -12,7 +12,7 @@ class PrivacySettingsScreen extends ConsumerStatefulWidget {
   const PrivacySettingsScreen({super.key});
 
   @override
-  State<PrivacySettingsScreen> createState() => _PrivacySettingsScreenState();
+  ConsumerState<PrivacySettingsScreen> createState() => _PrivacySettingsScreenState();
 }
 
 class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
@@ -135,7 +135,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(

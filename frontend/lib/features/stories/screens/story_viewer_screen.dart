@@ -28,7 +28,7 @@ class StoryViewerScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  State<StoryViewerScreen> createState() => _StoryViewerScreenState();
+  ConsumerState<StoryViewerScreen> createState() => _StoryViewerScreenState();
 }
 
 class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
@@ -215,7 +215,7 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     final story = widget.stories[_currentIndex];

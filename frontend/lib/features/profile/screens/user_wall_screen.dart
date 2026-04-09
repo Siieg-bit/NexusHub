@@ -14,7 +14,7 @@ class UserWallScreen extends ConsumerStatefulWidget {
   const UserWallScreen({super.key, required this.userId});
 
   @override
-  State<UserWallScreen> createState() => _UserWallScreenState();
+  ConsumerState<UserWallScreen> createState() => _UserWallScreenState();
 }
 
 class _UserWallScreenState extends ConsumerState<UserWallScreen> {
@@ -92,7 +92,7 @@ class _UserWallScreenState extends ConsumerState<UserWallScreen> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     final isOwnWall = widget.userId == SupabaseService.currentUserId;

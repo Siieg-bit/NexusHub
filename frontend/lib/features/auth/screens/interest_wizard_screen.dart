@@ -15,7 +15,7 @@ class InterestWizardScreen extends ConsumerStatefulWidget {
   const InterestWizardScreen({super.key});
 
   @override
-  State<InterestWizardScreen> createState() => _InterestWizardScreenState();
+  ConsumerState<InterestWizardScreen> createState() => _InterestWizardScreenState();
 }
 
 class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
@@ -77,6 +77,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
   }
 
   Future<void> _finishWizard() async {
+    final s = getStrings();
     setState(() => _isLoading = true);
     try {
       final userId = SupabaseService.currentUserId;
@@ -131,7 +132,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -161,6 +162,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
   }
 
   Widget _buildHeader() {
+    final s = getStrings();
     final r = context.r;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: r.s(20), vertical: r.s(12)),
@@ -214,6 +216,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
   }
 
   Widget _buildWelcomeStep() {
+    final s = getStrings();
     final r = context.r;
     return SingleChildScrollView(
       padding: EdgeInsets.all(r.s(24)),
@@ -309,6 +312,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
   }
 
   Widget _buildAminoIdStep() {
+    final s = getStrings();
     final r = context.r;
     return SingleChildScrollView(
       padding: EdgeInsets.all(r.s(24)),
@@ -402,6 +406,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
   }
 
   Widget _buildInterestsStep() {
+    final s = getStrings();
     final r = context.r;
     return Column(
       children: [
@@ -534,6 +539,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
   }
 
   Widget _buildSuggestedCommunitiesStep() {
+    final s = getStrings();
     final r = context.r;
     return SingleChildScrollView(
       padding: EdgeInsets.all(r.s(24)),

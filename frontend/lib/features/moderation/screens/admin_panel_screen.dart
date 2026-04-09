@@ -12,7 +12,7 @@ class AdminPanelScreen extends ConsumerStatefulWidget {
   const AdminPanelScreen({super.key});
 
   @override
-  State<AdminPanelScreen> createState() => _AdminPanelScreenState();
+  ConsumerState<AdminPanelScreen> createState() => _AdminPanelScreenState();
 }
 
 class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
@@ -73,7 +73,7 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     return Scaffold(
       backgroundColor: context.scaffoldBg,

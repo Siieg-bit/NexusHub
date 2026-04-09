@@ -10,7 +10,7 @@ class NotificationSettingsScreen extends ConsumerStatefulWidget {
   const NotificationSettingsScreen({super.key});
 
   @override
-  State<NotificationSettingsScreen> createState() =>
+  ConsumerState<NotificationSettingsScreen> createState() =>
       _NotificationSettingsScreenState();
 }
 

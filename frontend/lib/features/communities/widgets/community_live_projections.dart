@@ -25,7 +25,7 @@ class CommunityLiveProjections extends ConsumerStatefulWidget {
   });
 
   @override
-  State<CommunityLiveProjections> createState() =>
+  ConsumerState<CommunityLiveProjections> createState() =>
       _CommunityLiveProjectionsState();
 }
 

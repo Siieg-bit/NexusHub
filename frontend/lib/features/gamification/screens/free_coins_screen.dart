@@ -11,7 +11,7 @@ class FreeCoinsScreen extends ConsumerStatefulWidget {
   const FreeCoinsScreen({super.key});
 
   @override
-  State<FreeCoinsScreen> createState() => _FreeCoinsScreenState();
+  ConsumerState<FreeCoinsScreen> createState() => _FreeCoinsScreenState();
 }
 
 class _FreeCoinsScreenState extends ConsumerState<FreeCoinsScreen> {
@@ -105,7 +105,7 @@ class _FreeCoinsScreenState extends ConsumerState<FreeCoinsScreen> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(

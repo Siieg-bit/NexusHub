@@ -29,7 +29,7 @@ class PostCard extends ConsumerStatefulWidget {
   });
 
   @override
-  State<PostCard> createState() => _PostCardState();
+  ConsumerState<PostCard> createState() => _PostCardState();
 }
 
 class _PostCardState extends ConsumerState<PostCard>
@@ -197,7 +197,7 @@ class _PostCardState extends ConsumerState<PostCard>
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return AminoAnimations.cardPress(

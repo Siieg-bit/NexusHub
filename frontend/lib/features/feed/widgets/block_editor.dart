@@ -93,7 +93,7 @@ class BlockEditor extends ConsumerStatefulWidget {
   });
 
   @override
-  State<BlockEditor> createState() => _BlockEditorState();
+  ConsumerState<BlockEditor> createState() => _BlockEditorState();
 }
 
 class _BlockEditorState extends ConsumerState<BlockEditor> {
@@ -257,7 +257,7 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Column(

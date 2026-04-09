@@ -36,7 +36,7 @@ class CallScreen extends ConsumerStatefulWidget {
   }
 
   @override
-  State<CallScreen> createState() => _CallScreenState();
+  ConsumerState<CallScreen> createState() => _CallScreenState();
 }
 
 class _CallScreenState extends ConsumerState<CallScreen> {
@@ -137,7 +137,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     final isVideo = widget.session.type == CallType.video;

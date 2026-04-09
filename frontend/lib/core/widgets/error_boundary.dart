@@ -26,7 +26,7 @@ class ErrorBoundary extends ConsumerStatefulWidget {
   });
 
   @override
-  State<ErrorBoundary> createState() => _ErrorBoundaryState();
+  ConsumerState<ErrorBoundary> createState() => _ErrorBoundaryState();
 }
 
 class _ErrorBoundaryState extends ConsumerState<ErrorBoundary> {
@@ -107,7 +107,7 @@ class _ErrorBoundaryState extends ConsumerState<ErrorBoundary> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     if (_error != null) {
       return widget.fallback ??

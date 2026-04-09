@@ -35,7 +35,7 @@ class ScreeningRoomScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  State<ScreeningRoomScreen> createState() => _ScreeningRoomScreenState();
+  ConsumerState<ScreeningRoomScreen> createState() => _ScreeningRoomScreenState();
 }
 
 class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
@@ -390,7 +390,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     return Scaffold(
       backgroundColor: Colors.black,

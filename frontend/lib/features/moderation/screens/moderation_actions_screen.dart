@@ -22,7 +22,7 @@ class ModerationActionsScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  State<ModerationActionsScreen> createState() =>
+  ConsumerState<ModerationActionsScreen> createState() =>
       _ModerationActionsScreenState();
 }
 
@@ -326,7 +326,7 @@ class _ModerationActionsScreenState extends ConsumerState<ModerationActionsScree
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(

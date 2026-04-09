@@ -22,7 +22,7 @@ class CommunityChatTab extends ConsumerStatefulWidget {
   const CommunityChatTab({super.key, required this.communityId});
 
   @override
-  State<CommunityChatTab> createState() => _CommunityChatTabState();
+  ConsumerState<CommunityChatTab> createState() => _CommunityChatTabState();
 }
 
 class _CommunityChatTabState extends ConsumerState<CommunityChatTab> {
@@ -291,7 +291,7 @@ class _CommunityChatTabState extends ConsumerState<CommunityChatTab> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
 

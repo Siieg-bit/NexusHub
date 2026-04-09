@@ -13,7 +13,7 @@ class CoinShopScreen extends ConsumerStatefulWidget {
   const CoinShopScreen({super.key});
 
   @override
-  State<CoinShopScreen> createState() => _CoinShopScreenState();
+  ConsumerState<CoinShopScreen> createState() => _CoinShopScreenState();
 }
 
 class _CoinShopScreenState extends ConsumerState<CoinShopScreen> {
@@ -133,7 +133,7 @@ class _CoinShopScreenState extends ConsumerState<CoinShopScreen> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(

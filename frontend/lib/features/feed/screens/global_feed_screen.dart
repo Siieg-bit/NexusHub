@@ -298,7 +298,7 @@ class GlobalFeedScreen extends ConsumerWidget {
   }
 }
 
-class _QuickAction extends StatelessWidget {
+class _QuickAction extends ConsumerWidget {
   final IconData icon;
   final String label;
   final Color color;

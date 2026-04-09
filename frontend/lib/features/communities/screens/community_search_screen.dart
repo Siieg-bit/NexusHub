@@ -22,7 +22,7 @@ class CommunitySearchScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  State<CommunitySearchScreen> createState() => _CommunitySearchScreenState();
+  ConsumerState<CommunitySearchScreen> createState() => _CommunitySearchScreenState();
 }
 
 class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
@@ -199,7 +199,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(

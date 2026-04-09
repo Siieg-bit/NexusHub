@@ -49,7 +49,7 @@ class ReportDialog extends ConsumerStatefulWidget {
   }
 
   @override
-  State<ReportDialog> createState() => _ReportDialogState();
+  ConsumerState<ReportDialog> createState() => _ReportDialogState();
 }
 
 class _ReportDialogState extends ConsumerState<ReportDialog> {
@@ -57,56 +57,59 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
   final _reasonController = TextEditingController();
   bool _isSubmitting = false;
 
-  static const _flagTypes = [
-    {
-      'id': 'bullying',
-      'label': s.bullyingHarassment,
-      'icon': Icons.person_off_rounded,
-      'color': 0xFFF44336,
-    },
-    {
-      'id': 'art_theft',
-      'label': s.artTheftPlagiarism,
-      'icon': Icons.palette_rounded,
-      'color': 0xFFFF9800,
-    },
-    {
-      'id': 'inappropriate_content',
-      'label': s.inappropriateContent2,
-      'icon': Icons.no_adult_content_rounded,
-      'color': 0xFF9C27B0,
-    },
-    {
-      'id': 'spam',
-      'label': 'Spam / Flood',
-      'icon': Icons.report_rounded,
-      'color': 0xFFFFC107,
-    },
-    {
-      'id': 'off_topic',
-      'label': s.offTopic,
-      'icon': Icons.topic_rounded,
-      'color': 0xFF2196F3,
-    },
-    {
-      'id': 'impersonation',
-      'label': s.identityFraud,
-      'icon': Icons.masks_rounded,
-      'color': 0xFF607D8B,
-    },
-    {
-      'id': 'self_harm',
-      'label': s.selfHarmSuicide,
-      'icon': Icons.health_and_safety_rounded,
-      'color': 0xFFE91E63,
-    },
-    {
-      'id': 'other',
-      'label': s.other,
-      'icon': Icons.more_horiz_rounded,
-      'color': 0xFF9E9E9E,
-    },
-  ];
+  List<Map<String, dynamic>> _getFlagTypes() {
+    final s = getStrings();
+    return [
+      {
+        'id': 'bullying',
+        'label': s.bullyingHarassment,
+        'icon': Icons.person_off_rounded,
+        'color': 0xFFF44336,
+      },
+      {
+        'id': 'art_theft',
+        'label': s.artTheftPlagiarism,
+        'icon': Icons.palette_rounded,
+        'color': 0xFFFF9800,
+      },
+      {
+        'id': 'inappropriate_content',
+        'label': s.inappropriateContent2,
+        'icon': Icons.no_adult_content_rounded,
+        'color': 0xFF9C27B0,
+      },
+      {
+        'id': 'spam',
+        'label': 'Spam / Flood',
+        'icon': Icons.report_rounded,
+        'color': 0xFFFFC107,
+      },
+      {
+        'id': 'off_topic',
+        'label': s.offTopic,
+        'icon': Icons.topic_rounded,
+        'color': 0xFF2196F3,
+      },
+      {
+        'id': 'impersonation',
+        'label': s.identityFraud,
+        'icon': Icons.masks_rounded,
+        'color': 0xFF607D8B,
+      },
+      {
+        'id': 'self_harm',
+        'label': s.selfHarmSuicide,
+        'icon': Icons.health_and_safety_rounded,
+        'color': 0xFFE91E63,
+      },
+      {
+        'id': 'other',
+        'label': s.other,
+        'icon': Icons.more_horiz_rounded,
+        'color': 0xFF9E9E9E,
+      },
+    ];
+  }
 
   Future<void> _submit() async {
     final s = ref.read(stringsProvider);
@@ -160,7 +163,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Padding(
@@ -197,7 +200,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
           SizedBox(height: r.s(16)),
 
           // Tipos de flag
-          ...(_flagTypes.map((type) {
+          ...(_getFlagTypes().map((type) {
             final id = type['id'] as String?;
             final isSelected = _selectedType == id;
             return GestureDetector(

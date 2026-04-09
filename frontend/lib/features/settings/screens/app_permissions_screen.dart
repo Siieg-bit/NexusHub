@@ -10,7 +10,7 @@ class AppPermissionsScreen extends ConsumerStatefulWidget {
   const AppPermissionsScreen({super.key});
 
   @override
-  State<AppPermissionsScreen> createState() => _AppPermissionsScreenState();
+  ConsumerState<AppPermissionsScreen> createState() => _AppPermissionsScreenState();
 }
 
 class _AppPermissionsScreenState extends ConsumerState<AppPermissionsScreen>
@@ -120,7 +120,7 @@ class _AppPermissionsScreenState extends ConsumerState<AppPermissionsScreen>
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(

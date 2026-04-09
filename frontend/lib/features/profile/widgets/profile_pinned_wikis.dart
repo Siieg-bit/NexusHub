@@ -17,7 +17,7 @@ class ProfilePinnedWikis extends ConsumerStatefulWidget {
   const ProfilePinnedWikis({super.key, required this.userId});
 
   @override
-  State<ProfilePinnedWikis> createState() => _ProfilePinnedWikisState();
+  ConsumerState<ProfilePinnedWikis> createState() => _ProfilePinnedWikisState();
 }
 
 class _ProfilePinnedWikisState extends ConsumerState<ProfilePinnedWikis> {
@@ -54,7 +54,7 @@ class _ProfilePinnedWikisState extends ConsumerState<ProfilePinnedWikis> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     if (_isLoading) return const SizedBox.shrink();

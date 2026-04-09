@@ -830,7 +830,7 @@ class _FollowButton extends ConsumerStatefulWidget {
   });
 
   @override
-  State<_FollowButton> createState() => _FollowButtonState();
+  ConsumerState<_FollowButton> createState() => _FollowButtonState();
 }
 
 class _FollowButtonState extends ConsumerState<_FollowButton> {

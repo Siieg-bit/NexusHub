@@ -33,12 +33,12 @@ class StickerPicker extends ConsumerStatefulWidget {
   }
 
   @override
-  State<StickerPicker> createState() => _StickerPickerState();
+  ConsumerState<StickerPicker> createState() => _StickerPickerState();
 }
 
 class _StickerPickerState extends ConsumerState<StickerPicker> {
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     return _StickerPickerBody(communityId: widget.communityId);
   }
@@ -50,7 +50,7 @@ class _StickerPickerBody extends ConsumerStatefulWidget {
   const _StickerPickerBody({this.communityId, this.scrollController});
 
   @override
-  State<_StickerPickerBody> createState() => _StickerPickerBodyState();
+  ConsumerState<_StickerPickerBody> createState() => _StickerPickerBodyState();
 }
 
 class _StickerPickerBodyState extends ConsumerState<_StickerPickerBody>
@@ -266,7 +266,7 @@ class _StickerPickerBodyState extends ConsumerState<_StickerPickerBody>
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(

@@ -70,17 +70,20 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   String? _musicUrl;
   String? _musicTitle;
 
-  static const _postTypes = [
-    _PostTypeOption('normal', s.blog, Icons.article_rounded),
-    _PostTypeOption('image', s.image, Icons.image_rounded),
-    _PostTypeOption('poll', s.poll, Icons.poll_rounded),
-    _PostTypeOption('quiz', s.quiz, Icons.quiz_rounded),
-    _PostTypeOption('qa', 'Q&A', Icons.question_answer_rounded),
-    _PostTypeOption('link', s.link, Icons.link_rounded),
-    _PostTypeOption('crosspost', s.crosspost, Icons.share_rounded),
-    _PostTypeOption('repost', 'Repost', Icons.repeat_rounded),
-    _PostTypeOption('external', 'Externo', Icons.open_in_new_rounded),
-  ];
+  List<_PostTypeOption> _getPostTypes() {
+    final s = getStrings();
+    return [
+      _PostTypeOption('normal', s.blog, Icons.article_rounded),
+      _PostTypeOption('image', s.image, Icons.image_rounded),
+      _PostTypeOption('poll', s.poll, Icons.poll_rounded),
+      _PostTypeOption('quiz', s.quiz, Icons.quiz_rounded),
+      _PostTypeOption('qa', 'Q&A', Icons.question_answer_rounded),
+      _PostTypeOption('link', s.link, Icons.link_rounded),
+      _PostTypeOption('crosspost', s.crosspost, Icons.share_rounded),
+      _PostTypeOption('repost', 'Repost', Icons.repeat_rounded),
+      _PostTypeOption('external', 'Externo', Icons.open_in_new_rounded),
+    ];
+  }
 
   @override
   void initState() {
@@ -90,6 +93,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   }
 
   Future<void> _pickImage() async {
+    final s = getStrings();
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
     if (image == null) return;
@@ -123,6 +127,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   }
 
   Future<void> _pickCoverImage() async {
+    final s = getStrings();
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
     if (image == null) return;
@@ -157,6 +162,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   }
 
   Future<void> _submitPost() async {
+    final s = getStrings();
     if (_titleController.text.trim().isEmpty &&
         _contentController.text.trim().isEmpty &&
         _selectedType != 'image') {
@@ -471,9 +477,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: EdgeInsets.symmetric(horizontal: r.s(12)),
-              itemCount: _postTypes.length,
+              itemCount: _getPostTypes().length,
               itemBuilder: (context, index) {
-                final type = _postTypes[index];
+                final type = _getPostTypes()[index];
                 final isSelected = _selectedType == type.value;
                 return GestureDetector(
                   onTap: () => setState(() => _selectedType = type.value),
@@ -883,6 +889,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   // POLL EDITOR
   // ========================================================================
   Widget _buildPollEditor() {
+    final s = getStrings();
     final r = context.r;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -955,6 +962,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   // QUIZ EDITOR
   // ========================================================================
   Widget _buildQuizEditor() {
+    final s = getStrings();
     final r = context.r;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1106,6 +1114,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   // LINK EDITOR
   // ========================================================================
   Widget _buildLinkEditor() {
+    final s = getStrings();
     final r = context.r;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1137,6 +1146,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   // IMAGE EDITOR
   // ========================================================================
   Widget _buildImageEditor() {
+    final s = getStrings();
     final r = context.r;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1214,6 +1224,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   // BOTTOM TOOLBAR — Estilo Amino (flutuante, escuro)
   // ========================================================================
   Widget _buildToolbar() {
+    final s = getStrings();
     final r = context.r;
     return Container(
       padding: EdgeInsets.symmetric(vertical: r.s(8), horizontal: r.s(16)),
@@ -1256,6 +1267,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   }
 
   void _showMusicPicker() {
+    final s = getStrings();
     final r = context.r;
     final urlCtrl = TextEditingController(text: _musicUrl ?? '');
     final titleCtrl = TextEditingController(text: _musicTitle ?? '');

@@ -12,7 +12,7 @@ class WalletScreen extends ConsumerStatefulWidget {
   const WalletScreen({super.key});
 
   @override
-  State<WalletScreen> createState() => _WalletScreenState();
+  ConsumerState<WalletScreen> createState() => _WalletScreenState();
 }
 
 class _WalletScreenState extends ConsumerState<WalletScreen> {
@@ -69,7 +69,7 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(

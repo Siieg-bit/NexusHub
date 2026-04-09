@@ -10,7 +10,7 @@ class AdminReportsScreen extends ConsumerStatefulWidget {
   const AdminReportsScreen({super.key});
 
   @override
-  State<AdminReportsScreen> createState() => _AdminReportsScreenState();
+  ConsumerState<AdminReportsScreen> createState() => _AdminReportsScreenState();
 }
 
 class _AdminReportsScreenState extends ConsumerState<AdminReportsScreen>
@@ -180,7 +180,7 @@ class _AdminReportsScreenState extends ConsumerState<AdminReportsScreen>
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(

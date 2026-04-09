@@ -19,7 +19,7 @@ class CreateStoryScreen extends ConsumerStatefulWidget {
   const CreateStoryScreen({super.key, required this.communityId});
 
   @override
-  State<CreateStoryScreen> createState() => _CreateStoryScreenState();
+  ConsumerState<CreateStoryScreen> createState() => _CreateStoryScreenState();
 }
 
 class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
@@ -225,7 +225,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(

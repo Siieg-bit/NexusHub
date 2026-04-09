@@ -37,7 +37,7 @@ class CommunityProfileScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  State<CommunityProfileScreen> createState() => _CommunityProfileScreenState();
+  ConsumerState<CommunityProfileScreen> createState() => _CommunityProfileScreenState();
 }
 
 class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
@@ -159,7 +159,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     if (_isInitialLoading) {

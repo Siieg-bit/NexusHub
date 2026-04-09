@@ -27,7 +27,7 @@ class CommunityLiveChats extends ConsumerStatefulWidget {
   });
 
   @override
-  State<CommunityLiveChats> createState() => _CommunityLiveChatsState();
+  ConsumerState<CommunityLiveChats> createState() => _CommunityLiveChatsState();
 }
 
 class _CommunityLiveChatsState extends ConsumerState<CommunityLiveChats> {
@@ -276,7 +276,7 @@ class _CommunityLiveChatsState extends ConsumerState<CommunityLiveChats> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
 

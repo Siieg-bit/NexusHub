@@ -20,7 +20,7 @@ class EditCommunityProfileScreen extends ConsumerStatefulWidget {
   const EditCommunityProfileScreen({super.key, required this.communityId});
 
   @override
-  State<EditCommunityProfileScreen> createState() =>
+  ConsumerState<EditCommunityProfileScreen> createState() =>
       _EditCommunityProfileScreenState();
 }
 

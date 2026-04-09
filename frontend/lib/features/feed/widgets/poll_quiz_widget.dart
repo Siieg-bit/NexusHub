@@ -17,7 +17,7 @@ class PollDetailWidget extends ConsumerStatefulWidget {
   const PollDetailWidget({super.key, required this.post, this.onVoted});
 
   @override
-  State<PollDetailWidget> createState() => _PollDetailWidgetState();
+  ConsumerState<PollDetailWidget> createState() => _PollDetailWidgetState();
 }
 
 class _PollDetailWidgetState extends ConsumerState<PollDetailWidget> {
@@ -181,7 +181,7 @@ class _PollDetailWidgetState extends ConsumerState<PollDetailWidget> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     if (_options.isEmpty) {
@@ -357,7 +357,7 @@ class QuizDetailWidget extends ConsumerStatefulWidget {
   const QuizDetailWidget({super.key, required this.post, this.onCompleted});
 
   @override
-  State<QuizDetailWidget> createState() => _QuizDetailWidgetState();
+  ConsumerState<QuizDetailWidget> createState() => _QuizDetailWidgetState();
 }
 
 class _QuizDetailWidgetState extends ConsumerState<QuizDetailWidget> {
@@ -456,7 +456,7 @@ class _QuizDetailWidgetState extends ConsumerState<QuizDetailWidget> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     if (_questions.isEmpty) return const SizedBox.shrink();

@@ -38,6 +38,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
   }
 
   Future<void> _pickImages() async {
+    final s = getStrings();
     final picker = ImagePicker();
     final images = await picker.pickMultiImage();
     if (images.isEmpty) return;
@@ -71,6 +72,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
   }
 
   Future<void> _submit() async {
+    final s = getStrings();
     if (_mediaUrls.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

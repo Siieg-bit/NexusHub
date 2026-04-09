@@ -73,6 +73,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
   }
 
   Future<void> _submit() async {
+    final s = getStrings();
     final title = _titleController.text.trim();
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -295,6 +296,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
   }
 
   Widget _buildQuestionCard(int qi, _QuizQuestion q, Responsive r) {
+    final s = getStrings();
     return Container(
       margin: EdgeInsets.only(bottom: r.s(16)),
       padding: EdgeInsets.all(r.s(14)),

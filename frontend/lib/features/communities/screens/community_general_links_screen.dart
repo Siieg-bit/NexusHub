@@ -17,7 +17,7 @@ class CommunityGeneralLinksScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  State<CommunityGeneralLinksScreen> createState() =>
+  ConsumerState<CommunityGeneralLinksScreen> createState() =>
       _CommunityGeneralLinksScreenState();
 }
 

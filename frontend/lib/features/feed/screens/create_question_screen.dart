@@ -34,6 +34,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
   }
 
   Future<void> _submit() async {
+    final s = getStrings();
     final question = _questionController.text.trim();
     if (question.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(

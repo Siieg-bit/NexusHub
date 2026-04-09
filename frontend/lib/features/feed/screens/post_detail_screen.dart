@@ -74,6 +74,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   Future<void> _sendComment() async {
+    final s = getStrings();
     if (_commentController.text.trim().isEmpty) return;
 
     final userId = SupabaseService.currentUserId;
@@ -144,6 +145,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   Future<void> _toggleBookmark() async {
+    final s = getStrings();
     try {
       final result = await SupabaseService.rpc('toggle_bookmark', params: {
         'p_user_id': SupabaseService.currentUserId,
@@ -231,6 +233,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   void _sharePost() {
+    final s = getStrings();
     final link = 'https://nexushub.app/p/${widget.postId}';
     Clipboard.setData(ClipboardData(text: link));
     ScaffoldMessenger.of(context).showSnackBar(
@@ -501,7 +504,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           ),
         ),
         error: (error, _) => Center(
-          child: Text(s.errorGeneric(error),
+          child: Text(s.errorGeneric(error.toString()),
               style: const TextStyle(color: AppTheme.errorColor)),
         ),
         data: (post) {
@@ -580,7 +583,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
-                                        if (post.author != null && (post.authorLocalLevel ?? 0) > 0) ..[
+                                        if (post.author != null && (post.authorLocalLevel ?? 0) > 0) ...[
                                           SizedBox(width: r.s(6)),
                                           Container(
                                             padding: EdgeInsets.symmetric(
@@ -1051,6 +1054,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   Widget _buildQAHeader(PostModel post) {
+    final s = getStrings();
     final r = context.r;
     return Container(
       margin: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
@@ -1118,6 +1122,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   void _showEditPostDialog(PostModel post) {
+    final s = getStrings();
     final r = context.r;
     final titleCtrl = TextEditingController(text: post.title ?? '');
     final contentCtrl = TextEditingController(text: post.content);
@@ -1472,6 +1477,30 @@ class _CommentTileState extends State<_CommentTile> {
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RepostConfirmSheetDetail extends ConsumerWidget {
+  final dynamic post;
+  const _RepostConfirmSheetDetail({required this.post});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(stringsProvider);
+    return Container(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(s.repost, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(s.confirm),
           ),
         ],
       ),

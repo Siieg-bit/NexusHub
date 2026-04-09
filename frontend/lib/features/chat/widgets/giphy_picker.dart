@@ -28,12 +28,12 @@ class GiphyPicker extends ConsumerStatefulWidget {
   }
 
   @override
-  State<GiphyPicker> createState() => _GiphyPickerState();
+  ConsumerState<GiphyPicker> createState() => _GiphyPickerState();
 }
 
 class _GiphyPickerState extends ConsumerState<GiphyPicker> {
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     return const _GiphyPickerBody();
   }
@@ -44,7 +44,7 @@ class _GiphyPickerBody extends ConsumerStatefulWidget {
   const _GiphyPickerBody({this.scrollController});
 
   @override
-  State<_GiphyPickerBody> createState() => _GiphyPickerBodyState();
+  ConsumerState<_GiphyPickerBody> createState() => _GiphyPickerBodyState();
 }
 
 class _GiphyPickerBodyState extends ConsumerState<_GiphyPickerBody> {
@@ -131,7 +131,7 @@ class _GiphyPickerBodyState extends ConsumerState<_GiphyPickerBody> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(

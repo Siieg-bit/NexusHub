@@ -41,6 +41,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
   }
 
   Future<void> _submit() async {
+    final s = getStrings();
     final title = _titleController.text.trim();
     final url = _urlController.text.trim();
 

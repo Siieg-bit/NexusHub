@@ -18,7 +18,7 @@ class EditGuidelinesScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  State<EditGuidelinesScreen> createState() => _EditGuidelinesScreenState();
+  ConsumerState<EditGuidelinesScreen> createState() => _EditGuidelinesScreenState();
 }
 
 class _EditGuidelinesScreenState extends ConsumerState<EditGuidelinesScreen>
@@ -139,7 +139,7 @@ class _EditGuidelinesScreenState extends ConsumerState<EditGuidelinesScreen>
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(

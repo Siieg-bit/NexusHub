@@ -211,7 +211,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -668,7 +668,7 @@ class _DayCircle extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     final bool active = isCompleted || isTodayCompleted;
 
@@ -717,7 +717,8 @@ class _DayCircle extends ConsumerWidget {
 
 // =============================================================================
 // REWARD ITEM — Estilo Amino
-// =================================================================class _RewardItem extends ConsumerWidget {
+// =================================================================
+class _RewardItem extends ConsumerWidget {
   final IconData icon;
   final String label;
   final Color color;
@@ -727,7 +728,7 @@ class _DayCircle extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     return Column(
       children: [
@@ -747,14 +748,12 @@ class _DayCircle extends ConsumerWidget {
       ],
     );
   }
-},
-    );
-  }
 }
 
 // =============================================================================
 // INFO ROW — Estilo Amino
-// ===================================================class _InfoRow extends ConsumerWidget {
+// ===================================================
+class _InfoRow extends ConsumerWidget {
   final IconData icon;
   final String text;
 
@@ -762,7 +761,7 @@ class _DayCircle extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     return Padding(
       padding: EdgeInsets.symmetric(vertical: r.s(5)),
@@ -776,10 +775,6 @@ class _DayCircle extends ConsumerWidget {
                 style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12))),
           ),
         ],
-      ),
-    );
-  }
-}    ],
       ),
     );
   }

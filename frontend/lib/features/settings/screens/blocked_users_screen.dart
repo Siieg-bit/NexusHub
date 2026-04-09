@@ -12,7 +12,7 @@ class BlockedUsersScreen extends ConsumerStatefulWidget {
   const BlockedUsersScreen({super.key});
 
   @override
-  State<BlockedUsersScreen> createState() => _BlockedUsersScreenState();
+  ConsumerState<BlockedUsersScreen> createState() => _BlockedUsersScreenState();
 }
 
 class _BlockedUsersScreenState extends ConsumerState<BlockedUsersScreen> {
@@ -162,7 +162,7 @@ class _BlockedUsersScreenState extends ConsumerState<BlockedUsersScreen> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(

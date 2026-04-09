@@ -36,6 +36,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
   }
 
   Future<void> _submit() async {
+    final s = getStrings();
     final title = _titleController.text.trim();
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(

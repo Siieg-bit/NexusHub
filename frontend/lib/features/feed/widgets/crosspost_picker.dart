@@ -28,7 +28,7 @@ class CrosspostPicker extends ConsumerStatefulWidget {
   });
 
   @override
-  State<CrosspostPicker> createState() => _CrosspostPickerState();
+  ConsumerState<CrosspostPicker> createState() => _CrosspostPickerState();
 }
 
 class _CrosspostPickerState extends ConsumerState<CrosspostPicker> {
@@ -80,7 +80,7 @@ class _CrosspostPickerState extends ConsumerState<CrosspostPicker> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(

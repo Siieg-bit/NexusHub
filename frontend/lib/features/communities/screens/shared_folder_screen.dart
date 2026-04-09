@@ -25,7 +25,7 @@ class SharedFolderScreen extends ConsumerStatefulWidget {
   const SharedFolderScreen({super.key, required this.communityId});
 
   @override
-  State<SharedFolderScreen> createState() => _SharedFolderScreenState();
+  ConsumerState<SharedFolderScreen> createState() => _SharedFolderScreenState();
 }
 
 class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
@@ -346,7 +346,7 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(

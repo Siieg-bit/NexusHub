@@ -11,7 +11,7 @@ class LinkedAccountsScreen extends ConsumerStatefulWidget {
   const LinkedAccountsScreen({super.key});
 
   @override
-  State<LinkedAccountsScreen> createState() => _LinkedAccountsScreenState();
+  ConsumerState<LinkedAccountsScreen> createState() => _LinkedAccountsScreenState();
 }
 
 class _LinkedAccountsScreenState extends ConsumerState<LinkedAccountsScreen> {
@@ -166,7 +166,7 @@ class _LinkedAccountsScreenState extends ConsumerState<LinkedAccountsScreen> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(

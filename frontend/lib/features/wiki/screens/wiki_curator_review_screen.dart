@@ -16,7 +16,7 @@ class WikiCuratorReviewScreen extends ConsumerStatefulWidget {
   const WikiCuratorReviewScreen({super.key, required this.communityId});
 
   @override
-  State<WikiCuratorReviewScreen> createState() =>
+  ConsumerState<WikiCuratorReviewScreen> createState() =>
       _WikiCuratorReviewScreenState();
 }
 
@@ -203,7 +203,7 @@ class _WikiCuratorReviewScreenState extends ConsumerState<WikiCuratorReviewScree
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(

@@ -18,7 +18,7 @@ class WikiListScreen extends ConsumerStatefulWidget {
   const WikiListScreen({super.key, required this.communityId});
 
   @override
-  State<WikiListScreen> createState() => _WikiListScreenState();
+  ConsumerState<WikiListScreen> createState() => _WikiListScreenState();
 }
 
 class _WikiListScreenState extends ConsumerState<WikiListScreen> {
@@ -81,7 +81,7 @@ class _WikiListScreenState extends ConsumerState<WikiListScreen> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
@@ -402,7 +402,7 @@ class WikiDetailScreen extends ConsumerStatefulWidget {
   const WikiDetailScreen({super.key, required this.wikiId});
 
   @override
-  State<WikiDetailScreen> createState() => _WikiDetailScreenState();
+  ConsumerState<WikiDetailScreen> createState() => _WikiDetailScreenState();
 }
 
 class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
@@ -552,7 +552,7 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     if (_isLoading) {
@@ -914,7 +914,7 @@ class CreateWikiScreen extends ConsumerStatefulWidget {
   const CreateWikiScreen({super.key, required this.communityId});
 
   @override
-  State<CreateWikiScreen> createState() => _CreateWikiScreenState();
+  ConsumerState<CreateWikiScreen> createState() => _CreateWikiScreenState();
 }
 
 class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
@@ -1021,7 +1021,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(

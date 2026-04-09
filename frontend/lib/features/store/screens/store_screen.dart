@@ -13,7 +13,7 @@ class StoreScreen extends ConsumerStatefulWidget {
   const StoreScreen({super.key});
 
   @override
-  State<StoreScreen> createState() => _StoreScreenState();
+  ConsumerState<StoreScreen> createState() => _StoreScreenState();
 }
 
 class _StoreScreenState extends ConsumerState<StoreScreen>
@@ -128,7 +128,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
@@ -503,7 +503,7 @@ class _StoreItemCard extends ConsumerStatefulWidget {
   const _StoreItemCard({required this.item, required this.onPurchase});
 
   @override
-  State<_StoreItemCard> createState() => _StoreItemCardState();
+  ConsumerState<_StoreItemCard> createState() => _StoreItemCardState();
 }
 
 class _StoreItemCardState extends ConsumerState<_StoreItemCard>
@@ -526,7 +526,7 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard>
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     final price = widget.item['price'] as int? ?? 0;

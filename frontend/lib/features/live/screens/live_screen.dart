@@ -16,7 +16,7 @@ class LiveScreen extends ConsumerStatefulWidget {
   const LiveScreen({super.key, this.communityId});
 
   @override
-  State<LiveScreen> createState() => _LiveScreenState();
+  ConsumerState<LiveScreen> createState() => _LiveScreenState();
 }
 
 class _LiveScreenState extends ConsumerState<LiveScreen> {
@@ -199,7 +199,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(

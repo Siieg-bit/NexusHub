@@ -31,7 +31,7 @@ class AchievementsScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  State<AchievementsScreen> createState() => _AchievementsScreenState();
+  ConsumerState<AchievementsScreen> createState() => _AchievementsScreenState();
 }
 
 class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
@@ -225,7 +225,7 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final s = ref.watch(stringsProvider);
     final r = context.r;
     final unlocked =

@@ -19,7 +19,7 @@ class FollowersScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  State<FollowersScreen> createState() => _FollowersScreenState();
+  ConsumerState<FollowersScreen> createState() => _FollowersScreenState();
 }
 
 class _FollowersScreenState extends ConsumerState<FollowersScreen>
@@ -77,7 +77,7 @@ class _FollowersScreenState extends ConsumerState<FollowersScreen>
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -199,7 +199,7 @@ class _FollowButton extends ConsumerStatefulWidget {
   const _FollowButton({required this.targetUserId});
 
   @override
-  State<_FollowButton> createState() => _FollowButtonState();
+  ConsumerState<_FollowButton> createState() => _FollowButtonState();
 }
 
 class _FollowButtonState extends ConsumerState<_FollowButton> {
@@ -270,7 +270,7 @@ class _FollowButtonState extends ConsumerState<_FollowButton> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     if (_isLoading || widget.targetUserId == SupabaseService.currentUserId) {

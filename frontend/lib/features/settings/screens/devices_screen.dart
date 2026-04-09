@@ -11,7 +11,7 @@ class DevicesScreen extends ConsumerStatefulWidget {
   const DevicesScreen({super.key});
 
   @override
-  State<DevicesScreen> createState() => _DevicesScreenState();
+  ConsumerState<DevicesScreen> createState() => _DevicesScreenState();
 }
 
 class _DevicesScreenState extends ConsumerState<DevicesScreen> {
@@ -224,7 +224,7 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(

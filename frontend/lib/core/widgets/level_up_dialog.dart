@@ -67,7 +67,7 @@ class _LevelUpContent extends ConsumerStatefulWidget {
   });
 
   @override
-  State<_LevelUpContent> createState() => _LevelUpContentState();
+  ConsumerState<_LevelUpContent> createState() => _LevelUpContentState();
 }
 
 class _LevelUpContentState extends ConsumerState<_LevelUpContent>
@@ -140,7 +140,7 @@ class _LevelUpContentState extends ConsumerState<_LevelUpContent>
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     final levelColor = AppTheme.getLevelColor(widget.newLevel);

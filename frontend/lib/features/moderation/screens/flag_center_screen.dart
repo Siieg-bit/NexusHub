@@ -13,7 +13,7 @@ class FlagCenterScreen extends ConsumerStatefulWidget {
   const FlagCenterScreen({super.key, required this.communityId});
 
   @override
-  State<FlagCenterScreen> createState() => _FlagCenterScreenState();
+  ConsumerState<FlagCenterScreen> createState() => _FlagCenterScreenState();
 }
 
 class _FlagCenterScreenState extends ConsumerState<FlagCenterScreen>
@@ -79,7 +79,7 @@ class _FlagCenterScreenState extends ConsumerState<FlagCenterScreen>
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     return Scaffold(
       backgroundColor: context.scaffoldBg,

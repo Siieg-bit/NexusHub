@@ -533,7 +533,8 @@ class _PodiumItem extends ConsumerWidget {
 
 // =============================================================================
 // WIDGET: Tile da lista de ranking
-// =================================================================class _LeaderboardTile extends ConsumerWidget {
+// =================================================================
+class _LeaderboardTile extends ConsumerWidget {
   final Map<String, dynamic> data;
   final int rank;
 
