@@ -137,7 +137,7 @@ class _CommunityLiveProjectionsState extends ConsumerState<CommunityLiveProjecti
                 final membersCount = chat['members_count'] as int? ?? 0;
 
                 return AminoAnimations.cardPress(
-                  onTap: () => context.push('/chat/${chat['ids.closingBracket),
+                  onTap: () => context.push('/chat/${chat['id']}'),
                   child: Container(
                     width: r.s(160),
                     margin: EdgeInsets.only(right: r.s(8)),

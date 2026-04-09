@@ -226,6 +226,7 @@ class ProfileWallTab extends ConsumerWidget {
   }
 
   Future<void> _postMessage(WidgetRef ref, BuildContext context) async {
+    final s = ref.read(stringsProvider);
     final text = wallController.text.trim();
     if (text.isEmpty) return;
     try {
@@ -255,6 +256,7 @@ class ProfileWallTab extends ConsumerWidget {
   }
 
   String _timeAgo(DateTime dt) {
+    final s = ref.read(stringsProvider);
     final diff = DateTime.now().difference(dt);
     if (diff.inDays > 365) return '${diff.inDays ~/ 365}a';
     if (diff.inDays > 30) return '${diff.inDays ~/ 30}m';

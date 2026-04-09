@@ -136,6 +136,7 @@ class _CrosspostPickerState extends ConsumerState<CrosspostPicker> {
   }
 
   Widget _buildSelectedCommunity(Map<String, dynamic> community) {
+    final s = ref.read(stringsProvider);
     final r = context.r;
     return Container(
       padding: EdgeInsets.all(r.s(12)),
@@ -231,6 +232,7 @@ class _CrosspostPickerState extends ConsumerState<CrosspostPicker> {
   }
 
   void _showCommunityPicker() {
+    final s = ref.read(stringsProvider);
     final r = context.r;
     showModalBottomSheet(
       context: context,

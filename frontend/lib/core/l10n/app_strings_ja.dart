@@ -373,7 +373,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get deleteAccount => 'アカウント削除';
   @override
-  String get deleteAccountConfirm =>
+  String get deleteAccountConfirm => 'Are you sure you want to delete your account? This action cannot be undone.';
   @override
   String get logoutConfirm => '本当にログアウトしますか？';
   @override
@@ -1407,7 +1407,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get writeOnWall => 'ウォールに書く...';
   @override
-  String get accountLinked => 'アカウント ${provider.name} が正常に連携されました！';
+  String get accountLinked => 'アカウントが正常に連携されました！';
   @override
   String get active2 => 'アクティブ';
   @override
@@ -1443,7 +1443,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get android => 'Android';
   @override
-  String get androidVersion => 'Android ${Platform.operatingSystemVersion}';
+  String get androidVersion => 'Android';
   @override
   String get animeManga => 'アニメ＆マンガ';
   @override
@@ -1465,15 +1465,15 @@ class AppStringsJa implements AppStrings {
   @override
   String get audio2 => 'オーディオ';
   @override
-  String get authError => '認証エラー: ${error.message}';
+  String get authError => '認証エラー:';
   @override
-  String get averageRating => '平均: ${_avgRating.toStringAsFixed(1)} ($_totalRatings 件の評価)';
+  String get averageRating => 'Average rating';
   @override
   String get bannedUsers => '禁止ユーザー';
   @override
   String get bannedUsersCount => '禁止されたユーザー';
   @override
-  String get blockedOnDate => '${blockedAt.day}/${blockedAt.month}/${blockedAt.year} にブロックされました';
+  String get blockedOnDate => 'にブロックされました';
   @override
   String get blockedUsers2 => 'ブロックされたユーザー';
   @override
@@ -1485,7 +1485,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get bullying => 'いじめ';
   @override
-  String get byAuthor => '${author[';
+  String get byAuthor => 'By ';
   @override
   String get cacheCleared2 => 'キャッシュが正常にクリアされました！';
   @override
@@ -1729,11 +1729,11 @@ class AppStringsJa implements AppStrings {
   @override
   String get levelUpAlert => 'レベルアップ！';
   @override
-  String get linkProviderError => '${provider.name}の連携中にエラーが発生しました。もう一度お試しください。';
+  String get linkProviderError => 'の連携中にエラーが発生しました。もう一度お試しください。';
   @override
   String get linux => 'Linux';
   @override
-  String get linuxVersion => 'Linux ${Platform.operatingSystemVersion}';
+  String get linuxVersion => 'Linux';
   @override
   String get loadMoreError => 'アイテムの読み込み中にエラーが発生しました';
   @override
@@ -1963,7 +1963,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get somethingWentWrong2 => '問題が発生しました。もう一度お試しください。';
   @override
-  String get stepProgress => 'ステップ ${_currentStep + 1} / 4';
+  String get stepProgress => 'ステップ';
   @override
   String get sticker => 'Sticker';
   @override
@@ -1995,7 +1995,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get total => '合計';
   @override
-  String get totalCheckIns => '合計：$checkInDays 回のチェックイン';
+  String get totalCheckIns => '合計：回のチェックイン';
   @override
   String get totalCheckIns2 => '合計チェックイン';
   @override
@@ -2029,7 +2029,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get value => '値';
   @override
-  String get valueRange => '$min から $max の間でなければなりません';
+  String get valueRange => 'の間でなければなりません';
   @override
   String get valueRequired => '値は必須です';
   @override
@@ -2075,7 +2075,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get windows => 'Windows';
   @override
-  String get windowsVersion => 'Windows ${Platform.operatingSystemVersion}';
+  String get windowsVersion => 'Windows';
   @override
   String get wise => 'Wise';
   @override
@@ -2085,7 +2085,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get writeWhatYouLike => '好きなことを書いてください…';
   @override
-  String get yourEntry => 'あなたのエントリー "${entry["';
+  String get yourEntry => 'Your entry';
   @override
   String get yourStory => 'あなたのストーリー';
   @override
@@ -3537,8 +3537,7 @@ class AppStringsJa implements AppStrings {
   String get emailSameAsCurrent => 'これはすでに現在のメールアドレスです。';
   // AMINO ID VALIDATION
   @override
-  @override
-  String get aminoIdInvalidChars => '英数字とアンダースコアのみ使用できます。';
+    String get aminoIdInvalidChars => '英数字とアンダースコアのみ使用できます。';
     // REPOST
   @override
   String get repost => 'Repost';

@@ -83,6 +83,7 @@ class _ForwardMessageSheetState extends ConsumerState<ForwardMessageSheet> {
   }
 
   Future<void> _send() async {
+    final s = ref.read(stringsProvider);
     if (_selected.isEmpty) return;
     setState(() => _sending = true);
     try {

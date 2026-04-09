@@ -245,6 +245,7 @@ class MessageBubble extends ConsumerWidget {
   }
 
   Widget _buildContent(BuildContext context) {
+    final s = ref.read(stringsProvider);
     final r = context.r;
     final type = message.type;
     final textColor = isMe ? Colors.white : context.textPrimary;

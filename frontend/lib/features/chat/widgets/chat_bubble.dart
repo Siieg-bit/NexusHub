@@ -5,6 +5,7 @@ import 'nine_slice_bubble.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/l10n/app_strings.dart';
 export '../../../core/widgets/avatar_with_frame.dart';
 
 /// Custom Chat Bubble com suporte a frames equipáveis — estilo Amino Apps.
@@ -375,7 +376,7 @@ class StreakBar extends ConsumerWidget {
                   ),
                   SizedBox(height: r.s(4)),
                   Text(
-                    _dayLabel(i),
+                    _dayLabel(i, s),
                     style: TextStyle(
                       color:
                           isActive ? AppTheme.warningColor : Colors.grey[600],
@@ -419,8 +420,8 @@ class StreakBar extends ConsumerWidget {
     );
   }
 
-  String _dayLabel(int index) {
-    const days = [s.monday, s.tuesday, s.wednesday, s.thursday, s.friday, s.saturday, s.sunday];
+  String _dayLabel(int index, AppStrings s) {
+    final days = [s.monday, s.tuesday, s.wednesday, s.thursday, s.friday, s.saturday, s.sunday];
     final today = DateTime.now().weekday - 1; // 0 = Monday
     final dayIndex = (today - (6 - index)) % 7;
     return days[dayIndex < 0 ? dayIndex + 7 : dayIndex];

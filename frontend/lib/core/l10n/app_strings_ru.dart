@@ -1335,7 +1335,7 @@ class AppStringsRu implements AppStrings {
   @override
   String get somethingWentWrong2 => 'Что-то пошло не так. Пожалуйста, попробуйте снова.';
   @override
-  String get stepProgress => 'Шаг ${_currentStep + 1} из 4';
+  String get stepProgress => 'Шаг';
   @override
   String get sticker => 'Стикер';
   @override
@@ -1367,7 +1367,7 @@ class AppStringsRu implements AppStrings {
   @override
   String get total => 'Всего';
   @override
-  String get totalCheckIns => 'Всего: $checkInDays отметок';
+  String get totalCheckIns => 'Всего:отметок';
   @override
   String get totalCheckIns2 => 'Всего отметок';
   @override
@@ -1403,7 +1403,7 @@ class AppStringsRu implements AppStrings {
   @override
   String get value => 'Значение';
   @override
-  String get valueRange => 'Должно быть между $min и $max';
+  String get valueRange => 'Должно быть между';
   @override
   String get valueRequired => 'Значение обязательно';
   @override
@@ -1449,7 +1449,7 @@ class AppStringsRu implements AppStrings {
   @override
   String get windows => 'Windows';
   @override
-  String get windowsVersion => 'Windows ${Platform.operatingSystemVersion}';
+  String get windowsVersion => 'Windows';
   @override
   String get wise => 'Мудрый';
   @override
@@ -1459,7 +1459,7 @@ class AppStringsRu implements AppStrings {
   @override
   String get writeWhatYouLike => 'Напишите, что вам нравится...';
   @override
-  String get yourEntry => 'Ваша запись "${entry["';
+  String get yourEntry => 'Your entry';
   @override
   String get yourStory => 'Ваша история';
   @override
@@ -2899,7 +2899,7 @@ class AppStringsRu implements AppStrings {
   @override
   String get termsOfService => 'Условия использования';
   @override
-  String get deleteAccountConfirm =>
+  String get deleteAccountConfirm => 'Are you sure you want to delete your account? This action cannot be undone.';
   @override
   String get logoutConfirm => 'Вы уверены, что хотите выйти?';
   @override
@@ -3277,7 +3277,7 @@ class AppStringsRu implements AppStrings {
   @override
   String get writeOnWall => 'Написать на стене...';
   @override
-  String get accountLinked => 'Аккаунт ${provider.name} успешно привязан!';
+  String get accountLinked => 'Аккаунтуспешно привязан!';
   @override
   String get active2 => 'Активен';
   @override
@@ -3309,7 +3309,7 @@ class AppStringsRu implements AppStrings {
   @override
   String get android => 'Android';
   @override
-  String get androidVersion => 'Android ${Platform.operatingSystemVersion}';
+  String get androidVersion => 'Android';
   @override
   String get animeManga => 'Аниме и Манга';
   @override
@@ -3329,13 +3329,13 @@ class AppStringsRu implements AppStrings {
   @override
   String get audio2 => 'Аудио';
   @override
-  String get authError => 'Ошибка аутентификации: ${error.message}';
+  String get authError => 'Ошибка аутентификации:';
   @override
-  String get averageRating => 'Средний: ${_avgRating.toStringAsFixed(1)} ($_totalRatings оценок)';
+  String get averageRating => 'Average rating';
   @override
   String get bannedUsersCount => 'Заблокированные пользователи';
   @override
-  String get blockedOnDate => 'Заблокирован ${blockedAt.day}/${blockedAt.month}/${blockedAt.year}';
+  String get blockedOnDate => 'Заблокирован';
   @override
   String get blockedUsers2 => 'Заблокированные пользователи';
   @override
@@ -3345,7 +3345,7 @@ class AppStringsRu implements AppStrings {
   @override
   String get browser => 'Браузер';
   @override
-  String get byAuthor => 'От ${author[';
+  String get byAuthor => 'By ';
   @override
   String get cacheCleared2 => 'Кэш успешно очищен!';
   @override
@@ -3569,11 +3569,11 @@ class AppStringsRu implements AppStrings {
   @override
   String get levelUpAlert => 'ПОВЫШЕНИЕ УРОВНЯ!';
   @override
-  String get linkProviderError => 'Ошибка связывания ${provider.name}. Пожалуйста, попробуйте снова.';
+  String get linkProviderError => 'Ошибка связывания. Пожалуйста, попробуйте снова.';
   @override
   String get linux => 'Linux';
   @override
-  String get linuxVersion => 'Linux ${Platform.operatingSystemVersion}';
+  String get linuxVersion => 'Linux';
   @override
   String get loadMoreError => 'Ошибка загрузки дополнительных элементов';
   @override
@@ -4681,8 +4681,7 @@ class AppStringsRu implements AppStrings {
   String get emailSameAsCurrent => 'Это уже ваш текущий адрес электронной почты.';
   // AMINO ID VALIDATION
   @override
-  @override
-  String get aminoIdInvalidChars => 'Разрешены только буквы, цифры и символы подчёркивания.';
+    String get aminoIdInvalidChars => 'Разрешены только буквы, цифры и символы подчёркивания.';
     // REPOST
   @override
   String get repost => 'Repost';

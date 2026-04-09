@@ -49,7 +49,7 @@ class AppStringsFr implements AppStrings {
   @override
   String get noResults => 'Aucun résultat trouvé';
   @override
-  String get somethingWentWrong => 'Quelque chose s\\'est mal passé';
+  String get somethingWentWrong => 'Quelque chose s\'est mal passé';
   @override
   String get tryAgainLater => 'Veuillez réessayer plus tard';
   @override
@@ -57,7 +57,7 @@ class AppStringsFr implements AppStrings {
   @override
   String get login => 'Se connecter';
   @override
-  String get signUp => 'S\\'inscrire';
+  String get signUp => 'S\'inscrire';
   @override
   String get logout => 'Se déconnecter';
   @override
@@ -483,7 +483,7 @@ class AppStringsFr implements AppStrings {
   @override
   String get september => 'Septembre';
   @override
-  String get todayLabel => 'Aujourd\\'hui';
+  String get todayLabel => 'Aujourd\'hui';
   @override
   String get anErrorOccurredTryAgain => 'Une erreur s\'est produite. Réessayez.';
   @override
@@ -927,7 +927,7 @@ class AppStringsFr implements AppStrings {
   @override
   String get deleteAccount => 'Supprimer le compte';
   @override
-  String get deleteAccountConfirm =>
+  String get deleteAccountConfirm => 'Are you sure you want to delete your account? This action cannot be undone.';
   @override
   String get logoutConfirm => 'Êtes-vous sûr de vouloir vous déconnecter ?';
   @override
@@ -1635,7 +1635,7 @@ class AppStringsFr implements AppStrings {
   @override
   String get writeOnWall => 'Écrire sur le mur...';
   @override
-  String get accountLinked => 'Compte ${provider.name} lié avec succès !';
+  String get accountLinked => 'Comptelié avec succès !';
   @override
   String get active2 => 'Actif';
   @override
@@ -1671,7 +1671,7 @@ class AppStringsFr implements AppStrings {
   @override
   String get android => 'Android';
   @override
-  String get androidVersion => 'Android ${Platform.operatingSystemVersion}';
+  String get androidVersion => 'Android';
   @override
   String get animeManga => 'Anime & Manga';
   @override
@@ -1693,15 +1693,15 @@ class AppStringsFr implements AppStrings {
   @override
   String get audio2 => 'Audio';
   @override
-  String get authError => 'Erreur d\'authentification : ${error.message}';
+  String get authError => 'Erreur d\'authentification :';
   @override
-  String get averageRating => 'Moyenne : ${_avgRating.toStringAsFixed(1)} ($_totalRatings évaluations)';
+  String get averageRating => 'Average rating';
   @override
   String get bannedUsers => 'Bannis';
   @override
   String get bannedUsersCount => 'Utilisateurs bannis';
   @override
-  String get blockedOnDate => 'Bloqué le ${blockedAt.day}/${blockedAt.month}/${blockedAt.year}';
+  String get blockedOnDate => 'Bloqué le';
   @override
   String get blockedUsers2 => 'Utilisateurs bloqués';
   @override
@@ -1713,7 +1713,7 @@ class AppStringsFr implements AppStrings {
   @override
   String get bullying => 'Harcèlement';
   @override
-  String get byAuthor => 'Par ${author[';
+  String get byAuthor => 'By ';
   @override
   String get cacheCleared2 => 'Cache vidé avec succès !';
   @override
@@ -1959,11 +1959,11 @@ class AppStringsFr implements AppStrings {
   @override
   String get levelUpAlert => 'NIVEAU SUPÉRIEUR !';
   @override
-  String get linkProviderError => 'Erreur lors du lien avec ${provider.name}. Veuillez réessayer.';
+  String get linkProviderError => 'Erreur lors du lien avec. Veuillez réessayer.';
   @override
   String get linux => 'Linux';
   @override
-  String get linuxVersion => 'Linux ${Platform.operatingSystemVersion}';
+  String get linuxVersion => 'Linux';
   @override
   String get loadMoreError => 'Erreur lors du chargement de plus d\'éléments';
   @override
@@ -2193,7 +2193,7 @@ class AppStringsFr implements AppStrings {
   @override
   String get somethingWentWrong2 => 'Une erreur est survenue. Veuillez réessayer.';
   @override
-  String get stepProgress => 'Étape ${_currentStep + 1} sur 4';
+  String get stepProgress => 'Étape';
   @override
   String get sticker => 'Autocollant';
   @override
@@ -2225,7 +2225,7 @@ class AppStringsFr implements AppStrings {
   @override
   String get total => 'Total';
   @override
-  String get totalCheckIns => 'Total : $checkInDays enregistrements';
+  String get totalCheckIns => 'Total :enregistrements';
   @override
   String get totalCheckIns2 => 'Total des enregistrements';
   @override
@@ -2261,7 +2261,7 @@ class AppStringsFr implements AppStrings {
   @override
   String get value => 'Valeur';
   @override
-  String get valueRange => 'Doit être entre $min et $max';
+  String get valueRange => 'Doit être entre';
   @override
   String get valueRequired => 'La valeur est requise';
   @override
@@ -2305,7 +2305,7 @@ class AppStringsFr implements AppStrings {
   @override
   String get windows => 'Windows';
   @override
-  String get windowsVersion => 'Windows ${Platform.operatingSystemVersion}';
+  String get windowsVersion => 'Windows';
   @override
   String get wise => 'Sage';
   @override
@@ -2315,7 +2315,7 @@ class AppStringsFr implements AppStrings {
   @override
   String get writeWhatYouLike => 'Écrivez ce que vous aimez...';
   @override
-  String get yourEntry => 'Votre entrée "${entry["';
+  String get yourEntry => 'Your entry';
   @override
   String get yourStory => 'Votre histoire';
   @override
@@ -3596,15 +3596,14 @@ class AppStringsFr implements AppStrings {
   @override
   String get emailChangeReauthInfo => 'Veuillez confirmer votre mot de passe actuel pour continuer.';
   @override
-  String get emailChangeDualConfirmInfo => 'Un lien de confirmation sera envoyé à votre adresse e-mail actuelle et à la nouvelle. Le changement ne prendra effet qu'après confirmation des deux.';
+  String get emailChangeDualConfirmInfo => 'Un lien de confirmation sera envoyé à votre adresse e-mail actuelle et à la nouvelle. Le changement ne prendra effet qu\'après confirmation des deux.';
   @override
   String get emailChangeSentBoth => 'Liens de confirmation envoyés ! Vérifiez la boîte de réception de votre e-mail actuel et du nouveau.';
   @override
-  String get emailSameAsCurrent => 'C'est déjà votre adresse e-mail actuelle.';
+  String get emailSameAsCurrent => 'C\'est déjà votre adresse e-mail actuelle.';
   // AMINO ID VALIDATION
   @override
-  @override
-  String get aminoIdInvalidChars => 'Seuls les lettres, chiffres et underscores sont autorisés.';
+    String get aminoIdInvalidChars => 'Seuls les lettres, chiffres et underscores sont autorisés.';
     // REPOST
   @override
   String get repost => 'Repost';

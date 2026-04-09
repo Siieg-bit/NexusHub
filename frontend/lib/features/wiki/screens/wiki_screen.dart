@@ -725,7 +725,7 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
                         ),
                         SizedBox(width: r.s(10)),
                         Text(
-                          s.byAuthornickname'] ?? s.anonymous}',
+                          '${s.byAuthor}${author['nickname'] ?? s.anonymous}',
                           style: TextStyle(
                               color: context.textSecondary, fontSize: r.fs(14)),
                         ),

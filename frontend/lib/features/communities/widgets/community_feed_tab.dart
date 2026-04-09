@@ -314,7 +314,7 @@ class _LatestTab extends ConsumerWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /// Cabeçalho de seção estilo Amino: ícone colorido + label bold
-class _SectionHeader extends StatelessWidget {
+class _SectionHeader extends ConsumerWidget {
   final IconData icon;
   final String label;
   final Color accent;
@@ -326,7 +326,7 @@ class _SectionHeader extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Padding(
@@ -351,7 +351,7 @@ class _SectionHeader extends StatelessWidget {
 }
 
 /// Linha compacta para posts fixados (estilo lista Amino)
-class _PinnedPostRow extends StatelessWidget {
+class _PinnedPostRow extends ConsumerWidget {
   final PostModel post;
   final Color accent;
   final int index;
@@ -363,7 +363,7 @@ class _PinnedPostRow extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return AminoAnimations.staggerItem(
@@ -408,7 +408,7 @@ class _PinnedPostRow extends StatelessWidget {
 }
 
 /// Card grande para posts em destaque (grid 2 colunas, estilo Amino)
-class _FeaturedPostCard extends StatelessWidget {
+class _FeaturedPostCard extends ConsumerWidget {
   final PostModel post;
   final Color accent;
   final int index;
@@ -420,7 +420,7 @@ class _FeaturedPostCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     final thumb = post.coverImageUrl ?? post.mediaUrl;
@@ -555,12 +555,12 @@ class _FeaturedPostCard extends StatelessWidget {
 }
 
 /// Placeholder colorido quando não há imagem de capa
-class _PlaceholderCover extends StatelessWidget {
+class _PlaceholderCover extends ConsumerWidget {
   final Color accent;
   const _PlaceholderCover({required this.accent});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     return Container(
       color: accent.withValues(alpha: 0.15),
@@ -576,12 +576,12 @@ class _PlaceholderCover extends StatelessWidget {
 }
 
 /// Avatar padrão quando não há foto de perfil
-class _DefaultAvatar extends StatelessWidget {
+class _DefaultAvatar extends ConsumerWidget {
   final double size;
   const _DefaultAvatar({required this.size});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     return Container(
       width: size,

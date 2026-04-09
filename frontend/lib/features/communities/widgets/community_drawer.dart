@@ -230,6 +230,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
 
   Widget _buildLeftSidebar(
       Responsive r, AsyncValue<List<CommunityModel>> userCommunitiesAsync) {
+    final s = ref.read(stringsProvider);
     return Container(
       width: r.s(52),
       color: const Color(0xFF000000),
@@ -369,6 +370,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
 
   Widget _buildHeader(
       Responsive r, Color themeColor, bool hasCheckedIn, int streak) {
+    final s = ref.read(stringsProvider);
     final user = widget.currentUser;
 
     // Sem altura fixa — o conteúdo define a altura naturalmente.
@@ -751,6 +753,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
   // ═══════════════════════════════════════════════════════════════════════════
 
   Widget _buildCheckInMessage(Responsive r, bool hasCheckedIn) {
+    final s = ref.read(stringsProvider);
     // Após o check-in, o botão desaparece — a barra de streak já indica o status
     if (hasCheckedIn) return const SizedBox.shrink();
 
@@ -852,6 +855,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
   // ═══════════════════════════════════════════════════════════════════════════
 
   Widget _buildMainMenu(Responsive r) {
+    final s = ref.read(stringsProvider);
     return Column(
       children: [
         _AminoDrawerTile(
@@ -928,6 +932,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
   // ═══════════════════════════════════════════════════════════════════════════
 
   Widget _buildSeeMore(Responsive r) {
+    final s = ref.read(stringsProvider);
     return Column(
       children: [
         // "See More..." com seta
@@ -993,6 +998,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
   // ═══════════════════════════════════════════════════════════════════════════
 
   Widget _buildStaffSection(Responsive r) {
+    final s = ref.read(stringsProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1055,7 +1061,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
 // - Padding horizontal: ~14px
 // =============================================================================
 
-class _AminoDrawerTile extends StatelessWidget {
+class _AminoDrawerTile extends ConsumerWidget {
   final IconData icon;
   final Color iconColor;
   final String label;
@@ -1071,7 +1077,7 @@ class _AminoDrawerTile extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(

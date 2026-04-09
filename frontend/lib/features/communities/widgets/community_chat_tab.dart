@@ -71,6 +71,7 @@ class _CommunityChatTabState extends ConsumerState<CommunityChatTab> {
   }
 
   Future<void> _togglePin(Map<String, dynamic> chat) async {
+    final s = ref.read(stringsProvider);
     final isPinned = chat['is_pinned'] as bool? ?? false;
     try {
       await SupabaseService.table('chat_threads')
@@ -89,7 +90,7 @@ class _CommunityChatTabState extends ConsumerState<CommunityChatTab> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(s.errorChangingPin),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
@@ -100,6 +101,7 @@ class _CommunityChatTabState extends ConsumerState<CommunityChatTab> {
   }
 
   Future<void> _leaveOrDeleteChat(Map<String, dynamic> chat) async {
+    final s = ref.read(stringsProvider);
     try {
       final result = await SupabaseService.rpc('leave_public_chat', params: {
         'p_thread_id': chat['id'] as String,
@@ -118,7 +120,7 @@ class _CommunityChatTabState extends ConsumerState<CommunityChatTab> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(s.errorExecutingActionRetry),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
@@ -129,6 +131,7 @@ class _CommunityChatTabState extends ConsumerState<CommunityChatTab> {
   }
 
   void _showContextMenu(BuildContext context, Map<String, dynamic> chat) {
+    final s = ref.read(stringsProvider);
     final r = context.r;
     final isPinned = chat['is_pinned'] as bool? ?? false;
     final isHost = _isHost(chat);
@@ -198,6 +201,7 @@ class _CommunityChatTabState extends ConsumerState<CommunityChatTab> {
 
   void _confirmAction(
       BuildContext context, Map<String, dynamic> chat, bool isDelete) {
+    final s = ref.read(stringsProvider);
     final r = context.r;
     showDialog(
       context: context,

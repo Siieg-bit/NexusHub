@@ -1476,7 +1476,7 @@ class AppStringsEn implements AppStrings {
 
   // PASS 3 — AUTO-GENERATED
   @override
-  String get accountLinked => 'Account ${provider.name} linked successfully!';
+  String get accountLinked => 'Accountlinked successfully!';
   @override
   String get active2 => 'Active';
   @override
@@ -1515,7 +1515,7 @@ class AppStringsEn implements AppStrings {
   @override
   String get android => 'Android';
   @override
-  String get androidVersion => 'Android ${Platform.operatingSystemVersion}';
+  String get androidVersion => 'Android';
   @override
   String get animeManga => 'Anime & Manga';
   @override
@@ -1537,15 +1537,15 @@ class AppStringsEn implements AppStrings {
   @override
   String get audio2 => 'Audio';
   @override
-  String get authError => 'Authentication error: ${error.message}';
+  String get authError => 'Authentication error:';
   @override
-  String get averageRating => 'Average: ${_avgRating.toStringAsFixed(1)} ($_totalRatings ratings)';
+  String get averageRating => 'Average rating';
   @override
   String get bannedUsers => 'Banned';
   @override
   String get bannedUsersCount => 'Banned users';
   @override
-  String get blockedOnDate => 'Blocked on ${blockedAt.day}/${blockedAt.month}/${blockedAt.year}';
+  String get blockedOnDate => 'Blocked on';
   @override
   String get blockedUsers2 => 'Blocked Users';
   @override
@@ -1558,7 +1558,7 @@ class AppStringsEn implements AppStrings {
   @override
   String get bullying => 'Bullying';
   @override
-  String get byAuthor => 'By ${author[';
+  String get byAuthor => 'By ';
   @override
   String get cacheCleared2 => 'Cache cleared successfully!';
   @override
@@ -1809,11 +1809,11 @@ class AppStringsEn implements AppStrings {
   @override
   String get levelUpAlert => 'LEVEL UP!';
   @override
-  String get linkProviderError => 'Error linking ${provider.name}. Please try again.';
+  String get linkProviderError => 'Error linking. Please try again.';
   @override
   String get linux => 'Linux';
   @override
-  String get linuxVersion => 'Linux ${Platform.operatingSystemVersion}';
+  String get linuxVersion => 'Linux';
   @override
   String get loadMoreError => 'Error loading more items';
   @override
@@ -2051,7 +2051,7 @@ class AppStringsEn implements AppStrings {
   @override
   String get somethingWentWrong2 => 'Something went wrong. Please try again.';
   @override
-  String get stepProgress => 'Step ${_currentStep + 1} of 4';
+  String get stepProgress => 'Step';
   @override
   String get sticker => 'Sticker';
   @override
@@ -2086,7 +2086,7 @@ class AppStringsEn implements AppStrings {
   @override
   String get total => 'Total';
   @override
-  String get totalCheckIns => 'Total: $checkInDays check-ins';
+  String get totalCheckIns => 'Total:check-ins';
   @override
   String get totalCheckIns2 => 'Total check-ins';
   @override
@@ -2122,7 +2122,7 @@ class AppStringsEn implements AppStrings {
   @override
   String get value => 'Value';
   @override
-  String get valueRange => 'Must be between $min and $max';
+  String get valueRange => 'Must be between';
   @override
   String get valueRequired => 'Value is required';
   @override
@@ -2168,7 +2168,7 @@ class AppStringsEn implements AppStrings {
   @override
   String get windows => 'Windows';
   @override
-  String get windowsVersion => 'Windows ${Platform.operatingSystemVersion}';
+  String get windowsVersion => 'Windows';
   @override
   String get wise => 'Wise';
   @override
@@ -2182,7 +2182,7 @@ Use ** for bold';
   @override
   String get writeWhatYouLike => 'Write what you like...';
   @override
-  String get yourEntry => 'Your entry "${entry["';
+  String get yourEntry => 'Your entry';
   @override
   String get yourStory => 'Your Story';
 
@@ -3646,8 +3646,7 @@ it will appear here';
   String get emailSameAsCurrent => 'This is already your current email.';
   // AMINO ID VALIDATION
   @override
-  @override
-  String get aminoIdInvalidChars => 'Only letters, numbers and underscores are allowed.';
+    String get aminoIdInvalidChars => 'Only letters, numbers and underscores are allowed.';
     // REPOST
   @override
   String get repost => 'Repost';

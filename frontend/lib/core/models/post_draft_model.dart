@@ -79,7 +79,7 @@ class PostDraftModel {
           ? '${content!.substring(0, 80)}...'
           : content!;
     }
-    return s.untitledDraft;
+    return getStrings().untitledDraft;
   }
 
   PostDraftModel copyWith({

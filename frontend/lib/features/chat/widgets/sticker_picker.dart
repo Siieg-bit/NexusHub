@@ -159,6 +159,7 @@ class _StickerPickerBodyState extends ConsumerState<_StickerPickerBody>
   }
 
   Future<void> _loadStickerPacks() async {
+    final s = ref.read(stringsProvider);
     try {
       final res = await SupabaseService.table('store_items')
           .select()
@@ -202,6 +203,7 @@ class _StickerPickerBodyState extends ConsumerState<_StickerPickerBody>
   }
 
   Future<void> _toggleFavorite(Map<String, dynamic> sticker) async {
+    final s = ref.read(stringsProvider);
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;

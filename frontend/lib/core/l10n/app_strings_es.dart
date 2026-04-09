@@ -1415,7 +1415,7 @@ class AppStringsEs implements AppStrings {
   @override
   String get writeOnWall => 'Escribe en el muro...';
   @override
-  String get accountLinked => '¡Cuenta ${provider.name} vinculada con éxito!';
+  String get accountLinked => '¡Cuentavinculada con éxito!';
   @override
   String get active2 => 'Activo';
   @override
@@ -1451,7 +1451,7 @@ class AppStringsEs implements AppStrings {
   @override
   String get android => 'Android';
   @override
-  String get androidVersion => 'Android ${Platform.operatingSystemVersion}';
+  String get androidVersion => 'Android';
   @override
   String get animeManga => 'Anime y Manga';
   @override
@@ -1473,15 +1473,15 @@ class AppStringsEs implements AppStrings {
   @override
   String get audio2 => 'Audio';
   @override
-  String get authError => 'Error de autenticación: ${error.message}';
+  String get authError => 'Error de autenticación:';
   @override
-  String get averageRating => 'Promedio: ${_avgRating.toStringAsFixed(1)} ($_totalRatings calificaciones)';
+  String get averageRating => 'Average rating';
   @override
   String get bannedUsers => 'Prohibidos';
   @override
   String get bannedUsersCount => 'Usuarios prohibidos';
   @override
-  String get blockedOnDate => 'Bloqueado el ${blockedAt.day}/${blockedAt.month}/${blockedAt.year}';
+  String get blockedOnDate => 'Bloqueado el';
   @override
   String get blockedUsers2 => 'Usuarios bloqueados';
   @override
@@ -1493,7 +1493,7 @@ class AppStringsEs implements AppStrings {
   @override
   String get bullying => 'Acoso';
   @override
-  String get byAuthor => 'Por ${author[';
+  String get byAuthor => 'By ';
   @override
   String get cacheCleared2 => '¡Caché limpiada con éxito!';
   @override
@@ -1739,11 +1739,11 @@ class AppStringsEs implements AppStrings {
   @override
   String get levelUpAlert => '¡SUBISTE DE NIVEL!';
   @override
-  String get linkProviderError => 'Error al vincular ${provider.name}. Por favor, intenta de nuevo.';
+  String get linkProviderError => 'Error al vincular. Por favor, intenta de nuevo.';
   @override
   String get linux => 'Linux';
   @override
-  String get linuxVersion => 'Linux ${Platform.operatingSystemVersion}';
+  String get linuxVersion => 'Linux';
   @override
   String get loadMoreError => 'Error al cargar más elementos';
   @override
@@ -1973,7 +1973,7 @@ class AppStringsEs implements AppStrings {
   @override
   String get somethingWentWrong2 => 'Algo salió mal. Por favor, intenta de nuevo.';
   @override
-  String get stepProgress => 'Paso ${_currentStep + 1} de 4';
+  String get stepProgress => 'Paso';
   @override
   String get sticker => 'Sticker';
   @override
@@ -2005,7 +2005,7 @@ class AppStringsEs implements AppStrings {
   @override
   String get total => 'Total';
   @override
-  String get totalCheckIns => 'Total: $checkInDays registros de entrada';
+  String get totalCheckIns => 'Total:registros de entrada';
   @override
   String get totalCheckIns2 => 'Total de registros de entrada';
   @override
@@ -2041,7 +2041,7 @@ class AppStringsEs implements AppStrings {
   @override
   String get value => 'Valor';
   @override
-  String get valueRange => 'Debe estar entre $min y $max';
+  String get valueRange => 'Debe estar entre';
   @override
   String get valueRequired => 'El valor es obligatorio';
   @override
@@ -2087,7 +2087,7 @@ class AppStringsEs implements AppStrings {
   @override
   String get windows => 'Windows';
   @override
-  String get windowsVersion => 'Windows ${Platform.operatingSystemVersion}';
+  String get windowsVersion => 'Windows';
   @override
   String get wise => 'Sabio';
   @override
@@ -2097,7 +2097,7 @@ class AppStringsEs implements AppStrings {
   @override
   String get writeWhatYouLike => 'Escribe lo que quieras...';
   @override
-  String get yourEntry => 'Tu entrada "${entry["';
+  String get yourEntry => 'Your entry';
   @override
   String get yourStory => 'Tu historia';
   @override
@@ -3537,8 +3537,7 @@ class AppStringsEs implements AppStrings {
   String get emailSameAsCurrent => 'Este ya es tu correo electrónico actual.';
   // AMINO ID VALIDATION
   @override
-  @override
-  String get aminoIdInvalidChars => 'Solo se permiten letras, números y guiones bajos.';
+    String get aminoIdInvalidChars => 'Solo se permiten letras, números y guiones bajos.';
     // REPOST
   @override
   String get repost => 'Repost';

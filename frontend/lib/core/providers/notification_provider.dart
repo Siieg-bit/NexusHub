@@ -178,6 +178,7 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
   }
 
   Future<void> loadMore() async {
+    final s = getStrings();
     final current = state.valueOrNull;
     if (current == null || !current.hasMore || _isLoadingMore) return;
 

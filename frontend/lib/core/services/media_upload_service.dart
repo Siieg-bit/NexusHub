@@ -157,7 +157,6 @@ class MediaUploadService {
 
   /// Upload de um único arquivo para Supabase Storage
   static Future<UploadResult?> uploadFile({
-    final s = getStrings();
     required File file,
     required MediaBucket bucket,
     String? customPath,

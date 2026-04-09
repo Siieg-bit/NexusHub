@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/l10n/app_strings.dart';
 
 // =============================================================================
 // COMMUNITY CREATE MENU — Bottom sheet grid estilo Amino Apps
@@ -57,7 +58,7 @@ class _CommunityCreateMenuSheet extends ConsumerWidget {
     required this.communityName,
   });
 
-  List<_CreateItem> _buildItems() {
+  List<_CreateItem> _buildItems(AppStrings s) {
     return [
       _CreateItem(
         label: s.storyLabel,
@@ -159,7 +160,7 @@ class _CommunityCreateMenuSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
-    final items = _buildItems();
+    final items = _buildItems(s);
 
     return Container(
       decoration: BoxDecoration(

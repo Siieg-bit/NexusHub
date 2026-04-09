@@ -313,6 +313,7 @@ class _PostCardState extends ConsumerState<PostCard>
   // COMMUNITY HEADER (small, above author)
   // ══════════════════════════════════════════════════════════════════════════
   Widget _buildCommunityHeader() {
+    final s = ref.read(stringsProvider);
     final r = context.r;
     return Padding(
       padding: EdgeInsets.fromLTRB(r.s(12), r.s(10), r.s(12), 0),
@@ -358,6 +359,7 @@ class _PostCardState extends ConsumerState<PostCard>
   // AUTHOR HEADER — Estilo Amino
   // ══════════════════════════════════════════════════════════════════════════
   Widget _buildAuthorHeader(BuildContext context) {
+    final s = ref.read(stringsProvider);
     final r = context.r;
     return Padding(
       padding: EdgeInsets.fromLTRB(r.s(12), r.s(10), r.s(12), r.s(8)),
@@ -509,6 +511,7 @@ class _PostCardState extends ConsumerState<PostCard>
 
   // ── POLL ──
   Widget _buildPoll() {
+    final s = ref.read(stringsProvider);
     final r = context.r;
     final pollData = _post.pollData;
     if (pollData == null) return const SizedBox.shrink();
@@ -581,6 +584,7 @@ class _PostCardState extends ConsumerState<PostCard>
 
   // ── QUIZ ──
   Widget _buildQuiz() {
+    final s = ref.read(stringsProvider);
     final r = context.r;
     final quizData = _post.quizData;
     if (quizData == null) return const SizedBox.shrink();
@@ -680,6 +684,7 @@ class _PostCardState extends ConsumerState<PostCard>
 
   // ── Q&A ──
   Widget _buildQA() {
+    final s = ref.read(stringsProvider);
     final r = context.r;
     return Padding(
       padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(8)),
@@ -823,6 +828,7 @@ class _PostCardState extends ConsumerState<PostCard>
 
   // ── CROSSPOST / REPOST BANNER ──
   Widget _buildCrosspostBanner() {
+    final s = ref.read(stringsProvider);
     final r = context.r;
     final isRepost = _post.type == 'repost';
     final label = isRepost ? 'Repost' : s.crosspost;
@@ -895,6 +901,7 @@ class _PostCardState extends ConsumerState<PostCard>
   // ACTIONS FOOTER — Estilo Amino (like com animação, comment, tags)
   // ══════════════════════════════════════════════════════════════════════════
   Widget _buildActions(BuildContext context) {
+    final s = ref.read(stringsProvider);
     final r = context.r;
     return Padding(
       padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(10)),

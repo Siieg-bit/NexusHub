@@ -1251,7 +1251,7 @@ class AppStringsDe implements AppStrings {
   @override
   String get value => 'Wert';
   @override
-  String get valueRange => 'Muss zwischen $min und $max liegen';
+  String get valueRange => 'Muss zwischenliegen';
   @override
   String get valueRequired => 'Wert ist erforderlich';
   @override
@@ -1297,7 +1297,7 @@ class AppStringsDe implements AppStrings {
   @override
   String get windows => 'Windows';
   @override
-  String get windowsVersion => 'Windows ${Platform.operatingSystemVersion}';
+  String get windowsVersion => 'Windows';
   @override
   String get wise => 'Weise';
   @override
@@ -1307,7 +1307,7 @@ class AppStringsDe implements AppStrings {
   @override
   String get writeWhatYouLike => 'Schreiben Sie, was Ihnen gefällt...';
   @override
-  String get yourEntry => 'Ihr Eintrag "${entry['\'';
+  String get yourEntry => 'Your entry';
   @override
   String get yourStory => 'Ihre Story';
   @override
@@ -1819,7 +1819,7 @@ class AppStringsDe implements AppStrings {
   @override
   String get writeOnWall => 'Schreiben Sie an die Wand...';
   @override
-  String get accountLinked => 'Konto ${provider.name} erfolgreich verknüpft!';
+  String get accountLinked => 'Kontoerfolgreich verknüpft!';
   @override
   String get active2 => 'Aktiv';
   @override
@@ -1855,7 +1855,7 @@ class AppStringsDe implements AppStrings {
   @override
   String get android => 'Android';
   @override
-  String get androidVersion => 'Android ${Platform.operatingSystemVersion}';
+  String get androidVersion => 'Android';
   @override
   String get animeManga => 'Anime & Manga';
   @override
@@ -1877,15 +1877,15 @@ class AppStringsDe implements AppStrings {
   @override
   String get audio2 => 'Audio';
   @override
-  String get authError => 'Authentifizierungsfehler: ${error.message}';
+  String get authError => 'Authentifizierungsfehler:';
   @override
-  String get averageRating => 'Durchschnitt: ${_avgRating.toStringAsFixed(1)} ($_totalRatings Bewertungen)';
+  String get averageRating => 'Average rating';
   @override
   String get bannedUsers => 'Gesperrt';
   @override
   String get bannedUsersCount => 'Gesperrte Benutzer';
   @override
-  String get blockedOnDate => 'Gesperrt am ${blockedAt.day}/${blockedAt.month}/${blockedAt.year}';
+  String get blockedOnDate => 'Gesperrt am';
   @override
   String get blockedUsers2 => 'Gesperrte Benutzer';
   @override
@@ -1897,7 +1897,7 @@ class AppStringsDe implements AppStrings {
   @override
   String get bullying => 'Mobbing';
   @override
-  String get byAuthor => 'Von ${author[';
+  String get byAuthor => 'By ';
   @override
   String get cacheCleared2 => 'Cache erfolgreich geleert!';
   @override
@@ -2143,11 +2143,11 @@ class AppStringsDe implements AppStrings {
   @override
   String get levelUpAlert => 'LEVEL AUFSTIEG!';
   @override
-  String get linkProviderError => 'Fehler beim Verknüpfen von ${provider.name}. Bitte erneut versuchen.';
+  String get linkProviderError => 'Fehler beim Verknüpfen von. Bitte erneut versuchen.';
   @override
   String get linux => 'Linux';
   @override
-  String get linuxVersion => 'Linux ${Platform.operatingSystemVersion}';
+  String get linuxVersion => 'Linux';
   @override
   String get loadMoreError => 'Fehler beim Laden weiterer Elemente';
   @override
@@ -2377,7 +2377,7 @@ class AppStringsDe implements AppStrings {
   @override
   String get somethingWentWrong2 => 'Etwas ist schiefgelaufen. Bitte versuche es erneut.';
   @override
-  String get stepProgress => 'Schritt ${_currentStep + 1} von 4';
+  String get stepProgress => 'Schritt';
   @override
   String get sticker => 'Sticker';
   @override
@@ -2409,7 +2409,7 @@ class AppStringsDe implements AppStrings {
   @override
   String get total => 'Gesamt';
   @override
-  String get totalCheckIns => 'Gesamt: $checkInDays Check-ins';
+  String get totalCheckIns => 'Gesamt:Check-ins';
   @override
   String get totalCheckIns2 => 'Gesamt-Check-ins';
   @override
@@ -3687,8 +3687,7 @@ class AppStringsDe implements AppStrings {
   String get emailSameAsCurrent => 'Das ist bereits deine aktuelle E-Mail-Adresse.';
   // AMINO ID VALIDATION
   @override
-  @override
-  String get aminoIdInvalidChars => 'Nur Buchstaben, Zahlen und Unterstriche sind erlaubt.';
+    String get aminoIdInvalidChars => 'Nur Buchstaben, Zahlen und Unterstriche sind erlaubt.';
     // REPOST
   @override
   String get repost => 'Repost';

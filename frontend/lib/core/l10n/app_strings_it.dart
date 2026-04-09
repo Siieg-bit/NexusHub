@@ -1111,7 +1111,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get somethingWentWrong2 => 'Qualcosa è andato storto. Per favore, riprova.';
   @override
-  String get stepProgress => 'Passo ${_currentStep + 1} di 4';
+  String get stepProgress => 'Passo';
   @override
   String get sticker => 'Sticker';
   @override
@@ -1143,7 +1143,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get total => 'Totale';
   @override
-  String get totalCheckIns => 'Totale: $checkInDays check-in';
+  String get totalCheckIns => 'Totale:check-in';
   @override
   String get totalCheckIns2 => 'Check-in totali';
   @override
@@ -1179,7 +1179,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get value => 'Valore';
   @override
-  String get valueRange => 'Deve essere tra $min e $max';
+  String get valueRange => 'Deve essere tra';
   @override
   String get valueRequired => 'Valore richiesto';
   @override
@@ -1225,7 +1225,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get windows => 'Windows';
   @override
-  String get windowsVersion => 'Windows ${Platform.operatingSystemVersion}';
+  String get windowsVersion => 'Windows';
   @override
   String get wise => 'Saggio';
   @override
@@ -1235,7 +1235,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get writeWhatYouLike => 'Scrivi quello che ti piace...';
   @override
-  String get yourEntry => 'La tua voce "${entry["';
+  String get yourEntry => 'Your entry';
   @override
   String get yourStory => 'La tua Storia';
   @override
@@ -1355,7 +1355,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get newMembersNeedApproval => 'I nuovi membri necessitano di approvazione';
   @override
-  String get artTheftPlagiarism => 'Furto d\\'arte / Plagio';
+  String get artTheftPlagiarism => 'Furto d\'arte / Plagio';
   @override
   String get askCommunityHint => 'Chiedi alla comunità';
   @override
@@ -1445,11 +1445,11 @@ class AppStringsIt implements AppStrings {
   @override
   String get conversationRemovedFromList => 'La conversazione verrà rimossa dalla tua lista.';
   @override
-  String get couldNotAcceptInvite => 'Impossibile accettare l\\'invito ora.';
+  String get couldNotAcceptInvite => 'Impossibile accettare l\'invito ora.';
   @override
   String get couldNotConfirmParticipation => 'Impossibile confermare la tua partecipazione a questa chat.';
   @override
-  String get couldNotProcessSubscription => 'Impossibile elaborare l\\'abbonamento.';
+  String get couldNotProcessSubscription => 'Impossibile elaborare l\'abbonamento.';
   @override
   String get createNewPostLabel => 'Crea nuovo post';
   @override
@@ -1465,7 +1465,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get dailyCheckInBarDesc => 'Barra del check-in giornaliero con serie';
   @override
-  String get describeActionReason => 'Descrivi il motivo dell\\'azione...';
+  String get describeActionReason => 'Descrivi il motivo dell\'azione...';
   @override
   String get disableProfileCommentsSetting => 'Disabilita commenti sul profilo';
   @override
@@ -1491,9 +1491,9 @@ class AppStringsIt implements AppStrings {
   @override
   String get errorChangingPin => 'Errore nella modifica del pin.';
   @override
-  String get errorExecutingActionRetry => 'Errore nell\\'esecuzione dell\\'azione. Riprova.';
+  String get errorExecutingActionRetry => 'Errore nell\'esecuzione dell\'azione. Riprova.';
   @override
-  String get errorLoadingAd => 'Errore nel caricamento dell\\'annuncio. Riprova.';
+  String get errorLoadingAd => 'Errore nel caricamento dell\'annuncio. Riprova.';
   @override
   String get exclusiveBadgeDesc => 'Badge profilo esclusivo';
   @override
@@ -1539,15 +1539,15 @@ class AppStringsIt implements AppStrings {
   @override
   String get iconImageUrl => 'URL immagine icona';
   @override
-  String get identityFraud => 'Frode d\\'identità';
+  String get identityFraud => 'Frode d\'identità';
   @override
-  String get informActionReasonLabel => 'Informa il motivo dell\\'azione';
+  String get informActionReasonLabel => 'Informa il motivo dell\'azione';
   @override
   String get interactionsAppearHere => 'Quando qualcuno interagisce con te,\napparirà qui';
   @override
   String get invalidDataMsg => 'Dati non validi';
   @override
-  String get invalidReference => 'Riferimento non valido. L\\'elemento potrebbe essere stato rimosso.';
+  String get invalidReference => 'Riferimento non valido. L\'elemento potrebbe essere stato rimosso.';
   @override
   String get invalidValue => 'Valore non valido.';
   @override
@@ -1579,7 +1579,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get linksInGeneralSection => 'Questi link appaiono nella sezione "Generale" del menu laterale della comunità. Trascina per riordinare.';
   @override
-  String get loginToAcceptInvite => 'Accedi per accettare l\\'invito.';
+  String get loginToAcceptInvite => 'Accedi per accettare l\'invito.';
   @override
   String get max10000Chars => 'Massimo 10.000 caratteri';
   @override
@@ -1639,7 +1639,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get visualCustomization => 'Personalizzazione Visiva';
   @override
-  String get waitingForHostVideo => 'In attesa che l\\'host aggiunga un video...';
+  String get waitingForHostVideo => 'In attesa che l\'host aggiunga un video...';
   @override
   String get warningsStrikesActions => 'Avvertimenti, strike e azioni sui tuoi contenuti';
   @override
@@ -1703,7 +1703,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get defaultGuidelines => '1. Sii rispettoso verso tutti i membri\n2. Non fare spam o flood\n3. Mantieni i contenuti pertinenti alla comunità\n4. Non condividere informazioni personali';
   @override
-  String get defaultProhibitedContent => '• Contenuti NSFW / Espliciti\n• Bullismo o molestie\n• Furto d\\'arte\n• Pubblicità non autorizzata\n• Contenuti discriminatori';
+  String get defaultProhibitedContent => '• Contenuti NSFW / Espliciti\n• Bullismo o molestie\n• Furto d\'arte\n• Pubblicità non autorizzata\n• Contenuti discriminatori';
   @override
   String get defaultRoles => '• Leader: Gestisce la comunità e modera i contenuti\n• Curatore: Assiste nella moderazione e nella cura dei wiki\n• Membro: Partecipa attivamente alla comunità';
   @override
@@ -1861,7 +1861,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get errorUnlinking => 'Errore nello scollegamento. Riprova.';
   @override
-  String get errorForwarding => 'Errore nell\\'inoltro. Riprova.';
+  String get errorForwarding => 'Errore nell\'inoltro. Riprova.';
   @override
   String get errorPublishing2 => 'Errore di pubblicazione. Riprova.';
   @override
@@ -1913,7 +1913,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get deleteAccount => 'Elimina account';
   @override
-  String get deleteAccountConfirm =>
+  String get deleteAccountConfirm => 'Are you sure you want to delete your account? This action cannot be undone.';
   @override
   String get logoutConfirm => 'Sei sicuro di voler effettuare il logout?';
   @override
@@ -2271,7 +2271,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get writeOnWall => 'Scrivi sul muro...';
   @override
-  String get accountLinked => 'Account ${provider.name} collegato con successo!';
+  String get accountLinked => 'Accountcollegato con successo!';
   @override
   String get active2 => 'Attivo';
   @override
@@ -2307,7 +2307,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get android => 'Android';
   @override
-  String get androidVersion => 'Android ${Platform.operatingSystemVersion}';
+  String get androidVersion => 'Android';
   @override
   String get animeManga => 'Anime & Manga';
   @override
@@ -2329,15 +2329,15 @@ class AppStringsIt implements AppStrings {
   @override
   String get audio2 => 'Audio';
   @override
-  String get authError => 'Errore di autenticazione: ${error.message}';
+  String get authError => 'Errore di autenticazione:';
   @override
-  String get averageRating => 'Media: ${_avgRating.toStringAsFixed(1)} ($_totalRatings valutazioni)';
+  String get averageRating => 'Average rating';
   @override
   String get bannedUsers => 'Bannati';
   @override
   String get bannedUsersCount => 'Utenti bannati';
   @override
-  String get blockedOnDate => 'Bloccato il ${blockedAt.day}/${blockedAt.month}/${blockedAt.year}';
+  String get blockedOnDate => 'Bloccato il';
   @override
   String get blockedUsers2 => 'Utenti bloccati';
   @override
@@ -2349,7 +2349,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get bullying => 'Bullismo';
   @override
-  String get byAuthor => 'Di ${author[';
+  String get byAuthor => 'By ';
   @override
   String get cacheCleared2 => 'Cache svuotata con successo!';
   @override
@@ -2591,11 +2591,11 @@ class AppStringsIt implements AppStrings {
   @override
   String get levelUpAlert => 'LIVELLO SUPERATO!';
   @override
-  String get linkProviderError => 'Errore nel collegare ${provider.name}. Per favore riprova.';
+  String get linkProviderError => 'Errore nel collegare. Per favore riprova.';
   @override
   String get linux => 'Linux';
   @override
-  String get linuxVersion => 'Linux ${Platform.operatingSystemVersion}';
+  String get linuxVersion => 'Linux';
   @override
   String get loadMoreError => 'Errore nel caricamento di altri elementi';
   @override
@@ -3555,8 +3555,7 @@ class AppStringsIt implements AppStrings {
   String get emailSameAsCurrent => 'Questa è già la tua email attuale.';
   // AMINO ID VALIDATION
   @override
-  @override
-  String get aminoIdInvalidChars => 'Sono consentiti solo lettere, numeri e underscore.';
+    String get aminoIdInvalidChars => 'Sono consentiti solo lettere, numeri e underscore.';
     // REPOST
   @override
   String get repost => 'Repost';

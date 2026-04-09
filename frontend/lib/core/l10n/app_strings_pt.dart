@@ -1530,7 +1530,7 @@ class AppStringsPt implements AppStrings {
 
   // PASS 3 — AUTO-GENERATED
   @override
-  String get accountLinked => 'Conta ${provider.name} vinculada com sucesso!';
+  String get accountLinked => 'Contavinculada com sucesso!';
   @override
   String get active2 => 'Ativas';
   @override
@@ -1569,7 +1569,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get android => 'Android';
   @override
-  String get androidVersion => 'Android ${Platform.operatingSystemVersion}';
+  String get androidVersion => 'Android';
   @override
   String get animeManga => 'Anime & Mangá';
   @override
@@ -1591,15 +1591,15 @@ class AppStringsPt implements AppStrings {
   @override
   String get audio2 => 'Áudio';
   @override
-  String get authError => 'Erro de autenticação: ${error.message}';
+  String get authError => 'Erro de autenticação:';
   @override
-  String get averageRating => 'Média: ${_avgRating.toStringAsFixed(1)} ($_totalRatings avaliações)';
+  String get averageRating => 'Average rating';
   @override
   String get bannedUsers => 'Banidos';
   @override
   String get bannedUsersCount => 'Usuários banidos';
   @override
-  String get blockedOnDate => 'Bloqueado em ${blockedAt.day}/${blockedAt.month}/${blockedAt.year}';
+  String get blockedOnDate => 'Bloqueado em';
   @override
   String get blockedUsers2 => 'Usuários Bloqueados';
   @override
@@ -1612,7 +1612,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get bullying => 'Bullying';
   @override
-  String get byAuthor => 'Por ${author[';
+  String get byAuthor => 'By ';
   @override
   String get cacheCleared2 => 'Cache limpo com sucesso!';
   @override
@@ -1863,11 +1863,11 @@ class AppStringsPt implements AppStrings {
   @override
   String get levelUpAlert => 'SUBIU DE NÍVEL!';
   @override
-  String get linkProviderError => 'Erro ao vincular ${provider.name}. Tente novamente.';
+  String get linkProviderError => 'Erro ao vincular. Tente novamente.';
   @override
   String get linux => 'Linux';
   @override
-  String get linuxVersion => 'Linux ${Platform.operatingSystemVersion}';
+  String get linuxVersion => 'Linux';
   @override
   String get loadMoreError => 'Erro ao carregar mais itens';
   @override
@@ -2105,7 +2105,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get somethingWentWrong2 => 'Algo deu errado. Tente novamente.';
   @override
-  String get stepProgress => 'Passo ${_currentStep + 1} de 4';
+  String get stepProgress => 'Passo';
   @override
   String get sticker => 'Sticker';
   @override
@@ -2140,7 +2140,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get total => 'Total';
   @override
-  String get totalCheckIns => 'Total: $checkInDays check-ins';
+  String get totalCheckIns => 'Total:check-ins';
   @override
   String get totalCheckIns2 => 'Check-ins totais';
   @override
@@ -2176,7 +2176,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get value => 'Valor';
   @override
-  String get valueRange => 'Deve ser entre $min e $max';
+  String get valueRange => 'Deve ser entre';
   @override
   String get valueRequired => 'Valor é obrigatório';
   @override
@@ -2222,7 +2222,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get windows => 'Windows';
   @override
-  String get windowsVersion => 'Windows ${Platform.operatingSystemVersion}';
+  String get windowsVersion => 'Windows';
   @override
   String get wise => 'Sábio';
   @override
@@ -2236,7 +2236,7 @@ Use ** para negrito';
   @override
   String get writeWhatYouLike => 'Escreva o que você gosta...';
   @override
-  String get yourEntry => 'Sua entrada "${entry["';
+  String get yourEntry => 'Your entry';
   @override
   String get yourStory => 'Seu Story';
 

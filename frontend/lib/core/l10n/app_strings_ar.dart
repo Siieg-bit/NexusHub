@@ -1241,7 +1241,7 @@ class AppStringsAr implements AppStrings {
   @override
   String get somethingWentWrong2 => 'حدث خطأ ما. يرجى المحاولة مرة أخرى.';
   @override
-  String get stepProgress => 'الخطوة ${_currentStep + 1} من 4';
+  String get stepProgress => 'الخطوة';
   @override
   String get sticker => 'ملصق';
   @override
@@ -1273,7 +1273,7 @@ class AppStringsAr implements AppStrings {
   @override
   String get total => 'الإجمالي';
   @override
-  String get totalCheckIns => 'الإجمالي: $checkInDays تسجيلات حضور';
+  String get totalCheckIns => 'الإجمالي:تسجيلات حضور';
   @override
   String get totalCheckIns2 => 'إجمالي تسجيلات الحضور';
   @override
@@ -1309,7 +1309,7 @@ class AppStringsAr implements AppStrings {
   @override
   String get value => 'القيمة';
   @override
-  String get valueRange => 'يجب أن يكون بين $min و $max';
+  String get valueRange => 'يجب أن يكون بين';
   @override
   String get valueRequired => 'القيمة مطلوبة';
   @override
@@ -1355,7 +1355,7 @@ class AppStringsAr implements AppStrings {
   @override
   String get windows => 'Windows';
   @override
-  String get windowsVersion => 'Windows ${Platform.operatingSystemVersion}';
+  String get windowsVersion => 'Windows';
   @override
   String get wise => 'حكيم';
   @override
@@ -1365,7 +1365,7 @@ class AppStringsAr implements AppStrings {
   @override
   String get writeWhatYouLike => 'اكتب ما يعجبك...';
   @override
-  String get yourEntry => 'إدخالك "${entry["';
+  String get yourEntry => 'Your entry';
   @override
   String get yourStory => 'قصتك';
   @override
@@ -1711,7 +1711,7 @@ class AppStringsAr implements AppStrings {
   @override
   String get android => 'Android';
   @override
-  String get androidVersion => 'Android ${Platform.operatingSystemVersion}';
+  String get androidVersion => 'Android';
   @override
   String get animeManga => 'أنمي ومانجا';
   @override
@@ -1733,15 +1733,15 @@ class AppStringsAr implements AppStrings {
   @override
   String get audio2 => 'صوت';
   @override
-  String get authError => 'خطأ في المصادقة: ${error.message}';
+  String get authError => 'خطأ في المصادقة:';
   @override
-  String get averageRating => 'المتوسط: ${_avgRating.toStringAsFixed(1)} ($_totalRatings تقييمات)';
+  String get averageRating => 'Average rating';
   @override
   String get bannedUsers => 'المستخدمون المحظورون';
   @override
   String get bannedUsersCount => 'المستخدمون المحظورون';
   @override
-  String get blockedOnDate => 'تم الحظر في ${blockedAt.day}/${blockedAt.month}/${blockedAt.year}';
+  String get blockedOnDate => 'تم الحظر في';
   @override
   String get blockedUsers2 => 'المستخدمون المحظورون';
   @override
@@ -1753,7 +1753,7 @@ class AppStringsAr implements AppStrings {
   @override
   String get bullying => 'التنمر';
   @override
-  String get byAuthor => 'بواسطة ${author[';
+  String get byAuthor => 'By ';
   @override
   String get cacheCleared2 => 'تم مسح ذاكرة التخزين المؤقت بنجاح!';
   @override
@@ -3079,7 +3079,7 @@ class AppStringsAr implements AppStrings {
   @override
   String get termsOfService => 'شروط الخدمة';
   @override
-  String get deleteAccountConfirm =>
+  String get deleteAccountConfirm => 'Are you sure you want to delete your account? This action cannot be undone.';
   @override
   String get logoutConfirm => 'هل أنت متأكد أنك تريد تسجيل الخروج؟';
   @override
@@ -3399,7 +3399,7 @@ class AppStringsAr implements AppStrings {
   @override
   String get writeOnWall => 'اكتب على الحائط...';
   @override
-  String get accountLinked => 'تم ربط الحساب ${provider.name} بنجاح!';
+  String get accountLinked => 'تم ربط الحساببنجاح!';
   @override
   String get active2 => 'نشط';
   @override
@@ -3429,11 +3429,11 @@ class AppStringsAr implements AppStrings {
   @override
   String get levelUpAlert => 'ارتقاء بالمستوى!';
   @override
-  String get linkProviderError => 'خطأ في ربط ${provider.name}. يرجى المحاولة مرة أخرى.';
+  String get linkProviderError => 'خطأ في ربط. يرجى المحاولة مرة أخرى.';
   @override
   String get linux => 'لينكس';
   @override
-  String get linuxVersion => 'لينكس ${Platform.operatingSystemVersion}';
+  String get linuxVersion => 'لينكس';
   @override
   String get loadMoreError => 'خطأ في تحميل المزيد من العناصر';
   @override
@@ -4347,8 +4347,7 @@ class AppStringsAr implements AppStrings {
   String get emailSameAsCurrent => 'هذا هو بريدك الإلكتروني الحالي بالفعل.';
   // AMINO ID VALIDATION
   @override
-  @override
-  String get aminoIdInvalidChars => 'يُسمح فقط بالأحرف والأرقام والشرطة السفلية.';
+    String get aminoIdInvalidChars => 'يُسمح فقط بالأحرف والأرقام والشرطة السفلية.';
     // REPOST
   @override
   String get repost => 'Repost';

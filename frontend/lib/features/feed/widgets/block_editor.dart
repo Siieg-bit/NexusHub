@@ -152,6 +152,7 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
   }
 
   Future<void> _pickImageForBlock(int index) async {
+    final s = ref.read(stringsProvider);
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
     if (!mounted) return;
@@ -388,6 +389,7 @@ class _BlockWidget extends ConsumerWidget {
   }
 
   Widget _buildContent(BuildContext context) {
+    final s = ref.read(stringsProvider);
     final r = context.r;
     switch (block.type) {
       case BlockType.text:

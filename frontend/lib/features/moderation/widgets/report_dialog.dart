@@ -109,6 +109,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
   ];
 
   Future<void> _submit() async {
+    final s = ref.read(stringsProvider);
     if (_selectedType == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text(s.selectReportType)),

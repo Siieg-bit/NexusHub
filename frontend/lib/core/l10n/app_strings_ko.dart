@@ -1325,7 +1325,7 @@ class AppStringsKo implements AppStrings {
   @override
   String get somethingWentWrong2 => '문제가 발생했습니다. 다시 시도하세요.';
   @override
-  String get stepProgress => '4단계 중 ${_currentStep + 1}단계';
+  String get stepProgress => '4단계 중';
   @override
   String get sticker => '스티커';
   @override
@@ -1357,7 +1357,7 @@ class AppStringsKo implements AppStrings {
   @override
   String get total => '총';
   @override
-  String get totalCheckIns => '총: $checkInDays 체크인';
+  String get totalCheckIns => '총:체크인';
   @override
   String get totalCheckIns2 => '총 체크인';
   @override
@@ -1367,7 +1367,7 @@ class AppStringsKo implements AppStrings {
   @override
   String get tuesday => '화';
   @override
-  String get typeDeleteConfirm => '계정을 영구적으로 삭제하려면
+  String get typeDeleteConfirm => '계정을 영구적으로 삭제하려면';
   @override
   String get typeDeleteToConfirmAlt => 'DELETE를 입력하여 확인';
   @override
@@ -1391,7 +1391,7 @@ class AppStringsKo implements AppStrings {
   @override
   String get value => '값';
   @override
-  String get valueRange => '$min에서 $max 사이여야 합니다';
+  String get valueRange => '사이여야 합니다';
   @override
   String get valueRequired => '값은 필수입니다';
   @override
@@ -1437,7 +1437,7 @@ class AppStringsKo implements AppStrings {
   @override
   String get windows => 'Windows';
   @override
-  String get windowsVersion => 'Windows ${Platform.operatingSystemVersion}';
+  String get windowsVersion => 'Windows';
   @override
   String get wise => '현명함';
   @override
@@ -1447,7 +1447,7 @@ class AppStringsKo implements AppStrings {
   @override
   String get writeWhatYouLike => '좋아하는 것을 작성하세요...';
   @override
-  String get yourEntry => '회원님의 항목 "${entry["';
+  String get yourEntry => 'Your entry';
   @override
   String get yourStory => '내 스토리';
   @override
@@ -2189,7 +2189,7 @@ class AppStringsKo implements AppStrings {
   @override
   String get privacyPolicy => '개인정보 처리방침';
   @override
-  String get deleteAccountConfirm => '';
+  String get deleteAccountConfirm => '계정을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.';
   @override
   String get logoutConfirm => '로그아웃 하시겠습니까?';
   @override
@@ -2499,7 +2499,7 @@ class AppStringsKo implements AppStrings {
   @override
   String get writeOnWall => '벽에 글쓰기...';
   @override
-  String get accountLinked => '계정 ${provider.name}이(가) 성공적으로 연결되었습니다!';
+  String get accountLinked => '계정이(가) 성공적으로 연결되었습니다!';
   @override
   String get active2 => '활성';
   @override
@@ -2535,7 +2535,7 @@ class AppStringsKo implements AppStrings {
   @override
   String get android => '안드로이드';
   @override
-  String get androidVersion => 'Android ${Platform.operatingSystemVersion}';
+  String get androidVersion => 'Android';
   @override
   String get animeManga => '애니메이션 & 만화';
   @override
@@ -2557,15 +2557,15 @@ class AppStringsKo implements AppStrings {
   @override
   String get audio2 => '오디오';
   @override
-  String get authError => '인증 오류: ${error.message}';
+  String get authError => '인증 오류:';
   @override
-  String get averageRating => '평균: ${_avgRating.toStringAsFixed(1)} ($_totalRatings 평가)';
+  String get averageRating => 'Average rating';
   @override
   String get bannedUsers => '차단됨';
   @override
   String get bannedUsersCount => '차단된 사용자';
   @override
-  String get blockedOnDate => '${blockedAt.day}/${blockedAt.month}/${blockedAt.year}에 차단됨';
+  String get blockedOnDate => '에 차단됨';
   @override
   String get blockedUsers2 => '차단된 사용자';
   @override
@@ -2577,7 +2577,7 @@ class AppStringsKo implements AppStrings {
   @override
   String get bullying => '괴롭힘';
   @override
-  String get byAuthor => '${author[';
+  String get byAuthor => 'By ';
   @override
   String get cacheCleared2 => '캐시가 성공적으로 삭제되었습니다!';
   @override
@@ -2819,11 +2819,11 @@ class AppStringsKo implements AppStrings {
   @override
   String get levelUpAlert => '레벨 업!';
   @override
-  String get linkProviderError => '${provider.name} 연결 중 오류가 발생했습니다. 다시 시도해주세요.';
+  String get linkProviderError => '연결 중 오류가 발생했습니다. 다시 시도해주세요.';
   @override
   String get linux => '리눅스';
   @override
-  String get linuxVersion => '리눅스 ${Platform.operatingSystemVersion}';
+  String get linuxVersion => '리눅스';
   @override
   String get loadMoreError => '더 많은 항목을 불러오는 중 오류가 발생했습니다';
   @override
@@ -4043,8 +4043,7 @@ class AppStringsKo implements AppStrings {
   String get emailSameAsCurrent => '이미 현재 이메일 주소입니다.';
   // AMINO ID VALIDATION
   @override
-  @override
-  String get aminoIdInvalidChars => '영문자, 숫자, 밑줄만 허용됩니다.';
+    String get aminoIdInvalidChars => '영문자, 숫자, 밑줄만 허용됩니다.';
     // REPOST
   @override
   String get repost => 'Repost';

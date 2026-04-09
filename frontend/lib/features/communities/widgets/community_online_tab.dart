@@ -301,7 +301,7 @@ class _HappeningSection extends ConsumerWidget {
 // =============================================================================
 // SEÇÃO 2 — Members Online (avatares com indicador verde)
 // =============================================================================
-class _MembersOnlineSection extends StatelessWidget {
+class _MembersOnlineSection extends ConsumerWidget {
   final String communityId;
   final List<Map<String, dynamic>> members;
   final Set<String> onlineUserIds;
@@ -313,7 +313,7 @@ class _MembersOnlineSection extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
 
@@ -461,7 +461,7 @@ class _MembersOnlineSection extends StatelessWidget {
 // =============================================================================
 // SEÇÃO 3 — Browsing (navegando agora)
 // =============================================================================
-class _BrowsingSection extends StatelessWidget {
+class _BrowsingSection extends ConsumerWidget {
   final String communityId;
   final List<Map<String, dynamic>> members;
   final Set<String> onlineUserIds;
@@ -473,7 +473,7 @@ class _BrowsingSection extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
 
@@ -570,7 +570,7 @@ class _BrowsingSection extends StatelessWidget {
 // =============================================================================
 // SEÇÃO 4 — All Members (Leaders + Recently Joined)
 // =============================================================================
-class _AllMembersSection extends StatelessWidget {
+class _AllMembersSection extends ConsumerWidget {
   final CommunityModel community;
   final List<Map<String, dynamic>> members;
   final Set<String> onlineUserIds;
@@ -582,7 +582,7 @@ class _AllMembersSection extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     final communityId = community.id;
@@ -679,7 +679,7 @@ class _AllMembersSection extends StatelessWidget {
 // =============================================================================
 // ROW de membro individual
 // =============================================================================
-class _MemberRow extends StatelessWidget {
+class _MemberRow extends ConsumerWidget {
   final String communityId;
   final Map<String, dynamic> member;
   final Set<String> onlineUserIds;
@@ -691,7 +691,7 @@ class _MemberRow extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     final p = member['profiles'] as Map<String, dynamic>? ?? {};
@@ -820,7 +820,7 @@ class _MemberRow extends StatelessWidget {
 // =============================================================================
 // BOTÃO FOLLOW
 // =============================================================================
-class _FollowButton extends StatefulWidget {
+class _FollowButton extends ConsumerStatefulWidget {
   final String communityId;
   final String targetUserId;
 
@@ -833,7 +833,7 @@ class _FollowButton extends StatefulWidget {
   State<_FollowButton> createState() => _FollowButtonState();
 }
 
-class _FollowButtonState extends State<_FollowButton> {
+class _FollowButtonState extends ConsumerState<_FollowButton> {
   bool _following = false;
   bool _loading = false;
 
@@ -935,14 +935,14 @@ class _FollowButtonState extends State<_FollowButton> {
 // =============================================================================
 // AVATAR STACK (3 avatares sobrepostos)
 // =============================================================================
-class _AvatarStack extends StatelessWidget {
+class _AvatarStack extends ConsumerWidget {
   final List<String?> avatars;
   final double size;
 
   const _AvatarStack({required this.avatars, required this.size});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final visible = avatars.take(3).toList();
     if (visible.isEmpty) return const SizedBox.shrink();
@@ -1023,7 +1023,7 @@ void _showMemberSheet(
   );
 }
 
-class _MemberBottomSheet extends StatelessWidget {
+class _MemberBottomSheet extends ConsumerWidget {
   final String communityId;
   final String userId;
   final String nickname;
@@ -1041,7 +1041,7 @@ class _MemberBottomSheet extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
 

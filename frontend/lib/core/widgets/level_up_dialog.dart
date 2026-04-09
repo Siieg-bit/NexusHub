@@ -28,7 +28,7 @@ class LevelUpDialog {
     return showGeneralDialog(
       context: context,
       barrierDismissible: true,
-      barrierLabel: s.levelUp2,
+      barrierLabel: getStrings().levelUp2,
       barrierColor: Colors.black.withValues(alpha: 0.85),
       transitionDuration: const Duration(milliseconds: 500),
       transitionBuilder: (context, animation, secondaryAnimation, child) {

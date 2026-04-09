@@ -120,6 +120,7 @@ class _StoryCarouselState extends ConsumerState<StoryCarousel> {
   }
 
   Widget _buildCreateButton(BuildContext context) {
+    final s = ref.read(stringsProvider);
     final r = context.r;
     return Padding(
       padding: EdgeInsets.only(right: r.s(12)),

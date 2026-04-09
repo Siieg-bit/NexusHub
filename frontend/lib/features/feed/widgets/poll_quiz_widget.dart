@@ -534,6 +534,7 @@ class _QuizDetailWidgetState extends ConsumerState<QuizDetailWidget> {
   }
 
   Widget _buildQuestion() {
+    final s = ref.read(stringsProvider);
     final r = context.r;
     final q = _questions[_currentQuestion];
     final questionText = (q['question_text'] as String?) ??

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../config/app_theme.dart';
 import '../l10n/locale_provider.dart';
 import '../utils/responsive.dart';
+import '../l10n/app_strings.dart';
 
 /// Top Bar do Amino original — réplica pixel-perfect.
 ///
