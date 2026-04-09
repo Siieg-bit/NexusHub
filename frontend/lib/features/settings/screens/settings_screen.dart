@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/providers/theme_provider.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/services/cache_service.dart';
 import '../../../core/utils/responsive.dart';
 
@@ -69,7 +70,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 await SupabaseService.rpc('request_data_export');
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
+                    SnackBar(
                         content: Text(
                             s.requestSentNotification)),
                   );
@@ -262,7 +263,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           content: TextField(
             controller: passwordCtrl,
             obscureText: true,
-            decoration: const InputDecoration(hintText: s.currentPassword),
+            decoration: InputDecoration(hintText: s.currentPassword),
           ),
           actions: [
             TextButton(
@@ -283,7 +284,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       } catch (_) {
         if (mounted)
           ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text(s.incorrectPassword)));
+              .showSnackBar(SnackBar(content: Text(s.incorrectPassword)));
         return;
       }
       await SupabaseService.rpc('delete_user_account');
@@ -296,6 +297,181 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         );
       }
     }
+  }
+
+  /// Fluxo completo de troca de email:
+  /// 1. Pede a senha atual para reautenticar
+  /// 2. Pede o novo email com validação de formato
+  /// 3. Chama auth.updateUser — Supabase envia confirmação para AMBOS os emails
+  Future<void> _showChangeEmailDialog(
+      BuildContext context, AppStrings s, Responsive r) async {
+    final currentEmail =
+        SupabaseService.client.auth.currentUser?.email ?? '';
+
+    // Etapa 1: reautenticação com senha
+    final passwordCtrl = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: context.surfaceColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(r.s(16)),
+        ),
+        title: Text(s.confirmYourPassword,
+            style: TextStyle(
+                color: context.textPrimary, fontWeight: FontWeight.w800)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(s.emailChangeReauthInfo,
+                style: TextStyle(color: Colors.grey[500], fontSize: 13)),
+            SizedBox(height: r.s(12)),
+            TextField(
+              controller: passwordCtrl,
+              obscureText: true,
+              autofocus: true,
+              style: TextStyle(color: context.textPrimary),
+              decoration: InputDecoration(
+                hintText: s.currentPassword,
+                hintStyle: TextStyle(color: Colors.grey[600]),
+                filled: true,
+                fillColor: context.scaffoldBg,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(r.s(12)),
+                  borderSide: BorderSide.none,
+                ),
+                prefixIcon:
+                    Icon(Icons.lock_outline_rounded, color: Colors.grey[500]),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryColor),
+            child: Text(s.confirm),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+    if (passwordCtrl.text.isEmpty) return;
+
+    // Verificar senha
+    try {
+      await SupabaseService.client.auth
+          .signInWithPassword(email: currentEmail, password: passwordCtrl.text);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(s.incorrectPassword),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppTheme.errorColor,
+      ));
+      return;
+    } finally {
+      passwordCtrl.dispose();
+    }
+
+    if (!mounted) return;
+
+    // Etapa 2: pedir novo email
+    final emailCtrl = TextEditingController();
+    final emailFormKey = GlobalKey<FormState>();
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: context.surfaceColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(r.s(16)),
+        ),
+        title: Text(s.changeEmail,
+            style: TextStyle(
+                color: context.textPrimary, fontWeight: FontWeight.w800)),
+        content: Form(
+          key: emailFormKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(s.emailChangeDualConfirmInfo,
+                  style: TextStyle(color: Colors.grey[500], fontSize: 13)),
+              SizedBox(height: r.s(12)),
+              TextFormField(
+                controller: emailCtrl,
+                keyboardType: TextInputType.emailAddress,
+                autofocus: true,
+                style: TextStyle(color: context.textPrimary),
+                decoration: InputDecoration(
+                  hintText: s.newEmail,
+                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  filled: true,
+                  fillColor: context.scaffoldBg,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(r.s(12)),
+                    borderSide: BorderSide.none,
+                  ),
+                  prefixIcon:
+                      Icon(Icons.email_outlined, color: Colors.grey[500]),
+                ),
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return s.requiredField;
+                  final emailRegex =
+                      RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+                  if (!emailRegex.hasMatch(v.trim())) return s.invalidEmail;
+                  if (v.trim() == currentEmail) return s.emailSameAsCurrent;
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(s.cancel, style: TextStyle(color: Colors.grey[500])),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (emailFormKey.currentState?.validate() != true) return;
+              try {
+                await SupabaseService.client.auth.updateUser(
+                  UserAttributes(email: emailCtrl.text.trim()),
+                );
+                if (ctx.mounted) Navigator.pop(ctx);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(s.emailChangeSentBoth),
+                    behavior: SnackBarBehavior.floating,
+                    duration: const Duration(seconds: 5),
+                  ));
+                }
+              } catch (e) {
+                if (ctx.mounted) Navigator.pop(ctx);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(s.anErrorOccurredTryAgain),
+                    behavior: SnackBarBehavior.floating,
+                    backgroundColor: AppTheme.errorColor,
+                  ));
+                }
+              }
+            },
+            style:
+                ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryColor),
+            child: Text(s.save),
+          ),
+        ],
+      ),
+    );
+    emailCtrl.dispose();
   }
 
   Future<void> _loadProfile() async {
@@ -421,7 +597,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // ============================================================
                 // CONTA
                 // ============================================================
-                const _SectionLabel(title: s.account),
+                _SectionLabel(title: s.account),
                 _SettingsGroup(items: [
                   _SettingsItem(
                     icon: Icons.person_rounded,
@@ -433,81 +609,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     title: s.emailAndPassword,
                     subtitle:
                         SupabaseService.client.auth.currentUser?.email ?? '',
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        builder: (ctx) {
-                          final emailCtrl = TextEditingController(
-                            text: SupabaseService
-                                    .client.auth.currentUser?.email ??
-                                '',
-                          );
-                          return AlertDialog(
-                            backgroundColor: context.surfaceColor,
-                            title: Text(s.changeEmail,
-                                style: TextStyle(color: context.textPrimary)),
-                            content: TextField(
-                              controller: emailCtrl,
-                              style: TextStyle(color: context.textPrimary),
-                              decoration: InputDecoration(
-                                hintText: s.newEmail,
-                                hintStyle: TextStyle(color: Colors.grey[600]),
-                                filled: true,
-                                fillColor: context.scaffoldBg,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(r.s(12)),
-                                  borderSide: BorderSide.none,
-                                ),
-                              ),
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx),
-                                child: Text(s.cancel),
-                              ),
-                              ElevatedButton(
-                                onPressed: () async {
-                                  try {
-                                    await SupabaseService.client.auth
-                                        .updateUser(
-                                      UserAttributes(
-                                          email: emailCtrl.text.trim()),
-                                    );
-                                    if (ctx.mounted) Navigator.pop(ctx);
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                              'Email de confirma\u00e7\u00e3o enviado!'),
-                                          behavior: SnackBarBehavior.floating,
-                                        ),
-                                      );
-                                    }
-                                  } catch (e) {
-                                    if (ctx.mounted) Navigator.pop(ctx);
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                              s.anErrorOccurredTryAgain),
-                                          behavior: SnackBarBehavior.floating,
-                                        ),
-                                      );
-                                    }
-                                  }
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppTheme.primaryColor,
-                                ),
-                                child: Text(s.save),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
+                    onTap: () => _showChangeEmailDialog(context, s, r),
                   ),
                   _SettingsItem(
                     icon: Icons.link_rounded,
@@ -521,7 +623,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // ============================================================
                 // PREFERÊNCIAS
                 // ============================================================
-                const _SectionLabel(title: s.preferences),
+                _SectionLabel(title: s.preferences),
                 _SettingsGroup(items: [
                   _SettingsItem(
                     icon: Icons.notifications_rounded,
@@ -664,7 +766,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         await CacheService.clearAll();
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                            SnackBar(
                               content: Text(s.cacheCleared2),
                               behavior: SnackBarBehavior.floating,
                             ),
@@ -679,7 +781,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // ============================================================
                 // GAMIFICAÇÃO
                 // ============================================================
-                const _SectionLabel(title: s.gamification),
+                _SectionLabel(title: s.gamification),
                 _SettingsGroup(items: [
                   _SettingsItem(
                     icon: Icons.account_balance_wallet_rounded,
@@ -702,7 +804,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // ============================================================
                 // SEGURANÇA
                 // ============================================================
-                const _SectionLabel(title: s.security),
+                _SectionLabel(title: s.security),
                 _SettingsGroup(items: [
                   _SettingsItem(
                     icon: Icons.block_rounded,
@@ -788,7 +890,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 onPressed: () {
                                   Navigator.pop(ctx);
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
+                                    SnackBar(
                                       content: Text(
                                           'Bug reportado! Obrigado pelo feedback.'),
                                       behavior: SnackBarBehavior.floating,
@@ -836,7 +938,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // ============================================================
                 // DADOS
                 // ============================================================
-                const _SectionLabel(title: s.data),
+                _SectionLabel(title: s.data),
                 _SettingsGroup(items: [
                   _SettingsItem(
                     icon: Icons.download_rounded,
@@ -947,10 +1049,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 class _SectionLabel extends StatelessWidget {
   final String title;
   const _SectionLabel({required this.title});
-
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Padding(
       padding: EdgeInsets.only(bottom: r.s(8)),
