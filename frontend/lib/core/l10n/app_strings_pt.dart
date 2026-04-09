@@ -1706,17 +1706,17 @@ class AppStringsPt implements AppStrings {
   @override
   String get dedicated => 'Dedicado';
   @override
-  String get defaultFirebaseOptionsIosNotConfigured => 'DefaultFirebaseOptions have not been configured for ios - ';
+  String get defaultFirebaseOptionsIosNotConfigured => 'DefaultFirebaseOptions não foram configuradas para iOS - ';
   @override
-  String get defaultFirebaseOptionsLinuxNotConfigured => 'DefaultFirebaseOptions have not been configured for linux - ';
+  String get defaultFirebaseOptionsLinuxNotConfigured => 'DefaultFirebaseOptions não foram configuradas para Linux - ';
   @override
-  String get defaultFirebaseOptionsMacosNotConfigured => 'DefaultFirebaseOptions have not been configured for macos - ';
+  String get defaultFirebaseOptionsMacosNotConfigured => 'DefaultFirebaseOptions não foram configuradas para macOS - ';
   @override
-  String get defaultFirebaseOptionsNotSupported => 'DefaultFirebaseOptions are not supported for this platform.';
+  String get defaultFirebaseOptionsNotSupported => 'DefaultFirebaseOptions não são suportadas para esta plataforma.';
   @override
-  String get defaultFirebaseOptionsWebNotConfigured => 'DefaultFirebaseOptions have not been configured for web - ';
+  String get defaultFirebaseOptionsWebNotConfigured => 'DefaultFirebaseOptions não foram configuradas para web - ';
   @override
-  String get defaultFirebaseOptionsWindowsNotConfigured => 'DefaultFirebaseOptions have not been configured for windows - ';
+  String get defaultFirebaseOptionsWindowsNotConfigured => 'DefaultFirebaseOptions não foram configuradas para Windows - ';
   @override
   String get deleteAccount2 => 'Excluir Conta';
   @override
@@ -1780,7 +1780,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get exportMyData => 'Exportar Meus Dados';
   @override
-  String get failedToLoadData => 'Failed to load data.';
+  String get failedToLoadData => 'Falha ao carregar dados.';
   @override
   String get ffH => 'FF$h';
   @override
@@ -1821,7 +1821,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get highestStreak => 'Maior Streak';
   @override
-  String get home2 => 'Home';
+  String get home2 => 'Início';
   @override
   String get iap => 'IAP';
   @override
@@ -1859,9 +1859,9 @@ class AppStringsPt implements AppStrings {
   @override
   String get levelLabel => 'Nível $level';
   @override
-  String get levelUp2 => 'Level Up';
+  String get levelUp2 => 'Subiu de Nível';
   @override
-  String get levelUpAlert => 'LEVEL UP!';
+  String get levelUpAlert => 'SUBIU DE NÍVEL!';
   @override
   String get linkProviderError => 'Erro ao vincular ${provider.name}. Tente novamente.';
   @override
@@ -1877,13 +1877,13 @@ class AppStringsPt implements AppStrings {
   @override
   String get maxStreakRecord => 'Recorde: $maxStreak dias';
   @override
-  String get memesHumor => 'Memes & Humor';
+  String get memesHumor => 'Memes e Humor';
   @override
   String get messageDeleted2 => 'Mensagem apagada';
   @override
   String get messageLikeCommentAlerts => 'Receba alertas de mensagens, curtidas e comentários';
   @override
-  String get messagePlaceholder => 'Message...';
+  String get messagePlaceholder => 'Mensagem...';
   @override
   String get messagesToday => 'Mensagens hoje';
   @override
@@ -1957,7 +1957,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get notificationWhenReady => 'Você receberá uma notificação quando estiver pronto.';
   @override
-  String get offTopic => 'Off-Topic';
+  String get offTopic => 'Fora do Tópico';
   @override
   String get onlyFollowBack => 'Apenas quem eu sigo de volta';
   @override
@@ -2035,9 +2035,9 @@ class AppStringsPt implements AppStrings {
   @override
   String get rejectionReason => 'Motivo da rejeição';
   @override
-  String get renderFlex => 'A RenderFlex';
+  String get renderFlex => 'Um RenderFlex';
   @override
-  String get renderFlexOverflowed => 'RenderFlex overflowed';
+  String get renderFlexOverflowed => 'RenderFlex transbordou';
   @override
   String get reportedBy => 'Reportado por ${reporter?[';
   @override

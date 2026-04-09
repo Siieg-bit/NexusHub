@@ -3,12 +3,26 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'app_strings.dart';
 import 'app_strings_pt.dart';
 import 'app_strings_en.dart';
+import 'app_strings_ar.dart';
+import 'app_strings_de.dart';
+import 'app_strings_fr.dart';
+import 'app_strings_it.dart';
+import 'app_strings_ja.dart';
+import 'app_strings_ko.dart';
+import 'app_strings_ru.dart';
 import 'package:flutter/foundation.dart';
 
 /// Idiomas suportados pelo app.
 enum AppLocale {
   pt('pt', 'Português (BR)', '🇧🇷'),
-  en('en', 'English (US)', '🇺🇸');
+  en('en', 'English (US)', '🇺🇸'),
+  ar('ar', 'العربية', '🇸🇦'),
+  de('de', 'Deutsch', '🇩🇪'),
+  fr('fr', 'Français', '🇫🇷'),
+  it('it', 'Italiano', '🇮🇹'),
+  ja('ja', '日本語', '🇯🇵'),
+  ko('ko', '한국어', '🇰🇷'),
+  ru('ru', 'Русский', '🇷🇺');
 
   final String code;
   final String label;
@@ -22,6 +36,20 @@ enum AppLocale {
         return const AppStringsPt();
       case AppLocale.en:
         return const AppStringsEn();
+      case AppLocale.ar:
+        return const AppStringsAr();
+      case AppLocale.de:
+        return const AppStringsDe();
+      case AppLocale.fr:
+        return const AppStringsFr();
+      case AppLocale.it:
+        return const AppStringsIt();
+      case AppLocale.ja:
+        return const AppStringsJa();
+      case AppLocale.ko:
+        return const AppStringsKo();
+      case AppLocale.ru:
+        return const AppStringsRu();
     }
   }
 
