@@ -322,9 +322,9 @@ class _PostCardState extends ConsumerState<PostCard>
                     ),
                     // Role badges (Leader, Curator)
                     if (_post.author != null &&
-                        (_post.author?.level ?? 0) > 10) ...[
+                        (_post.authorLocalLevel ?? 0) > 10) ...[
                       SizedBox(width: r.s(6)),
-                      // Simulated role badge based on level
+                      // Role badge baseado no nível LOCAL da comunidade
                     ],
                   ],
                 ),
@@ -333,22 +333,22 @@ class _PostCardState extends ConsumerState<PostCard>
                 Row(
                   children: [
                     // Level badge (gradient pill)
-                    if (_post.author != null)
+                    if (_post.author != null && (_post.authorLocalLevel ?? 0) > 0)
                       Container(
                         padding: EdgeInsets.symmetric(
                             horizontal: r.s(6), vertical: 2),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              AppTheme.getLevelColor(_post.author?.level ?? 0),
-                              AppTheme.getLevelColor(_post.author?.level ?? 0)
+                              AppTheme.getLevelColor(_post.authorLocalLevel ?? 0),
+                              AppTheme.getLevelColor(_post.authorLocalLevel ?? 0)
                                   .withValues(alpha: 0.7),
                             ],
                           ),
                           borderRadius: BorderRadius.circular(r.s(10)),
                         ),
                         child: Text(
-                          'Lv.${_post.author?.level ?? 0}',
+                          s.lvBadge(_post.authorLocalLevel ?? 0),
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: r.fs(8),

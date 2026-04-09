@@ -150,15 +150,11 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
         }
       }
 
-      // Fallback: carregar do perfil global
-      final profileRes = await SupabaseService.table('profiles')
-          .select('reputation, level')
-          .eq('id', userId)
-          .maybeSingle();
-      if (profileRes != null) {
-        _reputation = profileRes['reputation'] as int? ?? 0;
-        _level = profileRes['level'] as int? ?? calculateLevel(_reputation);
-      }
+      // Sem communityId: nível/reputação são dados de comunidade, não globais.
+      // Manter valores padrão (0/1) — o widget de conquistas pode ser exibido
+      // sem dados de nível quando não há contexto de comunidade.
+      _reputation = 0;
+      _level = 1;
     } catch (_) {
       // Silenciar — dados de nível são opcionais
     }

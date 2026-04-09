@@ -506,7 +506,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
-                                        if (post.author != null) ...[
+                                        if (post.author != null && (post.authorLocalLevel ?? 0) > 0) ..[
                                           SizedBox(width: r.s(6)),
                                           Container(
                                             padding: EdgeInsets.symmetric(
@@ -516,9 +516,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                               gradient: LinearGradient(
                                                 colors: [
                                                   AppTheme.getLevelColor(
-                                                      post.author!.level),
+                                                      post.authorLocalLevel ?? 0),
                                                   AppTheme.getLevelColor(
-                                                          post.author!.level)
+                                                          post.authorLocalLevel ?? 0)
                                                       .withValues(alpha: 0.7),
                                                 ],
                                               ),
@@ -527,7 +527,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                                                       r.s(10)),
                                             ),
                                             child: Text(
-                                              'Lv.${post.author!.level}',
+                                              s.lvBadge(post.authorLocalLevel ?? 0),
                                               style: TextStyle(
                                                 color: Colors.white,
                                                 fontSize: r.fs(10),

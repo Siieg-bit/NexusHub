@@ -388,7 +388,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Text(
-                                        'lv',
+                                        s.drawerLvLabel,
                                         style: TextStyle(
                                           color: Colors.white
                                               .withValues(alpha: 0.85),

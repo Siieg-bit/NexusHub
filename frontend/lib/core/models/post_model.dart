@@ -40,6 +40,9 @@ class PostModel {
   final UserModel? author;
   final bool isLiked;
   final List<Map<String, dynamic>>? contentBlocks;
+  /// Nível LOCAL do autor na comunidade deste post.
+  /// Populado via community_members.local_level — NUNCA de profiles.level (global).
+  final int? authorLocalLevel;
 
   const PostModel({
     required this.id,
@@ -75,6 +78,7 @@ class PostModel {
     this.author,
     this.isLiked = false,
     this.contentBlocks,
+    this.authorLocalLevel,
   });
 
   factory PostModel.fromJson(Map<String, dynamic> json) {
@@ -128,6 +132,7 @@ class PostModel {
               ? UserModel.fromJson(json['author'] as Map<String, dynamic>)
               : null),
       isLiked: json['is_liked'] as bool? ?? false,
+      authorLocalLevel: json['author_local_level'] as int?,
       contentBlocks: (json['content_blocks'] as List<dynamic>?)
           ?.map((e) => Map<String, dynamic>.from(e as Map))
           .toList(),

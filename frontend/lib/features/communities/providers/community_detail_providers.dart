@@ -146,7 +146,7 @@ final communityMembersProvider =
         (ref, communityId) async {
   final response = await SupabaseService.table('community_members')
       .select(
-          '*, profiles!community_members_user_id_fkey(id, nickname, icon_url, level, online_status)')
+          '*, profiles!community_members_user_id_fkey(id, nickname, icon_url, online_status)')
       .eq('community_id', communityId)
       .order('role', ascending: false)
       .limit(50);
