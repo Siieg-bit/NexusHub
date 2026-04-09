@@ -46,7 +46,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
   List<Map<String, dynamic>> _userPosts = [];
   List<Map<String, dynamic>> _wikiEntries = [];
   List<Map<String, dynamic>> _savedPosts = [];
-  bool _isLoading = true;
+  bool _isInitialLoading = true;
   bool _savedPostsLoaded = false;
   bool _bioExpanded = false;
   final _wallController = TextEditingController();
@@ -64,7 +64,6 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
   }
 
   Future<void> _loadProfile() async {
-    if (mounted) setState(() => _isLoading = true);
     try {
       // Perfil global
       final userRes = await SupabaseService.table('profiles')
@@ -138,9 +137,12 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
       _followingCount = (followingRes as List?)?.length ?? 0;
 
       if (!mounted) return;
-      setState(() => _isLoading = false);
+      setState(() {
+        _isInitialLoading = false;
+        _savedPostsLoaded = false; // força recarregar posts salvos na próxima vez
+      });
     } catch (e) {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) setState(() => _isInitialLoading = false);
     }
   }
 
@@ -154,7 +156,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
   @override
   Widget build(BuildContext context) {
     final r = context.r;
-    if (_isLoading) {
+    if (_isInitialLoading) {
       return Scaffold(
         backgroundColor: context.scaffoldBg,
         body: Center(
