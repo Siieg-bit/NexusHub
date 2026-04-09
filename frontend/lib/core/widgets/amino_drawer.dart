@@ -39,10 +39,9 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
   late AnimationController _animController;
   bool _isOpen = false;
 
-  // Posição X onde o drag começou — usado para decidir se é drag de borda
-  double _dragStartX = 0.0;
-  // Se o drag atual foi iniciado como um drag de borda (para abrir)
-  bool _isDragging = false;
+  /// Largura da zona de borda esquerda que detecta swipe para abrir (px).
+  static const double _edgeDragWidth = 40.0;
+  bool _edgeDragActive = false;
 
   bool get isOpen => _isOpen;
 
@@ -79,36 +78,32 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
     }
   }
 
-  void _onDragStart(DragStartDetails details) {
-    _dragStartX = details.globalPosition.dx;
-    // Aceita drag se: drawer já aberto OU toque começou na borda esquerda (60px)
-    if (_isOpen || _dragStartX < 60.0) {
-      _isDragging = true;
-    } else {
-      _isDragging = false;
-    }
+  void _onHorizontalDragStart(DragStartDetails details) {
+    _edgeDragActive = !_isOpen && details.globalPosition.dx <= _edgeDragWidth;
   }
 
-  void _onDragUpdate(DragUpdateDetails details) {
-    if (!_isDragging) return;
+  void _onHorizontalDragUpdate(DragUpdateDetails details) {
     final delta = details.primaryDelta ?? 0;
-    _animController.value =
-        (_animController.value + delta / widget.maxSlide).clamp(0.0, 1.0);
+    if (_isOpen || _edgeDragActive) {
+      _animController.value =
+          (_animController.value + delta / widget.maxSlide).clamp(0.0, 1.0);
+    }
   }
 
-  void _onDragEnd(DragEndDetails details) {
-    if (!_isDragging) return;
-    _isDragging = false;
-    final velocity = details.primaryVelocity ?? 0;
-    if (velocity > 300) {
-      open();
-    } else if (velocity < -300) {
-      close();
-    } else if (_animController.value > 0.4) {
-      open();
-    } else {
-      close();
+  void _onHorizontalDragEnd(DragEndDetails details) {
+    if (_isOpen || _edgeDragActive) {
+      final velocity = details.primaryVelocity ?? 0;
+      if (velocity > 300) {
+        open();
+      } else if (velocity < -300) {
+        close();
+      } else if (_animController.value > 0.4) {
+        open();
+      } else {
+        close();
+      }
     }
+    _edgeDragActive = false;
   }
 
   @override
@@ -117,26 +112,56 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
     final effectiveMaxSlide = widget.maxSlide.clamp(0.0, screenWidth * 0.92);
 
     return GestureDetector(
-      // Captura drag horizontal em toda a tela — a lógica de borda
-      // é feita no _onDragStart pelo _dragStartX
-      onHorizontalDragStart: _onDragStart,
-      onHorizontalDragUpdate: _onDragUpdate,
-      onHorizontalDragEnd: _onDragEnd,
-      behavior: HitTestBehavior.translucent,
+      onHorizontalDragStart: _onHorizontalDragStart,
+      onHorizontalDragUpdate: _onHorizontalDragUpdate,
+      onHorizontalDragEnd: _onHorizontalDragEnd,
       child: Stack(
         children: [
-          // ── Conteúdo principal (não se move) ──────────────────────────
+          // ── Conteúdo principal (não se move) ──────────────────────────────────
           widget.child,
 
-          // ── Overlay escuro sobre o conteúdo quando aberto ─────────────
+          // ── Handle visual na borda esquerda (indicador de puxão) ───────
+          // Visível apenas quando o drawer está fechado.
+          // Estilo Amino: barra vertical fina semi-transparente.
+          AnimatedBuilder(
+            animation: _animController,
+            builder: (context, child) {
+              if (_animController.value > 0.05) {
+                return const SizedBox.shrink();
+              }
+              return child!;
+            },
+            child: Positioned(
+              left: 0,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: Container(
+                  width: 5.0,
+                  height: 48.0,
+                  margin: const EdgeInsets.only(left: 2.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.35),
+                    borderRadius: BorderRadius.circular(3.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 4.0,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // ── Overlay escuro sobre o conteúdo quando aberto ─────────────────
           AnimatedBuilder(
             animation: _animController,
             builder: (context, _) {
               if (_animController.value == 0) return const SizedBox.shrink();
               return GestureDetector(
                 onTap: close,
-                // Bloqueia taps no conteúdo quando o drawer está aberto
-                behavior: HitTestBehavior.opaque,
                 child: Container(
                   color: Colors.black
                       .withValues(alpha: 0.55 * _animController.value),
@@ -145,9 +170,10 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
             },
           ),
 
-          // ── Drawer (sobrepõe tudo, desliza da esquerda) ───────────────
-          // Usa Transform.translate 1:1 com o valor do controller.
-          // O easing é aplicado apenas via animateTo() em open()/close().
+          // ── Drawer (sobrepõe tudo, desliza da esquerda) ───────────────────
+          // Usa Transform.translate com valor linear do controller para que
+          // o drawer siga o dedo 1:1 durante o drag. O easing é aplicado
+          // apenas nas chamadas programáticas open()/close().
           AnimatedBuilder(
             animation: _animController,
             builder: (context, child) {

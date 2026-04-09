@@ -809,7 +809,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
               color: Colors.transparent,
               child: Container(
                 decoration: BoxDecoration(
-                  color: Theme.of(dialogCtx).scaffoldBackgroundColor,
+                  color: dialogCtx.scaffoldBg,
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(20.0),
                   ),
