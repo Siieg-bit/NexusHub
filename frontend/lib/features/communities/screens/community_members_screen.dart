@@ -34,6 +34,7 @@ class CommunityMembersScreen extends ConsumerWidget {
   const CommunityMembersScreen({super.key, required this.communityId});
 
   String _roleLabel(String role) {
+    final s = getStrings();
     switch (role) {
       case 'agent':
         return 'Agent';
@@ -237,7 +238,7 @@ class CommunityMembersScreen extends ConsumerWidget {
 // =============================================================================
 // SECTION HEADER
 // =============================================================================
-class _SectionHeader extends StatelessWidget {
+class _SectionHeader extends ConsumerWidget {
   final String title;
   final int count;
   final Color color;
@@ -249,7 +250,7 @@ class _SectionHeader extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Padding(
@@ -287,7 +288,7 @@ class _SectionHeader extends StatelessWidget {
 // =============================================================================
 // MEMBER TILE — Estilo Amino
 // =============================================================================
-class _MemberTile extends StatelessWidget {
+class _MemberTile extends ConsumerWidget {
   final int index;
   final Map<String, dynamic> member;
   final String Function(String) roleLabel;
@@ -303,7 +304,7 @@ class _MemberTile extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     final profile = member['profiles'] as Map<String, dynamic>? ?? {};

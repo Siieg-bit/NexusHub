@@ -36,6 +36,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   }
 
   Future<void> _handleSignup() async {
+    final s = getStrings();
     if (_formKey.currentState?.validate() != true) return;
     if (!_acceptedTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -453,7 +454,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 // AMINO TEXT FIELD — Input customizado no padrão Amino
 // ==============================================================================
 
-class _AminoTextField extends StatelessWidget {
+class _AminoTextField extends ConsumerWidget {
   final TextEditingController controller;
   final String hint;
   final IconData icon;
@@ -473,7 +474,7 @@ class _AminoTextField extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return TextFormField(

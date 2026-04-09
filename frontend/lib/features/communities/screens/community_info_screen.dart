@@ -96,6 +96,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
   }
 
   Future<void> _joinCommunity() async {
+    final s = getStrings();
     if (_isJoining) return;
     setState(() => _isJoining = true);
 
@@ -676,6 +677,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
   }
 
   String _languageLabel(String code) {
+    final s = getStrings();
     switch (code.toLowerCase()) {
       case 'pt':
         return s.portugueseLang;

@@ -403,7 +403,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 // AMINO TEXT FIELD — Input customizado no padrão Amino
 // ==============================================================================
 
-class _AminoTextField extends StatelessWidget {
+class _AminoTextField extends ConsumerWidget {
   final TextEditingController controller;
   final String hint;
   final IconData icon;
@@ -423,7 +423,7 @@ class _AminoTextField extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return TextFormField(

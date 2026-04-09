@@ -449,6 +449,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   // BANNER CAROUSEL — Estilo Amino (banner grande + dots)
   // ==========================================================================
   Widget _buildBannerCarousel() {
+    final s = getStrings();
     final r = context.r;
     // Banners de exemplo (serão substituídos por dados reais)
     final bannerItems = _recommendedCommunities.take(5).toList();
@@ -637,6 +638,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   // SECTION HEADER — Estilo Amino
   // ==========================================================================
   Widget _buildSectionHeader(String title, {VoidCallback? onSeeAll}) {
+    final s = getStrings();
     final r = context.r;
     return Padding(
       padding: EdgeInsets.fromLTRB(r.s(16), r.s(20), r.s(16), r.s(12)),
@@ -685,7 +687,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 /// Card "Minhas Comunidades" — estilo Amino com imagem de fundo + nome + CHECK IN
 /// Cards verticais com imagem de fundo cobrindo todo o card, nome sobreposto,
 /// avatar do usuário e botão "CHECK IN" verde na parte inferior.
-class _MyCommunityCard extends StatelessWidget {
+class _MyCommunityCard extends ConsumerWidget {
   final CommunityModel community;
   final void Function(CommunityModel)? onLongPress;
   const _MyCommunityCard({required this.community, this.onLongPress});
@@ -699,7 +701,7 @@ class _MyCommunityCard extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     final color = _parseColor(community.themeColor);
@@ -855,7 +857,7 @@ class _MyCommunityCard extends StatelessWidget {
 }
 
 /// Card de New Community — Estilo Amino (scroll horizontal, card compacto)
-class _NewCommunityCard extends StatelessWidget {
+class _NewCommunityCard extends ConsumerWidget {
   final CommunityModel community;
   const _NewCommunityCard({required this.community});
 
@@ -868,7 +870,7 @@ class _NewCommunityCard extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     final color = _parseColor(community.themeColor);
@@ -1004,12 +1006,12 @@ class _NewCommunityCard extends StatelessWidget {
 }
 
 /// Tile "For You" — Post popular com preview, estilo Amino
-class _ForYouPostTile extends StatelessWidget {
+class _ForYouPostTile extends ConsumerWidget {
   final Map<String, dynamic> post;
   const _ForYouPostTile({required this.post});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     final title = post['title'] as String? ?? '';
@@ -1174,12 +1176,12 @@ class _ForYouPostTile extends StatelessWidget {
 }
 
 /// Tile de comunidade recomendada — Estilo Amino (lista vertical)
-class _RecommendedCommunityTile extends StatelessWidget {
+class _RecommendedCommunityTile extends ConsumerWidget {
   final CommunityModel community;
   const _RecommendedCommunityTile({required this.community});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(

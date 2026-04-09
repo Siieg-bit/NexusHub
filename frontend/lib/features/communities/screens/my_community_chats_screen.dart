@@ -220,6 +220,7 @@ class _MyCommunityChatsScreenState
   // APP BAR
   // ---------------------------------------------------------------------------
   Widget _buildAppBar(Responsive r) {
+    final s = getStrings();
     return Container(
       padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
       child: Row(
@@ -285,6 +286,7 @@ class _MyCommunityChatsScreenState
   // BARRA DE BUSCA
   // ---------------------------------------------------------------------------
   Widget _buildSearchBar(Responsive r) {
+    final s = getStrings();
     return Container(
       margin: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(6)),
       padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
@@ -534,6 +536,7 @@ class _MyCommunityChatsScreenState
   // LISTA DE CHATS
   // ---------------------------------------------------------------------------
   Widget _buildChatsList(Responsive r, List<ChatRoomModel> chats) {
+    final s = getStrings();
     if (chats.isEmpty) {
       return Padding(
         padding: EdgeInsets.all(r.s(32)),
@@ -599,6 +602,7 @@ class _CommunityChatTile extends ConsumerWidget {
   });
 
   String _typeLabel(String type) {
+    final s = getStrings();
     switch (type) {
       case 'public':
         return s.publicChatLabel;
@@ -612,6 +616,7 @@ class _CommunityChatTile extends ConsumerWidget {
   }
 
   Future<void> _showContextMenu(BuildContext context, WidgetRef ref) async {
+    final s = getStrings();
     final r = context.r;
     final isPinned = chatRoom.isPinnedByUser;
     final userId = SupabaseService.currentUserId;

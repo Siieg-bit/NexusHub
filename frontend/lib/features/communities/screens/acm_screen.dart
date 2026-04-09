@@ -14,7 +14,7 @@ class AcmScreen extends ConsumerStatefulWidget {
   const AcmScreen({super.key, required this.communityId});
 
   @override
-  State<AcmScreen> createState() => _AcmScreenState();
+  ConsumerState<AcmScreen> createState() => _AcmScreenState();
 }
 
 class _AcmScreenState extends ConsumerState<AcmScreen>
@@ -162,6 +162,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
       };
 
   Future<void> _saveConfig() async {
+    final s = getStrings();
     final r = context.r;
     try {
       final updates = <String, dynamic>{
@@ -213,8 +214,9 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
+  @override
+  Widget build(BuildContext context) {
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -279,6 +281,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
   // TAB: Módulos
   // ========================================================================
   Widget _buildModulesTab() {
+    final s = getStrings();
     final r = context.r;
     final modules = [
       _ModuleItem(
@@ -336,6 +339,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
   // TAB: Acesso
   // ========================================================================
   Widget _buildAccessTab() {
+    final s = getStrings();
     final r = context.r;
     return ListView(
       padding: EdgeInsets.all(r.s(16)),
@@ -413,6 +417,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
   // TAB: Visual
   // ========================================================================
   Widget _buildVisualTab() {
+    final s = getStrings();
     final r = context.r;
     final currentColor = _parseColor(_themeColor);
 
@@ -656,6 +661,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
   // TAB: Home Layout — Customização da página inicial
   // ========================================================================
   Widget _buildHomeLayoutTab() {
+    final s = getStrings();
     final r = context.r;
     final visible = Map<String, dynamic>.from(
         _homeLayout['sections_visible'] as Map<String, dynamic>? ?? {});
@@ -900,6 +906,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
   }
 
   List<Widget> _buildSectionToggles(Map<String, dynamic> visible) {
+    final s = getStrings();
     final r = context.r;
     final sections = [
       _SectionToggle(
@@ -973,6 +980,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
   // TAB: Stats
   // ========================================================================
   Widget _buildStatsTab() {
+    final s = getStrings();
     final r = context.r;
     return RefreshIndicator(
       onRefresh: () async {
@@ -1095,8 +1103,9 @@ class _FeaturedStyleOption extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
+  @override
+  Widget build(BuildContext context) {
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     return Expanded(
       child: GestureDetector(
@@ -1153,8 +1162,9 @@ class _AccessOption extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
+  @override
+  Widget build(BuildContext context) {
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: onTap,
@@ -1222,8 +1232,9 @@ class _StatCard extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
+  @override
+  Widget build(BuildContext context) {
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       margin: EdgeInsets.only(bottom: r.s(8)),
@@ -1269,8 +1280,9 @@ class _InfoRow extends ConsumerWidget {
   const _InfoRow(this.label, this.value);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
+  @override
+  Widget build(BuildContext context) {
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     return Padding(
       padding: EdgeInsets.symmetric(vertical: r.s(6)),

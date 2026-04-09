@@ -106,6 +106,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
   }
 
   Widget _buildCommunityList(List<CommunityModel> communities) {
+    final s = getStrings();
     final r = context.r;
     return RefreshIndicator(
       color: AppTheme.primaryColor,
@@ -250,6 +251,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
   }
 
   void _showCommunityPreview(BuildContext context, CommunityModel community) {
+    final s = getStrings();
     showModalBottomSheet(
       context: context,
       backgroundColor: context.surfaceColor,
@@ -456,6 +458,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
   }
 
   Widget _buildEmptyState() {
+    final s = getStrings();
     final r = context.r;
     return Center(
       child: Padding(
@@ -509,6 +512,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
   }
 
   Widget _buildErrorState() {
+    final s = getStrings();
     final r = context.r;
     return Center(
       child: Column(
@@ -903,12 +907,12 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
 // Ícone "+" no topo, texto "Entrar em uma comunidade" centralizado.
 // Mesma altura que os cards de comunidade.
 // ============================================================================
-class _JoinCommunityCard extends StatelessWidget {
+class _JoinCommunityCard extends ConsumerWidget {
   final VoidCallback onTap;
   const _JoinCommunityCard({required this.onTap});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
@@ -1343,7 +1347,7 @@ class _CommunityPreviewSheetState
   }
 }
 
-class _StatChip extends StatelessWidget {
+class _StatChip extends ConsumerWidget {
   final IconData icon;
   final String label;
   final Color color;
@@ -1355,7 +1359,7 @@ class _StatChip extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(

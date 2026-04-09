@@ -50,6 +50,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
 
   @override
   void initState() {
+    final s = getStrings();
     super.initState();
     _activeTabs = [s.guidelines, s.featured, s.latest, s.chats];
     _tabController = TabController(length: _activeTabs.length, vsync: this);
@@ -73,6 +74,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
   bool _pendingTabRebuild = false;
 
   void _rebuildTabsIfNeeded(Map<String, dynamic> layout) {
+    final s = getStrings();
     if (_isDisposed || !mounted) return;
     // Evitar múltiplos rebuilds agendados no mesmo frame
     if (_pendingTabRebuild) return;
@@ -157,6 +159,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
   }
 
   Future<void> _joinCommunity() async {
+    final s = getStrings();
     final r = context.r;
     try {
       final userId = SupabaseService.currentUserId;

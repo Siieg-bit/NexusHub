@@ -378,6 +378,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   // LISTA DE CHATS — Estilo Amino
   // ==========================================================================
   Widget _buildChatList(List<ChatRoomModel> chatRooms) {
+    final s = getStrings();
     final r = context.r;
     final pendingInvites = ref.watch(pendingDmInvitesProvider);
     return RefreshIndicator(
@@ -445,6 +446,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   // RECOMENDADOS — Estilo Amino (cards grandes com imagem de fundo)
   // ==========================================================================
   Widget _buildRecommendedChats() {
+    final s = getStrings();
     final r = context.r;
     return ListView(
       padding: EdgeInsets.only(
@@ -580,6 +582,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   // ESTADO VAZIO — Estilo Amino
   // ==========================================================================
   Widget _buildEmptyChats() {
+    final s = getStrings();
     final r = context.r;
     return Center(
       child: Padding(
@@ -638,7 +641,7 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
 // ============================================================================
 // SIDEBAR ICON — Ícone na sidebar esquerda
 // ============================================================================
-class _SidebarIcon extends StatelessWidget {
+class _SidebarIcon extends ConsumerWidget {
   final IconData icon;
   final bool isSelected;
   final VoidCallback onTap;
@@ -654,7 +657,7 @@ class _SidebarIcon extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
@@ -727,7 +730,7 @@ class _SidebarIcon extends StatelessWidget {
 // ============================================================================
 // SIDEBAR COMMUNITY ICON — Ícone de comunidade na sidebar
 // ============================================================================
-class _SidebarCommunityIcon extends StatelessWidget {
+class _SidebarCommunityIcon extends ConsumerWidget {
   final CommunityModel community;
   final bool isSelected;
   final VoidCallback onTap;
@@ -739,7 +742,7 @@ class _SidebarCommunityIcon extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
@@ -792,6 +795,7 @@ class _AminoChatTile extends ConsumerWidget {
 
   /// Exibe o menu contextual de long press.
   Future<void> _showContextMenu(BuildContext context, WidgetRef ref) async {
+    final s = getStrings();
     final r = context.r;
     final isPinned = chatRoom.isPinnedByUser;
     final userId = SupabaseService.currentUserId;
