@@ -3519,6 +3519,13 @@ class AppStringsEs implements AppStrings {
   @override
   String dayLabel(int n) => 'D$n';
 
+  // BLOCK USER
+  @override
+  String get blockConfirmTitle => '¿Bloquear a este usuario?';
+  @override
+  String get blockConfirmMsg => 'No podrá ver tu perfil, publicaciones ni contactarte.';
+  @override
+  String get blockSuccess => 'Usuario bloqueado con éxito.';
   // REPOST
   @override
   String get repost => 'Repost';

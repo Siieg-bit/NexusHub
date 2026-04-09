@@ -4025,6 +4025,13 @@ class AppStringsKo implements AppStrings {
   @override
   String dayLabel(int n) => '${n}일';
 
+  // BLOCK USER
+  @override
+  String get blockConfirmTitle => '이 사용자를 차단하시겠습니까?';
+  @override
+  String get blockConfirmMsg => '내 프로필, 게시물을 볼 수 없고 연락도 할 수 없습니다.';
+  @override
+  String get blockSuccess => '사용자가 차단되었습니다.';
   // REPOST
   @override
   String get repost => 'Repost';

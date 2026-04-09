@@ -1845,6 +1845,10 @@ abstract class AppStrings {
   // STREAK DAY LABEL
   String dayLabel(int n);
 
+  // BLOCK USER
+  String get blockConfirmTitle;
+  String get blockConfirmMsg;
+  String get blockSuccess;
   // REPOST
   String get repost;
   String get repostAction;

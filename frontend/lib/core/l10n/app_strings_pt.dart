@@ -3682,6 +3682,13 @@ aparecerá aqui';
   @override
   String dayLabel(int n) => 'D$n';
 
+  // BLOCK USER
+  @override
+  String get blockConfirmTitle => 'Bloquear este usuário?';
+  @override
+  String get blockConfirmMsg => 'Ele não poderá ver seu perfil, posts ou entrar em contato com você.';
+  @override
+  String get blockSuccess => 'Usuário bloqueado com sucesso.';
   // REPOST
   @override
   String get repost => 'Repostar';

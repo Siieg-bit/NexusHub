@@ -4329,6 +4329,13 @@ class AppStringsAr implements AppStrings {
   @override
   String dayLabel(int n) => 'ي$n';
 
+  // BLOCK USER
+  @override
+  String get blockConfirmTitle => 'حظر هذا المستخدم؟';
+  @override
+  String get blockConfirmMsg => 'لن يتمكن من رؤية ملفك الشخصي أو منشوراتك أو التواصل معك.';
+  @override
+  String get blockSuccess => 'تم حظر المستخدم بنجاح.';
   // REPOST
   @override
   String get repost => 'Repost';

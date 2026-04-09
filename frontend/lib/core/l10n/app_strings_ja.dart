@@ -3519,6 +3519,13 @@ class AppStringsJa implements AppStrings {
   @override
   String dayLabel(int n) => '${n}日';
 
+  // BLOCK USER
+  @override
+  String get blockConfirmTitle => 'このユーザーをブロックしますか？';
+  @override
+  String get blockConfirmMsg => 'あなたのプロフィール、投稿を見たり、連絡したりできなくなります。';
+  @override
+  String get blockSuccess => 'ユーザーをブロックしました。';
   // REPOST
   @override
   String get repost => 'Repost';

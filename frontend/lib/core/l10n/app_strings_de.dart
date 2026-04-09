@@ -3669,6 +3669,13 @@ class AppStringsDe implements AppStrings {
   @override
   String dayLabel(int n) => 'T$n';
 
+  // BLOCK USER
+  @override
+  String get blockConfirmTitle => 'Diesen Benutzer blockieren?';
+  @override
+  String get blockConfirmMsg => 'Er kann dein Profil, Beiträge nicht sehen und dich nicht kontaktieren.';
+  @override
+  String get blockSuccess => 'Benutzer erfolgreich blockiert.';
   // REPOST
   @override
   String get repost => 'Repost';

@@ -4663,6 +4663,13 @@ class AppStringsRu implements AppStrings {
   @override
   String dayLabel(int n) => 'Д$n';
 
+  // BLOCK USER
+  @override
+  String get blockConfirmTitle => 'Заблокировать этого пользователя?';
+  @override
+  String get blockConfirmMsg => 'Он не сможет видеть ваш профиль, публикации или связаться с вами.';
+  @override
+  String get blockSuccess => 'Пользователь успешно заблокирован.';
   // REPOST
   @override
   String get repost => 'Repost';
