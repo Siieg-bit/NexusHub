@@ -804,7 +804,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
         return Align(
           alignment: Alignment.bottomCenter,
           child: SizedBox(
-            height: MediaQuery.of(dialogCtx).size.height * 0.92,
+            height: MediaQuery.of(dialogCtx).size.height * 0.87,
             child: Material(
               color: Colors.transparent,
               child: Container(
