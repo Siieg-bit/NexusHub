@@ -215,6 +215,7 @@ class _CommunityProfileScreenState extends State<CommunityProfileScreen>
         backgroundColor: context.surfaceColor,
         onRefresh: _loadProfile,
         child: NestedScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
           headerSliverBuilder: (context, innerBoxIsScrolled) => [
             // ================================================================
             // HEADER — Banner + Avatar + Nome + Level + Tags + Botões

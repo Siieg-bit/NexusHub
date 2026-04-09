@@ -736,31 +736,8 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
   // ═══════════════════════════════════════════════════════════════════════════
 
   Widget _buildCheckInMessage(Responsive r, bool hasCheckedIn) {
-    if (hasCheckedIn) {
-      return Padding(
-        padding: EdgeInsets.symmetric(horizontal: r.s(16)),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.check_circle_rounded,
-                color: const Color(0xFF4CAF50), size: r.s(13)),
-            SizedBox(width: r.s(4)),
-            Text(
-              'Check-in feito!',
-              style: TextStyle(
-                color: const Color(0xFF4CAF50),
-                fontSize: r.fs(11),
-                fontWeight: FontWeight.w600,
-                shadows: const [
-                  Shadow(color: Colors.black54, blurRadius: 4),
-                ],
-              ),
-            ),
-          ],
-        ),
-      );
-    }
+    // Após o check-in, o botão desaparece — a barra de streak já indica o status
+    if (hasCheckedIn) return const SizedBox.shrink();
 
     // Botão de check-in visível e clicável
     return GestureDetector(
