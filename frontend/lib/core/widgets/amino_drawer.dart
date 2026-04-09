@@ -39,6 +39,11 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
   late AnimationController _animController;
   bool _isOpen = false;
 
+  // Posição X onde o drag começou — usado para decidir se é drag de borda
+  double _dragStartX = 0.0;
+  // Se o drag atual foi iniciado como um drag de borda (para abrir)
+  bool _isDragging = false;
+
   bool get isOpen => _isOpen;
 
   @override
@@ -58,12 +63,12 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
 
   void open() {
     _animController.animateTo(1.0, curve: Curves.easeOutCubic);
-    setState(() => _isOpen = true);
+    if (mounted) setState(() => _isOpen = true);
   }
 
   void close() {
     _animController.animateTo(0.0, curve: Curves.easeInCubic);
-    setState(() => _isOpen = false);
+    if (mounted) setState(() => _isOpen = false);
   }
 
   void toggle() {
@@ -74,38 +79,32 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
     }
   }
 
-  // ── Drag handlers para quando o drawer já está aberto ──────────────
-  void _onOverlayDragUpdate(DragUpdateDetails details) {
-    final delta = details.primaryDelta ?? 0;
-    // Atualiza diretamente sem curva — o drag deve ser 1:1 com o dedo
-    _animController.value =
-        (_animController.value + delta / widget.maxSlide).clamp(0.0, 1.0);
-  }
-
-  void _onOverlayDragEnd(DragEndDetails details) {
-    final velocity = details.primaryVelocity ?? 0;
-    if (velocity < -300) {
-      close();
-    } else if (_animController.value > 0.5) {
-      open();
+  void _onDragStart(DragStartDetails details) {
+    _dragStartX = details.globalPosition.dx;
+    // Aceita drag se: drawer já aberto OU toque começou na borda esquerda (60px)
+    if (_isOpen || _dragStartX < 60.0) {
+      _isDragging = true;
     } else {
-      close();
+      _isDragging = false;
     }
   }
 
-  // ── Drag handlers para a zona de borda esquerda (abrir drawer) ─────
-  void _onEdgeDragUpdate(DragUpdateDetails details) {
+  void _onDragUpdate(DragUpdateDetails details) {
+    if (!_isDragging) return;
     final delta = details.primaryDelta ?? 0;
-    // Atualiza diretamente sem curva — o drag deve ser 1:1 com o dedo
     _animController.value =
         (_animController.value + delta / widget.maxSlide).clamp(0.0, 1.0);
   }
 
-  void _onEdgeDragEnd(DragEndDetails details) {
+  void _onDragEnd(DragEndDetails details) {
+    if (!_isDragging) return;
+    _isDragging = false;
     final velocity = details.primaryVelocity ?? 0;
     if (velocity > 300) {
       open();
-    } else if (_animController.value > 0.5) {
+    } else if (velocity < -300) {
+      close();
+    } else if (_animController.value > 0.4) {
       open();
     } else {
       close();
@@ -117,96 +116,60 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
     final screenWidth = MediaQuery.of(context).size.width;
     final effectiveMaxSlide = widget.maxSlide.clamp(0.0, screenWidth * 0.92);
 
-    return Stack(
-      children: [
-        // ── Conteúdo principal (não se move) ──────────────────────────────────
-        widget.child,
+    return GestureDetector(
+      // Captura drag horizontal em toda a tela — a lógica de borda
+      // é feita no _onDragStart pelo _dragStartX
+      onHorizontalDragStart: _onDragStart,
+      onHorizontalDragUpdate: _onDragUpdate,
+      onHorizontalDragEnd: _onDragEnd,
+      behavior: HitTestBehavior.translucent,
+      child: Stack(
+        children: [
+          // ── Conteúdo principal (não se move) ──────────────────────────
+          widget.child,
 
-        // ── Zona de drag exclusiva na borda esquerda ─────────────────────
-        // Largura de 28px, fica por CIMA do child (tabs), então captura
-        // o drag horizontal antes das tabs. Só funciona quando fechado.
-        AnimatedBuilder(
-          animation: _animController,
-          builder: (context, child) {
-            // Só mostrar a zona de drag quando o drawer está fechado
-            if (_animController.value > 0.05) {
-              return const SizedBox.shrink();
-            }
-            return child!;
-          },
-          child: Positioned(
-            left: 0,
-            top: 0,
-            bottom: 0,
-            width: 28.0,
-            child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onHorizontalDragUpdate: _onEdgeDragUpdate,
-              onHorizontalDragEnd: _onEdgeDragEnd,
-              child: Center(
+          // ── Overlay escuro sobre o conteúdo quando aberto ─────────────
+          AnimatedBuilder(
+            animation: _animController,
+            builder: (context, _) {
+              if (_animController.value == 0) return const SizedBox.shrink();
+              return GestureDetector(
+                onTap: close,
+                // Bloqueia taps no conteúdo quando o drawer está aberto
+                behavior: HitTestBehavior.opaque,
                 child: Container(
-                  width: 5.0,
-                  height: 48.0,
-                  margin: const EdgeInsets.only(left: 2.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.35),
-                    borderRadius: BorderRadius.circular(3.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        blurRadius: 4.0,
-                      ),
-                    ],
-                  ),
+                  color: Colors.black
+                      .withValues(alpha: 0.55 * _animController.value),
+                ),
+              );
+            },
+          ),
+
+          // ── Drawer (sobrepõe tudo, desliza da esquerda) ───────────────
+          // Usa Transform.translate 1:1 com o valor do controller.
+          // O easing é aplicado apenas via animateTo() em open()/close().
+          AnimatedBuilder(
+            animation: _animController,
+            builder: (context, child) {
+              final offset = effectiveMaxSlide * (_animController.value - 1.0);
+              return Transform.translate(
+                offset: Offset(offset, 0),
+                child: child,
+              );
+            },
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: SizedBox(
+                width: effectiveMaxSlide,
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: widget.drawer,
                 ),
               ),
             ),
           ),
-        ),
-
-        // ── Overlay escuro sobre o conteúdo quando aberto ─────────────────
-        // Também captura drag horizontal para fechar o drawer.
-        AnimatedBuilder(
-          animation: _animController,
-          builder: (context, _) {
-            if (_animController.value == 0) return const SizedBox.shrink();
-            return GestureDetector(
-              onTap: close,
-              onHorizontalDragUpdate: _onOverlayDragUpdate,
-              onHorizontalDragEnd: _onOverlayDragEnd,
-              child: Container(
-                color: Colors.black
-                    .withValues(alpha: 0.55 * _animController.value),
-              ),
-            );
-          },
-        ),
-
-        // ── Drawer (sobrepõe tudo, desliza da esquerda) ───────────────────
-        // Usa AnimatedBuilder com translate manual (sem CurvedAnimation)
-        // para que a posição visual seja sempre 1:1 com _animController.value
-        // durante o drag. O easing é aplicado apenas nas chamadas open()/close().
-        AnimatedBuilder(
-          animation: _animController,
-          builder: (context, child) {
-            final offset = effectiveMaxSlide * (_animController.value - 1.0);
-            return Transform.translate(
-              offset: Offset(offset, 0),
-              child: child,
-            );
-          },
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: SizedBox(
-              width: effectiveMaxSlide,
-              child: Material(
-                type: MaterialType.transparency,
-                child: widget.drawer,
-              ),
-            ),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

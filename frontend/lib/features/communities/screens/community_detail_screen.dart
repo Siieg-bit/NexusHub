@@ -780,51 +780,65 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     String communityId,
     String communityName,
   ) {
-    showModalBottomSheet(
+    // Usa showGeneralDialog para ter controle total sobre o overlay escuro.
+    // showModalBottomSheet ignora barrierColor quando há um Scaffold pai.
+    showGeneralDialog(
       context: ctx,
-      isScrollControlled: true,
-      useRootNavigator: true,
-      backgroundColor: Colors.transparent,
+      barrierDismissible: true,
+      barrierLabel: 'Online',
       barrierColor: Colors.black.withValues(alpha: 0.8),
-      builder: (sheetCtx) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.92,
-          minChildSize: 0.5,
-          maxChildSize: 0.97,
-          expand: false,
-          builder: (dragCtx, scrollController) {
-            return Container(
-              decoration: BoxDecoration(
-                color: dragCtx.scaffoldBg,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(20.0),
+      transitionDuration: const Duration(milliseconds: 300),
+      transitionBuilder: (_, anim, __, child) {
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 1),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(
+            parent: anim,
+            curve: Curves.easeOutCubic,
+          )),
+          child: child,
+        );
+      },
+      pageBuilder: (dialogCtx, _, __) {
+        return Align(
+          alignment: Alignment.bottomCenter,
+          child: SizedBox(
+            height: MediaQuery.of(dialogCtx).size.height * 0.92,
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(dialogCtx).scaffoldBackgroundColor,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(20.0),
+                  ),
                 ),
-              ),
-              child: Column(
-                children: [
-                  // Handle de arrasto
-                  Padding(
-                    padding: EdgeInsets.only(
-                        top: dragCtx.r.s(10), bottom: dragCtx.r.s(4)),
-                    child: Container(
-                      width: dragCtx.r.s(40),
-                      height: 4.0,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(2.0),
+                child: Column(
+                  children: [
+                    // Handle de arrasto
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10.0, bottom: 4.0),
+                      child: Container(
+                        width: 40.0,
+                        height: 4.0,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(2.0),
+                        ),
                       ),
                     ),
-                  ),
-                  // Página Online completa
-                  Expanded(
-                    child: CommunityOnlineTab(
-                      community: _communityForSheet(ref, communityId),
+                    // Página Online completa
+                    Expanded(
+                      child: CommunityOnlineTab(
+                        community: _communityForSheet(ref, communityId),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            );
-          },
+            ),
+          ),
         );
       },
     );
