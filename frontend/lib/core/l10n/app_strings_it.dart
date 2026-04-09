@@ -2401,7 +2401,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get community2 => 'Comunità';
   @override
-  String get communityLabel => 'Comunità: $_selectedCommunityName';
+  String get communityLabel => 'Comunità:...';
   @override
   String get confirmContinue => 'Sei sicuro di voler continuare?';
   @override
@@ -2409,9 +2409,9 @@ class AppStringsIt implements AppStrings {
   @override
   String get confirmDeletionButton => 'Conferma Cancellazione';
   @override
-  String get confirmUnblockUser => 'Vuoi sbloccare $nickname?';
+  String get confirmUnblockUser => 'Vuoi sbloccare ...?';
   @override
-  String get confirmUnlinkAccount => 'Sei sicuro di voler scollegare il tuo account $provider?';
+  String get confirmUnlinkAccount => 'Sei sicuro di voler scollegare il tuo account ...?';
   @override
   String get connectWithYourCommunities => 'Connettiti con le tue comunità preferite';
   @override
@@ -2427,7 +2427,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get current => 'Corrente';
   @override
-  String get currentCacheSize => 'Dimensione cache attuale: $size';
+  String get currentCacheSize => 'Dimensione cache attuale: ...';
   @override
   String get currentStreak => 'Serie Corrente';
   @override
@@ -2513,7 +2513,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get failedToLoadData => 'Impossibile caricare i dati.';
   @override
-  String get ffH => 'FF$h';
+  String get ffH => 'FF';
   @override
   String get field => 'Campo';
   @override
@@ -2575,17 +2575,17 @@ class AppStringsIt implements AppStrings {
   @override
   String get irreversibleActionWarning => 'Questa azione è IRREVERSIBILE. Tutti i tuoi dati, post, commenti, ';
   @override
-  String get joinedChannelInMs => 'Ora: Canale ${connection.channelId} unito in ${elapsed}ms';
+  String get joinedChannelInMs => 'Ora: Canale ... unito in ...ms';
   @override
-  String get languageChanged => 'Lingua cambiata in ${locale.label}';
+  String get languageChanged => 'Lingua cambiata in ...';
   @override
-  String get lastAccess2 => 'Ultimo accesso: ${lastSeen.day}/${lastSeen.month}/${lastSeen.year}';
+  String get lastAccess2 => 'Ultimo accesso: dd/mm/yyyy';
   @override
   String get lastSevenDays => 'Ultimi 7 giorni';
   @override
   String get leader2 => 'Leader';
   @override
-  String get levelLabel => 'Livello $level';
+  String get levelLabel => 'Livello ...';
   @override
   String get levelUp2 => 'Avanzamento di Livello';
   @override
@@ -2603,7 +2603,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get managePermissions => 'Gestisci i permessi necessari a NexusHub per funzionare correttamente.';
   @override
-  String get maxStreakRecord => 'Record: $maxStreak giorni';
+  String get maxStreakRecord => 'Record: ... giorni';
   @override
   String get memesHumor => 'Memes & Umorismo';
   @override
@@ -2701,7 +2701,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get pending2 => 'In sospeso';
   @override
-  String get pendingFlagsCount => 'In sospeso (${_pendingFlags.length})';
+  String get pendingFlagsCount => 'In sospeso (...)';
   @override
   String get pendingReview2 => 'In attesa di revisione';
   @override
@@ -2713,7 +2713,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get permissionDenied2 => 'Permesso negato';
   @override
-  String get permissionPermanentlyDenied => 'Il permesso per ${info.title} è stato negato permanentemente.';
+  String get permissionPermanentlyDenied => 'Il permesso per ... è stato negato permanentemente.';
   @override
   String get petsAnimals => 'Animali domestici e animali';
   @override
@@ -2733,7 +2733,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get preview2 => 'Anteprima';
   @override
-  String get profileLevel => 'Livello ${_profile?[';
+  String get profileLevel => 'Livello ...';
   @override
   String get profilePicture => 'Immagine del profilo';
   @override

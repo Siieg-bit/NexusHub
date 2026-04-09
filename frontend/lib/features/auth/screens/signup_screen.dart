@@ -73,8 +73,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             content: Text(
-              s.confirmationEmailSent(email)
-              'Abra o email e clique no link para ativar sua conta.',
+              '${s.confirmationEmailSent} $email\nAbra o email e clique no link para ativar sua conta.',
             ),
             actions: [
               TextButton(

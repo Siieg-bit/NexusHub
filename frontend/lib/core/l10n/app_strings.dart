@@ -487,7 +487,6 @@ abstract class AppStrings {
   String get day;
   String get dayStreak;
   String get days;
-  String get deleteFile;
   String get deleteMessage;
   String get deleting;
   String get describeReason;
@@ -1562,19 +1561,16 @@ abstract class AppStrings {
 
   // PASS 7 — FINAL INTERPOLATED
   String get yourUniqueIdDesc;
-  String confirmationEmailSent(String email);
   String get mediaLabel;
   String get moderationActions30d;
   String joinedCommunityName(String name);
   String checkInStreakMsg(int streak, int coins);
   String get leadersTitle;
   String levelAndRep(int level, int reputation);
-  String get communityNameRequired;
   String timeAgoMonthsShort(int months);
   String timeAgoDaysShort(int days);
   String timeAgoHoursShort(int hours);
   String timeAgoMinutesShort(int minutes);
-  String get justNow;
   String receivedWarning(String reason);
   String removedFromCommunity(String reason);
   String get aminoIdInUse;

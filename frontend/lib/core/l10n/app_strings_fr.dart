@@ -1765,7 +1765,7 @@ class AppStringsFr implements AppStrings {
   @override
   String get community2 => 'Communauté';
   @override
-  String get communityLabel => 'Communauté : $_selectedCommunityName';
+  String get communityLabel => 'Communauté :...';
   @override
   String get communityNameRequired => 'Le nom de la communauté est requis.';
   @override
@@ -1775,9 +1775,9 @@ class AppStringsFr implements AppStrings {
   @override
   String get confirmDeletionButton => 'Confirmer la suppression';
   @override
-  String get confirmUnblockUser => 'Voulez-vous débloquer $nickname ?';
+  String get confirmUnblockUser => 'Voulez-vous débloquer ... ?';
   @override
-  String get confirmUnlinkAccount => 'Êtes-vous sûr de vouloir dissocier votre compte $provider ?';
+  String get confirmUnlinkAccount => 'Êtes-vous sûr de vouloir dissocier votre compte ... ?';
   @override
   String confirmationEmailSent(String email) => 'Nous avons envoyé un lien de confirmation à \$email.\n\n';
   @override
@@ -1795,7 +1795,7 @@ class AppStringsFr implements AppStrings {
   @override
   String get current => 'Actuel';
   @override
-  String get currentCacheSize => 'Taille actuelle du cache : $size';
+  String get currentCacheSize => 'Taille actuelle du cache : ...';
   @override
   String get currentStreak => 'Série en cours';
   @override
@@ -1881,7 +1881,7 @@ class AppStringsFr implements AppStrings {
   @override
   String get failedToLoadData => 'Échec du chargement des données.';
   @override
-  String get ffH => 'FF$h';
+  String get ffH => 'FF';
   @override
   String get field => 'Champ';
   @override
@@ -1943,17 +1943,17 @@ class AppStringsFr implements AppStrings {
   @override
   String get irreversibleActionWarning => 'Cette action est IRRÉVERSIBLE. Toutes vos données, publications, commentaires, ';
   @override
-  String get joinedChannelInMs => 'Maintenant : Canal ${connection.channelId} rejoint en ${elapsed}ms';
+  String get joinedChannelInMs => 'Maintenant : Canal ... rejoint en ...ms';
   @override
-  String get languageChanged => 'Langue changée en ${locale.label}';
+  String get languageChanged => 'Langue changée en ...';
   @override
-  String get lastAccess2 => 'Dernier accès : ${lastSeen.day}/${lastSeen.month}/${lastSeen.year}';
+  String get lastAccess2 => 'Dernier accès : dd/mm/yyyy';
   @override
   String get lastSevenDays => '7 derniers jours';
   @override
   String get leader2 => 'Leader';
   @override
-  String get levelLabel => 'Niveau $level';
+  String get levelLabel => 'Niveau ...';
   @override
   String get levelUp2 => 'Niveau supérieur';
   @override
@@ -1971,7 +1971,7 @@ class AppStringsFr implements AppStrings {
   @override
   String get managePermissions => 'Gérez les permissions dont NexusHub a besoin pour fonctionner correctement.';
   @override
-  String get maxStreakRecord => 'Record : $maxStreak jours';
+  String get maxStreakRecord => 'Record : ... jours';
   @override
   String get memesHumor => 'Memes & Humour';
   @override
@@ -2069,7 +2069,7 @@ class AppStringsFr implements AppStrings {
   @override
   String get pending2 => 'En attente';
   @override
-  String get pendingFlagsCount => 'En attente (${_pendingFlags.length})';
+  String get pendingFlagsCount => 'En attente (...)';
   @override
   String get pendingReview2 => 'En attente de révision';
   @override
@@ -2081,7 +2081,7 @@ class AppStringsFr implements AppStrings {
   @override
   String get permissionDenied2 => 'Permission refusée';
   @override
-  String get permissionPermanentlyDenied => 'La permission pour ${info.title} a été refusée définitivement.';
+  String get permissionPermanentlyDenied => 'La permission pour ... a été refusée définitivement.';
   @override
   String get petsAnimals => 'Animaux de compagnie & Animaux';
   @override
@@ -2101,7 +2101,7 @@ class AppStringsFr implements AppStrings {
   @override
   String get preview2 => 'Aperçu';
   @override
-  String get profileLevel => 'Niveau ${_profile?[';
+  String get profileLevel => 'Niveau ...';
   @override
   String get profilePicture => 'Photo de profil';
   @override

@@ -528,7 +528,7 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
   Color _parseColor(String hex) {
     try {
       final h = hex.replaceFirst('#', '');
-      return Color(int.parse(s.ffH, radix: 16));
+      return Color(int.parse(h, radix: 16));
     } catch (_) {
       return Colors.black;
     }

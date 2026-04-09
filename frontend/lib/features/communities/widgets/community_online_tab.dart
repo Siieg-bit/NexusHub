@@ -1227,6 +1227,7 @@ class _MemberBottomSheet extends ConsumerWidget {
       context.push('/chat/$threadId');
     } catch (e) {
       if (context.mounted) {
+        final s = getStrings();
         final err = e.toString();
         String message = s.errorOpeningChatTryAgain;
 

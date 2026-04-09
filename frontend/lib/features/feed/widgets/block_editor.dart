@@ -389,7 +389,7 @@ class _BlockWidget extends ConsumerWidget {
   }
 
   Widget _buildContent(BuildContext context) {
-    final s = ref.read(stringsProvider);
+    final s = getStrings();
     final r = context.r;
     switch (block.type) {
       case BlockType.text:

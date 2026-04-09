@@ -1020,6 +1020,7 @@ class _PostCardState extends ConsumerState<PostCard>
 
   // ── Helpers ──
   String get _typeLabel {
+    final s = getStrings();
     switch (_post.type) {
       case 'poll':
         return s.poll;

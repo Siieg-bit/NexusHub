@@ -1556,10 +1556,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get allowedContent => 'Conteúdo Permitido';
   @override
-  String get allowedContentDetails => '• Posts relacionados ao tema da comunidade
-• Fan arts e criações originais
-• Discussões construtivas
-• Memes relacionados ao tema';
+  String get allowedContentDetails => '• Posts relacionados ao tema da comunidade\n• Fan arts e criações originais\n• Discussões construtivas\n• Memes relacionados ao tema';
   @override
   String get aminoPlus => 'Amino+';
   @override
@@ -1603,8 +1600,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get blockedUsers2 => 'Usuários Bloqueados';
   @override
-  String get blockedUsersInfo => 'Usuários bloqueados não podem ver seu perfil
- nem enviar mensagens para você.';
+  String get blockedUsersInfo => 'Usuários bloqueados não podem ver seu perfil\nnem enviar mensagens para você.';
   @override
   String get booksWriting => 'Livros & Escrita';
   @override
@@ -1664,7 +1660,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get community2 => 'Comunidade';
   @override
-  String get communityLabel => 'Comunidade: $_selectedCommunityName';
+  String get communityLabel => 'Comunidade:...';
   @override
   String get communityNameRequired => 'Nome da comunidade é obrigatório';
   @override
@@ -1674,9 +1670,9 @@ class AppStringsPt implements AppStrings {
   @override
   String get confirmDeletionButton => 'Confirmar Exclus e3o';
   @override
-  String get confirmUnblockUser => 'Deseja desbloquear $nickname?';
+  String get confirmUnblockUser => 'Deseja desbloquear ...?';
   @override
-  String get confirmUnlinkAccount => 'Tem certeza que deseja desvincular sua conta $provider?';
+  String get confirmUnlinkAccount => 'Tem certeza que deseja desvincular sua conta ...?';
   @override
   String get confirmationEmailSent => 'Email de confirma e7 e3o enviado!';
   @override
@@ -1694,9 +1690,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get current => 'Atual';
   @override
-  String get currentCacheSize => 'Tamanho atual do cache: $size
-
-';
+  String get currentCacheSize => 'Tamanho atual do cache: ...\n\n';
   @override
   String get currentStreak => 'Streak Atual';
   @override
@@ -1782,7 +1776,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get failedToLoadData => 'Falha ao carregar dados.';
   @override
-  String get ffH => 'FF$h';
+  String get ffH => 'FF';
   @override
   String get field => 'Campo';
   @override
@@ -1800,10 +1794,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get generalRules => 'Regras Gerais';
   @override
-  String get generalRulesDetails => '1. Seja respeitoso com todos os membros
-2. Não faça spam ou flood
-3. Mantenha o conteúdo relevante à comunidade
-4. Não compartilhe informações pessoais';
+  String get generalRulesDetails => '1. Seja respeitoso com todos os membros\n2. Não faça spam ou flood\n3. Mantenha o conteúdo relevante à comunidade\n4. Não compartilhe informações pessoais';
   @override
   String get gif => 'GIF';
   @override
@@ -1847,17 +1838,17 @@ class AppStringsPt implements AppStrings {
   @override
   String get irreversibleActionWarning => 'Esta ação é IRREVERSÍVEL. Todos os seus dados, posts, comentários, ';
   @override
-  String get joinedChannelInMs => 'Agora: Joined channel ${connection.channelId} in ${elapsed}ms';
+  String get joinedChannelInMs => 'Agora: Joined channel ... in ...ms';
   @override
-  String get languageChanged => 'Idioma alterado para ${locale.label}';
+  String get languageChanged => 'Idioma alterado para ...';
   @override
-  String get lastAccess2 => 'Último acesso: ${lastSeen.day.toString().padLeft(2, ';
+  String get lastAccess2 => 'Último acesso: dd/mm/yyyy';
   @override
   String get lastSevenDays => 'Últimos 7 dias';
   @override
   String get leader2 => 'Líder';
   @override
-  String get levelLabel => 'Nível $level';
+  String get levelLabel => 'Nível ...';
   @override
   String get levelUp2 => 'Subiu de Nível';
   @override
@@ -1875,7 +1866,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get managePermissions => 'Gerencie as permissões que o NexusHub precisa para funcionar corretamente.';
   @override
-  String get maxStreakRecord => 'Recorde: $maxStreak dias';
+  String get maxStreakRecord => 'Recorde: ... dias';
   @override
   String get memesHumor => 'Memes e Humor';
   @override
@@ -1973,21 +1964,19 @@ class AppStringsPt implements AppStrings {
   @override
   String get pending2 => 'Pendentes';
   @override
-  String get pendingFlagsCount => 'Pendentes (${_pendingFlags.length})';
+  String get pendingFlagsCount => 'Pendentes (...)';
   @override
   String get pendingReview2 => 'Pendente de revisao';
   @override
   String get permanentDelete => 'Excluir Permanentemente';
   @override
-  String get permanentDeletionNotice => 'mensagens e itens comprados serão permanentemente deletados.
-
-';
+  String get permanentDeletionNotice => 'mensagens e itens comprados serão permanentemente deletados.\n\n';
   @override
   String get permanentlyDenied => 'Negado permanentemente';
   @override
   String get permissionDenied2 => 'Permissão negada';
   @override
-  String get permissionPermanentlyDenied => 'A permissão de ${info.title} foi negada permanentemente. ';
+  String get permissionPermanentlyDenied => 'A permissão de ... foi negada permanentemente. ';
   @override
   String get petsAnimals => 'Pets & Animais';
   @override
@@ -2007,17 +1996,13 @@ class AppStringsPt implements AppStrings {
   @override
   String get preview2 => 'Prévia';
   @override
-  String get profileLevel => 'Nível ${_profile?[';
+  String get profileLevel => 'Nível ...';
   @override
   String get profilePicture => 'Foto de perfil';
   @override
   String get prohibitedContent => 'Conteúdo Proibido';
   @override
-  String get prohibitedContentDetails => '• NSFW / Conteúdo explícito
-• Bullying ou assédio
-• Roubo de arte (art theft)
-• Propaganda não autorizada
-• Conteúdo discriminatório';
+  String get prohibitedContentDetails => '• NSFW / Conteúdo explícito\n• Bullying ou assédio\n• Roubo de arte (art theft)\n• Propaganda não autorizada\n• Conteúdo discriminatório';
   @override
   String get publicChat => 'Chat Publico';
   @override
@@ -2067,9 +2052,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get rolesResponsibilities => 'Cargos e Responsabilidades';
   @override
-  String get rolesResponsibilitiesDetails => '• Leader: Gerencia a comunidade e modera conteúdo
-• Curator: Auxilia na moderação e curadoria de wikis
-• Member: Participa ativamente da comunidade';
+  String get rolesResponsibilitiesDetails => '• Leader: Gerencia a comunidade e modera conteúdo\n• Curator: Auxilia na moderação e curadoria de wikis\n• Member: Participa ativamente da comunidade';
   @override
   String get saturday => 'Sáb';
   @override
@@ -2113,9 +2096,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get strikeSystem => 'Sistema de Strikes';
   @override
-  String get strikeSystemDetails => '• 1º Strike: Aviso formal
-• 2º Strike: Silenciamento temporário (24h)
-• 3º Strike: Ban permanente da comunidade';
+  String get strikeSystemDetails => '• 1º Strike: Aviso formal\n• 2º Strike: Silenciamento temporário (24h)\n• 3º Strike: Ban permanente da comunidade';
   @override
   String get sunday => 'Dom';
   @override
@@ -2127,8 +2108,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get temporarilyPreventUser => 'Impedir o usuário de postar/comentar temporariamente';
   @override
-  String get textOverflowEllipsis => '║  TextOverflow.ellipsis no widget de texto responsável.   ║
-';
+  String get textOverflowEllipsis => '║  TextOverflow.ellipsis no widget de texto responsável.   ║\n';
   @override
   String get thursday => 'Qui';
   @override
@@ -2226,11 +2206,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get wise => 'Sábio';
   @override
-  String get writeGuidelines => 'Escreva as guidelines da sua comunidade aqui...
-
-Use ## para títulos de seção
-Use • ou - para listas
-Use ** para negrito';
+  String get writeGuidelines => 'Escreva as guidelines da sua comunidade aqui...\n\nUse ## para títulos de seção\nUse • ou - para listas\nUse ** para negrito';
   @override
   String get writeGuidelinesTab => 'Escreva as guidelines na aba Editor';
   @override
@@ -2518,8 +2494,7 @@ Use ** para negrito';
   @override
   String get addOptionLabel => 'Adicionar Opção';
   @override
-  String get addUsefulLinks => 'Adicione links úteis para os membros
-da sua comunidade.';
+  String get addUsefulLinks => 'Adicione links úteis para os membros\nda sua comunidade.';
   @override
   String get addVideoAction => 'Adicionar Vídeo';
   @override
@@ -2529,8 +2504,7 @@ da sua comunidade.';
   @override
   String get adventurerLabel => 'Aventureiro';
   @override
-  String get agreeTermsAndPrivacy => 'Ao continuar, você concorda com os Termos de Uso
-e Política de Privacidade.';
+  String get agreeTermsAndPrivacy => 'Ao continuar, você concorda com os Termos de Uso\ne Política de Privacidade.';
   @override
   String get alertsLabel => 'Alertas';
   @override
@@ -2572,8 +2546,7 @@ e Política de Privacidade.';
   @override
   String get biographyLabel => 'Biografia';
   @override
-  String get blockedUsersCannotSeeProfile => 'Usuários bloqueados não podem ver seu perfil
-';
+  String get blockedUsersCannotSeeProfile => 'Usuários bloqueados não podem ver seu perfil\n';
   @override
   String get blogTitleHint => 'Título do blog...';
   @override
@@ -2743,8 +2716,7 @@ e Política de Privacidade.';
   @override
   String get informActionReasonLabel => 'Informe o motivo da ação';
   @override
-  String get interactionsAppearHere => 'Quando alguém interagir com você,
-aparecerá aqui';
+  String get interactionsAppearHere => 'Quando alguém interagir com você,\naparecerá aqui';
   @override
   String get invalidDataMsg => 'Dados inválidos';
   @override

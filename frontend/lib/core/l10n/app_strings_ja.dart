@@ -1537,7 +1537,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get community2 => 'コミュニティ';
   @override
-  String get communityLabel => 'コミュニティ: $_selectedCommunityName';
+  String get communityLabel => 'コミュニティ:...';
   @override
   String get communityNameRequired => 'コミュニティ名は必須です';
   @override
@@ -1547,9 +1547,9 @@ class AppStringsJa implements AppStrings {
   @override
   String get confirmDeletionButton => '削除を確認';
   @override
-  String get confirmUnblockUser => '$nicknameさんのブロックを解除しますか？';
+  String get confirmUnblockUser => '...さんのブロックを解除しますか？';
   @override
-  String get confirmUnlinkAccount => '$providerアカウントの連携を解除してもよろしいですか？';
+  String get confirmUnlinkAccount => '...アカウントの連携を解除してもよろしいですか？';
   @override
   String get confirmationEmailSent => '確認メールを送信しました！';
   @override
@@ -1567,9 +1567,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get current => '現在';
   @override
-  String get currentCacheSize => '現在のキャッシュサイズ: $size
-  @override
-  String get currentStreak => '現在の連続記録';
+  String get currentCacheSize => '現在のキャッシュサイズ: ...\n@override\nString get currentStreak => '現在の連続記録';
   @override
   String get customizePrompt => 'あなたの体験をカスタマイズしましょう。数ステップで、';
   @override
@@ -1651,7 +1649,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get failedToLoadData => 'データの読み込みに失敗しました。';
   @override
-  String get ffH => 'FF$h';
+  String get ffH => 'FF';
   @override
   String get field => 'フィールド';
   @override
@@ -1669,9 +1667,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get generalRules => '一般ルール';
   @override
-  String get generalRulesDetails => '1. すべてのメンバーに敬意を持つこと
-  @override
-  String get gif => 'GIF';
+  String get generalRulesDetails => '1. すべてのメンバーに敬意を持つこと\n@override\nString get gif => 'GIF';
   @override
   String get googleApple => 'Google、Apple';
   @override
@@ -1713,17 +1709,17 @@ class AppStringsJa implements AppStrings {
   @override
   String get irreversibleActionWarning => 'この操作は取り消せません。すべてのデータ、投稿、コメント、';
   @override
-  String get joinedChannelInMs => '現在：${elapsed}msでチャンネル${connection.channelId}に参加しました';
+  String get joinedChannelInMs => '現在：...msでチャンネル...に参加しました';
   @override
-  String get languageChanged => '言語が${locale.label}に変更されました';
+  String get languageChanged => '言語が...に変更されました';
   @override
-  String get lastAccess2 => '最終アクセス：${lastSeen.day}/${lastSeen.month}/${lastSeen.year}';
+  String get lastAccess2 => '最終アクセス：dd/mm/yyyy';
   @override
   String get lastSevenDays => '過去7日間';
   @override
   String get leader2 => 'リーダー';
   @override
-  String get levelLabel => 'レベル $level';
+  String get levelLabel => 'レベル ...';
   @override
   String get levelUp2 => 'レベルアップ';
   @override
@@ -1741,7 +1737,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get managePermissions => 'NexusHubが正常に動作するために必要な権限を管理します。';
   @override
-  String get maxStreakRecord => '記録: $maxStreak 日';
+  String get maxStreakRecord => '記録: ... 日';
   @override
   String get memesHumor => 'ミーム＆ユーモア';
   @override
@@ -1839,19 +1835,17 @@ class AppStringsJa implements AppStrings {
   @override
   String get pending2 => '保留中';
   @override
-  String get pendingFlagsCount => '保留中 (${_pendingFlags.length})';
+  String get pendingFlagsCount => '保留中 (...)';
   @override
   String get pendingReview2 => 'レビュー待ち';
   @override
   String get permanentDelete => '完全に削除';
   @override
-  String get permanentDeletionNotice => 'メッセージと購入したアイテムは完全に削除されます。
-  @override
-  String get permanentlyDenied => '永久に拒否されました';
+  String get permanentDeletionNotice => 'メッセージと購入したアイテムは完全に削除されます。\n@override\nString get permanentlyDenied => '永久に拒否されました';
   @override
   String get permissionDenied2 => '許可が拒否されました';
   @override
-  String get permissionPermanentlyDenied => '${info.title}の許可は永久に拒否されました。';
+  String get permissionPermanentlyDenied => '...の許可は永久に拒否されました。';
   @override
   String get petsAnimals => 'ペット＆動物';
   @override
@@ -1871,7 +1865,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get preview2 => 'プレビュー';
   @override
-  String get profileLevel => 'レベル ${_profile?[';
+  String get profileLevel => 'レベル ...';
   @override
   String get profilePicture => 'プロフィール画像';
   @override
@@ -2079,9 +2073,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get wise => 'Wise';
   @override
-  String get writeGuidelines => 'ここにコミュニティガイドラインを書いてください…
-  @override
-  String get writeGuidelinesTab => 'エディタタブでガイドラインを書く';
+  String get writeGuidelines => 'ここにコミュニティガイドラインを書いてください…\n@override\nString get writeGuidelinesTab => 'エディタタブでガイドラインを書く';
   @override
   String get writeWhatYouLike => '好きなことを書いてください…';
   @override
@@ -2409,9 +2401,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get biographyLabel => '経歴';
   @override
-  String get blockedUsersCannotSeeProfile => 'ブロックされたユーザーはあなたのプロフィールを見られません
-  @override
-  String get blogTitleHint => 'ブログタイトル...';
+  String get blockedUsersCannotSeeProfile => 'ブロックされたユーザーはあなたのプロフィールを見られません\n@override\nString get blogTitleHint => 'ブログタイトル...';
   @override
   String get bubbleLabel => 'バブル';
   @override

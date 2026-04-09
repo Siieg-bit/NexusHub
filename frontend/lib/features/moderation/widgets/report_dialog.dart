@@ -112,7 +112,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
     final s = ref.read(stringsProvider);
     if (_selectedType == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(s.selectReportType)),
+        SnackBar(content: Text(s.selectReportType)),
       );
       return;
     }
@@ -136,7 +136,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(s.reportSubmittedThanks),
             backgroundColor: AppTheme.successColor,
           ),

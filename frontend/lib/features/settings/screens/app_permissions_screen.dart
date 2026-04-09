@@ -90,8 +90,7 @@ class _AppPermissionsScreenState extends ConsumerState<AppPermissionsScreen>
                 style: TextStyle(
                     color: context.textPrimary, fontWeight: FontWeight.w700)),
             content: Text(
-              s.permissionPermanentlyDenied
-              s.openSystemSettings,
+              '${s.permissionPermanentlyDenied}\n${s.openSystemSettings}',
               style: TextStyle(color: context.textSecondary),
             ),
             actions: [

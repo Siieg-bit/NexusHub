@@ -1805,7 +1805,7 @@ class AppStringsAr implements AppStrings {
   @override
   String get community2 => 'المجتمع';
   @override
-  String get communityLabel => 'المجتمع: $_selectedCommunityName';
+  String get communityLabel => 'المجتمع:...';
   @override
   String get communityNameRequired => 'اسم المجتمع مطلوب';
   @override
@@ -1815,9 +1815,9 @@ class AppStringsAr implements AppStrings {
   @override
   String get confirmDeletionButton => 'تأكيد الحذف';
   @override
-  String get confirmUnblockUser => 'هل تريد إلغاء حظر $nickname؟';
+  String get confirmUnblockUser => 'هل تريد إلغاء حظر ...؟';
   @override
-  String get confirmUnlinkAccount => 'هل أنت متأكد أنك تريد إلغاء ربط حساب $provider الخاص بك؟';
+  String get confirmUnlinkAccount => 'هل أنت متأكد أنك تريد إلغاء ربط حساب ... الخاص بك؟';
   @override
   String get confirmationEmailSent => 'تم إرسال بريد إلكتروني للتأكيد!';
   @override
@@ -1835,7 +1835,7 @@ class AppStringsAr implements AppStrings {
   @override
   String get current => 'الحالي';
   @override
-  String get currentCacheSize => 'حجم ذاكرة التخزين المؤقت الحالي: $size\n\n';
+  String get currentCacheSize => 'حجم ذاكرة التخزين المؤقت الحالي: ...\n\n';
   @override
   String get currentStreak => 'السلسلة الحالية';
   @override
@@ -1921,7 +1921,7 @@ class AppStringsAr implements AppStrings {
   @override
   String get failedToLoadData => 'فشل تحميل البيانات.';
   @override
-  String get ffH => 'FF$h';
+  String get ffH => 'FF';
   @override
   String get field => 'حقل';
   @override
@@ -1983,13 +1983,13 @@ class AppStringsAr implements AppStrings {
   @override
   String get irreversibleActionWarning => 'هذا الإجراء لا رجعة فيه. جميع بياناتك ومنشوراتك وتعليقاتك، ';
   @override
-  String get joinedChannelInMs => 'الآن: انضم إلى القناة ${connection.channelId} في ${elapsed} مللي ثانية';
+  String get joinedChannelInMs => 'الآن: انضم إلى القناة ... في ... مللي ثانية';
   @override
-  String get languageChanged => 'تم تغيير اللغة إلى ${locale.label}';
+  String get languageChanged => 'تم تغيير اللغة إلى ...';
   @override
-  String get lastAccess2 => 'آخر وصول: ${lastSee}';
+  String get lastAccess2 => 'آخر وصول: ...';
   @override
-  String get lastActivity => 'آخر نشاط: ${timeago.format(lastActivityDate)}';
+  String get lastActivity => 'آخر نشاط: ...';
   @override
   String get latest2 => 'الأحدث';
   @override
@@ -3425,7 +3425,7 @@ class AppStringsAr implements AppStrings {
   @override
   String get lastSevenDays => 'آخر 7 أيام';
   @override
-  String get levelLabel => 'المستوى $level';
+  String get levelLabel => 'المستوى ...';
   @override
   String get levelUpAlert => 'ارتقاء بالمستوى!';
   @override
@@ -3441,7 +3441,7 @@ class AppStringsAr implements AppStrings {
   @override
   String get managePermissions => 'إدارة الأذونات التي يحتاجها NexusHub للعمل بشكل صحيح.';
   @override
-  String get maxStreakRecord => 'الرقم القياسي: $maxStreak أيام';
+  String get maxStreakRecord => 'الرقم القياسي: ... أيام';
   @override
   String get memesHumor => 'ميمز وفكاهة';
   @override
@@ -3531,7 +3531,7 @@ class AppStringsAr implements AppStrings {
   @override
   String get passwordsDoNotMatch2 => 'كلمات المرور غير متطابقة';
   @override
-  String get pendingFlagsCount => 'قيد الانتظار (${_pendingFlags.length})';
+  String get pendingFlagsCount => 'قيد الانتظار (...)';
   @override
   String get pendingReview2 => 'قيد المراجعة';
   @override
@@ -3543,7 +3543,7 @@ class AppStringsAr implements AppStrings {
   @override
   String get permissionDenied2 => 'تم رفض الإذن';
   @override
-  String get permissionPermanentlyDenied => 'تم رفض الإذن لـ ${info.title} بشكل دائم.';
+  String get permissionPermanentlyDenied => 'تم رفض الإذن لـ ... بشكل دائم.';
   @override
   String get photosAndMedia => 'الصور والوسائط';
   @override
@@ -3559,7 +3559,7 @@ class AppStringsAr implements AppStrings {
   @override
   String get preview2 => 'معاينة';
   @override
-  String get profileLevel => 'المستوى ${_profile?[';
+  String get profileLevel => 'المستوى ...';
   @override
   String get profilePicture => 'صورة الملف الشخصي';
   @override

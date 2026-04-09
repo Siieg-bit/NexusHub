@@ -1545,7 +1545,7 @@ class AppStringsEs implements AppStrings {
   @override
   String get community2 => 'Comunidad';
   @override
-  String get communityLabel => 'Comunidad: $_selectedCommunityName';
+  String get communityLabel => 'Comunidad:...';
   @override
   String get communityNameRequired => 'El nombre de la comunidad es obligatorio';
   @override
@@ -1555,9 +1555,9 @@ class AppStringsEs implements AppStrings {
   @override
   String get confirmDeletionButton => 'Confirmar eliminación';
   @override
-  String get confirmUnblockUser => '¿Quieres desbloquear a $nickname?';
+  String get confirmUnblockUser => '¿Quieres desbloquear a ...?';
   @override
-  String get confirmUnlinkAccount => '¿Estás seguro de que quieres desvincular tu cuenta de $provider?';
+  String get confirmUnlinkAccount => '¿Estás seguro de que quieres desvincular tu cuenta de ...?';
   @override
   String get confirmationEmailSent => '¡Correo de confirmación enviado!';
   @override
@@ -1575,7 +1575,7 @@ class AppStringsEs implements AppStrings {
   @override
   String get current => 'Actual';
   @override
-  String get currentCacheSize => 'Tamaño actual de la caché: $size';
+  String get currentCacheSize => 'Tamaño actual de la caché: ...';
   @override
   String get currentStreak => 'Racha actual';
   @override
@@ -1661,7 +1661,7 @@ class AppStringsEs implements AppStrings {
   @override
   String get failedToLoadData => 'Error al cargar datos.';
   @override
-  String get ffH => 'FF$h';
+  String get ffH => 'FF';
   @override
   String get field => 'Campo';
   @override
@@ -1723,17 +1723,17 @@ class AppStringsEs implements AppStrings {
   @override
   String get irreversibleActionWarning => 'Esta acción es IRREVERSIBLE. Todos tus datos, publicaciones, comentarios, ';
   @override
-  String get joinedChannelInMs => 'Ahora: Canal ${connection.channelId} unido en ${elapsed}ms';
+  String get joinedChannelInMs => 'Ahora: Canal ... unido en ...ms';
   @override
-  String get languageChanged => 'Idioma cambiado a ${locale.label}';
+  String get languageChanged => 'Idioma cambiado a ...';
   @override
-  String get lastAccess2 => 'Último acceso: ${lastSeen.day}/${lastSeen.month}/${lastSeen.year}';
+  String get lastAccess2 => 'Último acceso: dd/mm/yyyy';
   @override
   String get lastSevenDays => 'Últimos 7 días';
   @override
   String get leader2 => 'Líder';
   @override
-  String get levelLabel => 'Nivel $level';
+  String get levelLabel => 'Nivel ...';
   @override
   String get levelUp2 => 'Subir de nivel';
   @override
@@ -1751,7 +1751,7 @@ class AppStringsEs implements AppStrings {
   @override
   String get managePermissions => 'Gestiona los permisos que NexusHub necesita para funcionar correctamente.';
   @override
-  String get maxStreakRecord => 'Récord: $maxStreak días';
+  String get maxStreakRecord => 'Récord: ... días';
   @override
   String get memesHumor => 'Memes y humor';
   @override
@@ -1849,7 +1849,7 @@ class AppStringsEs implements AppStrings {
   @override
   String get pending2 => 'Pendiente';
   @override
-  String get pendingFlagsCount => 'Pendiente (${_pendingFlags.length})';
+  String get pendingFlagsCount => 'Pendiente (...)';
   @override
   String get pendingReview2 => 'Revisión pendiente';
   @override
@@ -1861,7 +1861,7 @@ class AppStringsEs implements AppStrings {
   @override
   String get permissionDenied2 => 'Permiso denegado';
   @override
-  String get permissionPermanentlyDenied => 'El permiso para ${info.title} ha sido denegado permanentemente.';
+  String get permissionPermanentlyDenied => 'El permiso para ... ha sido denegado permanentemente.';
   @override
   String get petsAnimals => 'Mascotas y animales';
   @override
@@ -1881,7 +1881,7 @@ class AppStringsEs implements AppStrings {
   @override
   String get preview2 => 'Vista previa';
   @override
-  String get profileLevel => 'Nivel ${_profile?[';
+  String get profileLevel => 'Nivel ...';
   @override
   String get profilePicture => 'Foto de perfil';
   @override

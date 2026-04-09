@@ -445,7 +445,7 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
                                 if (lastSeen != null) ...[
                                   const SizedBox(height: 2),
                                   Text(
-                                    s.lastAccess20')}/${lastSeen.month.toString().padLeft(2, '0')}/${lastSeen.year} ${lastSeen.hour.toString().padLeft(2, '0')}:${lastSeen.minute.toString().padLeft(2, '0')}',
+                                    '${lastSeen.day.toString().padLeft(2, '0')}/${lastSeen.month.toString().padLeft(2, '0')}/${lastSeen.year} ${lastSeen.hour.toString().padLeft(2, '0')}:${lastSeen.minute.toString().padLeft(2, '0')}',
                                     style: TextStyle(
                                         color: Colors.grey[600],
                                         fontSize: r.fs(11)),

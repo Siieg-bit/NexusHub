@@ -360,7 +360,7 @@ class _CommunityChatTabState extends ConsumerState<CommunityChatTab> {
           final chat = _chats[index];
           return _ChatCard(
             chat: chat,
-            onTap: () => context.push('/chat/${chat['ids.closingBracket),
+            onTap: () => context.push('/chat/${chat["id"]}'),
             onLongPress: () => _showContextMenu(context, chat),
             formatTime: _formatTime,
           );

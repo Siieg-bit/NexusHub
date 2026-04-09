@@ -577,7 +577,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     fontSize: r.fs(16)),
                               ),
                               Text(
-                                s.profileLevellevel'] ?? 1}',
+                                'Nível ${_profile?["level"] ?? 1}',
                                 style: TextStyle(
                                     color: Colors.grey[500],
                                     fontSize: r.fs(12),

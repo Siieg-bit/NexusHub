@@ -3391,7 +3391,7 @@ class AppStringsRu implements AppStrings {
   @override
   String get community2 => 'Сообщество';
   @override
-  String get communityLabel => 'Сообщество: $_selectedCommunityName';
+  String get communityLabel => 'Сообщество:...';
   @override
   String get confirmContinue => 'Вы уверены, что хотите продолжить?';
   @override
@@ -3399,7 +3399,7 @@ class AppStringsRu implements AppStrings {
   @override
   String get confirmDeletionButton => 'Подтвердить удаление';
   @override
-  String get confirmUnlinkAccount => 'Вы уверены, что хотите отвязать ваш аккаунт $provider?';
+  String get confirmUnlinkAccount => 'Вы уверены, что хотите отвязать ваш аккаунт ...?';
   @override
   String get connectWithYourCommunities => 'Подключайтесь к вашим любимым сообществам';
   @override
@@ -3415,7 +3415,7 @@ class AppStringsRu implements AppStrings {
   @override
   String get current => 'Текущий';
   @override
-  String get currentCacheSize => 'Текущий размер кэша: $size';
+  String get currentCacheSize => 'Текущий размер кэша: ...';
   @override
   String get currentStreak => 'Текущая серия';
   @override
@@ -3493,7 +3493,7 @@ class AppStringsRu implements AppStrings {
   @override
   String get failedToLoadData => 'Не удалось загрузить данные.';
   @override
-  String get ffH => 'FF$h';
+  String get ffH => 'FF';
   @override
   String get field => 'Поле';
   @override
@@ -3553,17 +3553,17 @@ class AppStringsRu implements AppStrings {
   @override
   String get irreversibleActionWarning => 'Это действие НЕОБРАТИМО. Все ваши данные, посты, комментарии, ';
   @override
-  String get joinedChannelInMs => 'Сейчас: присоединился к каналу ${connection.channelId} за ${elapsed}мс';
+  String get joinedChannelInMs => 'Сейчас: присоединился к каналу ... за ...мс';
   @override
-  String get languageChanged => 'Язык изменён на ${locale.label}';
+  String get languageChanged => 'Язык изменён на ...';
   @override
-  String get lastAccess2 => 'Последний доступ: ${lastSeen.day}/${lastSeen.month}/${lastSeen.year}';
+  String get lastAccess2 => 'Последний доступ: dd/mm/yyyy';
   @override
   String get lastSevenDays => 'Последние 7 дней';
   @override
   String get leader2 => 'Лидер';
   @override
-  String get levelLabel => 'Уровень $level';
+  String get levelLabel => 'Уровень ...';
   @override
   String get levelUp2 => 'Повышение уровня';
   @override
@@ -3581,7 +3581,7 @@ class AppStringsRu implements AppStrings {
   @override
   String get managePermissions => 'Управляйте разрешениями, необходимыми NexusHub для корректной работы.';
   @override
-  String get maxStreakRecord => 'Рекорд: $maxStreak дней';
+  String get maxStreakRecord => 'Рекорд: ... дней';
   @override
   String get memesHumor => 'Мемы и юмор';
   @override
@@ -3677,7 +3677,7 @@ class AppStringsRu implements AppStrings {
   @override
   String get pending2 => 'В ожидании';
   @override
-  String get pendingFlagsCount => 'В ожидании (${_pendingFlags.length})';
+  String get pendingFlagsCount => 'В ожидании (...)';
   @override
   String get pendingReview2 => 'Ожидает проверки';
   @override
@@ -3689,7 +3689,7 @@ class AppStringsRu implements AppStrings {
   @override
   String get permissionDenied2 => 'Доступ запрещён';
   @override
-  String get permissionPermanentlyDenied => 'Разрешение для ${info.title} было навсегда запрещено.';
+  String get permissionPermanentlyDenied => 'Разрешение для ... было навсегда запрещено.';
   @override
   String get petsAnimals => 'Домашние животные и животные';
   @override
@@ -3709,7 +3709,7 @@ class AppStringsRu implements AppStrings {
   @override
   String get preview2 => 'Предпросмотр';
   @override
-  String get profileLevel => 'Уровень ${_profile?[';
+  String get profileLevel => 'Уровень ...';
   @override
   String get profilePicture => 'Фото профиля';
   @override

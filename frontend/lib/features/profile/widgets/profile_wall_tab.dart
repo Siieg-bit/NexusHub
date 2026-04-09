@@ -256,7 +256,7 @@ class ProfileWallTab extends ConsumerWidget {
   }
 
   String _timeAgo(DateTime dt) {
-    final s = ref.read(stringsProvider);
+    final s = getStrings();
     final diff = DateTime.now().difference(dt);
     if (diff.inDays > 365) return '${diff.inDays ~/ 365}a';
     if (diff.inDays > 30) return '${diff.inDays ~/ 30}m';

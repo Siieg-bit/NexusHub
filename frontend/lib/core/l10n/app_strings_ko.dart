@@ -2629,7 +2629,7 @@ class AppStringsKo implements AppStrings {
   @override
   String get community2 => '커뮤니티';
   @override
-  String get communityLabel => '커뮤니티: $_selectedCommunityName';
+  String get communityLabel => '커뮤니티:...';
   @override
   String get confirmContinue => '계속하시겠습니까?';
   @override
@@ -2637,9 +2637,9 @@ class AppStringsKo implements AppStrings {
   @override
   String get confirmDeletionButton => '삭제 확인';
   @override
-  String get confirmUnblockUser => '$nickname 사용자의 차단을 해제하시겠습니까?';
+  String get confirmUnblockUser => '... 사용자의 차단을 해제하시겠습니까?';
   @override
-  String get confirmUnlinkAccount => '$provider 계정 연결을 해제하시겠습니까?';
+  String get confirmUnlinkAccount => '... 계정 연결을 해제하시겠습니까?';
   @override
   String get connectWithYourCommunities => '좋아하는 커뮤니티와 연결하세요';
   @override
@@ -2655,7 +2655,7 @@ class AppStringsKo implements AppStrings {
   @override
   String get current => '현재';
   @override
-  String get currentCacheSize => '현재 캐시 크기: $size';
+  String get currentCacheSize => '현재 캐시 크기: ...';
   @override
   String get currentStreak => '현재 연속 기록';
   @override
@@ -2741,7 +2741,7 @@ class AppStringsKo implements AppStrings {
   @override
   String get failedToLoadData => '데이터 로드 실패.';
   @override
-  String get ffH => 'FF$h';
+  String get ffH => 'FF';
   @override
   String get field => '필드';
   @override
@@ -2803,17 +2803,17 @@ class AppStringsKo implements AppStrings {
   @override
   String get irreversibleActionWarning => '이 작업은 되돌릴 수 없습니다. 모든 데이터, 게시물, 댓글, ';
   @override
-  String get joinedChannelInMs => '지금: 채널 ${connection.channelId}에 ${elapsed}ms 만에 참여했습니다';
+  String get joinedChannelInMs => '지금: 채널 ...에 ...ms 만에 참여했습니다';
   @override
-  String get languageChanged => '언어가 ${locale.label}(으)로 변경되었습니다';
+  String get languageChanged => '언어가 ...(으)로 변경되었습니다';
   @override
-  String get lastAccess2 => '마지막 접속: ${lastSeen.day}/${lastSeen.month}/${lastSeen.year}';
+  String get lastAccess2 => '마지막 접속: dd/mm/yyyy';
   @override
   String get lastSevenDays => '최근 7일';
   @override
   String get leader2 => '리더';
   @override
-  String get levelLabel => '레벨 $level';
+  String get levelLabel => '레벨 ...';
   @override
   String get levelUp2 => '레벨 업';
   @override
@@ -2831,7 +2831,7 @@ class AppStringsKo implements AppStrings {
   @override
   String get managePermissions => 'NexusHub가 제대로 작동하는 데 필요한 권한을 관리하세요.';
   @override
-  String get maxStreakRecord => '기록: $maxStreak일';
+  String get maxStreakRecord => '기록: ...일';
   @override
   String get memesHumor => '밈 & 유머';
   @override
@@ -2927,7 +2927,7 @@ class AppStringsKo implements AppStrings {
   @override
   String get pending2 => '대기 중';
   @override
-  String get pendingFlagsCount => '대기 중 (${_pendingFlags.length})';
+  String get pendingFlagsCount => '대기 중 (...)';
   @override
   String get pendingReview2 => '검토 대기 중';
   @override
@@ -2939,7 +2939,7 @@ class AppStringsKo implements AppStrings {
   @override
   String get permissionDenied2 => '권한 거부됨';
   @override
-  String get permissionPermanentlyDenied => '${info.title} 권한이 영구적으로 거부되었습니다.';
+  String get permissionPermanentlyDenied => '... 권한이 영구적으로 거부되었습니다.';
   @override
   String get petsAnimals => '반려동물 & 동물';
   @override
@@ -2959,7 +2959,7 @@ class AppStringsKo implements AppStrings {
   @override
   String get preview2 => '미리보기';
   @override
-  String get profileLevel => '레벨 ${_profile?[';
+  String get profileLevel => '레벨 ...';
   @override
   String get profilePicture => '프로필 사진';
   @override

@@ -1949,7 +1949,7 @@ class AppStringsDe implements AppStrings {
   @override
   String get community2 => 'Community';
   @override
-  String get communityLabel => 'Community: $_selectedCommunityName';
+  String get communityLabel => 'Community:...';
   @override
   String get communityNameRequired => 'Der Community-Name ist erforderlich.';
   @override
@@ -1959,9 +1959,9 @@ class AppStringsDe implements AppStrings {
   @override
   String get confirmDeletionButton => 'Löschung bestätigen';
   @override
-  String get confirmUnblockUser => 'Möchten Sie $nickname entsperren?';
+  String get confirmUnblockUser => 'Möchten Sie ... entsperren?';
   @override
-  String get confirmUnlinkAccount => 'Sind Sie sicher, dass Sie Ihr $provider-Konto trennen möchten?';
+  String get confirmUnlinkAccount => 'Sind Sie sicher, dass Sie Ihr ...-Konto trennen möchten?';
   @override
   String confirmationEmailSent(String email) => 'Wir haben einen Bestätigungslink an \$email gesendet.\n\n';
   @override
@@ -1979,7 +1979,7 @@ class AppStringsDe implements AppStrings {
   @override
   String get current => 'Aktuell';
   @override
-  String get currentCacheSize => 'Aktuelle Cache-Größe: $size';
+  String get currentCacheSize => 'Aktuelle Cache-Größe: ...';
   @override
   String get currentStreak => 'Aktuelle Serie';
   @override
@@ -2065,7 +2065,7 @@ class AppStringsDe implements AppStrings {
   @override
   String get failedToLoadData => 'Daten konnten nicht geladen werden.';
   @override
-  String get ffH => 'FF$h';
+  String get ffH => 'FF';
   @override
   String get field => 'Feld';
   @override
@@ -2127,17 +2127,17 @@ class AppStringsDe implements AppStrings {
   @override
   String get irreversibleActionWarning => 'Diese Aktion ist UNWIDERRUFLICH. Alle Ihre Daten, Beiträge, Kommentare, ';
   @override
-  String get joinedChannelInMs => 'Jetzt: Kanal ${connection.channelId} in ${elapsed}ms beigetreten';
+  String get joinedChannelInMs => 'Jetzt: Kanal ... in ...ms beigetreten';
   @override
-  String get languageChanged => 'Sprache geändert zu ${locale.label}';
+  String get languageChanged => 'Sprache geändert zu ...';
   @override
-  String get lastAccess2 => 'Letzter Zugriff: ${lastSeen.day}/${lastSeen.month}/${lastSeen.year}';
+  String get lastAccess2 => 'Letzter Zugriff: dd/mm/yyyy';
   @override
   String get lastSevenDays => 'Letzte 7 Tage';
   @override
   String get leader2 => 'Anführer';
   @override
-  String get levelLabel => 'Level $level';
+  String get levelLabel => 'Level ...';
   @override
   String get levelUp2 => 'Level Aufstieg';
   @override
@@ -2155,7 +2155,7 @@ class AppStringsDe implements AppStrings {
   @override
   String get managePermissions => 'Verwalten Sie die Berechtigungen, die NexusHub benötigt, um ordnungsgemäß zu funktionieren.';
   @override
-  String get maxStreakRecord => 'Rekord: $maxStreak Tage';
+  String get maxStreakRecord => 'Rekord: ... Tage';
   @override
   String get memesHumor => 'Memes & Humor';
   @override
@@ -2253,7 +2253,7 @@ class AppStringsDe implements AppStrings {
   @override
   String get pending2 => 'Ausstehend';
   @override
-  String get pendingFlagsCount => 'Ausstehend (${_pendingFlags.length})';
+  String get pendingFlagsCount => 'Ausstehend (...)';
   @override
   String get pendingReview2 => 'Ausstehende Überprüfung';
   @override
@@ -2265,7 +2265,7 @@ class AppStringsDe implements AppStrings {
   @override
   String get permissionDenied2 => 'Berechtigung verweigert';
   @override
-  String get permissionPermanentlyDenied => 'Die Berechtigung für ${info.title} wurde dauerhaft verweigert.';
+  String get permissionPermanentlyDenied => 'Die Berechtigung für ... wurde dauerhaft verweigert.';
   @override
   String get petsAnimals => 'Haustiere & Tiere';
   @override
@@ -2285,7 +2285,7 @@ class AppStringsDe implements AppStrings {
   @override
   String get preview2 => 'Vorschau';
   @override
-  String get profileLevel => 'Level ${_profile?[';
+  String get profileLevel => 'Level ...';
   @override
   String get profilePicture => 'Profilbild';
   @override
