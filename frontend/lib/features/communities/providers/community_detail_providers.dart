@@ -20,7 +20,7 @@ final communityDetailProvider =
 final communityFeedProvider =
     FutureProvider.family<List<PostModel>, String>((ref, communityId) async {
   final response = await SupabaseService.table('posts')
-      .select('*, profiles!posts_author_id_fkey(*)')
+      .select('*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status)')
       .eq('community_id', communityId)
       .eq('status', 'ok')
       .order('is_pinned', ascending: false)
@@ -32,6 +32,7 @@ final communityFeedProvider =
     if (map['profiles'] != null) {
       map['author'] = map['profiles'];
     }
+    // original_author is already keyed correctly from the join alias
     return map;
   }).toList();
 
@@ -51,7 +52,7 @@ final communityFeaturedFeedProvider =
 final pinnedFeedProvider =
     FutureProvider.family<List<PostModel>, String>((ref, communityId) async {
   final response = await SupabaseService.table('posts')
-      .select('*, profiles!posts_author_id_fkey(*)')
+      .select('*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status)')
       .eq('community_id', communityId)
       .eq('status', 'ok')
       .eq('is_pinned', true)
@@ -74,7 +75,7 @@ final activeFeaturedFeedProvider =
   final now = DateTime.now().toUtc().toIso8601String();
 
   final response = await SupabaseService.table('posts')
-      .select('*, profiles!posts_author_id_fkey(*)')
+      .select('*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status)')
       .eq('community_id', communityId)
       .eq('status', 'ok')
       .eq('is_featured', true)
@@ -99,7 +100,7 @@ final activeFeaturedFeedProvider =
 final latestFeedProvider =
     FutureProvider.family<List<PostModel>, String>((ref, communityId) async {
   final response = await SupabaseService.table('posts')
-      .select('*, profiles!posts_author_id_fkey(*)')
+      .select('*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status)')
       .eq('community_id', communityId)
       .eq('status', 'ok')
       .eq('is_pinned', false)

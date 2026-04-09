@@ -97,7 +97,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
 
       // Posts do usuário na comunidade
       final postsRes = await SupabaseService.table('posts')
-          .select('*, profiles(*)')
+          .select('*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url, online_status)')
           .eq('author_id', widget.userId)
           .eq('community_id', widget.communityId)
           .eq('status', 'ok')
