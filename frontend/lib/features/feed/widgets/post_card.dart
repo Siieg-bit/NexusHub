@@ -74,6 +74,76 @@ class _PostCardState extends ConsumerState<PostCard>
     super.dispose();
   }
 
+  // ── REPOST ──
+  Future<void> _doRepost() async {
+    final s = ref.read(stringsProvider);
+    final currentUserId = SupabaseService.currentUserId;
+    if (currentUserId == null) return;
+
+    // Impedir auto-repost
+    if (_post.authorId == currentUserId) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Não é possível republicar seu próprio post.'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: AppTheme.errorColor,
+        ),
+      );
+      return;
+    }
+
+    // Impedir repost de repost
+    if (_post.type == 'repost') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Não é possível republicar um repost.'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: AppTheme.errorColor,
+        ),
+      );
+      return;
+    }
+
+    // Modal de confirmação
+    final confirm = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: context.surfaceColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => _RepostConfirmSheet(post: _post),
+    );
+
+    if (confirm != true || !mounted) return;
+
+    try {
+      await SupabaseService.rpc('repost_post', params: {
+        'p_original_post_id': _post.id,
+        'p_community_id': _post.communityId,
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(s.repostSuccess),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: const Color(0xFF4CAF50),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      final msg = e.toString();
+      final isAlreadyReposted = msg.contains('já republicou');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(isAlreadyReposted ? s.repostAlreadyExists : s.anErrorOccurredTryAgain),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: isAlreadyReposted ? AppTheme.warningColor : AppTheme.errorColor,
+        ),
+      );
+    }
+  }
+
   Future<void> _toggleLike() async {
     final wasLiked = _post.isLiked;
     setState(() {
@@ -983,5 +1053,211 @@ class _PostCardState extends ConsumerState<PostCard>
       default:
         return context.textSecondary;
     }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Widget auxiliar: caixa de ícone para o banner de repost/crosspost
+// ─────────────────────────────────────────────────────────────────────────────
+class _RepostIconBox extends StatelessWidget {
+  final Color color;
+  final IconData icon;
+  final double size;
+  final double iconSize;
+  const _RepostIconBox({
+    required this.color,
+    required this.icon,
+    required this.size,
+    required this.iconSize,
+  });
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(size / 2),
+      ),
+      child: Icon(icon, color: color, size: iconSize),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Modal de confirmação de repost
+// ─────────────────────────────────────────────────────────────────────────────
+class _RepostConfirmSheet extends ConsumerWidget {
+  final PostModel post;
+  const _RepostConfirmSheet({required this.post});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final r = context.r;
+    final s = ref.watch(stringsProvider);
+    const repostColor = Color(0xFF607D8B);
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(r.s(20), r.s(20), r.s(20), r.s(32)),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Handle bar
+          Center(
+            child: Container(
+              width: r.s(40),
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[700],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          SizedBox(height: r.s(20)),
+          // Ícone + título
+          Row(
+            children: [
+              Container(
+                width: r.s(44),
+                height: r.s(44),
+                decoration: BoxDecoration(
+                  color: repostColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(r.s(12)),
+                ),
+                child: const Icon(Icons.repeat_rounded,
+                    color: repostColor, size: 22),
+              ),
+              SizedBox(width: r.s(14)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      s.repostConfirmTitle,
+                      style: TextStyle(
+                        color: context.textPrimary,
+                        fontSize: r.fs(17),
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    SizedBox(height: r.s(2)),
+                    Text(
+                      s.repostConfirmMsg,
+                      style: TextStyle(
+                        color: context.textSecondary,
+                        fontSize: r.fs(12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: r.s(20)),
+          // Preview do post original
+          Container(
+            padding: EdgeInsets.all(r.s(12)),
+            decoration: BoxDecoration(
+              color: repostColor.withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(r.s(10)),
+              border: Border.all(color: repostColor.withValues(alpha: 0.2)),
+            ),
+            child: Row(
+              children: [
+                // Avatar do autor
+                if (post.author?.iconUrl != null)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(r.s(16)),
+                    child: CachedNetworkImage(
+                      imageUrl: post.author!.iconUrl!,
+                      width: r.s(32),
+                      height: r.s(32),
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                else
+                  CircleAvatar(
+                    radius: r.s(16),
+                    backgroundColor: repostColor.withValues(alpha: 0.2),
+                    child: Icon(Icons.person_rounded,
+                        size: r.s(16), color: repostColor),
+                  ),
+                SizedBox(width: r.s(10)),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '@${post.author?.nickname ?? s.user}',
+                        style: TextStyle(
+                          color: context.textSecondary,
+                          fontSize: r.fs(11),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      if (post.title != null && post.title!.isNotEmpty)
+                        Text(
+                          post.title!,
+                          style: TextStyle(
+                            color: context.textPrimary,
+                            fontSize: r.fs(12),
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: r.s(24)),
+          // Botões
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: Colors.grey[700]!),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(r.s(12)),
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: r.s(14)),
+                  ),
+                  onPressed: () => Navigator.pop(context, false),
+                  child: Text(
+                    s.cancel,
+                    style: TextStyle(
+                        color: context.textSecondary,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+              SizedBox(width: r.s(12)),
+              Expanded(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: repostColor,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(r.s(12)),
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: r.s(14)),
+                  ),
+                  icon: const Icon(Icons.repeat_rounded, size: 18),
+                  label: Text(
+                    s.repostAction,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  onPressed: () => Navigator.pop(context, true),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }

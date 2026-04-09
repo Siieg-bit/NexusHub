@@ -170,6 +170,65 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     }
   }
 
+  // ── REPOST ──
+  Future<void> _doRepost(PostModel post) async {
+    final s = ref.read(stringsProvider);
+    final currentUserId = SupabaseService.currentUserId;
+    if (currentUserId == null) return;
+
+    if (post.authorId == currentUserId) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text('Não é possível republicar seu próprio post.'),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppTheme.errorColor,
+      ));
+      return;
+    }
+
+    if (post.type == 'repost') {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text('Não é possível republicar um repost.'),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppTheme.errorColor,
+      ));
+      return;
+    }
+
+    final confirm = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: context.surfaceColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => _RepostConfirmSheetDetail(post: post),
+    );
+
+    if (confirm != true || !mounted) return;
+
+    try {
+      await SupabaseService.rpc('repost_post', params: {
+        'p_original_post_id': post.id,
+        'p_community_id': post.communityId,
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(s.repostSuccess),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: const Color(0xFF4CAF50),
+        ));
+      }
+    } catch (e) {
+      if (!mounted) return;
+      final msg = e.toString();
+      final isAlreadyReposted = msg.contains('já republicou');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(isAlreadyReposted ? s.repostAlreadyExists : s.anErrorOccurredTryAgain),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: isAlreadyReposted ? AppTheme.warningColor : AppTheme.errorColor,
+      ));
+    }
+  }
+
   void _sharePost() {
     final link = 'https://nexushub.app/p/${widget.postId}';
     Clipboard.setData(ClipboardData(text: link));
@@ -281,6 +340,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     }
                   }
                   break;
+                case 'repost':
+                  _doRepost(post);
+                  break;
                 case 'copy_link':
                   _sharePost();
                   break;
@@ -342,6 +404,17 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   ref.read(postDetailProvider(widget.postId)).valueOrNull;
               final isAuthor = post?.authorId == SupabaseService.currentUserId;
               return [
+                if (!isAuthor && post?.type != 'repost')
+                  PopupMenuItem(
+                    value: 'repost',
+                    child: Row(children: [
+                      Icon(Icons.repeat_rounded,
+                          size: r.s(18), color: const Color(0xFF607D8B)),
+                      SizedBox(width: r.s(10)),
+                      Text(s.repostAction,
+                          style: TextStyle(color: context.textPrimary)),
+                    ]),
+                  ),
                 PopupMenuItem(
                   value: 'copy_link',
                   child: Row(children: [
