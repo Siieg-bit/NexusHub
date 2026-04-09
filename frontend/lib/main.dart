@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 
+import 'package:go_router/go_router.dart';
+
 import 'config/app_config.dart';
 import 'config/app_theme.dart';
 import 'router/app_router.dart';

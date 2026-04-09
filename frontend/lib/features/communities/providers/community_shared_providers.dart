@@ -42,7 +42,7 @@ final checkInStatusProvider =
   if (userId == null) return {};
 
   // Buscar dados de check-in e o horário atual do servidor em paralelo
-  final results = await Future.wait([
+  final results = await Future.wait<dynamic>([
     SupabaseService.table('community_members')
         .select(
             'community_id, has_checkin_today, consecutive_checkin_days, last_checkin_at')
