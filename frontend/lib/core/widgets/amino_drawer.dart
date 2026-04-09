@@ -110,20 +110,21 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
         // vencer a gesture arena contra o TabBarView interno.
         // Sem isso, o TabBarView rouba o drag horizontal e o drawer
         // trava em ~5%.
-        AnimatedBuilder(
-          animation: _animController,
-          builder: (context, child) {
-            // Só mostrar quando o drawer está fechado
-            if (_animController.value > 0.05) {
-              return const SizedBox.shrink();
-            }
-            return child!;
-          },
-          child: Positioned(
-            left: 0,
-            top: 0,
-            bottom: 0,
-            width: 40.0,
+        // Positioned DEVE ser filho direto do Stack.
+        Positioned(
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: 40.0,
+          child: AnimatedBuilder(
+            animation: _animController,
+            builder: (context, child) {
+              // Só mostrar quando o drawer está fechado
+              if (_animController.value > 0.05) {
+                return const SizedBox.shrink();
+              }
+              return child!;
+            },
             child: _EdgeDragArea(
               onDragUpdate: _onDragUpdate,
               onDragEnd: _onDragEnd,
@@ -133,17 +134,18 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
 
         // ── Handle visual (indicador de puxão) ──────────────────────
         // Barra branca fina na borda esquerda, visível quando fechado.
-        IgnorePointer(
-          child: AnimatedBuilder(
-            animation: _animController,
-            builder: (context, _) {
-              final opacity = (1.0 - _animController.value * 20.0).clamp(0.0, 1.0);
-              if (opacity == 0) return const SizedBox.shrink();
-              return Positioned(
-                left: 2.0,
-                top: 0,
-                bottom: 0,
-                child: Center(
+        // Positioned deve ser filho direto do Stack (não de IgnorePointer).
+        Positioned(
+          left: 2.0,
+          top: 0,
+          bottom: 0,
+          child: IgnorePointer(
+            child: AnimatedBuilder(
+              animation: _animController,
+              builder: (context, _) {
+                final opacity = (1.0 - _animController.value * 20.0).clamp(0.0, 1.0);
+                if (opacity == 0) return const SizedBox.shrink();
+                return Center(
                   child: Opacity(
                     opacity: opacity,
                     child: Container(
@@ -161,9 +163,9 @@ class AminoDrawerControllerState extends State<AminoDrawerController>
                       ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
 
