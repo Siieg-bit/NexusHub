@@ -260,6 +260,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             community: community,
             currentUser: ref.watch(currentUserProfileProvider).valueOrNull,
             userRole: userRole,
+            membership: membership,
           ),
           child: Scaffold(
             backgroundColor: context.scaffoldBg,

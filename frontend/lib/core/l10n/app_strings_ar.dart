@@ -4286,4 +4286,15 @@ class AppStringsAr implements AppStrings {
 
   @override
   String get holdAndDragToReorder => 'اضغط مطولاً واسحب البطاقات لإعادة الترتيب';
+
+  @override
+  String streakRestoredMsg(int days) => 'تم استعادة السلسلة! $days أيام متتالية.';
+  @override
+  String get insufficientCoins => 'عملات غير كافية';
+  @override
+  String get noBio => 'لا توجد سيرة ذاتية';
+  @override
+  String get tapToAddBio => 'انقر هنا لإضافة سيرتك الذاتية!';
+  @override
+  String memberSinceLabel(String month, int year, int days) => 'عضو منذ $month $year ($days يوم)';
 }

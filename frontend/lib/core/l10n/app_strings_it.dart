@@ -3494,4 +3494,15 @@ class AppStringsIt implements AppStrings {
 
   @override
   String get holdAndDragToReorder => 'Tieni premuto e trascina le schede per riordinare';
+
+  @override
+  String streakRestoredMsg(int days) => 'Serie ripristinata! $days giorni consecutivi.';
+  @override
+  String get insufficientCoins => 'Monete insufficienti';
+  @override
+  String get noBio => 'Nessuna biografia';
+  @override
+  String get tapToAddBio => 'Tocca qui per aggiungere la tua biografia!';
+  @override
+  String memberSinceLabel(String month, int year, int days) => 'Membro dal $month $year ($days giorni)';
 }

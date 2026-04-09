@@ -3585,4 +3585,15 @@ it will appear here';
 
   @override
   String get holdAndDragToReorder => 'Hold and drag cards to reorder';
+
+  @override
+  String streakRestoredMsg(int days) => 'Streak restored! $days consecutive days.';
+  @override
+  String get insufficientCoins => 'Insufficient coins';
+  @override
+  String get noBio => 'No bio';
+  @override
+  String get tapToAddBio => 'Tap here to add your bio!';
+  @override
+  String memberSinceLabel(String month, int year, int days) => 'Member since $month $year ($days days)';
 }

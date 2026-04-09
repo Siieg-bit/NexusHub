@@ -3639,4 +3639,15 @@ aparecerá aqui';
 
   @override
   String get holdAndDragToReorder => 'Segure e arraste os cards para reordenar';
+
+  @override
+  String streakRestoredMsg(int days) => 'Streak restaurada! $days dias consecutivos.';
+  @override
+  String get insufficientCoins => 'Moedas insuficientes';
+  @override
+  String get noBio => 'Sem biografia';
+  @override
+  String get tapToAddBio => 'Clique aqui para adicionar sua biografia!';
+  @override
+  String memberSinceLabel(String month, int year, int days) => 'Membro desde $month $year ($days dias)';
 }

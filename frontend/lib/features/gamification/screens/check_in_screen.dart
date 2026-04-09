@@ -116,7 +116,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                    'Streak restaurada! $_consecutiveDays dias consecutivos.'),
+                    ref.read(stringsProvider).streakRestoredMsg(_consecutiveDays)),
                 backgroundColor: AppTheme.primaryColor,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
@@ -129,7 +129,7 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen>
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content:
-                    Text(data['message'] as String? ?? 'Moedas insuficientes'),
+                    Text(data['message'] as String? ?? ref.read(stringsProvider).insufficientCoins),
                 backgroundColor: AppTheme.errorColor,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(

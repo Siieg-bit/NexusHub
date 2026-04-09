@@ -4620,4 +4620,15 @@ class AppStringsRu implements AppStrings {
 
   @override
   String get holdAndDragToReorder => 'Удерживайте и перетащите карточки для изменения порядка';
+
+  @override
+  String streakRestoredMsg(int days) => 'Серия восстановлена! $days дней подряд.';
+  @override
+  String get insufficientCoins => 'Недостаточно монет';
+  @override
+  String get noBio => 'Нет биографии';
+  @override
+  String get tapToAddBio => 'Нажмите здесь, чтобы добавить биографию!';
+  @override
+  String memberSinceLabel(String month, int year, int days) => 'Участник с $month $year ($days дней)';
 }

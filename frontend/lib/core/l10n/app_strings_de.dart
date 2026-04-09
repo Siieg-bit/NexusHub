@@ -3626,4 +3626,15 @@ class AppStringsDe implements AppStrings {
 
   @override
   String get holdAndDragToReorder => 'Halten und ziehen Sie die Karten zum Neuordnen';
+
+  @override
+  String streakRestoredMsg(int days) => 'Streak wiederhergestellt! $days aufeinanderfolgende Tage.';
+  @override
+  String get insufficientCoins => 'Nicht genügend Münzen';
+  @override
+  String get noBio => 'Keine Biografie';
+  @override
+  String get tapToAddBio => 'Tippe hier, um deine Biografie hinzuzufügen!';
+  @override
+  String memberSinceLabel(String month, int year, int days) => 'Mitglied seit $month $year ($days Tage)';
 }

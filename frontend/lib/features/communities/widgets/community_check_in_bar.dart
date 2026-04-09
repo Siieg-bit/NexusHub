@@ -217,7 +217,7 @@ class _CommunityCheckInBarState extends ConsumerState<CommunityCheckInBar>
 
   Widget _buildModernStreakBar(Responsive r, int streak) {
     const totalDays = 7;
-    final completedDays = (streak % 7);
+    final completedDays = streak > 0 && streak % 7 == 0 ? 7 : streak % 7;
 
     return Row(
       children: List.generate(totalDays, (i) {

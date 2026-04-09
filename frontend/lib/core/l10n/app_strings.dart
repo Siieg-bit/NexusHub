@@ -1818,4 +1818,12 @@ abstract class AppStrings {
 
   // REORDER
   String get holdAndDragToReorder;
+  // STREAK REPAIR
+  String streakRestoredMsg(int days);
+  String get insufficientCoins;
+  // PROFILE BIO
+  String get noBio;
+  String get tapToAddBio;
+  // MEMBER SINCE (parametrized)
+  String memberSinceLabel(String month, int year, int days);
 }

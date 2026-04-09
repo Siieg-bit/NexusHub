@@ -49,12 +49,14 @@ class CommunityDrawer extends ConsumerStatefulWidget {
   final CommunityModel community;
   final UserModel? currentUser;
   final String? userRole;
+  final Map<String, dynamic>? membership;
 
   const CommunityDrawer({
     super.key,
     required this.community,
     this.currentUser,
     this.userRole,
+    this.membership,
   });
 
   @override
@@ -444,11 +446,15 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
             // Badge de nível + barra de reputação (clicável: abre rankings)
             if (user != null)
               GestureDetector(
-                onTap: () => context.push('/all-rankings', extra: {
-                  'level': user.level,
-                  'reputation': user.reputation,
-                  'bannerUrl': widget.community.bannerUrl,
-                }),
+                onTap: () {
+                  final localLevel = widget.membership?['local_level'] as int? ?? user.level;
+                  final localRep = widget.membership?['local_reputation'] as int? ?? user.reputation;
+                  context.push('/all-rankings', extra: {
+                    'level': localLevel,
+                    'reputation': localRep,
+                    'bannerUrl': widget.community.bannerUrl,
+                  });
+                },
                 child: _buildLevelBadge(r, user),
               ),
             SizedBox(height: r.s(8)),
@@ -556,10 +562,12 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
   // ═══════════════════════════════════════════════════════════════════════════
 
   Widget _buildLevelBadge(Responsive r, UserModel user) {
-    final level = user.level;
-    final reputation = user.reputation;
+    final s = ref.read(stringsProvider);
+    // Priorizar dados locais da comunidade (membership) sobre dados globais (user)
+    final level = widget.membership?['local_level'] as int? ?? user.level;
+    final reputation = widget.membership?['local_reputation'] as int? ?? user.reputation;
     final levelColor = AppTheme.getLevelColor(level);
-    final levelName = levelTitle(level);
+    final levelName = levelTitleFromStrings(s, level);
     final repProgress = levelProgress(reputation);
 
     return Padding(

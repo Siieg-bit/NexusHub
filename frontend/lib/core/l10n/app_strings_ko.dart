@@ -3982,4 +3982,15 @@ class AppStringsKo implements AppStrings {
 
   @override
   String get holdAndDragToReorder => '카드를 길게 누르고 드래그하여 재정렬';
+
+  @override
+  String streakRestoredMsg(int days) => '연속 기록 복원! $days일 연속.';
+  @override
+  String get insufficientCoins => '코인이 부족합니다';
+  @override
+  String get noBio => '소개 없음';
+  @override
+  String get tapToAddBio => '여기를 탭하여 소개를 추가하세요!';
+  @override
+  String memberSinceLabel(String month, int year, int days) => '$month $year년부터 ($days일)';
 }

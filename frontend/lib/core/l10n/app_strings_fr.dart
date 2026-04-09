@@ -3542,4 +3542,15 @@ class AppStringsFr implements AppStrings {
 
   @override
   String get holdAndDragToReorder => 'Maintenez et faites glisser les cartes pour réorganiser';
+
+  @override
+  String streakRestoredMsg(int days) => 'Série restaurée ! $days jours consécutifs.';
+  @override
+  String get insufficientCoins => 'Pièces insuffisantes';
+  @override
+  String get noBio => 'Pas de bio';
+  @override
+  String get tapToAddBio => 'Appuyez ici pour ajouter votre bio !';
+  @override
+  String memberSinceLabel(String month, int year, int days) => 'Membre depuis $month $year ($days jours)';
 }

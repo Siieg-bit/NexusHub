@@ -3476,4 +3476,15 @@ class AppStringsJa implements AppStrings {
 
   @override
   String get holdAndDragToReorder => 'カードを長押ししてドラッグして並べ替え';
+
+  @override
+  String streakRestoredMsg(int days) => 'ストリーク復元！$days日連続。';
+  @override
+  String get insufficientCoins => 'コインが不足しています';
+  @override
+  String get noBio => '自己紹介なし';
+  @override
+  String get tapToAddBio => 'ここをタップして自己紹介を追加！';
+  @override
+  String memberSinceLabel(String month, int year, int days) => '$month $year年から（$days日間）';
 }

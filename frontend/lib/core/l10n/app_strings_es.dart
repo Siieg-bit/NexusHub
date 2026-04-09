@@ -3476,4 +3476,15 @@ class AppStringsEs implements AppStrings {
 
   @override
   String get holdAndDragToReorder => 'Mantén presionado y arrastra las tarjetas para reordenar';
+
+  @override
+  String streakRestoredMsg(int days) => '¡Racha restaurada! $days días consecutivos.';
+  @override
+  String get insufficientCoins => 'Monedas insuficientes';
+  @override
+  String get noBio => 'Sin biografía';
+  @override
+  String get tapToAddBio => '¡Toca aquí para añadir tu biografía!';
+  @override
+  String memberSinceLabel(String month, int year, int days) => 'Miembro desde $month $year ($days días)';
 }
