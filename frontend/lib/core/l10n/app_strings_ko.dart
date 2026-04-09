@@ -4032,7 +4032,20 @@ class AppStringsKo implements AppStrings {
   String get blockConfirmMsg => '내 프로필, 게시물을 볼 수 없고 연락도 할 수 없습니다.';
   @override
   String get blockSuccess => '사용자가 차단되었습니다.';
-  // REPOST
+  // EMAIL CHANGE
+  @override
+  String get emailChangeReauthInfo => '계속하려면 현재 비밀번호를 확인하세요.';
+  @override
+  String get emailChangeDualConfirmInfo => '현재 이메일과 새 이메일 주소 모두에 확인 링크가 전송됩니다. 두 곳 모두 확인된 후에만 변경이 적용됩니다.';
+  @override
+  String get emailChangeSentBoth => '확인 링크가 전송되었습니다! 현재 이메일과 새 이메일의 받은 편지함을 확인하세요.';
+  @override
+  String get emailSameAsCurrent => '이미 현재 이메일 주소입니다.';
+  // AMINO ID VALIDATION
+  @override
+  @override
+  String get aminoIdInvalidChars => '영문자, 숫자, 밑줄만 허용됩니다.';
+    // REPOST
   @override
   String get repost => 'Repost';
   @override

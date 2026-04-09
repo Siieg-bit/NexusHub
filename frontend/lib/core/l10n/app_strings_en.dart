@@ -3635,7 +3635,20 @@ it will appear here';
   String get blockConfirmMsg => 'They will not be able to see your profile, posts or contact you.';
   @override
   String get blockSuccess => 'User blocked successfully.';
-  // REPOST
+  // EMAIL CHANGE
+  @override
+  String get emailChangeReauthInfo => 'Please confirm your current password to proceed.';
+  @override
+  String get emailChangeDualConfirmInfo => 'A confirmation link will be sent to both your current and new email address. The change will only take effect after both are confirmed.';
+  @override
+  String get emailChangeSentBoth => 'Confirmation links sent! Check both your current and new email inbox.';
+  @override
+  String get emailSameAsCurrent => 'This is already your current email.';
+  // AMINO ID VALIDATION
+  @override
+  @override
+  String get aminoIdInvalidChars => 'Only letters, numbers and underscores are allowed.';
+    // REPOST
   @override
   String get repost => 'Repost';
   @override

@@ -4670,7 +4670,20 @@ class AppStringsRu implements AppStrings {
   String get blockConfirmMsg => 'Он не сможет видеть ваш профиль, публикации или связаться с вами.';
   @override
   String get blockSuccess => 'Пользователь успешно заблокирован.';
-  // REPOST
+  // EMAIL CHANGE
+  @override
+  String get emailChangeReauthInfo => 'Пожалуйста, подтвердите текущий пароль для продолжения.';
+  @override
+  String get emailChangeDualConfirmInfo => 'Ссылка для подтверждения будет отправлена на ваш текущий и новый адрес электронной почты. Изменение вступит в силу только после подтверждения обоих.';
+  @override
+  String get emailChangeSentBoth => 'Ссылки для подтверждения отправлены! Проверьте входящие сообщения текущей и новой почты.';
+  @override
+  String get emailSameAsCurrent => 'Это уже ваш текущий адрес электронной почты.';
+  // AMINO ID VALIDATION
+  @override
+  @override
+  String get aminoIdInvalidChars => 'Разрешены только буквы, цифры и символы подчёркивания.';
+    // REPOST
   @override
   String get repost => 'Repost';
   @override

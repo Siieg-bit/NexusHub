@@ -4336,7 +4336,20 @@ class AppStringsAr implements AppStrings {
   String get blockConfirmMsg => 'لن يتمكن من رؤية ملفك الشخصي أو منشوراتك أو التواصل معك.';
   @override
   String get blockSuccess => 'تم حظر المستخدم بنجاح.';
-  // REPOST
+  // EMAIL CHANGE
+  @override
+  String get emailChangeReauthInfo => 'يرجى تأكيد كلمة المرور الحالية للمتابعة.';
+  @override
+  String get emailChangeDualConfirmInfo => 'سيتم إرسال رابط تأكيد إلى بريدك الإلكتروني الحالي والجديد. لن يسري التغيير إلا بعد تأكيد كليهما.';
+  @override
+  String get emailChangeSentBoth => 'تم إرسال روابط التأكيد! تحقق من صندوق الوارد لبريدك الحالي والجديد.';
+  @override
+  String get emailSameAsCurrent => 'هذا هو بريدك الإلكتروني الحالي بالفعل.';
+  // AMINO ID VALIDATION
+  @override
+  @override
+  String get aminoIdInvalidChars => 'يُسمح فقط بالأحرف والأرقام والشرطة السفلية.';
+    // REPOST
   @override
   String get repost => 'Repost';
   @override

@@ -3689,7 +3689,19 @@ aparecerá aqui';
   String get blockConfirmMsg => 'Ele não poderá ver seu perfil, posts ou entrar em contato com você.';
   @override
   String get blockSuccess => 'Usuário bloqueado com sucesso.';
-  // REPOST
+  // EMAIL CHANGE
+  @override
+  String get emailChangeReauthInfo => 'Confirme sua senha atual para continuar.';
+  @override
+  String get emailChangeDualConfirmInfo => 'Um link de confirmação será enviado para o seu email atual e para o novo. A troca só será efetivada após ambos serem confirmados.';
+  @override
+  String get emailChangeSentBoth => 'Links de confirmação enviados! Verifique a caixa de entrada do seu email atual e do novo.';
+  @override
+  String get emailSameAsCurrent => 'Este já é o seu email atual.';
+  // AMINO ID VALIDATION
+  @override
+  String get aminoIdInvalidChars => 'Apenas letras, números e underscores são permitidos.';
+    // REPOST
   @override
   String get repost => 'Repostar';
   @override

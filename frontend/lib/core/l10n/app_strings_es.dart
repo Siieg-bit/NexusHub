@@ -3526,7 +3526,20 @@ class AppStringsEs implements AppStrings {
   String get blockConfirmMsg => 'No podrá ver tu perfil, publicaciones ni contactarte.';
   @override
   String get blockSuccess => 'Usuario bloqueado con éxito.';
-  // REPOST
+  // EMAIL CHANGE
+  @override
+  String get emailChangeReauthInfo => 'Por favor, confirma tu contraseña actual para continuar.';
+  @override
+  String get emailChangeDualConfirmInfo => 'Se enviará un enlace de confirmación a tu correo actual y al nuevo. El cambio solo se aplicará después de que ambos sean confirmados.';
+  @override
+  String get emailChangeSentBoth => '¡Enlaces de confirmación enviados! Revisa la bandeja de entrada de tu correo actual y del nuevo.';
+  @override
+  String get emailSameAsCurrent => 'Este ya es tu correo electrónico actual.';
+  // AMINO ID VALIDATION
+  @override
+  @override
+  String get aminoIdInvalidChars => 'Solo se permiten letras, números y guiones bajos.';
+    // REPOST
   @override
   String get repost => 'Repost';
   @override

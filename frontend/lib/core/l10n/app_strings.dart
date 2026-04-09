@@ -1849,7 +1849,14 @@ abstract class AppStrings {
   String get blockConfirmTitle;
   String get blockConfirmMsg;
   String get blockSuccess;
-  // REPOST
+  // EMAIL CHANGE
+  String get emailChangeReauthInfo;
+  String get emailChangeDualConfirmInfo;
+  String get emailChangeSentBoth;
+  String get emailSameAsCurrent;
+  // AMINO ID VALIDATION
+  String get aminoIdInvalidChars;
+    // REPOST
   String get repost;
   String get repostAction;
   String get repostSuccess;

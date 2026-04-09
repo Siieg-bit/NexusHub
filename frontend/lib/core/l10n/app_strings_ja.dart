@@ -3526,7 +3526,20 @@ class AppStringsJa implements AppStrings {
   String get blockConfirmMsg => 'あなたのプロフィール、投稿を見たり、連絡したりできなくなります。';
   @override
   String get blockSuccess => 'ユーザーをブロックしました。';
-  // REPOST
+  // EMAIL CHANGE
+  @override
+  String get emailChangeReauthInfo => '続行するには現在のパスワードを確認してください。';
+  @override
+  String get emailChangeDualConfirmInfo => '現在のメールアドレスと新しいメールアドレスの両方に確認リンクが送信されます。両方が確認された後にのみ変更が有効になります。';
+  @override
+  String get emailChangeSentBoth => '確認リンクを送信しました！現在のメールと新しいメールの受信トレイを確認してください。';
+  @override
+  String get emailSameAsCurrent => 'これはすでに現在のメールアドレスです。';
+  // AMINO ID VALIDATION
+  @override
+  @override
+  String get aminoIdInvalidChars => '英数字とアンダースコアのみ使用できます。';
+    // REPOST
   @override
   String get repost => 'Repost';
   @override

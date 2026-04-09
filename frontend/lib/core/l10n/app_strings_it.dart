@@ -3544,7 +3544,20 @@ class AppStringsIt implements AppStrings {
   String get blockConfirmMsg => 'Non potrà vedere il tuo profilo, i post o contattarti.';
   @override
   String get blockSuccess => 'Utente bloccato con successo.';
-  // REPOST
+  // EMAIL CHANGE
+  @override
+  String get emailChangeReauthInfo => 'Conferma la tua password attuale per continuare.';
+  @override
+  String get emailChangeDualConfirmInfo => 'Verrà inviato un link di conferma alla tua email attuale e a quella nuova. La modifica avrà effetto solo dopo che entrambe saranno state confermate.';
+  @override
+  String get emailChangeSentBoth => 'Link di conferma inviati! Controlla la casella di posta della tua email attuale e di quella nuova.';
+  @override
+  String get emailSameAsCurrent => 'Questa è già la tua email attuale.';
+  // AMINO ID VALIDATION
+  @override
+  @override
+  String get aminoIdInvalidChars => 'Sono consentiti solo lettere, numeri e underscore.';
+    // REPOST
   @override
   String get repost => 'Repost';
   @override

@@ -84,17 +84,23 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text(s.profileUpdatedSuccess)),
+          SnackBar(
+            content: Text(s.profileUpdatedSuccess),
+            behavior: SnackBarBehavior.floating,
+          ),
         );
         context.pop();
       }
     } catch (e) {
       if (mounted) {
+        final isDuplicate = e.toString().contains('duplicate') ||
+            e.toString().contains('unique') ||
+            e.toString().contains('23505');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-                'Erro ao salvar: ${e.toString().contains('duplicate') ? s.aminoIdInUse : s.tryAgainGeneric}'),
+            content: Text(isDuplicate ? s.aminoIdInUse : s.tryAgainGeneric),
             backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -299,6 +305,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                 label: s.aminoId,
                 icon: Icons.alternate_email_rounded,
                 hintText: s.uniqueIdentifier,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) return null; // opcional
+                  final trimmed = value.trim();
+                  if (trimmed.length < 3) return s.min3Chars;
+                  if (trimmed.length > 30) return s.max30Chars;
+                  final validChars = RegExp(r'^[a-zA-Z0-9_]+$');
+                  if (!validChars.hasMatch(trimmed)) return s.aminoIdInvalidChars;
+                  return null;
+                },
               ),
               SizedBox(height: r.s(16)),
 
