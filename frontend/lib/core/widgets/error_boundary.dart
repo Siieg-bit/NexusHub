@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../config/app_theme.dart';
 import '../l10n/locale_provider.dart';
 
@@ -124,7 +125,7 @@ class _ErrorBoundaryState extends ConsumerState<ErrorBoundary> {
 }
 
 /// Tela de fallback padrão exibida quando ocorre um erro não tratado.
-class _DefaultErrorFallback extends ConsumerWidget {
+class _DefaultErrorFallback extends ConsumerStatefulWidget {
   final Object error;
   final StackTrace? stackTrace;
   final VoidCallback onRetry;
@@ -136,8 +137,32 @@ class _DefaultErrorFallback extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
+  ConsumerState<_DefaultErrorFallback> createState() =>
+      _DefaultErrorFallbackState();
+}
+
+class _DefaultErrorFallbackState extends ConsumerState<_DefaultErrorFallback> {
+  bool _copied = false;
+
+  String get _fullErrorText {
+    return '${widget.error.toString()}\n\n'
+        '=== STACK TRACE ===\n'
+        '${widget.stackTrace?.toString() ?? "(sem stack trace)"}';
+  }
+
+  Future<void> _copyToClipboard() async {
+    await Clipboard.setData(ClipboardData(text: _fullErrorText));
+    if (mounted) {
+      setState(() => _copied = true);
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) setState(() => _copied = false);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = ref.watch(stringsProvider);
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBg,
       body: SafeArea(
@@ -178,59 +203,85 @@ class _DefaultErrorFallback extends ConsumerWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  onPressed: onRetry,
-                  icon: const Icon(Icons.refresh_rounded, color: Colors.white),
-                  label:  Text(
-                    s.retry,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              // Detalhes do erro + stack trace (sempre visível)
-              ExpansionTile(
-                title: Text(
-                  s.errorDetails,
-                  style: TextStyle(color: Colors.grey[500], fontSize: 13),
-                ),
+              const SizedBox(height: 24),
+              // ── Botões: Tentar novamente + Copiar erro ──
+              Row(
                 children: [
-                  Container(
-                    width: double.infinity,
-                    constraints: const BoxConstraints(maxHeight: 300),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.black26,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: SingleChildScrollView(
-                      child: SelectableText(
-                        '${error.toString()}\n\n'
-                        '=== STACK TRACE ===\n'
-                        '${stackTrace?.toString() ?? "(sem stack trace)"}',
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      onPressed: widget.onRetry,
+                      icon: const Icon(Icons.refresh_rounded,
+                          color: Colors.white, size: 18),
+                      label: Text(
+                        s.retry,
                         style: const TextStyle(
-                          color: AppTheme.errorColor,
-                          fontSize: 11,
-                          fontFamily: 'monospace',
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _copied
+                            ? const Color(0xFF4CAF50)
+                            : Colors.grey[800],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      onPressed: _copyToClipboard,
+                      icon: Icon(
+                        _copied
+                            ? Icons.check_rounded
+                            : Icons.copy_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                      label: Text(
+                        _copied ? 'Copiado!' : 'Copiar erro',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
                         ),
                       ),
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 16),
+              // ── Stack trace expandível ──
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.black26,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: SingleChildScrollView(
+                    child: Text(
+                      _fullErrorText,
+                      style: const TextStyle(
+                        color: AppTheme.errorColor,
+                        fontSize: 10,
+                        fontFamily: 'monospace',
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
