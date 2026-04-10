@@ -261,23 +261,51 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
     final raw = error.toString().trim();
     if (raw.isEmpty) return 'Falha desconhecida ao publicar o blog.';
 
-    var cleaned = raw
+    final normalized = raw
         .replaceFirst('Exception: ', '')
-        .replaceFirst('PostgrestException(message: ', '')
-        .replaceFirst('AuthException(message: ', '');
+        .replaceFirst('PostgrestException(', '')
+        .replaceFirst('AuthException(', '')
+        .trim();
 
-    final detailsIndex = cleaned.indexOf(', details:');
-    if (detailsIndex != -1) {
-      cleaned = cleaned.substring(0, detailsIndex);
+    String? extractField(String field) {
+      final match = RegExp(
+        '$field:\\s*(.*?)(?=,\\s*(?:message|details|hint|code):|\\)\$)',
+        dotAll: true,
+      ).firstMatch(normalized);
+      return match?.group(1)?.trim();
     }
 
-    final codeIndex = cleaned.indexOf(', code:');
-    if (codeIndex != -1) {
-      cleaned = cleaned.substring(0, codeIndex);
+    final message = extractField('message');
+    final details = extractField('details');
+    final hint = extractField('hint');
+
+    final parts = <String>[];
+
+    void addPart(String? value) {
+      if (value == null) return;
+      final cleaned = value
+          .replaceAll(RegExp(r'^null$'), '')
+          .replaceAll(RegExp(r'\)+$'), '')
+          .trim();
+      if (cleaned.isNotEmpty) {
+        parts.add(cleaned);
+      }
     }
 
-    cleaned = cleaned.replaceAll(RegExp(r'\)+$'), '').trim();
-    return cleaned.isEmpty ? 'Falha desconhecida ao publicar o blog.' : cleaned;
+    addPart(message);
+    addPart(details);
+    addPart(hint);
+
+    if (parts.isNotEmpty) {
+      return parts.join(' | ');
+    }
+
+    final fallback = normalized.replaceAll(RegExp(r'\)+$'), '').trim();
+    return fallback.isEmpty ? 'Falha desconhecida ao publicar o blog.' : fallback;
+  }
+
+  String _formatCreateAttemptError(String stage, dynamic error) {
+    return '$stage: ${_extractErrorMessage(error)}';
   }
 
   String? _extractPostId(dynamic result) {
@@ -295,13 +323,16 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
     required List<Map<String, dynamic>> contentBlocks,
     required List<String> mediaUrls,
   }) async {
+    final errors = <String>[];
+    final coverImageUrl = mediaUrls.isNotEmpty ? mediaUrls.first : null;
+
     final params = {
       'p_community_id': widget.communityId,
       'p_title': title,
       'p_content': content,
       'p_type': 'blog',
       'p_media_list': mediaUrls,
-      'p_cover_image_url': mediaUrls.isNotEmpty ? mediaUrls.first : null,
+      'p_cover_image_url': coverImageUrl,
       'p_visibility': _visibility,
       'p_comments_blocked': false,
       'p_content_blocks': contentBlocks,
@@ -311,80 +342,113 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
     try {
       return await SupabaseService.rpc('create_post_with_reputation', params: params);
     } catch (rpcError) {
-      try {
-        final legacyParams = Map<String, dynamic>.from(params)
-          ..remove('p_content_blocks')
-          ..remove('p_is_pinned_profile');
+      errors.add(_formatCreateAttemptError('RPC atual', rpcError));
+    }
 
-        final legacyResult = await SupabaseService.rpc(
-          'create_post_with_reputation',
-          params: legacyParams,
-        );
+    try {
+      final legacyParams = Map<String, dynamic>.from(params)
+        ..remove('p_content_blocks')
+        ..remove('p_is_pinned_profile');
 
-        final legacyPostId = _extractPostId(legacyResult);
-        if (legacyPostId != null) {
-          try {
-            await SupabaseService.table('posts').update({
-              'content_blocks': contentBlocks,
-              'is_pinned_profile': false,
-            }).eq('id', legacyPostId);
-          } catch (_) {
-            // Banco legado sem as colunas novas: mantém a publicação concluída.
-          }
-        }
+      final legacyResult = await SupabaseService.rpc(
+        'create_post_with_reputation',
+        params: legacyParams,
+      );
 
-        return legacyResult;
-      } catch (_) {
-        final userId = SupabaseService.currentUserId;
-        if (userId == null) {
-          throw Exception(getStrings().notAuthenticated);
-        }
-
+      final legacyPostId = _extractPostId(legacyResult);
+      if (legacyPostId != null) {
         try {
-          final inserted = await SupabaseService.table('posts')
-              .insert({
-                'community_id': widget.communityId,
-                'author_id': userId,
-                'type': 'blog',
-                'title': title,
-                'content': content,
-                'content_blocks': contentBlocks,
-                'media_list': mediaUrls,
-                'cover_image_url': mediaUrls.isNotEmpty ? mediaUrls.first : null,
-                'visibility': _visibility,
-                'comments_blocked': false,
-                'status': 'ok',
-                'is_pinned_profile': false,
-              })
-              .select('id')
-              .single();
-
-          return inserted['id'];
-        } catch (_) {
-          try {
-            final inserted = await SupabaseService.table('posts')
-                .insert({
-                  'community_id': widget.communityId,
-                  'author_id': userId,
-                  'type': 'blog',
-                  'title': title,
-                  'content': content,
-                  'media_list': mediaUrls,
-                  'cover_image_url': mediaUrls.isNotEmpty ? mediaUrls.first : null,
-                  'visibility': _visibility,
-                  'comments_blocked': false,
-                  'status': 'ok',
-                })
-                .select('id')
-                .single();
-
-            return inserted['id'];
-          } catch (insertError) {
-            throw Exception(_extractErrorMessage(insertError));
-          }
+          await SupabaseService.table('posts').update({
+            'content_blocks': contentBlocks,
+            'is_pinned_profile': false,
+          }).eq('id', legacyPostId);
+        } catch (legacyUpdateError) {
+          errors.add(
+            _formatCreateAttemptError(
+              'Atualização complementar pós-RPC legada',
+              legacyUpdateError,
+            ),
+          );
         }
       }
+
+      return legacyResult;
+    } catch (legacyRpcError) {
+      errors.add(_formatCreateAttemptError('RPC legada', legacyRpcError));
     }
+
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) {
+      throw Exception(getStrings().notAuthenticated);
+    }
+
+    final insertAttempts = <Map<String, dynamic>>[
+      {
+        'label': 'Inserção direta completa',
+        'payload': {
+          'community_id': widget.communityId,
+          'author_id': userId,
+          'type': 'blog',
+          'title': title,
+          'content': content,
+          'content_blocks': contentBlocks,
+          'media_list': mediaUrls,
+          'cover_image_url': coverImageUrl,
+          'visibility': _visibility,
+          'comments_blocked': false,
+          'status': 'ok',
+          'is_pinned_profile': false,
+        },
+      },
+      {
+        'label': 'Inserção direta compatível',
+        'payload': {
+          'community_id': widget.communityId,
+          'author_id': userId,
+          'type': 'blog',
+          'title': title,
+          'content': content,
+          'media_list': mediaUrls,
+          'cover_image_url': coverImageUrl,
+          'visibility': _visibility,
+          'comments_blocked': false,
+          'status': 'ok',
+        },
+      },
+      {
+        'label': 'Inserção direta mínima',
+        'payload': {
+          'community_id': widget.communityId,
+          'author_id': userId,
+          'type': 'blog',
+          'title': title,
+          'content': content,
+          'media_list': mediaUrls,
+          'cover_image_url': coverImageUrl,
+          'status': 'ok',
+        },
+      },
+    ];
+
+    for (final attempt in insertAttempts) {
+      try {
+        final payload = Map<String, dynamic>.from(
+          attempt['payload'] as Map<String, dynamic>,
+        );
+        final inserted = await SupabaseService.table('posts')
+            .insert(payload)
+            .select('id')
+            .single();
+
+        return inserted['id'];
+      } catch (insertError) {
+        errors.add(
+          _formatCreateAttemptError(attempt['label'] as String, insertError),
+        );
+      }
+    }
+
+    throw Exception(errors.join('\n'));
   }
 
   Future<void> _submit() async {
