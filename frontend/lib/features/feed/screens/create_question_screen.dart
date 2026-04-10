@@ -9,6 +9,7 @@ import '../../../core/utils/media_utils.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/models/post_model.dart';
+import '../../../core/providers/post_provider.dart';
 
 // =============================================================================
 // CREATE QUESTION SCREEN — Post tipo Q&A (pergunta aberta para a comunidade)
@@ -42,6 +43,32 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
   bool _isUrgent = false;
   String _visibility = 'public';
   String? _referenceImageUrl;
+
+  bool get _isEditing => widget.editingPost != null;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_isEditing) {
+      _populateFromPost(widget.editingPost!);
+    }
+  }
+
+  void _populateFromPost(PostModel post) {
+    _questionController.text = post.title ?? '';
+    _contextController.text = post.content;
+    _visibility = post.editorMetadata.extra['visibility'] as String? ?? 'public';
+    _isAnonymous = post.editorMetadata.extra['is_anonymous'] == true;
+    _isUrgent = post.editorMetadata.extra['is_urgent'] == true;
+
+    // Restaurar imagem de referência
+    _referenceImageUrl = post.coverImageUrl;
+
+    // Restaurar tags
+    if (post.tags.isNotEmpty) {
+      _tags.addAll(post.tags);
+    }
+  }
 
   @override
   void dispose() {
@@ -113,6 +140,56 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
       final userId = SupabaseService.currentUserId;
       if (userId == null) throw Exception(s.notAuthenticated);
 
+      // ── Modo de EDIÇÃO ──
+      if (_isEditing) {
+        final editorMetadata = <String, dynamic>{
+          'editor_type': 'qa',
+          'tags': _tags,
+          'is_anonymous': _isAnonymous,
+          'is_urgent': _isUrgent,
+        };
+
+        final postData = {
+          'title': question,
+          'content': _contextController.text.trim(),
+          'type': 'qa',
+          'media_list': _referenceImageUrl != null ? [{'url': _referenceImageUrl!, 'type': 'image'}] : [],
+          'tags': _tags,
+          'cover_image_url': _referenceImageUrl,
+          'visibility': _visibility,
+          'editor_type': 'qa',
+          'editor_metadata': editorMetadata,
+        };
+
+        final success = await ref
+            .read(communityFeedProvider(widget.communityId).notifier)
+            .editPost(widget.editingPost!.id, postData);
+
+        if (mounted) {
+          if (success) {
+            context.pop();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(s.postUpdated),
+                backgroundColor: AppTheme.successColor,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(s.anErrorOccurredTryAgain),
+                backgroundColor: AppTheme.errorColor,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        }
+        if (mounted) setState(() => _isSubmitting = false);
+        return;
+      }
+
+      // ── Modo de CRIAÇÃO ──
       final editorMetadata = <String, dynamic>{
         'editor_type': 'qa',
         'tags': _tags,
@@ -205,7 +282,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         title: Text(
-          'Fazer Pergunta',
+          _isEditing ? s.editPost : 'Fazer Pergunta',
           style: TextStyle(
               color: context.textPrimary,
               fontSize: r.fs(17),
@@ -254,7 +331,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
                         strokeWidth: 2, color: AppTheme.primaryColor),
                   )
                 : Text(
-                    s.publish,
+                    _isEditing ? s.save : s.publish,
                     style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontSize: r.fs(14),

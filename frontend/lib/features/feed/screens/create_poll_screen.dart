@@ -9,6 +9,7 @@ import '../../../core/utils/media_utils.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/models/post_model.dart';
+import '../../../core/providers/post_provider.dart';
 
 // =============================================================================
 // CREATE POLL SCREEN — Enquete com múltiplas opções
@@ -46,6 +47,8 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
   String? _coverImageUrl;
   String _duration = '3d'; // Duração padrão
 
+  bool get _isEditing => widget.editingPost != null;
+
   static const _durations = {
     '1h': '1 hora',
     '6h': '6 horas',
@@ -55,6 +58,44 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
     '7d': '7 dias',
     'none': 'Sem limite',
   };
+
+  @override
+  void initState() {
+    super.initState();
+    if (_isEditing) {
+      _populateFromPost(widget.editingPost!);
+    }
+  }
+
+  void _populateFromPost(PostModel post) {
+    _titleController.text = post.title ?? '';
+    _descriptionController.text = post.content;
+    _visibility = post.editorMetadata.extra['visibility'] as String? ?? 'public';
+    _coverImageUrl = post.coverImageUrl;
+    _allowMultipleChoice = post.editorMetadata.extra['allow_multiple_choice'] == true;
+    _anonymousVotes = post.editorMetadata.extra['anonymous_votes'] == true;
+    _duration = post.editorMetadata.extra['duration'] as String? ?? '3d';
+
+    // Restaurar opções da enquete
+    if (post.pollData != null) {
+      final options = post.pollData!['options'] as List?;
+      if (options != null && options.isNotEmpty) {
+        // Limpar opções padrão
+        for (final c in _options) {
+          c.dispose();
+        }
+        _options.clear();
+
+        for (final opt in options) {
+          final controller = TextEditingController();
+          if (opt is Map) {
+            controller.text = (opt['text'] as String?) ?? '';
+          }
+          _options.add(controller);
+        }
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -176,6 +217,56 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
 
       final expiresAt = _getExpiresAt();
 
+      // ── Modo de EDIÇÃO ──
+      if (_isEditing) {
+        final editorMetadata = <String, dynamic>{
+          'editor_type': 'poll',
+          'allow_multiple_choice': _allowMultipleChoice,
+          'anonymous_votes': _anonymousVotes,
+          'duration': _duration,
+          if (expiresAt != null) 'expires_at': expiresAt.toIso8601String(),
+        };
+
+        final postData = {
+          'title': title,
+          'content': _descriptionController.text.trim(),
+          'type': 'poll',
+          'poll_options': pollOpts,
+          'cover_image_url': _coverImageUrl,
+          'visibility': _visibility,
+          'editor_type': 'poll',
+          'editor_metadata': editorMetadata,
+        };
+
+        final success = await ref
+            .read(communityFeedProvider(widget.communityId).notifier)
+            .editPost(widget.editingPost!.id, postData);
+
+        if (mounted) {
+          if (success) {
+            context.pop();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(s.postUpdated),
+                backgroundColor: AppTheme.successColor,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(s.anErrorOccurredTryAgain),
+                backgroundColor: AppTheme.errorColor,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        }
+        if (mounted) setState(() => _isSubmitting = false);
+        return;
+      }
+
+      // ── Modo de CRIAÇÃO ──
       final editorMetadata = <String, dynamic>{
         'editor_type': 'poll',
         'allow_multiple_choice': _allowMultipleChoice,
@@ -231,7 +322,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         title: Text(
-          s.newPoll,
+          _isEditing ? s.editPost : s.newPoll,
           style: TextStyle(
               color: context.textPrimary,
               fontSize: r.fs(17),
@@ -280,7 +371,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
                         strokeWidth: 2, color: AppTheme.primaryColor),
                   )
                 : Text(
-                    s.publish,
+                    _isEditing ? s.save : s.publish,
                     style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontSize: r.fs(14),

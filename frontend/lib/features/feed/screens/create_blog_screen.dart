@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/providers/draft_provider.dart';
+import '../../../core/providers/post_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/media_utils.dart';
 import '../../../core/utils/responsive.dart';
@@ -58,6 +59,8 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
   String _titleFont = 'Default';
   bool _pinToProfile = false;
 
+  bool get _isEditing => widget.editingPost != null;
+
   static const _titleFonts = [
     'Default',
     'Serif',
@@ -94,7 +97,55 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(_restoreLatestDraft);
+    if (_isEditing) {
+      _populateFromPost(widget.editingPost!);
+      _restoringDraft = false;
+    } else {
+      Future.microtask(_restoreLatestDraft);
+    }
+  }
+
+  void _populateFromPost(PostModel post) {
+    _titleController.text = post.title ?? '';
+    _coverImageUrl = post.coverImageUrl;
+    _visibility = post.editorMetadata.extra['visibility'] as String? ?? 'public';
+    _pinToProfile = post.isPinnedProfile;
+
+    // Restaurar tags
+    if (post.tags.isNotEmpty) {
+      _tags.addAll(post.tags);
+    }
+
+    // Restaurar personalização do editor_metadata
+    final meta = post.editorMetadata;
+    final titleColorHex = meta.extra['title_color'] as String?;
+    if (titleColorHex != null) {
+      _titleColor = _parseHexColor(titleColorHex) ?? Colors.white;
+    }
+    final bgColorHex = meta.extra['bg_accent_color'] as String?;
+    if (bgColorHex != null) {
+      _bgAccentColor = _parseHexColor(bgColorHex) ?? const Color(0xFF0D1B2A);
+    }
+    _titleFont = meta.extra['title_font'] as String? ?? 'Default';
+
+    // Restaurar blocos de conteúdo
+    if (post.contentBlocks != null && post.contentBlocks!.isNotEmpty) {
+      _blocks = post.contentBlocks!
+          .map((b) => ContentBlock.fromJson(Map<String, dynamic>.from(b)))
+          .toList();
+    } else if (post.content.isNotEmpty) {
+      _blocks = [ContentBlock(type: BlockType.text, text: post.content)];
+    }
+  }
+
+  Color? _parseHexColor(String? hex) {
+    if (hex == null || hex.isEmpty) return null;
+    try {
+      final cleaned = hex.replaceAll('#', '');
+      if (cleaned.length == 6) return Color(int.parse('FF\$cleaned', radix: 16));
+      if (cleaned.length == 8) return Color(int.parse(cleaned, radix: 16));
+    } catch (_) {}
+    return null;
   }
 
   @override
@@ -553,6 +604,61 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
     setState(() => _isSubmitting = true);
 
     try {
+      // ── Modo de EDIÇÃO ──
+      if (_isEditing) {
+        final coverUrl = _coverImageUrl ?? (mediaUrls.isNotEmpty ? mediaUrls.first : null);
+        final editorMetadata = <String, dynamic>{
+          'editor_type': 'blog',
+          'title_color': '#${_titleColor.value.toRadixString(16).padLeft(8, '0')}',
+          'bg_accent_color': '#${_bgAccentColor.value.toRadixString(16).padLeft(8, '0')}',
+          'title_font': _titleFont,
+          'tags': _tags,
+          'pin_to_profile': _pinToProfile,
+        };
+
+        final postData = {
+          'title': title,
+          'content': content,
+          'type': 'blog',
+          'media_list': mediaUrls.map((url) => {'url': url, 'type': 'image'}).toList(),
+          'tags': _tags,
+          'cover_image_url': coverUrl,
+          'visibility': _visibility,
+          'content_blocks': serializedBlocks,
+          'is_pinned_profile': _pinToProfile,
+          'editor_type': 'blog',
+          'editor_metadata': editorMetadata,
+        };
+
+        final success = await ref
+            .read(communityFeedProvider(widget.communityId).notifier)
+            .editPost(widget.editingPost!.id, postData);
+
+        if (mounted) {
+          if (success) {
+            context.pop();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(s.postUpdated),
+                backgroundColor: AppTheme.successColor,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(s.anErrorOccurredTryAgain),
+                backgroundColor: AppTheme.errorColor,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        }
+        if (mounted) setState(() => _isSubmitting = false);
+        return;
+      }
+
+      // ── Modo de CRIAÇÃO ──
       await _createBlogPost(
         title: title,
         content: content,
@@ -716,7 +822,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         title: Text(
-          s.newBlog,
+          _isEditing ? s.editPost : s.newBlog,
           style: TextStyle(
             color: context.textPrimary,
             fontSize: r.fs(17),
@@ -813,7 +919,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
                     ),
                   )
                 : Text(
-                    s.publish,
+                    _isEditing ? s.save : s.publish,
                     style: TextStyle(
                       color: AppTheme.primaryColor,
                       fontSize: r.fs(14),

@@ -40,6 +40,8 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
   int _durationSeconds = 5;
   VideoPlayerController? _videoPreviewController;
 
+  bool get _isEditing => widget.editingPost != null;
+
   // Backgrounds sólidos
   static final _bgColors = [
     const Color(0xFF0D1B2A),
@@ -219,6 +221,54 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
       final userId = SupabaseService.currentUserId;
       if (userId == null) throw Exception(s.notAuthenticated);
 
+      // ── Modo de EDIÇÃO ──
+      if (_isEditing) {
+        String bgColor;
+        if (_isGradient) {
+          final g = _bgGradients[_gradientIndex];
+          bgColor = '#${g[0].value.toRadixString(16).padLeft(8, '0').substring(2)}';
+        } else if (_selectedBgIndex < _bgColors.length) {
+          bgColor = _bgHexCodes[_selectedBgIndex];
+        } else {
+          bgColor = '#0D1B2A';
+        }
+
+        try {
+          await SupabaseService.table('stories').update({
+            'media_url': _mediaUrl ?? '',
+            'media_type': _type,
+            'caption': _textController.text.trim().isNotEmpty
+                ? _textController.text.trim()
+                : null,
+            'background_color': bgColor,
+            'duration_seconds': _durationSeconds,
+          }).eq('id', widget.editingPost!.id);
+
+          if (mounted) {
+            Navigator.of(context).pop();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(s.postUpdated),
+                backgroundColor: AppTheme.successColor,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(s.anErrorOccurredTryAgain),
+                backgroundColor: AppTheme.errorColor,
+              ),
+            );
+          }
+        }
+        if (mounted) setState(() => _isSubmitting = false);
+        return;
+      }
+
+      // ── Modo de CRIAÇÃO ──
       String bgColor;
       if (_isGradient) {
         final g = _bgGradients[_gradientIndex];
@@ -266,6 +316,40 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    if (_isEditing) {
+      _populateFromPost(widget.editingPost!);
+    }
+  }
+
+  void _populateFromPost(PostModel post) {
+    // Stories guardam dados em storyData
+    final sd = post.storyData ?? {};
+    _textController.text = sd['caption'] as String? ?? post.content;
+    _type = sd['media_type'] as String? ?? 'text';
+    _mediaUrl = sd['media_url'] as String?;
+    _durationSeconds = (sd['duration_seconds'] as num?)?.toInt() ?? 5;
+
+    // Restaurar background
+    final bgColor = sd['background_color'] as String?;
+    if (bgColor != null) {
+      final idx = _bgHexCodes.indexWhere(
+        (hex) => hex.toLowerCase() == bgColor.toLowerCase(),
+      );
+      if (idx >= 0) _selectedBgIndex = idx;
+    }
+
+    // Restaurar fonte e tamanho
+    final fontIdx = sd['font_index'] as int?;
+    if (fontIdx != null && fontIdx < _fontFamilies.length) {
+      _selectedFontIndex = fontIdx;
+    }
+    final fs = sd['font_size'] as num?;
+    if (fs != null) _fontSize = fs.toDouble();
+  }
+
+  @override
   void dispose() {
     _textController.dispose();
     _videoPreviewController?.dispose();
@@ -294,7 +378,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                   ),
                   const Spacer(),
                   Text(
-                    'Criar Story',
+                    _isEditing ? s.editPost : 'Criar Story',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: r.fs(16),

@@ -9,6 +9,7 @@ import '../../../core/utils/media_utils.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/models/post_model.dart';
+import '../../../core/providers/post_provider.dart';
 
 // =============================================================================
 // CREATE LINK POST SCREEN — Post com URL externa
@@ -43,10 +44,34 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
   String? _thumbnailUrl;
   bool _urlValid = false;
 
+  bool get _isEditing => widget.editingPost != null;
+
   @override
   void initState() {
     super.initState();
     _urlController.addListener(_onUrlChanged);
+    if (_isEditing) {
+      _populateFromPost(widget.editingPost!);
+    }
+  }
+
+  void _populateFromPost(PostModel post) {
+    _titleController.text = post.title ?? '';
+    _descriptionController.text = post.content;
+    _visibility = post.editorMetadata.extra['visibility'] as String? ?? 'public';
+
+    // Restaurar URL
+    final linkUrl = post.externalUrl ??
+        post.editorMetadata.extra['link_url'] as String? ?? '';
+    _urlController.text = linkUrl;
+
+    // Restaurar thumbnail
+    _thumbnailUrl = post.coverImageUrl;
+
+    // Restaurar tags
+    if (post.tags.isNotEmpty) {
+      _tags.addAll(post.tags);
+    }
   }
 
   @override
@@ -147,6 +172,57 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
       final userId = SupabaseService.currentUserId;
       if (userId == null) throw Exception(s.notAuthenticated);
 
+      // ── Modo de EDIÇÃO ──
+      if (_isEditing) {
+        final editorMetadata = <String, dynamic>{
+          'editor_type': 'link',
+          'tags': _tags,
+          'link_url': url,
+          'domain': _extractDomain(url),
+        };
+
+        final postData = {
+          'title': title,
+          'content': _descriptionController.text.trim(),
+          'type': 'link',
+          'external_url': url,
+          'media_list': _thumbnailUrl != null ? [{'url': _thumbnailUrl!, 'type': 'image'}] : [],
+          'tags': _tags,
+          'cover_image_url': _thumbnailUrl,
+          'visibility': _visibility,
+          'editor_type': 'link',
+          'editor_metadata': editorMetadata,
+        };
+
+        final success = await ref
+            .read(communityFeedProvider(widget.communityId).notifier)
+            .editPost(widget.editingPost!.id, postData);
+
+        if (mounted) {
+          if (success) {
+            context.pop();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(s.postUpdated),
+                backgroundColor: AppTheme.successColor,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(s.anErrorOccurredTryAgain),
+                backgroundColor: AppTheme.errorColor,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        }
+        if (mounted) setState(() => _isSubmitting = false);
+        return;
+      }
+
+      // ── Modo de CRIAÇÃO ──
       final editorMetadata = <String, dynamic>{
         'editor_type': 'link',
         'tags': _tags,
@@ -235,7 +311,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         title: Text(
-          s.shareLinkTitle,
+          _isEditing ? s.editPost : s.shareLinkTitle,
           style: TextStyle(
               color: context.textPrimary,
               fontSize: r.fs(17),
@@ -284,7 +360,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
                         strokeWidth: 2, color: AppTheme.primaryColor),
                   )
                 : Text(
-                    s.publish,
+                    _isEditing ? s.save : s.publish,
                     style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontSize: r.fs(14),

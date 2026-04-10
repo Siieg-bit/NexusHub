@@ -9,6 +9,7 @@ import '../../../core/utils/media_utils.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/models/post_model.dart';
+import '../../../core/providers/post_provider.dart';
 
 // =============================================================================
 // CREATE IMAGE POST SCREEN — Post com galeria de imagens
@@ -51,7 +52,40 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
   bool _isSpoiler = false;
   String _visibility = 'public';
 
+  bool get _isEditing => widget.editingPost != null;
+
   static const int _maxImages = 20;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_isEditing) {
+      _populateFromPost(widget.editingPost!);
+    }
+  }
+
+  void _populateFromPost(PostModel post) {
+    _titleController.text = post.title ?? '';
+    _captionController.text = post.content;
+    _visibility = post.editorMetadata.extra['visibility'] as String? ?? 'public';
+    _isNsfw = post.editorMetadata.extra['is_nsfw'] == true;
+    _isSpoiler = post.editorMetadata.extra['is_spoiler'] == true;
+
+    // Restaurar tags
+    if (post.tags.isNotEmpty) {
+      _tags.addAll(post.tags);
+    }
+
+    // Restaurar imagens da media_list
+    for (final media in post.mediaList) {
+      if (media is Map && media['url'] != null) {
+        _images.add(_ImageItem(
+          url: media['url'] as String,
+          caption: (media['caption'] as String?) ?? '',
+        ));
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -234,6 +268,66 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
       if (userId == null) throw Exception(s.notAuthenticated);
 
       final mediaUrls = _images.map((img) => img.url).toList();
+
+      // ── Modo de EDIÇÃO ──
+      if (_isEditing) {
+        final mediaList = _images
+            .map((img) => {
+                  'url': img.url,
+                  'type': 'image',
+                  if (img.caption.isNotEmpty) 'caption': img.caption,
+                })
+            .toList();
+
+        final editorMetadata = <String, dynamic>{
+          'editor_type': 'image',
+          'tags': _tags,
+          'is_nsfw': _isNsfw,
+          'is_spoiler': _isSpoiler,
+          'image_count': _images.length,
+        };
+
+        final postData = {
+          'title': _titleController.text.trim().isNotEmpty ? _titleController.text.trim() : null,
+          'content': _captionController.text.trim(),
+          'type': 'image',
+          'media_list': mediaList,
+          'tags': _tags,
+          'cover_image_url': mediaUrls.isNotEmpty ? mediaUrls.first : null,
+          'visibility': _visibility,
+          'editor_type': 'image',
+          'editor_metadata': editorMetadata,
+        };
+
+        final success = await ref
+            .read(communityFeedProvider(widget.communityId).notifier)
+            .editPost(widget.editingPost!.id, postData);
+
+        if (mounted) {
+          if (success) {
+            context.pop();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(s.postUpdated),
+                backgroundColor: AppTheme.successColor,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(s.anErrorOccurredTryAgain),
+                backgroundColor: AppTheme.errorColor,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        }
+        if (mounted) setState(() => _isSubmitting = false);
+        return;
+      }
+
+      // ── Modo de CRIAÇÃO ──
       final mediaList = _images
           .map((img) => {
                 'url': img.url,
@@ -330,7 +424,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         title: Text(
-          'Post de Imagem',
+          _isEditing ? s.editPost : 'Post de Imagem',
           style: TextStyle(
               color: context.textPrimary,
               fontSize: r.fs(17),
@@ -379,7 +473,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
                         strokeWidth: 2, color: AppTheme.primaryColor),
                   )
                 : Text(
-                    s.publish,
+                    _isEditing ? s.save : s.publish,
                     style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontSize: r.fs(14),

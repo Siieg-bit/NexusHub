@@ -9,6 +9,7 @@ import '../../../core/utils/media_utils.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/models/post_model.dart';
+import '../../../core/providers/post_provider.dart';
 
 // =============================================================================
 // CREATE QUIZ SCREEN — Quiz interativo com perguntas e respostas corretas
@@ -75,6 +76,8 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
   bool _isUploadingCover = false;
   bool _shuffleQuestions = false;
 
+  bool get _isEditing => widget.editingPost != null;
+
   static const _timerOptions = {
     0: 'Sem limite',
     10: '10s',
@@ -83,6 +86,72 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
     30: '30s',
     60: '60s',
   };
+
+  @override
+  void initState() {
+    super.initState();
+    if (_isEditing) {
+      _populateFromPost(widget.editingPost!);
+    }
+  }
+
+  void _populateFromPost(PostModel post) {
+    _titleController.text = post.title ?? '';
+    _descriptionController.text = post.content;
+    _visibility = post.editorMetadata.extra['visibility'] as String? ?? 'public';
+    _coverImageUrl = post.coverImageUrl;
+    _difficulty = post.editorMetadata.extra['difficulty'] as String? ?? 'medium';
+    _shuffleQuestions = post.editorMetadata.extra['shuffle_questions'] == true;
+
+    // Restaurar tags
+    if (post.tags.isNotEmpty) {
+      _tags.addAll(post.tags);
+    }
+
+    // Restaurar perguntas do quizData
+    if (post.quizData != null) {
+      final questions = post.quizData!['questions'] as List?;
+      if (questions != null && questions.isNotEmpty) {
+        // Limpar pergunta padrão
+        for (final q in _questions) {
+          q.dispose();
+        }
+        _questions.clear();
+
+        for (final qData in questions) {
+          if (qData is Map) {
+            final q = _QuizQuestion();
+            q.questionController.text =
+                (qData['question_text'] ?? qData['prompt'] ?? '') as String;
+            q.explanationController.text =
+                (qData['explanation'] ?? '') as String;
+            q.correctIndex =
+                (qData['correct_option_index'] ?? qData['correct_index'] ?? 0) as int;
+            q.imageUrl = qData['image_url'] as String?;
+            q.timerSeconds = (qData['timer_seconds'] as num?)?.toInt() ?? 0;
+
+            // Restaurar opções
+            final options = qData['options'] as List?;
+            if (options != null && options.isNotEmpty) {
+              for (final o in q.options) {
+                o.dispose();
+              }
+              q.options.clear();
+              for (final opt in options) {
+                final o = _QuizOption();
+                if (opt is Map) {
+                  o.controller.text = (opt['text'] ?? '') as String;
+                }
+                q.options.add(o);
+              }
+            }
+
+            _questions.add(q);
+          }
+        }
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -213,6 +282,78 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
       final userId = SupabaseService.currentUserId;
       if (userId == null) throw Exception(s.notAuthenticated);
 
+      // ── Modo de EDIÇÃO ──
+      if (_isEditing) {
+        final questions = validQuestions
+            .map((q) => {
+                  'question_text': q.questionController.text.trim(),
+                  'correct_option_index': q.correctIndex,
+                  'explanation': q.explanationController.text.trim(),
+                  'image_url': q.imageUrl,
+                  'timer_seconds': q.timerSeconds,
+                  'options': q.options
+                      .where((o) => o.controller.text.trim().isNotEmpty)
+                      .map((o) => {'text': o.controller.text.trim()})
+                      .toList(),
+                })
+            .toList();
+
+        final editorMetadata = <String, dynamic>{
+          'editor_type': 'quiz',
+          'difficulty': _difficulty,
+          'tags': _tags,
+          'shuffle_questions': _shuffleQuestions,
+          'total_questions': questions.length,
+        };
+
+        final postData = {
+          'title': title,
+          'content': _descriptionController.text.trim(),
+          'type': 'quiz',
+          'tags': _tags,
+          'cover_image_url': _coverImageUrl,
+          'visibility': _visibility,
+          'editor_type': 'quiz',
+          'editor_metadata': editorMetadata,
+        };
+
+        // Atualizar quiz_data com as perguntas
+        try {
+          await SupabaseService.table('posts').update({
+            ...postData,
+            'quiz_data': {'questions': questions},
+          }).eq('id', widget.editingPost!.id);
+        } catch (_) {}
+
+        final success = await ref
+            .read(communityFeedProvider(widget.communityId).notifier)
+            .editPost(widget.editingPost!.id, postData);
+
+        if (mounted) {
+          if (success) {
+            context.pop();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(s.postUpdated),
+                backgroundColor: AppTheme.successColor,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(s.anErrorOccurredTryAgain),
+                backgroundColor: AppTheme.errorColor,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        }
+        if (mounted) setState(() => _isSubmitting = false);
+        return;
+      }
+
+      // ── Modo de CRIAÇÃO ──
       final questions = validQuestions
           .map((q) => {
                 'question_text': q.questionController.text.trim(),
@@ -297,7 +438,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         title: Text(
-          s.newQuiz,
+          _isEditing ? s.editPost : s.newQuiz,
           style: TextStyle(
               color: context.textPrimary,
               fontSize: r.fs(17),
@@ -346,7 +487,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
                         strokeWidth: 2, color: AppTheme.primaryColor),
                   )
                 : Text(
-                    s.publish,
+                    _isEditing ? s.save : s.publish,
                     style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontSize: r.fs(14),

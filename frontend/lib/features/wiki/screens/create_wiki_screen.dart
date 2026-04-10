@@ -9,6 +9,7 @@ import '../../../core/utils/media_utils.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/models/post_model.dart';
+import '../../../core/providers/post_provider.dart';
 
 // =============================================================================
 // CREATE WIKI SCREEN — Entrada de Wiki/Enciclopédia da comunidade
@@ -59,6 +60,57 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
   bool _isUploadingCover = false;
   String _visibility = 'public';
   String? _coverImageUrl;
+
+  bool get _isEditing => widget.editingPost != null;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_isEditing) {
+      _populateFromPost(widget.editingPost!);
+    }
+  }
+
+  void _populateFromPost(PostModel post) {
+    _titleController.text = post.title ?? '';
+    _visibility = post.editorMetadata.extra['visibility'] as String? ?? 'public';
+    _coverImageUrl = post.coverImageUrl;
+
+    // Restaurar subtítulo
+    final subtitle = post.editorMetadata.extra['subtitle'] as String?;
+    if (subtitle != null) _subtitleController.text = subtitle;
+
+    // Restaurar tags
+    if (post.tags.isNotEmpty) {
+      _tags.addAll(post.tags);
+    }
+
+    // Restaurar referências
+    final refs = post.editorMetadata.extra['references'] as List?;
+    if (refs != null) {
+      _references.addAll(refs.map((r) => r.toString()));
+    }
+
+    // Restaurar seções do editor_metadata
+    final sections = post.editorMetadata.extra['sections'] as List?;
+    if (sections != null && sections.isNotEmpty) {
+      // Limpar seção padrão
+      for (final s in _sections) {
+        s.dispose();
+      }
+      _sections.clear();
+
+      for (final secData in sections) {
+        if (secData is Map) {
+          final sec = _WikiSection();
+          sec.titleController.text = (secData['title'] as String?) ?? '';
+          sec.contentController.text = (secData['content'] as String?) ?? '';
+          sec.imageUrl = secData['image_url'] as String?;
+          _sections.add(sec);
+        }
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -202,6 +254,87 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
       final userId = SupabaseService.currentUserId;
       if (userId == null) throw Exception(s.notAuthenticated);
 
+      // ── Modo de EDIÇÃO ──
+      if (_isEditing) {
+        // Montar conteúdo como markdown-like
+        final contentBuffer = StringBuffer();
+        if (_subtitleController.text.trim().isNotEmpty) {
+          contentBuffer.writeln(_subtitleController.text.trim());
+          contentBuffer.writeln();
+        }
+        for (final sec in validSections) {
+          if (sec.titleController.text.trim().isNotEmpty) {
+            contentBuffer.writeln('## ${sec.titleController.text.trim()}');
+          }
+          if (sec.contentController.text.trim().isNotEmpty) {
+            contentBuffer.writeln(sec.contentController.text.trim());
+          }
+          contentBuffer.writeln();
+        }
+
+        final sectionsJson = validSections
+            .map((sec) => {
+                  'title': sec.titleController.text.trim(),
+                  'content': sec.contentController.text.trim(),
+                  'image_url': sec.imageUrl,
+                })
+            .toList();
+
+        final editorMetadata = <String, dynamic>{
+          'editor_type': 'wiki',
+          'tags': _tags,
+          'references': _references,
+          'sections': sectionsJson,
+          'subtitle': _subtitleController.text.trim(),
+        };
+
+        final mediaUrls = <String>[];
+        if (_coverImageUrl != null) mediaUrls.add(_coverImageUrl!);
+        for (final sec in validSections) {
+          if (sec.imageUrl != null) mediaUrls.add(sec.imageUrl!);
+        }
+
+        final postData = {
+          'title': title,
+          'content': contentBuffer.toString().trim(),
+          'type': 'wiki',
+          'media_list': mediaUrls.map((url) => {'url': url, 'type': 'image'}).toList(),
+          'tags': _tags,
+          'cover_image_url': _coverImageUrl,
+          'visibility': _visibility,
+          'editor_type': 'wiki',
+          'editor_metadata': editorMetadata,
+        };
+
+        final success = await ref
+            .read(communityFeedProvider(widget.communityId).notifier)
+            .editPost(widget.editingPost!.id, postData);
+
+        if (mounted) {
+          if (success) {
+            context.pop();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(s.postUpdated),
+                backgroundColor: AppTheme.successColor,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(s.anErrorOccurredTryAgain),
+                backgroundColor: AppTheme.errorColor,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        }
+        if (mounted) setState(() => _isSubmitting = false);
+        return;
+      }
+
+      // ── Modo de CRIAÇÃO ──
       // Montar conteúdo como markdown-like
       final contentBuffer = StringBuffer();
       if (_subtitleController.text.trim().isNotEmpty) {
@@ -322,7 +455,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
       appBar: AppBar(
         backgroundColor: context.surfaceColor,
         title: Text(
-          s.wikiEntry,
+          _isEditing ? s.editPost : s.wikiEntry,
           style: TextStyle(
               color: context.textPrimary,
               fontSize: r.fs(17),
@@ -371,7 +504,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
                         strokeWidth: 2, color: AppTheme.primaryColor),
                   )
                 : Text(
-                    s.publish,
+                    _isEditing ? s.save : s.publish,
                     style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontSize: r.fs(14),
