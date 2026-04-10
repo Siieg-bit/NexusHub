@@ -11,7 +11,8 @@ import '../../../core/l10n/app_strings.dart';
 // COMMUNITY CREATE MENU — Bottom sheet grid estilo Amino Apps
 //
 // Exibido ao tocar no botão "+" (FAB rosa) da barra inferior da comunidade.
-// Cada item abre sua própria tela dedicada de criação.
+// Todos os itens navegam ao editor unificado (CreatePostScreen) com o
+// initialType correspondente.
 // Itens: Story, Pergunta, Chat Público, Imagem, Link, Quiz, Enquete,
 //        Entrada Wiki, Blog, Rascunhos.
 // =============================================================================
@@ -60,90 +61,70 @@ class _CommunityCreateMenuSheet extends ConsumerWidget {
 
   List<_CreateItem> _buildItems(AppStrings s) {
     final s = getStrings();
+
+    /// Helper para navegar ao editor unificado com tipo pré-selecionado.
+    void _goCreate(BuildContext ctx, String type) {
+      Navigator.pop(ctx);
+      ctx.push(
+        '/community/$communityId/create-post',
+        extra: {'initialType': type},
+      );
+    }
+
     return [
       _CreateItem(
         label: s.storyLabel,
         icon: Icons.auto_awesome_rounded,
         color: const Color(0xFF7C3AED),
-        onTap: (ctx) {
-          Navigator.pop(ctx);
-          ctx.push('/community/$communityId/create-story');
-        },
+        onTap: (ctx) => _goCreate(ctx, 'story'),
       ),
       _CreateItem(
         label: s.question,
         icon: Icons.help_rounded,
         color: const Color(0xFFEA580C),
-        onTap: (ctx) {
-          Navigator.pop(ctx);
-          ctx.push('/community/$communityId/create-question');
-        },
+        onTap: (ctx) => _goCreate(ctx, 'qa'),
       ),
       _CreateItem(
         label: s.chatPublicNewline,
         icon: Icons.chat_bubble_rounded,
         color: const Color(0xFF16A34A),
-        onTap: (ctx) {
-          Navigator.pop(ctx);
-          ctx.push('/create-public-chat', extra: {
-            'communityId': communityId,
-            'communityName': communityName,
-          });
-        },
+        onTap: (ctx) => _goCreate(ctx, 'public_chat'),
       ),
       _CreateItem(
         label: s.image,
         icon: Icons.image_rounded,
         color: const Color(0xFFE11D48),
-        onTap: (ctx) {
-          Navigator.pop(ctx);
-          ctx.push('/community/$communityId/create-image');
-        },
+        onTap: (ctx) => _goCreate(ctx, 'image'),
       ),
       _CreateItem(
         label: s.link,
         icon: Icons.link_rounded,
         color: const Color(0xFF2563EB),
-        onTap: (ctx) {
-          Navigator.pop(ctx);
-          ctx.push('/community/$communityId/create-link');
-        },
+        onTap: (ctx) => _goCreate(ctx, 'link'),
       ),
       _CreateItem(
         label: s.quiz,
         icon: Icons.checklist_rounded,
         color: const Color(0xFFDB2777),
-        onTap: (ctx) {
-          Navigator.pop(ctx);
-          ctx.push('/community/$communityId/create-quiz');
-        },
+        onTap: (ctx) => _goCreate(ctx, 'quiz'),
       ),
       _CreateItem(
         label: s.poll,
         icon: Icons.bar_chart_rounded,
         color: const Color(0xFF0891B2),
-        onTap: (ctx) {
-          Navigator.pop(ctx);
-          ctx.push('/community/$communityId/create-poll');
-        },
+        onTap: (ctx) => _goCreate(ctx, 'poll'),
       ),
       _CreateItem(
         label: s.wikiEntryNewline,
         icon: Icons.menu_book_rounded,
         color: const Color(0xFFD97706),
-        onTap: (ctx) {
-          Navigator.pop(ctx);
-          ctx.push('/community/$communityId/wiki/create');
-        },
+        onTap: (ctx) => _goCreate(ctx, 'wiki'),
       ),
       _CreateItem(
         label: s.blog,
         icon: Icons.article_rounded,
         color: const Color(0xFF0D9488),
-        onTap: (ctx) {
-          Navigator.pop(ctx);
-          ctx.push('/community/$communityId/create-blog');
-        },
+        onTap: (ctx) => _goCreate(ctx, 'blog'),
       ),
       _CreateItem(
         label: s.drafts,

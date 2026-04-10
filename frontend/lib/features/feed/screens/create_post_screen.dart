@@ -551,8 +551,10 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         // Atualizar editor_metadata e editor_type no post criado
         if (postId != null) {
           try {
+            // Incluir editor_type dentro do editor_metadata (coluna editor_type
+            // não existe na tabela, então salvamos no JSON de metadata).
+            editorMetadata['editor_type'] = _selectedType;
             await SupabaseService.table('posts').update({
-              'editor_type': _selectedType,
               'editor_metadata': editorMetadata,
               if (_selectedType == 'story')
                 'story_data': {

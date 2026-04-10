@@ -264,47 +264,53 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-      // Rotas de criação dedicadas (menu + da comunidade)
+      // Rotas de criação dedicadas — todas redirecionam ao editor unificado
       GoRoute(
         path: '/community/:communityId/create-blog',
         name: 'create-blog',
-        builder: (context, state) => CreateBlogScreen(
+        builder: (context, state) => CreatePostScreen(
           communityId: state.pathParameters['communityId']!,
+          initialType: 'blog',
         ),
       ),
       GoRoute(
         path: '/community/:communityId/create-image',
         name: 'create-image',
-        builder: (context, state) => CreateImagePostScreen(
+        builder: (context, state) => CreatePostScreen(
           communityId: state.pathParameters['communityId']!,
+          initialType: 'image',
         ),
       ),
       GoRoute(
         path: '/community/:communityId/create-link',
         name: 'create-link',
-        builder: (context, state) => CreateLinkPostScreen(
+        builder: (context, state) => CreatePostScreen(
           communityId: state.pathParameters['communityId']!,
+          initialType: 'link',
         ),
       ),
       GoRoute(
         path: '/community/:communityId/create-poll',
         name: 'create-poll',
-        builder: (context, state) => CreatePollScreen(
+        builder: (context, state) => CreatePostScreen(
           communityId: state.pathParameters['communityId']!,
+          initialType: 'poll',
         ),
       ),
       GoRoute(
         path: '/community/:communityId/create-quiz',
         name: 'create-quiz',
-        builder: (context, state) => CreateQuizScreen(
+        builder: (context, state) => CreatePostScreen(
           communityId: state.pathParameters['communityId']!,
+          initialType: 'quiz',
         ),
       ),
       GoRoute(
         path: '/community/:communityId/create-question',
         name: 'create-question',
-        builder: (context, state) => CreateQuestionScreen(
+        builder: (context, state) => CreatePostScreen(
           communityId: state.pathParameters['communityId']!,
+          initialType: 'qa',
         ),
       ),
       // ====================================================================
@@ -393,8 +399,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/community/:communityId/wiki/create',
         name: 'create-wiki',
-        builder: (context, state) => CreateWikiScreen(
+        builder: (context, state) => CreatePostScreen(
           communityId: state.pathParameters['communityId']!,
+          initialType: 'wiki',
         ),
       ),
       GoRoute(
@@ -687,7 +694,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'create-story',
         builder: (context, state) {
           final communityId = state.pathParameters['id']!;
-          return CreateStoryScreen(communityId: communityId);
+          return CreatePostScreen(
+            communityId: communityId,
+            initialType: 'story',
+          );
         },
       ),
     ],

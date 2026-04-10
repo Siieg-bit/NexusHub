@@ -24,7 +24,7 @@ const _kPostSelect =
     'original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url), '
     'original_post:original_post_id('
     'id, title, content, type, cover_image_url, media_list, created_at, '
-    'author_id, community_id, original_post_id, editor_type, post_variant, '
+    'author_id, community_id, original_post_id, post_variant, '
     'editor_metadata, editor_state, story_data, chat_data, wiki_data'
     ')';
 

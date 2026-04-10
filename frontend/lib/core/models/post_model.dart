@@ -110,7 +110,10 @@ class PostModel {
       id: json['id'] as String,
       communityId: json['community_id'] as String? ?? '',
       authorId: json['author_id'] as String? ?? '',
-      editorType: json['editor_type'] as String?,
+      editorType: json['editor_type'] as String? ??
+          (json['editor_metadata'] is Map
+              ? (json['editor_metadata'] as Map)['editor_type'] as String?
+              : null),
       variant: json['variant'] as String? ?? json['post_variant'] as String?,
       editorMetadata: PostEditorModel.fromJson(
         json['editor_metadata'] as Map<String, dynamic>?,
