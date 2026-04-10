@@ -12,6 +12,7 @@ import '../../../core/models/post_model.dart';
 import '../../../core/providers/post_provider.dart';
 import '../../../core/providers/draft_provider.dart';
 import 'dart:async';
+import '../../../core/services/og_tags_service.dart';
 
 // =============================================================================
 // CREATE LINK POST SCREEN — Post com URL externa
@@ -45,6 +46,9 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
   String _visibility = 'public';
   String? _thumbnailUrl;
   bool _urlValid = false;
+  bool _isFetchingOg = false;
+  OgTagsData? _ogData;
+  Timer? _ogDebounceTimer;
 
   bool get _isEditing => widget.editingPost != null;
 
@@ -212,6 +216,8 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
 
   @override
   void dispose() {
+    _autoDraftTimer?.cancel();
+    _ogDebounceTimer?.cancel();
     _titleController.dispose();
     _urlController.dispose();
     _descriptionController.dispose();
@@ -224,6 +230,47 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
     final valid = Uri.tryParse(url)?.hasAbsolutePath == true &&
         (url.startsWith('http://') || url.startsWith('https://'));
     if (valid != _urlValid) setState(() => _urlValid = valid);
+
+    // Debounce OG fetch — espera 800ms após parar de digitar
+    _ogDebounceTimer?.cancel();
+    if (valid) {
+      _ogDebounceTimer = Timer(const Duration(milliseconds: 800), () {
+        _fetchOgTags(url);
+      });
+    } else {
+      setState(() => _ogData = null);
+    }
+  }
+
+  Future<void> _fetchOgTags(String url) async {
+    if (_isFetchingOg) return;
+    setState(() => _isFetchingOg = true);
+
+    try {
+      final data = await OgTagsService.fetch(url);
+      if (!mounted) return;
+
+      setState(() {
+        _ogData = data;
+        _isFetchingOg = false;
+
+        // Auto-preencher campos vazios com dados OG
+        if (!data.isEmpty) {
+          if (_titleController.text.trim().isEmpty && data.title != null) {
+            _titleController.text = data.title!;
+          }
+          if (_descriptionController.text.trim().isEmpty &&
+              data.description != null) {
+            _descriptionController.text = data.description!;
+          }
+          if (_thumbnailUrl == null && data.image != null) {
+            _thumbnailUrl = data.image;
+          }
+        }
+      });
+    } catch (_) {
+      if (mounted) setState(() => _isFetchingOg = false);
+    }
   }
 
   String? _extractDomain(String url) {
@@ -670,6 +717,12 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
 
   Widget _buildLinkPreview(Responsive r) {
     final domain = _extractDomain(_urlController.text.trim());
+    final displayTitle = _titleController.text.trim().isNotEmpty
+        ? _titleController.text.trim()
+        : _ogData?.title ?? domain ?? 'Link externo';
+    final displayDesc = _ogData?.description;
+    final displayDomain = _ogData?.siteName ?? domain ?? _urlController.text.trim();
+
     return Container(
       padding: EdgeInsets.all(r.s(12)),
       decoration: BoxDecoration(
@@ -678,58 +731,97 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
         border: Border.all(
             color: const Color(0xFF2563EB).withValues(alpha: 0.3)),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: r.s(48),
-            height: r.s(48),
-            decoration: BoxDecoration(
-              color: const Color(0xFF2563EB).withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(r.s(8)),
-            ),
-            child: _thumbnailUrl != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(r.s(8)),
-                    child: Image.network(_thumbnailUrl!,
-                        fit: BoxFit.cover,
-                        width: r.s(48),
-                        height: r.s(48)),
-                  )
-                : Icon(Icons.language_rounded,
-                    color: const Color(0xFF2563EB), size: r.s(24)),
-          ),
-          SizedBox(width: r.s(12)),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _titleController.text.trim().isNotEmpty
-                      ? _titleController.text.trim()
-                      : domain ?? 'Link externo',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: context.textPrimary,
-                    fontSize: r.fs(13),
-                    fontWeight: FontWeight.w600,
-                  ),
+          Row(
+            children: [
+              Container(
+                width: r.s(48),
+                height: r.s(48),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2563EB).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(r.s(8)),
                 ),
-                SizedBox(height: r.s(2)),
-                Text(
-                  domain ?? _urlController.text.trim(),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: const Color(0xFF2563EB),
-                    fontSize: r.fs(11),
-                  ),
+                child: _isFetchingOg
+                    ? Center(
+                        child: SizedBox(
+                          width: r.s(20),
+                          height: r.s(20),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: const Color(0xFF2563EB),
+                          ),
+                        ),
+                      )
+                    : _thumbnailUrl != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(r.s(8)),
+                            child: Image.network(_thumbnailUrl!,
+                                fit: BoxFit.cover,
+                                width: r.s(48),
+                                height: r.s(48)),
+                          )
+                        : Icon(Icons.language_rounded,
+                            color: const Color(0xFF2563EB), size: r.s(24)),
+              ),
+              SizedBox(width: r.s(12)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      displayTitle,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: context.textPrimary,
+                        fontSize: r.fs(13),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: r.s(2)),
+                    Text(
+                      displayDomain,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: const Color(0xFF2563EB),
+                        fontSize: r.fs(11),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              Icon(Icons.open_in_new_rounded,
+                  color: context.textSecondary, size: r.s(16)),
+            ],
           ),
-          Icon(Icons.open_in_new_rounded,
-              color: context.textSecondary, size: r.s(16)),
+          // Mostrar descrição OG se disponível
+          if (displayDesc != null && displayDesc.isNotEmpty) ...[
+            SizedBox(height: r.s(8)),
+            Text(
+              displayDesc,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: context.textSecondary,
+                fontSize: r.fs(11),
+              ),
+            ),
+          ],
+          // Indicador de carregamento OG
+          if (_isFetchingOg) ...[
+            SizedBox(height: r.s(6)),
+            Text(
+              'Buscando informa\u00e7\u00f5es do link...',
+              style: TextStyle(
+                color: context.textSecondary,
+                fontSize: r.fs(10),
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
         ],
       ),
     );
