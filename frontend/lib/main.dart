@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -239,6 +240,11 @@ class _NexusHubAppState extends ConsumerState<NexusHubApp> {
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
       locale: Locale(currentLocale.code),
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       supportedLocales: AppLocale.values.map((l) => Locale(l.code)),
       routerConfig: router,
       builder: (context, child) {
