@@ -8,6 +8,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/media_utils.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/models/post_model.dart';
 
 // =============================================================================
 // CREATE WIKI SCREEN — Entrada de Wiki/Enciclopédia da comunidade
@@ -39,7 +40,8 @@ class _WikiSection {
 
 class CreateWikiScreen extends ConsumerStatefulWidget {
   final String communityId;
-  const CreateWikiScreen({super.key, required this.communityId});
+  final PostModel? editingPost;
+  const CreateWikiScreen({super.key, required this.communityId, this.editingPost});
 
   @override
   ConsumerState<CreateWikiScreen> createState() => _CreateWikiScreenState();

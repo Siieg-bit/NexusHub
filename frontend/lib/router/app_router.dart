@@ -268,44 +268,68 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/community/:communityId/create-blog',
         name: 'create-blog',
-        builder: (context, state) => CreateBlogScreen(
-          communityId: state.pathParameters['communityId']!,
-        ),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return CreateBlogScreen(
+            communityId: state.pathParameters['communityId']!,
+            editingPost: extra['editingPost'] as PostModel?,
+          );
+        },
       ),
       GoRoute(
         path: '/community/:communityId/create-image',
         name: 'create-image',
-        builder: (context, state) => CreateImagePostScreen(
-          communityId: state.pathParameters['communityId']!,
-        ),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return CreateImagePostScreen(
+            communityId: state.pathParameters['communityId']!,
+            editingPost: extra['editingPost'] as PostModel?,
+          );
+        },
       ),
       GoRoute(
         path: '/community/:communityId/create-link',
         name: 'create-link',
-        builder: (context, state) => CreateLinkPostScreen(
-          communityId: state.pathParameters['communityId']!,
-        ),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return CreateLinkPostScreen(
+            communityId: state.pathParameters['communityId']!,
+            editingPost: extra['editingPost'] as PostModel?,
+          );
+        },
       ),
       GoRoute(
         path: '/community/:communityId/create-poll',
         name: 'create-poll',
-        builder: (context, state) => CreatePollScreen(
-          communityId: state.pathParameters['communityId']!,
-        ),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return CreatePollScreen(
+            communityId: state.pathParameters['communityId']!,
+            editingPost: extra['editingPost'] as PostModel?,
+          );
+        },
       ),
       GoRoute(
         path: '/community/:communityId/create-quiz',
         name: 'create-quiz',
-        builder: (context, state) => CreateQuizScreen(
-          communityId: state.pathParameters['communityId']!,
-        ),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return CreateQuizScreen(
+            communityId: state.pathParameters['communityId']!,
+            editingPost: extra['editingPost'] as PostModel?,
+          );
+        },
       ),
       GoRoute(
         path: '/community/:communityId/create-question',
         name: 'create-question',
-        builder: (context, state) => CreateQuestionScreen(
-          communityId: state.pathParameters['communityId']!,
-        ),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return CreateQuestionScreen(
+            communityId: state.pathParameters['communityId']!,
+            editingPost: extra['editingPost'] as PostModel?,
+          );
+        },
       ),
       // ====================================================================
       // ROTAS DE CHAT
@@ -393,9 +417,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/community/:communityId/wiki/create',
         name: 'create-wiki',
-        builder: (context, state) => CreateWikiScreen(
-          communityId: state.pathParameters['communityId']!,
-        ),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return CreateWikiScreen(
+            communityId: state.pathParameters['communityId']!,
+            editingPost: extra['editingPost'] as PostModel?,
+          );
+        },
       ),
       GoRoute(
         path: '/community/:communityId/wiki/review',
@@ -687,7 +715,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'create-story',
         builder: (context, state) {
           final communityId = state.pathParameters['id']!;
-          return CreateStoryScreen(communityId: communityId);
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return CreateStoryScreen(
+            communityId: communityId,
+            editingPost: extra['editingPost'] as PostModel?,
+          );
         },
       ),
     ],

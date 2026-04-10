@@ -8,6 +8,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/media_utils.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/models/post_model.dart';
 
 // =============================================================================
 // CREATE POLL SCREEN — Enquete com múltiplas opções
@@ -23,7 +24,8 @@ import '../../../core/l10n/locale_provider.dart';
 
 class CreatePollScreen extends ConsumerStatefulWidget {
   final String communityId;
-  const CreatePollScreen({super.key, required this.communityId});
+  final PostModel? editingPost;
+  const CreatePollScreen({super.key, required this.communityId, this.editingPost});
 
   @override
   ConsumerState<CreatePollScreen> createState() => _CreatePollScreenState();

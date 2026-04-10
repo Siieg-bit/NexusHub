@@ -1460,14 +1460,47 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   void _showEditPostDialog(PostModel post) {
-    // Navegar para o CreatePostScreen em modo de edição (reutiliza o editor completo)
-    context.push(
-      '/community/${post.communityId}/create-post',
-      extra: {
-        'editingPost': post,
-        'initialType': post.editorType ?? post.type,
-      },
-    );
+    // Navegar para a tela de edição correta baseado no tipo do post
+    final type = post.editorType ?? post.type;
+    final communityId = post.communityId;
+    final extra = {'editingPost': post};
+
+    switch (type) {
+      case 'blog':
+        context.push('/community/$communityId/create-blog', extra: extra);
+        break;
+      case 'image':
+        context.push('/community/$communityId/create-image', extra: extra);
+        break;
+      case 'link':
+        context.push('/community/$communityId/create-link', extra: extra);
+        break;
+      case 'poll':
+        context.push('/community/$communityId/create-poll', extra: extra);
+        break;
+      case 'quiz':
+        context.push('/community/$communityId/create-quiz', extra: extra);
+        break;
+      case 'qa':
+      case 'question':
+        context.push('/community/$communityId/create-question', extra: extra);
+        break;
+      case 'wiki':
+        context.push('/community/$communityId/wiki/create', extra: extra);
+        break;
+      case 'story':
+        context.push('/community/$communityId/create-story', extra: extra);
+        break;
+      default:
+        // Tipo normal ou desconhecido — usar o editor genérico
+        context.push(
+          '/community/$communityId/create-post',
+          extra: {
+            'editingPost': post,
+            'initialType': type,
+          },
+        );
+    }
   }
 
   // ======================================================

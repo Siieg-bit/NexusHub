@@ -9,6 +9,7 @@ import '../../../core/providers/draft_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/media_utils.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/models/post_model.dart';
 import '../widgets/block_content_renderer.dart';
 import '../widgets/block_editor.dart';
 
@@ -28,8 +29,9 @@ import '../widgets/block_editor.dart';
 
 class CreateBlogScreen extends ConsumerStatefulWidget {
   final String communityId;
+  final PostModel? editingPost;
 
-  const CreateBlogScreen({super.key, required this.communityId});
+  const CreateBlogScreen({super.key, required this.communityId, this.editingPost});
 
   @override
   ConsumerState<CreateBlogScreen> createState() => _CreateBlogScreenState();

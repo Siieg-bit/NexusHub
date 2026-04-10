@@ -8,6 +8,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/media_utils.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/models/post_model.dart';
 
 // =============================================================================
 // CREATE QUESTION SCREEN — Post tipo Q&A (pergunta aberta para a comunidade)
@@ -22,7 +23,8 @@ import '../../../core/l10n/locale_provider.dart';
 
 class CreateQuestionScreen extends ConsumerStatefulWidget {
   final String communityId;
-  const CreateQuestionScreen({super.key, required this.communityId});
+  final PostModel? editingPost;
+  const CreateQuestionScreen({super.key, required this.communityId, this.editingPost});
 
   @override
   ConsumerState<CreateQuestionScreen> createState() =>

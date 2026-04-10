@@ -7,6 +7,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/models/post_model.dart';
 
 /// Create Story Screen — Criação de stories estilo Amino/Instagram.
 ///
@@ -20,7 +21,8 @@ import '../../../core/l10n/locale_provider.dart';
 ///   - Filtro de imagem básico (brilho)
 class CreateStoryScreen extends ConsumerStatefulWidget {
   final String communityId;
-  const CreateStoryScreen({super.key, required this.communityId});
+  final PostModel? editingPost;
+  const CreateStoryScreen({super.key, required this.communityId, this.editingPost});
 
   @override
   ConsumerState<CreateStoryScreen> createState() => _CreateStoryScreenState();

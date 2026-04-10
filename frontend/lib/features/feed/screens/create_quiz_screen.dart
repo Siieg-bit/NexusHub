@@ -8,6 +8,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/media_utils.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/models/post_model.dart';
 
 // =============================================================================
 // CREATE QUIZ SCREEN — Quiz interativo com perguntas e respostas corretas
@@ -54,7 +55,8 @@ class _QuizQuestion {
 
 class CreateQuizScreen extends ConsumerStatefulWidget {
   final String communityId;
-  const CreateQuizScreen({super.key, required this.communityId});
+  final PostModel? editingPost;
+  const CreateQuizScreen({super.key, required this.communityId, this.editingPost});
 
   @override
   ConsumerState<CreateQuizScreen> createState() => _CreateQuizScreenState();
