@@ -1,34 +1,21 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+
 import '../../../config/app_theme.dart';
+import '../../../core/l10n/locale_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
-import '../../../core/l10n/locale_provider.dart';
 
-/// Rich Text Block Editor — Editor de Blocos estilo Amino.
+/// Rich Text Block Editor — Editor de blocos estilo Amino.
 ///
-/// No Amino original, blogs são compostos por blocos intercalados:
-///   [Texto] → [Imagem] → [Texto] → [Imagem] → [Texto]
-///
-/// Cada bloco pode ser:
-///   - text: parágrafo com formatação (negrito, itálico, etc.)
-///   - image: imagem inline com legenda opcional
-///   - divider: separador visual
-///   - heading: título/subtítulo dentro do blog
-///
-/// O editor permite:
-///   - Adicionar/remover/reordenar blocos
-///   - Upload de imagens inline entre parágrafos
-///   - Toolbar flutuante por bloco
-///   - Preview em tempo real
-///   - Serialização para JSON (content_blocks)
-
-// ═══════════════════════════════════════════════════════════════
-// MODELO DE BLOCO
-// ═══════════════════════════════════════════════════════════════
-
-enum BlockType { text, image, divider, heading }
+/// Serializa os blocos em um formato compatível com o renderer atual,
+/// mantendo chaves legadas e novas ao mesmo tempo:
+/// - texto: `content` e `text`
+/// - imagem: `url` e `image_url`
+/// - heading: `level`
+/// - texto/citação: `bold`, `italic` e `align`
+enum BlockType { text, image, divider, heading, quote }
 
 class ContentBlock {
   final String id;
@@ -36,7 +23,12 @@ class ContentBlock {
   String text;
   String? imageUrl;
   String? caption;
+  bool bold;
+  bool italic;
+  String align;
+  int level;
   TextEditingController? controller;
+  TextEditingController? captionController;
 
   ContentBlock({
     String? id,
@@ -44,41 +36,97 @@ class ContentBlock {
     this.text = '',
     this.imageUrl,
     this.caption,
+    this.bold = false,
+    this.italic = false,
+    this.align = 'left',
+    this.level = 2,
   }) : id = id ?? DateTime.now().microsecondsSinceEpoch.toString() {
-    if (type == BlockType.text || type == BlockType.heading) {
-      controller = TextEditingController(text: text);
+    _ensureControllers();
+  }
+
+  bool get isTextBased =>
+      type == BlockType.text || type == BlockType.heading || type == BlockType.quote;
+
+  void _ensureControllers() {
+    if (isTextBased) {
+      controller ??= TextEditingController(text: text);
+    } else {
+      controller?.dispose();
+      controller = null;
+    }
+
+    if (type == BlockType.image) {
+      captionController ??= TextEditingController(text: caption ?? '');
+    } else {
+      captionController?.dispose();
+      captionController = null;
     }
   }
 
-  Map<String, dynamic> toJson() => {
-        'type': type.name,
-        'text': type == BlockType.text || type == BlockType.heading
-            ? (controller?.text ?? text)
-            : text,
-        if (imageUrl != null) 'image_url': imageUrl,
-        if (caption != null && caption!.isNotEmpty) 'caption': caption,
-      };
+  void syncFromControllers() {
+    if (controller != null) {
+      text = controller!.text;
+    }
+    if (captionController != null) {
+      caption = captionController!.text.trim();
+    }
+  }
+
+  void setType(BlockType newType) {
+    syncFromControllers();
+    type = newType;
+    if (type != BlockType.heading) level = 2;
+    _ensureControllers();
+  }
+
+  Map<String, dynamic> toJson() {
+    syncFromControllers();
+    final serializedText = text.trim();
+    final serializedCaption = caption?.trim();
+
+    return {
+      'type': type.name,
+      if (isTextBased) 'content': serializedText,
+      if (isTextBased) 'text': serializedText,
+      if (imageUrl != null && imageUrl!.isNotEmpty) 'url': imageUrl,
+      if (imageUrl != null && imageUrl!.isNotEmpty) 'image_url': imageUrl,
+      if (serializedCaption != null && serializedCaption.isNotEmpty)
+        'caption': serializedCaption,
+      if (type == BlockType.text || type == BlockType.quote) 'bold': bold,
+      if (type == BlockType.text || type == BlockType.quote) 'italic': italic,
+      if (type == BlockType.text || type == BlockType.quote) 'align': align,
+      if (type == BlockType.heading) 'level': level,
+    };
+  }
 
   static ContentBlock fromJson(Map<String, dynamic> json) {
-    return ContentBlock(
-      type: BlockType.values.firstWhere(
-        (e) => e.name == json['type'],
-        orElse: () => BlockType.text,
-      ),
-      text: json['text'] as String? ?? '',
-      imageUrl: json['image_url'] as String?,
-      caption: json['caption'] as String?,
+    final rawType = (json['type'] as String? ?? 'text').toLowerCase();
+    final type = BlockType.values.firstWhere(
+      (value) => value.name == rawType,
+      orElse: () => BlockType.text,
     );
+
+    final block = ContentBlock(
+      type: type,
+      text: (json['content'] ?? json['text'] ?? '') as String,
+      imageUrl: (json['url'] ?? json['image_url']) as String?,
+      caption: json['caption'] as String?,
+      bold: json['bold'] == true,
+      italic: json['italic'] == true,
+      align: (json['align'] as String?) ?? 'left',
+      level: (json['level'] as num?)?.toInt() ?? 2,
+    );
+
+    return block;
   }
+
+  ContentBlock clone() => ContentBlock.fromJson(toJson());
 
   void dispose() {
     controller?.dispose();
+    captionController?.dispose();
   }
 }
-
-// ═══════════════════════════════════════════════════════════════
-// BLOCK EDITOR WIDGET
-// ═══════════════════════════════════════════════════════════════
 
 class BlockEditor extends ConsumerStatefulWidget {
   final List<ContentBlock> initialBlocks;
@@ -105,38 +153,43 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
   void initState() {
     super.initState();
     _blocks = widget.initialBlocks.isNotEmpty
-        ? List.from(widget.initialBlocks)
+        ? widget.initialBlocks.map((block) => block.clone()).toList()
         : [ContentBlock(type: BlockType.text)];
   }
 
   @override
   void dispose() {
-    for (final b in _blocks) {
-      b.dispose();
+    for (final block in _blocks) {
+      block.dispose();
     }
     super.dispose();
   }
 
   void _notifyChanged() {
-    widget.onChanged(List.from(_blocks));
+    for (final block in _blocks) {
+      block.syncFromControllers();
+    }
+    widget.onChanged(_blocks.map((block) => block.clone()).toList());
   }
 
   void _addBlock(BlockType type, {int? afterIndex}) {
-    final index = (afterIndex ?? _blocks.length - 1) + 1;
+    final insertIndex = (afterIndex ?? (_blocks.length - 1)) + 1;
     final block = ContentBlock(type: type);
     setState(() {
-      _blocks.insert(index, block);
-      _focusedBlockIndex = index;
+      _blocks.insert(insertIndex, block);
+      _focusedBlockIndex = insertIndex;
     });
     _notifyChanged();
   }
 
   void _removeBlock(int index) {
-    if (_blocks.length <= 1) return; // Mínimo 1 bloco
+    if (_blocks.length <= 1) return;
     setState(() {
       _blocks[index].dispose();
       _blocks.removeAt(index);
-      _focusedBlockIndex = null;
+      if (_focusedBlockIndex == index) {
+        _focusedBlockIndex = null;
+      }
     });
     _notifyChanged();
   }
@@ -151,67 +204,106 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
     _notifyChanged();
   }
 
+  void _changeTextBlockType(int index, BlockType nextType) {
+    if (!(nextType == BlockType.text ||
+        nextType == BlockType.heading ||
+        nextType == BlockType.quote)) {
+      return;
+    }
+
+    setState(() {
+      _blocks[index].setType(nextType);
+      _focusedBlockIndex = index;
+    });
+    _notifyChanged();
+  }
+
+  void _toggleBold(int index) {
+    setState(() => _blocks[index].bold = !_blocks[index].bold);
+    _notifyChanged();
+  }
+
+  void _toggleItalic(int index) {
+    setState(() => _blocks[index].italic = !_blocks[index].italic);
+    _notifyChanged();
+  }
+
+  void _cycleAlignment(int index) {
+    const alignments = ['left', 'center', 'right'];
+    final current = _blocks[index].align;
+    final next = alignments[(alignments.indexOf(current) + 1) % alignments.length];
+    setState(() => _blocks[index].align = next);
+    _notifyChanged();
+  }
+
+  void _changeHeadingLevel(int index, int level) {
+    setState(() => _blocks[index].level = level);
+    _notifyChanged();
+  }
+
   Future<void> _pickImageForBlock(int index) async {
     final s = ref.read(stringsProvider);
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
-    if (!mounted) return;
-    if (image == null) return;
+    if (!mounted || image == null) return;
 
-    if (!mounted) return;
-    setState(() => _isUploading = true);
+    setState(() {
+      _isUploading = true;
+      _focusedBlockIndex = index;
+    });
 
     try {
       final userId = SupabaseService.currentUserId ?? 'unknown';
       final bytes = await image.readAsBytes();
       final path =
           'posts/${widget.communityId}/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
+
       await SupabaseService.client.storage
           .from('post_media')
           .uploadBinary(path, bytes);
-      if (!mounted) return;
-      final url =
+
+      final publicUrl =
           SupabaseService.client.storage.from('post_media').getPublicUrl(path);
 
       if (!mounted) return;
       setState(() {
-        _blocks[index].imageUrl = url;
+        _blocks[index].imageUrl = publicUrl;
         _isUploading = false;
       });
       _notifyChanged();
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
       setState(() => _isUploading = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(s.errorUploadTryAgain),
-            backgroundColor: AppTheme.errorColor,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(s.errorUploadTryAgain),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 
   Future<void> _insertImageBlock({int? afterIndex}) async {
-    final index = (afterIndex ?? _blocks.length - 1) + 1;
+    final insertIndex = (afterIndex ?? (_blocks.length - 1)) + 1;
     final block = ContentBlock(type: BlockType.image);
+
     setState(() {
-      _blocks.insert(index, block);
-      _focusedBlockIndex = index;
+      _blocks.insert(insertIndex, block);
+      _focusedBlockIndex = insertIndex;
     });
 
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
     if (!mounted) return;
+
     if (image == null) {
-      // Remover bloco se cancelou
-      if (!mounted) return;
       setState(() {
-        _blocks.removeAt(index);
+        _blocks[insertIndex].dispose();
+        _blocks.removeAt(insertIndex);
         _focusedBlockIndex = null;
       });
+      _notifyChanged();
       return;
     }
 
@@ -222,48 +314,42 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
       final bytes = await image.readAsBytes();
       final path =
           'posts/${widget.communityId}/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
+
       await SupabaseService.client.storage
           .from('post_media')
           .uploadBinary(path, bytes);
-      if (!mounted) return;
-      final url =
+
+      final publicUrl =
           SupabaseService.client.storage.from('post_media').getPublicUrl(path);
 
+      if (!mounted) return;
       setState(() {
-        _blocks[index].imageUrl = url;
+        _blocks[insertIndex].imageUrl = publicUrl;
         _isUploading = false;
       });
 
-      // Adicionar bloco de texto após a imagem automaticamente
-      _addBlock(BlockType.text, afterIndex: index);
       _notifyChanged();
-    } catch (e) {
+      _addBlock(BlockType.text, afterIndex: insertIndex);
+    } catch (_) {
+      if (!mounted) return;
       setState(() => _isUploading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(ref.read(stringsProvider).errorUploadTryAgain),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
-  }
-
-  /// Serializa todos os blocos para JSON (para salvar no banco)
-  List<Map<String, dynamic>> toJson() {
-    return _blocks.map((b) => b.toJson()).toList();
-  }
-
-  /// Converte blocos para texto plano (fallback para content)
-  String toPlainText() {
-    return _blocks
-        .where((b) => b.type == BlockType.text || b.type == BlockType.heading)
-        .map((b) => b.controller?.text ?? b.text)
-        .where((t) => t.isNotEmpty)
-        .join('\n\n');
   }
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── Blocos ──
         ReorderableListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -275,32 +361,35 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
           proxyDecorator: (child, index, animation) {
             return AnimatedBuilder(
               animation: animation,
-              builder: (ctx, child) => Material(
+              builder: (context, _) => Material(
                 color: Colors.transparent,
-                elevation: 4,
+                elevation: 6,
                 child: child,
               ),
-              child: child,
             );
           },
-          itemBuilder: (ctx, i) {
-            final block = _blocks[i];
+          itemBuilder: (context, index) {
+            final block = _blocks[index];
             return _BlockWidget(
               key: ValueKey(block.id),
               block: block,
-              index: i,
-              isFocused: _focusedBlockIndex == i,
-              isUploading: _isUploading && _focusedBlockIndex == i,
-              onFocus: () => setState(() => _focusedBlockIndex = i),
-              onRemove: () => _removeBlock(i),
-              onPickImage: () => _pickImageForBlock(i),
+              index: index,
+              isFocused: _focusedBlockIndex == index,
+              isUploading: _isUploading && _focusedBlockIndex == index,
+              onFocus: () => setState(() => _focusedBlockIndex = index),
+              onRemove: () => _removeBlock(index),
+              onPickImage: () => _pickImageForBlock(index),
               onTextChanged: (_) => _notifyChanged(),
+              onCaptionChanged: (_) => _notifyChanged(),
+              onToggleBold: () => _toggleBold(index),
+              onToggleItalic: () => _toggleItalic(index),
+              onCycleAlignment: () => _cycleAlignment(index),
+              onTypeChanged: (nextType) => _changeTextBlockType(index, nextType),
+              onHeadingLevelChanged: (level) => _changeHeadingLevel(index, level),
             );
           },
         ),
-
-        // ── Barra de adicionar bloco ──
-        SizedBox(height: r.s(8)),
+        SizedBox(height: r.s(10)),
         _AddBlockBar(
           onAddText: () => _addBlock(BlockType.text),
           onAddImage: () => _insertImageBlock(),
@@ -312,10 +401,6 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// BLOCO INDIVIDUAL
-// ═══════════════════════════════════════════════════════════════
-
 class _BlockWidget extends ConsumerWidget {
   final ContentBlock block;
   final int index;
@@ -325,6 +410,12 @@ class _BlockWidget extends ConsumerWidget {
   final VoidCallback onRemove;
   final VoidCallback onPickImage;
   final ValueChanged<String> onTextChanged;
+  final ValueChanged<String> onCaptionChanged;
+  final VoidCallback onToggleBold;
+  final VoidCallback onToggleItalic;
+  final VoidCallback onCycleAlignment;
+  final ValueChanged<BlockType> onTypeChanged;
+  final ValueChanged<int> onHeadingLevelChanged;
 
   const _BlockWidget({
     super.key,
@@ -336,43 +427,67 @@ class _BlockWidget extends ConsumerWidget {
     required this.onRemove,
     required this.onPickImage,
     required this.onTextChanged,
+    required this.onCaptionChanged,
+    required this.onToggleBold,
+    required this.onToggleItalic,
+    required this.onCycleAlignment,
+    required this.onTypeChanged,
+    required this.onHeadingLevelChanged,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
+
     return GestureDetector(
       onTap: onFocus,
       child: Container(
-        margin: EdgeInsets.only(bottom: r.s(4)),
+        margin: EdgeInsets.only(bottom: r.s(8)),
+        padding: EdgeInsets.symmetric(vertical: r.s(6)),
         decoration: BoxDecoration(
-          border: isFocused
-              ? Border(
-                  left: BorderSide(
-                    color: AppTheme.accentColor.withValues(alpha: 0.5),
-                    width: r.s(3),
-                  ),
-                )
-              : null,
+          color: isFocused
+              ? context.cardBg.withValues(alpha: 0.3)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(r.s(12)),
+          border: Border.all(
+            color: isFocused
+                ? AppTheme.accentColor.withValues(alpha: 0.35)
+                : Colors.transparent,
+          ),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Conteúdo do bloco
-            Expanded(child: _buildContent(context)),
-
-            // Ações do bloco (visíveis quando focado)
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (isFocused && block.isTextBased)
+                    _FormatToolbar(
+                      block: block,
+                      onToggleBold: onToggleBold,
+                      onToggleItalic: onToggleItalic,
+                      onCycleAlignment: onCycleAlignment,
+                      onTypeChanged: onTypeChanged,
+                      onHeadingLevelChanged: onHeadingLevelChanged,
+                    ),
+                  _buildContent(context),
+                ],
+              ),
+            ),
             if (isFocused)
               Padding(
-                padding: EdgeInsets.only(top: r.s(4)),
+                padding: EdgeInsets.only(top: r.s(2), right: r.s(4)),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _MiniAction(
-                      icon: Icons.drag_indicator_rounded,
-                      color: (Colors.grey[600] ?? Colors.grey),
-                      onTap: () {},
+                    ReorderableDragStartListener(
+                      index: index,
+                      child: _MiniAction(
+                        icon: Icons.drag_indicator_rounded,
+                        color: context.textSecondary,
+                        onTap: () {},
+                      ),
                     ),
                     _MiniAction(
                       icon: Icons.delete_outline_rounded,
@@ -391,55 +506,74 @@ class _BlockWidget extends ConsumerWidget {
   Widget _buildContent(BuildContext context) {
     final s = getStrings();
     final r = context.r;
+
     switch (block.type) {
       case BlockType.text:
-        return Padding(
-          padding: EdgeInsets.symmetric(horizontal: r.s(4)),
-          child: TextField(
-            controller: block.controller,
-            style: TextStyle(
-              fontSize: r.fs(15),
-              height: 1.7,
-              color: Colors.grey[300],
-            ),
-            decoration: InputDecoration(
-              hintText: s.writeHereHint,
-              hintStyle: TextStyle(color: Colors.grey[700]),
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(vertical: r.s(8)),
-            ),
-            maxLines: null,
-            onChanged: onTextChanged,
-          ),
+      case BlockType.quote:
+      case BlockType.heading:
+        final isHeading = block.type == BlockType.heading;
+        final isQuote = block.type == BlockType.quote;
+        final baseStyle = TextStyle(
+          fontSize: isHeading
+              ? (block.level == 1 ? r.fs(24) : block.level == 2 ? r.fs(20) : r.fs(18))
+              : r.fs(15),
+          height: isQuote ? 1.6 : 1.7,
+          color: context.textPrimary,
+          fontWeight: isHeading || block.bold ? FontWeight.w700 : FontWeight.w400,
+          fontStyle: block.italic || isQuote ? FontStyle.italic : FontStyle.normal,
         );
 
-      case BlockType.heading:
-        return Padding(
-          padding: EdgeInsets.symmetric(horizontal: r.s(4)),
-          child: TextField(
-            controller: block.controller,
-            style: TextStyle(
-              fontSize: r.fs(20),
-              fontWeight: FontWeight.w800,
-              color: context.textPrimary,
-              height: 1.4,
+        final field = TextField(
+          controller: block.controller,
+          textAlign: _parseTextAlign(block.align),
+          style: baseStyle,
+          decoration: InputDecoration(
+            hintText: isHeading
+                ? 'Subtítulo da seção'
+                : isQuote
+                    ? 'Escreva uma citação ou destaque'
+                    : s.writeHereHint,
+            hintStyle: TextStyle(
+              color: context.textHint,
+              fontSize: baseStyle.fontSize,
+              fontWeight: isHeading ? FontWeight.w700 : FontWeight.w400,
+              fontStyle: isQuote ? FontStyle.italic : FontStyle.normal,
             ),
-            decoration: InputDecoration(
-              hintText: s.subtitleHint,
-              hintStyle: TextStyle(
-                  color: Colors.grey[700], fontWeight: FontWeight.w700),
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(vertical: r.s(8)),
+            border: InputBorder.none,
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: r.s(8),
+              vertical: r.s(10),
             ),
-            maxLines: null,
-            onChanged: onTextChanged,
           ),
+          maxLines: null,
+          onTap: onFocus,
+          onChanged: onTextChanged,
+        );
+
+        if (!isQuote) {
+          return field;
+        }
+
+        return Container(
+          margin: EdgeInsets.symmetric(horizontal: r.s(6)),
+          decoration: BoxDecoration(
+            color: AppTheme.accentColor.withValues(alpha: 0.06),
+            borderRadius: BorderRadius.circular(r.s(12)),
+            border: Border(
+              left: BorderSide(
+                color: AppTheme.accentColor.withValues(alpha: 0.7),
+                width: r.s(3),
+              ),
+            ),
+          ),
+          child: field,
         );
 
       case BlockType.image:
         if (isUploading) {
           return Container(
             height: r.s(180),
+            margin: EdgeInsets.symmetric(horizontal: r.s(6)),
             decoration: BoxDecoration(
               color: context.cardBg,
               borderRadius: BorderRadius.circular(r.s(12)),
@@ -448,11 +582,15 @@ class _BlockWidget extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CircularProgressIndicator(
-                      color: AppTheme.accentColor, strokeWidth: 2),
+                  const CircularProgressIndicator(
+                    color: AppTheme.accentColor,
+                    strokeWidth: 2,
+                  ),
                   SizedBox(height: r.s(8)),
-                  Text(s.sendingImage,
-                      style: TextStyle(color: Colors.grey, fontSize: r.fs(12))),
+                  Text(
+                    s.sendingImage,
+                    style: TextStyle(color: context.textSecondary, fontSize: r.fs(12)),
+                  ),
                 ],
               ),
             ),
@@ -463,26 +601,29 @@ class _BlockWidget extends ConsumerWidget {
           return GestureDetector(
             onTap: onPickImage,
             child: Container(
-              height: r.s(120),
+              height: r.s(132),
+              margin: EdgeInsets.symmetric(horizontal: r.s(6)),
               decoration: BoxDecoration(
                 color: context.cardBg,
                 borderRadius: BorderRadius.circular(r.s(12)),
                 border: Border.all(
-                  color: AppTheme.accentColor.withValues(alpha: 0.2),
-                  style: BorderStyle.solid,
+                  color: AppTheme.accentColor.withValues(alpha: 0.25),
                 ),
               ),
               child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.add_photo_alternate_rounded,
-                        color: AppTheme.accentColor.withValues(alpha: 0.6),
-                        size: r.s(32)),
-                    SizedBox(height: r.s(4)),
-                    Text(s.tapToAddImage,
-                        style: TextStyle(
-                            color: Colors.grey[600], fontSize: r.fs(12))),
+                    Icon(
+                      Icons.add_photo_alternate_rounded,
+                      color: AppTheme.accentColor.withValues(alpha: 0.7),
+                      size: r.s(30),
+                    ),
+                    SizedBox(height: r.s(6)),
+                    Text(
+                      s.tapToAddImage,
+                      style: TextStyle(color: context.textSecondary, fontSize: r.fs(12)),
+                    ),
                   ],
                 ),
               ),
@@ -490,62 +631,180 @@ class _BlockWidget extends ConsumerWidget {
           );
         }
 
-        return Column(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(r.s(12)),
-              child: Image.network(
-                block.imageUrl!,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  height: r.s(120),
-                  color: context.cardBg,
-                  child: Center(
-                    child: Icon(Icons.broken_image_rounded,
-                        color: Colors.grey, size: r.s(32)),
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: r.s(6)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(r.s(12)),
+                child: Image.network(
+                  block.imageUrl!,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    height: r.s(120),
+                    color: context.cardBg,
+                    child: Center(
+                      child: Icon(
+                        Icons.broken_image_rounded,
+                        color: context.textHint,
+                        size: r.s(32),
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-            if (block.caption != null && block.caption!.isNotEmpty)
-              Padding(
-                padding: EdgeInsets.only(top: r.s(4)),
-                child: Text(
-                  block.caption!,
-                  style: TextStyle(
-                      color: Colors.grey[500],
-                      fontSize: r.fs(11),
-                      fontStyle: FontStyle.italic),
-                  textAlign: TextAlign.center,
+              SizedBox(height: r.s(8)),
+              OutlinedButton.icon(
+                onPressed: onPickImage,
+                icon: const Icon(Icons.refresh_rounded),
+                label: const Text('Trocar imagem'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: context.textPrimary,
+                  side: BorderSide(color: context.dividerClr),
                 ),
               ),
-          ],
+              SizedBox(height: r.s(6)),
+              TextField(
+                controller: block.captionController,
+                style: TextStyle(
+                  color: context.textSecondary,
+                  fontSize: r.fs(12),
+                  fontStyle: FontStyle.italic,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'Legenda da imagem (opcional)',
+                  hintStyle: TextStyle(color: context.textHint),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(horizontal: r.s(4)),
+                ),
+                onTap: onFocus,
+                onChanged: onCaptionChanged,
+              ),
+            ],
+          ),
         );
 
       case BlockType.divider:
         return Padding(
-          padding: EdgeInsets.symmetric(vertical: r.s(12)),
-          child: Container(
-            height: 1,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.transparent,
-                  AppTheme.accentColor.withValues(alpha: 0.3),
-                  Colors.transparent,
-                ],
+          padding: EdgeInsets.symmetric(vertical: r.s(16), horizontal: r.s(20)),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: r.s(4),
+                height: r.s(4),
+                decoration: BoxDecoration(
+                  color: context.textHint.withValues(alpha: 0.5),
+                  shape: BoxShape.circle,
+                ),
               ),
-            ),
+              SizedBox(width: r.s(8)),
+              Container(
+                width: r.s(4),
+                height: r.s(4),
+                decoration: BoxDecoration(
+                  color: context.textHint.withValues(alpha: 0.5),
+                  shape: BoxShape.circle,
+                ),
+              ),
+              SizedBox(width: r.s(8)),
+              Container(
+                width: r.s(4),
+                height: r.s(4),
+                decoration: BoxDecoration(
+                  color: context.textHint.withValues(alpha: 0.5),
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ],
           ),
         );
     }
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// BARRA DE ADICIONAR BLOCO
-// ═══════════════════════════════════════════════════════════════
+class _FormatToolbar extends StatelessWidget {
+  final ContentBlock block;
+  final VoidCallback onToggleBold;
+  final VoidCallback onToggleItalic;
+  final VoidCallback onCycleAlignment;
+  final ValueChanged<BlockType> onTypeChanged;
+  final ValueChanged<int> onHeadingLevelChanged;
+
+  const _FormatToolbar({
+    required this.block,
+    required this.onToggleBold,
+    required this.onToggleItalic,
+    required this.onCycleAlignment,
+    required this.onTypeChanged,
+    required this.onHeadingLevelChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: EdgeInsets.only(left: r.s(6), right: r.s(6), bottom: r.s(6)),
+      child: Row(
+        children: [
+          PopupMenuButton<BlockType>(
+            tooltip: 'Estilo do bloco',
+            color: context.surfaceColor,
+            onSelected: onTypeChanged,
+            itemBuilder: (_) => const [
+              PopupMenuItem(value: BlockType.text, child: Text('Texto')),
+              PopupMenuItem(value: BlockType.heading, child: Text('Subtítulo')),
+              PopupMenuItem(value: BlockType.quote, child: Text('Citação')),
+            ],
+            child: _ToolbarChip(
+              label: switch (block.type) {
+                BlockType.heading => 'Subtítulo',
+                BlockType.quote => 'Citação',
+                _ => 'Texto',
+              },
+            ),
+          ),
+          SizedBox(width: r.s(6)),
+          _ToolbarIconButton(
+            icon: Icons.format_bold_rounded,
+            selected: block.bold,
+            onTap: onToggleBold,
+          ),
+          SizedBox(width: r.s(6)),
+          _ToolbarIconButton(
+            icon: Icons.format_italic_rounded,
+            selected: block.italic,
+            onTap: onToggleItalic,
+          ),
+          SizedBox(width: r.s(6)),
+          _ToolbarIconButton(
+            icon: _alignmentIcon(block.align),
+            selected: false,
+            onTap: onCycleAlignment,
+          ),
+          if (block.type == BlockType.heading) ...[
+            SizedBox(width: r.s(6)),
+            PopupMenuButton<int>(
+              tooltip: 'Nível do subtítulo',
+              color: context.surfaceColor,
+              onSelected: onHeadingLevelChanged,
+              itemBuilder: (_) => const [
+                PopupMenuItem(value: 1, child: Text('Título grande')),
+                PopupMenuItem(value: 2, child: Text('Título médio')),
+                PopupMenuItem(value: 3, child: Text('Título pequeno')),
+              ],
+              child: _ToolbarChip(label: 'H${block.level}'),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
 
 class _AddBlockBar extends ConsumerWidget {
   final VoidCallback onAddText;
@@ -562,10 +821,11 @@ class _AddBlockBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
+
     return Container(
-      padding: EdgeInsets.symmetric(vertical: r.s(8), horizontal: r.s(4)),
+      padding: EdgeInsets.symmetric(vertical: r.s(10), horizontal: r.s(6)),
       decoration: BoxDecoration(
         color: context.cardBg.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(r.s(12)),
@@ -588,7 +848,7 @@ class _AddBlockBar extends ConsumerWidget {
           ),
           _AddBlockButton(
             icon: Icons.title_rounded,
-            label: s.title,
+            label: 'Subtítulo',
             color: const Color(0xFFFF9800),
             onTap: onAddHeading,
           ),
@@ -604,7 +864,7 @@ class _AddBlockBar extends ConsumerWidget {
   }
 }
 
-class _AddBlockButton extends ConsumerWidget {
+class _AddBlockButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color color;
@@ -618,9 +878,9 @@ class _AddBlockButton extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
+  Widget build(BuildContext context) {
     final r = context.r;
+
     return GestureDetector(
       onTap: onTap,
       child: Column(
@@ -639,9 +899,10 @@ class _AddBlockButton extends ConsumerWidget {
           Text(
             label,
             style: TextStyle(
-                color: Colors.grey[500],
-                fontSize: r.fs(10),
-                fontWeight: FontWeight.w600),
+              color: context.textSecondary,
+              fontSize: r.fs(10),
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -649,7 +910,74 @@ class _AddBlockButton extends ConsumerWidget {
   }
 }
 
-class _MiniAction extends ConsumerWidget {
+class _ToolbarChip extends StatelessWidget {
+  final String label;
+
+  const _ToolbarChip({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(6)),
+      decoration: BoxDecoration(
+        color: context.cardBg,
+        borderRadius: BorderRadius.circular(r.s(20)),
+        border: Border.all(color: context.dividerClr),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: context.textPrimary,
+          fontSize: r.fs(11),
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+class _ToolbarIconButton extends StatelessWidget {
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _ToolbarIconButton({
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(r.s(20)),
+      child: Container(
+        padding: EdgeInsets.all(r.s(8)),
+        decoration: BoxDecoration(
+          color: selected
+              ? AppTheme.accentColor.withValues(alpha: 0.18)
+              : context.cardBg,
+          borderRadius: BorderRadius.circular(r.s(20)),
+          border: Border.all(
+            color: selected
+                ? AppTheme.accentColor.withValues(alpha: 0.35)
+                : context.dividerClr,
+          ),
+        ),
+        child: Icon(
+          icon,
+          size: r.s(18),
+          color: selected ? AppTheme.accentColor : context.textPrimary,
+        ),
+      ),
+    );
+  }
+}
+
+class _MiniAction extends StatelessWidget {
   final IconData icon;
   final Color color;
   final VoidCallback onTap;
@@ -661,8 +989,7 @@ class _MiniAction extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
+  Widget build(BuildContext context) {
     final r = context.r;
     return GestureDetector(
       onTap: onTap,
@@ -674,115 +1001,24 @@ class _MiniAction extends ConsumerWidget {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// BLOCK CONTENT RENDERER — Para renderizar blocos na visualização
-// ═══════════════════════════════════════════════════════════════
+TextAlign _parseTextAlign(String align) {
+  switch (align) {
+    case 'center':
+      return TextAlign.center;
+    case 'right':
+      return TextAlign.right;
+    default:
+      return TextAlign.left;
+  }
+}
 
-class BlockContentRenderer extends ConsumerWidget {
-  final List<dynamic> blocks;
-
-  const BlockContentRenderer({super.key, required this.blocks});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
-    final r = context.r;
-    if (blocks.isEmpty) return const SizedBox.shrink();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: blocks.map((blockData) {
-        final data = blockData as Map<String, dynamic>;
-        final type = data['type'] as String? ?? 'text';
-        final text = data['text'] as String? ?? '';
-        final imageUrl = data['image_url'] as String?;
-        final caption = data['caption'] as String?;
-
-        switch (type) {
-          case 'heading':
-            return Padding(
-              padding: EdgeInsets.only(bottom: r.s(8), top: r.s(12)),
-              child: Text(
-                text,
-                style: TextStyle(
-                  fontSize: r.fs(20),
-                  fontWeight: FontWeight.w800,
-                  color: context.textPrimary,
-                  height: 1.4,
-                ),
-              ),
-            );
-
-          case 'image':
-            return Padding(
-              padding: EdgeInsets.symmetric(vertical: r.s(8)),
-              child: Column(
-                children: [
-                  if (imageUrl != null && imageUrl.isNotEmpty)
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(r.s(12)),
-                      child: Image.network(
-                        imageUrl,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                          height: r.s(120),
-                          color: context.cardBg,
-                          child: Center(
-                            child: Icon(Icons.broken_image_rounded,
-                                color: Colors.grey, size: r.s(32)),
-                          ),
-                        ),
-                      ),
-                    ),
-                  if (caption != null && caption.isNotEmpty)
-                    Padding(
-                      padding: EdgeInsets.only(top: r.s(4)),
-                      child: Text(
-                        caption,
-                        style: TextStyle(
-                          color: Colors.grey[500],
-                          fontSize: r.fs(11),
-                          fontStyle: FontStyle.italic,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                ],
-              ),
-            );
-
-          case 'divider':
-            return Padding(
-              padding: EdgeInsets.symmetric(vertical: r.s(12)),
-              child: Container(
-                height: 1,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.transparent,
-                      AppTheme.accentColor.withValues(alpha: 0.3),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            );
-
-          default: // text
-            return Padding(
-              padding: EdgeInsets.only(bottom: r.s(8)),
-              child: Text(
-                text,
-                style: TextStyle(
-                  fontSize: r.fs(15),
-                  height: 1.7,
-                  color: Colors.grey[300],
-                ),
-              ),
-            );
-        }
-      }).toList(),
-    );
+IconData _alignmentIcon(String align) {
+  switch (align) {
+    case 'center':
+      return Icons.format_align_center_rounded;
+    case 'right':
+      return Icons.format_align_right_rounded;
+    default:
+      return Icons.format_align_left_rounded;
   }
 }

@@ -5,6 +5,26 @@ import '../../../core/models/post_model.dart';
 import '../../../core/models/community_model.dart';
 import '../../../core/services/supabase_service.dart';
 
+const _kProfilePostSelect =
+    '*, profiles!posts_author_id_fkey(*), '
+    'original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url), '
+    'original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)';
+
+PostModel _mapProfilePost(dynamic raw) {
+  final map = Map<String, dynamic>.from(raw as Map);
+  if (map['profiles'] != null) {
+    map['author'] = map['profiles'];
+  }
+  if (map['original_post'] != null) {
+    final originalPost = Map<String, dynamic>.from(map['original_post'] as Map);
+    if (originalPost['profiles'] != null) {
+      originalPost['author'] = originalPost['profiles'];
+    }
+    map['original_post'] = originalPost;
+  }
+  return PostModel.fromJson(map);
+}
+
 // =============================================================================
 // PROVIDERS — Profile Screen
 // =============================================================================
@@ -95,26 +115,52 @@ final userProfileProvider =
   }
 });
 
-/// Provider para posts de um usuário (Stories).
+/// Provider legado para posts de um usuário.
 final userPostsProvider =
     FutureProvider.family<List<PostModel>, String>((ref, userId) async {
   final response = await SupabaseService.table('posts')
-      .select('*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
+      .select(_kProfilePostSelect)
       .eq('author_id', userId)
       .eq('status', 'ok')
       .order('created_at', ascending: false)
       .limit(20);
 
-  return (response as List? ?? []).map((e) {
-    final map = Map<String, dynamic>.from(e);
-    if (map['profiles'] != null) map['author'] = map['profiles'];
-    if (map['original_post'] != null) {
-      final op = Map<String, dynamic>.from(map['original_post'] as Map);
-      if (op['profiles'] != null) op['author'] = op['profiles'];
-      map['original_post'] = op;
-    }
-    return PostModel.fromJson(map);
-  }).toList();
+  return (response as List? ?? []).map(_mapProfilePost).toList();
+});
+
+/// Blogs publicados de um usuário para a aba de perfil.
+final userBlogsProvider =
+    FutureProvider.family<List<PostModel>, String>((ref, userId) async {
+  final response = await SupabaseService.table('posts')
+      .select(_kProfilePostSelect)
+      .eq('author_id', userId)
+      .eq('type', 'blog')
+      .eq('status', 'ok')
+      .order('is_pinned_profile', ascending: false)
+      .order('created_at', ascending: false)
+      .limit(50);
+
+  return (response as List? ?? []).map(_mapProfilePost).toList();
+});
+
+/// Blog fixado no perfil do usuário, se existir.
+final pinnedProfileBlogProvider =
+    FutureProvider.family<PostModel?, String>((ref, userId) async {
+  final response = await SupabaseService.table('posts')
+      .select(_kProfilePostSelect)
+      .eq('author_id', userId)
+      .eq('type', 'blog')
+      .eq('status', 'ok')
+      .eq('is_pinned_profile', true)
+      .order('updated_at', ascending: false)
+      .limit(1)
+      .maybeSingle();
+
+  if (response == null) {
+    return null;
+  }
+
+  return _mapProfilePost(response);
 });
 
 /// Provider para stories do usuário (tabela stories, NÃO posts).

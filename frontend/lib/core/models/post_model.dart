@@ -32,6 +32,7 @@ class PostModel {
   final String status; // enum: ok, pending, closed, disabled, deleted
   final bool isFeatured;
   final bool isPinned;
+  final bool isPinnedProfile;
   final String? featuredBy;
   final DateTime? featuredAt;
   final DateTime? featuredUntil;
@@ -75,6 +76,7 @@ class PostModel {
     this.status = 'ok',
     this.isFeatured = false,
     this.isPinned = false,
+    this.isPinnedProfile = false,
     this.featuredBy,
     this.featuredAt,
     this.featuredUntil,
@@ -122,6 +124,7 @@ class PostModel {
       status: json['status'] as String? ?? 'ok',
       isFeatured: json['is_featured'] as bool? ?? false,
       isPinned: json['is_pinned'] as bool? ?? false,
+      isPinnedProfile: json['is_pinned_profile'] as bool? ?? false,
       featuredBy: json['featured_by'] as String?,
       featuredAt: json['featured_at'] != null
           ? DateTime.tryParse(json['featured_at'] as String)
@@ -177,6 +180,7 @@ class PostModel {
     bool? isLiked,
     bool? isFeatured,
     bool? isPinned,
+    bool? isPinnedProfile,
     DateTime? featuredUntil,
     UserModel? originalAuthor,
     PostModel? originalPost,
@@ -207,6 +211,7 @@ class PostModel {
       status: status,
       isFeatured: isFeatured ?? this.isFeatured,
       isPinned: isPinned ?? this.isPinned,
+      isPinnedProfile: isPinnedProfile ?? this.isPinnedProfile,
       featuredBy: featuredBy,
       featuredAt: featuredAt,
       featuredUntil: featuredUntil ?? this.featuredUntil,

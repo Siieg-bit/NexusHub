@@ -17,6 +17,7 @@ import '../widgets/profile_linked_communities.dart';
 import '../widgets/profile_stories_tab.dart';
 import '../widgets/profile_wall_tab.dart';
 import '../widgets/profile_pinned_wikis.dart';
+import '../widgets/profile_blogs_tab.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/providers/block_provider.dart';
 
@@ -41,7 +42,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -119,6 +120,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             onRefresh: () async {
               ref.invalidate(userProfileProvider(widget.userId));
               ref.invalidate(equippedItemsProvider(widget.userId));
+              ref.invalidate(userBlogsProvider(widget.userId));
+              ref.invalidate(pinnedProfileBlogProvider(widget.userId));
               await Future.delayed(const Duration(milliseconds: 300));
             },
             child: NestedScrollView(
@@ -591,7 +594,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 ),
 
                 // ================================================================
-                // TABS — Stories | Wall
+                // TABS — Stories | Blogs | Wall
                 // ================================================================
                 SliverPersistentHeader(
                   pinned: true,
@@ -611,9 +614,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       indicatorColor: context.textPrimary,
                       indicatorWeight: 3,
                       indicatorSize: TabBarIndicatorSize.label,
-                      tabs:  [
+                      tabs: [
                         Tab(text: s.stories),
-                        Tab(text: 'Wall'),
+                        Tab(text: s.blog),
+                        Tab(text: s.wall),
                       ],
                     ),
                   ),
@@ -623,6 +627,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 controller: _tabController,
                 children: [
                   ProfileStoriesTab(userId: widget.userId),
+                  ProfileBlogsTab(
+                    userId: widget.userId,
+                    isOwnProfile: isOwnProfile,
+                  ),
                   ProfileWallTab(
                     userId: widget.userId,
                     wallController: _wallController,

@@ -77,7 +77,7 @@ class BlockContentRenderer extends StatelessWidget {
   /// Bloco de texto — parágrafo com formatação básica
   Widget _buildTextBlock(Map<String, dynamic> block, BuildContext context) {
     final r = context.r;
-    final content = block['content'] as String? ?? '';
+    final content = (block['content'] ?? block['text']) as String? ?? '';
     final isBold = block['bold'] == true;
     final isItalic = block['italic'] == true;
     final alignment = _parseAlignment(block['align'] as String?);
@@ -100,7 +100,7 @@ class BlockContentRenderer extends StatelessWidget {
 
   /// Bloco de heading — título de seção
   Widget _buildHeadingBlock(Map<String, dynamic> block, BuildContext context) {
-    final content = block['content'] as String? ?? '';
+    final content = (block['content'] ?? block['text']) as String? ?? '';
     final level = block['level'] as int? ?? 2;
 
     final fontSize = level == 1
@@ -126,7 +126,7 @@ class BlockContentRenderer extends StatelessWidget {
   /// Bloco de imagem — imagem inline com legenda opcional
   Widget _buildImageBlock(Map<String, dynamic> block, BuildContext context) {
     final r = context.r;
-    final url = block['url'] as String? ?? '';
+    final url = (block['url'] ?? block['image_url']) as String? ?? '';
     final caption = block['caption'] as String?;
 
     if (url.isEmpty) return const SizedBox.shrink();
@@ -228,7 +228,7 @@ class BlockContentRenderer extends StatelessWidget {
   /// Bloco de citação — quote com barra lateral
   Widget _buildQuoteBlock(Map<String, dynamic> block, BuildContext context) {
     final r = context.r;
-    final content = block['content'] as String? ?? '';
+    final content = (block['content'] ?? block['text']) as String? ?? '';
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
@@ -264,7 +264,7 @@ class BlockContentRenderer extends StatelessWidget {
   /// Bloco de link — preview de link embutido
   Widget _buildLinkBlock(Map<String, dynamic> block, BuildContext context) {
     final r = context.r;
-    final url = block['url'] as String? ?? '';
+    final url = (block['url'] ?? block['image_url']) as String? ?? '';
     final title = block['title'] as String? ?? url;
     final preview = block['preview'] as String?;
 
