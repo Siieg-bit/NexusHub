@@ -2569,29 +2569,29 @@ class AppStringsRu implements AppStrings {
   @override
   String get hasLeftTheChat => 'покинул(а) чат';
   @override
-  String streakDaysLabel(int streak) => 'Серия \$streak дней';
+  String streakDaysLabel(int streak)=>'Серия $streak дней';
   @override
-  String timeAgoMonths(int months) => '\${months}м назад';
+  String timeAgoMonths(int months)=>'${months}м назад';
   @override
-  String timeAgoDays(int days) => '\${days}д назад';
+  String timeAgoDays(int days)=>'${days}д назад';
   @override
-  String timeAgoHours(int hours) => '\${hours}ч назад';
+  String timeAgoHours(int hours)=>'${hours}ч назад';
   @override
-  String timeAgoMinutes(int minutes) => '\${minutes}мин назад';
+  String timeAgoMinutes(int minutes)=>'${minutes}мин назад';
   @override
-  String viewsCountLabel(int count) => '\$count просмотров';
+  String viewsCountLabel(int count)=>'$count просмотров';
   @override
-  String optionNumber(int number) => 'Вариант \$number';
+  String optionNumber(int number)=>'Вариант $number';
   @override
-  String viewCommentsCount(int count) => 'Посмотреть \$count комментариев';
+  String viewCommentsCount(int count)=>'Посмотреть $count комментариев';
   @override
-  String replyInComments(int count) => 'Ответить в комментариях ниже • \$count ответов';
+  String replyInComments(int count)=>'Ответить в комментариях ниже • $count ответов';
   @override
-  String dayOfStreak(int days) => 'День \$days серии!';
+  String dayOfStreak(int days)=>'День $days серии!';
   @override
-  String wonExtraCoins(int coins) => 'Вы выиграли \$coins дополнительных монет!';
+  String wonExtraCoins(int coins)=>'Вы выиграли $coins дополнительных монет!';
   @override
-  String freeCoinsRemaining(int remaining) => 'Заработайте 5 бесплатных монет (осталось \$remaining)';
+  String freeCoinsRemaining(int remaining)=>'Заработайте 5 бесплатных монет (осталось $remaining)';
   @override
   String get checkInDaily => 'Ежедневная\nОтметка';
   @override
@@ -2617,39 +2617,39 @@ class AppStringsRu implements AppStrings {
   @override
   String get moderationActions30d => 'Действия модерации (30д)';
   @override
-  String joinedCommunityName(String name) => 'Вы вступили в "\$name"!';
+  String joinedCommunityName(String name)=>'Вы вступили в "$name"!';
   @override
-  String checkInStreakMsg(int streak, int coins) => 'Отметка выполнена! Серия: \$streak день\${streak > 1 ? "дней" : ""} (+\$coins монет)';
+  String checkInStreakMsg(int streak, int coins)=>'Отметка выполнена! Серия: $streak день${streak > 1 ? "дней" : ""} (+$coins монет)';
   @override
   String get leadersTitle => 'ЛИДЕРЫ';
   @override
-  String levelAndRep(int level, int reputation) => 'Уровень \$level • \$reputation репутации';
+  String levelAndRep(int level, int reputation)=>'Уровень $level • $reputation репутации';
   @override
   String get communityNameRequired => 'Название сообщества обязательно.';
   @override
-  String timeAgoMonthsShort(int months) => '\${months}мес. назад';
+  String timeAgoMonthsShort(int months)=>'${months}мес. назад';
   @override
-  String timeAgoDaysShort(int days) => '\${days}д. назад';
+  String timeAgoDaysShort(int days)=>'${days}д. назад';
   @override
-  String timeAgoHoursShort(int hours) => '\${hours}ч. назад';
+  String timeAgoHoursShort(int hours)=>'${hours}ч. назад';
   @override
-  String timeAgoMinutesShort(int minutes) => '\${minutes}мин. назад';
+  String timeAgoMinutesShort(int minutes)=>'${minutes}мин. назад';
   @override
   String get justNow => 'только что';
   @override
-  String receivedWarning(String reason) => 'Вы получили предупреждение: \$reason';
+  String receivedWarning(String reason)=>'Вы получили предупреждение: $reason';
   @override
-  String removedFromCommunity(String reason) => 'Вы были удалены из сообщества: \$reason';
+  String removedFromCommunity(String reason)=>'Вы были удалены из сообщества: $reason';
   @override
   String get aminoIdInUse => 'Этот Amino ID уже используется.';
   @override
   String get tryAgainGeneric => 'Попробуйте снова.';
   @override
-  String pausedUntil(String dateTime) => 'Приостановлено до \$dateTime';
+  String pausedUntil(String dateTime)=>'Приостановлено до $dateTime';
   @override
-  String entryApprovedMsg(String title) => 'Ваша запись "\$title" была одобрена и видна в каталоге.';
+  String entryApprovedMsg(String title)=>'Ваша запись "$title" была одобрена и видна в каталоге.';
   @override
-  String entryNeedsChanges(String title, String reason) => 'Ваша запись "\$title" требует изменений: \$reason';
+  String entryNeedsChanges(String title, String reason)=>'Ваша запись "$title" требует изменений: $reason';
   @override
   String get textOverflowHint => '║  TextOverflow.ellipsis в соответствующем текстовом виджете.   ║\n';
   @override
@@ -4469,29 +4469,29 @@ class AppStringsRu implements AppStrings {
   @override
   String get globalRankingNewline => 'Глобальный\nрейтинг';
   @override
-  String amountCoinsTransferred(int amount) => '\$amount монет переведено!';
+  String amountCoinsTransferred(int amount)=>'$amount монет переведено!';
   @override
-  String nicknameUnblocked(String nickname) => '\$nickname разблокирован';
+  String nicknameUnblocked(String nickname)=>'$nickname разблокирован';
   @override
-  String reactionSent(String reaction) => '\$reaction отправлена!';
+  String reactionSent(String reaction)=>'$reaction отправлена!';
   @override
-  String propsAmountSent(int amount) => '\$amount подарков отправлено!';
+  String propsAmountSent(int amount)=>'$amount подарков отправлено!';
   @override
-  String totalVotesLabel(int count) => '\$count голосов';
+  String totalVotesLabel(int count)=>'$count голосов';
   @override
-  String postCommentsCountReplies(int count) => '\$count ответов';
+  String postCommentsCountReplies(int count)=>'$count ответов';
   @override
-  String coinsEarnedLabel(int coins) => '+\$coins монет';
+  String coinsEarnedLabel(int coins)=>'+$coins монет';
   @override
-  String xpEarnedLabel(int xp) => '+\$xp опыта';
+  String xpEarnedLabel(int xp)=>'+$xp опыта';
   @override
-  String rewardCoinsLabel(int coins) => '+\$coins монет!';
+  String rewardCoinsLabel(int coins)=>'+$coins монет!';
   @override
-  String providerUnlinked(String provider) => 'Аккаунт \$provider отвязан.';
+  String providerUnlinked(String provider)=>'Аккаунт $provider отвязан.';
   @override
-  String costCoinsLabel(int amount) => 'Стоимость: \$amount монет';
+  String costCoinsLabel(int amount)=>'Стоимость: $amount монет';
   @override
-  String leftCommunityName(String name) => 'Вы покинули "\$name".';
+  String leftCommunityName(String name)=>'Вы покинули "$name".';
   @override
   String get quizCreatedSuccess => 'Викторина успешно создана!';
   @override
@@ -4501,17 +4501,17 @@ class AppStringsRu implements AppStrings {
   @override
   String get noItemAvailableMsg => 'Нет доступных элементов';
   @override
-  String memberCountMembers(int count) => '\$count участников';
+  String memberCountMembers(int count)=>'$count участников';
   @override
-  String errorPurchase(String error) => 'Ошибка покупки: \$error';
+  String errorPurchase(String error)=>'Ошибка покупки: $error';
   @override
-  String errorGeneric(String error) => 'Ошибка: \$error';
+  String errorGeneric(String error)=>'Ошибка: $error';
   @override
-  String currentBalanceCoins(String coins) => 'Текущий баланс: \$coins монет';
+  String currentBalanceCoins(String coins)=>'Текущий баланс: $coins монет';
   @override
-  String leftCommunityMsg(String name) => 'Вы покинули "\$name".';
+  String leftCommunityMsg(String name)=>'Вы покинули "$name".';
   @override
-  String pollQuestion(String question) => '📊 \$question';
+  String pollQuestion(String question)=>'📊 $question';
   @override
   String get pinnedLabel => '📌 Закреплено';
   @override
@@ -4521,11 +4521,11 @@ class AppStringsRu implements AppStrings {
   @override
   String get optionLabel => 'Вариант';
   @override
-  String optionN(int n) => 'Вариант \$n';
+  String optionN(int n)=>'Вариант $n';
   @override
-  String questionN(int n) => 'Вопрос \$n';
+  String questionN(int n)=>'Вопрос $n';
   @override
-  String amountCoins(int amount) => '\$amount монет';
+  String amountCoins(int amount)=>'$amount монет';
 
   // SISTEMA DE NÍVEIS — Nomes dos 20 níveis
   @override
@@ -4585,11 +4585,11 @@ class AppStringsRu implements AppStrings {
 
   // TELA DE RANKINGS / NÍVEL
   @override
-  String reputationPointsLabel(int points) => '\$points Очков Репутации';
+  String reputationPointsLabel(int points)=>'$points Очков Репутации';
   @override
-  String repProgressLabel(int current, int total) => '\$current/\$total REP';
+  String repProgressLabel(int current, int total)=>'$current/$total REP';
   @override
-  String daysToLevelUp(int days) => '~\$days дней до повышения уровня';
+  String daysToLevelUp(int days)=>'~$days дней до повышения уровня';
 
 
   // ── Achievements screen (layout Amino) ──
@@ -4612,15 +4612,15 @@ class AppStringsRu implements AppStrings {
 
   // CHECK-IN MESSAGES
   @override
-  String checkInSuccessMsg(int rep, int streak) => 'Чек-ин! +$rep реп | Серия: $streak дней';
+  String checkInSuccessMsg(int rep, int streak)=>'Чек-ин! +$rep реп | Серия: $streak дней';
   @override
-  String plusReputationLabel(int amount) => '+$amount репутации';
+  String plusReputationLabel(int amount)=>'+$amount репутации';
 
   @override
   String get holdAndDragToReorder => 'Удерживайте и перетащите карточки для изменения порядка';
 
   @override
-  String streakRestoredMsg(int days) => 'Серия восстановлена! $days дней подряд.';
+  String streakRestoredMsg(int days)=>'Серия восстановлена! $days дней подряд.';
   @override
   String get insufficientCoins => 'Недостаточно монет';
   @override
@@ -4628,7 +4628,7 @@ class AppStringsRu implements AppStrings {
   @override
   String get tapToAddBio => 'Нажмите здесь, чтобы добавить биографию!';
   @override
-  String memberSinceLabel(String month, int year, int days) => 'Участник с $month $year ($days дней)';
+  String memberSinceLabel(String month, int year, int days)=>'Участник с $month $year ($days дней)';
   // DRAWER MENU ITEMS
   @override
   String get drawerExit => 'Выйти';
@@ -4654,12 +4654,12 @@ class AppStringsRu implements AppStrings {
   @override
   String get thisWeek => 'На этой неделе';
   @override
-  String lvBadge(int level) => 'Ур.$level';
+  String lvBadge(int level)=>'Ур.$level';
   // LEAVE COMMUNITY CONFIRM
   @override
-  String leaveCommunityConfirmMsg(String communityName) => 'Вы уверены, что хотите покинуть "$communityName"? Вы сможете вернуться позже.';
+  String leaveCommunityConfirmMsg(String communityName)=>'Вы уверены, что хотите покинуть "$communityName"? Вы сможете вернуться позже.';
   @override
-  String dayLabel(int n) => 'Д$n';
+  String dayLabel(int n)=>'Д$n';
 
   // BLOCK USER
   @override
@@ -4696,7 +4696,7 @@ class AppStringsRu implements AppStrings {
   @override
   String get repostNotificationTitle => 'New Repost';
   @override
-  String repostNotificationBody(String username) => '$username reposted your post.';
+  String repostNotificationBody(String username)=>'$username reposted your post.';
 
 
   @override

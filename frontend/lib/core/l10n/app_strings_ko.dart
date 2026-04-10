@@ -1777,29 +1777,29 @@ class AppStringsKo implements AppStrings {
   @override
   String get writeContentHere => '여기에 콘텐츠를 작성하세요...';
   @override
-  String streakDaysLabel(int streak) => '$streak일 연속';
+  String streakDaysLabel(int streak)=>'$streak일 연속';
   @override
-  String timeAgoMonths(int months) => '${months}개월 전';
+  String timeAgoMonths(int months)=>'${months}개월 전';
   @override
-  String timeAgoDays(int days) => '${days}일 전';
+  String timeAgoDays(int days)=>'${days}일 전';
   @override
-  String timeAgoHours(int hours) => '${hours}시간 전';
+  String timeAgoHours(int hours)=>'${hours}시간 전';
   @override
-  String timeAgoMinutes(int minutes) => '${minutes}분 전';
+  String timeAgoMinutes(int minutes)=>'${minutes}분 전';
   @override
-  String viewsCountLabel(int count) => '조회수 $count회';
+  String viewsCountLabel(int count)=>'조회수 $count회';
   @override
-  String optionNumber(int number) => '옵션 $number';
+  String optionNumber(int number)=>'옵션 $number';
   @override
-  String viewCommentsCount(int count) => '댓글 $count개 보기';
+  String viewCommentsCount(int count)=>'댓글 $count개 보기';
   @override
-  String replyInComments(int count) => '아래 댓글에 답장 • 답장 $count개';
+  String replyInComments(int count)=>'아래 댓글에 답장 • 답장 $count개';
   @override
-  String dayOfStreak(int days) => '연속 $days일째!';
+  String dayOfStreak(int days)=>'연속 $days일째!';
   @override
-  String wonExtraCoins(int coins) => '$coins개의 추가 코인을 획득했습니다!';
+  String wonExtraCoins(int coins)=>'$coins개의 추가 코인을 획득했습니다!';
   @override
-  String freeCoinsRemaining(int remaining) => '무료 코인 5개 획득 (남은 $remaining개)';
+  String freeCoinsRemaining(int remaining)=>'무료 코인 5개 획득 (남은 $remaining개)';
   @override
   String get checkInDaily => '일일\n체크인';
   @override
@@ -1825,39 +1825,39 @@ class AppStringsKo implements AppStrings {
   @override
   String get moderationActions30d => '관리 조치(30일)';
   @override
-  String joinedCommunityName(String name) => '"$name"에 가입했습니다!';
+  String joinedCommunityName(String name)=>'"$name"에 가입했습니다!';
   @override
-  String checkInStreakMsg(int streak, int coins) => '체크인 완료! 연속: $streak일 (+코인 $coins개)';
+  String checkInStreakMsg(int streak, int coins)=>'체크인 완료! 연속: $streak일 (+코인 $coins개)';
   @override
   String get leadersTitle => '리더';
   @override
-  String levelAndRep(int level, int reputation) => '레벨 $level • 평판 $reputation';
+  String levelAndRep(int level, int reputation)=>'레벨 $level • 평판 $reputation';
   @override
   String get communityNameRequired => '커뮤니티 이름은 필수입니다.';
   @override
-  String timeAgoMonthsShort(int months) => '${months}개월 전';
+  String timeAgoMonthsShort(int months)=>'${months}개월 전';
   @override
-  String timeAgoDaysShort(int days) => '${days}일 전';
+  String timeAgoDaysShort(int days)=>'${days}일 전';
   @override
-  String timeAgoHoursShort(int hours) => '${hours}시간 전';
+  String timeAgoHoursShort(int hours)=>'${hours}시간 전';
   @override
-  String timeAgoMinutesShort(int minutes) => '${minutes}분 전';
+  String timeAgoMinutesShort(int minutes)=>'${minutes}분 전';
   @override
   String get justNow => '방금';
   @override
-  String receivedWarning(String reason) => '경고를 받았습니다: $reason';
+  String receivedWarning(String reason)=>'경고를 받았습니다: $reason';
   @override
-  String removedFromCommunity(String reason) => '커뮤니티에서 제거되었습니다: $reason';
+  String removedFromCommunity(String reason)=>'커뮤니티에서 제거되었습니다: $reason';
   @override
   String get aminoIdInUse => '이 Amino ID는 이미 사용 중입니다.';
   @override
   String get tryAgainGeneric => '다시 시도하세요.';
   @override
-  String pausedUntil(String dateTime) => '$dateTime까지 일시 중지됨';
+  String pausedUntil(String dateTime)=>'$dateTime까지 일시 중지됨';
   @override
-  String entryApprovedMsg(String title) => '회원님의 항목 "$title"이(가) 승인되어 카탈로그에 표시됩니다.';
+  String entryApprovedMsg(String title)=>'회원님의 항목 "$title"이(가) 승인되어 카탈로그에 표시됩니다.';
   @override
-  String entryNeedsChanges(String title, String reason) => '회원님의 항목 "$title"은(는) 변경이 필요합니다: $reason';
+  String entryNeedsChanges(String title, String reason)=>'회원님의 항목 "$title"은(는) 변경이 필요합니다: $reason';
   @override
   String get textOverflowHint => '║  담당 텍스트 위젯의 TextOverflow.ellipsis.   ║\n';
   @override
@@ -3831,29 +3831,29 @@ class AppStringsKo implements AppStrings {
   @override
   String get globalRankingNewline => '글로벌\n랭킹';
   @override
-  String amountCoinsTransferred(int amount) => '\$amount 코인이 전송되었습니다!';
+  String amountCoinsTransferred(int amount)=>'$amount 코인이 전송되었습니다!';
   @override
-  String nicknameUnblocked(String nickname) => '\$nickname 차단 해제됨';
+  String nicknameUnblocked(String nickname)=>'$nickname 차단 해제됨';
   @override
-  String reactionSent(String reaction) => '\$reaction 전송됨!';
+  String reactionSent(String reaction)=>'$reaction 전송됨!';
   @override
-  String propsAmountSent(int amount) => '\$amount 개의 소품이 전송되었습니다!';
+  String propsAmountSent(int amount)=>'$amount 개의 소품이 전송되었습니다!';
   @override
-  String totalVotesLabel(int count) => '\$count 표';
+  String totalVotesLabel(int count)=>'$count 표';
   @override
-  String postCommentsCountReplies(int count) => '\$count 개의 답글';
+  String postCommentsCountReplies(int count)=>'$count 개의 답글';
   @override
-  String coinsEarnedLabel(int coins) => '+\$coins 코인';
+  String coinsEarnedLabel(int coins)=>'+$coins 코인';
   @override
-  String xpEarnedLabel(int xp) => '+\$xp 경험치';
+  String xpEarnedLabel(int xp)=>'+$xp 경험치';
   @override
-  String rewardCoinsLabel(int coins) => '+\$coins 코인!';
+  String rewardCoinsLabel(int coins)=>'+$coins 코인!';
   @override
-  String providerUnlinked(String provider) => '\$provider 계정 연결 해제됨.';
+  String providerUnlinked(String provider)=>'$provider 계정 연결 해제됨.';
   @override
-  String costCoinsLabel(int amount) => '비용: \$amount 코인';
+  String costCoinsLabel(int amount)=>'비용: $amount 코인';
   @override
-  String leftCommunityName(String name) => '"\$name" 커뮤니티를 나갔습니다.';
+  String leftCommunityName(String name)=>'"$name" 커뮤니티를 나갔습니다.';
   @override
   String get errorPrefix => '오류: ';
   @override
@@ -3861,17 +3861,17 @@ class AppStringsKo implements AppStrings {
   @override
   String get noItemAvailableMsg => '사용 가능한 항목이 없습니다';
   @override
-  String memberCountMembers(int count) => '\$count 명의 멤버';
+  String memberCountMembers(int count)=>'$count 명의 멤버';
   @override
-  String errorPurchase(String error) => '구매 오류: \$error';
+  String errorPurchase(String error)=>'구매 오류: $error';
   @override
-  String errorGeneric(String error) => '오류: \$error';
+  String errorGeneric(String error)=>'오류: $error';
   @override
-  String currentBalanceCoins(String coins) => '현재 잔액: \$coins 코인';
+  String currentBalanceCoins(String coins)=>'현재 잔액: $coins 코인';
   @override
-  String leftCommunityMsg(String name) => '"\$name" 커뮤니티를 나갔습니다.';
+  String leftCommunityMsg(String name)=>'"$name" 커뮤니티를 나갔습니다.';
   @override
-  String pollQuestion(String question) => '📊 \$question';
+  String pollQuestion(String question)=>'📊 $question';
   @override
   String get pinnedLabel => '📌 고정됨';
   @override
@@ -3883,11 +3883,11 @@ class AppStringsKo implements AppStrings {
   @override
   String get optionLabel => '옵션';
   @override
-  String optionN(int n) => '옵션 \$n';
+  String optionN(int n)=>'옵션 $n';
   @override
-  String questionN(int n) => '질문 \$n';
+  String questionN(int n)=>'질문 $n';
   @override
-  String amountCoins(int amount) => '\$amount 코인';
+  String amountCoins(int amount)=>'$amount 코인';
 
   // SISTEMA DE NÍVEIS — Nomes dos 20 níveis
   @override
@@ -3947,11 +3947,11 @@ class AppStringsKo implements AppStrings {
 
   // TELA DE RANKINGS / NÍVEL
   @override
-  String reputationPointsLabel(int points) => '\$points 평판 포인트';
+  String reputationPointsLabel(int points)=>'$points 평판 포인트';
   @override
-  String repProgressLabel(int current, int total) => '\$current/\$total REP';
+  String repProgressLabel(int current, int total)=>'$current/$total REP';
   @override
-  String daysToLevelUp(int days) => '~\$days일 후 레벨업';
+  String daysToLevelUp(int days)=>'~$days일 후 레벨업';
 
 
   // ── Achievements screen (layout Amino) ──
@@ -3974,15 +3974,15 @@ class AppStringsKo implements AppStrings {
 
   // CHECK-IN MESSAGES
   @override
-  String checkInSuccessMsg(int rep, int streak) => '체크인! +$rep rep | 연속: $streak일';
+  String checkInSuccessMsg(int rep, int streak)=>'체크인! +$rep rep | 연속: $streak일';
   @override
-  String plusReputationLabel(int amount) => '+$amount 평판';
+  String plusReputationLabel(int amount)=>'+$amount 평판';
 
   @override
   String get holdAndDragToReorder => '카드를 길게 누르고 드래그하여 재정렬';
 
   @override
-  String streakRestoredMsg(int days) => '연속 기록 복원! $days일 연속.';
+  String streakRestoredMsg(int days)=>'연속 기록 복원! $days일 연속.';
   @override
   String get insufficientCoins => '코인이 부족합니다';
   @override
@@ -3990,7 +3990,7 @@ class AppStringsKo implements AppStrings {
   @override
   String get tapToAddBio => '여기를 탭하여 소개를 추가하세요!';
   @override
-  String memberSinceLabel(String month, int year, int days) => '$month $year년부터 ($days일)';
+  String memberSinceLabel(String month, int year, int days)=>'$month $year년부터 ($days일)';
   // DRAWER MENU ITEMS
   @override
   String get drawerExit => '나가기';
@@ -4016,12 +4016,12 @@ class AppStringsKo implements AppStrings {
   @override
   String get thisWeek => '이번 주';
   @override
-  String lvBadge(int level) => 'Lv.$level';
+  String lvBadge(int level)=>'Lv.$level';
   // LEAVE COMMUNITY CONFIRM
   @override
-  String leaveCommunityConfirmMsg(String communityName) => '"$communityName"을(를) 떠나시겠습니까? 나중에 다시 참여할 수 있습니다.';
+  String leaveCommunityConfirmMsg(String communityName)=>'"$communityName"을(를) 떠나시겠습니까? 나중에 다시 참여할 수 있습니다.';
   @override
-  String dayLabel(int n) => '${n}일';
+  String dayLabel(int n)=>'${n}일';
 
   // BLOCK USER
   @override
@@ -4058,7 +4058,7 @@ class AppStringsKo implements AppStrings {
   @override
   String get repostNotificationTitle => 'New Repost';
   @override
-  String repostNotificationBody(String username) => '$username reposted your post.';
+  String repostNotificationBody(String username)=>'$username reposted your post.';
 
 
   @override

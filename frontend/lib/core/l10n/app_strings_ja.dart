@@ -2923,29 +2923,29 @@ class AppStringsJa implements AppStrings {
   @override
   String get writeContentHere => 'ここにコンテンツを書いてください…';
   @override
-  String streakDaysLabel(int streak) => '\$streak日連続記録';
+  String streakDaysLabel(int streak)=>'$streak日連続記録';
   @override
-  String timeAgoMonths(int months) => '\${months}ヶ月前';
+  String timeAgoMonths(int months)=>'${months}ヶ月前';
   @override
-  String timeAgoDays(int days) => '\${days}日前';
+  String timeAgoDays(int days)=>'${days}日前';
   @override
-  String timeAgoHours(int hours) => '\${hours}時間前';
+  String timeAgoHours(int hours)=>'${hours}時間前';
   @override
-  String timeAgoMinutes(int minutes) => '\${minutes}分前';
+  String timeAgoMinutes(int minutes)=>'${minutes}分前';
   @override
-  String viewsCountLabel(int count) => '\$count 回視聴';
+  String viewsCountLabel(int count)=>'$count 回視聴';
   @override
-  String optionNumber(int number) => 'オプション \$number';
+  String optionNumber(int number)=>'オプション $number';
   @override
-  String viewCommentsCount(int count) => '\$count 件のコメントを見る';
+  String viewCommentsCount(int count)=>'$count 件のコメントを見る';
   @override
-  String replyInComments(int count) => 'コメント欄で返信 • \$count 件の返信';
+  String replyInComments(int count)=>'コメント欄で返信 • $count 件の返信';
   @override
-  String dayOfStreak(int days) => '連続記録の \$days 日目！';
+  String dayOfStreak(int days)=>'連続記録の $days 日目！';
   @override
-  String wonExtraCoins(int coins) => '追加で \$coins コインを獲得しました！';
+  String wonExtraCoins(int coins)=>'追加で $coins コインを獲得しました！';
   @override
-  String freeCoinsRemaining(int remaining) => '無料で5コイン獲得（残り \$remaining）';
+  String freeCoinsRemaining(int remaining)=>'無料で5コイン獲得（残り $remaining）';
   @override
   String get checkInDaily => '毎日\nチェックイン';
   @override
@@ -2971,35 +2971,35 @@ class AppStringsJa implements AppStrings {
   @override
   String get moderationActions30d => 'モデレーションアクション（30日間）';
   @override
-  String joinedCommunityName(String name) => '「\$name」に参加しました！';
+  String joinedCommunityName(String name)=>'「$name」に参加しました！';
   @override
-  String checkInStreakMsg(int streak, int coins) => 'チェックイン完了！連続記録: \$streak 日\${streak > 1 ? "s" : ""} (+\$coins コイン)';
+  String checkInStreakMsg(int streak, int coins)=>'チェックイン完了！連続記録: $streak 日${streak > 1 ? "s" : ""} (+$coins コイン)';
   @override
   String get leadersTitle => 'リーダー';
   @override
-  String levelAndRep(int level, int reputation) => 'レベル \$level • 評判 \$reputation';
+  String levelAndRep(int level, int reputation)=>'レベル $level • 評判 $reputation';
   @override
-  String timeAgoMonthsShort(int months) => '\${months}ヶ月前';
+  String timeAgoMonthsShort(int months)=>'${months}ヶ月前';
   @override
-  String timeAgoDaysShort(int days) => '\${days}日前';
+  String timeAgoDaysShort(int days)=>'${days}日前';
   @override
-  String timeAgoHoursShort(int hours) => '\${hours}時間前';
+  String timeAgoHoursShort(int hours)=>'${hours}時間前';
   @override
-  String timeAgoMinutesShort(int minutes) => '\${minutes}分前';
+  String timeAgoMinutesShort(int minutes)=>'${minutes}分前';
   @override
-  String receivedWarning(String reason) => '警告を受け取りました: \$reason';
+  String receivedWarning(String reason)=>'警告を受け取りました: $reason';
   @override
-  String removedFromCommunity(String reason) => 'コミュニティから削除されました: \$reason';
+  String removedFromCommunity(String reason)=>'コミュニティから削除されました: $reason';
   @override
   String get aminoIdInUse => 'このAmino IDは既に使用されています。';
   @override
   String get tryAgainGeneric => 'もう一度試してください。';
   @override
-  String pausedUntil(String dateTime) => '\$dateTimeまで一時停止中';
+  String pausedUntil(String dateTime)=>'$dateTimeまで一時停止中';
   @override
-  String entryApprovedMsg(String title) => 'あなたの投稿「\$title」は承認され、カタログに表示されています。';
+  String entryApprovedMsg(String title)=>'あなたの投稿「$title」は承認され、カタログに表示されています。';
   @override
-  String entryNeedsChanges(String title, String reason) => 'あなたの投稿「\$title」は修正が必要です: \$reason';
+  String entryNeedsChanges(String title, String reason)=>'あなたの投稿「$title」は修正が必要です: $reason';
   @override
   String get textOverflowHint => '║  TextOverflow.ellipsis を該当のテキストウィジェットに使用しています。   ║\n';
   @override
@@ -3295,29 +3295,29 @@ class AppStringsJa implements AppStrings {
   @override
   String get globalRankingNewline => 'グローバル\nランキング';
   @override
-  String amountCoinsTransferred(int amount) => '\$amount コインが送金されました！';
+  String amountCoinsTransferred(int amount)=>'$amount コインが送金されました！';
   @override
-  String nicknameUnblocked(String nickname) => '\$nickname のブロックを解除しました';
+  String nicknameUnblocked(String nickname)=>'$nickname のブロックを解除しました';
   @override
-  String reactionSent(String reaction) => '\$reaction を送信しました！';
+  String reactionSent(String reaction)=>'$reaction を送信しました！';
   @override
-  String propsAmountSent(int amount) => '\$amount プロップスを送信しました！';
+  String propsAmountSent(int amount)=>'$amount プロップスを送信しました！';
   @override
-  String totalVotesLabel(int count) => '\$count 票';
+  String totalVotesLabel(int count)=>'$count 票';
   @override
-  String postCommentsCountReplies(int count) => '\$count 件の返信';
+  String postCommentsCountReplies(int count)=>'$count 件の返信';
   @override
-  String coinsEarnedLabel(int coins) => '+\$coins コイン';
+  String coinsEarnedLabel(int coins)=>'+$coins コイン';
   @override
-  String xpEarnedLabel(int xp) => '+\$xp XP';
+  String xpEarnedLabel(int xp)=>'+$xp XP';
   @override
-  String rewardCoinsLabel(int coins) => '+\$coins コイン！';
+  String rewardCoinsLabel(int coins)=>'+$coins コイン！';
   @override
-  String providerUnlinked(String provider) => '\$provider アカウントの連携を解除しました。';
+  String providerUnlinked(String provider)=>'$provider アカウントの連携を解除しました。';
   @override
-  String costCoinsLabel(int amount) => 'コスト: \$amount コイン';
+  String costCoinsLabel(int amount)=>'コスト: $amount コイン';
   @override
-  String leftCommunityName(String name) => '「\$name」を退会しました。';
+  String leftCommunityName(String name)=>'「$name」を退会しました。';
   @override
   String get quizCreatedSuccess => 'クイズが正常に作成されました！';
   @override
@@ -3327,17 +3327,17 @@ class AppStringsJa implements AppStrings {
   @override
   String get noItemAvailableMsg => '利用可能なアイテムがありません';
   @override
-  String memberCountMembers(int count) => '\$count メンバー';
+  String memberCountMembers(int count)=>'$count メンバー';
   @override
-  String errorPurchase(String error) => '購入エラー: \$error';
+  String errorPurchase(String error)=>'購入エラー: $error';
   @override
-  String errorGeneric(String error) => 'エラー: \$error';
+  String errorGeneric(String error)=>'エラー: $error';
   @override
-  String currentBalanceCoins(String coins) => '現在の残高: \$coins コイン';
+  String currentBalanceCoins(String coins)=>'現在の残高: $coins コイン';
   @override
-  String leftCommunityMsg(String name) => '「\$name」を退会しました。';
+  String leftCommunityMsg(String name)=>'「$name」を退会しました。';
   @override
-  String pollQuestion(String question) => '📊 \$question';
+  String pollQuestion(String question)=>'📊 $question';
   @override
   String get pinnedLabel => '📌 ピン留め';
   @override
@@ -3349,11 +3349,11 @@ class AppStringsJa implements AppStrings {
   @override
   String get optionLabel => '選択肢';
   @override
-  String optionN(int n) => '選択肢 \$n';
+  String optionN(int n)=>'選択肢 $n';
   @override
-  String questionN(int n) => '質問 \$n';
+  String questionN(int n)=>'質問 $n';
   @override
-  String amountCoins(int amount) => '\$amount コイン';
+  String amountCoins(int amount)=>'$amount コイン';
   @override
   String get featurePost => '注目の投稿';
   @override
@@ -3443,11 +3443,11 @@ class AppStringsJa implements AppStrings {
 
   // TELA DE RANKINGS / NÍVEL
   @override
-  String reputationPointsLabel(int points) => '\$points 評判ポイント';
+  String reputationPointsLabel(int points)=>'$points 評判ポイント';
   @override
-  String repProgressLabel(int current, int total) => '\$current/\$total REP';
+  String repProgressLabel(int current, int total)=>'$current/$total REP';
   @override
-  String daysToLevelUp(int days) => '~\$days 日でレベルアップ';
+  String daysToLevelUp(int days)=>'~$days 日でレベルアップ';
 
 
   // ── Achievements screen (layout Amino) ──
@@ -3470,15 +3470,15 @@ class AppStringsJa implements AppStrings {
 
   // CHECK-IN MESSAGES
   @override
-  String checkInSuccessMsg(int rep, int streak) => 'チェックイン！ +$rep rep | 連続: $streak日';
+  String checkInSuccessMsg(int rep, int streak)=>'チェックイン！ +$rep rep | 連続: $streak日';
   @override
-  String plusReputationLabel(int amount) => '+$amount 評判';
+  String plusReputationLabel(int amount)=>'+$amount 評判';
 
   @override
   String get holdAndDragToReorder => 'カードを長押ししてドラッグして並べ替え';
 
   @override
-  String streakRestoredMsg(int days) => 'ストリーク復元！$days日連続。';
+  String streakRestoredMsg(int days)=>'ストリーク復元！$days日連続。';
   @override
   String get insufficientCoins => 'コインが不足しています';
   @override
@@ -3486,7 +3486,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get tapToAddBio => 'ここをタップして自己紹介を追加！';
   @override
-  String memberSinceLabel(String month, int year, int days) => '$month $year年から（$days日間）';
+  String memberSinceLabel(String month, int year, int days)=>'$month $year年から（$days日間）';
   // DRAWER MENU ITEMS
   @override
   String get drawerExit => '退出';
@@ -3512,12 +3512,12 @@ class AppStringsJa implements AppStrings {
   @override
   String get thisWeek => '今週';
   @override
-  String lvBadge(int level) => 'Lv.$level';
+  String lvBadge(int level)=>'Lv.$level';
   // LEAVE COMMUNITY CONFIRM
   @override
-  String leaveCommunityConfirmMsg(String communityName) => '"$communityName"を退出しますか？後で再参加できます。';
+  String leaveCommunityConfirmMsg(String communityName)=>'"$communityName"を退出しますか？後で再参加できます。';
   @override
-  String dayLabel(int n) => '${n}日';
+  String dayLabel(int n)=>'${n}日';
 
   // BLOCK USER
   @override
@@ -3554,5 +3554,5 @@ class AppStringsJa implements AppStrings {
   @override
   String get repostNotificationTitle => 'New Repost';
   @override
-  String repostNotificationBody(String username) => '$username reposted your post.';
+  String repostNotificationBody(String username)=>'$username reposted your post.';
 }

@@ -1669,29 +1669,29 @@ class AppStringsIt implements AppStrings {
   @override
   String get writeContentHere => 'Scrivi qui il tuo contenuto...';
   @override
-  String streakDaysLabel(int streak) => 'Serie di $streak giorni';
+  String streakDaysLabel(int streak)=>'Serie di $streak giorni';
   @override
-  String timeAgoMonths(int months) => '$months mesi fa';
+  String timeAgoMonths(int months)=>'$months mesi fa';
   @override
-  String timeAgoDays(int days) => '$days giorni fa';
+  String timeAgoDays(int days)=>'$days giorni fa';
   @override
-  String timeAgoHours(int hours) => '$hours ore fa';
+  String timeAgoHours(int hours)=>'$hours ore fa';
   @override
-  String timeAgoMinutes(int minutes) => '$minutes min fa';
+  String timeAgoMinutes(int minutes)=>'$minutes min fa';
   @override
-  String viewsCountLabel(int count) => '$count visualizzazioni';
+  String viewsCountLabel(int count)=>'$count visualizzazioni';
   @override
-  String optionNumber(int number) => 'Opzione $number';
+  String optionNumber(int number)=>'Opzione $number';
   @override
-  String viewCommentsCount(int count) => 'Vedi $count commenti';
+  String viewCommentsCount(int count)=>'Vedi $count commenti';
   @override
-  String replyInComments(int count) => 'Rispondi nei commenti qui sotto • $count risposte';
+  String replyInComments(int count)=>'Rispondi nei commenti qui sotto • $count risposte';
   @override
-  String dayOfStreak(int days) => 'Giorno $days della serie!';
+  String dayOfStreak(int days)=>'Giorno $days della serie!';
   @override
-  String wonExtraCoins(int coins) => 'Hai vinto $coins monete extra!';
+  String wonExtraCoins(int coins)=>'Hai vinto $coins monete extra!';
   @override
-  String freeCoinsRemaining(int remaining) => 'Guadagna 5 monete gratis ($remaining rimanenti)';
+  String freeCoinsRemaining(int remaining)=>'Guadagna 5 monete gratis ($remaining rimanenti)';
   @override
   String get checkInDaily => 'Check-in\nGiornaliero';
   @override
@@ -1717,39 +1717,39 @@ class AppStringsIt implements AppStrings {
   @override
   String get moderationActions30d => 'Azioni di Moderazione (30g)';
   @override
-  String joinedCommunityName(String name) => 'Ti sei unito a "$name"!';
+  String joinedCommunityName(String name)=>'Ti sei unito a "$name"!';
   @override
-  String checkInStreakMsg(int streak, int coins) => 'Check-in effettuato! Serie: $streak giorn${streak > 1 ? "i" : "o"} (+$coins monete)';
+  String checkInStreakMsg(int streak, int coins)=>'Check-in effettuato! Serie: $streak giorn${streak > 1 ? "i" : "o"} (+$coins monete)';
   @override
   String get leadersTitle => 'LEADER';
   @override
-  String levelAndRep(int level, int reputation) => 'Livello $level • $reputation rep';
+  String levelAndRep(int level, int reputation)=>'Livello $level • $reputation rep';
   @override
   String get communityNameRequired => 'Il nome della comunità è obbligatorio.';
   @override
-  String timeAgoMonthsShort(int months) => '$months me fa';
+  String timeAgoMonthsShort(int months)=>'$months me fa';
   @override
-  String timeAgoDaysShort(int days) => '$days g fa';
+  String timeAgoDaysShort(int days)=>'$days g fa';
   @override
-  String timeAgoHoursShort(int hours) => '$hours o fa';
+  String timeAgoHoursShort(int hours)=>'$hours o fa';
   @override
-  String timeAgoMinutesShort(int minutes) => '$minutes min fa';
+  String timeAgoMinutesShort(int minutes)=>'$minutes min fa';
   @override
   String get justNow => 'proprio ora';
   @override
-  String receivedWarning(String reason) => 'Hai ricevuto un avvertimento: $reason';
+  String receivedWarning(String reason)=>'Hai ricevuto un avvertimento: $reason';
   @override
-  String removedFromCommunity(String reason) => 'Sei stato rimosso dalla comunità: $reason';
+  String removedFromCommunity(String reason)=>'Sei stato rimosso dalla comunità: $reason';
   @override
   String get aminoIdInUse => 'Questo ID Amino è già in uso.';
   @override
   String get tryAgainGeneric => 'Riprova.';
   @override
-  String pausedUntil(String dateTime) => 'In pausa fino a $dateTime';
+  String pausedUntil(String dateTime)=>'In pausa fino a $dateTime';
   @override
-  String entryApprovedMsg(String title) => 'La tua voce "$title" è stata approvata ed è visibile nel catalogo.';
+  String entryApprovedMsg(String title)=>'La tua voce "$title" è stata approvata ed è visibile nel catalogo.';
   @override
-  String entryNeedsChanges(String title, String reason) => 'La tua voce "$title" necessita di modifiche: $reason';
+  String entryNeedsChanges(String title, String reason)=>'La tua voce "$title" necessita di modifiche: $reason';
   @override
   String get textOverflowHint => '║  TextOverflow.ellipsis sul widget di testo responsabile.   ║\n';
   @override
@@ -3341,29 +3341,29 @@ class AppStringsIt implements AppStrings {
   @override
   String get globalRankingNewline => 'Classifica\nGlobale';
   @override
-  String amountCoinsTransferred(int amount) => '\$amount monete trasferite!';
+  String amountCoinsTransferred(int amount)=>'$amount monete trasferite!';
   @override
-  String nicknameUnblocked(String nickname) => '\$nickname sbloccato';
+  String nicknameUnblocked(String nickname)=>'$nickname sbloccato';
   @override
-  String reactionSent(String reaction) => '\$reaction inviata!';
+  String reactionSent(String reaction)=>'$reaction inviata!';
   @override
-  String propsAmountSent(int amount) => '\$amount props inviati!';
+  String propsAmountSent(int amount)=>'$amount props inviati!';
   @override
-  String totalVotesLabel(int count) => '\$count voti';
+  String totalVotesLabel(int count)=>'$count voti';
   @override
-  String postCommentsCountReplies(int count) => '\$count risposte';
+  String postCommentsCountReplies(int count)=>'$count risposte';
   @override
-  String coinsEarnedLabel(int coins) => '+\$coins Monete';
+  String coinsEarnedLabel(int coins)=>'+$coins Monete';
   @override
-  String xpEarnedLabel(int xp) => '+\$xp XP';
+  String xpEarnedLabel(int xp)=>'+$xp XP';
   @override
-  String rewardCoinsLabel(int coins) => '+\$coins monete!';
+  String rewardCoinsLabel(int coins)=>'+$coins monete!';
   @override
-  String providerUnlinked(String provider) => 'Account \$provider scollegato.';
+  String providerUnlinked(String provider)=>'Account $provider scollegato.';
   @override
-  String costCoinsLabel(int amount) => 'Costo: \$amount monete';
+  String costCoinsLabel(int amount)=>'Costo: $amount monete';
   @override
-  String leftCommunityName(String name) => 'Hai lasciato "\$name".';
+  String leftCommunityName(String name)=>'Hai lasciato "$name".';
   @override
   String get quizCreatedSuccess => 'Quiz creato con successo!';
   @override
@@ -3373,17 +3373,17 @@ class AppStringsIt implements AppStrings {
   @override
   String get noItemAvailableMsg => 'Nessun articolo disponibile';
   @override
-  String memberCountMembers(int count) => '\$count membri';
+  String memberCountMembers(int count)=>'$count membri';
   @override
-  String errorPurchase(String error) => 'Errore di acquisto: \$error';
+  String errorPurchase(String error)=>'Errore di acquisto: $error';
   @override
-  String errorGeneric(String error) => 'Errore: \$error';
+  String errorGeneric(String error)=>'Errore: $error';
   @override
-  String currentBalanceCoins(String coins) => 'Saldo attuale: \$coins monete';
+  String currentBalanceCoins(String coins)=>'Saldo attuale: $coins monete';
   @override
-  String leftCommunityMsg(String name) => 'Hai lasciato "\$name".';
+  String leftCommunityMsg(String name)=>'Hai lasciato "$name".';
   @override
-  String pollQuestion(String question) => '📊 \$question';
+  String pollQuestion(String question)=>'📊 $question';
   @override
   String get pinnedLabel => '📌 Fissato';
   @override
@@ -3395,11 +3395,11 @@ class AppStringsIt implements AppStrings {
   @override
   String get optionLabel => 'Opzione';
   @override
-  String optionN(int n) => 'Opzione \$n';
+  String optionN(int n)=>'Opzione $n';
   @override
-  String questionN(int n) => 'Domanda \$n';
+  String questionN(int n)=>'Domanda $n';
   @override
-  String amountCoins(int amount) => '\$amount monete';
+  String amountCoins(int amount)=>'$amount monete';
 
   // SISTEMA DE NÍVEIS — Nomes dos 20 níveis
   @override
@@ -3459,11 +3459,11 @@ class AppStringsIt implements AppStrings {
 
   // TELA DE RANKINGS / NÍVEL
   @override
-  String reputationPointsLabel(int points) => '\$points Punti Reputazione';
+  String reputationPointsLabel(int points)=>'$points Punti Reputazione';
   @override
-  String repProgressLabel(int current, int total) => '\$current/\$total REP';
+  String repProgressLabel(int current, int total)=>'$current/$total REP';
   @override
-  String daysToLevelUp(int days) => '~\$days giorni per salire di livello';
+  String daysToLevelUp(int days)=>'~$days giorni per salire di livello';
 
 
   // ── Achievements screen (layout Amino) ──
@@ -3486,15 +3486,15 @@ class AppStringsIt implements AppStrings {
 
   // CHECK-IN MESSAGES
   @override
-  String checkInSuccessMsg(int rep, int streak) => 'Check-in! +$rep rep | Serie: $streak giorni';
+  String checkInSuccessMsg(int rep, int streak)=>'Check-in! +$rep rep | Serie: $streak giorni';
   @override
-  String plusReputationLabel(int amount) => '+$amount reputazione';
+  String plusReputationLabel(int amount)=>'+$amount reputazione';
 
   @override
   String get holdAndDragToReorder => 'Tieni premuto e trascina le schede per riordinare';
 
   @override
-  String streakRestoredMsg(int days) => 'Serie ripristinata! $days giorni consecutivi.';
+  String streakRestoredMsg(int days)=>'Serie ripristinata! $days giorni consecutivi.';
   @override
   String get insufficientCoins => 'Monete insufficienti';
   @override
@@ -3502,7 +3502,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get tapToAddBio => 'Tocca qui per aggiungere la tua biografia!';
   @override
-  String memberSinceLabel(String month, int year, int days) => 'Membro dal $month $year ($days giorni)';
+  String memberSinceLabel(String month, int year, int days)=>'Membro dal $month $year ($days giorni)';
   // DRAWER MENU ITEMS
   @override
   String get drawerExit => 'Esci';
@@ -3528,12 +3528,12 @@ class AppStringsIt implements AppStrings {
   @override
   String get thisWeek => 'Questa Settimana';
   @override
-  String lvBadge(int level) => 'Lv.$level';
+  String lvBadge(int level)=>'Lv.$level';
   // LEAVE COMMUNITY CONFIRM
   @override
-  String leaveCommunityConfirmMsg(String communityName) => 'Sei sicuro di voler lasciare "$communityName"? Potrai rientrare in seguito.';
+  String leaveCommunityConfirmMsg(String communityName)=>'Sei sicuro di voler lasciare "$communityName"? Potrai rientrare in seguito.';
   @override
-  String dayLabel(int n) => 'G$n';
+  String dayLabel(int n)=>'G$n';
 
   // BLOCK USER
   @override
@@ -3570,7 +3570,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get repostNotificationTitle => 'New Repost';
   @override
-  String repostNotificationBody(String username) => '$username reposted your post.';
+  String repostNotificationBody(String username)=>'$username reposted your post.';
 
 
   @override
