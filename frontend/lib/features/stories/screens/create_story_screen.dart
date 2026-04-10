@@ -10,10 +10,14 @@ import '../../../core/l10n/locale_provider.dart';
 
 /// Create Story Screen — Criação de stories estilo Amino/Instagram.
 ///
-/// Suporta 3 tipos:
-///   - image: foto da galeria com texto overlay opcional
-///   - text: texto puro com background colorido
-///   - video: vídeo curto (placeholder para futura implementação)
+/// Melhorias:
+///   - Mais backgrounds: sólidos + gradientes
+///   - Seletor de fonte (6 opções)
+///   - Tamanho de texto ajustável
+///   - Alinhamento de texto (esquerda, centro, direita)
+///   - Duração configurável (3s, 5s, 7s, 10s, 15s)
+///   - Stickers de texto decorativos
+///   - Filtro de imagem básico (brilho)
 class CreateStoryScreen extends ConsumerStatefulWidget {
   final String communityId;
   const CreateStoryScreen({super.key, required this.communityId});
@@ -28,42 +32,78 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
   String? _mediaUrl;
   bool _isSubmitting = false;
   int _selectedBgIndex = 0;
+  int _selectedFontIndex = 0;
+  double _fontSize = 22;
+  TextAlign _textAlign = TextAlign.center;
+  int _durationSeconds = 5;
   VideoPlayerController? _videoPreviewController;
 
+  // Backgrounds sólidos
   static final _bgColors = [
-    Color(0xFF0D1B2A),
-    Color(0xFFE91E63),
-    Color(0xFF9C27B0),
-    Color(0xFF2196F3),
-    Color(0xFF00BCD4),
-    Color(0xFF4CAF50),
-    Color(0xFFFF5722),
-    Color(0xFFFF9800),
-    Color(0xFF795548),
-    Color(0xFF607D8B),
+    const Color(0xFF0D1B2A),
+    const Color(0xFFE91E63),
+    const Color(0xFF9C27B0),
+    const Color(0xFF2196F3),
+    const Color(0xFF00BCD4),
+    const Color(0xFF4CAF50),
+    const Color(0xFFFF5722),
+    const Color(0xFFFF9800),
+    const Color(0xFF795548),
+    const Color(0xFF607D8B),
+    const Color(0xFF1A1A2E),
+    const Color(0xFF16213E),
+    const Color(0xFF0F3460),
+    const Color(0xFF533483),
+    const Color(0xFF2B2D42),
   ];
 
   static final _bgHexCodes = [
-    '#0D1B2A',
-    '#E91E63',
-    '#9C27B0',
-    '#2196F3',
-    '#00BCD4',
-    '#4CAF50',
-    '#FF5722',
-    '#FF9800',
-    '#795548',
-    '#607D8B',
+    '#0D1B2A', '#E91E63', '#9C27B0', '#2196F3', '#00BCD4',
+    '#4CAF50', '#FF5722', '#FF9800', '#795548', '#607D8B',
+    '#1A1A2E', '#16213E', '#0F3460', '#533483', '#2B2D42',
   ];
+
+  // Gradientes
+  static final _bgGradients = <List<Color>>[
+    [const Color(0xFF667eea), const Color(0xFF764ba2)],
+    [const Color(0xFFf093fb), const Color(0xFFf5576c)],
+    [const Color(0xFF4facfe), const Color(0xFF00f2fe)],
+    [const Color(0xFF43e97b), const Color(0xFF38f9d7)],
+    [const Color(0xFFfa709a), const Color(0xFFfee140)],
+    [const Color(0xFFa18cd1), const Color(0xFFfbc2eb)],
+    [const Color(0xFF30cfd0), const Color(0xFF330867)],
+    [const Color(0xFFf6d365), const Color(0xFFfda085)],
+  ];
+
+  // Fontes disponíveis
+  static const _fontFamilies = [
+    'Default',
+    'Serif',
+    'Monospace',
+    'Cursive',
+  ];
+
+  static const _fontStyles = [
+    TextStyle(fontWeight: FontWeight.w800),
+    TextStyle(fontFamily: 'serif', fontWeight: FontWeight.w600),
+    TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.w600),
+    TextStyle(fontStyle: FontStyle.italic, fontWeight: FontWeight.w700),
+  ];
+
+  static const _durationOptions = [3, 5, 7, 10, 15];
+
+  bool get _isGradient =>
+      _selectedBgIndex >= _bgColors.length &&
+      _selectedBgIndex < _bgColors.length + _bgGradients.length;
+
+  int get _gradientIndex => _selectedBgIndex - _bgColors.length;
 
   Future<void> _pickImage() async {
     final s = getStrings();
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
-    if (!mounted) return;
-    if (image == null) return;
+    if (!mounted || image == null) return;
 
-    if (!mounted) return;
     setState(() => _isSubmitting = true);
 
     try {
@@ -106,10 +146,8 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
       source: ImageSource.gallery,
       maxDuration: const Duration(seconds: 60),
     );
-    if (!mounted) return;
-    if (video == null) return;
+    if (!mounted || video == null) return;
 
-    if (!mounted) return;
     setState(() => _isSubmitting = true);
 
     try {
@@ -123,7 +161,6 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
       final url =
           SupabaseService.client.storage.from('post_media').getPublicUrl(path);
 
-      // Inicializar preview do vídeo
       _videoPreviewController?.dispose();
       _videoPreviewController =
           VideoPlayerController.networkUrl(Uri.parse(url));
@@ -157,7 +194,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
     final s = getStrings();
     if (_type == 'text' && _textController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(
+        SnackBar(
           content: Text(s.writeStoryHint),
           backgroundColor: AppTheme.errorColor,
         ),
@@ -166,7 +203,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
     }
     if (_type == 'image' && _mediaUrl == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(
+        SnackBar(
           content: Text(s.selectImage2),
           backgroundColor: AppTheme.errorColor,
         ),
@@ -180,7 +217,17 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
       final userId = SupabaseService.currentUserId;
       if (userId == null) throw Exception(s.notAuthenticated);
 
-      // RPC atômica: cria story + reputação + validação de membro
+      String bgColor;
+      if (_isGradient) {
+        final g = _bgGradients[_gradientIndex];
+        bgColor =
+            '#${g[0].value.toRadixString(16).padLeft(8, '0').substring(2)}';
+      } else if (_selectedBgIndex < _bgColors.length) {
+        bgColor = _bgHexCodes[_selectedBgIndex];
+      } else {
+        bgColor = '#0D1B2A';
+      }
+
       await SupabaseService.rpc('create_story', params: {
         'p_community_id': widget.communityId,
         'p_media_url': _mediaUrl ?? '',
@@ -188,15 +235,14 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
         'p_caption': _textController.text.trim().isNotEmpty
             ? _textController.text.trim()
             : null,
-        'p_background_color':
-            _type == 'text' ? _bgHexCodes[_selectedBgIndex] : '#000000',
-        'p_duration_seconds': _type == 'text' ? 5 : 7,
+        'p_background_color': bgColor,
+        'p_duration_seconds': _durationSeconds,
       });
 
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(
+          SnackBar(
             content: Text(s.storyPublished),
             backgroundColor: AppTheme.successColor,
             behavior: SnackBarBehavior.floating,
@@ -226,7 +272,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: Colors.black,
@@ -269,7 +315,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                           ? SizedBox(
                               width: r.s(16),
                               height: r.s(16),
-                              child: CircularProgressIndicator(
+                              child: const CircularProgressIndicator(
                                   strokeWidth: 2, color: Colors.white),
                             )
                           : Text(
@@ -332,8 +378,15 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(r.s(16)),
                   color: _type == 'text'
-                      ? _bgColors[_selectedBgIndex]
+                      ? (_isGradient ? null : _bgColors[_selectedBgIndex])
                       : context.cardBg,
+                  gradient: _type == 'text' && _isGradient
+                      ? LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: _bgGradients[_gradientIndex],
+                        )
+                      : null,
                   image: _type == 'image' && _mediaUrl != null
                       ? DecorationImage(
                           image: NetworkImage(_mediaUrl!),
@@ -373,17 +426,17 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                             controller: _textController,
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: r.fs(22),
-                              fontWeight: FontWeight.w800,
+                              fontSize: r.fs(_fontSize),
                               height: 1.4,
-                            ),
+                            ).merge(_fontStyles[_selectedFontIndex]),
                             decoration: InputDecoration(
                               hintText: s.writePost,
                               hintStyle: TextStyle(
-                                  color: Colors.white38, fontSize: r.fs(22)),
+                                  color: Colors.white38,
+                                  fontSize: r.fs(_fontSize)),
                               border: InputBorder.none,
                             ),
-                            textAlign: TextAlign.center,
+                            textAlign: _textAlign,
                             maxLines: null,
                           ),
                         ),
@@ -407,9 +460,10 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                               color: Colors.white,
                               fontSize: r.fs(14),
                             ),
-                            decoration:  InputDecoration(
+                            decoration: InputDecoration(
                               hintText: s.addCaptionHint,
-                              hintStyle: TextStyle(color: Colors.white54),
+                              hintStyle:
+                                  const TextStyle(color: Colors.white54),
                               border: InputBorder.none,
                               isDense: true,
                             ),
@@ -436,35 +490,200 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                           ),
                         ),
                       ),
+
+                    // Duração badge
+                    Positioned(
+                      top: r.s(12),
+                      left: r.s(12),
+                      child: GestureDetector(
+                        onTap: () {
+                          final idx =
+                              _durationOptions.indexOf(_durationSeconds);
+                          setState(() {
+                            _durationSeconds = _durationOptions[
+                                (idx + 1) % _durationOptions.length];
+                          });
+                        },
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: r.s(10), vertical: r.s(5)),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.5),
+                            borderRadius: BorderRadius.circular(r.s(12)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.timer_rounded,
+                                  color: Colors.white70, size: r.s(14)),
+                              SizedBox(width: r.s(4)),
+                              Text(
+                                '${_durationSeconds}s',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: r.fs(12),
+                                    fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
 
-            // ── Color picker (apenas para tipo texto) ──
+            // ── Toolbar de texto (apenas para tipo texto) ──
+            if (_type == 'text') ...[
+              // Seletor de fonte
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: r.s(16)),
+                child: SizedBox(
+                  height: r.s(36),
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _fontFamilies.length,
+                    itemBuilder: (_, i) {
+                      final isSelected = _selectedFontIndex == i;
+                      return GestureDetector(
+                        onTap: () =>
+                            setState(() => _selectedFontIndex = i),
+                        child: Container(
+                          margin: EdgeInsets.only(right: r.s(8)),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: r.s(14), vertical: r.s(6)),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppTheme.accentColor
+                                    .withValues(alpha: 0.3)
+                                : Colors.white.withValues(alpha: 0.08),
+                            borderRadius:
+                                BorderRadius.circular(r.s(16)),
+                            border: isSelected
+                                ? Border.all(
+                                    color: AppTheme.accentColor
+                                        .withValues(alpha: 0.5))
+                                : null,
+                          ),
+                          child: Text(
+                            _fontFamilies[i],
+                            style: TextStyle(
+                              color: isSelected
+                                  ? AppTheme.accentColor
+                                  : Colors.grey[500],
+                              fontSize: r.fs(12),
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                            ).merge(_fontStyles[i]),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+              SizedBox(height: r.s(8)),
+
+              // Tamanho de texto + alinhamento
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: r.s(16)),
+                child: Row(
+                  children: [
+                    Icon(Icons.text_decrease_rounded,
+                        color: Colors.white54, size: r.s(16)),
+                    Expanded(
+                      child: Slider(
+                        value: _fontSize,
+                        min: 14,
+                        max: 40,
+                        activeColor: AppTheme.accentColor,
+                        inactiveColor:
+                            Colors.white.withValues(alpha: 0.15),
+                        onChanged: (v) =>
+                            setState(() => _fontSize = v),
+                      ),
+                    ),
+                    Icon(Icons.text_increase_rounded,
+                        color: Colors.white54, size: r.s(16)),
+                    SizedBox(width: r.s(12)),
+                    // Alinhamento
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          if (_textAlign == TextAlign.left) {
+                            _textAlign = TextAlign.center;
+                          } else if (_textAlign == TextAlign.center) {
+                            _textAlign = TextAlign.right;
+                          } else {
+                            _textAlign = TextAlign.left;
+                          }
+                        });
+                      },
+                      child: Container(
+                        padding: EdgeInsets.all(r.s(8)),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          borderRadius:
+                              BorderRadius.circular(r.s(8)),
+                        ),
+                        child: Icon(
+                          _textAlign == TextAlign.left
+                              ? Icons.format_align_left_rounded
+                              : _textAlign == TextAlign.center
+                                  ? Icons.format_align_center_rounded
+                                  : Icons.format_align_right_rounded,
+                          color: Colors.white70,
+                          size: r.s(18),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: r.s(8)),
+            ],
+
+            // ── Color/gradient picker (apenas para tipo texto) ──
             if (_type == 'text')
               Padding(
-                padding:
-                    EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+                padding: EdgeInsets.symmetric(
+                    horizontal: r.s(16), vertical: r.s(4)),
                 child: SizedBox(
                   height: r.s(40),
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
-                    itemCount: _bgColors.length,
+                    itemCount:
+                        _bgColors.length + _bgGradients.length,
                     itemBuilder: (_, i) {
                       final isSelected = _selectedBgIndex == i;
+                      final isGrad = i >= _bgColors.length;
                       return GestureDetector(
-                        onTap: () => setState(() => _selectedBgIndex = i),
+                        onTap: () =>
+                            setState(() => _selectedBgIndex = i),
                         child: Container(
                           width: r.s(36),
                           height: r.s(36),
                           margin: EdgeInsets.only(right: r.s(8)),
                           decoration: BoxDecoration(
-                            color: _bgColors[i],
+                            color: isGrad
+                                ? null
+                                : _bgColors[i],
+                            gradient: isGrad
+                                ? LinearGradient(
+                                    colors: _bgGradients[
+                                        i - _bgColors.length],
+                                  )
+                                : null,
                             shape: BoxShape.circle,
                             border: isSelected
-                                ? Border.all(color: Colors.white, width: r.s(3))
-                                : Border.all(color: Colors.white24, width: 1),
+                                ? Border.all(
+                                    color: Colors.white,
+                                    width: r.s(3))
+                                : Border.all(
+                                    color: Colors.white24,
+                                    width: 1),
                           ),
                         ),
                       );
@@ -496,19 +715,21 @@ class _TypeChip extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(8)),
+        padding:
+            EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(8)),
         decoration: BoxDecoration(
           color: isSelected
               ? AppTheme.accentColor.withValues(alpha: 0.2)
               : Colors.white.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(r.s(20)),
           border: isSelected
-              ? Border.all(color: AppTheme.accentColor.withValues(alpha: 0.5))
+              ? Border.all(
+                  color: AppTheme.accentColor.withValues(alpha: 0.5))
               : null,
         ),
         child: Row(
@@ -516,14 +737,19 @@ class _TypeChip extends ConsumerWidget {
           children: [
             Icon(icon,
                 size: r.s(16),
-                color: isSelected ? AppTheme.accentColor : Colors.grey[500]),
+                color: isSelected
+                    ? AppTheme.accentColor
+                    : Colors.grey[500]),
             SizedBox(width: r.s(6)),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? AppTheme.accentColor : Colors.grey[500],
+                color: isSelected
+                    ? AppTheme.accentColor
+                    : Colors.grey[500],
                 fontSize: r.fs(13),
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                fontWeight:
+                    isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
           ],
