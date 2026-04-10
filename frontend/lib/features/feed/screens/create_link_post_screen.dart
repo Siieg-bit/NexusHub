@@ -1,14 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/media_utils.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // CREATE LINK POST SCREEN — Post com URL externa
+//
+// Melhorias:
+//   - Preview visual do link (card com título, domínio e thumbnail)
+//   - Upload de thumbnail customizada
+//   - Tags
+//   - Validação de URL em tempo real com indicador visual
+//   - Suporte a editor_metadata
 // =============================================================================
 
 class CreateLinkPostScreen extends ConsumerStatefulWidget {
@@ -24,20 +33,85 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
   final _titleController = TextEditingController();
   final _urlController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _tagController = TextEditingController();
+  final List<String> _tags = [];
   bool _isSubmitting = false;
+  bool _isUploadingThumb = false;
   String _visibility = 'public';
+  String? _thumbnailUrl;
+  bool _urlValid = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _urlController.addListener(_onUrlChanged);
+  }
 
   @override
   void dispose() {
     _titleController.dispose();
     _urlController.dispose();
     _descriptionController.dispose();
+    _tagController.dispose();
     super.dispose();
   }
 
-  bool _isValidUrl(String url) {
-    final uri = Uri.tryParse(url);
-    return uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
+  void _onUrlChanged() {
+    final url = _urlController.text.trim();
+    final valid = Uri.tryParse(url)?.hasAbsolutePath == true &&
+        (url.startsWith('http://') || url.startsWith('https://'));
+    if (valid != _urlValid) setState(() => _urlValid = valid);
+  }
+
+  String? _extractDomain(String url) {
+    try {
+      return Uri.parse(url).host;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _addTag() {
+    final tag = _tagController.text.trim();
+    if (tag.isEmpty || _tags.length >= 10 || _tags.contains(tag)) return;
+    setState(() {
+      _tags.add(tag);
+      _tagController.clear();
+    });
+  }
+
+  Future<void> _pickThumbnail() async {
+    final s = getStrings();
+    final picker = ImagePicker();
+    final image = await picker.pickImage(source: ImageSource.gallery);
+    if (image == null || !mounted) return;
+
+    setState(() => _isUploadingThumb = true);
+    try {
+      final userId = SupabaseService.currentUserId ?? 'unknown';
+      final rawBytes = await image.readAsBytes();
+      final bytes = await MediaUtils.compressImage(rawBytes);
+      final path =
+          'posts/$userId/${DateTime.now().millisecondsSinceEpoch}_thumb_${image.name}';
+      await SupabaseService.storage
+          .from('post_media')
+          .uploadBinary(path, bytes);
+      final url =
+          SupabaseService.storage.from('post_media').getPublicUrl(path);
+      if (mounted) setState(() => _thumbnailUrl = url);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(s.errorUploadTryAgain),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUploadingThumb = false);
+    }
   }
 
   Future<void> _submit() async {
@@ -47,18 +121,20 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
 
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(
+        SnackBar(
           content: Text(s.titleRequired),
           backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
         ),
       );
       return;
     }
-    if (url.isEmpty || !_isValidUrl(url)) {
+    if (url.isEmpty || !_urlValid) {
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(
+        SnackBar(
           content: Text(s.enterValidLink),
           backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
         ),
       );
       return;
@@ -69,39 +145,68 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
       final userId = SupabaseService.currentUserId;
       if (userId == null) throw Exception(s.notAuthenticated);
 
-      final result = await SupabaseService.table('posts')
-          .insert({
-            'community_id': widget.communityId,
-            'author_id': userId,
-            'type': 'link',
-            'title': title,
-            'content': _descriptionController.text.trim(),
-            'external_url': url,
-            'media_list': [],
-            'visibility': _visibility,
-            'comments_blocked': false,
-          })
-          .select()
-          .single();
+      final editorMetadata = <String, dynamic>{
+        'editor_type': 'link',
+        'tags': _tags,
+        'link_url': url,
+        'domain': _extractDomain(url),
+      };
 
+      // Tentar RPC primeiro
       try {
-        await SupabaseService.rpc('add_reputation', params: {
-          'p_user_id': userId,
+        await SupabaseService.rpc('create_post_with_reputation', params: {
           'p_community_id': widget.communityId,
-          'p_action_type': 'post_create',
-          'p_raw_amount': 15,
-          'p_reference_id': result['id'],
+          'p_title': title,
+          'p_content': _descriptionController.text.trim(),
+          'p_type': 'link',
+          'p_visibility': _visibility,
+          'p_media_urls': _thumbnailUrl != null ? [_thumbnailUrl!] : <String>[],
+          'p_cover_image_url': _thumbnailUrl,
+          'p_editor_type': 'link',
+          'p_editor_metadata': editorMetadata,
         });
-      } catch (e) {
-        debugPrint('[create_link_post_screen.dart] $e');
+      } catch (_) {
+        // Fallback: insert direto
+        final result = await SupabaseService.table('posts')
+            .insert({
+              'community_id': widget.communityId,
+              'author_id': userId,
+              'type': 'link',
+              'title': title,
+              'content': _descriptionController.text.trim(),
+              'external_url': url,
+              'media_list': _thumbnailUrl != null
+                  ? [
+                      {'url': _thumbnailUrl!, 'type': 'image'}
+                    ]
+                  : [],
+              'cover_image_url': _thumbnailUrl,
+              'visibility': _visibility,
+              'comments_blocked': false,
+              'editor_type': 'link',
+              'editor_metadata': editorMetadata,
+            })
+            .select()
+            .single();
+
+        try {
+          await SupabaseService.rpc('add_reputation', params: {
+            'p_user_id': userId,
+            'p_community_id': widget.communityId,
+            'p_action_type': 'post_create',
+            'p_raw_amount': 15,
+            'p_reference_id': result['id'],
+          });
+        } catch (_) {}
       }
 
       if (mounted) {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(
+          SnackBar(
             content: Text(s.linkSharedSuccess),
             backgroundColor: AppTheme.successColor,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -112,6 +217,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
           SnackBar(
             content: Text(s.errorPublishing2),
             backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -120,7 +226,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -191,14 +297,16 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Card de URL
+            // Card de URL com validação visual
             Container(
               padding: EdgeInsets.all(r.s(16)),
               decoration: BoxDecoration(
                 color: context.cardBg,
                 borderRadius: BorderRadius.circular(r.s(16)),
                 border: Border.all(
-                    color: context.dividerClr.withValues(alpha: 0.3)),
+                    color: _urlValid
+                        ? AppTheme.successColor.withValues(alpha: 0.4)
+                        : context.dividerClr.withValues(alpha: 0.3)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,8 +316,8 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
                       Container(
                         padding: EdgeInsets.all(r.s(8)),
                         decoration: BoxDecoration(
-                          color:
-                              const Color(0xFF2563EB).withValues(alpha: 0.15),
+                          color: const Color(0xFF2563EB)
+                              .withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(r.s(8)),
                         ),
                         child: Icon(Icons.link_rounded,
@@ -223,6 +331,10 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
                             fontSize: r.fs(14),
                             fontWeight: FontWeight.w600),
                       ),
+                      const Spacer(),
+                      if (_urlValid)
+                        Icon(Icons.check_circle_rounded,
+                            color: AppTheme.successColor, size: r.s(18)),
                     ],
                   ),
                   SizedBox(height: r.s(12)),
@@ -235,7 +347,8 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
                     decoration: InputDecoration(
                       hintText: 'https://...',
                       hintStyle: TextStyle(
-                          color: context.textSecondary, fontSize: r.fs(14)),
+                          color: context.textSecondary,
+                          fontSize: r.fs(14)),
                       filled: true,
                       fillColor: context.scaffoldBg,
                       border: OutlineInputBorder(
@@ -245,7 +358,10 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(r.s(10)),
                         borderSide: BorderSide(
-                            color: const Color(0xFF2563EB), width: 1.5),
+                            color: _urlValid
+                                ? AppTheme.successColor
+                                : const Color(0xFF2563EB),
+                            width: 1.5),
                       ),
                       prefixIcon: Icon(Icons.language_rounded,
                           color: context.textSecondary, size: r.s(18)),
@@ -254,7 +370,15 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
                 ],
               ),
             ),
+
+            // Preview do link
+            if (_urlValid) ...[
+              SizedBox(height: r.s(12)),
+              _buildLinkPreview(r),
+            ],
+
             SizedBox(height: r.s(16)),
+
             // Título
             TextField(
               controller: _titleController,
@@ -276,6 +400,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
             ),
             Divider(color: context.dividerClr),
             SizedBox(height: r.s(8)),
+
             // Descrição
             TextField(
               controller: _descriptionController,
@@ -283,19 +408,287 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
               maxLines: 5,
               minLines: 2,
               textCapitalization: TextCapitalization.sentences,
-              style: TextStyle(color: context.textPrimary, fontSize: r.fs(15)),
+              style:
+                  TextStyle(color: context.textPrimary, fontSize: r.fs(15)),
               decoration: InputDecoration(
                 hintText: s.describeLinkHint,
-                hintStyle:
-                    TextStyle(color: context.textSecondary, fontSize: r.fs(15)),
+                hintStyle: TextStyle(
+                    color: context.textSecondary, fontSize: r.fs(15)),
                 border: InputBorder.none,
                 counterText: '',
               ),
             ),
+            SizedBox(height: r.s(16)),
+
+            // Thumbnail customizada
+            Divider(color: context.dividerClr),
+            SizedBox(height: r.s(12)),
+            Text(
+              'Thumbnail (opcional)',
+              style: TextStyle(
+                  color: context.textPrimary,
+                  fontSize: r.fs(13),
+                  fontWeight: FontWeight.w600),
+            ),
+            SizedBox(height: r.s(8)),
+            _buildThumbnailSection(r),
+            SizedBox(height: r.s(16)),
+
+            // Tags
+            Divider(color: context.dividerClr),
+            SizedBox(height: r.s(12)),
+            Text(
+              'Tags',
+              style: TextStyle(
+                  color: context.textPrimary,
+                  fontSize: r.fs(13),
+                  fontWeight: FontWeight.w600),
+            ),
+            SizedBox(height: r.s(8)),
+            _buildTagsSection(r),
+
             SizedBox(height: r.s(80)),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildLinkPreview(Responsive r) {
+    final domain = _extractDomain(_urlController.text.trim());
+    return Container(
+      padding: EdgeInsets.all(r.s(12)),
+      decoration: BoxDecoration(
+        color: context.cardBg,
+        borderRadius: BorderRadius.circular(r.s(12)),
+        border: Border.all(
+            color: const Color(0xFF2563EB).withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: r.s(48),
+            height: r.s(48),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2563EB).withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(r.s(8)),
+            ),
+            child: _thumbnailUrl != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(r.s(8)),
+                    child: Image.network(_thumbnailUrl!,
+                        fit: BoxFit.cover,
+                        width: r.s(48),
+                        height: r.s(48)),
+                  )
+                : Icon(Icons.language_rounded,
+                    color: const Color(0xFF2563EB), size: r.s(24)),
+          ),
+          SizedBox(width: r.s(12)),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _titleController.text.trim().isNotEmpty
+                      ? _titleController.text.trim()
+                      : domain ?? 'Link externo',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: context.textPrimary,
+                    fontSize: r.fs(13),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: r.s(2)),
+                Text(
+                  domain ?? _urlController.text.trim(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: const Color(0xFF2563EB),
+                    fontSize: r.fs(11),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(Icons.open_in_new_rounded,
+              color: context.textSecondary, size: r.s(16)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildThumbnailSection(Responsive r) {
+    if (_thumbnailUrl != null) {
+      return Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(r.s(12)),
+            child: Image.network(
+              _thumbnailUrl!,
+              width: double.infinity,
+              height: r.s(140),
+              fit: BoxFit.cover,
+            ),
+          ),
+          Positioned(
+            top: r.s(8),
+            right: r.s(8),
+            child: Row(
+              children: [
+                _circleButton(
+                  icon: Icons.camera_alt_rounded,
+                  onTap: _pickThumbnail,
+                  r: r,
+                ),
+                SizedBox(width: r.s(8)),
+                _circleButton(
+                  icon: Icons.close_rounded,
+                  onTap: () => setState(() => _thumbnailUrl = null),
+                  r: r,
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
+    return GestureDetector(
+      onTap: _isUploadingThumb ? null : _pickThumbnail,
+      child: Container(
+        height: r.s(72),
+        decoration: BoxDecoration(
+          color: context.cardBg,
+          borderRadius: BorderRadius.circular(r.s(12)),
+          border:
+              Border.all(color: context.dividerClr.withValues(alpha: 0.4)),
+        ),
+        child: Center(
+          child: _isUploadingThumb
+              ? CircularProgressIndicator(
+                  color: AppTheme.primaryColor, strokeWidth: 2)
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.add_photo_alternate_rounded,
+                        color: context.textSecondary, size: r.s(20)),
+                    SizedBox(width: r.s(8)),
+                    Text(
+                      'Adicionar thumbnail',
+                      style: TextStyle(
+                          color: context.textSecondary,
+                          fontSize: r.fs(13)),
+                    ),
+                  ],
+                ),
+        ),
+      ),
+    );
+  }
+
+  Widget _circleButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    required Responsive r,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(r.s(6)),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.6),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: Colors.white, size: r.s(16)),
+      ),
+    );
+  }
+
+  Widget _buildTagsSection(Responsive r) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (_tags.isNotEmpty) ...[
+          Wrap(
+            spacing: r.s(6),
+            runSpacing: r.s(4),
+            children: _tags
+                .map((tag) => Container(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: r.s(10), vertical: r.s(4)),
+                      decoration: BoxDecoration(
+                        color:
+                            AppTheme.accentColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(r.s(12)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('#$tag',
+                              style: TextStyle(
+                                  color: AppTheme.accentColor,
+                                  fontSize: r.fs(12),
+                                  fontWeight: FontWeight.w600)),
+                          SizedBox(width: r.s(4)),
+                          GestureDetector(
+                            onTap: () =>
+                                setState(() => _tags.remove(tag)),
+                            child: Icon(Icons.close_rounded,
+                                color: AppTheme.accentColor,
+                                size: r.s(14)),
+                          ),
+                        ],
+                      ),
+                    ))
+                .toList(),
+          ),
+          SizedBox(height: r.s(8)),
+        ],
+        if (_tags.length < 10)
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _tagController,
+                  style: TextStyle(
+                      color: context.textPrimary, fontSize: r.fs(13)),
+                  decoration: InputDecoration(
+                    hintText: 'Adicionar tag...',
+                    hintStyle: TextStyle(
+                        color: context.textSecondary,
+                        fontSize: r.fs(13)),
+                    border: InputBorder.none,
+                    isDense: true,
+                    prefixIcon: Icon(Icons.tag_rounded,
+                        color: context.textSecondary, size: r.s(16)),
+                  ),
+                  onSubmitted: (_) => _addTag(),
+                ),
+              ),
+              GestureDetector(
+                onTap: _addTag,
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: r.s(12), vertical: r.s(6)),
+                  decoration: BoxDecoration(
+                    color:
+                        AppTheme.accentColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(r.s(8)),
+                  ),
+                  child: Text('Adicionar',
+                      style: TextStyle(
+                          color: AppTheme.accentColor,
+                          fontSize: r.fs(12),
+                          fontWeight: FontWeight.w600)),
+                ),
+              ),
+            ],
+          ),
+      ],
     );
   }
 }

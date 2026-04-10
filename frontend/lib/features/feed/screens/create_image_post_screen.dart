@@ -11,7 +11,22 @@ import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // CREATE IMAGE POST SCREEN — Post com galeria de imagens
+//
+// Melhorias:
+//   - Reordenação de imagens via drag & drop (long press)
+//   - Legenda individual por imagem
+//   - Tags
+//   - Toggle NSFW / Spoiler
+//   - Indicador de contagem de imagens (máx. 20)
+//   - Preview em tela cheia ao tocar na imagem
+//   - Suporte a editor_metadata para personalização
 // =============================================================================
+
+class _ImageItem {
+  final String url;
+  String caption;
+  _ImageItem({required this.url, this.caption = ''});
+}
 
 class CreateImagePostScreen extends ConsumerStatefulWidget {
   final String communityId;
@@ -25,27 +40,58 @@ class CreateImagePostScreen extends ConsumerStatefulWidget {
 class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
   final _titleController = TextEditingController();
   final _captionController = TextEditingController();
-  final List<String> _mediaUrls = [];
+  final _tagController = TextEditingController();
+  final List<_ImageItem> _images = [];
+  final List<String> _tags = [];
   bool _isSubmitting = false;
   bool _isUploading = false;
+  bool _isNsfw = false;
+  bool _isSpoiler = false;
   String _visibility = 'public';
+
+  static const int _maxImages = 20;
 
   @override
   void dispose() {
     _titleController.dispose();
     _captionController.dispose();
+    _tagController.dispose();
     super.dispose();
+  }
+
+  void _addTag() {
+    final tag = _tagController.text.trim();
+    if (tag.isEmpty || _tags.length >= 10 || _tags.contains(tag)) return;
+    setState(() {
+      _tags.add(tag);
+      _tagController.clear();
+    });
   }
 
   Future<void> _pickImages() async {
     final s = getStrings();
+    if (_images.length >= _maxImages) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Máximo de $_maxImages imagens atingido'),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     final picker = ImagePicker();
-    final images = await picker.pickMultiImage();
-    if (images.isEmpty) return;
+    final selected = await picker.pickMultiImage();
+    if (selected.isEmpty || !mounted) return;
+
+    final remaining = _maxImages - _images.length;
+    final toUpload = selected.take(remaining).toList();
+
     setState(() => _isUploading = true);
     try {
       final userId = SupabaseService.currentUserId ?? 'unknown';
-      for (final image in images) {
+      for (final image in toUpload) {
         final rawBytes = await image.readAsBytes();
         final bytes = await MediaUtils.compressImage(rawBytes);
         final path =
@@ -55,14 +101,15 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
             .uploadBinary(path, bytes);
         final url =
             SupabaseService.storage.from('post_media').getPublicUrl(path);
-        if (mounted) setState(() => _mediaUrls.add(url));
+        if (mounted) setState(() => _images.add(_ImageItem(url: url)));
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(
+          SnackBar(
             content: Text(s.errorUploadTryAgain),
             backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -71,58 +118,190 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
     }
   }
 
+  void _removeImage(int index) {
+    setState(() => _images.removeAt(index));
+  }
+
+  void _reorderImages(int oldIndex, int newIndex) {
+    setState(() {
+      if (newIndex > oldIndex) newIndex -= 1;
+      final item = _images.removeAt(oldIndex);
+      _images.insert(newIndex, item);
+    });
+  }
+
+  void _showImagePreview(int index) {
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(16),
+        child: Stack(
+          children: [
+            Center(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(_images[index].url, fit: BoxFit.contain),
+              ),
+            ),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.6),
+                    shape: BoxShape.circle,
+                  ),
+                  child:
+                      const Icon(Icons.close_rounded, color: Colors.white, size: 20),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showCaptionDialog(int index) {
+    final controller = TextEditingController(text: _images[index].caption);
+    final r = context.r;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: context.surfaceColor,
+        title: Text('Legenda da imagem ${index + 1}',
+            style: TextStyle(color: context.textPrimary, fontSize: r.fs(16))),
+        content: TextField(
+          controller: controller,
+          maxLength: 200,
+          maxLines: 3,
+          style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+          decoration: InputDecoration(
+            hintText: 'Descreva esta imagem...',
+            hintStyle:
+                TextStyle(color: context.textSecondary, fontSize: r.fs(14)),
+            filled: true,
+            fillColor: context.cardBg,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(r.s(10)),
+              borderSide: BorderSide.none,
+            ),
+            counterText: '',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancelar',
+                style: TextStyle(color: context.textSecondary)),
+          ),
+          TextButton(
+            onPressed: () {
+              setState(
+                  () => _images[index].caption = controller.text.trim());
+              Navigator.pop(ctx);
+            },
+            child: Text('Salvar',
+                style: TextStyle(color: AppTheme.primaryColor)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _submit() async {
     final s = getStrings();
-    if (_mediaUrls.isEmpty) {
+    if (_images.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(
+        SnackBar(
           content: Text(s.addAtLeastOneImage),
           backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
         ),
       );
       return;
     }
+
     setState(() => _isSubmitting = true);
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) throw Exception(s.notAuthenticated);
 
-      final result = await SupabaseService.table('posts')
-          .insert({
-            'community_id': widget.communityId,
-            'author_id': userId,
-            'type': 'image',
-            'title': _titleController.text.trim().isNotEmpty
-                ? _titleController.text.trim()
-                : null,
-            'content': _captionController.text.trim(),
-            'media_list':
-                _mediaUrls.map((url) => {'url': url, 'type': 'image'}).toList(),
-            'cover_image_url': _mediaUrls.first,
-            'visibility': _visibility,
-            'comments_blocked': false,
-          })
-          .select()
-          .single();
+      final mediaUrls = _images.map((img) => img.url).toList();
+      final mediaList = _images
+          .map((img) => {
+                'url': img.url,
+                'type': 'image',
+                if (img.caption.isNotEmpty) 'caption': img.caption,
+              })
+          .toList();
 
+      final editorMetadata = <String, dynamic>{
+        'editor_type': 'image',
+        'tags': _tags,
+        'is_nsfw': _isNsfw,
+        'is_spoiler': _isSpoiler,
+        'image_count': _images.length,
+      };
+
+      // Tentar RPC primeiro
       try {
-        await SupabaseService.rpc('add_reputation', params: {
-          'p_user_id': userId,
+        await SupabaseService.rpc('create_post_with_reputation', params: {
           'p_community_id': widget.communityId,
-          'p_action_type': 'post_create',
-          'p_raw_amount': 15,
-          'p_reference_id': result['id'],
+          'p_title': _titleController.text.trim().isNotEmpty
+              ? _titleController.text.trim()
+              : null,
+          'p_content': _captionController.text.trim(),
+          'p_type': 'image',
+          'p_visibility': _visibility,
+          'p_media_urls': mediaUrls,
+          'p_cover_image_url': mediaUrls.first,
+          'p_editor_type': 'image',
+          'p_editor_metadata': editorMetadata,
         });
-      } catch (e) {
-        debugPrint('[create_image_post_screen.dart] $e');
+      } catch (_) {
+        // Fallback: insert direto
+        final result = await SupabaseService.table('posts')
+            .insert({
+              'community_id': widget.communityId,
+              'author_id': userId,
+              'type': 'image',
+              'title': _titleController.text.trim().isNotEmpty
+                  ? _titleController.text.trim()
+                  : null,
+              'content': _captionController.text.trim(),
+              'media_list': mediaList,
+              'cover_image_url': mediaUrls.first,
+              'visibility': _visibility,
+              'comments_blocked': false,
+              'editor_type': 'image',
+              'editor_metadata': editorMetadata,
+            })
+            .select()
+            .single();
+
+        try {
+          await SupabaseService.rpc('add_reputation', params: {
+            'p_user_id': userId,
+            'p_community_id': widget.communityId,
+            'p_action_type': 'post_create',
+            'p_raw_amount': 15,
+            'p_reference_id': result['id'],
+          });
+        } catch (_) {}
       }
 
       if (mounted) {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(
+          SnackBar(
             content: Text(s.postPublishedSuccess),
             backgroundColor: AppTheme.successColor,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -133,6 +312,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
           SnackBar(
             content: Text(s.errorPublishing2),
             backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -141,7 +321,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -212,9 +392,38 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Galeria de imagens
+            // Contador de imagens
+            Row(
+              children: [
+                Icon(Icons.photo_library_rounded,
+                    color: AppTheme.primaryColor, size: r.s(20)),
+                SizedBox(width: r.s(8)),
+                Text(
+                  '${_images.length}/$_maxImages imagens',
+                  style: TextStyle(
+                    color: context.textSecondary,
+                    fontSize: r.fs(13),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                if (_images.length > 1)
+                  Text(
+                    'Segure para reordenar',
+                    style: TextStyle(
+                      color: context.textSecondary.withValues(alpha: 0.6),
+                      fontSize: r.fs(11),
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+              ],
+            ),
+            SizedBox(height: r.s(12)),
+
+            // Galeria de imagens com reordenação
             _buildImageGrid(r),
             SizedBox(height: r.s(20)),
+
             // Título (opcional)
             TextField(
               controller: _titleController,
@@ -234,7 +443,8 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
             ),
             Divider(color: context.dividerClr),
             SizedBox(height: r.s(8)),
-            // Legenda
+
+            // Legenda geral
             TextField(
               controller: _captionController,
               maxLength: 500,
@@ -250,6 +460,34 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
                 counterText: '',
               ),
             ),
+            SizedBox(height: r.s(16)),
+
+            // Tags
+            _buildTagsSection(r),
+            SizedBox(height: r.s(16)),
+
+            // Toggles NSFW / Spoiler
+            Divider(color: context.dividerClr),
+            SizedBox(height: r.s(8)),
+            _buildToggleRow(
+              icon: Icons.warning_amber_rounded,
+              label: 'Conteúdo NSFW',
+              subtitle: 'Marcar como conteúdo adulto',
+              value: _isNsfw,
+              onChanged: (v) => setState(() => _isNsfw = v),
+              color: AppTheme.errorColor,
+              r: r,
+            ),
+            _buildToggleRow(
+              icon: Icons.visibility_off_rounded,
+              label: 'Spoiler',
+              subtitle: 'Esconder imagens até o usuário tocar',
+              value: _isSpoiler,
+              onChanged: (v) => setState(() => _isSpoiler = v),
+              color: AppTheme.accentColor,
+              r: r,
+            ),
+
             SizedBox(height: r.s(80)),
           ],
         ),
@@ -258,101 +496,298 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
   }
 
   Widget _buildImageGrid(Responsive r) {
+    if (_images.isEmpty) {
+      return GestureDetector(
+        onTap: _isUploading ? null : _pickImages,
+        child: Container(
+          height: r.s(200),
+          decoration: BoxDecoration(
+            color: context.cardBg,
+            borderRadius: BorderRadius.circular(r.s(16)),
+            border:
+                Border.all(color: context.dividerClr.withValues(alpha: 0.4)),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (_isUploading)
+                  CircularProgressIndicator(
+                      color: AppTheme.primaryColor, strokeWidth: 2)
+                else ...[
+                  Icon(Icons.add_photo_alternate_rounded,
+                      color: AppTheme.primaryColor, size: r.s(48)),
+                  SizedBox(height: r.s(8)),
+                  Text(
+                    'Toque para adicionar imagens',
+                    style: TextStyle(
+                        color: context.textSecondary, fontSize: r.fs(14)),
+                  ),
+                  SizedBox(height: r.s(4)),
+                  Text(
+                    'Até $_maxImages imagens',
+                    style: TextStyle(
+                        color: context.textSecondary.withValues(alpha: 0.6),
+                        fontSize: r.fs(12)),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (_mediaUrls.isEmpty)
-          GestureDetector(
-            onTap: _isUploading ? null : _pickImages,
-            child: Container(
-              height: r.s(200),
-              decoration: BoxDecoration(
-                color: context.cardBg,
-                borderRadius: BorderRadius.circular(r.s(16)),
-                border: Border.all(
-                    color: context.dividerClr.withValues(alpha: 0.4)),
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
+        ReorderableListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          buildDefaultDragHandles: false,
+          onReorder: _reorderImages,
+          itemCount: _images.length,
+          itemBuilder: (ctx, index) {
+            final img = _images[index];
+            return ReorderableDragStartListener(
+              key: ValueKey(img.url),
+              index: index,
+              child: Container(
+                margin: EdgeInsets.only(bottom: r.s(8)),
+                decoration: BoxDecoration(
+                  color: context.cardBg,
+                  borderRadius: BorderRadius.circular(r.s(12)),
+                  border: Border.all(
+                      color: context.dividerClr.withValues(alpha: 0.3)),
+                ),
+                child: Row(
                   children: [
-                    if (_isUploading)
-                      CircularProgressIndicator(color: AppTheme.primaryColor)
-                    else ...[
-                      Icon(Icons.add_photo_alternate_rounded,
-                          color: AppTheme.primaryColor, size: r.s(48)),
-                      SizedBox(height: r.s(8)),
-                      Text(
-                        'Toque para adicionar imagens',
-                        style: TextStyle(
-                            color: context.textSecondary, fontSize: r.fs(14)),
+                    // Thumbnail
+                    GestureDetector(
+                      onTap: () => _showImagePreview(index),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.horizontal(
+                            left: Radius.circular(r.s(12))),
+                        child: Image.network(
+                          img.url,
+                          width: r.s(80),
+                          height: r.s(80),
+                          fit: BoxFit.cover,
+                        ),
                       ),
-                    ],
+                    ),
+                    SizedBox(width: r.s(12)),
+                    // Info
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Imagem ${index + 1}',
+                            style: TextStyle(
+                              color: context.textPrimary,
+                              fontSize: r.fs(13),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          if (img.caption.isNotEmpty) ...[
+                            SizedBox(height: r.s(2)),
+                            Text(
+                              img.caption,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: context.textSecondary,
+                                fontSize: r.fs(11),
+                              ),
+                            ),
+                          ],
+                          SizedBox(height: r.s(4)),
+                          GestureDetector(
+                            onTap: () => _showCaptionDialog(index),
+                            child: Text(
+                              img.caption.isEmpty
+                                  ? 'Adicionar legenda'
+                                  : 'Editar legenda',
+                              style: TextStyle(
+                                color: AppTheme.accentColor,
+                                fontSize: r.fs(11),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Actions
+                    IconButton(
+                      icon: Icon(Icons.close_rounded,
+                          color: AppTheme.errorColor, size: r.s(18)),
+                      onPressed: () => _removeImage(index),
+                    ),
+                    Icon(Icons.drag_handle_rounded,
+                        color: context.textSecondary, size: r.s(20)),
+                    SizedBox(width: r.s(8)),
                   ],
                 ),
               ),
-            ),
-          )
-        else ...[
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              crossAxisSpacing: r.s(4),
-              mainAxisSpacing: r.s(4),
-            ),
-            itemCount: _mediaUrls.length + 1,
-            itemBuilder: (ctx, index) {
-              if (index == _mediaUrls.length) {
-                // Botão adicionar mais
-                return GestureDetector(
-                  onTap: _isUploading ? null : _pickImages,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: context.cardBg,
-                      borderRadius: BorderRadius.circular(r.s(8)),
-                      border: Border.all(
-                          color: context.dividerClr.withValues(alpha: 0.4)),
-                    ),
-                    child: _isUploading
-                        ? Center(
-                            child: CircularProgressIndicator(
-                                color: AppTheme.primaryColor, strokeWidth: 2))
-                        : Icon(Icons.add_rounded,
-                            color: AppTheme.primaryColor, size: r.s(28)),
-                  ),
-                );
-              }
-              return Stack(
-                fit: StackFit.expand,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(r.s(8)),
-                    child: Image.network(_mediaUrls[index], fit: BoxFit.cover),
-                  ),
-                  Positioned(
-                    top: r.s(4),
-                    right: r.s(4),
-                    child: GestureDetector(
-                      onTap: () => setState(() => _mediaUrls.removeAt(index)),
-                      child: Container(
-                        padding: EdgeInsets.all(r.s(2)),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.6),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(Icons.close_rounded,
-                            color: Colors.white, size: r.s(14)),
+            );
+          },
+        ),
+        // Botão adicionar mais
+        if (_images.length < _maxImages)
+          GestureDetector(
+            onTap: _isUploading ? null : _pickImages,
+            child: Container(
+              height: r.s(56),
+              decoration: BoxDecoration(
+                color: context.cardBg,
+                borderRadius: BorderRadius.circular(r.s(12)),
+                border: Border.all(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.3)),
+              ),
+              child: Center(
+                child: _isUploading
+                    ? CircularProgressIndicator(
+                        color: AppTheme.primaryColor, strokeWidth: 2)
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.add_rounded,
+                              color: AppTheme.primaryColor, size: r.s(20)),
+                          SizedBox(width: r.s(8)),
+                          Text(
+                            'Adicionar mais imagens',
+                            style: TextStyle(
+                              color: AppTheme.primaryColor,
+                              fontSize: r.fs(14),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildTagsSection(Responsive r) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (_tags.isNotEmpty) ...[
+          Wrap(
+            spacing: r.s(6),
+            runSpacing: r.s(4),
+            children: _tags
+                .map((tag) => Container(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: r.s(10), vertical: r.s(4)),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(r.s(12)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('#$tag',
+                              style: TextStyle(
+                                  color: AppTheme.accentColor,
+                                  fontSize: r.fs(12),
+                                  fontWeight: FontWeight.w600)),
+                          SizedBox(width: r.s(4)),
+                          GestureDetector(
+                            onTap: () => setState(() => _tags.remove(tag)),
+                            child: Icon(Icons.close_rounded,
+                                color: AppTheme.accentColor, size: r.s(14)),
+                          ),
+                        ],
+                      ),
+                    ))
+                .toList(),
+          ),
+          SizedBox(height: r.s(8)),
+        ],
+        if (_tags.length < 10)
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _tagController,
+                  style: TextStyle(
+                      color: context.textPrimary, fontSize: r.fs(13)),
+                  decoration: InputDecoration(
+                    hintText: 'Adicionar tag...',
+                    hintStyle: TextStyle(
+                        color: context.textSecondary, fontSize: r.fs(13)),
+                    border: InputBorder.none,
+                    isDense: true,
+                    prefixIcon: Icon(Icons.tag_rounded,
+                        color: context.textSecondary, size: r.s(16)),
                   ),
-                ],
-              );
-            },
+                  onSubmitted: (_) => _addTag(),
+                ),
+              ),
+              GestureDetector(
+                onTap: _addTag,
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: r.s(12), vertical: r.s(6)),
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(r.s(8)),
+                  ),
+                  child: Text('Adicionar',
+                      style: TextStyle(
+                          color: AppTheme.accentColor,
+                          fontSize: r.fs(12),
+                          fontWeight: FontWeight.w600)),
+                ),
+              ),
+            ],
+          ),
+      ],
+    );
+  }
+
+  Widget _buildToggleRow({
+    required IconData icon,
+    required String label,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+    required Color color,
+    required Responsive r,
+  }) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: r.s(4)),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: r.s(20)),
+          SizedBox(width: r.s(12)),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label,
+                    style: TextStyle(
+                        color: context.textPrimary,
+                        fontSize: r.fs(13),
+                        fontWeight: FontWeight.w600)),
+                Text(subtitle,
+                    style: TextStyle(
+                        color: context.textSecondary, fontSize: r.fs(11))),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeColor: color,
           ),
         ],
-      ],
+      ),
     );
   }
 }

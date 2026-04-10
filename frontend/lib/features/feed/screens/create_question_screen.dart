@@ -1,14 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/media_utils.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // CREATE QUESTION SCREEN — Post tipo Q&A (pergunta aberta para a comunidade)
+//
+// Melhorias:
+//   - Tags de categoria para classificar a pergunta
+//   - Imagem de referência (opcional)
+//   - Toggle de pergunta anônima
+//   - Urgência da pergunta (normal, urgente)
+//   - Suporte a editor_metadata
 // =============================================================================
 
 class CreateQuestionScreen extends ConsumerStatefulWidget {
@@ -23,14 +32,64 @@ class CreateQuestionScreen extends ConsumerStatefulWidget {
 class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
   final _questionController = TextEditingController();
   final _contextController = TextEditingController();
+  final _tagController = TextEditingController();
+  final List<String> _tags = [];
   bool _isSubmitting = false;
+  bool _isUploadingImage = false;
+  bool _isAnonymous = false;
+  bool _isUrgent = false;
   String _visibility = 'public';
+  String? _referenceImageUrl;
 
   @override
   void dispose() {
     _questionController.dispose();
     _contextController.dispose();
+    _tagController.dispose();
     super.dispose();
+  }
+
+  void _addTag() {
+    final tag = _tagController.text.trim();
+    if (tag.isEmpty || _tags.length >= 5 || _tags.contains(tag)) return;
+    setState(() {
+      _tags.add(tag);
+      _tagController.clear();
+    });
+  }
+
+  Future<void> _pickReferenceImage() async {
+    final s = getStrings();
+    final picker = ImagePicker();
+    final image = await picker.pickImage(source: ImageSource.gallery);
+    if (image == null || !mounted) return;
+
+    setState(() => _isUploadingImage = true);
+    try {
+      final userId = SupabaseService.currentUserId ?? 'unknown';
+      final rawBytes = await image.readAsBytes();
+      final bytes = await MediaUtils.compressImage(rawBytes);
+      final path =
+          'posts/$userId/${DateTime.now().millisecondsSinceEpoch}_ref_${image.name}';
+      await SupabaseService.storage
+          .from('post_media')
+          .uploadBinary(path, bytes);
+      final url =
+          SupabaseService.storage.from('post_media').getPublicUrl(path);
+      if (mounted) setState(() => _referenceImageUrl = url);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(s.errorUploadTryAgain),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUploadingImage = false);
+    }
   }
 
   Future<void> _submit() async {
@@ -38,9 +97,10 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
     final question = _questionController.text.trim();
     if (question.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(
+        SnackBar(
           content: Text(s.questionRequired),
           backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
         ),
       );
       return;
@@ -51,38 +111,70 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
       final userId = SupabaseService.currentUserId;
       if (userId == null) throw Exception(s.notAuthenticated);
 
-      final result = await SupabaseService.table('posts')
-          .insert({
-            'community_id': widget.communityId,
-            'author_id': userId,
-            'type': 'qa',
-            'title': question,
-            'content': _contextController.text.trim(),
-            'media_list': [],
-            'visibility': _visibility,
-            'comments_blocked': false,
-          })
-          .select()
-          .single();
+      final editorMetadata = <String, dynamic>{
+        'editor_type': 'qa',
+        'tags': _tags,
+        'is_anonymous': _isAnonymous,
+        'is_urgent': _isUrgent,
+      };
 
+      final mediaUrls = <String>[];
+      if (_referenceImageUrl != null) mediaUrls.add(_referenceImageUrl!);
+
+      // Tentar RPC primeiro
       try {
-        await SupabaseService.rpc('add_reputation', params: {
-          'p_user_id': userId,
+        await SupabaseService.rpc('create_post_with_reputation', params: {
           'p_community_id': widget.communityId,
-          'p_action_type': 'post_create',
-          'p_raw_amount': 15,
-          'p_reference_id': result['id'],
+          'p_title': question,
+          'p_content': _contextController.text.trim(),
+          'p_type': 'qa',
+          'p_visibility': _visibility,
+          'p_media_urls': mediaUrls,
+          'p_cover_image_url': _referenceImageUrl,
+          'p_editor_type': 'qa',
+          'p_editor_metadata': editorMetadata,
         });
-      } catch (e) {
-        debugPrint('[create_question_screen.dart] $e');
+      } catch (_) {
+        // Fallback: insert direto
+        final result = await SupabaseService.table('posts')
+            .insert({
+              'community_id': widget.communityId,
+              'author_id': userId,
+              'type': 'qa',
+              'title': question,
+              'content': _contextController.text.trim(),
+              'media_list': _referenceImageUrl != null
+                  ? [
+                      {'url': _referenceImageUrl!, 'type': 'image'}
+                    ]
+                  : [],
+              'cover_image_url': _referenceImageUrl,
+              'visibility': _visibility,
+              'comments_blocked': false,
+              'editor_type': 'qa',
+              'editor_metadata': editorMetadata,
+            })
+            .select()
+            .single();
+
+        try {
+          await SupabaseService.rpc('add_reputation', params: {
+            'p_user_id': userId,
+            'p_community_id': widget.communityId,
+            'p_action_type': 'post_create',
+            'p_raw_amount': 15,
+            'p_reference_id': result['id'],
+          });
+        } catch (_) {}
       }
 
       if (mounted) {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(
+          SnackBar(
             content: Text(s.questionPublishedSuccess),
             backgroundColor: AppTheme.successColor,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -93,6 +185,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
           SnackBar(
             content: Text(s.errorPublishing2),
             backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -101,8 +194,10 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
+    final accentOrange = const Color(0xFFEA580C);
+
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
@@ -178,22 +273,23 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
                 width: r.s(64),
                 height: r.s(64),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEA580C).withValues(alpha: 0.15),
+                  color: accentOrange.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(Icons.help_rounded,
-                    color: const Color(0xFFEA580C), size: r.s(32)),
+                    color: accentOrange, size: r.s(32)),
               ),
             ),
             SizedBox(height: r.s(8)),
             Center(
               child: Text(
                 s.askCommunity,
-                style:
-                    TextStyle(color: context.textSecondary, fontSize: r.fs(13)),
+                style: TextStyle(
+                    color: context.textSecondary, fontSize: r.fs(13)),
               ),
             ),
             SizedBox(height: r.s(24)),
+
             // Pergunta
             TextField(
               controller: _questionController,
@@ -216,6 +312,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
               ),
             ),
             Divider(color: context.dividerClr, height: r.s(24)),
+
             // Contexto adicional
             TextField(
               controller: _contextController,
@@ -223,37 +320,87 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
               maxLines: 8,
               minLines: 3,
               textCapitalization: TextCapitalization.sentences,
-              style: TextStyle(color: context.textPrimary, fontSize: r.fs(15)),
+              style:
+                  TextStyle(color: context.textPrimary, fontSize: r.fs(15)),
               decoration: InputDecoration(
                 hintText: s.addContextHint,
-                hintStyle:
-                    TextStyle(color: context.textSecondary, fontSize: r.fs(15)),
+                hintStyle: TextStyle(
+                    color: context.textSecondary, fontSize: r.fs(15)),
                 border: InputBorder.none,
                 counterText: '',
               ),
             ),
             SizedBox(height: r.s(16)),
+
+            // Imagem de referência
+            _buildReferenceImageSection(r, accentOrange),
+            SizedBox(height: r.s(16)),
+
+            // Tags de categoria
+            Divider(color: context.dividerClr),
+            SizedBox(height: r.s(12)),
+            Text(
+              'Categorias',
+              style: TextStyle(
+                  color: context.textPrimary,
+                  fontSize: r.fs(13),
+                  fontWeight: FontWeight.w600),
+            ),
+            SizedBox(height: r.s(4)),
+            Text(
+              'Adicione tags para classificar sua pergunta',
+              style: TextStyle(
+                  color: context.textSecondary, fontSize: r.fs(11)),
+            ),
+            SizedBox(height: r.s(8)),
+            _buildTagsSection(r),
+            SizedBox(height: r.s(16)),
+
+            // Toggles
+            Divider(color: context.dividerClr),
+            SizedBox(height: r.s(8)),
+            _buildToggleRow(
+              icon: Icons.priority_high_rounded,
+              label: 'Pergunta urgente',
+              subtitle: 'Destacar como urgente para a comunidade',
+              value: _isUrgent,
+              onChanged: (v) => setState(() => _isUrgent = v),
+              color: AppTheme.errorColor,
+              r: r,
+            ),
+            _buildToggleRow(
+              icon: Icons.person_off_rounded,
+              label: 'Perguntar anonimamente',
+              subtitle: 'Seu nome não será exibido',
+              value: _isAnonymous,
+              onChanged: (v) => setState(() => _isAnonymous = v),
+              color: context.textSecondary,
+              r: r,
+            ),
+            SizedBox(height: r.s(16)),
+
             // Dica
             Container(
               padding: EdgeInsets.all(r.s(12)),
               decoration: BoxDecoration(
-                color: const Color(0xFFEA580C).withValues(alpha: 0.08),
+                color: accentOrange.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(r.s(12)),
                 border: Border.all(
-                    color: const Color(0xFFEA580C).withValues(alpha: 0.2)),
+                    color: accentOrange.withValues(alpha: 0.2)),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(Icons.lightbulb_outline_rounded,
-                      color: const Color(0xFFEA580C), size: r.s(16)),
+                      color: accentOrange, size: r.s(16)),
                   SizedBox(width: r.s(8)),
                   Expanded(
                     child: Text(
                       'Perguntas claras e específicas recebem mais respostas. '
                       'Inclua detalhes relevantes no contexto.',
                       style: TextStyle(
-                          color: context.textPrimary.withValues(alpha: 0.7),
+                          color:
+                              context.textPrimary.withValues(alpha: 0.7),
                           fontSize: r.fs(12),
                           height: 1.4),
                     ),
@@ -264,6 +411,224 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
             SizedBox(height: r.s(80)),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildReferenceImageSection(Responsive r, Color accent) {
+    if (_referenceImageUrl != null) {
+      return Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(r.s(12)),
+            child: Image.network(
+              _referenceImageUrl!,
+              width: double.infinity,
+              height: r.s(160),
+              fit: BoxFit.cover,
+            ),
+          ),
+          Positioned(
+            top: r.s(8),
+            right: r.s(8),
+            child: Row(
+              children: [
+                _circleBtn(Icons.camera_alt_rounded, _pickReferenceImage, r),
+                SizedBox(width: r.s(8)),
+                _circleBtn(Icons.close_rounded,
+                    () => setState(() => _referenceImageUrl = null), r),
+              ],
+            ),
+          ),
+          Positioned(
+            bottom: r.s(8),
+            left: r.s(8),
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                  horizontal: r.s(8), vertical: r.s(4)),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.6),
+                borderRadius: BorderRadius.circular(r.s(6)),
+              ),
+              child: Text(
+                'Imagem de referência',
+                style: TextStyle(
+                    color: Colors.white, fontSize: r.fs(10)),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return GestureDetector(
+      onTap: _isUploadingImage ? null : _pickReferenceImage,
+      child: Container(
+        height: r.s(64),
+        decoration: BoxDecoration(
+          color: context.cardBg,
+          borderRadius: BorderRadius.circular(r.s(12)),
+          border: Border.all(
+              color: context.dividerClr.withValues(alpha: 0.4)),
+        ),
+        child: Center(
+          child: _isUploadingImage
+              ? CircularProgressIndicator(
+                  color: accent, strokeWidth: 2)
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.add_photo_alternate_rounded,
+                        color: context.textSecondary, size: r.s(20)),
+                    SizedBox(width: r.s(8)),
+                    Text(
+                      'Adicionar imagem de referência',
+                      style: TextStyle(
+                          color: context.textSecondary,
+                          fontSize: r.fs(13)),
+                    ),
+                  ],
+                ),
+        ),
+      ),
+    );
+  }
+
+  Widget _circleBtn(IconData icon, VoidCallback onTap, Responsive r) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(r.s(6)),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.6),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: Colors.white, size: r.s(16)),
+      ),
+    );
+  }
+
+  Widget _buildTagsSection(Responsive r) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (_tags.isNotEmpty) ...[
+          Wrap(
+            spacing: r.s(6),
+            runSpacing: r.s(4),
+            children: _tags
+                .map((tag) => Container(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: r.s(10), vertical: r.s(4)),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentColor
+                            .withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(r.s(12)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('#$tag',
+                              style: TextStyle(
+                                  color: AppTheme.accentColor,
+                                  fontSize: r.fs(12),
+                                  fontWeight: FontWeight.w600)),
+                          SizedBox(width: r.s(4)),
+                          GestureDetector(
+                            onTap: () =>
+                                setState(() => _tags.remove(tag)),
+                            child: Icon(Icons.close_rounded,
+                                color: AppTheme.accentColor,
+                                size: r.s(14)),
+                          ),
+                        ],
+                      ),
+                    ))
+                .toList(),
+          ),
+          SizedBox(height: r.s(8)),
+        ],
+        if (_tags.length < 5)
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _tagController,
+                  style: TextStyle(
+                      color: context.textPrimary, fontSize: r.fs(13)),
+                  decoration: InputDecoration(
+                    hintText: 'Ex: ajuda, dúvida, tutorial...',
+                    hintStyle: TextStyle(
+                        color: context.textSecondary,
+                        fontSize: r.fs(13)),
+                    border: InputBorder.none,
+                    isDense: true,
+                    prefixIcon: Icon(Icons.tag_rounded,
+                        color: context.textSecondary, size: r.s(16)),
+                  ),
+                  onSubmitted: (_) => _addTag(),
+                ),
+              ),
+              GestureDetector(
+                onTap: _addTag,
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: r.s(12), vertical: r.s(6)),
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentColor
+                        .withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(r.s(8)),
+                  ),
+                  child: Text('Adicionar',
+                      style: TextStyle(
+                          color: AppTheme.accentColor,
+                          fontSize: r.fs(12),
+                          fontWeight: FontWeight.w600)),
+                ),
+              ),
+            ],
+          ),
+      ],
+    );
+  }
+
+  Widget _buildToggleRow({
+    required IconData icon,
+    required String label,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+    required Color color,
+    required Responsive r,
+  }) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: r.s(4)),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: r.s(20)),
+          SizedBox(width: r.s(12)),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label,
+                    style: TextStyle(
+                        color: context.textPrimary,
+                        fontSize: r.fs(13),
+                        fontWeight: FontWeight.w600)),
+                Text(subtitle,
+                    style: TextStyle(
+                        color: context.textSecondary,
+                        fontSize: r.fs(11))),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeColor: color,
+          ),
+        ],
       ),
     );
   }

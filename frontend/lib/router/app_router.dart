@@ -26,6 +26,7 @@ import '../features/feed/screens/create_link_post_screen.dart';
 import '../features/feed/screens/create_poll_screen.dart';
 import '../features/feed/screens/create_quiz_screen.dart';
 import '../features/feed/screens/create_question_screen.dart';
+import '../features/wiki/screens/create_wiki_screen.dart';
 import '../features/feed/screens/global_feed_screen.dart';
 import '../features/feed/screens/post_detail_screen.dart';
 import '../features/gamification/screens/check_in_screen.dart';
@@ -67,7 +68,6 @@ import '../features/communities/screens/community_search_screen.dart';
 import '../features/communities/screens/community_general_links_screen.dart';
 import '../features/moderation/screens/edit_guidelines_screen.dart';
 import '../features/moderation/screens/admin_reports_screen.dart';
-import '../features/live/screens/screening_room_screen.dart';
 import '../features/stories/screens/create_story_screen.dart';
 import '../features/feed/screens/drafts_screen.dart';
 import '../features/profile/screens/edit_community_profile_screen.dart';
@@ -264,53 +264,47 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-      // Rotas de criação dedicadas — todas redirecionam ao editor unificado
+      // Rotas de criação dedicadas — cada tipo usa sua tela especializada
       GoRoute(
         path: '/community/:communityId/create-blog',
         name: 'create-blog',
-        builder: (context, state) => CreatePostScreen(
+        builder: (context, state) => CreateBlogScreen(
           communityId: state.pathParameters['communityId']!,
-          initialType: 'blog',
         ),
       ),
       GoRoute(
         path: '/community/:communityId/create-image',
         name: 'create-image',
-        builder: (context, state) => CreatePostScreen(
+        builder: (context, state) => CreateImagePostScreen(
           communityId: state.pathParameters['communityId']!,
-          initialType: 'image',
         ),
       ),
       GoRoute(
         path: '/community/:communityId/create-link',
         name: 'create-link',
-        builder: (context, state) => CreatePostScreen(
+        builder: (context, state) => CreateLinkPostScreen(
           communityId: state.pathParameters['communityId']!,
-          initialType: 'link',
         ),
       ),
       GoRoute(
         path: '/community/:communityId/create-poll',
         name: 'create-poll',
-        builder: (context, state) => CreatePostScreen(
+        builder: (context, state) => CreatePollScreen(
           communityId: state.pathParameters['communityId']!,
-          initialType: 'poll',
         ),
       ),
       GoRoute(
         path: '/community/:communityId/create-quiz',
         name: 'create-quiz',
-        builder: (context, state) => CreatePostScreen(
+        builder: (context, state) => CreateQuizScreen(
           communityId: state.pathParameters['communityId']!,
-          initialType: 'quiz',
         ),
       ),
       GoRoute(
         path: '/community/:communityId/create-question',
         name: 'create-question',
-        builder: (context, state) => CreatePostScreen(
+        builder: (context, state) => CreateQuestionScreen(
           communityId: state.pathParameters['communityId']!,
-          initialType: 'qa',
         ),
       ),
       // ====================================================================
@@ -399,9 +393,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/community/:communityId/wiki/create',
         name: 'create-wiki',
-        builder: (context, state) => CreatePostScreen(
+        builder: (context, state) => CreateWikiScreen(
           communityId: state.pathParameters['communityId']!,
-          initialType: 'wiki',
         ),
       ),
       GoRoute(
@@ -694,10 +687,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'create-story',
         builder: (context, state) {
           final communityId = state.pathParameters['id']!;
-          return CreatePostScreen(
-            communityId: communityId,
-            initialType: 'story',
-          );
+          return CreateStoryScreen(communityId: communityId);
         },
       ),
     ],
