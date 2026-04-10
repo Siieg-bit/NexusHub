@@ -257,6 +257,136 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
     if (mounted) context.pop();
   }
 
+  String _extractErrorMessage(dynamic error) {
+    final raw = error.toString().trim();
+    if (raw.isEmpty) return 'Falha desconhecida ao publicar o blog.';
+
+    var cleaned = raw
+        .replaceFirst('Exception: ', '')
+        .replaceFirst('PostgrestException(message: ', '')
+        .replaceFirst('AuthException(message: ', '');
+
+    final detailsIndex = cleaned.indexOf(', details:');
+    if (detailsIndex != -1) {
+      cleaned = cleaned.substring(0, detailsIndex);
+    }
+
+    final codeIndex = cleaned.indexOf(', code:');
+    if (codeIndex != -1) {
+      cleaned = cleaned.substring(0, codeIndex);
+    }
+
+    cleaned = cleaned.replaceAll(RegExp(r'\)+$'), '').trim();
+    return cleaned.isEmpty ? 'Falha desconhecida ao publicar o blog.' : cleaned;
+  }
+
+  String? _extractPostId(dynamic result) {
+    if (result is String && result.isNotEmpty) return result;
+    if (result is Map<String, dynamic>) {
+      final id = result['id'] ?? result['post_id'];
+      if (id is String && id.isNotEmpty) return id;
+    }
+    return null;
+  }
+
+  Future<dynamic> _createBlogPost({
+    required String title,
+    required String content,
+    required List<Map<String, dynamic>> contentBlocks,
+    required List<String> mediaUrls,
+  }) async {
+    final params = {
+      'p_community_id': widget.communityId,
+      'p_title': title,
+      'p_content': content,
+      'p_type': 'blog',
+      'p_media_list': mediaUrls,
+      'p_cover_image_url': mediaUrls.isNotEmpty ? mediaUrls.first : null,
+      'p_visibility': _visibility,
+      'p_comments_blocked': false,
+      'p_content_blocks': contentBlocks,
+      'p_is_pinned_profile': false,
+    };
+
+    try {
+      return await SupabaseService.rpc('create_post_with_reputation', params: params);
+    } catch (rpcError) {
+      try {
+        final legacyParams = Map<String, dynamic>.from(params)
+          ..remove('p_content_blocks')
+          ..remove('p_is_pinned_profile');
+
+        final legacyResult = await SupabaseService.rpc(
+          'create_post_with_reputation',
+          params: legacyParams,
+        );
+
+        final legacyPostId = _extractPostId(legacyResult);
+        if (legacyPostId != null) {
+          try {
+            await SupabaseService.table('posts').update({
+              'content_blocks': contentBlocks,
+              'is_pinned_profile': false,
+            }).eq('id', legacyPostId);
+          } catch (_) {
+            // Banco legado sem as colunas novas: mantém a publicação concluída.
+          }
+        }
+
+        return legacyResult;
+      } catch (_) {
+        final userId = SupabaseService.currentUserId;
+        if (userId == null) {
+          throw Exception(getStrings().notAuthenticated);
+        }
+
+        try {
+          final inserted = await SupabaseService.table('posts')
+              .insert({
+                'community_id': widget.communityId,
+                'author_id': userId,
+                'type': 'blog',
+                'title': title,
+                'content': content,
+                'content_blocks': contentBlocks,
+                'media_list': mediaUrls,
+                'cover_image_url': mediaUrls.isNotEmpty ? mediaUrls.first : null,
+                'visibility': _visibility,
+                'comments_blocked': false,
+                'status': 'ok',
+                'is_pinned_profile': false,
+              })
+              .select('id')
+              .single();
+
+          return inserted['id'];
+        } catch (_) {
+          try {
+            final inserted = await SupabaseService.table('posts')
+                .insert({
+                  'community_id': widget.communityId,
+                  'author_id': userId,
+                  'type': 'blog',
+                  'title': title,
+                  'content': content,
+                  'media_list': mediaUrls,
+                  'cover_image_url': mediaUrls.isNotEmpty ? mediaUrls.first : null,
+                  'visibility': _visibility,
+                  'comments_blocked': false,
+                  'status': 'ok',
+                })
+                .select('id')
+                .single();
+
+            return inserted['id'];
+          } catch (insertError) {
+            throw Exception(_extractErrorMessage(insertError));
+          }
+        }
+      }
+    }
+  }
+
   Future<void> _submit() async {
     final s = getStrings();
     final title = _titleController.text.trim();
@@ -289,45 +419,12 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      dynamic postId;
-
-      try {
-        postId = await SupabaseService.rpc('create_post_with_reputation', params: {
-          'p_community_id': widget.communityId,
-          'p_title': title,
-          'p_content': content,
-          'p_type': 'blog',
-          'p_media_list': mediaUrls,
-          'p_cover_image_url': mediaUrls.isNotEmpty ? mediaUrls.first : null,
-          'p_visibility': _visibility,
-          'p_comments_blocked': false,
-          'p_content_blocks': contentBlocks,
-          'p_is_pinned_profile': false,
-        });
-      } catch (_) {
-        final userId = SupabaseService.currentUserId;
-        if (userId == null) throw Exception(s.notAuthenticated);
-
-        final inserted = await SupabaseService.table('posts')
-            .insert({
-              'community_id': widget.communityId,
-              'author_id': userId,
-              'type': 'blog',
-              'title': title,
-              'content': content,
-              'content_blocks': contentBlocks,
-              'media_list': mediaUrls,
-              'cover_image_url': mediaUrls.isNotEmpty ? mediaUrls.first : null,
-              'visibility': _visibility,
-              'comments_blocked': false,
-              'status': 'ok',
-              'is_pinned_profile': false,
-            })
-            .select('id')
-            .single();
-
-        postId = inserted['id'];
-      }
+      await _createBlogPost(
+        title: title,
+        content: content,
+        contentBlocks: contentBlocks,
+        mediaUrls: mediaUrls,
+      );
 
       await _deleteDraftIfNeeded();
 
@@ -340,12 +437,13 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
           behavior: SnackBarBehavior.floating,
         ),
       );
-    } catch (_) {
+    } catch (error) {
       if (!mounted) return;
       setState(() => _isSubmitting = false);
+      final detailedMessage = _extractErrorMessage(error);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(s.errorPublishing2),
+          content: Text('${s.errorPublishing2}: $detailedMessage'),
           backgroundColor: AppTheme.errorColor,
           behavior: SnackBarBehavior.floating,
         ),

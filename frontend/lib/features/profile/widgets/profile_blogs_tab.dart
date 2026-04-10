@@ -93,11 +93,12 @@ class ProfileBlogsTab extends ConsumerWidget {
   }) {
     final s = ref.watch(stringsProvider);
     final r = context.r;
+    final resolvedPinnedBlog = _resolvePinnedBlog(blogs, pinnedBlog);
     final visibleBlogs = blogs
-        .where((blog) => pinnedBlog == null || blog.id != pinnedBlog.id)
+        .where((blog) => resolvedPinnedBlog == null || blog.id != resolvedPinnedBlog.id)
         .toList();
 
-    if (blogs.isEmpty && pinnedBlog == null) {
+    if (blogs.isEmpty && resolvedPinnedBlog == null) {
       return ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.all(r.s(24)),
@@ -128,14 +129,14 @@ class ProfileBlogsTab extends ConsumerWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.fromLTRB(r.s(12), r.s(12), r.s(12), r.s(24)),
         children: [
-          if (pinnedBlog != null) ...[
+          if (resolvedPinnedBlog != null) ...[
             _SectionHeader(
               title: s.pinnedLabel,
               subtitle: 'Blog destacado no perfil',
               icon: Icons.push_pin_rounded,
             ),
             _ProfileBlogCard(
-              post: pinnedBlog,
+              post: resolvedPinnedBlog,
               isOwnProfile: isOwnProfile,
               busy: loadingPinnedState,
               actionLabel: s.unpinFromProfile,
@@ -143,7 +144,7 @@ class ProfileBlogsTab extends ConsumerWidget {
               onAction: () => _togglePinnedBlog(
                 context,
                 ref,
-                post: pinnedBlog,
+                post: resolvedPinnedBlog,
                 shouldPin: false,
               ),
             ),
@@ -190,6 +191,20 @@ class ProfileBlogsTab extends ConsumerWidget {
     );
   }
 
+  PostModel? _resolvePinnedBlog(List<PostModel> blogs, PostModel? pinnedBlog) {
+    if (pinnedBlog != null) {
+      return pinnedBlog;
+    }
+
+    for (final blog in blogs) {
+      if (blog.isPinnedProfile) {
+        return blog;
+      }
+    }
+
+    return null;
+  }
+
   Future<void> _togglePinnedBlog(
     BuildContext context,
     WidgetRef ref, {
@@ -198,13 +213,47 @@ class ProfileBlogsTab extends ConsumerWidget {
   }) async {
     final messenger = ScaffoldMessenger.of(context);
     try {
-      await SupabaseService.rpc(
-        'toggle_profile_blog_pin',
-        params: {
-          'p_post_id': post.id,
-          'p_is_pinned': shouldPin,
-        },
-      );
+      var persisted = false;
+
+      try {
+        await SupabaseService.rpc(
+          'toggle_profile_blog_pin',
+          params: {
+            'p_post_id': post.id,
+            'p_is_pinned': shouldPin,
+          },
+        );
+
+        final updatedPost = await SupabaseService.table('posts')
+            .select('id, is_pinned_profile')
+            .eq('id', post.id)
+            .maybeSingle();
+
+        persisted =
+            updatedPost != null && updatedPost['is_pinned_profile'] == shouldPin;
+      } catch (_) {
+        persisted = false;
+      }
+
+      if (!persisted) {
+        final currentUserId = SupabaseService.currentUser?.id;
+        if (currentUserId == null) {
+          throw Exception('Usuário não autenticado para atualizar a pinagem.');
+        }
+
+        if (shouldPin) {
+          await SupabaseService.table('posts')
+              .update({'is_pinned_profile': false})
+              .eq('author_id', currentUserId)
+              .eq('type', 'blog');
+        }
+
+        await SupabaseService.table('posts')
+            .update({'is_pinned_profile': shouldPin})
+            .eq('id', post.id)
+            .eq('author_id', currentUserId);
+      }
+
       ref.invalidate(userBlogsProvider(userId));
       ref.invalidate(pinnedProfileBlogProvider(userId));
       messenger.showSnackBar(
