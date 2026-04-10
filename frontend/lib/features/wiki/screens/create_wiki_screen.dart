@@ -10,6 +10,8 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/models/post_model.dart';
 import '../../../core/providers/post_provider.dart';
+import '../../../core/providers/draft_provider.dart';
+import 'dart:async';
 
 // =============================================================================
 // CREATE WIKI SCREEN — Entrada de Wiki/Enciclopédia da comunidade
@@ -63,11 +65,19 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
 
   bool get _isEditing => widget.editingPost != null;
 
+  // ── Rascunhos automáticos ──
+  String? _draftId;
+  bool _isSavingDraft = false;
+  Timer? _autoDraftTimer;
+
   @override
   void initState() {
     super.initState();
     if (_isEditing) {
       _populateFromPost(widget.editingPost!);
+    } else {
+      Future.microtask(_restoreLatestDraft);
+      _startAutoDraftTimer();
     }
   }
 
@@ -110,6 +120,168 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
         }
       }
     }
+  }
+
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // RASCUNHOS AUTOMÁTICOS
+  // ════════════════════════════════════════════════════════════════════════════
+
+  void _startAutoDraftTimer() {
+    _autoDraftTimer?.cancel();
+    _autoDraftTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => _saveDraft(silent: true),
+    );
+  }
+
+  Future<void> _restoreLatestDraft() async {
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) return;
+
+    try {
+      final result = await SupabaseService.table('post_drafts')
+          .select()
+          .eq('user_id', userId)
+          .eq('community_id', widget.communityId)
+          .eq('post_type', 'wiki')
+          .order('updated_at', ascending: false)
+          .limit(1);
+
+      if (!mounted) return;
+      final list = (result as List?) ?? const [];
+      if (list.isNotEmpty) {
+        final data = Map<String, dynamic>.from(list.first as Map);
+        setState(() {
+          _draftId = data['id'] as String?;
+          _titleController.text = (data['title'] as String?) ?? '';
+          _subtitleController.text = (data['subtitle'] as String?) ?? '';
+          _coverImageUrl = data['cover_image_url'] as String?;
+          _visibility = (data['visibility'] as String?) ?? 'public';
+          final tags = (data['tags'] as List?) ?? [];
+          _tags.addAll(tags.map((t) => t.toString()));
+          final wd = data['wiki_data'] as Map?;
+          if (wd != null) {
+            final refs = wd['references'] as List?;
+            if (refs != null) _references.addAll(refs.map((r) => r.toString()));
+            final sections = wd['sections'] as List?;
+            if (sections != null && sections.isNotEmpty) {
+              for (final s in _sections) { s.dispose(); }
+              _sections.clear();
+              for (final secData in sections) {
+                if (secData is Map) {
+                  final sec = _WikiSection();
+                  sec.titleController.text = (secData['title'] as String?) ?? '';
+                  sec.contentController.text = (secData['content'] as String?) ?? '';
+                  sec.imageUrl = secData['image_url'] as String?;
+                  _sections.add(sec);
+                }
+              }
+            }
+          }
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Rascunho restaurado.'),
+            backgroundColor: AppTheme.successColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _saveDraft({bool silent = false}) async {
+    if (_isSavingDraft || _isEditing) return;
+    if (!(_titleController.text.trim().isNotEmpty || _sections.any((s) => s.titleController.text.trim().isNotEmpty || s.contentController.text.trim().isNotEmpty))) {
+      if (!silent && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Adicione conteúdo antes de salvar.'),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
+
+    setState(() => _isSavingDraft = true);
+    try {
+      final draftsNotifier = ref.read(postDraftsProvider.notifier);
+      if (_draftId == null) {
+        final created = await draftsNotifier.createDraft(
+          communityId: widget.communityId,
+          postType: 'wiki',
+          title: _titleController.text.trim(),
+          subtitle: _subtitleController.text.trim(),
+          coverImageUrl: _coverImageUrl,
+          tags: _tags,
+          visibility: _visibility,
+          wikiData: {
+            'sections': _sections
+                .map((s) => {
+                      'title': s.titleController.text.trim(),
+                      'content': s.contentController.text.trim(),
+                      'image_url': s.imageUrl,
+                    })
+                .toList(),
+            'references': _references,
+          },
+        );
+        _draftId = created?.id;
+      } else {
+        await draftsNotifier.updateDraft(
+          _draftId!,
+          communityId: widget.communityId,
+          postType: 'wiki',
+          title: _titleController.text.trim(),
+          subtitle: _subtitleController.text.trim(),
+          coverImageUrl: _coverImageUrl,
+          tags: _tags,
+          visibility: _visibility,
+          wikiData: {
+            'sections': _sections
+                .map((s) => {
+                      'title': s.titleController.text.trim(),
+                      'content': s.contentController.text.trim(),
+                      'image_url': s.imageUrl,
+                    })
+                .toList(),
+            'references': _references,
+          },
+        );
+      }
+
+      if (!mounted || silent) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Rascunho salvo.'),
+          backgroundColor: AppTheme.successColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (_) {
+      if (!mounted || silent) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Erro ao salvar rascunho.'),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSavingDraft = false);
+    }
+  }
+
+  Future<void> _deleteDraftIfNeeded() async {
+    if (_draftId == null) return;
+    try {
+      final draftsNotifier = ref.read(postDraftsProvider.notifier);
+      await draftsNotifier.deleteDraft(_draftId!);
+    } catch (_) {}
   }
 
   @override

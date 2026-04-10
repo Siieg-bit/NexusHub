@@ -10,6 +10,8 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/models/post_model.dart';
 import '../../../core/providers/post_provider.dart';
+import '../../../core/providers/draft_provider.dart';
+import 'dart:async';
 
 // =============================================================================
 // CREATE LINK POST SCREEN — Post com URL externa
@@ -46,12 +48,20 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
 
   bool get _isEditing => widget.editingPost != null;
 
+  // ── Rascunhos automáticos ──
+  String? _draftId;
+  bool _isSavingDraft = false;
+  Timer? _autoDraftTimer;
+
   @override
   void initState() {
     super.initState();
     _urlController.addListener(_onUrlChanged);
     if (_isEditing) {
       _populateFromPost(widget.editingPost!);
+    } else {
+      Future.microtask(_restoreLatestDraft);
+      _startAutoDraftTimer();
     }
   }
 
@@ -72,6 +82,132 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
     if (post.tags.isNotEmpty) {
       _tags.addAll(post.tags);
     }
+  }
+
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // RASCUNHOS AUTOMÁTICOS
+  // ════════════════════════════════════════════════════════════════════════════
+
+  void _startAutoDraftTimer() {
+    _autoDraftTimer?.cancel();
+    _autoDraftTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => _saveDraft(silent: true),
+    );
+  }
+
+  Future<void> _restoreLatestDraft() async {
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) return;
+
+    try {
+      final result = await SupabaseService.table('post_drafts')
+          .select()
+          .eq('user_id', userId)
+          .eq('community_id', widget.communityId)
+          .eq('post_type', 'link')
+          .order('updated_at', ascending: false)
+          .limit(1);
+
+      if (!mounted) return;
+      final list = (result as List?) ?? const [];
+      if (list.isNotEmpty) {
+        final data = Map<String, dynamic>.from(list.first as Map);
+        setState(() {
+          _draftId = data['id'] as String?;
+          _titleController.text = (data['title'] as String?) ?? '';
+          _descriptionController.text = (data['content'] as String?) ?? '';
+          _urlController.text = (data['external_url'] as String?) ?? '';
+          _thumbnailUrl = data['cover_image_url'] as String?;
+          _visibility = (data['visibility'] as String?) ?? 'public';
+          final tags = (data['tags'] as List?) ?? [];
+          _tags.addAll(tags.map((t) => t.toString()));
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Rascunho restaurado.'),
+            backgroundColor: AppTheme.successColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _saveDraft({bool silent = false}) async {
+    if (_isSavingDraft || _isEditing) return;
+    if (!(_titleController.text.trim().isNotEmpty || _urlController.text.trim().isNotEmpty)) {
+      if (!silent && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Adicione conteúdo antes de salvar.'),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
+
+    setState(() => _isSavingDraft = true);
+    try {
+      final draftsNotifier = ref.read(postDraftsProvider.notifier);
+      if (_draftId == null) {
+        final created = await draftsNotifier.createDraft(
+          communityId: widget.communityId,
+          postType: 'link',
+          title: _titleController.text.trim(),
+          content: _descriptionController.text.trim(),
+          externalUrl: _urlController.text.trim(),
+          coverImageUrl: _thumbnailUrl,
+          tags: _tags,
+          visibility: _visibility,
+        );
+        _draftId = created?.id;
+      } else {
+        await draftsNotifier.updateDraft(
+          _draftId!,
+          communityId: widget.communityId,
+          postType: 'link',
+          title: _titleController.text.trim(),
+          content: _descriptionController.text.trim(),
+          externalUrl: _urlController.text.trim(),
+          coverImageUrl: _thumbnailUrl,
+          tags: _tags,
+          visibility: _visibility,
+        );
+      }
+
+      if (!mounted || silent) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Rascunho salvo.'),
+          backgroundColor: AppTheme.successColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (_) {
+      if (!mounted || silent) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Erro ao salvar rascunho.'),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSavingDraft = false);
+    }
+  }
+
+  Future<void> _deleteDraftIfNeeded() async {
+    if (_draftId == null) return;
+    try {
+      final draftsNotifier = ref.read(postDraftsProvider.notifier);
+      await draftsNotifier.deleteDraft(_draftId!);
+    } catch (_) {}
   }
 
   @override

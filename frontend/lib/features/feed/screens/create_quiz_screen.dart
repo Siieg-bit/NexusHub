@@ -10,6 +10,8 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/models/post_model.dart';
 import '../../../core/providers/post_provider.dart';
+import '../../../core/providers/draft_provider.dart';
+import 'dart:async';
 
 // =============================================================================
 // CREATE QUIZ SCREEN — Quiz interativo com perguntas e respostas corretas
@@ -78,6 +80,11 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
 
   bool get _isEditing => widget.editingPost != null;
 
+  // ── Rascunhos automáticos ──
+  String? _draftId;
+  bool _isSavingDraft = false;
+  Timer? _autoDraftTimer;
+
   static const _timerOptions = {
     0: 'Sem limite',
     10: '10s',
@@ -92,6 +99,9 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
     super.initState();
     if (_isEditing) {
       _populateFromPost(widget.editingPost!);
+    } else {
+      Future.microtask(_restoreLatestDraft);
+      _startAutoDraftTimer();
     }
   }
 
@@ -151,6 +161,196 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
         }
       }
     }
+  }
+
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // RASCUNHOS AUTOMÁTICOS
+  // ════════════════════════════════════════════════════════════════════════════
+
+  void _startAutoDraftTimer() {
+    _autoDraftTimer?.cancel();
+    _autoDraftTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => _saveDraft(silent: true),
+    );
+  }
+
+  Future<void> _restoreLatestDraft() async {
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) return;
+
+    try {
+      final result = await SupabaseService.table('post_drafts')
+          .select()
+          .eq('user_id', userId)
+          .eq('community_id', widget.communityId)
+          .eq('post_type', 'quiz')
+          .order('updated_at', ascending: false)
+          .limit(1);
+
+      if (!mounted) return;
+      final list = (result as List?) ?? const [];
+      if (list.isNotEmpty) {
+        final data = Map<String, dynamic>.from(list.first as Map);
+        setState(() {
+          _draftId = data['id'] as String?;
+          _titleController.text = (data['title'] as String?) ?? '';
+          _descriptionController.text = (data['content'] as String?) ?? '';
+          _coverImageUrl = data['cover_image_url'] as String?;
+          _visibility = (data['visibility'] as String?) ?? 'public';
+          final tags = (data['tags'] as List?) ?? [];
+          _tags.addAll(tags.map((t) => t.toString()));
+          final qd = data['quiz_data'] as Map?;
+          if (qd != null) {
+            _difficulty = (qd['difficulty'] as String?) ?? 'medium';
+            _shuffleQuestions = qd['shuffle_questions'] == true;
+            final questions = qd['questions'] as List?;
+            if (questions != null && questions.isNotEmpty) {
+              for (final q in _questions) { q.dispose(); }
+              _questions.clear();
+              for (final qData in questions) {
+                if (qData is Map) {
+                  final q = _QuizQuestion();
+                  q.questionController.text = (qData['question_text'] ?? '') as String;
+                  q.explanationController.text = (qData['explanation'] ?? '') as String;
+                  q.correctIndex = (qData['correct_option_index'] ?? 0) as int;
+                  q.imageUrl = qData['image_url'] as String?;
+                  q.timerSeconds = (qData['timer_seconds'] as num?)?.toInt() ?? 0;
+                  final options = qData['options'] as List?;
+                  if (options != null && options.isNotEmpty) {
+                    for (final o in q.options) { o.dispose(); }
+                    q.options.clear();
+                    for (final opt in options) {
+                      final o = _QuizOption();
+                      if (opt is Map) o.controller.text = (opt['text'] ?? '') as String;
+                      q.options.add(o);
+                    }
+                  }
+                  _questions.add(q);
+                }
+              }
+            }
+          }
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Rascunho restaurado.'),
+            backgroundColor: AppTheme.successColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _saveDraft({bool silent = false}) async {
+    if (_isSavingDraft || _isEditing) return;
+    if (!(_titleController.text.trim().isNotEmpty || _questions.any((q) => q.questionController.text.trim().isNotEmpty))) {
+      if (!silent && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Adicione conteúdo antes de salvar.'),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
+
+    setState(() => _isSavingDraft = true);
+    try {
+      final draftsNotifier = ref.read(postDraftsProvider.notifier);
+      if (_draftId == null) {
+        final created = await draftsNotifier.createDraft(
+          communityId: widget.communityId,
+          postType: 'quiz',
+          title: _titleController.text.trim(),
+          content: _descriptionController.text.trim(),
+          coverImageUrl: _coverImageUrl,
+          tags: _tags,
+          visibility: _visibility,
+          quizData: {
+            'questions': _questions
+                .where((q) => q.questionController.text.trim().isNotEmpty)
+                .map((q) => {
+                      'question_text': q.questionController.text.trim(),
+                      'correct_option_index': q.correctIndex,
+                      'explanation': q.explanationController.text.trim(),
+                      'image_url': q.imageUrl,
+                      'timer_seconds': q.timerSeconds,
+                      'options': q.options
+                          .where((o) => o.controller.text.trim().isNotEmpty)
+                          .map((o) => {'text': o.controller.text.trim()})
+                          .toList(),
+                    })
+                .toList(),
+            'difficulty': _difficulty,
+            'shuffle_questions': _shuffleQuestions,
+          },
+        );
+        _draftId = created?.id;
+      } else {
+        await draftsNotifier.updateDraft(
+          _draftId!,
+          communityId: widget.communityId,
+          postType: 'quiz',
+          title: _titleController.text.trim(),
+          content: _descriptionController.text.trim(),
+          coverImageUrl: _coverImageUrl,
+          tags: _tags,
+          visibility: _visibility,
+          quizData: {
+            'questions': _questions
+                .where((q) => q.questionController.text.trim().isNotEmpty)
+                .map((q) => {
+                      'question_text': q.questionController.text.trim(),
+                      'correct_option_index': q.correctIndex,
+                      'explanation': q.explanationController.text.trim(),
+                      'image_url': q.imageUrl,
+                      'timer_seconds': q.timerSeconds,
+                      'options': q.options
+                          .where((o) => o.controller.text.trim().isNotEmpty)
+                          .map((o) => {'text': o.controller.text.trim()})
+                          .toList(),
+                    })
+                .toList(),
+            'difficulty': _difficulty,
+            'shuffle_questions': _shuffleQuestions,
+          },
+        );
+      }
+
+      if (!mounted || silent) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Rascunho salvo.'),
+          backgroundColor: AppTheme.successColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (_) {
+      if (!mounted || silent) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Erro ao salvar rascunho.'),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSavingDraft = false);
+    }
+  }
+
+  Future<void> _deleteDraftIfNeeded() async {
+    if (_draftId == null) return;
+    try {
+      final draftsNotifier = ref.read(postDraftsProvider.notifier);
+      await draftsNotifier.deleteDraft(_draftId!);
+    } catch (_) {}
   }
 
   @override

@@ -9,7 +9,10 @@ import '../../../core/utils/media_utils.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/models/post_model.dart';
+import '../../../core/models/post_editor_model.dart';
 import '../../../core/providers/post_provider.dart';
+import '../../../core/providers/draft_provider.dart';
+import 'dart:async';
 
 // =============================================================================
 // CREATE POLL SCREEN — Enquete com múltiplas opções
@@ -49,6 +52,11 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
 
   bool get _isEditing => widget.editingPost != null;
 
+  // ── Rascunhos automáticos ──
+  String? _draftId;
+  bool _isSavingDraft = false;
+  Timer? _autoDraftTimer;
+
   static const _durations = {
     '1h': '1 hora',
     '6h': '6 horas',
@@ -64,6 +72,9 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
     super.initState();
     if (_isEditing) {
       _populateFromPost(widget.editingPost!);
+    } else {
+      Future.microtask(_restoreLatestDraft);
+      _startAutoDraftTimer();
     }
   }
 
@@ -95,6 +106,151 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
         }
       }
     }
+  }
+
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // RASCUNHOS AUTOMÁTICOS
+  // ════════════════════════════════════════════════════════════════════════════
+
+  void _startAutoDraftTimer() {
+    _autoDraftTimer?.cancel();
+    _autoDraftTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => _saveDraft(silent: true),
+    );
+  }
+
+  Future<void> _restoreLatestDraft() async {
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) return;
+
+    try {
+      final result = await SupabaseService.table('post_drafts')
+          .select()
+          .eq('user_id', userId)
+          .eq('community_id', widget.communityId)
+          .eq('post_type', 'poll')
+          .order('updated_at', ascending: false)
+          .limit(1);
+
+      if (!mounted) return;
+      final list = (result as List?) ?? const [];
+      if (list.isNotEmpty) {
+        final data = Map<String, dynamic>.from(list.first as Map);
+        setState(() {
+          _draftId = data['id'] as String?;
+          _titleController.text = (data['title'] as String?) ?? '';
+          _descriptionController.text = (data['content'] as String?) ?? '';
+          _coverImageUrl = data['cover_image_url'] as String?;
+          _visibility = (data['visibility'] as String?) ?? 'public';
+          final meta = data['editor_metadata'] as Map?;
+          if (meta != null) {
+            _allowMultipleChoice = meta['extra']?['allow_multiple_choice'] == true;
+            _anonymousVotes = meta['extra']?['anonymous_votes'] == true;
+            _duration = (meta['extra']?['duration'] as String?) ?? '3d';
+            final opts = meta['extra']?['options'] as List?;
+            if (opts != null && opts.isNotEmpty) {
+              for (final c in _options) { c.dispose(); }
+              _options.clear();
+              for (final opt in opts) {
+                _options.add(TextEditingController(text: opt.toString()));
+              }
+            }
+          }
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Rascunho restaurado.'),
+            backgroundColor: AppTheme.successColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _saveDraft({bool silent = false}) async {
+    if (_isSavingDraft || _isEditing) return;
+    if (!(_titleController.text.trim().isNotEmpty)) {
+      if (!silent && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Adicione conteúdo antes de salvar.'),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
+
+    setState(() => _isSavingDraft = true);
+    try {
+      final draftsNotifier = ref.read(postDraftsProvider.notifier);
+      if (_draftId == null) {
+        final created = await draftsNotifier.createDraft(
+          communityId: widget.communityId,
+          postType: 'poll',
+          title: _titleController.text.trim(),
+          content: _descriptionController.text.trim(),
+          coverImageUrl: _coverImageUrl,
+          visibility: _visibility,
+          editorMetadata: PostEditorModel(extra: {
+            'allow_multiple_choice': _allowMultipleChoice,
+            'anonymous_votes': _anonymousVotes,
+            'duration': _duration,
+            'options': _options.map((c) => c.text.trim()).where((t) => t.isNotEmpty).toList(),
+          }),
+        );
+        _draftId = created?.id;
+      } else {
+        await draftsNotifier.updateDraft(
+          _draftId!,
+          communityId: widget.communityId,
+          postType: 'poll',
+          title: _titleController.text.trim(),
+          content: _descriptionController.text.trim(),
+          coverImageUrl: _coverImageUrl,
+          visibility: _visibility,
+          editorMetadata: PostEditorModel(extra: {
+            'allow_multiple_choice': _allowMultipleChoice,
+            'anonymous_votes': _anonymousVotes,
+            'duration': _duration,
+            'options': _options.map((c) => c.text.trim()).where((t) => t.isNotEmpty).toList(),
+          }),
+        );
+      }
+
+      if (!mounted || silent) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Rascunho salvo.'),
+          backgroundColor: AppTheme.successColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (_) {
+      if (!mounted || silent) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Erro ao salvar rascunho.'),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSavingDraft = false);
+    }
+  }
+
+  Future<void> _deleteDraftIfNeeded() async {
+    if (_draftId == null) return;
+    try {
+      final draftsNotifier = ref.read(postDraftsProvider.notifier);
+      await draftsNotifier.deleteDraft(_draftId!);
+    } catch (_) {}
   }
 
   @override

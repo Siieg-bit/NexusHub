@@ -10,6 +10,8 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/models/post_model.dart';
 import '../../../core/providers/post_provider.dart';
+import '../../../core/providers/draft_provider.dart';
+import 'dart:async';
 
 // =============================================================================
 // CREATE IMAGE POST SCREEN — Post com galeria de imagens
@@ -54,6 +56,11 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
 
   bool get _isEditing => widget.editingPost != null;
 
+  // ── Rascunhos automáticos ──
+  String? _draftId;
+  bool _isSavingDraft = false;
+  Timer? _autoDraftTimer;
+
   static const int _maxImages = 20;
 
   @override
@@ -61,6 +68,9 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
     super.initState();
     if (_isEditing) {
       _populateFromPost(widget.editingPost!);
+    } else {
+      Future.microtask(_restoreLatestDraft);
+      _startAutoDraftTimer();
     }
   }
 
@@ -85,6 +95,134 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
         ));
       }
     }
+  }
+
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // RASCUNHOS AUTOMÁTICOS
+  // ════════════════════════════════════════════════════════════════════════════
+
+  void _startAutoDraftTimer() {
+    _autoDraftTimer?.cancel();
+    _autoDraftTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => _saveDraft(silent: true),
+    );
+  }
+
+  Future<void> _restoreLatestDraft() async {
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) return;
+
+    try {
+      final result = await SupabaseService.table('post_drafts')
+          .select()
+          .eq('user_id', userId)
+          .eq('community_id', widget.communityId)
+          .eq('post_type', 'image')
+          .order('updated_at', ascending: false)
+          .limit(1);
+
+      if (!mounted) return;
+      final list = (result as List?) ?? const [];
+      if (list.isNotEmpty) {
+        final data = Map<String, dynamic>.from(list.first as Map);
+        setState(() {
+          _draftId = data['id'] as String?;
+          _titleController.text = (data['title'] as String?) ?? '';
+          _captionController.text = (data['content'] as String?) ?? '';
+          _visibility = (data['visibility'] as String?) ?? 'public';
+          final urls = (data['media_urls'] as List?) ?? [];
+          for (final url in urls) {
+            _images.add(_ImageItem(url: url.toString()));
+          }
+          final tags = (data['tags'] as List?) ?? [];
+          _tags.addAll(tags.map((t) => t.toString()));
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Rascunho restaurado.'),
+            backgroundColor: AppTheme.successColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _saveDraft({bool silent = false}) async {
+    if (_isSavingDraft || _isEditing) return;
+    if (!(_titleController.text.trim().isNotEmpty || _images.isNotEmpty)) {
+      if (!silent && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Adicione conteúdo antes de salvar.'),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
+
+    setState(() => _isSavingDraft = true);
+    try {
+      final draftsNotifier = ref.read(postDraftsProvider.notifier);
+      if (_draftId == null) {
+        final created = await draftsNotifier.createDraft(
+          communityId: widget.communityId,
+          postType: 'image',
+          title: _titleController.text.trim(),
+          content: _captionController.text.trim(),
+          mediaUrls: _images.map((img) => img.url).toList(),
+          coverImageUrl: _images.isNotEmpty ? _images.first.url : null,
+          tags: _tags,
+          visibility: _visibility,
+        );
+        _draftId = created?.id;
+      } else {
+        await draftsNotifier.updateDraft(
+          _draftId!,
+          communityId: widget.communityId,
+          postType: 'image',
+          title: _titleController.text.trim(),
+          content: _captionController.text.trim(),
+          mediaUrls: _images.map((img) => img.url).toList(),
+          coverImageUrl: _images.isNotEmpty ? _images.first.url : null,
+          tags: _tags,
+          visibility: _visibility,
+        );
+      }
+
+      if (!mounted || silent) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Rascunho salvo.'),
+          backgroundColor: AppTheme.successColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (_) {
+      if (!mounted || silent) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Erro ao salvar rascunho.'),
+          backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSavingDraft = false);
+    }
+  }
+
+  Future<void> _deleteDraftIfNeeded() async {
+    if (_draftId == null) return;
+    try {
+      final draftsNotifier = ref.read(postDraftsProvider.notifier);
+      await draftsNotifier.deleteDraft(_draftId!);
+    } catch (_) {}
   }
 
   @override
