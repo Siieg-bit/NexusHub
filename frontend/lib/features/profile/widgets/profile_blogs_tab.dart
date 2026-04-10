@@ -236,7 +236,7 @@ class ProfileBlogsTab extends ConsumerWidget {
       }
 
       if (!persisted) {
-        final currentUserId = SupabaseService.currentUser?.id;
+        final currentUserId = SupabaseService.currentUserId;
         if (currentUserId == null) {
           throw Exception('Usuário não autenticado para atualizar a pinagem.');
         }
