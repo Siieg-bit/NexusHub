@@ -1,14 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/utils/media_utils.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================
 // CREATE POLL SCREEN — Enquete com múltiplas opções
+//
+// Melhorias:
+//   - Duração configurável (1h, 6h, 12h, 1d, 3d, 7d, sem limite)
+//   - Toggle de múltipla escolha
+//   - Imagem de capa opcional
+//   - Reordenação de opções via drag
+//   - Ícone/emoji por opção
+//   - Suporte a editor_metadata
 // =============================================================================
 
 class CreatePollScreen extends ConsumerStatefulWidget {
@@ -27,7 +37,22 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
     TextEditingController(),
   ];
   bool _isSubmitting = false;
+  bool _isUploadingCover = false;
+  bool _allowMultipleChoice = false;
+  bool _anonymousVotes = false;
   String _visibility = 'public';
+  String? _coverImageUrl;
+  String _duration = '3d'; // Duração padrão
+
+  static const _durations = {
+    '1h': '1 hora',
+    '6h': '6 horas',
+    '12h': '12 horas',
+    '1d': '1 dia',
+    '3d': '3 dias',
+    '7d': '7 dias',
+    'none': 'Sem limite',
+  };
 
   @override
   void dispose() {
@@ -51,14 +76,77 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
     setState(() {});
   }
 
+  void _reorderOptions(int oldIndex, int newIndex) {
+    setState(() {
+      if (newIndex > oldIndex) newIndex -= 1;
+      final item = _options.removeAt(oldIndex);
+      _options.insert(newIndex, item);
+    });
+  }
+
+  DateTime? _getExpiresAt() {
+    final now = DateTime.now().toUtc();
+    switch (_duration) {
+      case '1h':
+        return now.add(const Duration(hours: 1));
+      case '6h':
+        return now.add(const Duration(hours: 6));
+      case '12h':
+        return now.add(const Duration(hours: 12));
+      case '1d':
+        return now.add(const Duration(days: 1));
+      case '3d':
+        return now.add(const Duration(days: 3));
+      case '7d':
+        return now.add(const Duration(days: 7));
+      default:
+        return null;
+    }
+  }
+
+  Future<void> _pickCoverImage() async {
+    final s = getStrings();
+    final picker = ImagePicker();
+    final image = await picker.pickImage(source: ImageSource.gallery);
+    if (image == null || !mounted) return;
+
+    setState(() => _isUploadingCover = true);
+    try {
+      final userId = SupabaseService.currentUserId ?? 'unknown';
+      final rawBytes = await image.readAsBytes();
+      final bytes = await MediaUtils.compressImage(rawBytes);
+      final path =
+          'posts/$userId/${DateTime.now().millisecondsSinceEpoch}_poll_cover_${image.name}';
+      await SupabaseService.storage
+          .from('post_media')
+          .uploadBinary(path, bytes);
+      final url =
+          SupabaseService.storage.from('post_media').getPublicUrl(path);
+      if (mounted) setState(() => _coverImageUrl = url);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(s.errorUploadTryAgain),
+            backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUploadingCover = false);
+    }
+  }
+
   Future<void> _submit() async {
     final s = getStrings();
     final title = _titleController.text.trim();
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(
+        SnackBar(
           content: Text(s.pollQuestionRequired),
           backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
         ),
       );
       return;
@@ -67,9 +155,10 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
         _options.where((c) => c.text.trim().isNotEmpty).toList();
     if (validOptions.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(
+        SnackBar(
           content: Text(s.addAtLeast2Options),
           backgroundColor: AppTheme.errorColor,
+          behavior: SnackBarBehavior.floating,
         ),
       );
       return;
@@ -80,11 +169,19 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
       final userId = SupabaseService.currentUserId;
       if (userId == null) throw Exception(s.notAuthenticated);
 
-      // Montar opções da enquete como JSON
       final pollOpts =
           validOptions.map((c) => {'text': c.text.trim()}).toList();
 
-      // RPC atômica: cria post + poll_options + reputação
+      final expiresAt = _getExpiresAt();
+
+      final editorMetadata = <String, dynamic>{
+        'editor_type': 'poll',
+        'allow_multiple_choice': _allowMultipleChoice,
+        'anonymous_votes': _anonymousVotes,
+        'duration': _duration,
+        if (expiresAt != null) 'expires_at': expiresAt.toIso8601String(),
+      };
+
       await SupabaseService.rpc('create_post_with_reputation', params: {
         'p_community_id': widget.communityId,
         'p_title': title,
@@ -92,14 +189,18 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
         'p_type': 'poll',
         'p_visibility': _visibility,
         'p_poll_options': pollOpts,
+        'p_cover_image_url': _coverImageUrl,
+        'p_editor_type': 'poll',
+        'p_editor_metadata': editorMetadata,
       });
 
       if (mounted) {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(
+          SnackBar(
             content: Text(s.pollCreatedSuccess),
             backgroundColor: AppTheme.successColor,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -110,6 +211,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
           SnackBar(
             content: Text(s.errorCreatingPoll),
             backgroundColor: AppTheme.errorColor,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -118,8 +220,10 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
+    final accent = const Color(0xFF0891B2);
+
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
@@ -195,14 +299,19 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
                 width: r.s(64),
                 height: r.s(64),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0891B2).withValues(alpha: 0.15),
+                  color: accent.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(Icons.bar_chart_rounded,
-                    color: const Color(0xFF0891B2), size: r.s(32)),
+                    color: accent, size: r.s(32)),
               ),
             ),
             SizedBox(height: r.s(20)),
+
+            // Imagem de capa (opcional)
+            _buildCoverSection(r, accent),
+            SizedBox(height: r.s(16)),
+
             // Pergunta
             Text(
               s.question,
@@ -218,8 +327,10 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
               maxLength: 200,
               maxLines: 3,
               r: r,
+              accent: accent,
             ),
             SizedBox(height: r.s(16)),
+
             // Descrição
             Text(
               s.descriptionOptional2,
@@ -235,9 +346,11 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
               maxLength: 500,
               maxLines: 3,
               r: r,
+              accent: accent,
             ),
             SizedBox(height: r.s(24)),
-            // Opções
+
+            // Opções com reordenação
             Row(
               children: [
                 Text(
@@ -253,72 +366,101 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
                   style: TextStyle(
                       color: context.textSecondary, fontSize: r.fs(12)),
                 ),
+                if (_options.length > 2) ...[
+                  SizedBox(width: r.s(8)),
+                  Text(
+                    'Segure para reordenar',
+                    style: TextStyle(
+                      color: context.textSecondary.withValues(alpha: 0.6),
+                      fontSize: r.fs(10),
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
               ],
             ),
             SizedBox(height: r.s(8)),
-            ...List.generate(_options.length, (i) {
-              return Padding(
-                padding: EdgeInsets.only(bottom: r.s(8)),
-                child: Row(
-                  children: [
-                    Container(
-                      width: r.s(28),
-                      height: r.s(28),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0891B2).withValues(alpha: 0.15),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          '${i + 1}',
-                          style: TextStyle(
-                              color: const Color(0xFF0891B2),
-                              fontSize: r.fs(12),
-                              fontWeight: FontWeight.w700),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: r.s(8)),
-                    Expanded(
-                      child: TextField(
-                        controller: _options[i],
-                        maxLength: 100,
-                        textCapitalization: TextCapitalization.sentences,
-                        style: TextStyle(
-                            color: context.textPrimary, fontSize: r.fs(14)),
-                        decoration: InputDecoration(
-                          hintText: s.optionNumber(i + 1),
-                          hintStyle: TextStyle(
-                              color: context.textSecondary, fontSize: r.fs(14)),
-                          filled: true,
-                          fillColor: context.cardBg,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(r.s(10)),
-                            borderSide: BorderSide.none,
+
+            ReorderableListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              buildDefaultDragHandles: false,
+              onReorder: _reorderOptions,
+              itemCount: _options.length,
+              itemBuilder: (ctx, i) {
+                return ReorderableDragStartListener(
+                  key: ValueKey('option_$i'),
+                  index: i,
+                  child: Padding(
+                    padding: EdgeInsets.only(bottom: r.s(8)),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: r.s(28),
+                          height: r.s(28),
+                          decoration: BoxDecoration(
+                            color: accent.withValues(alpha: 0.15),
+                            shape: BoxShape.circle,
                           ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(r.s(10)),
-                            borderSide: BorderSide(
-                                color: const Color(0xFF0891B2), width: 1.5),
+                          child: Center(
+                            child: Text(
+                              '${i + 1}',
+                              style: TextStyle(
+                                  color: accent,
+                                  fontSize: r.fs(12),
+                                  fontWeight: FontWeight.w700),
+                            ),
                           ),
-                          counterText: '',
-                          contentPadding: EdgeInsets.symmetric(
-                              horizontal: r.s(12), vertical: r.s(10)),
                         ),
-                      ),
+                        SizedBox(width: r.s(8)),
+                        Expanded(
+                          child: TextField(
+                            controller: _options[i],
+                            maxLength: 100,
+                            textCapitalization: TextCapitalization.sentences,
+                            style: TextStyle(
+                                color: context.textPrimary,
+                                fontSize: r.fs(14)),
+                            decoration: InputDecoration(
+                              hintText: s.optionNumber(i + 1),
+                              hintStyle: TextStyle(
+                                  color: context.textSecondary,
+                                  fontSize: r.fs(14)),
+                              filled: true,
+                              fillColor: context.cardBg,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(r.s(10)),
+                                borderSide: BorderSide.none,
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(r.s(10)),
+                                borderSide:
+                                    BorderSide(color: accent, width: 1.5),
+                              ),
+                              counterText: '',
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: r.s(12), vertical: r.s(10)),
+                            ),
+                          ),
+                        ),
+                        if (_options.length > 2) ...[
+                          SizedBox(width: r.s(4)),
+                          GestureDetector(
+                            onTap: () => _removeOption(i),
+                            child: Icon(Icons.remove_circle_outline_rounded,
+                                color: AppTheme.errorColor, size: r.s(20)),
+                          ),
+                        ],
+                        SizedBox(width: r.s(4)),
+                        Icon(Icons.drag_handle_rounded,
+                            color: context.textSecondary, size: r.s(18)),
+                      ],
                     ),
-                    if (_options.length > 2) ...[
-                      SizedBox(width: r.s(8)),
-                      GestureDetector(
-                        onTap: () => _removeOption(i),
-                        child: Icon(Icons.remove_circle_outline_rounded,
-                            color: AppTheme.errorColor, size: r.s(20)),
-                      ),
-                    ],
-                  ],
-                ),
-              );
-            }),
+                  ),
+                );
+              },
+            ),
+
             if (_options.length < 10)
               TextButton.icon(
                 onPressed: _addOption,
@@ -330,9 +472,158 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
                       color: AppTheme.primaryColor, fontSize: r.fs(14)),
                 ),
               ),
+
+            SizedBox(height: r.s(16)),
+            Divider(color: context.dividerClr),
+            SizedBox(height: r.s(12)),
+
+            // Duração
+            Text(
+              'Duração da enquete',
+              style: TextStyle(
+                  color: context.textPrimary,
+                  fontSize: r.fs(13),
+                  fontWeight: FontWeight.w600),
+            ),
+            SizedBox(height: r.s(8)),
+            Wrap(
+              spacing: r.s(8),
+              runSpacing: r.s(6),
+              children: _durations.entries.map((e) {
+                final selected = _duration == e.key;
+                return GestureDetector(
+                  onTap: () => setState(() => _duration = e.key),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: r.s(14), vertical: r.s(8)),
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? accent.withValues(alpha: 0.2)
+                          : context.cardBg,
+                      borderRadius: BorderRadius.circular(r.s(20)),
+                      border: Border.all(
+                        color: selected
+                            ? accent
+                            : context.dividerClr.withValues(alpha: 0.4),
+                        width: selected ? 1.5 : 1,
+                      ),
+                    ),
+                    child: Text(
+                      e.value,
+                      style: TextStyle(
+                        color: selected ? accent : context.textSecondary,
+                        fontSize: r.fs(12),
+                        fontWeight:
+                            selected ? FontWeight.w700 : FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+
+            SizedBox(height: r.s(16)),
+            Divider(color: context.dividerClr),
+            SizedBox(height: r.s(8)),
+
+            // Toggles
+            _buildToggleRow(
+              icon: Icons.check_box_rounded,
+              label: 'Múltipla escolha',
+              subtitle: 'Permitir selecionar mais de uma opção',
+              value: _allowMultipleChoice,
+              onChanged: (v) => setState(() => _allowMultipleChoice = v),
+              color: accent,
+              r: r,
+            ),
+            _buildToggleRow(
+              icon: Icons.visibility_off_rounded,
+              label: 'Votos anônimos',
+              subtitle: 'Não mostrar quem votou em cada opção',
+              value: _anonymousVotes,
+              onChanged: (v) => setState(() => _anonymousVotes = v),
+              color: context.textSecondary,
+              r: r,
+            ),
+
             SizedBox(height: r.s(80)),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildCoverSection(Responsive r, Color accent) {
+    if (_coverImageUrl != null) {
+      return Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(r.s(12)),
+            child: Image.network(
+              _coverImageUrl!,
+              width: double.infinity,
+              height: r.s(140),
+              fit: BoxFit.cover,
+            ),
+          ),
+          Positioned(
+            top: r.s(8),
+            right: r.s(8),
+            child: Row(
+              children: [
+                _circleBtn(Icons.camera_alt_rounded, _pickCoverImage, r),
+                SizedBox(width: r.s(8)),
+                _circleBtn(Icons.close_rounded,
+                    () => setState(() => _coverImageUrl = null), r),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
+    return GestureDetector(
+      onTap: _isUploadingCover ? null : _pickCoverImage,
+      child: Container(
+        height: r.s(64),
+        decoration: BoxDecoration(
+          color: context.cardBg,
+          borderRadius: BorderRadius.circular(r.s(12)),
+          border:
+              Border.all(color: context.dividerClr.withValues(alpha: 0.4)),
+        ),
+        child: Center(
+          child: _isUploadingCover
+              ? CircularProgressIndicator(color: accent, strokeWidth: 2)
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.add_photo_alternate_rounded,
+                        color: context.textSecondary, size: r.s(20)),
+                    SizedBox(width: r.s(8)),
+                    Text(
+                      'Adicionar imagem de capa',
+                      style: TextStyle(
+                          color: context.textSecondary,
+                          fontSize: r.fs(13)),
+                    ),
+                  ],
+                ),
+        ),
+      ),
+    );
+  }
+
+  Widget _circleBtn(IconData icon, VoidCallback onTap, Responsive r) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(r.s(6)),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.6),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: Colors.white, size: r.s(16)),
       ),
     );
   }
@@ -343,6 +634,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
     required int maxLength,
     required int maxLines,
     required Responsive r,
+    required Color accent,
   }) {
     return TextField(
       controller: controller,
@@ -352,7 +644,8 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
       style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: context.textSecondary, fontSize: r.fs(14)),
+        hintStyle:
+            TextStyle(color: context.textSecondary, fontSize: r.fs(14)),
         filled: true,
         fillColor: context.cardBg,
         border: OutlineInputBorder(
@@ -361,11 +654,52 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(r.s(12)),
-          borderSide: BorderSide(color: const Color(0xFF0891B2), width: 1.5),
+          borderSide: BorderSide(color: accent, width: 1.5),
         ),
         counterText: '',
         contentPadding:
             EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(12)),
+      ),
+    );
+  }
+
+  Widget _buildToggleRow({
+    required IconData icon,
+    required String label,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+    required Color color,
+    required Responsive r,
+  }) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: r.s(4)),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: r.s(20)),
+          SizedBox(width: r.s(12)),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label,
+                    style: TextStyle(
+                        color: context.textPrimary,
+                        fontSize: r.fs(13),
+                        fontWeight: FontWeight.w600)),
+                Text(subtitle,
+                    style: TextStyle(
+                        color: context.textSecondary,
+                        fontSize: r.fs(11))),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeColor: color,
+          ),
+        ],
       ),
     );
   }
