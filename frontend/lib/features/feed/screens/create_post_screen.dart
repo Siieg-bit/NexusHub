@@ -549,7 +549,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                       fontFamily: _fontFamily,
                     ),
                     decoration: InputDecoration(
-                      hintText: s.subtitle,
+                      hintText: s.subtitleHint,
                       border: InputBorder.none,
                       hintStyle: TextStyle(
                         color: _textColor.withValues(alpha: 0.15),

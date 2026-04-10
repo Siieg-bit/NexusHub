@@ -4704,4 +4704,16 @@ class AppStringsRu implements AppStrings {
   @override
   String get confirmationEmailSent => 'Письмо с подтверждением отправлено на';
     String repostedBy(String username) => '$username сделал репост';
+
+  // Wiki create screen strings
+  @override
+  String get wikiTitleRequired => 'Заголовок обязателен';
+  @override
+  String get wikiNeedOneSection => 'Необходим хотя бы один раздел';
+  @override
+  String get wikiPublishedSuccess => 'Запись вики успешно опубликована!';
+  @override
+  String get wikiEntry => 'Запись вики';
+  @override
+  String get wikiDescription => 'Описание...';
 }

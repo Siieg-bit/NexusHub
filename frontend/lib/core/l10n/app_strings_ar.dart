@@ -4368,4 +4368,16 @@ class AppStringsAr implements AppStrings {
   @override
   String repostNotificationBody(String username)=>'$username reposted your post.';
     String repostedBy(String username) => 'أعاد $username النشر';
+
+  // Wiki create screen strings
+  @override
+  String get wikiTitleRequired => 'العنوان مطلوب';
+  @override
+  String get wikiNeedOneSection => 'مطلوب قسم واحد على الأقل';
+  @override
+  String get wikiPublishedSuccess => 'تم نشر مدخل الويكي بنجاح!';
+  @override
+  String get wikiEntry => 'مدخل ويكي';
+  @override
+  String get wikiDescription => 'الوصف...';
 }

@@ -3635,4 +3635,16 @@ class AppStringsEn implements AppStrings {
   @override
   String repostNotificationBody(String username)=>'$username reposted your post.';
     String repostedBy(String username) => '$username reposted';
+
+  // Wiki create screen strings
+  @override
+  String get wikiTitleRequired => 'Title is required';
+  @override
+  String get wikiNeedOneSection => 'At least one section is required';
+  @override
+  String get wikiPublishedSuccess => 'Wiki entry published successfully!';
+  @override
+  String get wikiEntry => 'Wiki Entry';
+  @override
+  String get wikiDescription => 'Description...';
 }

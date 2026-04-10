@@ -69,6 +69,7 @@ import '../features/communities/screens/community_general_links_screen.dart';
 import '../features/moderation/screens/edit_guidelines_screen.dart';
 import '../features/moderation/screens/admin_reports_screen.dart';
 import '../features/stories/screens/create_story_screen.dart';
+import '../features/live/screens/screening_room_screen.dart';
 import '../features/feed/screens/drafts_screen.dart';
 import '../features/profile/screens/edit_community_profile_screen.dart';
 import 'shell_screen.dart';

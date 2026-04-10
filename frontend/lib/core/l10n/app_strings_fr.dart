@@ -3626,4 +3626,16 @@ class AppStringsFr implements AppStrings {
   @override
   String get confirmationEmailSent => 'E-mail de confirmation envoyé à';
     String repostedBy(String username) => '$username a reposté';
+
+  // Wiki create screen strings
+  @override
+  String get wikiTitleRequired => 'Le titre est obligatoire';
+  @override
+  String get wikiNeedOneSection => 'Au moins une section est requise';
+  @override
+  String get wikiPublishedSuccess => 'Entrée wiki publiée avec succès !';
+  @override
+  String get wikiEntry => 'Entrée Wiki';
+  @override
+  String get wikiDescription => 'Description...';
 }

@@ -4066,4 +4066,16 @@ class AppStringsKo implements AppStrings {
   @override
   String get confirmationEmailSent => '확인 이메일이 전송되었습니다';
     String repostedBy(String username) => '$username 님이 리포스트했습니다';
+
+  // Wiki create screen strings
+  @override
+  String get wikiTitleRequired => '제목은 필수입니다';
+  @override
+  String get wikiNeedOneSection => '최소 하나의 섹션이 필요합니다';
+  @override
+  String get wikiPublishedSuccess => '위키 항목이 성공적으로 게시되었습니다!';
+  @override
+  String get wikiEntry => '위키 항목';
+  @override
+  String get wikiDescription => '설명...';
 }

@@ -1863,4 +1863,11 @@ abstract class AppStrings {
   String get repostNotificationTitle;
   String repostNotificationBody(String username);
   String repostedBy(String username);
+
+  // Wiki create screen strings
+  String get wikiTitleRequired;
+  String get wikiNeedOneSection;
+  String get wikiPublishedSuccess;
+  String get wikiEntry;
+  String get wikiDescription;
 }

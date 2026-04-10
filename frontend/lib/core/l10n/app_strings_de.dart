@@ -3712,4 +3712,16 @@ class AppStringsDe implements AppStrings {
   @override
   String get membersCount => 'Mitglieder';
     String repostedBy(String username) => '$username hat repostet';
+
+  // Wiki create screen strings
+  @override
+  String get wikiTitleRequired => 'Titel ist erforderlich';
+  @override
+  String get wikiNeedOneSection => 'Mindestens ein Abschnitt ist erforderlich';
+  @override
+  String get wikiPublishedSuccess => 'Wiki-Eintrag erfolgreich veröffentlicht!';
+  @override
+  String get wikiEntry => 'Wiki-Eintrag';
+  @override
+  String get wikiDescription => 'Beschreibung...';
 }
