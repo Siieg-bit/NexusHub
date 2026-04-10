@@ -37,7 +37,7 @@ class ProfileBlogsTab extends ConsumerWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.all(r.s(24)),
         children: [
-          SizedBox(height: r.sh(0.08)),
+          SizedBox(height: r.screenHeight * 0.08),
           Icon(Icons.article_outlined, color: Colors.grey[600], size: r.s(44)),
           SizedBox(height: r.s(12)),
           Text(
@@ -102,7 +102,7 @@ class ProfileBlogsTab extends ConsumerWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.all(r.s(24)),
         children: [
-          SizedBox(height: r.sh(0.08)),
+          SizedBox(height: r.screenHeight * 0.08),
           Icon(Icons.menu_book_rounded,
               color: Colors.grey[600], size: r.s(48)),
           SizedBox(height: r.s(12)),
