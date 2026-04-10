@@ -5,26 +5,28 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../config/app_theme.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/models/community_model.dart';
 import '../../../core/providers/draft_provider.dart';
 import '../../../core/providers/post_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/media_utils.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/models/post_model.dart';
+import '../../communities/providers/community_detail_providers.dart'
+    as community_providers;
 import '../widgets/block_content_renderer.dart';
 import '../widgets/block_editor.dart';
 
 // =============================================================================
-// CREATE BLOG SCREEN — Editor profissional de blogs com blocos ricos
+// CREATE BLOG SCREEN — Editor de blogs estilo Amino
 //
-// Design inspirado em Medium / Notion:
-//   - Layout imersivo com capa hero
-//   - AppBar minimalista (fechar, preview, configurações, publicar)
-//   - Título grande e limpo sem bordas
-//   - Editor de blocos como área principal
-//   - Painel de configurações avançadas via bottom sheet
-//   - Contagem de palavras e tempo de leitura discretos
-//   - Rascunhos automáticos e modo de edição
+// Design inspirado no Amino:
+//   - Header com banner da comunidade + "Novo Blog" centralizado
+//   - Botão voltar (←) e check (✓) no header
+//   - Área de edição limpa: título + conteúdo
+//   - Barra fixa inferior com ações organizadas
+//   - Configurações avançadas via bottom sheets
+//   - Todas as funcionalidades preservadas (blocos, rascunhos, capa, etc.)
 // =============================================================================
 
 class CreateBlogScreen extends ConsumerStatefulWidget {
@@ -46,6 +48,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
   final _titleController = TextEditingController();
   final _tagController = TextEditingController();
   final _scrollController = ScrollController();
+  final _contentFocusNode = FocusNode();
 
   List<ContentBlock> _blocks = [];
   bool _isSubmitting = false;
@@ -151,6 +154,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
     _titleController.dispose();
     _tagController.dispose();
     _scrollController.dispose();
+    _contentFocusNode.dispose();
     super.dispose();
   }
 
@@ -934,6 +938,89 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // ── Capa do Blog ──
+                          _SettingsSection(
+                            icon: Icons.photo_library_outlined,
+                            title: 'Capa do blog',
+                            subtitle: _coverImageUrl != null
+                                ? 'Capa definida'
+                                : 'Sem capa',
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (_coverImageUrl != null) ...[
+                                  ClipRRect(
+                                    borderRadius:
+                                        BorderRadius.circular(r.s(12)),
+                                    child: Image.network(
+                                      _coverImageUrl!,
+                                      width: double.infinity,
+                                      height: r.s(140),
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                  SizedBox(height: r.s(10)),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: _SmallButton(
+                                          label: 'Trocar capa',
+                                          onTap: () {
+                                            _pickCoverImage();
+                                            Navigator.pop(ctx);
+                                          },
+                                        ),
+                                      ),
+                                      SizedBox(width: r.s(8)),
+                                      Expanded(
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            setState(() =>
+                                                _coverImageUrl = null);
+                                            setModalState(() {});
+                                          },
+                                          child: Container(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: r.s(14),
+                                                vertical: r.s(10)),
+                                            decoration: BoxDecoration(
+                                              color: AppTheme.errorColor
+                                                  .withValues(alpha: 0.12),
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      r.s(10)),
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                'Remover',
+                                                style: TextStyle(
+                                                  color:
+                                                      AppTheme.errorColor,
+                                                  fontSize: r.fs(13),
+                                                  fontWeight:
+                                                      FontWeight.w600,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ] else
+                                  _SmallButton(
+                                    label: 'Adicionar capa',
+                                    onTap: () {
+                                      _pickCoverImage();
+                                      Navigator.pop(ctx);
+                                    },
+                                  ),
+                              ],
+                            ),
+                          ),
+
+                          SizedBox(height: r.s(20)),
+
                           // ── Tags ──
                           _SettingsSection(
                             icon: Icons.tag_rounded,
@@ -1223,6 +1310,123 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
+  // INSERT BLOCKS BOTTOM SHEET (para adicionar blocos de conteúdo)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  void _showInsertBlockSheet() {
+    final s = getStrings();
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final r = ctx.r;
+        return Container(
+          decoration: BoxDecoration(
+            color: ctx.scaffoldBg,
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(r.s(20)),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle
+              Container(
+                margin: EdgeInsets.only(top: r.s(12)),
+                width: r.s(40),
+                height: r.s(4),
+                decoration: BoxDecoration(
+                  color: ctx.dividerClr,
+                  borderRadius: BorderRadius.circular(r.s(2)),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(
+                    horizontal: r.s(20), vertical: r.s(12)),
+                child: Row(
+                  children: [
+                    Icon(Icons.add_circle_outline_rounded,
+                        color: ctx.textSecondary, size: r.s(18)),
+                    SizedBox(width: r.s(8)),
+                    Text(
+                      'Inserir bloco',
+                      style: TextStyle(
+                        color: ctx.textPrimary,
+                        fontSize: r.fs(16),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      icon: Icon(Icons.close_rounded,
+                          color: ctx.textSecondary),
+                    ),
+                  ],
+                ),
+              ),
+              Divider(color: ctx.dividerClr, height: 1),
+              Padding(
+                padding: EdgeInsets.all(r.s(20)),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _InsertBlockOption(
+                      icon: Icons.text_fields_rounded,
+                      label: s.text,
+                      color: const Color(0xFF4CAF50),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        setState(() {
+                          _blocks.add(ContentBlock(type: BlockType.text));
+                        });
+                      },
+                    ),
+                    _InsertBlockOption(
+                      icon: Icons.title_rounded,
+                      label: 'Subtítulo',
+                      color: const Color(0xFFFF9800),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        setState(() {
+                          _blocks.add(ContentBlock(type: BlockType.heading));
+                        });
+                      },
+                    ),
+                    _InsertBlockOption(
+                      icon: Icons.format_quote_rounded,
+                      label: 'Citação',
+                      color: const Color(0xFF9C27B0),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        setState(() {
+                          _blocks.add(ContentBlock(type: BlockType.quote));
+                        });
+                      },
+                    ),
+                    _InsertBlockOption(
+                      icon: Icons.horizontal_rule_rounded,
+                      label: s.divider,
+                      color: const Color(0xFF607D8B),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        setState(() {
+                          _blocks.add(ContentBlock(type: BlockType.divider));
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: r.s(16)),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
   // BUILD
   // ═══════════════════════════════════════════════════════════════════════════
 
@@ -1231,113 +1435,12 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
     final s = ref.watch(stringsProvider);
     final r = context.r;
 
+    // Buscar dados da comunidade para o banner
+    final communityAsync =
+        ref.watch(community_providers.communityDetailProvider(widget.communityId));
+
     return Scaffold(
       backgroundColor: context.scaffoldBg,
-      // ── AppBar minimalista ──
-      appBar: AppBar(
-        backgroundColor: context.scaffoldBg,
-        elevation: 0,
-        scrolledUnderElevation: 0.5,
-        surfaceTintColor: context.surfaceColor,
-        leading: IconButton(
-          icon: Icon(Icons.close_rounded, color: context.textPrimary),
-          onPressed: _handleClose,
-          tooltip: 'Fechar',
-        ),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (_draftId != null) ...[
-              Container(
-                padding: EdgeInsets.symmetric(
-                    horizontal: r.s(8), vertical: r.s(3)),
-                decoration: BoxDecoration(
-                  color: AppTheme.accentColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(r.s(6)),
-                ),
-                child: Text(
-                  'Rascunho',
-                  style: TextStyle(
-                    color: AppTheme.accentColor,
-                    fontSize: r.fs(11),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-        actions: [
-          // Salvar rascunho
-          IconButton(
-            tooltip: 'Salvar rascunho',
-            onPressed: (_isSavingDraft || _isSubmitting)
-                ? null
-                : () => _saveDraft(),
-            icon: _isSavingDraft
-                ? SizedBox(
-                    width: r.s(18),
-                    height: r.s(18),
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: context.textSecondary,
-                    ),
-                  )
-                : Icon(Icons.save_outlined,
-                    color: context.textSecondary, size: r.s(22)),
-          ),
-          // Preview
-          IconButton(
-            tooltip: 'Pré-visualizar',
-            onPressed: _openPreview,
-            icon: Icon(Icons.visibility_outlined,
-                color: context.textSecondary, size: r.s(22)),
-          ),
-          // Configurações
-          IconButton(
-            tooltip: 'Configurações',
-            onPressed: _openSettings,
-            icon: Icon(Icons.tune_rounded,
-                color: context.textSecondary, size: r.s(22)),
-          ),
-          // Publicar
-          Padding(
-            padding: EdgeInsets.only(right: r.s(8)),
-            child: _isSubmitting
-                ? Padding(
-                    padding: EdgeInsets.all(r.s(12)),
-                    child: SizedBox(
-                      width: r.s(20),
-                      height: r.s(20),
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppTheme.primaryColor,
-                      ),
-                    ),
-                  )
-                : TextButton(
-                    onPressed: _submit,
-                    style: TextButton.styleFrom(
-                      backgroundColor:
-                          AppTheme.primaryColor.withValues(alpha: 0.12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(r.s(10)),
-                      ),
-                      padding: EdgeInsets.symmetric(
-                          horizontal: r.s(16), vertical: r.s(8)),
-                    ),
-                    child: Text(
-                      _isEditing ? s.save : s.publish,
-                      style: TextStyle(
-                        color: AppTheme.primaryColor,
-                        fontSize: r.fs(14),
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-          ),
-        ],
-      ),
       body: _restoringDraft
           ? Center(
               child: Column(
@@ -1358,247 +1461,486 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                 ],
               ),
             )
-          : SingleChildScrollView(
-              controller: _scrollController,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // ── Cover Image (Hero) ──
-                  _buildCoverSection(r),
+          : Column(
+              children: [
+                // ── Header Amino (banner da comunidade) ──
+                _buildAminoHeader(r, communityAsync),
 
-                  // ── Área de edição principal ──
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: r.s(20)),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(height: r.s(20)),
+                // ── Área de edição principal ──
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      // Ao tocar na área vazia, foca no conteúdo
+                      _contentFocusNode.requestFocus();
+                    },
+                    child: SingleChildScrollView(
+                      controller: _scrollController,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: r.s(16)),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(height: r.s(16)),
 
-                        // Título
-                        TextField(
-                          controller: _titleController,
-                          maxLength: 120,
-                          textCapitalization:
-                              TextCapitalization.sentences,
-                          onChanged: (_) => setState(() {}),
-                          style: TextStyle(
-                            color: _titleColor,
-                            fontSize: r.fs(26),
-                            fontWeight: FontWeight.w800,
-                            height: 1.25,
-                            fontFamily:
-                                _fontFamilyFromName(_titleFont),
-                          ),
-                          decoration: InputDecoration(
-                            hintText: 'Título do seu blog...',
-                            hintStyle: TextStyle(
-                              color: context.textSecondary
-                                  .withValues(alpha: 0.5),
-                              fontSize: r.fs(26),
-                              fontWeight: FontWeight.w800,
-                            ),
-                            border: InputBorder.none,
-                            counterText: '',
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                        ),
-
-                        // Tags preview (inline, compacto)
-                        if (_tags.isNotEmpty) ...[
-                          SizedBox(height: r.s(8)),
-                          Wrap(
-                            spacing: r.s(6),
-                            runSpacing: r.s(4),
-                            children: _tags
-                                .map((tag) => Text(
-                                      '#$tag',
-                                      style: TextStyle(
-                                        color: AppTheme.accentColor
-                                            .withValues(alpha: 0.7),
-                                        fontSize: r.fs(13),
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ))
-                                .toList(),
-                          ),
-                        ],
-
-                        // Stats discretos
-                        if (_wordCount > 0) ...[
-                          SizedBox(height: r.s(12)),
-                          Row(
-                            children: [
-                              Text(
-                                '$_wordCount palavras',
-                                style: TextStyle(
-                                  color: context.textSecondary
-                                      .withValues(alpha: 0.6),
-                                  fontSize: r.fs(12),
-                                ),
+                            // Título
+                            TextField(
+                              controller: _titleController,
+                              maxLength: 120,
+                              textCapitalization:
+                                  TextCapitalization.sentences,
+                              onChanged: (_) => setState(() {}),
+                              style: TextStyle(
+                                color: context.textPrimary,
+                                fontSize: r.fs(20),
+                                fontWeight: FontWeight.w700,
+                                height: 1.3,
+                                fontFamily:
+                                    _fontFamilyFromName(_titleFont),
                               ),
-                              if (_readingTime.isNotEmpty) ...[
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: r.s(6)),
-                                  child: Text(
-                                    '·',
-                                    style: TextStyle(
-                                      color: context.textSecondary
-                                          .withValues(alpha: 0.4),
-                                      fontSize: r.fs(12),
+                              decoration: InputDecoration(
+                                hintText: 'Título',
+                                hintStyle: TextStyle(
+                                  color: context.textSecondary
+                                      .withValues(alpha: 0.5),
+                                  fontSize: r.fs(20),
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                border: InputBorder.none,
+                                counterText: '',
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                            ),
+
+                            // Separador sutil
+                            Divider(
+                              color:
+                                  context.dividerClr.withValues(alpha: 0.3),
+                              height: 1,
+                            ),
+
+                            SizedBox(height: r.s(12)),
+
+                            // Capa preview compacto (se definida)
+                            if (_coverImageUrl != null) ...[
+                              Stack(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius:
+                                        BorderRadius.circular(r.s(10)),
+                                    child: Image.network(
+                                      _coverImageUrl!,
+                                      width: double.infinity,
+                                      height: r.s(160),
+                                      fit: BoxFit.cover,
                                     ),
                                   ),
-                                ),
-                                Text(
-                                  _readingTime,
+                                  Positioned(
+                                    top: r.s(8),
+                                    right: r.s(8),
+                                    child: GestureDetector(
+                                      onTap: () => setState(
+                                          () => _coverImageUrl = null),
+                                      child: Container(
+                                        padding: EdgeInsets.all(r.s(4)),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black
+                                              .withValues(alpha: 0.6),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Icon(
+                                          Icons.close_rounded,
+                                          color: Colors.white,
+                                          size: r.s(16),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: r.s(12)),
+                            ],
+
+                            // Tags preview inline
+                            if (_tags.isNotEmpty) ...[
+                              Wrap(
+                                spacing: r.s(6),
+                                runSpacing: r.s(4),
+                                children: _tags
+                                    .map((tag) => Text(
+                                          '#$tag',
+                                          style: TextStyle(
+                                            color: AppTheme.accentColor
+                                                .withValues(alpha: 0.7),
+                                            fontSize: r.fs(13),
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ))
+                                    .toList(),
+                              ),
+                              SizedBox(height: r.s(8)),
+                            ],
+
+                            // ── Block Editor ──
+                            BlockEditor(
+                              initialBlocks: _blocks,
+                              communityId: widget.communityId,
+                              onChanged: (blocks) =>
+                                  setState(() => _blocks = blocks),
+                            ),
+
+                            // Hint text (estilo Amino)
+                            if (_blocks.isEmpty ||
+                                (_blocks.length == 1 &&
+                                    _blocks.first.isTextBased &&
+                                    (_blocks.first.controller?.text
+                                            .isEmpty ??
+                                        true)))
+                              Padding(
+                                padding:
+                                    EdgeInsets.only(top: r.s(8)),
+                                child: Text(
+                                  'Compartilhe seus pensamentos e ideias, escreva resenhas, publique imagens e GIFs, e muito mais.',
                                   style: TextStyle(
-                                    color: context.textSecondary
-                                        .withValues(alpha: 0.6),
-                                    fontSize: r.fs(12),
+                                    color: context.textHint
+                                        .withValues(alpha: 0.5),
+                                    fontSize: r.fs(14),
+                                    height: 1.5,
                                   ),
                                 ),
-                              ],
+                              ),
+
+                            // Stats discretos
+                            if (_wordCount > 0) ...[
+                              SizedBox(height: r.s(16)),
+                              Row(
+                                children: [
+                                  Text(
+                                    '$_wordCount palavras',
+                                    style: TextStyle(
+                                      color: context.textSecondary
+                                          .withValues(alpha: 0.6),
+                                      fontSize: r.fs(11),
+                                    ),
+                                  ),
+                                  if (_readingTime.isNotEmpty) ...[
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: r.s(6)),
+                                      child: Text(
+                                        '·',
+                                        style: TextStyle(
+                                          color: context.textSecondary
+                                              .withValues(alpha: 0.4),
+                                          fontSize: r.fs(11),
+                                        ),
+                                      ),
+                                    ),
+                                    Text(
+                                      _readingTime,
+                                      style: TextStyle(
+                                        color: context.textSecondary
+                                            .withValues(alpha: 0.6),
+                                        fontSize: r.fs(11),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
                             ],
-                          ),
-                        ],
 
-                        SizedBox(height: r.s(16)),
-                        Divider(
-                          color:
-                              context.dividerClr.withValues(alpha: 0.3),
-                          height: 1,
+                            SizedBox(height: r.s(100)),
+                          ],
                         ),
-                        SizedBox(height: r.s(16)),
-
-                        // ── Block Editor ──
-                        BlockEditor(
-                          initialBlocks: _blocks,
-                          communityId: widget.communityId,
-                          onChanged: (blocks) =>
-                              setState(() => _blocks = blocks),
-                        ),
-
-                        SizedBox(height: r.s(100)),
-                      ],
+                      ),
                     ),
                   ),
-                ],
-              ),
+                ),
+
+                // ── Barra fixa inferior (estilo Amino) ──
+                _buildBottomToolbar(r, s),
+              ],
             ),
     );
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // COVER SECTION
+  // AMINO HEADER (banner da comunidade)
   // ═══════════════════════════════════════════════════════════════════════════
 
-  Widget _buildCoverSection(Responsive r) {
-    if (_coverImageUrl != null) {
-      return Stack(
+  Widget _buildAminoHeader(
+      Responsive r, AsyncValue<CommunityModel> communityAsync) {
+    final topPadding = MediaQuery.of(context).padding.top;
+    final headerHeight = r.s(100) + topPadding;
+
+    // Extrair dados da comunidade
+    String? bannerUrl;
+    Color themeColor = const Color(0xFF1A1A2E);
+
+    communityAsync.whenData((community) {
+      bannerUrl = community.bannerUrl;
+      final parsed = _parseHexColor(community.themeColor);
+      if (parsed != null) themeColor = parsed;
+    });
+
+    return Container(
+      height: headerHeight,
+      width: double.infinity,
+      child: Stack(
+        fit: StackFit.expand,
         children: [
-          Image.network(
-            _coverImageUrl!,
-            width: double.infinity,
-            height: r.s(220),
-            fit: BoxFit.cover,
-          ),
-          // Gradient overlay
-          Positioned.fill(
-            child: Container(
+          // Fundo: banner ou cor do tema
+          if (bannerUrl != null && bannerUrl!.isNotEmpty)
+            Image.network(
+              bannerUrl!,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      themeColor,
+                      themeColor.withValues(alpha: 0.7),
+                    ],
+                  ),
+                ),
+              ),
+            )
+          else
+            Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                   colors: [
-                    Colors.transparent,
-                    context.scaffoldBg.withValues(alpha: 0.8),
+                    themeColor,
+                    themeColor.withValues(alpha: 0.7),
                   ],
                 ),
               ),
             ),
+
+          // Overlay escuro para legibilidade
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.4),
+                  Colors.black.withValues(alpha: 0.6),
+                ],
+              ),
+            ),
           ),
-          // Action buttons
+
+          // Conteúdo do header
           Positioned(
-            top: r.s(12),
-            right: r.s(12),
+            left: 0,
+            right: 0,
+            bottom: 0,
+            top: topPadding,
             child: Row(
               children: [
-                _CoverActionButton(
-                  icon: Icons.camera_alt_rounded,
-                  label: 'Trocar',
-                  onTap: _pickCoverImage,
+                // Botão voltar
+                IconButton(
+                  onPressed: _handleClose,
+                  icon: Icon(
+                    Icons.arrow_back_rounded,
+                    color: Colors.white,
+                    size: r.s(24),
+                  ),
+                  tooltip: 'Voltar',
                 ),
-                SizedBox(width: r.s(8)),
-                _CoverActionButton(
-                  icon: Icons.close_rounded,
-                  label: 'Remover',
-                  onTap: () => setState(() => _coverImageUrl = null),
+
+                // Título centralizado
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _isEditing ? 'Editar Blog' : 'Novo Blog',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: r.fs(18),
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      if (_draftId != null) ...[
+                        SizedBox(height: r.s(2)),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: r.s(8), vertical: r.s(2)),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(r.s(4)),
+                          ),
+                          child: Text(
+                            'Rascunho',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              fontSize: r.fs(10),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
+
+                // Botão publicar (check)
+                _isSubmitting
+                    ? Padding(
+                        padding: EdgeInsets.all(r.s(12)),
+                        child: SizedBox(
+                          width: r.s(22),
+                          height: r.s(22),
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        ),
+                      )
+                    : IconButton(
+                        onPressed: _submit,
+                        icon: Icon(
+                          Icons.check_rounded,
+                          color: Colors.white,
+                          size: r.s(26),
+                        ),
+                        tooltip: _isEditing ? 'Salvar' : 'Publicar',
+                      ),
               ],
             ),
           ),
         ],
-      );
-    }
+      ),
+    );
+  }
 
-    return GestureDetector(
-      onTap: _isUploadingCover ? null : _pickCoverImage,
-      child: Container(
-        margin: EdgeInsets.fromLTRB(r.s(20), r.s(8), r.s(20), 0),
-        height: r.s(140),
-        decoration: BoxDecoration(
-          color: context.surfaceColor,
-          borderRadius: BorderRadius.circular(r.s(16)),
-          border: Border.all(
+  // ═══════════════════════════════════════════════════════════════════════════
+  // BOTTOM TOOLBAR (barra fixa inferior estilo Amino)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  Widget _buildBottomToolbar(Responsive r, dynamic s) {
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
+    return Container(
+      padding: EdgeInsets.only(
+        left: r.s(8),
+        right: r.s(8),
+        top: r.s(8),
+        bottom: r.s(8) + bottomPadding,
+      ),
+      decoration: BoxDecoration(
+        color: context.surfaceColor,
+        border: Border(
+          top: BorderSide(
             color: context.dividerClr.withValues(alpha: 0.3),
-            width: 1.5,
-            strokeAlign: BorderSide.strokeAlignInside,
+            width: 0.5,
           ),
         ),
-        child: Center(
-          child: _isUploadingCover
-              ? CircularProgressIndicator(
-                  color: AppTheme.primaryColor,
-                  strokeWidth: 2,
-                )
-              : Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(r.s(12)),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryColor
-                            .withValues(alpha: 0.08),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.add_photo_alternate_outlined,
-                        color: AppTheme.primaryColor
-                            .withValues(alpha: 0.7),
-                        size: r.s(28),
-                      ),
-                    ),
-                    SizedBox(height: r.s(10)),
-                    Text(
-                      'Adicionar capa',
-                      style: TextStyle(
-                        color: context.textSecondary,
-                        fontSize: r.fs(13),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    SizedBox(height: r.s(2)),
-                    Text(
-                      'Recomendado: 1200 x 630px',
-                      style: TextStyle(
-                        color: context.textSecondary
-                            .withValues(alpha: 0.5),
-                        fontSize: r.fs(11),
-                      ),
-                    ),
-                  ],
+      ),
+      child: Row(
+        children: [
+          // Câmera / Inserir imagem no conteúdo
+          _BottomToolbarButton(
+            icon: Icons.camera_alt_outlined,
+            tooltip: 'Inserir imagem',
+            onTap: () {
+              // Adiciona um bloco de imagem no conteúdo
+              setState(() {
+                _blocks.add(ContentBlock(type: BlockType.image));
+              });
+            },
+          ),
+
+          SizedBox(width: r.s(4)),
+
+          // Capa do blog
+          _BottomToolbarButton(
+            icon: Icons.photo_library_outlined,
+            tooltip: 'Capa do blog',
+            badge: _coverImageUrl != null,
+            onTap: () {
+              if (_coverImageUrl != null) {
+                // Se já tem capa, abrir opções
+                _openSettings();
+              } else {
+                _pickCoverImage();
+              }
+            },
+          ),
+
+          SizedBox(width: r.s(4)),
+
+          // Inserir blocos (texto, subtítulo, citação, divisor)
+          _BottomToolbarButton(
+            icon: Icons.add_circle_outline_rounded,
+            tooltip: 'Inserir bloco',
+            onTap: _showInsertBlockSheet,
+          ),
+
+          SizedBox(width: r.s(4)),
+
+          // Preview
+          _BottomToolbarButton(
+            icon: Icons.visibility_outlined,
+            tooltip: 'Pré-visualizar',
+            onTap: _openPreview,
+          ),
+
+          SizedBox(width: r.s(4)),
+
+          // Salvar rascunho
+          _BottomToolbarButton(
+            icon: Icons.save_outlined,
+            tooltip: 'Salvar rascunho',
+            isLoading: _isSavingDraft,
+            onTap: (_isSavingDraft || _isSubmitting)
+                ? null
+                : () => _saveDraft(),
+          ),
+
+          const Spacer(),
+
+          // Botão Configurações (estilo "Categorias" do Amino)
+          GestureDetector(
+            onTap: _openSettings,
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                  horizontal: r.s(14), vertical: r.s(8)),
+              decoration: BoxDecoration(
+                color: context.cardBg,
+                borderRadius: BorderRadius.circular(r.s(8)),
+                border: Border.all(
+                  color: context.dividerClr.withValues(alpha: 0.5),
                 ),
-        ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.tune_rounded,
+                    color: context.textSecondary,
+                    size: r.s(16),
+                  ),
+                  SizedBox(width: r.s(6)),
+                  Text(
+                    'Opções',
+                    style: TextStyle(
+                      color: context.textSecondary,
+                      fontSize: r.fs(13),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1608,14 +1950,90 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
 // WIDGETS AUXILIARES
 // =============================================================================
 
-class _CoverActionButton extends StatelessWidget {
+class _BottomToolbarButton extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback? onTap;
+  final bool badge;
+  final bool isLoading;
+
+  const _BottomToolbarButton({
+    required this.icon,
+    required this.tooltip,
+    this.onTap,
+    this.badge = false,
+    this.isLoading = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(r.s(8)),
+        child: Container(
+          width: r.s(40),
+          height: r.s(40),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(r.s(8)),
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              if (isLoading)
+                SizedBox(
+                  width: r.s(18),
+                  height: r.s(18),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: context.textSecondary,
+                  ),
+                )
+              else
+                Icon(
+                  icon,
+                  color: onTap != null
+                      ? context.textSecondary
+                      : context.textHint,
+                  size: r.s(22),
+                ),
+              if (badge)
+                Positioned(
+                  top: r.s(4),
+                  right: r.s(4),
+                  child: Container(
+                    width: r.s(8),
+                    height: r.s(8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryColor,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: context.surfaceColor,
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _InsertBlockOption extends StatelessWidget {
   final IconData icon;
   final String label;
+  final Color color;
   final VoidCallback onTap;
 
-  const _CoverActionButton({
+  const _InsertBlockOption({
     required this.icon,
     required this.label,
+    required this.color,
     required this.onTap,
   });
 
@@ -1624,28 +2042,28 @@ class _CoverActionButton extends StatelessWidget {
     final r = context.r;
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding:
-            EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(6)),
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.6),
-          borderRadius: BorderRadius.circular(r.s(8)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: Colors.white, size: r.s(14)),
-            SizedBox(width: r.s(4)),
-            Text(
-              label,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: r.fs(11),
-                fontWeight: FontWeight.w600,
-              ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: r.s(52),
+            height: r.s(52),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(r.s(14)),
             ),
-          ],
-        ),
+            child: Icon(icon, color: color, size: r.s(24)),
+          ),
+          SizedBox(height: r.s(6)),
+          Text(
+            label,
+            style: TextStyle(
+              color: context.textSecondary,
+              fontSize: r.fs(11),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }
