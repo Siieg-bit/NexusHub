@@ -17,7 +17,7 @@ final globalFeedProvider = FutureProvider<List<PostModel>>((ref) async {
   // Buscar posts das comunidades que o usuário participa
   final response = await SupabaseService.table('posts')
       .select(
-          '*, profiles!posts_author_id_fkey(*), communities!posts_community_id_fkey(name, icon_url, theme_color), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url), original_post:posts!posts_original_post_id_fkey(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id, profiles!posts_author_id_fkey(id, nickname, icon_url))')
+          '*, profiles!posts_author_id_fkey(*), communities!posts_community_id_fkey(name, icon_url, theme_color), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
       .eq('status', 'ok')
       .order('created_at', ascending: false)
       .limit(30);

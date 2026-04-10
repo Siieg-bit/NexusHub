@@ -99,7 +99,7 @@ final userProfileProvider =
 final userPostsProvider =
     FutureProvider.family<List<PostModel>, String>((ref, userId) async {
   final response = await SupabaseService.table('posts')
-      .select('*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url), original_post:posts!posts_original_post_id_fkey(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id, profiles!posts_author_id_fkey(id, nickname, icon_url))')
+      .select('*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
       .eq('author_id', userId)
       .eq('status', 'ok')
       .order('created_at', ascending: false)

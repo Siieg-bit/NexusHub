@@ -24,10 +24,9 @@ import 'package:flutter/foundation.dart';
 const _kPostSelect =
     '*, profiles!posts_author_id_fkey(id, nickname, icon_url), '
     'original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url), '
-    'original_post:posts!posts_original_post_id_fkey('
+    'original_post:original_post_id('
     'id, title, content, type, cover_image_url, media_list, created_at, '
-    'author_id, community_id, original_post_id, '
-    'profiles!posts_author_id_fkey(id, nickname, icon_url)'
+    'author_id, community_id, original_post_id'
     ')';
 
 /// Helper: normaliza um map de post retornado pelo Supabase,

@@ -140,7 +140,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
       // Buscar posts com filtros
       dynamic postQuery = SupabaseService.table('posts')
           .select(
-              '*, profiles!posts_author_id_fkey(id, nickname, icon_url, level), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url), original_post:posts!posts_original_post_id_fkey(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id, profiles!posts_author_id_fkey(id, nickname, icon_url))')
+              '*, profiles!posts_author_id_fkey(id, nickname, icon_url, level), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url), original_post:original_post_id(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id)')
           .eq('community_id', widget.communityId)
           .ilike('title', pattern);
 
