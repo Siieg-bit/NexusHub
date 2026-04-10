@@ -2685,6 +2685,8 @@ class AppStringsJa implements AppStrings {
   @override
   String get noPermissionEditPost => 'この投稿を編集する権限がありません。';
   @override
+  String get noGuidelinesYet => 'このコミュニティにはまだガイドラインが設定されていません。';
+  @override
   String get noPublicChatsYet => 'まだ公開チャットはありません。';
   @override
   String get noPublicChatsYetShort => 'まだ公開チャットはありません';

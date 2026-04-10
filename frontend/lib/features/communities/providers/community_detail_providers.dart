@@ -231,3 +231,17 @@ const Map<String, dynamic> defaultLayout = {
     'show_create_button': true,
   },
 };
+
+/// Guidelines da comunidade (tabela guidelines)
+final guidelinesProvider =
+    FutureProvider.family<Map<String, dynamic>?, String>((ref, communityId) async {
+  try {
+    final response = await SupabaseService.table('guidelines')
+        .select('title, content, updated_at')
+        .eq('community_id', communityId)
+        .maybeSingle();
+    return response as Map<String, dynamic>?;
+  } catch (_) {
+    return null;
+  }
+});

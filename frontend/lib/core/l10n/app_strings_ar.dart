@@ -3795,6 +3795,8 @@ class AppStringsAr implements AppStrings {
   @override
   String get noPermissionEditPost => 'ليس لديك إذن لتحرير هذه المشاركة.';
   @override
+  String get noGuidelinesYet => 'لم يتم تحديد إرشادات لهذا المجتمع بعد.';
+  @override
   String get noPublicChatsYet => 'لا توجد محادثات عامة بعد.';
   @override
   String get noPublicChatsYetShort => 'لا توجد محادثات عامة بعد';

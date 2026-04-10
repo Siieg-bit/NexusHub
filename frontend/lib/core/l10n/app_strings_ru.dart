@@ -4081,6 +4081,8 @@ class AppStringsRu implements AppStrings {
   @override
   String get noPermissionEditPost => 'У вас нет прав на редактирование этого поста.';
   @override
+  String get noGuidelinesYet => 'Для этого сообщества ещё не установлены правила.';
+  @override
   String get noPublicChatsYet => 'Публичных чатов пока нет.';
   @override
   String get noPublicChatsYetShort => 'Публичных чатов пока нет';

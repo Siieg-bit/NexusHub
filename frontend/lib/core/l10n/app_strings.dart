@@ -1413,6 +1413,7 @@ abstract class AppStrings {
   String get noOneCanCommentWallDesc;
   String get noPermissionEditPost;
   String get noPublicChatsYet;
+  String get noGuidelinesYet;
   String get noPublicChatsYetShort;
   String get noSectionsEnabledMsg;
   String get noTransactionsYetMsg;

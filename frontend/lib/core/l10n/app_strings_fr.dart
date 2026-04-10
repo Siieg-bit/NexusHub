@@ -2919,6 +2919,8 @@ class AppStringsFr implements AppStrings {
   @override
   String get noPermissionEditPost => 'Vous n\'avez pas la permission de modifier ce post.';
   @override
+  String get noGuidelinesYet => "Aucune directive n'a encore été définie pour cette communauté.";
+  @override
   String get noPublicChatsYet => 'Pas encore de chats publics.';
   @override
   String get noPublicChatsYetShort => 'Pas encore de chats publics';

@@ -2821,6 +2821,8 @@ class AppStringsPt implements AppStrings {
   @override
   String get noPermissionEditPost => 'Você não tem permissão para editar este post.';
   @override
+  String get noGuidelinesYet => 'Nenhuma diretriz foi definida para esta comunidade ainda.';
+  @override
   String get noPublicChatsYet => 'Nenhum chat público ainda.';
   @override
   String get noPublicChatsYetShort => 'Nenhum chat público ainda';

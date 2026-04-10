@@ -3469,6 +3469,8 @@ class AppStringsKo implements AppStrings {
   @override
   String get noPermissionEditPost => '이 게시물을 편집할 권한이 없습니다.';
   @override
+  String get noGuidelinesYet => '이 커뮤니티에 대한 가이드라인이 아직 설정되지 않았습니다.';
+  @override
   String get noPublicChatsYet => '아직 공개 채팅이 없습니다.';
   @override
   String get noPublicChatsYetShort => '아직 공개 채팅이 없습니다';

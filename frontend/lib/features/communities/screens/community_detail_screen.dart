@@ -84,7 +84,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     if (visible['guidelines'] != false) tabs.add(s.guidelines);
     if (visible['featured_posts'] != false) tabs.add(s.featured);
     if (visible['latest_feed'] != false) tabs.add(s.latest);
-    if (visible['public_chats'] != false) tabs.add(s.publicChatsLabel);
+    if (visible['public_chats'] != false) tabs.add(s.chats);
 
     // Guard: se a lista de tabs não mudou, não recriar o controller
     if (tabs.length == _activeTabs.length && _listEquals(tabs, _activeTabs))
@@ -690,20 +690,19 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
           ? TabBarView(
               controller: _tabController,
               children: _activeTabs.map((tab) {
-                switch (tab) {
-                  case 'Diretrizes':
-                    return CommunityGuidelinesTab(community: community);
-                  case 'Destaques':
+                if (tab == s.guidelines) {
+                    return CommunityGuidelinesTab(communityId: widget.communityId);
+                  } else if (tab == s.featured) {
                     return CommunityFeedTab(
                         communityId: widget.communityId, isFeatured: true);
-                  case 'Recentes':
+                  } else if (tab == s.latest) {
                     return CommunityFeedTab(
                         communityId: widget.communityId, isFeatured: false);
-                  case 'Chats':
+                  } else if (tab == s.chats) {
                     return CommunityChatTab(communityId: widget.communityId);
-                  default:
+                  } else {
                     return const SizedBox.shrink();
-                }
+                  }
               }).toList(),
             )
           : Center(

@@ -2703,6 +2703,8 @@ class AppStringsEs implements AppStrings {
   @override
   String get noPermissionEditPost => 'No tienes permiso para editar esta publicación.';
   @override
+  String get noGuidelinesYet => 'Aún no se han definido directrices para esta comunidad.';
+  @override
   String get noPublicChatsYet => 'Aún no hay chats públicos.';
   @override
   String get noPublicChatsYetShort => 'Aún no hay chats públicos';
