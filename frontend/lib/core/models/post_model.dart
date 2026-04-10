@@ -1,4 +1,5 @@
 import 'user_model.dart';
+import 'post_editor_model.dart';
 
 /// Modelo de post/blog do feed.
 /// Baseado no schema v5 — engenharia reversa do APK Amino (Blog.smali).
@@ -6,6 +7,12 @@ class PostModel {
   final String id;
   final String communityId;
   final String authorId;
+  final String? editorType;
+  final String? variant;
+  final PostEditorModel editorMetadata;
+  final Map<String, dynamic>? storyData;
+  final Map<String, dynamic>? chatData;
+  final Map<String, dynamic>? wikiData;
   final String
       type; // enum: normal, crosspost, repost, qa, poll, link, quiz, image, external
   final String? title;
@@ -25,6 +32,7 @@ class PostModel {
       pollData; // JSONB: {options: [{text, votes}], totalVotes, userVote}
   final Map<String, dynamic>?
       quizData; // JSONB: {questions: [{text, options, correctIndex}]}
+  final Map<String, dynamic>? editorState;
   final int likesCount;
   final int commentsCount;
   final int viewsCount;
@@ -54,6 +62,12 @@ class PostModel {
     required this.id,
     required this.communityId,
     required this.authorId,
+    this.editorType,
+    this.variant,
+    this.editorMetadata = const PostEditorModel(),
+    this.storyData,
+    this.chatData,
+    this.wikiData,
     this.type = 'normal',
     this.title,
     required this.content,
@@ -69,6 +83,7 @@ class PostModel {
     this.linkSummary,
     this.pollData,
     this.quizData,
+    this.editorState,
     this.likesCount = 0,
     this.commentsCount = 0,
     this.viewsCount = 0,
@@ -95,6 +110,14 @@ class PostModel {
       id: json['id'] as String,
       communityId: json['community_id'] as String? ?? '',
       authorId: json['author_id'] as String? ?? '',
+      editorType: json['editor_type'] as String?,
+      variant: json['variant'] as String? ?? json['post_variant'] as String?,
+      editorMetadata: PostEditorModel.fromJson(
+        json['editor_metadata'] as Map<String, dynamic>?,
+      ),
+      storyData: json['story_data'] as Map<String, dynamic>?,
+      chatData: json['chat_data'] as Map<String, dynamic>?,
+      wikiData: json['wiki_data'] as Map<String, dynamic>?,
       type: json['type'] as String? ?? 'normal',
       title: json['title'] as String?,
       content: json['content'] as String? ?? '',
@@ -117,6 +140,7 @@ class PostModel {
       linkSummary: json['link_summary'] as Map<String, dynamic>?,
       pollData: json['poll_data'] as Map<String, dynamic>?,
       quizData: json['quiz_data'] as Map<String, dynamic>?,
+      editorState: json['editor_state'] as Map<String, dynamic>?,
       likesCount: (json['likes_count'] as num?)?.toInt() ?? 0,
       commentsCount: (json['comments_count'] as num?)?.toInt() ?? 0,
       viewsCount: (json['views_count'] as num?)?.toInt() ?? 0,
@@ -159,6 +183,12 @@ class PostModel {
     return {
       'community_id': communityId,
       'author_id': authorId,
+      if (editorType != null) 'editor_type': editorType,
+      if (variant != null) 'variant': variant,
+      'editor_metadata': editorMetadata.toJson(),
+      if (storyData != null) 'story_data': storyData,
+      if (chatData != null) 'chat_data': chatData,
+      if (wikiData != null) 'wiki_data': wikiData,
       'type': type,
       'title': title,
       'content': content,
@@ -171,6 +201,7 @@ class PostModel {
       'tags': tags,
       if (pollData != null) 'poll_data': pollData,
       if (quizData != null) 'quiz_data': quizData,
+      if (editorState != null) 'editor_state': editorState,
     };
   }
 
@@ -189,6 +220,12 @@ class PostModel {
       id: id,
       communityId: communityId,
       authorId: authorId,
+      editorType: editorType,
+      variant: variant,
+      editorMetadata: editorMetadata,
+      storyData: storyData,
+      chatData: chatData,
+      wikiData: wikiData,
       type: type,
       title: title,
       content: content,
@@ -204,6 +241,7 @@ class PostModel {
       linkSummary: linkSummary,
       pollData: pollData,
       quizData: quizData,
+      editorState: editorState,
       likesCount: likesCount ?? this.likesCount,
       commentsCount: commentsCount ?? this.commentsCount,
       viewsCount: viewsCount,
@@ -237,6 +275,9 @@ class PostModel {
   }
 
   /// Extrai lista de URLs de mídia dos blocos e da mediaList
+  String get effectiveEditorType =>
+      editorType ?? variant ?? type;
+
   List<String> get mediaUrls {
     final urls = <String>[];
     if (mediaList.isNotEmpty) {

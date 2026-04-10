@@ -1,8 +1,9 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../services/supabase_service.dart';
-import '../models/post_model.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../models/post_editor_model.dart';
+import '../models/post_model.dart';
+import '../services/supabase_service.dart';
 
 /// ============================================================================
 /// PostProvider — State Management com AsyncNotifier para posts/feed.
@@ -12,25 +13,21 @@ import 'package:flutter/foundation.dart';
 /// - Detalhes de um post
 /// - Criar, editar, deletar post
 /// - Like/Unlike
-/// - Pinned posts (is_pinned = true)
-/// - Featured posts ativos (is_featured = true AND featured_until > now())
+/// - Posts fixados e destaques
 ///
-/// IMPORTANTE: Todos os providers injetam `is_liked` consultando a
-/// tabela `likes` para o usuário atual, garantindo persistência visual.
+/// Agora também centraliza a superfície do editor unificado para criação e
+/// edição rica, com suporte a variantes, metadados visuais e payloads avançados.
 /// ============================================================================
 
-/// Query de select padrão para posts — inclui autor, autor original e post original
-/// (necessário para renderizar reposts estilo Twitter no PostCard).
 const _kPostSelect =
     '*, profiles!posts_author_id_fkey(id, nickname, icon_url), '
     'original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url), '
     'original_post:original_post_id('
     'id, title, content, type, cover_image_url, media_list, created_at, '
-    'author_id, community_id, original_post_id'
+    'author_id, community_id, original_post_id, editor_type, post_variant, '
+    'editor_metadata, editor_state, story_data, chat_data, wiki_data'
     ')';
 
-/// Helper: normaliza um map de post retornado pelo Supabase,
-/// mapeando o join `profiles` para `author` e processando `original_post`.
 Map<String, dynamic> _normalizePostMap(Map<String, dynamic> map) {
   if (map['profiles'] != null) {
     map['author'] = map['profiles'];
@@ -45,10 +42,9 @@ Map<String, dynamic> _normalizePostMap(Map<String, dynamic> map) {
   return map;
 }
 
-/// Helper: dado uma lista de maps de posts, consulta a tabela likes
-/// para o usuário atual e injeta `is_liked` em cada map.
 Future<List<Map<String, dynamic>>> _injectIsLiked(
-    List<Map<String, dynamic>> posts) async {
+  List<Map<String, dynamic>> posts,
+) async {
   final userId = SupabaseService.currentUserId;
   if (userId == null || posts.isEmpty) return posts;
 
@@ -68,10 +64,124 @@ Future<List<Map<String, dynamic>>> _injectIsLiked(
     }
   } catch (e) {
     debugPrint('[post_provider] _injectIsLiked error: $e');
-    // Fallback: manter is_liked como false (default do PostModel)
   }
 
   return posts;
+}
+
+List<Map<String, dynamic>> _normalizeMediaList(dynamic rawMediaList) {
+  if (rawMediaList is List) {
+    return rawMediaList.map((item) {
+      if (item is Map<String, dynamic>) {
+        return Map<String, dynamic>.from(item);
+      }
+      if (item is Map) {
+        return Map<String, dynamic>.from(item);
+      }
+      final url = item?.toString() ?? '';
+      return {
+        'url': url,
+        'type': 'image',
+      };
+    }).where((item) => (item['url'] as String?)?.isNotEmpty == true).toList();
+  }
+  return const [];
+}
+
+List<Map<String, dynamic>> _extractPollOptions(Map<String, dynamic> postData) {
+  final direct = postData['poll_options'];
+  if (direct is List) {
+    return direct
+        .map((e) => Map<String, dynamic>.from(e as Map))
+        .toList(growable: false);
+  }
+
+  final pollData = postData['poll_data'];
+  if (pollData is Map && pollData['options'] is List) {
+    return (pollData['options'] as List)
+        .map((e) => Map<String, dynamic>.from(e as Map))
+        .toList(growable: false);
+  }
+
+  final editorMetadata = postData['editor_metadata'];
+  if (editorMetadata is Map && editorMetadata['poll_options'] is List) {
+    return (editorMetadata['poll_options'] as List)
+        .map((e) => Map<String, dynamic>.from(e as Map))
+        .toList(growable: false);
+  }
+
+  final metadataObject = postData['editorMetadata'];
+  if (metadataObject is PostEditorModel) {
+    return metadataObject.pollOptions
+        .map((e) => e.toJson())
+        .toList(growable: false);
+  }
+
+  return const [];
+}
+
+Map<String, dynamic> _normalizeEditorPayload(Map<String, dynamic> postData) {
+  final editorMetadataObject = postData['editorMetadata'];
+  final editorMetadataMap = editorMetadataObject is PostEditorModel
+      ? editorMetadataObject.toJson()
+      : Map<String, dynamic>.from(
+          postData['editor_metadata'] as Map? ?? const {},
+        );
+
+  final editorType = (postData['editor_type'] ??
+          postData['editorType'] ??
+          editorMetadataMap['editor_type'] ??
+          postData['post_variant'] ??
+          postData['variant'] ??
+          postData['type'] ??
+          PostEditorType.normal)
+      .toString();
+
+  final variant = (postData['post_variant'] ??
+          postData['variant'] ??
+          editorMetadataMap['variant'])
+      ?.toString();
+
+  final mediaList = _normalizeMediaList(postData['media_list']);
+  final coverImageUrl = (postData['cover_image_url'] ??
+          postData['coverImageUrl'] ??
+          editorMetadataMap['cover_style']?['cover_image_url'] ??
+          (mediaList.isNotEmpty ? mediaList.first['url'] : null))
+      ?.toString();
+
+  final backgroundUrl = (postData['background_url'] ??
+          postData['backgroundUrl'] ??
+          editorMetadataMap['cover_style']?['background_image_url'])
+      ?.toString();
+
+  return {
+    'title': postData['title'] ?? '',
+    'content': postData['content'],
+    'type': postData['type'] ?? 'normal',
+    'media_list': mediaList,
+    'category_id': postData['category_id'],
+    'poll_options': _extractPollOptions(postData),
+    'tags': List<String>.from(postData['tags'] as List? ?? const []),
+    'cover_image_url': coverImageUrl,
+    'background_url': backgroundUrl,
+    'external_url': postData['external_url'] ?? postData['externalUrl'],
+    'gif_url': postData['gif_url'],
+    'music_url': postData['music_url'],
+    'music_title': postData['music_title'],
+    'visibility': postData['visibility'] ?? 'public',
+    'comments_blocked': postData['comments_blocked'] ?? false,
+    'original_post_id': postData['original_post_id'],
+    'original_community_id': postData['original_community_id'],
+    'content_blocks': postData['content_blocks'] ?? const [],
+    'is_pinned_profile': postData['is_pinned_profile'] ?? false,
+    'editor_type': editorType,
+    'post_variant': variant,
+    'editor_metadata': editorMetadataMap,
+    'editor_state': postData['editor_state'],
+    'story_data': postData['story_data'],
+    'chat_data': postData['chat_data'],
+    'wiki_data': postData['wiki_data'],
+  };
 }
 
 class CommunityFeedNotifier
@@ -99,7 +209,6 @@ class CommunityFeedNotifier
         .map((e) => _normalizePostMap(Map<String, dynamic>.from(e as Map)))
         .toList();
 
-    // Injetar is_liked para o usuário atual
     await _injectIsLiked(list);
 
     final posts = list.map((e) => PostModel.fromJson(e)).toList();
@@ -114,7 +223,7 @@ class CommunityFeedNotifier
     try {
       final more = await _fetchPage(arg, _page);
       state = AsyncData([...current, ...more]);
-    } catch (e) {
+    } catch (_) {
       _page--;
     }
   }
@@ -131,26 +240,82 @@ class CommunityFeedNotifier
       final userId = SupabaseService.currentUserId;
       if (userId == null) return false;
 
-      // Usa RPC server-side para validação, reputação e atomicidade
+      final payload = _normalizeEditorPayload(postData);
+
       await SupabaseService.rpc('create_post_with_reputation', params: {
         'p_community_id': arg,
-        'p_title': postData['title'] ?? '',
-        'p_content': postData['content'],
-        'p_type': postData['type'] ?? 'normal',
-        'p_media_list': postData['media_list'] ?? [],
-        'p_cover_image_url': postData['cover_image_url'],
-        'p_background_url': postData['background_url'],
-        'p_external_url': postData['external_url'],
-        'p_gif_url': postData['gif_url'],
-        'p_music_url': postData['music_url'],
-        'p_music_title': postData['music_title'],
-        'p_visibility': postData['visibility'] ?? 'public',
-        'p_comments_blocked': postData['comments_blocked'] ?? false,
+        'p_title': payload['title'],
+        'p_content': payload['content'],
+        'p_type': payload['type'],
+        'p_media_list': payload['media_list'],
+        'p_category_id': payload['category_id'],
+        'p_poll_options': payload['poll_options'],
+        'p_tags': payload['tags'],
+        'p_cover_image_url': payload['cover_image_url'],
+        'p_background_url': payload['background_url'],
+        'p_external_url': payload['external_url'],
+        'p_gif_url': payload['gif_url'],
+        'p_music_url': payload['music_url'],
+        'p_music_title': payload['music_title'],
+        'p_visibility': payload['visibility'],
+        'p_comments_blocked': payload['comments_blocked'],
+        'p_original_post_id': payload['original_post_id'],
+        'p_original_community_id': payload['original_community_id'],
+        'p_content_blocks': payload['content_blocks'],
+        'p_is_pinned_profile': payload['is_pinned_profile'],
+        'p_editor_type': payload['editor_type'],
+        'p_post_variant': payload['post_variant'],
+        'p_editor_metadata': payload['editor_metadata'],
+        'p_editor_state': payload['editor_state'],
+        'p_story_data': payload['story_data'],
+        'p_chat_data': payload['chat_data'],
+        'p_wiki_data': payload['wiki_data'],
       });
 
       await refresh();
       return true;
     } catch (e) {
+      debugPrint('[post_provider] createPost error: $e');
+      return false;
+    }
+  }
+
+  Future<bool> editPost(String postId, Map<String, dynamic> postData) async {
+    try {
+      final payload = _normalizeEditorPayload(postData);
+
+      await SupabaseService.rpc('edit_post', params: {
+        'p_post_id': postId,
+        'p_title': payload['title'],
+        'p_content': payload['content'],
+        'p_type': payload['type'],
+        'p_media_list': payload['media_list'],
+        'p_category_id': payload['category_id'],
+        'p_poll_options': payload['poll_options'],
+        'p_tags': payload['tags'],
+        'p_cover_image_url': payload['cover_image_url'],
+        'p_background_url': payload['background_url'],
+        'p_external_url': payload['external_url'],
+        'p_gif_url': payload['gif_url'],
+        'p_music_url': payload['music_url'],
+        'p_music_title': payload['music_title'],
+        'p_visibility': payload['visibility'],
+        'p_comments_blocked': payload['comments_blocked'],
+        'p_content_blocks': payload['content_blocks'],
+        'p_is_pinned_profile': payload['is_pinned_profile'],
+        'p_editor_type': payload['editor_type'],
+        'p_post_variant': payload['post_variant'],
+        'p_editor_metadata': payload['editor_metadata'],
+        'p_editor_state': payload['editor_state'],
+        'p_story_data': payload['story_data'],
+        'p_chat_data': payload['chat_data'],
+        'p_wiki_data': payload['wiki_data'],
+      });
+
+      await refresh();
+      return true;
+    } catch (e) {
+      debugPrint('[post_provider] editPost error: $e');
       return false;
     }
   }
@@ -162,6 +327,7 @@ class CommunityFeedNotifier
       state = AsyncData(current.where((p) => p.id != postId).toList());
       return true;
     } catch (e) {
+      debugPrint('[post_provider] deletePost error: $e');
       return false;
     }
   }
@@ -171,7 +337,6 @@ class CommunityFeedNotifier
       await SupabaseService.client.rpc('toggle_post_like', params: {
         'p_post_id': postId,
       });
-      // Atualizar o post localmente usando copyWith
       final current = state.valueOrNull ?? [];
       final index = current.indexWhere((p) => p.id == postId);
       if (index >= 0) {
@@ -185,7 +350,7 @@ class CommunityFeedNotifier
         state = AsyncData(newList);
       }
     } catch (e) {
-      debugPrint('[post_provider] Erro: $e');
+      debugPrint('[post_provider] toggleLike error: $e');
     }
   }
 
@@ -195,7 +360,6 @@ class CommunityFeedNotifier
 final communityFeedProvider = AsyncNotifierProvider.family<
     CommunityFeedNotifier, List<PostModel>, String>(CommunityFeedNotifier.new);
 
-// ── Post Detail ──
 final postDetailProvider = FutureProvider.family<PostModel?, String>(
   (ref, postId) async {
     final res = await SupabaseService.table('posts')
@@ -206,13 +370,11 @@ final postDetailProvider = FutureProvider.family<PostModel?, String>(
     if (res == null) return null;
 
     final map = _normalizePostMap(Map<String, dynamic>.from(res));
-    // Injetar is_liked
     await _injectIsLiked([map]);
     return PostModel.fromJson(map);
   },
 );
 
-// ── Pinned Posts (posts fixados no topo da aba Destaque) ──
 final pinnedPostsProvider = FutureProvider.family<List<PostModel>, String>(
   (ref, communityId) async {
     final res = await SupabaseService.table('posts')
@@ -232,14 +394,10 @@ final pinnedPostsProvider = FutureProvider.family<List<PostModel>, String>(
   },
 );
 
-// ── Featured Posts ativos (is_featured=true e não expirados) ──
-final activeFeaturedPostsProvider =
-    FutureProvider.family<List<PostModel>, String>(
+final activeFeaturedPostsProvider = FutureProvider.family<List<PostModel>, String>(
   (ref, communityId) async {
     final now = DateTime.now().toUtc().toIso8601String();
 
-    // Busca posts com is_featured=true onde featured_until é NULL (sem expiração)
-    // OU featured_until > agora (ainda dentro do prazo)
     final res = await SupabaseService.table('posts')
         .select(_kPostSelect)
         .eq('community_id', communityId)
@@ -255,13 +413,11 @@ final activeFeaturedPostsProvider =
 
     await _injectIsLiked(list);
 
-    // Filtro extra no cliente para garantir (caso o Supabase não suporte o .or corretamente)
     final posts = list.map((e) => PostModel.fromJson(e)).toList();
     return posts.where((p) => p.isFeaturedActive).toList();
   },
 );
 
-// ── Latest Posts (posts recentes, excluindo fixados e destaques) ──
 final latestPostsProvider = FutureProvider.family<List<PostModel>, String>(
   (ref, communityId) async {
     final res = await SupabaseService.table('posts')
@@ -281,8 +437,6 @@ final latestPostsProvider = FutureProvider.family<List<PostModel>, String>(
   },
 );
 
-// ── Featured Posts (legado — mantido para compatibilidade) ──
 final featuredPostsProvider = FutureProvider.family<List<PostModel>, String>(
-  (ref, communityId) =>
-      ref.watch(activeFeaturedPostsProvider(communityId).future),
+  (ref, communityId) => ref.watch(activeFeaturedPostsProvider(communityId).future),
 );
