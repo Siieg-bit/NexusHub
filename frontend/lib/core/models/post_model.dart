@@ -42,6 +42,8 @@ class PostModel {
   /// Autor do post original (para reposts).
   /// Populado via join com profiles quando type = 'repost'.
   final UserModel? originalAuthor;
+  /// Dados completos do post original (para reposts — estilo retweet).
+  final PostModel? originalPost;
   final List<Map<String, dynamic>>? contentBlocks;
   /// Nível LOCAL do autor na comunidade deste post.
   /// Populado via community_members.local_level — NUNCA de profiles.level (global).
@@ -83,6 +85,7 @@ class PostModel {
     this.contentBlocks,
     this.authorLocalLevel,
     this.originalAuthor,
+    this.originalPost,
   });
 
   factory PostModel.fromJson(Map<String, dynamic> json) {
@@ -140,6 +143,9 @@ class PostModel {
       originalAuthor: json['original_author'] != null
           ? UserModel.fromJson(json['original_author'] as Map<String, dynamic>)
           : null,
+      originalPost: json['original_post'] != null
+          ? PostModel.fromJson(json['original_post'] as Map<String, dynamic>)
+          : null,
       contentBlocks: (json['content_blocks'] as List<dynamic>?)
           ?.map((e) => Map<String, dynamic>.from(e as Map))
           .toList(),
@@ -173,6 +179,7 @@ class PostModel {
     bool? isPinned,
     DateTime? featuredUntil,
     UserModel? originalAuthor,
+    PostModel? originalPost,
   }) {
     return PostModel(
       id: id,
@@ -209,6 +216,7 @@ class PostModel {
       isLiked: isLiked ?? this.isLiked,
       contentBlocks: contentBlocks,
       originalAuthor: originalAuthor ?? this.originalAuthor,
+      originalPost: originalPost ?? this.originalPost,
     );
   }
 

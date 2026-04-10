@@ -3711,4 +3711,5 @@ class AppStringsDe implements AppStrings {
 
   @override
   String get membersCount => 'Mitglieder';
+    String repostedBy(String username) => '$username hat repostet';
 }

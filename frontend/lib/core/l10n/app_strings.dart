@@ -1862,4 +1862,5 @@ abstract class AppStrings {
   String get repostConfirmMsg;
   String get repostNotificationTitle;
   String repostNotificationBody(String username);
+  String repostedBy(String username);
 }

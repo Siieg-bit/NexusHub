@@ -17,7 +17,7 @@ final globalFeedProvider = FutureProvider<List<PostModel>>((ref) async {
   // Buscar posts das comunidades que o usuário participa
   final response = await SupabaseService.table('posts')
       .select(
-          '*, profiles!posts_author_id_fkey(*), communities!posts_community_id_fkey(name, icon_url, theme_color)')
+          '*, profiles!posts_author_id_fkey(*), communities!posts_community_id_fkey(name, icon_url, theme_color), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url), original_post:posts!posts_original_post_id_fkey(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id, profiles!posts_author_id_fkey(id, nickname, icon_url))')
       .eq('status', 'ok')
       .order('created_at', ascending: false)
       .limit(30);
@@ -25,6 +25,11 @@ final globalFeedProvider = FutureProvider<List<PostModel>>((ref) async {
   return (response as List? ?? []).map((e) {
     final map = Map<String, dynamic>.from(e);
     if (map['profiles'] != null) map['author'] = map['profiles'];
+    if (map['original_post'] != null) {
+      final op = Map<String, dynamic>.from(map['original_post'] as Map);
+      if (op['profiles'] != null) op['author'] = op['profiles'];
+      map['original_post'] = op;
+    }
     return PostModel.fromJson(map);
   }).toList();
 });

@@ -99,7 +99,7 @@ final userProfileProvider =
 final userPostsProvider =
     FutureProvider.family<List<PostModel>, String>((ref, userId) async {
   final response = await SupabaseService.table('posts')
-      .select('*, profiles!posts_author_id_fkey(*)')
+      .select('*, profiles!posts_author_id_fkey(*), original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url), original_post:posts!posts_original_post_id_fkey(id, title, content, type, cover_image_url, media_list, created_at, author_id, community_id, original_post_id, profiles!posts_author_id_fkey(id, nickname, icon_url))')
       .eq('author_id', userId)
       .eq('status', 'ok')
       .order('created_at', ascending: false)
@@ -108,6 +108,11 @@ final userPostsProvider =
   return (response as List? ?? []).map((e) {
     final map = Map<String, dynamic>.from(e);
     if (map['profiles'] != null) map['author'] = map['profiles'];
+    if (map['original_post'] != null) {
+      final op = Map<String, dynamic>.from(map['original_post'] as Map);
+      if (op['profiles'] != null) op['author'] = op['profiles'];
+      map['original_post'] = op;
+    }
     return PostModel.fromJson(map);
   }).toList();
 });

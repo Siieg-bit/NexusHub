@@ -3577,4 +3577,5 @@ class AppStringsIt implements AppStrings {
 
   @override
   String get confirmationEmailSent => 'Email di conferma inviata a';
+    String repostedBy(String username) => '$username ha repostato';
 }

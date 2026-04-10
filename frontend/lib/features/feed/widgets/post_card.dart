@@ -13,6 +13,7 @@ import 'block_content_renderer.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/l10n/app_strings.dart';
 
 /// Card de post no feed — estilo Amino Apps (web-preview).
 /// Suporta todos os 9 tipos de post com renderização interativa.
@@ -220,8 +221,8 @@ class _PostCardState extends ConsumerState<PostCard>
             // ── Author header ──
             _buildAuthorHeader(context),
 
-            // ── Title ──
-            if ((_post.title ?? '').isNotEmpty)
+            // ── Title (oculto para reposts — título fica no card aninhado) ──
+            if (_post.type != 'repost' && (_post.title ?? '').isNotEmpty)
               Padding(
                 padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(4)),
                 child: Text(
@@ -237,35 +238,37 @@ class _PostCardState extends ConsumerState<PostCard>
                 ),
               ),
 
-            // ── Content (Block Editor ou texto simples) ──
-            if (_post.hasBlockContent)
-              Padding(
-                padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(8)),
-                child: BlockContentPreview(
-                  blocks: _post.contentBlocks ?? [],
-                  maxLines: 3,
-                ),
-              )
-            else
-              Padding(
-                padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(8)),
-                child: Text(
-                  _post.content,
-                  style: TextStyle(
-                    color: Colors.grey[400],
-                    fontSize: r.fs(12),
-                    height: 1.5,
+            // ── Content (oculto para reposts — conteúdo fica no card aninhado) ──
+            if (_post.type != 'repost') ...[  
+              if (_post.hasBlockContent)
+                Padding(
+                  padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(8)),
+                  child: BlockContentPreview(
+                    blocks: _post.contentBlocks ?? [],
+                    maxLines: 3,
                   ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
+                )
+              else
+                Padding(
+                  padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(8)),
+                  child: Text(
+                    _post.content,
+                    style: TextStyle(
+                      color: Colors.grey[400],
+                      fontSize: r.fs(12),
+                      height: 1.5,
+                    ),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
+            ],
 
             // ── Type-specific content ──
             _buildTypeSpecificContent(),
 
-            // ── Media (formato square 1:1) ──
-            if ((_post.mediaUrl ?? '').isNotEmpty)
+            // ── Media (oculto para reposts — mídia fica no card aninhado) ──
+            if (_post.type != 'repost' && (_post.mediaUrl ?? '').isNotEmpty)
               Padding(
                 padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(8)),
                 child: AspectRatio(
@@ -830,12 +833,11 @@ class _PostCardState extends ConsumerState<PostCard>
   Widget _buildCrosspostBanner() {
     final s = ref.read(stringsProvider);
     final r = context.r;
-    final isRepost = _post.type == 'repost';
-    final label = isRepost ? 'Repost' : s.crosspost;
-    final icon = isRepost ? Icons.repeat_rounded : Icons.share_rounded;
-    final color = isRepost ? const Color(0xFF607D8B) : const Color(0xFF9C27B0);
-    final originId = _post.originalCommunityId;
-
+    if (_post.type == 'repost') {
+      return _buildRepostCard(s, r);
+    }
+    // crosspost legacy
+    final color = const Color(0xFF9C27B0);
     return Padding(
       padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(8)),
       child: GestureDetector(
@@ -853,47 +855,192 @@ class _PostCardState extends ConsumerState<PostCard>
           ),
           child: Row(
             children: [
-              Container(
-                width: r.s(36),
-                height: r.s(36),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(r.s(8)),
-                ),
-                child: Icon(icon, color: color, size: r.s(18)),
-              ),
-              SizedBox(width: r.s(12)),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      label,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: r.fs(12),
-                        color: color,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      originId != null
-                          ? 'De outra comunidade'
-                          : 'Post compartilhado',
-                      style: TextStyle(
-                        color: Colors.grey[500],
-                        fontSize: r.fs(10),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(Icons.open_in_new_rounded,
-                  size: r.s(14), color: Colors.grey[600]),
+              Icon(Icons.share_rounded, color: color, size: r.s(18)),
+              SizedBox(width: r.s(8)),
+              Text(s.crosspost,
+                  style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.w700,
+                      fontSize: r.fs(12))),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  /// Card de repost estilo Twitter/X:
+  /// - Linha "X repostou" acima do card
+  /// - Card aninhado com o conteúdo do post original (clicável)
+  Widget _buildRepostCard(dynamic s, dynamic r) {
+    final originalPost = _post.originalPost;
+    final originalAuthor = _post.originalAuthor ?? originalPost?.author;
+    final reposterName = _post.author?.nickname ?? s.user;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ── "X repostou" banner ──
+        Padding(
+          padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(6)),
+          child: Row(
+            children: [
+              Icon(Icons.repeat_rounded,
+                  size: r.s(14), color: Colors.grey[500]),
+              SizedBox(width: r.s(5)),
+              Text(
+                s.repostedBy(reposterName),
+                style: TextStyle(
+                  color: Colors.grey[500],
+                  fontSize: r.fs(11),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+        // ── Card aninhado do post original ──
+        Padding(
+          padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(8)),
+          child: GestureDetector(
+            onTap: () {
+              if (_post.originalPostId != null) {
+                context.push('/post/${_post.originalPostId}');
+              }
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                color: context.surfaceColor,
+                borderRadius: BorderRadius.circular(r.s(10)),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.08),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header do post original
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(
+                        r.s(10), r.s(10), r.s(10), r.s(6)),
+                    child: Row(
+                      children: [
+                        if (originalAuthor?.iconUrl != null)
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(r.s(14)),
+                            child: CachedNetworkImage(
+                              imageUrl: originalAuthor!.iconUrl!,
+                              width: r.s(28),
+                              height: r.s(28),
+                              fit: BoxFit.cover,
+                              errorWidget: (_, __, ___) => CircleAvatar(
+                                radius: r.s(14),
+                                backgroundColor:
+                                    AppTheme.primaryColor.withValues(alpha: 0.3),
+                                child: Icon(Icons.person_rounded,
+                                    size: r.s(14),
+                                    color: AppTheme.primaryColor),
+                              ),
+                            ),
+                          )
+                        else
+                          CircleAvatar(
+                            radius: r.s(14),
+                            backgroundColor:
+                                AppTheme.primaryColor.withValues(alpha: 0.3),
+                            child: Icon(Icons.person_rounded,
+                                size: r.s(14),
+                                color: AppTheme.primaryColor),
+                          ),
+                        SizedBox(width: r.s(8)),
+                        Expanded(
+                          child: Text(
+                            originalAuthor?.nickname ?? s.user,
+                            style: TextStyle(
+                              color: context.textPrimary,
+                              fontWeight: FontWeight.w600,
+                              fontSize: r.fs(12),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Icon(Icons.open_in_new_rounded,
+                            size: r.s(12), color: Colors.grey[600]),
+                      ],
+                    ),
+                  ),
+                  // Título do post original
+                  if ((originalPost?.title ?? '').isNotEmpty)
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(
+                          r.s(10), 0, r.s(10), r.s(4)),
+                      child: Text(
+                        originalPost!.title!,
+                        style: TextStyle(
+                          color: context.textPrimary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: r.fs(13),
+                          height: 1.3,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  // Conteúdo do post original
+                  if (originalPost != null &&
+                      (originalPost.content).isNotEmpty)
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(
+                          r.s(10), 0, r.s(10), r.s(8)),
+                      child: Text(
+                        originalPost.content,
+                        style: TextStyle(
+                          color: Colors.grey[400],
+                          fontSize: r.fs(12),
+                          height: 1.5,
+                        ),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  // Imagem de capa do post original
+                  if (originalPost?.coverImageUrl != null ||
+                      originalPost?.mediaUrl != null)
+                    ClipRRect(
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(r.s(10)),
+                        bottomRight: Radius.circular(r.s(10)),
+                      ),
+                      child: CachedNetworkImage(
+                        imageUrl: originalPost?.coverImageUrl ??
+                            originalPost!.mediaUrl!,
+                        width: double.infinity,
+                        height: r.s(160),
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  else if (originalPost == null)
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(
+                          r.s(10), 0, r.s(10), r.s(10)),
+                      child: Text(
+                        s.postNotFoundMsg,
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: r.fs(11),
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    )
+                  else
+                    SizedBox(height: r.s(4)),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

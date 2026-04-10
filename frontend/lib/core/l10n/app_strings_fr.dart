@@ -3625,4 +3625,5 @@ class AppStringsFr implements AppStrings {
 
   @override
   String get confirmationEmailSent => 'E-mail de confirmation envoyé à';
+    String repostedBy(String username) => '$username a reposté';
 }

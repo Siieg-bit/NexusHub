@@ -3688,4 +3688,5 @@ class AppStringsPt implements AppStrings {
   String get repostNotificationTitle => 'Novo Repost';
   @override
   String repostNotificationBody(String username)=>'$username republicou seu post.';
+  String repostedBy(String username) => '$username repostou';
 }

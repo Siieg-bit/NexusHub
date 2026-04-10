@@ -16,6 +16,7 @@ import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../moderation/widgets/report_dialog.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/providers/block_provider.dart';
 
 /// Provider para comentários de um post.
@@ -534,9 +535,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // ======================================================
-                        // TÍTULO
+                        // TÍTULO (oculto para reposts — título fica no card aninhado)
                         // ======================================================
-                        if (post.title != null && post.title!.isNotEmpty)
+                        if (post.type != 'repost' &&
+                            post.title != null &&
+                            post.title!.isNotEmpty)
                           Padding(
                             padding: EdgeInsets.fromLTRB(
                                 r.s(16), r.s(16), r.s(16), r.s(4)),
@@ -720,9 +723,15 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           ),
 
                         // ======================================================
-                        // CONTEÚDO (Block Editor ou texto simples)
+                        // REPOST — Card do post original (estilo Twitter)
                         // ======================================================
-                        if (post.hasBlockContent)
+                        if (post.type == 'repost')
+                          _buildOriginalPostCard(post, r, s),
+                        // ======================================================
+                        // CONTEÚDO (Block Editor ou texto simples)
+                        // Oculto para reposts — conteúdo fica no card aninhado
+                        // ======================================================
+                        if (post.type != 'repost' && post.hasBlockContent)
                           Padding(
                             padding: EdgeInsets.symmetric(vertical: r.s(8)),
                             child: BlockContentRenderer(
@@ -730,7 +739,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                               backgroundUrl: post.backgroundUrl,
                             ),
                           )
-                        else
+                        else if (post.type != 'repost')
                           Padding(
                             padding: EdgeInsets.fromLTRB(
                                 r.s(16), 0, r.s(16), r.s(16)),
@@ -1247,6 +1256,152 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  // ======================================================
+  // REPOST — Card do post original (estilo Twitter/X)
+  // ======================================================
+  Widget _buildOriginalPostCard(PostModel post, dynamic r, dynamic s) {
+    final originalPost = post.originalPost;
+    final originalAuthor = post.originalAuthor ?? originalPost?.author;
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(r.s(16), 0, r.s(16), r.s(16)),
+      child: GestureDetector(
+        onTap: () {
+          if (post.originalPostId != null) {
+            context.push('/post/${post.originalPostId}');
+          }
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: context.surfaceColor,
+            borderRadius: BorderRadius.circular(r.s(12)),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.08),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header do post original
+              Padding(
+                padding:
+                    EdgeInsets.fromLTRB(r.s(12), r.s(12), r.s(12), r.s(6)),
+                child: Row(
+                  children: [
+                    if (originalAuthor?.iconUrl != null)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(r.s(16)),
+                        child: CachedNetworkImage(
+                          imageUrl: originalAuthor!.iconUrl!,
+                          width: r.s(32),
+                          height: r.s(32),
+                          fit: BoxFit.cover,
+                          errorWidget: (_, __, ___) => CircleAvatar(
+                            radius: r.s(16),
+                            backgroundColor:
+                                AppTheme.primaryColor.withValues(alpha: 0.3),
+                            child: Icon(Icons.person_rounded,
+                                size: r.s(16),
+                                color: AppTheme.primaryColor),
+                          ),
+                        ),
+                      )
+                    else
+                      CircleAvatar(
+                        radius: r.s(16),
+                        backgroundColor:
+                            AppTheme.primaryColor.withValues(alpha: 0.3),
+                        child: Icon(Icons.person_rounded,
+                            size: r.s(16),
+                            color: AppTheme.primaryColor),
+                      ),
+                    SizedBox(width: r.s(10)),
+                    Expanded(
+                      child: Text(
+                        originalAuthor?.nickname ?? s.user,
+                        style: TextStyle(
+                          color: context.textPrimary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: r.fs(14),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Icon(Icons.open_in_new_rounded,
+                        size: r.s(14), color: Colors.grey[600]),
+                  ],
+                ),
+              ),
+              // Título do post original
+              if ((originalPost?.title ?? '').isNotEmpty)
+                Padding(
+                  padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(6)),
+                  child: Text(
+                    originalPost!.title!,
+                    style: TextStyle(
+                      color: context.textPrimary,
+                      fontWeight: FontWeight.w700,
+                      fontSize: r.fs(15),
+                      height: 1.3,
+                    ),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              // Conteúdo do post original
+              if (originalPost != null && originalPost.content.isNotEmpty)
+                Padding(
+                  padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(10)),
+                  child: Text(
+                    originalPost.content,
+                    style: TextStyle(
+                      color: Colors.grey[400],
+                      fontSize: r.fs(14),
+                      height: 1.5,
+                    ),
+                    maxLines: 5,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              // Imagem de capa do post original
+              if (originalPost?.coverImageUrl != null ||
+                  originalPost?.mediaUrl != null)
+                ClipRRect(
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(r.s(12)),
+                    bottomRight: Radius.circular(r.s(12)),
+                  ),
+                  child: CachedNetworkImage(
+                    imageUrl:
+                        originalPost?.coverImageUrl ?? originalPost!.mediaUrl!,
+                    width: double.infinity,
+                    height: r.s(200),
+                    fit: BoxFit.cover,
+                    errorWidget: (_, __, ___) => const SizedBox.shrink(),
+                  ),
+                )
+              else if (originalPost == null)
+                Padding(
+                  padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(12)),
+                  child: Text(
+                    s.postNotFoundMsg,
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: r.fs(13),
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                )
+              else
+                SizedBox(height: r.s(4)),
+            ],
+          ),
         ),
       ),
     );

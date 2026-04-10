@@ -4703,4 +4703,5 @@ class AppStringsRu implements AppStrings {
 
   @override
   String get confirmationEmailSent => 'Письмо с подтверждением отправлено на';
+    String repostedBy(String username) => '$username сделал репост';
 }

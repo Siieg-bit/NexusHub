@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/supabase_service.dart';
 import '../models/post_model.dart';
 import 'package:flutter/foundation.dart';
-import 'block_provider.dart';
+
 
 /// ============================================================================
 /// PostProvider — State Management com AsyncNotifier para posts/feed.
@@ -18,6 +18,33 @@ import 'block_provider.dart';
 /// IMPORTANTE: Todos os providers injetam `is_liked` consultando a
 /// tabela `likes` para o usuário atual, garantindo persistência visual.
 /// ============================================================================
+
+/// Query de select padrão para posts — inclui autor, autor original e post original
+/// (necessário para renderizar reposts estilo Twitter no PostCard).
+const _kPostSelect =
+    '*, profiles!posts_author_id_fkey(id, nickname, icon_url), '
+    'original_author:profiles!posts_original_author_id_fkey(id, nickname, icon_url), '
+    'original_post:posts!posts_original_post_id_fkey('
+    'id, title, content, type, cover_image_url, media_list, created_at, '
+    'author_id, community_id, original_post_id, '
+    'profiles!posts_author_id_fkey(id, nickname, icon_url)'
+    ')';
+
+/// Helper: normaliza um map de post retornado pelo Supabase,
+/// mapeando o join `profiles` para `author` e processando `original_post`.
+Map<String, dynamic> _normalizePostMap(Map<String, dynamic> map) {
+  if (map['profiles'] != null) {
+    map['author'] = map['profiles'];
+  }
+  if (map['original_post'] != null) {
+    final op = Map<String, dynamic>.from(map['original_post'] as Map);
+    if (op['profiles'] != null) {
+      op['author'] = op['profiles'];
+    }
+    map['original_post'] = op;
+  }
+  return map;
+}
 
 /// Helper: dado uma lista de maps de posts, consulta a tabela likes
 /// para o usuário atual e injeta `is_liked` em cada map.
@@ -63,14 +90,15 @@ class CommunityFeedNotifier
 
   Future<List<PostModel>> _fetchPage(String communityId, int page) async {
     final res = await SupabaseService.table('posts')
-        .select('*, profiles!posts_author_id_fkey(id, nickname, icon_url)')
+        .select(_kPostSelect)
         .eq('community_id', communityId)
         .order('is_pinned', ascending: false)
         .order('created_at', ascending: false)
         .range(page * _pageSize, (page + 1) * _pageSize - 1);
 
-    final list =
-        (res as List).map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    final list = (res as List)
+        .map((e) => _normalizePostMap(Map<String, dynamic>.from(e as Map)))
+        .toList();
 
     // Injetar is_liked para o usuário atual
     await _injectIsLiked(list);
@@ -172,13 +200,13 @@ final communityFeedProvider = AsyncNotifierProvider.family<
 final postDetailProvider = FutureProvider.family<PostModel?, String>(
   (ref, postId) async {
     final res = await SupabaseService.table('posts')
-        .select('*, profiles!posts_author_id_fkey(id, nickname, icon_url)')
+        .select(_kPostSelect)
         .eq('id', postId)
         .maybeSingle();
 
     if (res == null) return null;
 
-    final map = Map<String, dynamic>.from(res);
+    final map = _normalizePostMap(Map<String, dynamic>.from(res));
     // Injetar is_liked
     await _injectIsLiked([map]);
     return PostModel.fromJson(map);
@@ -189,15 +217,16 @@ final postDetailProvider = FutureProvider.family<PostModel?, String>(
 final pinnedPostsProvider = FutureProvider.family<List<PostModel>, String>(
   (ref, communityId) async {
     final res = await SupabaseService.table('posts')
-        .select('*, profiles!posts_author_id_fkey(id, nickname, icon_url)')
+        .select(_kPostSelect)
         .eq('community_id', communityId)
         .eq('is_pinned', true)
         .eq('status', 'ok')
         .order('created_at', ascending: false)
         .limit(5);
 
-    final list =
-        (res as List).map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    final list = (res as List)
+        .map((e) => _normalizePostMap(Map<String, dynamic>.from(e as Map)))
+        .toList();
 
     await _injectIsLiked(list);
     return list.map((e) => PostModel.fromJson(e)).toList();
@@ -213,7 +242,7 @@ final activeFeaturedPostsProvider =
     // Busca posts com is_featured=true onde featured_until é NULL (sem expiração)
     // OU featured_until > agora (ainda dentro do prazo)
     final res = await SupabaseService.table('posts')
-        .select('*, profiles!posts_author_id_fkey(id, nickname, icon_url)')
+        .select(_kPostSelect)
         .eq('community_id', communityId)
         .eq('is_featured', true)
         .eq('status', 'ok')
@@ -221,8 +250,9 @@ final activeFeaturedPostsProvider =
         .order('featured_at', ascending: false)
         .limit(12);
 
-    final list =
-        (res as List).map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    final list = (res as List)
+        .map((e) => _normalizePostMap(Map<String, dynamic>.from(e as Map)))
+        .toList();
 
     await _injectIsLiked(list);
 
@@ -236,15 +266,16 @@ final activeFeaturedPostsProvider =
 final latestPostsProvider = FutureProvider.family<List<PostModel>, String>(
   (ref, communityId) async {
     final res = await SupabaseService.table('posts')
-        .select('*, profiles!posts_author_id_fkey(id, nickname, icon_url)')
+        .select(_kPostSelect)
         .eq('community_id', communityId)
         .eq('status', 'ok')
         .eq('is_pinned', false)
         .order('created_at', ascending: false)
         .limit(20);
 
-    final list =
-        (res as List).map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    final list = (res as List)
+        .map((e) => _normalizePostMap(Map<String, dynamic>.from(e as Map)))
+        .toList();
 
     await _injectIsLiked(list);
     return list.map((e) => PostModel.fromJson(e)).toList();

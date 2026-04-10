@@ -3557,4 +3557,5 @@ class AppStringsEs implements AppStrings {
   String get repostNotificationTitle => 'New Repost';
   @override
   String repostNotificationBody(String username)=>'$username reposted your post.';
+    String repostedBy(String username) => '$username reposteó';
 }

@@ -4065,4 +4065,5 @@ class AppStringsKo implements AppStrings {
 
   @override
   String get confirmationEmailSent => '확인 이메일이 전송되었습니다';
+    String repostedBy(String username) => '$username 님이 리포스트했습니다';
 }
