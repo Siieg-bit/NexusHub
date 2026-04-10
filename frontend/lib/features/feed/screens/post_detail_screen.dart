@@ -14,6 +14,9 @@ import '../widgets/block_content_renderer.dart';
 import '../widgets/poll_quiz_widget.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../moderation/widgets/report_dialog.dart';
+import '../../chat/widgets/sticker_picker.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../../core/utils/media_utils.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
@@ -50,6 +53,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   bool _viewRecorded = false;
   bool _isBookmarked = false;
   CommentModel? _replyingToComment;
+  String? _pendingStickerUrl;
+  String? _pendingMediaUrl;
+  bool _showStickerPicker = false;
 
   /// Incrementa views_count uma única vez por abertura da tela.
   Future<void> _recordView() async {
@@ -208,16 +214,19 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     }
   }
 
-  Future<void> _sendComment() async {
+  Future<void> _sendComment({String? stickerUrl}) async {
     final s = getStrings();
-    if (_commentController.text.trim().isEmpty) return;
+    final textContent = _commentController.text.trim();
+    final mediaUrl = stickerUrl ?? _pendingStickerUrl ?? _pendingMediaUrl;
+
+    // Precisa ter texto ou mídia
+    if (textContent.isEmpty && mediaUrl == null) return;
 
     final userId = SupabaseService.currentUserId;
     if (userId == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(
-              content: Text(s.needLoginToComment)),
+           SnackBar(content: Text(s.needLoginToComment)),
         );
       }
       return;
@@ -240,17 +249,34 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         }
       }
 
-      await SupabaseService.rpc('create_comment_with_reputation', params: {
-        'p_community_id': communityId,
-        'p_author_id': userId,
-        'p_content': _commentController.text.trim(),
-        'p_post_id': widget.postId,
-        'p_parent_id': _replyingToComment?.id,
-      });
+      // Usar RPC para texto puro, insert direto quando tem mídia
+      if (mediaUrl != null) {
+        await SupabaseService.table('comments').insert({
+          'post_id': widget.postId,
+          'author_id': userId,
+          'content': textContent.isNotEmpty ? textContent : (stickerUrl != null ? '[sticker]' : '[image]'),
+          'media_url': mediaUrl,
+          'parent_id': _replyingToComment?.id,
+        });
+      } else {
+        await SupabaseService.rpc('create_comment_with_reputation', params: {
+          'p_community_id': communityId,
+          'p_author_id': userId,
+          'p_content': textContent,
+          'p_post_id': widget.postId,
+          'p_parent_id': _replyingToComment?.id,
+        });
+      }
+
       if (!mounted) return;
       _commentController.clear();
       _commentFocusNode.unfocus();
       _clearReplyTarget();
+      setState(() {
+        _pendingStickerUrl = null;
+        _pendingMediaUrl = null;
+        _showStickerPicker = false;
+      });
       ref.invalidate(postCommentsProvider(widget.postId));
       ref.invalidate(postDetailProvider(widget.postId));
     } catch (e) {
@@ -264,6 +290,45 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       }
     } finally {
       if (mounted) setState(() => _isSending = false);
+    }
+  }
+
+  Future<void> _pickCommentImage() async {
+    final s = getStrings();
+    final picker = ImagePicker();
+    final image = await picker.pickImage(source: ImageSource.gallery);
+    if (image == null) return;
+
+    try {
+      final userId = SupabaseService.currentUserId ?? 'unknown';
+      final path = 'comments/$userId/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final rawBytes = await image.readAsBytes();
+      final bytes = await MediaUtils.compressImage(rawBytes);
+
+      await SupabaseService.storage.from('post_media').uploadBinary(path, bytes);
+      if (!mounted) return;
+
+      final url = SupabaseService.storage.from('post_media').getPublicUrl(path);
+      if (!mounted) return;
+      setState(() => _pendingMediaUrl = url);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(s.errorUploadTryAgain),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _openStickerPicker() async {
+    final post = ref.read(postDetailProvider(widget.postId)).valueOrNull;
+    final result = await StickerPicker.show(context, communityId: post?.communityId);
+    if (result != null && result['sticker_url'] != null && mounted) {
+      // Enviar sticker diretamente como comentário
+      await _sendComment(stickerUrl: result['sticker_url']!);
     }
   }
 
@@ -1088,7 +1153,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               ),
 
               // ================================================================
-              // CAMPO DE COMENTÁRIO FIXO — sempre montado para permitir foco e reply
+              // CAMPO DE COMENTÁRIO FIXO — com stickers, imagem e reply
               // ================================================================
               Container(
                 padding: EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16), r.s(8)),
@@ -1105,6 +1170,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      // Reply indicator
                       if (_replyingToComment != null)
                         Container(
                           margin: EdgeInsets.only(bottom: r.s(8)),
@@ -1140,8 +1206,69 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             ],
                           ),
                         ),
+                      // Preview de mídia pendente
+                      if (_pendingMediaUrl != null || _pendingStickerUrl != null)
+                        Container(
+                          margin: EdgeInsets.only(bottom: r.s(8)),
+                          child: Row(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(r.s(8)),
+                                child: Image.network(
+                                  _pendingStickerUrl ?? _pendingMediaUrl!,
+                                  width: r.s(60),
+                                  height: r.s(60),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              SizedBox(width: r.s(8)),
+                              Expanded(
+                                child: Text(
+                                  _pendingStickerUrl != null ? 'Sticker' : 'Imagem anexada',
+                                  style: TextStyle(
+                                    color: Colors.grey[500],
+                                    fontSize: r.fs(12),
+                                  ),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () => setState(() {
+                                  _pendingMediaUrl = null;
+                                  _pendingStickerUrl = null;
+                                }),
+                                child: Icon(Icons.close_rounded,
+                                    color: Colors.grey[600], size: r.s(18)),
+                              ),
+                            ],
+                          ),
+                        ),
+                      // Input row com botões de sticker e imagem
                       Row(
                         children: [
+                          // Botão de sticker
+                          GestureDetector(
+                            onTap: _openStickerPicker,
+                            child: Padding(
+                              padding: EdgeInsets.only(right: r.s(6)),
+                              child: Icon(
+                                Icons.emoji_emotions_rounded,
+                                color: Colors.grey[500],
+                                size: r.s(22),
+                              ),
+                            ),
+                          ),
+                          // Botão de imagem
+                          GestureDetector(
+                            onTap: _pickCommentImage,
+                            child: Padding(
+                              padding: EdgeInsets.only(right: r.s(8)),
+                              child: Icon(
+                                Icons.image_rounded,
+                                color: Colors.grey[500],
+                                size: r.s(22),
+                              ),
+                            ),
+                          ),
                           Expanded(
                             child: Container(
                               decoration: BoxDecoration(
@@ -1333,133 +1460,13 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   void _showEditPostDialog(PostModel post) {
-    final s = getStrings();
-    final r = context.r;
-    final titleCtrl = TextEditingController(text: post.title ?? '');
-    final contentCtrl = TextEditingController(text: post.content);
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: context.surfaceColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
-      ),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          left: r.s(16),
-          right: r.s(16),
-          top: r.s(20),
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + r.s(24),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text(s.editPost,
-                    style: TextStyle(
-                        fontSize: r.fs(18),
-                        fontWeight: FontWeight.w800,
-                        color: context.textPrimary)),
-                const Spacer(),
-                IconButton(
-                  icon: Icon(Icons.close_rounded, color: context.textSecondary),
-                  onPressed: () => Navigator.pop(ctx),
-                ),
-              ],
-            ),
-            SizedBox(height: r.s(12)),
-            TextField(
-              controller: titleCtrl,
-              style: TextStyle(
-                  color: context.textPrimary,
-                  fontSize: r.fs(15),
-                  fontWeight: FontWeight.w700),
-              decoration: InputDecoration(
-                hintText: s.title,
-                hintStyle: TextStyle(color: Colors.grey[600]),
-                filled: true,
-                fillColor: context.cardBg,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(r.s(10)),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            SizedBox(height: r.s(10)),
-            TextField(
-              controller: contentCtrl,
-              style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
-              maxLines: 6,
-              decoration: InputDecoration(
-                hintText: s.content,
-                hintStyle: TextStyle(color: Colors.grey[600]),
-                filled: true,
-                fillColor: context.cardBg,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(r.s(10)),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            SizedBox(height: r.s(16)),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(r.s(12)),
-                  ),
-                  padding: EdgeInsets.symmetric(vertical: r.s(14)),
-                ),
-                onPressed: () async {
-                  try {
-                    final trimmedTitle = titleCtrl.text.trim();
-                    final trimmedContent = contentCtrl.text.trim();
-
-                    await SupabaseService.rpc('edit_post', params: {
-                      'p_post_id': widget.postId,
-                      'p_title': trimmedTitle.isNotEmpty ? trimmedTitle : null,
-                      'p_content': trimmedContent,
-                    });
-
-                    if (ctx.mounted) Navigator.pop(ctx);
-                    ref.invalidate(postDetailProvider(widget.postId));
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                         SnackBar(
-                          content: Text(s.postUpdated),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    }
-                  } catch (e) {
-                    if (ctx.mounted) {
-                      ScaffoldMessenger.of(ctx).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            e.toString().contains(
-                                    s.postNotFoundOrNoPermission)
-                                ? s.noPermissionEditPost
-                                : s.anErrorOccurredTryAgain,
-                          ),
-                        ),
-                      );
-                    }
-                  }
-                },
-                child: Text(s.saveChangesAction,
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: r.fs(15))),
-              ),
-            ),
-          ],
-        ),
-      ),
+    // Navegar para o CreatePostScreen em modo de edição (reutiliza o editor completo)
+    context.push(
+      '/community/${post.communityId}/create-post',
+      extra: {
+        'editingPost': post,
+        'initialType': post.editorType ?? post.type,
+      },
     );
   }
 
@@ -1843,14 +1850,53 @@ class _CommentTileState extends ConsumerState<_CommentTile> {
                       ],
                     ),
                     SizedBox(height: r.s(4)),
-                    Text(
-                      comment.content,
-                      style: TextStyle(
-                        fontSize: r.fs(14),
-                        height: 1.4,
-                        color: context.textPrimary,
+                    // Texto do comentário (ocultar se for apenas marcador de sticker/imagem)
+                    if (comment.content != '[sticker]' && comment.content != '[image]')
+                      Text(
+                        comment.content,
+                        style: TextStyle(
+                          fontSize: r.fs(14),
+                          height: 1.4,
+                          color: context.textPrimary,
+                        ),
                       ),
-                    ),
+                    // Renderizar mídia (sticker ou imagem) se presente
+                    if (comment.mediaUrl != null && comment.mediaUrl!.isNotEmpty)
+                      Padding(
+                        padding: EdgeInsets.only(top: r.s(6)),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(r.s(10)),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxWidth: r.s(200),
+                              maxHeight: r.s(200),
+                            ),
+                            child: Image.network(
+                              comment.mediaUrl!,
+                              fit: BoxFit.contain,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return SizedBox(
+                                  width: r.s(100),
+                                  height: r.s(100),
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          AppTheme.primaryColor),
+                                    ),
+                                  ),
+                                );
+                              },
+                              errorBuilder: (_, __, ___) => Icon(
+                                Icons.broken_image_rounded,
+                                color: Colors.grey[500],
+                                size: r.s(40),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     SizedBox(height: r.s(8)),
                     Row(
                       children: [

@@ -108,7 +108,8 @@ class DraftsScreen extends ConsumerWidget {
               .read(postDraftsProvider.notifier)
               .createDraft(title: '', content: '');
           if (draft != null && context.mounted) {
-            context.push('/create-post', extra: {'draftId': draft.id});
+            final cid = draft.communityId ?? 'global';
+            context.push('/community/$cid/create-post', extra: {'draftId': draft.id});
           }
         },
         backgroundColor: AppTheme.primaryColor,
@@ -180,7 +181,8 @@ class _DraftCard extends ConsumerWidget {
       child: GestureDetector(
         onTap: () {
           if (!context.mounted) return;
-          context.push('/create-post', extra: {'draftId': draft.id});
+          final cid = draft.communityId ?? 'global';
+          context.push('/community/$cid/create-post', extra: {'draftId': draft.id});
         },
         child: Container(
           margin: EdgeInsets.only(bottom: r.s(12)),

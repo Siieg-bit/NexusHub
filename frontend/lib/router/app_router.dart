@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/services/supabase_service.dart';
+import '../core/models/post_model.dart';
 import '../features/auth/providers/auth_provider.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/onboarding_screen.dart';
@@ -258,6 +259,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           return CreatePostScreen(
             communityId: state.pathParameters['communityId']!,
             initialType: extra['initialType'] as String?,
+            editingPost: extra['editingPost'] as PostModel?,
           );
         },
       ),
