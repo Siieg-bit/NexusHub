@@ -1264,7 +1264,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   // ======================================================
   // REPOST — Card do post original (estilo Twitter/X)
   // ======================================================
-  Widget _buildOriginalPostCard(PostModel post, dynamic r, dynamic s) {
+  Widget _buildOriginalPostCard(PostModel post, Responsive r, AppStrings s) {
     final originalPost = post.originalPost;
     final originalAuthor = post.originalAuthor ?? originalPost?.author;
 

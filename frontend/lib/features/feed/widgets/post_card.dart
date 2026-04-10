@@ -872,7 +872,7 @@ class _PostCardState extends ConsumerState<PostCard>
   /// Card de repost estilo Twitter/X:
   /// - Linha "X repostou" acima do card
   /// - Card aninhado com o conteúdo do post original (clicável)
-  Widget _buildRepostCard(dynamic s, dynamic r) {
+  Widget _buildRepostCard(AppStrings s, Responsive r) {
     final originalPost = _post.originalPost;
     final originalAuthor = _post.originalAuthor ?? originalPost?.author;
     final reposterName = _post.author?.nickname ?? s.user;
