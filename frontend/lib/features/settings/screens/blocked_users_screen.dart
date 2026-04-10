@@ -102,7 +102,7 @@ class _BlockedUsersScreenState extends ConsumerState<BlockedUsersScreen> {
                   ),
                 ],
               ),
-              child: const Text(
+              child:  Text(
                 s.unblock,
                 style: TextStyle(
                   color: Colors.white,

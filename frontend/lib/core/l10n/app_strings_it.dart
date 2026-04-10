@@ -1712,9 +1712,7 @@ class AppStringsIt implements AppStrings {
   String get guidelinesEditorHint => 'Scrivi qui le linee guida della tua comunità...\n\nUsa ## per i titoli delle sezioni\nUsa • o - per gli elenchi\nUsa ** per il grassetto';
   @override
   String get yourUniqueIdDesc => 'Il tuo ID univoco è come gli altri membri ti troveranno. ';
-  @override
-  String confirmationEmailSent(String email) => 'Abbiamo inviato un link di conferma a $email.\n\n';
-  @override
+    @override
   String get mediaLabel => 'media';
   @override
   String get moderationActions30d => 'Azioni di Moderazione (30g)';
@@ -2571,7 +2569,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get invitedMembersOnly => 'Solo i membri invitati possono partecipare';
   @override
-  String get ipAddress => 'IP: $ipAddress';
+  String get ipAddress => 'IP: ...';
   @override
   String get irreversibleActionWarning => 'Questa azione è IRREVERSIBILE. Tutti i tuoi dati, post, commenti, ';
   @override
@@ -3151,7 +3149,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get subscribeAction => 'Iscriviti';
   @override
-  String get subscribePrice => 'Iscriviti per $14.90/mese';
+  String get subscribePrice => 'Iscriviti per \$14.90/mese';
   @override
   String get subscriptionsLabel => 'Abbonamenti';
   @override
@@ -3573,4 +3571,8 @@ class AppStringsIt implements AppStrings {
   String get repostNotificationTitle => 'New Repost';
   @override
   String repostNotificationBody(String username) => '$username reposted your post.';
+
+
+  @override
+  String get confirmationEmailSent => 'Email di conferma inviata a';
 }

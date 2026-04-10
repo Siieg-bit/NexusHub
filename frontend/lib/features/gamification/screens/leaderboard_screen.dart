@@ -692,7 +692,4 @@ class _LeaderboardTile extends ConsumerWidget {
       ),
     );
   }
-},
-    );
-  }
 }

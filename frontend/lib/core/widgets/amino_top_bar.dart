@@ -133,6 +133,7 @@ class AminoTopBar extends ConsumerWidget implements PreferredSizeWidget {
   /// Esquerda: lupa + placeholder localizado. Direita: código do idioma atual + seta dropdown.
   Widget _buildSearchBar(
       BuildContext context, WidgetRef ref, AppStrings s, AppLocale currentLocale) {
+    final s = getStrings();
     final r = context.r;
     return Expanded(
       child: Container(

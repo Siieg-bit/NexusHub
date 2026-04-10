@@ -317,6 +317,7 @@ class ThreadMessagesNotifier
 
   /// Deletar mensagem para todos (autor, host ou co-host)
   Future<bool> deleteForAll(String messageId) async {
+    final s = getStrings();
     try {
       await SupabaseService.rpc('delete_chat_message_for_all', params: {
         'p_message_id': messageId,

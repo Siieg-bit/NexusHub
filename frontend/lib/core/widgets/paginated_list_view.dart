@@ -53,11 +53,11 @@ class PaginatedListView<T> extends ConsumerStatefulWidget {
   /// Padrão: 300px. Valores maiores iniciam o carregamento mais cedo.
   final double prefetchThreshold;
 
-  const PaginatedListView({
+   PaginatedListView({
     super.key,
     required this.fetchPage,
     required this.itemBuilder,
-    this.emptyMessage = s.noItemsFound,
+    this.emptyMessage = 'No items found',
     this.emptyIcon = '📭',
     this.pageSize = 20,
     this.header,
@@ -74,10 +74,10 @@ class PaginatedListView<T> extends ConsumerStatefulWidget {
   });
 
   @override
-  State<PaginatedListView<T>> createState() => _PaginatedListViewState<T>();
+  ConsumerState<PaginatedListView<T>> createState() => _PaginatedListViewState<T>();
 }
 
-class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
+class _PaginatedListViewState<T> extends ConsumerState<PaginatedListView<T>> {
   final List<T> _items = [];
   int _currentPage = 0;
   bool _isLoading = false;
@@ -203,7 +203,7 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     // ── First load: shimmer ──
@@ -270,6 +270,7 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
 
   /// Widget exibido no final da lista: spinner, retry banner, ou nada.
   Widget _buildTrailing(Responsive r) {
+    final s = getStrings();
     // Erro em página intermediária → banner de retry inline
     if (_loadMoreError != null) {
       return Padding(
@@ -355,6 +356,7 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
   }
 
   Widget _buildError() {
+    final s = getStrings();
     final r = context.r;
     return Center(
       child: Padding(
@@ -428,11 +430,11 @@ class PaginatedGridView<T> extends ConsumerStatefulWidget {
   final Widget Function(BuildContext context)? shimmerBuilder;
   final double prefetchThreshold;
 
-  const PaginatedGridView({
+   PaginatedGridView({
     super.key,
     required this.fetchPage,
     required this.itemBuilder,
-    this.emptyMessage = s.noItemsFound,
+    this.emptyMessage = 'No items found',
     this.pageSize = 20,
     this.crossAxisCount = 2,
     this.mainAxisSpacing = 8,
@@ -445,10 +447,10 @@ class PaginatedGridView<T> extends ConsumerStatefulWidget {
   });
 
   @override
-  State<PaginatedGridView<T>> createState() => _PaginatedGridViewState<T>();
+  ConsumerState<PaginatedGridView<T>> createState() => _PaginatedGridViewState<T>();
 }
 
-class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
+class _PaginatedGridViewState<T> extends ConsumerState<PaginatedGridView<T>> {
   final List<T> _items = [];
   int _currentPage = 0;
   bool _isLoading = false;
@@ -547,7 +549,7 @@ class _PaginatedGridViewState<T> extends State<PaginatedGridView<T>> {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     if (_isFirstLoad) {

@@ -1719,7 +1719,7 @@ class AppStringsEs implements AppStrings {
   @override
   String get invitedMembersOnly => 'Solo miembros invitados pueden unirse';
   @override
-  String get ipAddress => 'IP: $ipAddress';
+  String get ipAddress => 'IP: ...';
   @override
   String get irreversibleActionWarning => 'Esta acción es IRREVERSIBLE. Todos tus datos, publicaciones, comentarios, ';
   @override
@@ -2865,7 +2865,7 @@ class AppStringsEs implements AppStrings {
   @override
   String get subscribeAction => 'Suscribirse';
   @override
-  String get subscribePrice => 'Suscríbete por $14.90/mes';
+  String get subscribePrice => 'Suscríbete por \$14.90/mes';
   @override
   String get subscriptionsLabel => 'Suscripciones';
   @override

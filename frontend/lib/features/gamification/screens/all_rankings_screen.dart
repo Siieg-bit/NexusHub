@@ -90,6 +90,7 @@ class AllRankingsScreen extends ConsumerWidget {
   // ═══════════════════════════════════════════════════════════════════════════
 
   Widget _buildAppBar(BuildContext context, Responsive r, dynamic s) {
+    final s = getStrings();
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: r.s(4),
@@ -125,6 +126,7 @@ class AllRankingsScreen extends ConsumerWidget {
 
   Widget _buildCurrentLevelInfo(
       BuildContext context, Responsive r, dynamic s) {
+    final s = getStrings();
     final levelColor = AppTheme.getLevelColor(currentLevel);
     final title = levelTitleFromStrings(s, currentLevel);
     final progress = levelProgress(currentReputation);
@@ -261,6 +263,7 @@ class AllRankingsScreen extends ConsumerWidget {
 
   Widget _buildLevelTile(
       BuildContext context, Responsive r, dynamic s, int lvl) {
+    final s = getStrings();
     final levelColor = AppTheme.getLevelColor(lvl);
     final title = levelTitleFromStrings(s, lvl);
     final threshold = reputationForLevel(lvl);

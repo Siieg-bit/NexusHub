@@ -229,7 +229,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
         backgroundColor: context.scaffoldBg,
         appBar: AppBar(backgroundColor: context.scaffoldBg),
         body: Center(
-            child: Text(s.errorGeneric(error),
+            child: Text(s.errorGeneric(error.toString()),
                 style: TextStyle(color: context.textSecondary))),
       ),
       data: (community) {
@@ -382,6 +382,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     Map<String, dynamic> visible,
     Map<String, dynamic> welcomeBanner,
   ) {
+    final s = getStrings();
     final r = context.r;
     return NestedScrollView(
       headerSliverBuilder: (context, innerBoxIsScrolled) => [
@@ -690,15 +691,15 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
               controller: _tabController,
               children: _activeTabs.map((tab) {
                 switch (tab) {
-                  case s.guidelines:
+                  case 'Diretrizes':
                     return CommunityGuidelinesTab(community: community);
-                  case s.featured:
+                  case 'Destaques':
                     return CommunityFeedTab(
                         communityId: widget.communityId, isFeatured: true);
-                  case s.latest:
+                  case 'Recentes':
                     return CommunityFeedTab(
                         communityId: widget.communityId, isFeatured: false);
-                  case s.chats:
+                  case 'Chats':
                     return CommunityChatTab(communityId: widget.communityId);
                   default:
                     return const SizedBox.shrink();
@@ -725,6 +726,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     String communityId,
     String communityName,
   ) {
+    final s = getStrings();
     // Usa showGeneralDialog para ter controle total sobre o overlay escuro.
     // showModalBottomSheet ignora barrierColor quando há um Scaffold pai.
     showGeneralDialog(

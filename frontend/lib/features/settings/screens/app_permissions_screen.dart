@@ -4,6 +4,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/l10n/app_strings.dart';
 
 /// Tela de Permissões do App — exibe e gerencia permissões de sistema.
 class AppPermissionsScreen extends ConsumerStatefulWidget {
@@ -17,7 +18,7 @@ class _AppPermissionsScreenState extends ConsumerState<AppPermissionsScreen>
     with WidgetsBindingObserver {
   Map<Permission, PermissionStatus> _statuses = {};
 
-  final _permissions = [
+  List<_PermissionInfo> _getPermissions(AppStrings s) => [
     _PermissionInfo(
       permission: Permission.camera,
       icon: Icons.camera_alt_rounded,
@@ -71,8 +72,9 @@ class _AppPermissionsScreenState extends ConsumerState<AppPermissionsScreen>
   }
 
   Future<void> _loadStatuses() async {
+    final s = getStrings();
     final statuses = <Permission, PermissionStatus>{};
-    for (final info in _permissions) {
+    for (final info in _getPermissions(s)) {
       statuses[info.permission] = await info.permission.status;
     }
     if (mounted) setState(() => _statuses = statuses);
@@ -160,7 +162,7 @@ class _AppPermissionsScreenState extends ConsumerState<AppPermissionsScreen>
               ],
             ),
           ),
-          ..._permissions.map((info) {
+          ..._getPermissions(getStrings()).map((info) {
             final status = _statuses[info.permission];
             final isGranted = status?.isGranted ?? false;
             final isDenied = status?.isPermanentlyDenied ?? false;

@@ -50,7 +50,7 @@ class CaptchaService {
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        title: const Row(
+        title:  Row(
           children: [
             Icon(Icons.security_rounded, color: Color(0xFF6C5CE7)),
             SizedBox(width: 8),
@@ -91,7 +91,7 @@ class CaptchaService {
               keyboardType: TextInputType.numberWithOptions(signed: true),
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              decoration: const InputDecoration(
+              decoration:  InputDecoration(
                 hintText: s.response,
                 border: OutlineInputBorder(),
               ),
@@ -128,7 +128,7 @@ class CaptchaService {
   static Future<bool> isRequired(String action) async {
     // Em produção, verificar server-side via RPC
     // Por enquanto, CAPTCHA é requerido em ações específicas
-    const protectedActions = [
+    final protectedActions = [
       'register',
       'reset_password',
       'create_community',
@@ -145,6 +145,7 @@ class CaptchaService {
     String action, {
     String? reason,
   }) async {
+    final s = getStrings();
     final required = await isRequired(action);
     if (!required) return true;
 

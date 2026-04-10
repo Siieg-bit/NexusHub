@@ -239,7 +239,7 @@ class GlobalFeedScreen extends ConsumerWidget {
                               ),
                             ],
                           ),
-                          child: const Text(
+                          child:  Text(
                             s.retry,
                             style: TextStyle(
                               color: Colors.white,
@@ -312,7 +312,7 @@ class _QuickAction extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(

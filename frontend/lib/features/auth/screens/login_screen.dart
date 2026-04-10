@@ -166,7 +166,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       final email = _emailController.text.trim();
                       if (email.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
+                           SnackBar(
                             content: Text(s.enterYourEmailFirst),
                             behavior: SnackBarBehavior.floating,
                           ),

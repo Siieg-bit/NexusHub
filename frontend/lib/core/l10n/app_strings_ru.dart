@@ -2612,9 +2612,7 @@ class AppStringsRu implements AppStrings {
   String get guidelinesEditorHint => 'Напишите здесь правила вашего сообщества...\n\nИспользуйте ## для заголовков разделов\nИспользуйте • или - для списков\nИспользуйте ** для жирного шрифта';
   @override
   String get yourUniqueIdDesc => 'Ваш уникальный ID - это то, как другие участники будут вас находить. ';
-  @override
-  String confirmationEmailSent(String email) => 'Мы отправили ссылку для подтверждения на \$email.\n\n';
-  @override
+    @override
   String get mediaLabel => 'медиа';
   @override
   String get moderationActions30d => 'Действия модерации (30д)';
@@ -3549,7 +3547,7 @@ class AppStringsRu implements AppStrings {
   @override
   String get invitedMembersOnly => 'Присоединиться могут только приглашённые участники';
   @override
-  String get ipAddress => 'IP: $ipAddress';
+  String get ipAddress => 'IP: ...';
   @override
   String get irreversibleActionWarning => 'Это действие НЕОБРАТИМО. Все ваши данные, посты, комментарии, ';
   @override
@@ -4243,7 +4241,7 @@ class AppStringsRu implements AppStrings {
   @override
   String get subscribeAction => 'Подписаться';
   @override
-  String get subscribePrice => 'Подписка за $14.90/месяц';
+  String get subscribePrice => 'Подписка за \$14.90/месяц';
   @override
   String get subscriptionsLabel => 'Подписки';
   @override
@@ -4699,4 +4697,8 @@ class AppStringsRu implements AppStrings {
   String get repostNotificationTitle => 'New Repost';
   @override
   String repostNotificationBody(String username) => '$username reposted your post.';
+
+
+  @override
+  String get confirmationEmailSent => 'Письмо с подтверждением отправлено на';
 }

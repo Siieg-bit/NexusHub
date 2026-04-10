@@ -279,7 +279,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
             subtitle: Padding(
               padding: EdgeInsets.only(top: r.s(4)),
               child: Text(
-                s.levelLabel(u['level'] as int? ?? 1),
+                s.levelLabel,
                 style: TextStyle(
                     color: AppTheme.accentColor,
                     fontSize: r.fs(13),

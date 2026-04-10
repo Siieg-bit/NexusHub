@@ -421,6 +421,7 @@ class StreakBar extends ConsumerWidget {
   }
 
   String _dayLabel(int index, AppStrings s) {
+    final s = getStrings();
     final days = [s.monday, s.tuesday, s.wednesday, s.thursday, s.friday, s.saturday, s.sunday];
     final today = DateTime.now().weekday - 1; // 0 = Monday
     final dayIndex = (today - (6 - index)) % 7;

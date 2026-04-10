@@ -56,7 +56,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
     final title = _titleController.text.trim();
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+         SnackBar(
           content: Text(s.pollQuestionRequired),
           backgroundColor: AppTheme.errorColor,
         ),
@@ -67,7 +67,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
         _options.where((c) => c.text.trim().isNotEmpty).toList();
     if (validOptions.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+         SnackBar(
           content: Text(s.addAtLeast2Options),
           backgroundColor: AppTheme.errorColor,
         ),
@@ -97,7 +97,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
       if (mounted) {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+           SnackBar(
             content: Text(s.pollCreatedSuccess),
             backgroundColor: AppTheme.successColor,
           ),

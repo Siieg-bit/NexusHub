@@ -143,7 +143,7 @@ class _CommunityGeneralLinksScreenState
               if (titleCtrl.text.trim().isEmpty ||
                   urlCtrl.text.trim().isEmpty) {
                 ScaffoldMessenger.of(ctx).showSnackBar(
-                  const SnackBar(
+                   SnackBar(
                     content: Text(s.fillTitleAndUrl),
                     behavior: SnackBarBehavior.floating,
                   ),
@@ -250,7 +250,7 @@ class _CommunityGeneralLinksScreenState
       await _loadLinks();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+           SnackBar(
             content: Text(s.linkRemoved2),
             behavior: SnackBarBehavior.floating,
           ),
@@ -294,7 +294,7 @@ class _CommunityGeneralLinksScreenState
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(

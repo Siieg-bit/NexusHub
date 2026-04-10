@@ -1778,9 +1778,7 @@ class AppStringsFr implements AppStrings {
   String get confirmUnblockUser => 'Voulez-vous débloquer ... ?';
   @override
   String get confirmUnlinkAccount => 'Êtes-vous sûr de vouloir dissocier votre compte ... ?';
-  @override
-  String confirmationEmailSent(String email) => 'Nous avons envoyé un lien de confirmation à \$email.\n\n';
-  @override
+    @override
   String get connectWithYourCommunities => 'Connectez-vous avec vos communautés préférées';
   @override
   String get connectedDevices => 'Appareils connectés';
@@ -1939,7 +1937,7 @@ class AppStringsFr implements AppStrings {
   @override
   String get invitedMembersOnly => 'Seuls les membres invités peuvent rejoindre';
   @override
-  String get ipAddress => 'IP : $ipAddress';
+  String get ipAddress => 'IP : ...';
   @override
   String get irreversibleActionWarning => 'Cette action est IRRÉVERSIBLE. Toutes vos données, publications, commentaires, ';
   @override
@@ -3083,7 +3081,7 @@ class AppStringsFr implements AppStrings {
   @override
   String get subscribeAction => 'S’abonner';
   @override
-  String get subscribePrice => 'Abonnez-vous pour $14.90/mois';
+  String get subscribePrice => 'Abonnez-vous pour \$14.90/mois';
   @override
   String get subscriptionsLabel => 'Abonnements';
   @override
@@ -3621,4 +3619,8 @@ class AppStringsFr implements AppStrings {
   String get repostNotificationTitle => 'New Repost';
   @override
   String repostNotificationBody(String username) => '$username reposted your post.';
+
+
+  @override
+  String get confirmationEmailSent => 'E-mail de confirmation envoyé à';
 }

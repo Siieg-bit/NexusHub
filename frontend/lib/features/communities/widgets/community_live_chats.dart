@@ -104,6 +104,7 @@ class _CommunityLiveChatsState extends ConsumerState<CommunityLiveChats> {
   }
 
   Future<void> _leaveOrDeleteChat(Map<String, dynamic> chat) async {
+    final s = getStrings();
     try {
       // RPC usa auth.uid() internamente — não precisa passar p_user_id
       final result = await SupabaseService.rpc('leave_public_chat', params: {
@@ -124,7 +125,7 @@ class _CommunityLiveChatsState extends ConsumerState<CommunityLiveChats> {
       debugPrint('[community_live_chats] Erro ao apagar/sair: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+           SnackBar(
             content: Text(s.errorExecutingActionRetry),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
@@ -135,6 +136,7 @@ class _CommunityLiveChatsState extends ConsumerState<CommunityLiveChats> {
   }
 
   void _showContextMenu(BuildContext context, Map<String, dynamic> chat) {
+    final s = getStrings();
     final r = context.r;
     final isPinned = chat['is_pinned'] as bool? ?? false;
     final isHost = _isHost(chat);
@@ -203,6 +205,7 @@ class _CommunityLiveChatsState extends ConsumerState<CommunityLiveChats> {
 
   void _confirmAction(
       BuildContext context, Map<String, dynamic> chat, bool isDelete) {
+    final s = getStrings();
     final r = context.r;
     showDialog(
       context: context,

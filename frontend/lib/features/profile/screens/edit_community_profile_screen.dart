@@ -141,7 +141,7 @@ class _EditCommunityProfileScreenState
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+           SnackBar(
             content: Text(s.communityProfileUpdated),
             backgroundColor: AppTheme.successColor,
             behavior: SnackBarBehavior.floating,
@@ -172,7 +172,7 @@ class _EditCommunityProfileScreenState
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(

@@ -387,6 +387,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
 
   Future<void> _confirmLeaveCommunity(
       BuildContext context, CommunityModel community) async {
+    final s = getStrings();
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) {

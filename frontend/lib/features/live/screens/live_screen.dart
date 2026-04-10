@@ -48,6 +48,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   }
 
   Future<void> _createScreeningRoom() async {
+    final s = getStrings();
     final r = context.r;
     // Precisa de um thread_id — criar um chat thread temporário ou usar existente
     final threadIdController = TextEditingController();
@@ -189,6 +190,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   }
 
   String _timeAgo(String? dateStr) {
+    final s = getStrings();
     if (dateStr == null) return '';
     final date = DateTime.tryParse(dateStr);
     if (date == null) return '';
@@ -283,6 +285,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   }
 
   Widget _buildSessionCard(Map<String, dynamic> session) {
+    final s = getStrings();
     final r = context.r;
     final type = session['type'] as String? ?? 'voice';
     final color = _typeColor(type);

@@ -93,7 +93,7 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
           unselectedLabelColor: Colors.grey[500],
           indicatorColor: AppTheme.primaryColor,
           dividerColor: Colors.transparent,
-          tabs: const [
+          tabs:  [
             Tab(text: 'Overview'),
             Tab(text: s.actionsLabel),
             Tab(text: 'Ferramentas'),
@@ -349,7 +349,7 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
                 if (selectedCommunityId == null ||
                     selectedCommunityId!.isEmpty) {
                   ScaffoldMessenger.of(ctx).showSnackBar(
-                    const SnackBar(
+                     SnackBar(
                       content: Text(s.selectCommunity2),
                       behavior: SnackBarBehavior.floating,
                     ),
@@ -369,7 +369,7 @@ class _AdminPanelScreenState extends ConsumerState<AdminPanelScreen>
                   if (ctx.mounted) Navigator.pop(ctx);
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
+                       SnackBar(
                         content: Text(s.broadcastSent),
                         behavior: SnackBarBehavior.floating,
                       ),

@@ -81,7 +81,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     if (userId == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+           SnackBar(
               content: Text(s.needLoginToComment)),
         );
       }
@@ -237,7 +237,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     final link = 'https://nexushub.app/p/${widget.postId}';
     Clipboard.setData(ClipboardData(text: link));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+       SnackBar(
         content: Text(s.linkCopied),
         behavior: SnackBarBehavior.floating,
         duration: Duration(seconds: 2),
@@ -326,7 +326,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           {'status': 'deleted'}).eq('id', widget.postId);
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
+                           SnackBar(
                             content: Text(s.postDeleted2),
                             behavior: SnackBarBehavior.floating,
                           ),
@@ -387,7 +387,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       }, onConflict: 'user_id,post_id');
                       if (mounted) {
                         ScaffoldMessenger.of(context)
-                            .showSnackBar(const SnackBar(
+                            .showSnackBar( SnackBar(
                           content: Text(s.postHiddenFromFeed),
                           behavior: SnackBarBehavior.floating,
                           duration: Duration(seconds: 2),
@@ -1218,7 +1218,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     ref.invalidate(postDetailProvider(widget.postId));
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
+                         SnackBar(
                           content: Text(s.postUpdated),
                           behavior: SnackBarBehavior.floating,
                         ),
@@ -1256,7 +1256,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 // =============================================================================
 // BOTÃO DA BARRA INFERIOR
 // =============================================================================
-class _BottomBarButton extends StatelessWidget {
+class _BottomBarButton extends ConsumerWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
@@ -1270,7 +1270,7 @@ class _BottomBarButton extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     final effectiveColor = color ?? Colors.grey[600]!;
@@ -1304,7 +1304,7 @@ class _BottomBarButton extends StatelessWidget {
 // =============================================================================
 // TILE DE COMENTÁRIO — flat, sem card com borda (estilo Amino)
 // =============================================================================
-class _CommentTile extends StatefulWidget {
+class _CommentTile extends ConsumerStatefulWidget {
   final CommentModel comment;
   final String? communityId;
   final TextEditingController? commentController;
@@ -1318,10 +1318,10 @@ class _CommentTile extends StatefulWidget {
   });
 
   @override
-  State<_CommentTile> createState() => _CommentTileState();
+  ConsumerState<_CommentTile> createState() => _CommentTileState();
 }
 
-class _CommentTileState extends State<_CommentTile> {
+class _CommentTileState extends ConsumerState<_CommentTile> {
   late bool _isLiked;
   late int _likesCount;
 
@@ -1496,7 +1496,7 @@ class _RepostConfirmSheetDetail extends ConsumerWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(s.repost, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          Text(s.repost, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),

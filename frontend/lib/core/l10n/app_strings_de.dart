@@ -376,9 +376,7 @@ class AppStringsDe implements AppStrings {
   String followingCount(int count) => '$count gefolgt';
   @override
   String postsCount(int count) => '$count Beiträge';
-  @override
-  String membersCount(int count) => '$count Mitglieder';
-  @override
+    @override
   String onlineMembersCount(int count) => '$count online';
   @override
   String commentsCount(int count) => '$count Kommentare';
@@ -1962,9 +1960,7 @@ class AppStringsDe implements AppStrings {
   String get confirmUnblockUser => 'Möchten Sie ... entsperren?';
   @override
   String get confirmUnlinkAccount => 'Sind Sie sicher, dass Sie Ihr ...-Konto trennen möchten?';
-  @override
-  String confirmationEmailSent(String email) => 'Wir haben einen Bestätigungslink an \$email gesendet.\n\n';
-  @override
+    @override
   String get connectWithYourCommunities => 'Verbinden Sie sich mit Ihren Lieblings-Communities';
   @override
   String get connectedDevices => 'Verbundene Geräte';
@@ -2123,7 +2119,7 @@ class AppStringsDe implements AppStrings {
   @override
   String get invitedMembersOnly => 'Nur eingeladene Mitglieder können beitreten';
   @override
-  String get ipAddress => 'IP: $ipAddress';
+  String get ipAddress => 'IP: ...';
   @override
   String get irreversibleActionWarning => 'Diese Aktion ist UNWIDERRUFLICH. Alle Ihre Daten, Beiträge, Kommentare, ';
   @override
@@ -3023,7 +3019,7 @@ class AppStringsDe implements AppStrings {
   @override
   String get subscribeAction => 'Abonnieren';
   @override
-  String get subscribePrice => 'Abonniere für $14.90/Monat';
+  String get subscribePrice => 'Abonniere für \$14.90/Monat';
   @override
   String get subscriptionsLabel => 'Abonnements';
   @override
@@ -3705,4 +3701,12 @@ class AppStringsDe implements AppStrings {
   String get repostNotificationTitle => 'New Repost';
   @override
   String repostNotificationBody(String username) => '$username reposted your post.';
+
+
+  @override
+  String get confirmationEmailSent => 'E-Mail-Bestätigung gesendet an';
+
+
+  @override
+  String get membersCount => 'Mitglieder';
 }

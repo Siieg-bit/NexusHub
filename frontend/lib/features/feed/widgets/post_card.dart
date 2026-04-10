@@ -1067,7 +1067,7 @@ class _PostCardState extends ConsumerState<PostCard>
 // ─────────────────────────────────────────────────────────────────────────────
 // Widget auxiliar: caixa de ícone para o banner de repost/crosspost
 // ─────────────────────────────────────────────────────────────────────────────
-class _RepostIconBox extends StatelessWidget {
+class _RepostIconBox extends ConsumerWidget {
   final Color color;
   final IconData icon;
   final double size;
@@ -1079,7 +1079,7 @@ class _RepostIconBox extends StatelessWidget {
     required this.iconSize,
   });
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       width: size,
       height: size,

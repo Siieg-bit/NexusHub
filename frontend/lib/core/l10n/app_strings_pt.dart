@@ -976,7 +976,6 @@ class AppStringsPt implements AppStrings {
   @override
   String get days => 'Dias';
   @override
-  String get deleteFile => 'Excluir arquivo';
   @override
   String get deleteMessage => 'Excluir mensagem';
   @override
@@ -3116,7 +3115,6 @@ class AppStringsPt implements AppStrings {
   @override
   String get yourUniqueIdDesc => 'Seu ID único é como outros membros vão te encontrar. ';
   @override
-  String confirmationEmailSent(String email) => 'Enviamos um link de confirmação para \$email.\n\n';
   @override
   String get mediaLabel => 'mídia';
   @override
@@ -3130,7 +3128,6 @@ class AppStringsPt implements AppStrings {
   @override
   String levelAndRep(int level, int reputation) => 'Nível \$level • \$reputation rep';
   @override
-  String get communityNameRequired => 'O nome da comunidade é obrigatório.';
   @override
   String timeAgoMonthsShort(int months) => '\${months}m atrás';
   @override
@@ -3140,7 +3137,6 @@ class AppStringsPt implements AppStrings {
   @override
   String timeAgoMinutesShort(int minutes) => '\${minutes}min atrás';
   @override
-  String get justNow => 'agora';
   @override
   String receivedWarning(String reason) => 'Você recebeu um aviso: \$reason';
   @override

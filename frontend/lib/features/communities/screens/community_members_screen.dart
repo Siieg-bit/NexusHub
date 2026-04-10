@@ -110,7 +110,7 @@ class CommunityMembersScreen extends ConsumerWidget {
               color: AppTheme.primaryColor, strokeWidth: 2.5),
         ),
         error: (error, _) => Center(
-            child: Text(s.errorGeneric(error),
+            child: Text(s.errorGeneric(error.toString()),
                 style: TextStyle(color: context.textSecondary))),
         data: (members) {
           if (members.isEmpty) {
@@ -382,7 +382,7 @@ class _MemberTile extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 2),
-                    Text(s.levelLabel(level, levelTitle(level)),
+                    Text(s.levelLabel,
                         style: TextStyle(
                             color: AppTheme.getLevelColor(level),
                             fontSize: r.fs(11))),

@@ -100,7 +100,6 @@ class PrivacyService {
   static String levelLabel(int level) {
     final s = getStrings();
     switch (level) {
-      final s = getStrings();
       case 1:
         return s.publicLabel;
       case 2:

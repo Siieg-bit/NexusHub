@@ -394,7 +394,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                             color: Colors.grey[600]),
                         onTap: () {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                             SnackBar(
                                 content: Text(s.exportInProgress)),
                           );
                         },
@@ -424,7 +424,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                       ListTile(
                         leading: const Icon(Icons.delete_forever_rounded,
                             color: AppTheme.errorColor),
-                        title: const Text(
+                        title:  Text(
                           s.deleteAccount2,
                           style: TextStyle(
                             color: AppTheme.errorColor,
@@ -516,7 +516,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                                                     s.deleteButton) {
                                                   ScaffoldMessenger.of(context)
                                                       .showSnackBar(
-                                                    const SnackBar(
+                                                     SnackBar(
                                                       content: Text(
                                                           s.typeDeleteToConfirmAlt),
                                                       behavior: SnackBarBehavior
@@ -556,7 +556,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                                                 backgroundColor:
                                                     AppTheme.errorColor,
                                               ),
-                                              child: const Text(
+                                              child:  Text(
                                                   s.permanentDelete),
                                             ),
                                           ],
@@ -580,7 +580,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen> {
                                         ),
                                       ],
                                     ),
-                                    child: const Text(
+                                    child:  Text(
                                       s.delete,
                                       style: TextStyle(
                                         color: Colors.white,

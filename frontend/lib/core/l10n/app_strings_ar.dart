@@ -1979,7 +1979,7 @@ class AppStringsAr implements AppStrings {
   @override
   String get invitedMembersOnly => 'يمكن للأعضاء المدعوين فقط الانضمام';
   @override
-  String get ipAddress => 'عنوان IP: $ipAddress';
+  String get ipAddress => 'عنوان IP: ...';
   @override
   String get irreversibleActionWarning => 'هذا الإجراء لا رجعة فيه. جميع بياناتك ومنشوراتك وتعليقاتك، ';
   @override
@@ -2019,7 +2019,7 @@ class AppStringsAr implements AppStrings {
   @override
   String get loginToVote => 'سجل الدخول للتصويت';
   @override
-  String get longestStreak => 'أطول سلسلة: $streak أيام';
+  String get longestStreak => 'أطول سلسلة: ... أيام';
   @override
   String get master => 'ماجستير';
   @override
@@ -3955,7 +3955,7 @@ class AppStringsAr implements AppStrings {
   @override
   String get subscribeAction => 'اشتراك';
   @override
-  String get subscribePrice => 'اشترك مقابل $14.90/شهر';
+  String get subscribePrice => 'اشترك مقابل \$14.90/شهر';
   @override
   String get subscriptionsLabel => 'الاشتراكات';
   @override

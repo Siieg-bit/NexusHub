@@ -39,6 +39,7 @@ class _ErrorBoundaryState extends ConsumerState<ErrorBoundary> {
   /// Retorna true se o erro é apenas um overflow de layout (RenderFlex).
   /// Esses erros NÃO devem travar a tela — são avisos de layout.
   static bool _isLayoutOverflow(FlutterErrorDetails details) {
+    final s = getStrings();
     final summary = details.exceptionAsString();
     return summary.contains(s.renderFlexOverflowed) ||
         summary.contains(s.renderFlex) ||
@@ -49,6 +50,7 @@ class _ErrorBoundaryState extends ConsumerState<ErrorBoundary> {
 
   @override
   void initState() {
+    final s = getStrings();
     super.initState();
     _previousErrorHandler = FlutterError.onError;
 
@@ -158,7 +160,7 @@ class _DefaultErrorFallback extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
+               Text(
                 s.somethingWentWrong,
                 style: TextStyle(
                   color: Colors.white,
@@ -189,7 +191,7 @@ class _DefaultErrorFallback extends ConsumerWidget {
                   ),
                   onPressed: onRetry,
                   icon: const Icon(Icons.refresh_rounded, color: Colors.white),
-                  label: const Text(
+                  label:  Text(
                     s.retry,
                     style: TextStyle(
                       color: Colors.white,

@@ -167,7 +167,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         _contentController.text.trim().isEmpty &&
         _selectedType != 'image') {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+         SnackBar(
           content: Text(s.fillTitleOrContent),
           backgroundColor: AppTheme.errorColor,
         ),
@@ -178,7 +178,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     // Validar crosspost
     if (_selectedType == 'crosspost' && _crosspostCommunity == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+         SnackBar(
           content: Text(s.selectCrosspostCommunity),
           backgroundColor: AppTheme.errorColor,
         ),
@@ -299,7 +299,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       if (mounted) {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+           SnackBar(
             content: Text(s.postCreatedSuccess),
             backgroundColor: AppTheme.successColor,
           ),
@@ -1245,7 +1245,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               if (url != null && mounted) {
                 setState(() => _gifUrl = url);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
+                   SnackBar(
                       content: Text(s.gifAddedToPost),
                       behavior: SnackBarBehavior.floating),
                 );
@@ -1344,7 +1344,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                   Navigator.pop(ctx);
                   if (_musicUrl != null) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
+                       SnackBar(
                           content: Text(s.musicAddedToPost),
                           behavior: SnackBarBehavior.floating),
                     );
@@ -1389,7 +1389,7 @@ class _QuizQuestion {
   }
 }
 
-class _ToolbarButton extends StatelessWidget {
+class _ToolbarButton extends ConsumerWidget {
   final IconData icon;
   final String tooltip;
   final VoidCallback onTap;
@@ -1397,7 +1397,7 @@ class _ToolbarButton extends StatelessWidget {
   const _ToolbarButton(this.icon, this.tooltip, this.onTap);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Tooltip(

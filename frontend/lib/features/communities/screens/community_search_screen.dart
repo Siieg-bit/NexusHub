@@ -741,7 +741,7 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen>
                   if (author != null) ...[
                     SizedBox(height: r.s(4)),
                     Text(
-                      'por ${author['nicknames.closingBracket,
+                      'por ${author?["nickname"] ?? ""}',
                       style: TextStyle(
                           color: context.textHint, fontSize: r.fs(11)),
                     ),

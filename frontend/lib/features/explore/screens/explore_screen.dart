@@ -144,6 +144,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   void _showCommunityContextMenu(
       BuildContext context, CommunityModel community) {
+    final s = getStrings();
     showModalBottomSheet(
       context: context,
       backgroundColor: context.surfaceColor,
@@ -274,6 +275,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   Future<void> _confirmLeaveCommunity(
       BuildContext context, CommunityModel community) async {
+    final s = getStrings();
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) {

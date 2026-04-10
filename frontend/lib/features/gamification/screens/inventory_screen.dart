@@ -21,13 +21,10 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen>
   List<Map<String, dynamic>> _items = [];
   Set<String> _equippedIds = {};
 
-  final _tabs = const [
-    s.everyone,
-    'Avatar Frames',
-    'Chat Bubbles',
-    s.stickers,
-    'Backgrounds'
-  ];
+  List<String> get _tabs {
+    final s = getStrings();
+    return [s.everyone, 'Avatar Frames', 'Chat Bubbles', s.stickers, 'Backgrounds'];
+  }
 
   @override
   void initState() {

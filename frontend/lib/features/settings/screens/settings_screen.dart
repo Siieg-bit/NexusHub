@@ -302,6 +302,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   /// 3. Chama auth.updateUser — Supabase envia confirmação para AMBOS os emails
   Future<void> _showChangeEmailDialog(
       BuildContext context, AppStrings s, Responsive r) async {
+    final s = getStrings();
     final currentEmail =
         SupabaseService.client.auth.currentUser?.email ?? '';
 
@@ -1040,11 +1041,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 }
 
-class _SectionLabel extends StatelessWidget {
+class _SectionLabel extends ConsumerWidget {
   final String title;
   const _SectionLabel({required this.title});
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final r = context.r;
     return Padding(
       padding: EdgeInsets.only(bottom: r.s(8)),
@@ -1090,6 +1091,10 @@ class _SettingsGroup extends ConsumerWidget {
           );
         }).toList(),
       ),
+    );
+  }
+}
+
 class _SettingsItem extends ConsumerWidget {
   final IconData icon;
   final String title;
@@ -1121,6 +1126,10 @@ class _SettingsItem extends ConsumerWidget {
       trailing: Icon(Icons.chevron_right_rounded,
           color: Colors.grey[600], size: r.s(20)),
       onTap: onTap,
+    );
+  }
+}
+
 class _ThemeSelectorItem extends ConsumerWidget {
   final ThemeMode currentMode;
   final ValueChanged<ThemeMode> onSelect;
@@ -1194,10 +1203,6 @@ class _ThemeSelectorItem extends ConsumerWidget {
             ),
           ),
         );
-      },
-    );
-  }
-}    );
       },
     );
   }

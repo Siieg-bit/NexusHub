@@ -47,7 +47,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
 
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+         SnackBar(
           content: Text(s.titleRequired),
           backgroundColor: AppTheme.errorColor,
         ),
@@ -56,7 +56,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
     }
     if (url.isEmpty || !_isValidUrl(url)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+         SnackBar(
           content: Text(s.enterValidLink),
           backgroundColor: AppTheme.errorColor,
         ),
@@ -99,7 +99,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
       if (mounted) {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+           SnackBar(
             content: Text(s.linkSharedSuccess),
             backgroundColor: AppTheme.successColor,
           ),

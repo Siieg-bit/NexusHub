@@ -922,7 +922,6 @@ class AppStringsEn implements AppStrings {
   @override
   String get days => 'Days';
   @override
-  String get deleteFile => 'Delete file';
   @override
   String get deleteMessage => 'Delete message';
   @override
@@ -1780,7 +1779,7 @@ class AppStringsEn implements AppStrings {
   @override
   String get invitedMembersOnly => 'Only invited members can join';
   @override
-  String get ipAddress => 'IP: $ipAddress';
+  String get ipAddress => 'IP: ...';
   @override
   String get irreversibleActionWarning => 'This action is IRREVERSIBLE. All your data, posts, comments, ';
   @override
@@ -2930,7 +2929,7 @@ class AppStringsEn implements AppStrings {
   @override
   String get subscribeAction => 'Subscribe';
   @override
-  String get subscribePrice => 'Subscribe for $14.90/month';
+  String get subscribePrice => 'Subscribe for \$14.90/month';
   @override
   String get subscriptionsLabel => 'Subscriptions';
   @override
@@ -3062,7 +3061,6 @@ class AppStringsEn implements AppStrings {
   @override
   String get yourUniqueIdDesc => 'Your unique ID is how other members will find you. ';
   @override
-  String confirmationEmailSent(String email) => 'We sent a confirmation link to \$email.\n\n';
   @override
   String get mediaLabel => 'media';
   @override
@@ -3076,7 +3074,6 @@ class AppStringsEn implements AppStrings {
   @override
   String levelAndRep(int level, int reputation) => 'Level \$level • \$reputation rep';
   @override
-  String get communityNameRequired => 'The community name is required.';
   @override
   String timeAgoMonthsShort(int months) => '\${months}mo ago';
   @override
@@ -3086,7 +3083,6 @@ class AppStringsEn implements AppStrings {
   @override
   String timeAgoMinutesShort(int minutes) => '\${minutes}min ago';
   @override
-  String get justNow => 'just now';
   @override
   String receivedWarning(String reason) => 'You received a warning: \$reason';
   @override

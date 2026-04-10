@@ -4,6 +4,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/l10n/app_strings.dart';
 
 /// Tela para Leaders/Curators editarem as guidelines da comunidade.
 /// Réplica fiel do Amino Apps — editor de texto rico com preview.
@@ -29,7 +30,7 @@ class _EditGuidelinesScreenState extends ConsumerState<EditGuidelinesScreen>
   bool _hasChanges = false;
 
   // Seções pré-definidas do Amino
-  static const _templateSections = [
+  static List<Map<String, dynamic>> _templateSections(AppStrings s) => [
     {
       'title': s.generalRules,
       'icon': Icons.gavel_rounded,
@@ -230,9 +231,9 @@ class _EditGuidelinesScreenState extends ConsumerState<EditGuidelinesScreen>
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: EdgeInsets.symmetric(horizontal: r.s(16)),
-            itemCount: _templateSections.length,
+            itemCount: _templateSections(s).length,
             itemBuilder: (context, index) {
-              final section = _templateSections[index];
+              final section = _templateSections(s)[index];
               return GestureDetector(
                 onTap: () => _insertTemplate(section),
                 child: Container(

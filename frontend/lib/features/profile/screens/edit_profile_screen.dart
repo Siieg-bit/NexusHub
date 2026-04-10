@@ -188,7 +188,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                           AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
                     ),
                   )
-                : const Text(
+                :  Text(
                     s.save,
                     style: TextStyle(
                       color: AppTheme.primaryColor,
@@ -362,7 +362,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                     labelStyle: TextStyle(
                         fontSize: r.fs(12), fontWeight: FontWeight.w700),
                     dividerHeight: 0,
-                    tabs: const [
+                    tabs:  [
                       Tab(text: s.edit),
                       Tab(text: s.preview),
                     ],

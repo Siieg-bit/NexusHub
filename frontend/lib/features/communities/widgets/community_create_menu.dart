@@ -59,6 +59,7 @@ class _CommunityCreateMenuSheet extends ConsumerWidget {
   });
 
   List<_CreateItem> _buildItems(AppStrings s) {
+    final s = getStrings();
     return [
       _CreateItem(
         label: s.storyLabel,

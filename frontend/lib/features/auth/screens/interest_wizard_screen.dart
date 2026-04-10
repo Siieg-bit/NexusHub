@@ -5,6 +5,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/l10n/app_strings.dart';
 
 /// Wizard de seleção de interesses em 4 passos, inspirado no Amino Apps.
 /// Passo 1: Boas-vindas e avatar
@@ -26,7 +27,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
   final Set<String> _selectedInterests = {};
   bool _isLoading = false;
 
-  static const _interestCategories = [
+  static List<_InterestItem> _getInterestCategories(AppStrings s) => [
     _InterestItem(
         s.animeManga, Icons.movie_filter_rounded, Color(0xFFE91E63)),
     _InterestItem(s.interestKpop, Icons.music_note_rounded, Color(0xFF9C27B0)),
@@ -453,9 +454,9 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
                 crossAxisSpacing: 12,
                 childAspectRatio: 1.0,
               ),
-              itemCount: _interestCategories.length,
+              itemCount: _getInterestCategories(s).length,
               itemBuilder: (context, index) {
-                final item = _interestCategories[index];
+                final item = _getInterestCategories(s)[index];
                 final isSelected = _selectedInterests.contains(item.name);
                 return GestureDetector(
                   onTap: () {
@@ -575,8 +576,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
           ),
           SizedBox(height: r.s(12)),
           Text(
-            'Seus interesses foram salvos. Agora vamos encontrar '
-            s.bestCommunitiesForYou,
+            'Seus interesses foram salvos. Agora vamos encontrar ${s.bestCommunitiesForYou}',
             style: TextStyle(
               color: Colors.grey[500],
               fontSize: r.fs(16),
@@ -591,7 +591,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
             runSpacing: 8,
             alignment: WrapAlignment.center,
             children: _selectedInterests.map((interest) {
-              final item = _interestCategories.firstWhere(
+              final item = _getInterestCategories(s).firstWhere(
                 (i) => i.name == interest,
                 orElse: () => _InterestItem(
                     interest, Icons.star_rounded, AppTheme.primaryColor),

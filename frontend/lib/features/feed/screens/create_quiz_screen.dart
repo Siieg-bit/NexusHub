@@ -77,7 +77,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
     final title = _titleController.text.trim();
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+         SnackBar(
           content: Text(s.quizTitleRequired),
           backgroundColor: AppTheme.errorColor,
         ),
@@ -89,7 +89,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
         .toList();
     if (validQuestions.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+         SnackBar(
           content: Text(s.addAtLeastOneQuestion),
           backgroundColor: AppTheme.errorColor,
         ),
@@ -127,7 +127,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
       if (mounted) {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+           SnackBar(
             content: Text(s.quizCreatedSuccess),
             backgroundColor: AppTheme.successColor,
           ),

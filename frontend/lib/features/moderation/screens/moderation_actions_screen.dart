@@ -6,6 +6,7 @@ import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/l10n/app_strings.dart';
 
 /// Ações de Moderação — Tela para aplicar ações em um usuário/conteúdo.
 /// Suporta: Ban, Mute, Warn, Hide Post, Delete Post, Strike, Transfer Leader.
@@ -34,7 +35,7 @@ class _ModerationActionsScreenState extends ConsumerState<ModerationActionsScree
   int _banDurationHours = 24;
   int _featuredDurationDays = 1; // 1, 3, 7 ou 0 (permanente)
 
-  static const _actions = [
+  static List<Map<String, dynamic>> _getActions(AppStrings s) => [
     {
       'id': 'warn',
       'label': s.warn,
@@ -384,7 +385,7 @@ class _ModerationActionsScreenState extends ConsumerState<ModerationActionsScree
                                     fontSize: r.fs(16)),
                               ),
                               Text(
-                                s.levelLabel(_targetUser?['level'] as int? ?? 1),
+                                s.levelLabel,
                                 style: TextStyle(
                                     color: Colors.grey[500],
                                     fontSize: r.fs(12)),
@@ -403,7 +404,7 @@ class _ModerationActionsScreenState extends ConsumerState<ModerationActionsScree
                           fontWeight: FontWeight.w800,
                           fontSize: r.fs(16))),
                   SizedBox(height: r.s(12)),
-                  ..._actions.map((action) {
+                  ..._getActions(s).map((action) {
                     final id = (action['id'] as String?) ?? '';
                     final isSelected = _selectedAction == id;
                     return GestureDetector(

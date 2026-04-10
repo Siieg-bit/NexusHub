@@ -1820,9 +1820,7 @@ class AppStringsKo implements AppStrings {
   String get guidelinesEditorHint => '여기에 커뮤니티 가이드라인을 작성하세요...\n\n## 섹션 제목에 사용\n• 또는 - 목록에 사용\n** 굵게에 사용';
   @override
   String get yourUniqueIdDesc => '고유 ID는 다른 멤버가 나를 찾는 방법입니다. ';
-  @override
-  String confirmationEmailSent(String email) => '$email(으)로 확인 링크를 보냈습니다.\n\n';
-  @override
+    @override
   String get mediaLabel => '미디어';
   @override
   String get moderationActions30d => '관리 조치(30일)';
@@ -2799,7 +2797,7 @@ class AppStringsKo implements AppStrings {
   @override
   String get invitedMembersOnly => '초대된 회원만 참여할 수 있습니다';
   @override
-  String get ipAddress => 'IP: $ipAddress';
+  String get ipAddress => 'IP: ...';
   @override
   String get irreversibleActionWarning => '이 작업은 되돌릴 수 없습니다. 모든 데이터, 게시물, 댓글, ';
   @override
@@ -3629,7 +3627,7 @@ class AppStringsKo implements AppStrings {
   @override
   String get subscribeAction => '구독하기';
   @override
-  String get subscribePrice => '$14.90/월 구독';
+  String get subscribePrice => '\$14.90/월 구독';
   @override
   String get subscriptionsLabel => '구독';
   @override
@@ -4061,4 +4059,8 @@ class AppStringsKo implements AppStrings {
   String get repostNotificationTitle => 'New Repost';
   @override
   String repostNotificationBody(String username) => '$username reposted your post.';
+
+
+  @override
+  String get confirmationEmailSent => '확인 이메일이 전송되었습니다';
 }

@@ -200,7 +200,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         final link = 'https://nexushub.app/u/${widget.userId}';
                         Clipboard.setData(ClipboardData(text: link));
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
+                           SnackBar(
                             content: Text(s.profileLinkCopied),
                             behavior: SnackBarBehavior.floating,
                           ),
@@ -611,7 +611,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       indicatorColor: context.textPrimary,
                       indicatorWeight: 3,
                       indicatorSize: TabBarIndicatorSize.label,
-                      tabs: const [
+                      tabs:  [
                         Tab(text: s.stories),
                         Tab(text: 'Wall'),
                       ],

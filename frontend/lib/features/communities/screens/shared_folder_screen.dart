@@ -37,7 +37,7 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
   bool _isUploading = false;
 
   // Filtros
-  static const _tabs = ['Todos', 'Imagens', 'Vídeos', 'Arquivos'];
+  static final _tabs = ['Todos', 'Imagens', 'Vídeos', 'Arquivos'];
 
   @override
   void initState() {
@@ -258,7 +258,7 @@ class _SharedFolderScreenState extends ConsumerState<SharedFolderScreen>
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+           SnackBar(
             content: Text(s.fileSentSuccess),
             backgroundColor: AppTheme.successColor,
             behavior: SnackBarBehavior.floating,

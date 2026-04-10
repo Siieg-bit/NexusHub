@@ -2,8 +2,6 @@
 // ignore_for_file: type=lint
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
-import 'core/l10n/locale_provider.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
@@ -19,34 +17,32 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      final s = getStrings();
       throw UnsupportedError(
-        '${s.defaultFirebaseOptionsWebNotConfigured}\nyou can reconfigure this by running the FlutterFire CLI again.',
+        'DefaultFirebaseOptions are not supported for this platform (web)\nyou can reconfigure this by running the FlutterFire CLI again.',
       );
     }
-    final s = getStrings();
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
         throw UnsupportedError(
-          '${s.defaultFirebaseOptionsIosNotConfigured}\nyou can reconfigure this by running the FlutterFire CLI again.',
+          'DefaultFirebaseOptions are not supported for this platform (iOS)\nyou can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.macOS:
         throw UnsupportedError(
-          '${s.defaultFirebaseOptionsMacosNotConfigured}\nyou can reconfigure this by running the FlutterFire CLI again.',
+          'DefaultFirebaseOptions are not supported for this platform (macOS)\nyou can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.windows:
         throw UnsupportedError(
-          '${s.defaultFirebaseOptionsWindowsNotConfigured}\nyou can reconfigure this by running the FlutterFire CLI again.',
+          'DefaultFirebaseOptions are not supported for this platform (Windows)\nyou can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.linux:
         throw UnsupportedError(
-          '${s.defaultFirebaseOptionsLinuxNotConfigured}\nyou can reconfigure this by running the FlutterFire CLI again.',
+          'DefaultFirebaseOptions are not supported for this platform (Linux)\nyou can reconfigure this by running the FlutterFire CLI again.',
         );
       default:
         throw UnsupportedError(
-          s.defaultFirebaseOptionsNotSupported,
+          'DefaultFirebaseOptions are not supported for this platform',
         );
     }
   }

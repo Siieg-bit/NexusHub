@@ -438,6 +438,7 @@ class _MyCommunityChatsScreenState
   // ---------------------------------------------------------------------------
   Widget _buildFavoritesSection(
       Responsive r, List<Map<String, dynamic>> favorites) {
+    final s = getStrings();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

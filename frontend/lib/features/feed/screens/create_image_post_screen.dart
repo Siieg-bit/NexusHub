@@ -60,7 +60,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+           SnackBar(
             content: Text(s.errorUploadTryAgain),
             backgroundColor: AppTheme.errorColor,
           ),
@@ -75,7 +75,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
     final s = getStrings();
     if (_mediaUrls.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+         SnackBar(
           content: Text(s.addAtLeastOneImage),
           backgroundColor: AppTheme.errorColor,
         ),
@@ -120,7 +120,7 @@ class _CreateImagePostScreenState extends ConsumerState<CreateImagePostScreen> {
       if (mounted) {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+           SnackBar(
             content: Text(s.postPublishedSuccess),
             backgroundColor: AppTheme.successColor,
           ),

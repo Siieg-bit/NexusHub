@@ -191,7 +191,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+         SnackBar(
           content: Text(s.couldNotAcceptInvite),
           behavior: SnackBarBehavior.floating,
         ),
@@ -513,7 +513,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 // TILE DE NOTIFICAÇÃO — Estilo Amino (simples e limpo)
 // =============================================================================
 
-class _NotificationTile extends StatelessWidget {
+class _NotificationTile extends ConsumerWidget {
   final Map<String, dynamic> data;
   final VoidCallback? onTap;
   final VoidCallback? onPrimaryAction;
@@ -590,7 +590,7 @@ class _NotificationTile extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     final type = data['type'] as String? ?? 'general';
@@ -803,12 +803,12 @@ class _NotificationTile extends StatelessWidget {
 // BANNER DE RETRY (erro ao carregar mais)
 // =============================================================================
 
-class _RetryBanner extends StatelessWidget {
+class _RetryBanner extends ConsumerWidget {
   final VoidCallback onRetry;
   const _RetryBanner({required this.onRetry});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(

@@ -216,7 +216,7 @@ class AppTheme {
       ),
       textTheme: const TextTheme(
         displayLarge: TextStyle(
-            fontFamily: s.plusJakartaSans,
+            fontFamily: 'Plus Jakarta Sans',
             color: textPrimary,
             fontSize: 32,
             fontWeight: FontWeight.bold),
@@ -362,7 +362,7 @@ class AppTheme {
       ),
       textTheme: const TextTheme(
         displayLarge: TextStyle(
-            fontFamily: s.plusJakartaSans,
+            fontFamily: 'Plus Jakarta Sans',
             color: textPrimaryLight,
             fontSize: 32,
             fontWeight: FontWeight.bold),

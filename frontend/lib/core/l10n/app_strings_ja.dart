@@ -2841,7 +2841,7 @@ class AppStringsJa implements AppStrings {
   @override
   String get subscribeAction => '購読する';
   @override
-  String get subscribePrice => '$14.90/月で購読';
+  String get subscribePrice => '\$14.90/月で購読';
   @override
   String get subscriptionsLabel => '購読';
   @override

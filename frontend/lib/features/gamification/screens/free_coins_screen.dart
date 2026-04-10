@@ -233,28 +233,28 @@ class _FreeCoinsScreenState extends ConsumerState<FreeCoinsScreen> {
                 // Atividades Diárias
                 _SectionTitle(title: s.dailyActivities),
                 SizedBox(height: r.s(8)),
-                const _EarningCard(
+                _EarningCard(
                   icon: Icons.calendar_today_rounded,
                   iconColor: Color(0xFF2196F3),
                   title: s.dailyCheckIn2,
                   subtitle: s.checkInEveryDay,
                   reward: '+5-25',
                 ),
-                const _EarningCard(
+                _EarningCard(
                   icon: Icons.edit_rounded,
                   iconColor: Color(0xFF4CAF50),
                   title: 'Criar um Post',
                   subtitle: s.publishContentCommunity,
                   reward: '+3',
                 ),
-                const _EarningCard(
+                _EarningCard(
                   icon: Icons.comment_rounded,
                   iconColor: Color(0xFF00BCD4),
                   title: 'Comentar em Posts',
                   subtitle: s.joinDiscussions,
                   reward: '+1',
                 ),
-                const _EarningCard(
+                _EarningCard(
                   icon: Icons.quiz_rounded,
                   iconColor: Color(0xFFFF9800),
                   title: 'Responder Quiz',
@@ -266,21 +266,21 @@ class _FreeCoinsScreenState extends ConsumerState<FreeCoinsScreen> {
                 // Conquistas
                 _SectionTitle(title: s.achievements),
                 SizedBox(height: r.s(8)),
-                const _EarningCard(
+                _EarningCard(
                   icon: Icons.emoji_events_rounded,
                   iconColor: Color(0xFFFF9800),
                   title: 'Completar Conquistas',
                   subtitle: 'Desbloqueie badges e ganhe moedas',
                   reward: '+10-100',
                 ),
-                const _EarningCard(
+                _EarningCard(
                   icon: Icons.person_add_rounded,
                   iconColor: Color(0xFF9C27B0),
                   title: 'Convidar Amigos',
                   subtitle: 'Ganhe moedas quando amigos se cadastram',
                   reward: '+50',
                 ),
-                const _EarningCard(
+                _EarningCard(
                   icon: Icons.trending_up_rounded,
                   iconColor: Color(0xFF2196F3),
                   title: s.levelUpAction,
@@ -325,7 +325,7 @@ class _EarningCard extends ConsumerWidget {
   final VoidCallback? onTap;
   final bool isLoading;
 
-  const _EarningCard({
+  _EarningCard({
     required this.icon,
     required this.iconColor,
     required this.title,

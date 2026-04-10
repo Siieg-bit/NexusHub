@@ -112,6 +112,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> _loadUserProfile() async {
+    final s = getStrings();
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
@@ -139,6 +140,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   /// Login com email e senha.
   Future<bool> signInWithEmail(String email, String password) async {
+    final s = getStrings();
     state = state.copyWith(isLoading: true, error: null);
     try {
       await SupabaseService.auth.signInWithPassword(
@@ -161,6 +163,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   /// Cadastro com email e senha.
   Future<bool> signUp(String email, String password, String nickname) async {
+    final s = getStrings();
     state = state.copyWith(isLoading: true, error: null);
     try {
       final response = await SupabaseService.auth.signUp(
@@ -205,6 +208,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   /// Login com Google OAuth usando Google Sign-In nativo (Android/iOS).
   /// Usa signInWithIdToken para evitar problemas de redirect em apps nativos.
   Future<bool> signInWithGoogle() async {
+    final s = getStrings();
     state = state.copyWith(isLoading: true, error: null);
     try {
       // Client ID do servidor Web (usado pelo Supabase para validar o token)
@@ -253,6 +257,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   /// Login com Apple OAuth.
   Future<bool> signInWithApple() async {
+    final s = getStrings();
     state = state.copyWith(isLoading: true, error: null);
     try {
       await SupabaseService.auth.signInWithOAuth(OAuthProvider.apple);
@@ -266,6 +271,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   /// Logout.
   Future<void> signOut() async {
+    final s = getStrings();
     try {
       // Encerrar presença em tempo real
       try {

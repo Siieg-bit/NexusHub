@@ -121,7 +121,7 @@ class DeviceFingerprintService {
   /// Em produção, usar package:device_info_plus para dados mais precisos.
   static String _generateFingerprint(Map<String, String> info) {
     final raw =
-        '${info['device_type']}_${info['os']}_${info['browser']}_${info['device_names.closingBracket;
+        '${info['device_type']}_${info['os']}_${info['browser']}_${info['device_name']}';
     // Simple hash
     var hash = 0;
     for (var i = 0; i < raw.length; i++) {

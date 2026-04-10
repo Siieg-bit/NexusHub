@@ -69,7 +69,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             backgroundColor: Theme.of(ctx).cardColor,
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16)),
-            title: const Text(
+            title:  Text(
               s.checkYourEmail,
               style: TextStyle(fontWeight: FontWeight.bold),
             ),

@@ -124,6 +124,7 @@ class _FlagCenterScreenState extends ConsumerState<FlagCenterScreen>
 
   Widget _buildFlagList(List<Map<String, dynamic>> flags,
       {required bool isPending}) {
+    final s = getStrings();
     final r = context.r;
     if (flags.isEmpty) {
       return Center(
@@ -316,7 +317,7 @@ class _FlagCard extends ConsumerWidget {
               SizedBox(width: r.s(12)),
               Expanded(
                 child: Text(
-                  'Reportado por: ${data[\'reporter_nickname\'] ?? \'Anônimo\'}',
+                  "Reportado por: ${reporter?['nickname'] ?? 'Anônimo'}",
                   style: TextStyle(
                     color: Colors.grey[500],
                     fontSize: r.fs(13),

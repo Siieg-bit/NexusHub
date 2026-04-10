@@ -100,7 +100,6 @@ class SystemAccountService {
 
   /// Envia notificação de ação de moderação via backend.
   static Future<void> sendModerationNotice({
-    final s = getStrings();
     required String userId,
     required String action,
     required String reason,

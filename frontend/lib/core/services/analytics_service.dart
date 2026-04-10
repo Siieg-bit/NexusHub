@@ -160,11 +160,10 @@ class AnalyticsService {
   // ─── Loja & IAP ────────────────────────────────────────────────────────────
 
   static Future<void> logPurchase({
-    final s = getStrings();
     required String itemId,
     required String itemName,
     required double price,
-    String currency = s.currencyBrl,
+    String currency = 'BRL',
   }) async {
     await _analytics.logPurchase(
       currency: currency,

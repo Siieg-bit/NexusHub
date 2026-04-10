@@ -90,7 +90,7 @@ class _LinkedAccountsScreenState extends ConsumerState<LinkedAccountsScreen> {
     final s = getStrings();
     if (_identities.length <= 1) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+         SnackBar(
           content: Text(s.cannotUnlinkLastLogin),
           behavior: SnackBarBehavior.floating,
           backgroundColor: AppTheme.errorColor,

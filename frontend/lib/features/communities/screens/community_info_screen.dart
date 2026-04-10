@@ -235,7 +235,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
                       community.link ?? community.endpoint ?? community.id;
                   Clipboard.setData(ClipboardData(text: link));
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
+                     SnackBar(
                       content: Text(s.linkCopied),
                       behavior: SnackBarBehavior.floating,
                       duration: Duration(seconds: 2),

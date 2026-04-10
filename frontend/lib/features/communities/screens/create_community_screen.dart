@@ -154,7 +154,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
-                  : const Text(
+                  :  Text(
                       s.create,
                       style: TextStyle(
                         color: Colors.white,
@@ -323,7 +323,7 @@ class _CreateCommunityScreenState extends ConsumerState<CreateCommunityScreen> {
                     contentPadding: EdgeInsets.symmetric(
                         horizontal: r.s(16), vertical: r.s(16)),
                   ),
-                  items: const [
+                  items:  [
                     DropdownMenuItem(
                         value: 'pt-BR', child: Text(s.portugueseBrazil)),
                     DropdownMenuItem(value: 'en', child: Text('English')),

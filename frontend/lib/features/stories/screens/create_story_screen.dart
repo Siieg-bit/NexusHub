@@ -30,7 +30,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
   int _selectedBgIndex = 0;
   VideoPlayerController? _videoPreviewController;
 
-  static const _bgColors = [
+  static final _bgColors = [
     Color(0xFF0D1B2A),
     Color(0xFFE91E63),
     Color(0xFF9C27B0),
@@ -43,7 +43,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
     Color(0xFF607D8B),
   ];
 
-  static const _bgHexCodes = [
+  static final _bgHexCodes = [
     '#0D1B2A',
     '#E91E63',
     '#9C27B0',
@@ -157,7 +157,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
     final s = getStrings();
     if (_type == 'text' && _textController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+         SnackBar(
           content: Text(s.writeStoryHint),
           backgroundColor: AppTheme.errorColor,
         ),
@@ -166,7 +166,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
     }
     if (_type == 'image' && _mediaUrl == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+         SnackBar(
           content: Text(s.selectImage2),
           backgroundColor: AppTheme.errorColor,
         ),
@@ -196,7 +196,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+           SnackBar(
             content: Text(s.storyPublished),
             backgroundColor: AppTheme.successColor,
             behavior: SnackBarBehavior.floating,
@@ -407,7 +407,7 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
                               color: Colors.white,
                               fontSize: r.fs(14),
                             ),
-                            decoration: const InputDecoration(
+                            decoration:  InputDecoration(
                               hintText: s.addCaptionHint,
                               hintStyle: TextStyle(color: Colors.white54),
                               border: InputBorder.none,

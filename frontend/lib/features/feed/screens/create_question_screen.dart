@@ -38,7 +38,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
     final question = _questionController.text.trim();
     if (question.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+         SnackBar(
           content: Text(s.questionRequired),
           backgroundColor: AppTheme.errorColor,
         ),
@@ -80,7 +80,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
       if (mounted) {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+           SnackBar(
             content: Text(s.questionPublishedSuccess),
             backgroundColor: AppTheme.successColor,
           ),

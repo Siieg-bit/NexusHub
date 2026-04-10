@@ -305,6 +305,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   void _showBackgroundPicker() {
+    final s = getStrings();
     final r = context.r;
     final urlCtrl = TextEditingController(text: _chatBackground ?? '');
     final presets = [
@@ -540,7 +541,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // ==========================================================================
 
   String _mapMessageType(String type) {
-    const validTypes = {
+    final validTypes = {
       'text',
       'strike',
       'voice_note',
@@ -604,6 +605,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     String? pollQuestion,
     List<String>? pollOptions,
   }) async {
+    final s = getStrings();
     final text = _messageController.text.trim();
     if (text.isEmpty && type == 'text' && mediaUrl == null) return;
 
@@ -743,6 +745,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // ==========================================================================
 
   void _showChatSettings() {
+    final s = getStrings();
     final r = context.r;
     showModalBottomSheet(
       context: context,
@@ -778,7 +781,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             _settingsTile(r, Icons.notifications_rounded, s.notifications, () {
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
+                 SnackBar(
                   content: Text(s.notificationSettingsComingSoon),
                   backgroundColor: AppTheme.primaryColor,
                   behavior: SnackBarBehavior.floating,
@@ -863,6 +866,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // ==========================================================================
 
   void _leaveChatConfirm() {
+    final s = getStrings();
     final r = context.r;
     showDialog(
       context: context,
@@ -895,6 +899,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   Future<void> _leaveChat() async {
+    final s = getStrings();
     final userId = SupabaseService.currentUserId;
     if (userId == null) return;
     try {
@@ -925,7 +930,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       debugPrint('[ChatRoom] leave_public_chat RPC error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+           SnackBar(
             content: Text(s.errorLeavingChat),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
@@ -937,6 +942,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
   // Deletar o chat (host ou team_admin)
   Future<void> _deleteChat() async {
+    final s = getStrings();
     try {
       await SupabaseService.rpc('delete_public_chat', params: {
         'p_thread_id': widget.threadId,
@@ -949,7 +955,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           debugPrint('[chat_room_screen.dart] $e');
         }
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+           SnackBar(
             content: Text(s.chatDeletedMsg),
             backgroundColor: AppTheme.primaryColor,
             behavior: SnackBarBehavior.floating,
@@ -961,7 +967,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       debugPrint('[ChatRoom] delete_public_chat RPC error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+           SnackBar(
             content: Text(s.errorDeletingChat),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
@@ -972,6 +978,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   void _deleteChatConfirm() {
+    final s = getStrings();
     final r = context.r;
     showDialog(
       context: context,
@@ -1009,6 +1016,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // ==========================================================================
 
   Future<void> _sendImage() async {
+    final s = getStrings();
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
     if (image == null) return;
@@ -1036,6 +1044,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   Future<void> _sendVideoFile() async {
+    final s = getStrings();
     final picker = ImagePicker();
     final video = await picker.pickVideo(source: ImageSource.gallery);
     if (video == null) return;
@@ -1089,6 +1098,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   Future<void> _pinMessage(String messageId) async {
+    final s = getStrings();
     try {
       await SupabaseService.rpc('pin_message', params: {
         'p_thread_id': widget.threadId,
@@ -1116,6 +1126,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // ==========================================================================
 
   Future<void> _showTipDialog() async {
+    final s = getStrings();
     final r = context.r;
     final customController = TextEditingController();
     int? selectedAmount;
@@ -1299,6 +1310,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   void _showInlinePollCreator() {
+    final s = getStrings();
     final r = context.r;
     final questionCtrl = TextEditingController();
     final optionCtrls = [TextEditingController(), TextEditingController()];
@@ -1393,6 +1405,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   void _showLinkInput() {
+    final s = getStrings();
     final r = context.r;
     final linkCtrl = TextEditingController();
     showDialog(
@@ -1459,6 +1472,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   }
 
   void _showEditMessageDialog(MessageModel message) {
+    final s = getStrings();
     final r = context.r;
     final editController = TextEditingController(text: message.content ?? '');
     showDialog(
@@ -1552,6 +1566,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // ==========================================================================
 
   void _showMessageActions(MessageModel message) async {
+    final s = getStrings();
     final action = await ChatMessageActionsSheet.show(
       context,
       message: message,
@@ -1571,7 +1586,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         break;
       case ChatMessageAction.copy:
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+           SnackBar(
             content: Text(s.copiedMsg),
             backgroundColor: AppTheme.primaryColor,
           ),
@@ -1642,7 +1657,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         break;
       case ChatMessageAction.report:
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+           SnackBar(
             content: Text(s.reportSubmittedThankYou),
             backgroundColor: AppTheme.primaryColor,
           ),
@@ -1656,6 +1671,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // ==========================================================================
 
   void _showPinnedMessages() {
+    final s = getStrings();
     final r = context.r;
     showModalBottomSheet(
       context: context,
@@ -2052,7 +2068,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                       }
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
-                                        const SnackBar(
+                                         SnackBar(
                                           content: Text(s.joinedChat),
                                           backgroundColor:
                                               AppTheme.primaryColor,
@@ -2067,7 +2083,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                       setState(() => _isSending = false);
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
-                                        const SnackBar(
+                                         SnackBar(
                                           content: Text(
                                               s.errorJoiningChat),
                                           backgroundColor: AppTheme.errorColor,
@@ -2240,6 +2256,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // ==========================================================================
 
   void _onTextChanged(String value) {
+    final s = getStrings();
     final urlRegex = RegExp(
       r'(?<![\[\(])(https?:\/\/[^\s]+)',
       caseSensitive: false,
@@ -2376,7 +2393,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 // =============================================================================
 // CHAT MEMBERS SHEET — Mostra membros do chat (Bug #6 fix)
 // =============================================================================
-class _ChatMembersSheet extends StatefulWidget {
+class _ChatMembersSheet extends ConsumerStatefulWidget {
   final String threadId;
   final ScrollController scrollController;
 
@@ -2386,10 +2403,10 @@ class _ChatMembersSheet extends StatefulWidget {
   });
 
   @override
-  State<_ChatMembersSheet> createState() => _ChatMembersSheetState();
+  ConsumerState<_ChatMembersSheet> createState() => _ChatMembersSheetState();
 }
 
-class _ChatMembersSheetState extends State<_ChatMembersSheet> {
+class _ChatMembersSheetState extends ConsumerState<_ChatMembersSheet> {
   List<Map<String, dynamic>> _members = [];
   bool _isLoading = true;
 

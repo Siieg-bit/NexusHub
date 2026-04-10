@@ -107,7 +107,7 @@ class PushNotificationService {
   /// Configura os canais de notificação do Android
   static Future<void> _setupNotificationChannels() async {
     final s = getStrings();
-    const channels = [
+    final channels = [
       AndroidNotificationChannel(
         'nexushub_default',
         'Geral',

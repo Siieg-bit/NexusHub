@@ -130,7 +130,6 @@ class RateLimiterService {
   static String _friendlyMessage(String action) {
     final s = getStrings();
     switch (action) {
-      final s = getStrings();
       case 'post_create':
         return s.postingTooFast;
       case 'comment_create':
@@ -178,3 +177,4 @@ class RateLimitException implements Exception {
   @override
   String toString() => 'RateLimitException($action): $message';
 }
+

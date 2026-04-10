@@ -40,7 +40,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
     final title = _titleController.text.trim();
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+         SnackBar(
           content: Text(s.titleRequired),
           backgroundColor: AppTheme.errorColor,
         ),
@@ -89,7 +89,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
       if (mounted) {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+           SnackBar(
             content: Text(s.blogPublishedSuccess),
             backgroundColor: AppTheme.successColor,
           ),
