@@ -202,23 +202,26 @@ class _DefaultErrorFallback extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              // Detalhes do erro (apenas em debug)
-              if (const bool.fromEnvironment('dart.vm.product') == false)
-                ExpansionTile(
-                  title: Text(
-                    s.errorDetails,
-                    style: TextStyle(color: Colors.grey[500], fontSize: 13),
-                  ),
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.black26,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+              // Detalhes do erro + stack trace (sempre visível)
+              ExpansionTile(
+                title: Text(
+                  s.errorDetails,
+                  style: TextStyle(color: Colors.grey[500], fontSize: 13),
+                ),
+                children: [
+                  Container(
+                    width: double.infinity,
+                    constraints: const BoxConstraints(maxHeight: 300),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.black26,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: SingleChildScrollView(
                       child: SelectableText(
-                        error.toString(),
+                        '${error.toString()}\n\n'
+                        '=== STACK TRACE ===\n'
+                        '${stackTrace?.toString() ?? "(sem stack trace)"}',
                         style: const TextStyle(
                           color: AppTheme.errorColor,
                           fontSize: 11,
@@ -226,8 +229,9 @@ class _DefaultErrorFallback extends ConsumerWidget {
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),

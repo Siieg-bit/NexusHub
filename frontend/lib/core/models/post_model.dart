@@ -115,10 +115,10 @@ class PostModel {
       linkSummary: json['link_summary'] as Map<String, dynamic>?,
       pollData: json['poll_data'] as Map<String, dynamic>?,
       quizData: json['quiz_data'] as Map<String, dynamic>?,
-      likesCount: json['likes_count'] as int? ?? 0,
-      commentsCount: json['comments_count'] as int? ?? 0,
-      viewsCount: json['views_count'] as int? ?? 0,
-      tipsTotal: json['tips_total'] as int? ?? 0,
+      likesCount: (json['likes_count'] as num?)?.toInt() ?? 0,
+      commentsCount: (json['comments_count'] as num?)?.toInt() ?? 0,
+      viewsCount: (json['views_count'] as num?)?.toInt() ?? 0,
+      tipsTotal: (json['tips_total'] as num?)?.toInt() ?? 0,
       status: json['status'] as String? ?? 'ok',
       isFeatured: json['is_featured'] as bool? ?? false,
       isPinned: json['is_pinned'] as bool? ?? false,
@@ -139,7 +139,7 @@ class PostModel {
               ? UserModel.fromJson(json['author'] as Map<String, dynamic>)
               : null),
       isLiked: json['is_liked'] as bool? ?? false,
-      authorLocalLevel: json['author_local_level'] as int?,
+      authorLocalLevel: (json['author_local_level'] as num?)?.toInt(),
       originalAuthor: json['original_author'] != null
           ? UserModel.fromJson(json['original_author'] as Map<String, dynamic>)
           : null,

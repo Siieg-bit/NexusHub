@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/services.dart';
@@ -80,6 +81,29 @@ void main() async {
       PushNotificationService.clearToken();
     }
   });
+
+  // ── Captura global de erros assíncronos ──────────────────────────
+  // PlatformDispatcher captura erros que escapam de Futures/Streams
+  FlutterError.onError = (FlutterErrorDetails details) {
+    debugPrint(
+      '\n\x1B[31m══════ FLUTTER ERROR ══════\x1B[0m\n'
+      '${details.exceptionAsString()}\n'
+      '${details.stack ?? "(sem stack trace)"}\n'
+      '\x1B[31m═══════════════════════════\x1B[0m\n',
+    );
+    // Repassa para o ErrorBoundary tratar visualmente
+    FlutterError.presentError(details);
+  };
+
+  PlatformDispatcher.instance.onError = (error, stack) {
+    debugPrint(
+      '\n\x1B[31m══════ ASYNC ERROR ══════\x1B[0m\n'
+      '$error\n'
+      '$stack\n'
+      '\x1B[31m═════════════════════════\x1B[0m\n',
+    );
+    return true;
+  };
 
   runApp(
     const ProviderScope(
