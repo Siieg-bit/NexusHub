@@ -15,39 +15,43 @@ import '../widgets/block_content_renderer.dart';
 import '../widgets/block_editor.dart';
 
 // =============================================================================
-// CREATE BLOG SCREEN — Editor de post tipo "Blog" (texto rico com blocos)
+// CREATE BLOG SCREEN — Editor profissional de blogs com blocos ricos
 //
-// Melhorias:
-//   - Imagem de capa (cover image) com upload
-//   - Tags / categorias
-//   - Personalização de cores (fundo do post, cor do texto do título)
-//   - Seletor de fonte do título
-//   - Barra de personalização expansível
-//   - Preview melhorado com capa
-//   - Rascunhos automáticos
-//   - Indicador de contagem de palavras
+// Design inspirado em Medium / Notion:
+//   - Layout imersivo com capa hero
+//   - AppBar minimalista (fechar, preview, configurações, publicar)
+//   - Título grande e limpo sem bordas
+//   - Editor de blocos como área principal
+//   - Painel de configurações avançadas via bottom sheet
+//   - Contagem de palavras e tempo de leitura discretos
+//   - Rascunhos automáticos e modo de edição
 // =============================================================================
 
 class CreateBlogScreen extends ConsumerStatefulWidget {
   final String communityId;
   final PostModel? editingPost;
 
-  const CreateBlogScreen({super.key, required this.communityId, this.editingPost});
+  const CreateBlogScreen({
+    super.key,
+    required this.communityId,
+    this.editingPost,
+  });
 
   @override
   ConsumerState<CreateBlogScreen> createState() => _CreateBlogScreenState();
 }
 
-class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
+class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
+    with SingleTickerProviderStateMixin {
   final _titleController = TextEditingController();
   final _tagController = TextEditingController();
+  final _scrollController = ScrollController();
 
   List<ContentBlock> _blocks = [];
   bool _isSubmitting = false;
   bool _isSavingDraft = false;
   bool _restoringDraft = true;
   bool _isUploadingCover = false;
-  bool _showCustomization = false;
   String _visibility = 'public';
   String? _draftId;
   String? _coverImageUrl;
@@ -61,12 +65,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
 
   bool get _isEditing => widget.editingPost != null;
 
-  static const _titleFonts = [
-    'Default',
-    'Serif',
-    'Monospace',
-    'Cursive',
-  ];
+  static const _titleFonts = ['Default', 'Serif', 'Monospace', 'Cursive'];
 
   static const _colorPresets = [
     Color(0xFF0D1B2A),
@@ -108,15 +107,12 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
   void _populateFromPost(PostModel post) {
     _titleController.text = post.title ?? '';
     _coverImageUrl = post.coverImageUrl;
-    _visibility = post.editorMetadata.extra['visibility'] as String? ?? 'public';
+    _visibility =
+        post.editorMetadata.extra['visibility'] as String? ?? 'public';
     _pinToProfile = post.isPinnedProfile;
 
-    // Restaurar tags
-    if (post.tags.isNotEmpty) {
-      _tags.addAll(post.tags);
-    }
+    if (post.tags.isNotEmpty) _tags.addAll(post.tags);
 
-    // Restaurar personalização do editor_metadata
     final meta = post.editorMetadata;
     final titleColorHex = meta.extra['title_color'] as String?;
     if (titleColorHex != null) {
@@ -124,11 +120,11 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
     }
     final bgColorHex = meta.extra['bg_accent_color'] as String?;
     if (bgColorHex != null) {
-      _bgAccentColor = _parseHexColor(bgColorHex) ?? const Color(0xFF0D1B2A);
+      _bgAccentColor =
+          _parseHexColor(bgColorHex) ?? const Color(0xFF0D1B2A);
     }
     _titleFont = meta.extra['title_font'] as String? ?? 'Default';
 
-    // Restaurar blocos de conteúdo
     if (post.contentBlocks != null && post.contentBlocks!.isNotEmpty) {
       _blocks = post.contentBlocks!
           .map((b) => ContentBlock.fromJson(Map<String, dynamic>.from(b)))
@@ -142,7 +138,9 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
     if (hex == null || hex.isEmpty) return null;
     try {
       final cleaned = hex.replaceAll('#', '');
-      if (cleaned.length == 6) return Color(int.parse('FF\$cleaned', radix: 16));
+      if (cleaned.length == 6) {
+        return Color(int.parse('FF$cleaned', radix: 16));
+      }
       if (cleaned.length == 8) return Color(int.parse(cleaned, radix: 16));
     } catch (_) {}
     return null;
@@ -152,8 +150,13 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
   void dispose() {
     _titleController.dispose();
     _tagController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // HELPERS
+  // ═══════════════════════════════════════════════════════════════════════════
 
   bool get _hasAnyContent {
     if (_titleController.text.trim().isNotEmpty) return true;
@@ -179,12 +182,16 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
     for (final block in _blocks) {
       if (block.isTextBased) {
         final text = (block.controller?.text ?? block.text).trim();
-        if (text.isNotEmpty) {
-          count += text.split(RegExp(r'\s+')).length;
-        }
+        if (text.isNotEmpty) count += text.split(RegExp(r'\s+')).length;
       }
     }
     return count;
+  }
+
+  String get _readingTime {
+    final minutes = (_wordCount / 200).ceil();
+    if (minutes <= 0) return '';
+    return '$minutes min de leitura';
   }
 
   String _fontFamilyFromName(String name) {
@@ -227,7 +234,8 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
   List<String> _extractMediaUrls(List<Map<String, dynamic>> blocks) {
     final urls = blocks
         .where((block) => block['type'] == 'image')
-        .map((block) => (block['url'] ?? block['image_url']) as String? ?? '')
+        .map((block) =>
+            (block['url'] ?? block['image_url']) as String? ?? '')
         .where((url) => url.isNotEmpty)
         .toList();
     if (_coverImageUrl != null && _coverImageUrl!.isNotEmpty) {
@@ -242,11 +250,16 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
             block['type'] == 'text' ||
             block['type'] == 'heading' ||
             block['type'] == 'quote')
-        .map((block) => (block['content'] ?? block['text']) as String? ?? '')
+        .map((block) =>
+            (block['content'] ?? block['text']) as String? ?? '')
         .map((text) => text.trim())
         .where((text) => text.isNotEmpty)
         .join('\n\n');
   }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // COVER IMAGE
+  // ═══════════════════════════════════════════════════════════════════════════
 
   Future<void> _pickCoverImage() async {
     final s = getStrings();
@@ -261,8 +274,11 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
       final bytes = await MediaUtils.compressImage(rawBytes);
       final path =
           'posts/$userId/${DateTime.now().millisecondsSinceEpoch}_cover_${image.name}';
-      await SupabaseService.storage.from('post_media').uploadBinary(path, bytes);
-      final url = SupabaseService.storage.from('post_media').getPublicUrl(path);
+      await SupabaseService.storage
+          .from('post_media')
+          .uploadBinary(path, bytes);
+      final url =
+          SupabaseService.storage.from('post_media').getPublicUrl(path);
       if (mounted) setState(() => _coverImageUrl = url);
     } catch (_) {
       if (mounted) {
@@ -288,6 +304,10 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
     });
   }
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // DRAFTS
+  // ═══════════════════════════════════════════════════════════════════════════
+
   Future<void> _restoreLatestDraft() async {
     final userId = SupabaseService.currentUserId;
     if (userId == null) {
@@ -311,15 +331,14 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
         final data = Map<String, dynamic>.from(list.first as Map);
         final restoredBlocks =
             ((data['content_blocks'] as List?) ?? const [])
-                .map((item) =>
-                    ContentBlock.fromJson(Map<String, dynamic>.from(item as Map)))
+                .map((item) => ContentBlock.fromJson(
+                    Map<String, dynamic>.from(item as Map)))
                 .toList();
 
         setState(() {
           _draftId = data['id'] as String?;
           _titleController.text = (data['title'] as String?) ?? '';
           _visibility = (data['visibility'] as String?) ?? 'public';
-          _coverImageUrl = data['cover_image_url'] as String?;
           _blocks = restoredBlocks.isNotEmpty
               ? restoredBlocks
               : [
@@ -332,21 +351,15 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Rascunho restaurado com sucesso.'),
+            content: const Text('Rascunho restaurado'),
             backgroundColor: AppTheme.successColor,
             behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
           ),
         );
       }
     } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Não foi possível restaurar o rascunho.'),
-          backgroundColor: AppTheme.errorColor,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      // Silently fail
     } finally {
       if (mounted) setState(() => _restoringDraft = false);
     }
@@ -364,8 +377,8 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
       if (!silent && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:
-                const Text('Adicione um título ou conteúdo antes de salvar.'),
+            content: const Text(
+                'Adicione um título ou conteúdo antes de salvar.'),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
           ),
@@ -406,9 +419,10 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
       if (!mounted || silent) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Rascunho salvo.'),
+          content: const Text('Rascunho salvo'),
           backgroundColor: AppTheme.successColor,
           behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
         ),
       );
     } catch (_) {
@@ -439,6 +453,10 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
     }
     if (mounted) context.pop();
   }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SUBMIT
+  // ═══════════════════════════════════════════════════════════════════════════
 
   String _extractErrorMessage(dynamic error) {
     final raw = error.toString().trim();
@@ -477,16 +495,22 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
 
     if (parts.isNotEmpty) return parts.join(' | ');
     final fallback = normalized.replaceAll(RegExp(r'\)+$'), '').trim();
-    return fallback.isEmpty ? 'Falha desconhecida ao publicar o blog.' : fallback;
+    return fallback.isEmpty
+        ? 'Falha desconhecida ao publicar o blog.'
+        : fallback;
   }
 
-  String? _extractPostId(dynamic result) {
-    if (result is String && result.isNotEmpty) return result;
-    if (result is Map<String, dynamic>) {
-      final id = result['id'] ?? result['post_id'];
-      if (id is String && id.isNotEmpty) return id;
-    }
-    return null;
+  Map<String, dynamic> _buildEditorMetadata() {
+    return {
+      'editor_type': 'blog',
+      'title_color':
+          '#${_titleColor.value.toRadixString(16).padLeft(8, '0')}',
+      'bg_accent_color':
+          '#${_bgAccentColor.value.toRadixString(16).padLeft(8, '0')}',
+      'title_font': _titleFont,
+      'tags': _tags,
+      'pin_to_profile': _pinToProfile,
+    };
   }
 
   Future<dynamic> _createBlogPost({
@@ -496,41 +520,33 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
     required List<String> mediaUrls,
   }) async {
     final errors = <String>[];
-    final coverUrl = _coverImageUrl ?? (mediaUrls.isNotEmpty ? mediaUrls.first : null);
+    final coverUrl =
+        _coverImageUrl ?? (mediaUrls.isNotEmpty ? mediaUrls.first : null);
+    final editorMetadata = _buildEditorMetadata();
 
-    // Montar editor_metadata
-    final editorMetadata = <String, dynamic>{
-      'editor_type': 'blog',
-      'title_color': '#${_titleColor.value.toRadixString(16).padLeft(8, '0')}',
-      'bg_accent_color':
-          '#${_bgAccentColor.value.toRadixString(16).padLeft(8, '0')}',
-      'title_font': _titleFont,
-      'tags': _tags,
-      'pin_to_profile': _pinToProfile,
-    };
-
-    // Tentativa 1: RPC create_post_with_reputation
+    // Tentativa 1: RPC
     try {
-      final result =
-          await SupabaseService.rpc('create_post_with_reputation', params: {
-        'p_community_id': widget.communityId,
-        'p_title': title,
-        'p_content': content,
-        'p_type': 'blog',
-        'p_visibility': _visibility,
-        'p_media_urls': mediaUrls,
-        'p_cover_image_url': coverUrl,
-        'p_content_blocks': contentBlocks,
-        'p_editor_type': 'blog',
-        'p_editor_metadata': editorMetadata,
-        'p_is_pinned_profile': _pinToProfile,
-      });
+      final result = await SupabaseService.rpc(
+          'create_post_with_reputation',
+          params: {
+            'p_community_id': widget.communityId,
+            'p_title': title,
+            'p_content': content,
+            'p_type': 'blog',
+            'p_visibility': _visibility,
+            'p_media_urls': mediaUrls,
+            'p_cover_image_url': coverUrl,
+            'p_content_blocks': contentBlocks,
+            'p_editor_type': 'blog',
+            'p_editor_metadata': editorMetadata,
+            'p_is_pinned_profile': _pinToProfile,
+          });
       return result;
     } catch (e) {
       errors.add('RPC: ${_extractErrorMessage(e)}');
     }
 
-    // Tentativa 2: insert direto
+    // Tentativa 2: Insert direto
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) throw Exception('Não autenticado');
@@ -542,8 +558,9 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
             'type': 'blog',
             'title': title,
             'content': content,
-            'media_list':
-                mediaUrls.map((url) => {'url': url, 'type': 'image'}).toList(),
+            'media_list': mediaUrls
+                .map((url) => {'url': url, 'type': 'image'})
+                .toList(),
             'cover_image_url': coverUrl,
             'visibility': _visibility,
             'content_blocks': contentBlocks,
@@ -593,7 +610,8 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
     if (serializedBlocks.isEmpty && content.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Adicione conteúdo ao blog antes de publicar.'),
+          content:
+              const Text('Adicione conteúdo ao blog antes de publicar.'),
           backgroundColor: AppTheme.errorColor,
           behavior: SnackBarBehavior.floating,
         ),
@@ -604,23 +622,18 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      // ── Modo de EDIÇÃO ──
       if (_isEditing) {
-        final coverUrl = _coverImageUrl ?? (mediaUrls.isNotEmpty ? mediaUrls.first : null);
-        final editorMetadata = <String, dynamic>{
-          'editor_type': 'blog',
-          'title_color': '#${_titleColor.value.toRadixString(16).padLeft(8, '0')}',
-          'bg_accent_color': '#${_bgAccentColor.value.toRadixString(16).padLeft(8, '0')}',
-          'title_font': _titleFont,
-          'tags': _tags,
-          'pin_to_profile': _pinToProfile,
-        };
+        final coverUrl = _coverImageUrl ??
+            (mediaUrls.isNotEmpty ? mediaUrls.first : null);
+        final editorMetadata = _buildEditorMetadata();
 
         final postData = {
           'title': title,
           'content': content,
           'type': 'blog',
-          'media_list': mediaUrls.map((url) => {'url': url, 'type': 'image'}).toList(),
+          'media_list': mediaUrls
+              .map((url) => {'url': url, 'type': 'image'})
+              .toList(),
           'tags': _tags,
           'cover_image_url': coverUrl,
           'visibility': _visibility,
@@ -658,7 +671,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
         return;
       }
 
-      // ── Modo de CRIAÇÃO ──
+      // Modo de criação
       await _createBlogPost(
         title: title,
         content: content,
@@ -694,6 +707,10 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
     if (mounted) setState(() => _isSubmitting = false);
   }
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PREVIEW
+  // ═══════════════════════════════════════════════════════════════════════════
+
   void _openPreview() {
     final title = _titleController.text.trim();
     final blocks = _serializeBlocks();
@@ -701,117 +718,514 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: context.surfaceColor,
+      backgroundColor: Colors.transparent,
       builder: (context) {
         final r = context.r;
-        return SafeArea(
-          child: DraggableScrollableSheet(
-            expand: false,
-            initialChildSize: 0.88,
-            minChildSize: 0.55,
-            maxChildSize: 0.95,
-            builder: (_, controller) => SingleChildScrollView(
-              controller: controller,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      margin: EdgeInsets.only(top: r.s(12)),
-                      width: r.s(42),
-                      height: r.s(4),
-                      decoration: BoxDecoration(
-                        color: context.dividerClr,
-                        borderRadius: BorderRadius.circular(r.s(999)),
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.9,
+          decoration: BoxDecoration(
+            color: context.scaffoldBg,
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(r.s(20)),
+            ),
+          ),
+          child: Column(
+            children: [
+              // Handle bar
+              Container(
+                margin: EdgeInsets.only(top: r.s(12)),
+                width: r.s(40),
+                height: r.s(4),
+                decoration: BoxDecoration(
+                  color: context.dividerClr,
+                  borderRadius: BorderRadius.circular(r.s(2)),
+                ),
+              ),
+              // Header
+              Padding(
+                padding: EdgeInsets.symmetric(
+                    horizontal: r.s(20), vertical: r.s(12)),
+                child: Row(
+                  children: [
+                    Icon(Icons.visibility_outlined,
+                        color: context.textSecondary, size: r.s(18)),
+                    SizedBox(width: r.s(8)),
+                    Text(
+                      'Pré-visualização',
+                      style: TextStyle(
+                        color: context.textPrimary,
+                        fontSize: r.fs(16),
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                  ),
-                  // Cover image preview
-                  if (_coverImageUrl != null) ...[
-                    SizedBox(height: r.s(16)),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(0),
-                      child: Image.network(
-                        _coverImageUrl!,
-                        width: double.infinity,
-                        height: r.s(200),
-                        fit: BoxFit.cover,
-                      ),
+                    const Spacer(),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: Icon(Icons.close_rounded,
+                          color: context.textSecondary),
                     ),
                   ],
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(
-                        r.s(20), r.s(20), r.s(20), r.s(28)),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title.isEmpty
-                              ? 'Pré-visualização do blog'
-                              : title,
-                          style: TextStyle(
-                            color: context.textPrimary,
-                            fontSize: r.fs(24),
-                            fontWeight: FontWeight.w800,
-                            height: 1.2,
-                            fontFamily: _fontFamilyFromName(_titleFont),
-                          ),
-                        ),
-                        if (_tags.isNotEmpty) ...[
-                          SizedBox(height: r.s(12)),
-                          Wrap(
-                            spacing: r.s(6),
-                            runSpacing: r.s(4),
-                            children: _tags
-                                .map((tag) => Container(
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: r.s(10),
-                                          vertical: r.s(4)),
-                                      decoration: BoxDecoration(
-                                        color: AppTheme.accentColor
-                                            .withValues(alpha: 0.15),
-                                        borderRadius:
-                                            BorderRadius.circular(r.s(12)),
-                                      ),
-                                      child: Text(
-                                        '#$tag',
-                                        style: TextStyle(
-                                          color: AppTheme.accentColor,
-                                          fontSize: r.fs(12),
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ))
-                                .toList(),
-                          ),
-                        ],
-                        SizedBox(height: r.s(20)),
-                        if (blocks.isEmpty)
-                          Text(
-                            'Adicione conteúdo para visualizar o resultado antes de publicar.',
-                            style: TextStyle(
-                              color: context.textSecondary,
-                              fontSize: r.fs(14),
-                            ),
-                          )
-                        else
-                          BlockContentRenderer(
-                            blocks: blocks,
-                            horizontalPadding: 0,
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
+              Divider(color: context.dividerClr, height: 1),
+              // Content
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (_coverImageUrl != null)
+                        Image.network(
+                          _coverImageUrl!,
+                          width: double.infinity,
+                          height: r.s(220),
+                          fit: BoxFit.cover,
+                        ),
+                      Padding(
+                        padding: EdgeInsets.all(r.s(20)),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title.isEmpty ? 'Sem título' : title,
+                              style: TextStyle(
+                                color: context.textPrimary,
+                                fontSize: r.fs(26),
+                                fontWeight: FontWeight.w800,
+                                height: 1.2,
+                                fontFamily:
+                                    _fontFamilyFromName(_titleFont),
+                              ),
+                            ),
+                            if (_tags.isNotEmpty) ...[
+                              SizedBox(height: r.s(12)),
+                              Wrap(
+                                spacing: r.s(6),
+                                runSpacing: r.s(4),
+                                children: _tags
+                                    .map((tag) => Container(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: r.s(10),
+                                              vertical: r.s(4)),
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.accentColor
+                                                .withValues(alpha: 0.12),
+                                            borderRadius:
+                                                BorderRadius.circular(
+                                                    r.s(20)),
+                                          ),
+                                          child: Text(
+                                            '#$tag',
+                                            style: TextStyle(
+                                              color: AppTheme.accentColor,
+                                              fontSize: r.fs(12),
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ))
+                                    .toList(),
+                              ),
+                            ],
+                            if (_readingTime.isNotEmpty) ...[
+                              SizedBox(height: r.s(12)),
+                              Text(
+                                '$_wordCount palavras  ·  $_readingTime',
+                                style: TextStyle(
+                                  color: context.textSecondary,
+                                  fontSize: r.fs(12),
+                                ),
+                              ),
+                            ],
+                            SizedBox(height: r.s(24)),
+                            if (blocks.isEmpty)
+                              Text(
+                                'Adicione conteúdo para visualizar.',
+                                style: TextStyle(
+                                  color: context.textSecondary,
+                                  fontSize: r.fs(14),
+                                ),
+                              )
+                            else
+                              BlockContentRenderer(
+                                blocks: blocks,
+                                horizontalPadding: 0,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       },
     );
   }
 
-  // ─── Build ──────────────────────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SETTINGS BOTTOM SHEET
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  void _openSettings() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setModalState) {
+            final r = ctx.r;
+            return Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(ctx).size.height * 0.85,
+              ),
+              decoration: BoxDecoration(
+                color: ctx.scaffoldBg,
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(r.s(20)),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Handle
+                  Container(
+                    margin: EdgeInsets.only(top: r.s(12)),
+                    width: r.s(40),
+                    height: r.s(4),
+                    decoration: BoxDecoration(
+                      color: ctx.dividerClr,
+                      borderRadius: BorderRadius.circular(r.s(2)),
+                    ),
+                  ),
+                  // Header
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: r.s(20), vertical: r.s(12)),
+                    child: Row(
+                      children: [
+                        Icon(Icons.tune_rounded,
+                            color: ctx.textSecondary, size: r.s(18)),
+                        SizedBox(width: r.s(8)),
+                        Text(
+                          'Configurações do blog',
+                          style: TextStyle(
+                            color: ctx.textPrimary,
+                            fontSize: r.fs(16),
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          icon: Icon(Icons.close_rounded,
+                              color: ctx.textSecondary),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Divider(color: ctx.dividerClr, height: 1),
+                  // Settings content
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.all(r.s(20)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // ── Tags ──
+                          _SettingsSection(
+                            icon: Icons.tag_rounded,
+                            title: 'Tags',
+                            subtitle:
+                                '${_tags.length}/10 tags adicionadas',
+                            child: Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                              children: [
+                                if (_tags.isNotEmpty) ...[
+                                  Wrap(
+                                    spacing: r.s(6),
+                                    runSpacing: r.s(6),
+                                    children: _tags
+                                        .map((tag) => _TagChip(
+                                              tag: tag,
+                                              onRemove: () {
+                                                setState(() =>
+                                                    _tags.remove(tag));
+                                                setModalState(() {});
+                                              },
+                                            ))
+                                        .toList(),
+                                  ),
+                                  SizedBox(height: r.s(10)),
+                                ],
+                                if (_tags.length < 10)
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: TextField(
+                                          controller: _tagController,
+                                          style: TextStyle(
+                                            color: ctx.textPrimary,
+                                            fontSize: r.fs(13),
+                                          ),
+                                          decoration: InputDecoration(
+                                            hintText:
+                                                'Adicionar tag...',
+                                            hintStyle: TextStyle(
+                                              color:
+                                                  ctx.textSecondary,
+                                              fontSize: r.fs(13),
+                                            ),
+                                            filled: true,
+                                            fillColor:
+                                                ctx.surfaceColor,
+                                            border:
+                                                OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius
+                                                      .circular(
+                                                          r.s(10)),
+                                              borderSide:
+                                                  BorderSide.none,
+                                            ),
+                                            contentPadding:
+                                                EdgeInsets.symmetric(
+                                              horizontal: r.s(12),
+                                              vertical: r.s(10),
+                                            ),
+                                            isDense: true,
+                                          ),
+                                          onSubmitted: (_) {
+                                            _addTag();
+                                            setModalState(() {});
+                                          },
+                                        ),
+                                      ),
+                                      SizedBox(width: r.s(8)),
+                                      _SmallButton(
+                                        label: 'Adicionar',
+                                        onTap: () {
+                                          _addTag();
+                                          setModalState(() {});
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                              ],
+                            ),
+                          ),
+
+                          SizedBox(height: r.s(20)),
+
+                          // ── Visibilidade ──
+                          _SettingsSection(
+                            icon: Icons.visibility_outlined,
+                            title: 'Visibilidade',
+                            child: Row(
+                              children: [
+                                _VisibilityChip(
+                                  label: 'Público',
+                                  icon: Icons.public_rounded,
+                                  isSelected:
+                                      _visibility == 'public',
+                                  onTap: () {
+                                    setState(() =>
+                                        _visibility = 'public');
+                                    setModalState(() {});
+                                  },
+                                ),
+                                SizedBox(width: r.s(8)),
+                                _VisibilityChip(
+                                  label: 'Seguidores',
+                                  icon: Icons.people_rounded,
+                                  isSelected:
+                                      _visibility == 'followers',
+                                  onTap: () {
+                                    setState(() =>
+                                        _visibility = 'followers');
+                                    setModalState(() {});
+                                  },
+                                ),
+                                SizedBox(width: r.s(8)),
+                                _VisibilityChip(
+                                  label: 'Privado',
+                                  icon: Icons.lock_rounded,
+                                  isSelected:
+                                      _visibility == 'private',
+                                  onTap: () {
+                                    setState(() =>
+                                        _visibility = 'private');
+                                    setModalState(() {});
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          SizedBox(height: r.s(20)),
+
+                          // ── Fonte do título ──
+                          _SettingsSection(
+                            icon: Icons.text_fields_rounded,
+                            title: 'Fonte do título',
+                            child: SizedBox(
+                              height: r.s(40),
+                              child: ListView.separated(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: _titleFonts.length,
+                                separatorBuilder: (_, __) =>
+                                    SizedBox(width: r.s(8)),
+                                itemBuilder: (_, i) {
+                                  final font = _titleFonts[i];
+                                  final isSelected =
+                                      _titleFont == font;
+                                  return GestureDetector(
+                                    onTap: () {
+                                      setState(() =>
+                                          _titleFont = font);
+                                      setModalState(() {});
+                                    },
+                                    child: Container(
+                                      padding:
+                                          EdgeInsets.symmetric(
+                                        horizontal: r.s(16),
+                                        vertical: r.s(8),
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? AppTheme.primaryColor
+                                                .withValues(
+                                                    alpha: 0.15)
+                                            : ctx.surfaceColor,
+                                        borderRadius:
+                                            BorderRadius.circular(
+                                                r.s(10)),
+                                        border: Border.all(
+                                          color: isSelected
+                                              ? AppTheme
+                                                  .primaryColor
+                                              : ctx.dividerClr,
+                                          width: isSelected
+                                              ? 1.5
+                                              : 1,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        font,
+                                        style: TextStyle(
+                                          color: isSelected
+                                              ? AppTheme
+                                                  .primaryColor
+                                              : ctx.textPrimary,
+                                          fontSize: r.fs(13),
+                                          fontWeight: isSelected
+                                              ? FontWeight.w700
+                                              : FontWeight.w500,
+                                          fontFamily:
+                                              _fontFamilyFromName(
+                                                  font),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+
+                          SizedBox(height: r.s(20)),
+
+                          // ── Cor do título ──
+                          _SettingsSection(
+                            icon: Icons.format_color_text_rounded,
+                            title: 'Cor do título',
+                            child: _ColorPaletteRow(
+                              colors: _textColorPresets,
+                              selected: _titleColor,
+                              onSelect: (c) {
+                                setState(() => _titleColor = c);
+                                setModalState(() {});
+                              },
+                            ),
+                          ),
+
+                          SizedBox(height: r.s(20)),
+
+                          // ── Cor de fundo ──
+                          _SettingsSection(
+                            icon: Icons.palette_outlined,
+                            title: 'Cor de destaque',
+                            child: _ColorPaletteRow(
+                              colors: _colorPresets,
+                              selected: _bgAccentColor,
+                              onSelect: (c) {
+                                setState(
+                                    () => _bgAccentColor = c);
+                                setModalState(() {});
+                              },
+                            ),
+                          ),
+
+                          SizedBox(height: r.s(20)),
+
+                          // ── Fixar no perfil ──
+                          _SettingsSection(
+                            icon: Icons.push_pin_outlined,
+                            title: 'Fixar no perfil',
+                            subtitle:
+                                'Destaque este blog no topo do seu perfil',
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    _pinToProfile
+                                        ? 'Ativado'
+                                        : 'Desativado',
+                                    style: TextStyle(
+                                      color: _pinToProfile
+                                          ? AppTheme.primaryColor
+                                          : ctx.textSecondary,
+                                      fontSize: r.fs(13),
+                                      fontWeight:
+                                          FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                                Switch(
+                                  value: _pinToProfile,
+                                  onChanged: (v) {
+                                    setState(
+                                        () => _pinToProfile = v);
+                                    setModalState(() {});
+                                  },
+                                  activeColor:
+                                      AppTheme.primaryColor,
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          SizedBox(height: r.s(20)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // BUILD
+  // ═══════════════════════════════════════════════════════════════════════════
+
   @override
   Widget build(BuildContext context) {
     final s = ref.watch(stringsProvider);
@@ -819,290 +1233,306 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
 
     return Scaffold(
       backgroundColor: context.scaffoldBg,
+      // ── AppBar minimalista ──
       appBar: AppBar(
-        backgroundColor: context.surfaceColor,
-        title: Text(
-          _isEditing ? s.editPost : s.newBlog,
-          style: TextStyle(
-            color: context.textPrimary,
-            fontSize: r.fs(17),
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+        backgroundColor: context.scaffoldBg,
+        elevation: 0,
+        scrolledUnderElevation: 0.5,
+        surfaceTintColor: context.surfaceColor,
         leading: IconButton(
           icon: Icon(Icons.close_rounded, color: context.textPrimary),
           onPressed: _handleClose,
+          tooltip: 'Fechar',
+        ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_draftId != null) ...[
+              Container(
+                padding: EdgeInsets.symmetric(
+                    horizontal: r.s(8), vertical: r.s(3)),
+                decoration: BoxDecoration(
+                  color: AppTheme.accentColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(r.s(6)),
+                ),
+                child: Text(
+                  'Rascunho',
+                  style: TextStyle(
+                    color: AppTheme.accentColor,
+                    fontSize: r.fs(11),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
         actions: [
+          // Salvar rascunho
+          IconButton(
+            tooltip: 'Salvar rascunho',
+            onPressed: (_isSavingDraft || _isSubmitting)
+                ? null
+                : () => _saveDraft(),
+            icon: _isSavingDraft
+                ? SizedBox(
+                    width: r.s(18),
+                    height: r.s(18),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: context.textSecondary,
+                    ),
+                  )
+                : Icon(Icons.save_outlined,
+                    color: context.textSecondary, size: r.s(22)),
+          ),
           // Preview
           IconButton(
             tooltip: 'Pré-visualizar',
             onPressed: _openPreview,
-            icon: Icon(Icons.visibility_outlined, color: context.textPrimary),
+            icon: Icon(Icons.visibility_outlined,
+                color: context.textSecondary, size: r.s(22)),
           ),
-          // Personalização toggle
+          // Configurações
           IconButton(
-            tooltip: 'Personalização',
-            onPressed: () =>
-                setState(() => _showCustomization = !_showCustomization),
-            icon: Icon(
-              Icons.palette_outlined,
-              color: _showCustomization
-                  ? AppTheme.accentColor
-                  : context.textPrimary,
-            ),
-          ),
-          // Rascunho
-          TextButton(
-            onPressed:
-                (_isSavingDraft || _isSubmitting) ? null : () => _saveDraft(),
-            child: _isSavingDraft
-                ? SizedBox(
-                    width: r.s(18),
-                    height: r.s(18),
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppTheme.primaryColor,
-                    ),
-                  )
-                : Text(
-                    'Rascunho',
-                    style: TextStyle(
-                      color: context.textPrimary,
-                      fontSize: r.fs(13),
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-          ),
-          // Visibilidade
-          PopupMenuButton<String>(
-            initialValue: _visibility,
-            onSelected: (value) => setState(() => _visibility = value),
-            color: context.surfaceColor,
-            icon: Icon(
-              _visibility == 'public'
-                  ? Icons.public_rounded
-                  : _visibility == 'followers'
-                      ? Icons.people_rounded
-                      : Icons.lock_rounded,
-              color: AppTheme.accentColor,
-              size: r.s(20),
-            ),
-            itemBuilder: (_) => [
-              PopupMenuItem(
-                value: 'public',
-                child: Text(s.publicLabel,
-                    style: TextStyle(color: context.textPrimary)),
-              ),
-              PopupMenuItem(
-                value: 'followers',
-                child: Text(s.followers,
-                    style: TextStyle(color: context.textPrimary)),
-              ),
-              PopupMenuItem(
-                value: 'private',
-                child: Text(s.privateLabel,
-                    style: TextStyle(color: context.textPrimary)),
-              ),
-            ],
+            tooltip: 'Configurações',
+            onPressed: _openSettings,
+            icon: Icon(Icons.tune_rounded,
+                color: context.textSecondary, size: r.s(22)),
           ),
           // Publicar
-          TextButton(
-            onPressed: _isSubmitting ? null : _submit,
+          Padding(
+            padding: EdgeInsets.only(right: r.s(8)),
             child: _isSubmitting
-                ? SizedBox(
-                    width: r.s(18),
-                    height: r.s(18),
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppTheme.primaryColor,
+                ? Padding(
+                    padding: EdgeInsets.all(r.s(12)),
+                    child: SizedBox(
+                      width: r.s(20),
+                      height: r.s(20),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppTheme.primaryColor,
+                      ),
                     ),
                   )
-                : Text(
-                    _isEditing ? s.save : s.publish,
-                    style: TextStyle(
-                      color: AppTheme.primaryColor,
-                      fontSize: r.fs(14),
-                      fontWeight: FontWeight.w700,
+                : TextButton(
+                    onPressed: _submit,
+                    style: TextButton.styleFrom(
+                      backgroundColor:
+                          AppTheme.primaryColor.withValues(alpha: 0.12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(r.s(10)),
+                      ),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: r.s(16), vertical: r.s(8)),
+                    ),
+                    child: Text(
+                      _isEditing ? s.save : s.publish,
+                      style: TextStyle(
+                        color: AppTheme.primaryColor,
+                        fontSize: r.fs(14),
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
           ),
-          SizedBox(width: r.s(4)),
         ],
       ),
       body: _restoringDraft
-          ? const Center(
-              child: CircularProgressIndicator(
-                color: AppTheme.accentColor,
-                strokeWidth: 2,
+          ? Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CircularProgressIndicator(
+                    color: AppTheme.accentColor,
+                    strokeWidth: 2,
+                  ),
+                  SizedBox(height: r.s(12)),
+                  Text(
+                    'Carregando...',
+                    style: TextStyle(
+                      color: context.textSecondary,
+                      fontSize: r.fs(13),
+                    ),
+                  ),
+                ],
               ),
             )
-          : Column(
-              children: [
-                // Barra de personalização expansível
-                if (_showCustomization) _buildCustomizationBar(r),
+          : SingleChildScrollView(
+              controller: _scrollController,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ── Cover Image (Hero) ──
+                  _buildCoverSection(r),
 
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.all(r.s(16)),
+                  // ── Área de edição principal ──
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: r.s(20)),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Cover image
-                        _buildCoverSection(r),
-                        SizedBox(height: r.s(16)),
-
-                        // Info card
-                        Container(
-                          width: double.infinity,
-                          padding: EdgeInsets.all(r.s(12)),
-                          decoration: BoxDecoration(
-                            color: context.cardBg.withValues(alpha: 0.5),
-                            borderRadius: BorderRadius.circular(r.s(12)),
-                            border: Border.all(color: context.dividerClr),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(Icons.info_outline_rounded,
-                                  color: context.textSecondary, size: r.s(16)),
-                              SizedBox(width: r.s(8)),
-                              Expanded(
-                                child: Text(
-                                  _draftId == null
-                                      ? 'Escreva seu blog com blocos de texto, imagem e subtítulos.'
-                                      : 'Editando rascunho salvo.',
-                                  style: TextStyle(
-                                    color: context.textSecondary,
-                                    fontSize: r.fs(12),
-                                    height: 1.4,
-                                  ),
-                                ),
-                              ),
-                              // Word count
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: r.s(8), vertical: r.s(4)),
-                                decoration: BoxDecoration(
-                                  color: context.dividerClr
-                                      .withValues(alpha: 0.3),
-                                  borderRadius:
-                                      BorderRadius.circular(r.s(8)),
-                                ),
-                                child: Text(
-                                  '$_wordCount palavras',
-                                  style: TextStyle(
-                                    color: context.textSecondary,
-                                    fontSize: r.fs(10),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(height: r.s(16)),
+                        SizedBox(height: r.s(20)),
 
                         // Título
                         TextField(
                           controller: _titleController,
                           maxLength: 120,
-                          textCapitalization: TextCapitalization.sentences,
+                          textCapitalization:
+                              TextCapitalization.sentences,
                           onChanged: (_) => setState(() {}),
                           style: TextStyle(
-                            color: context.textPrimary,
-                            fontSize: r.fs(22),
-                            fontWeight: FontWeight.w700,
-                            fontFamily: _fontFamilyFromName(_titleFont),
+                            color: _titleColor,
+                            fontSize: r.fs(26),
+                            fontWeight: FontWeight.w800,
+                            height: 1.25,
+                            fontFamily:
+                                _fontFamilyFromName(_titleFont),
                           ),
                           decoration: InputDecoration(
-                            hintText: s.blogTitleHint,
+                            hintText: 'Título do seu blog...',
                             hintStyle: TextStyle(
-                              color: context.textSecondary,
-                              fontSize: r.fs(22),
-                              fontWeight: FontWeight.w700,
+                              color: context.textSecondary
+                                  .withValues(alpha: 0.5),
+                              fontSize: r.fs(26),
+                              fontWeight: FontWeight.w800,
                             ),
                             border: InputBorder.none,
                             counterText: '',
+                            contentPadding: EdgeInsets.zero,
                           ),
                         ),
 
-                        // Tags
-                        _buildTagsSection(r),
+                        // Tags preview (inline, compacto)
+                        if (_tags.isNotEmpty) ...[
+                          SizedBox(height: r.s(8)),
+                          Wrap(
+                            spacing: r.s(6),
+                            runSpacing: r.s(4),
+                            children: _tags
+                                .map((tag) => Text(
+                                      '#$tag',
+                                      style: TextStyle(
+                                        color: AppTheme.accentColor
+                                            .withValues(alpha: 0.7),
+                                        fontSize: r.fs(13),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ))
+                                .toList(),
+                          ),
+                        ],
 
-                        Divider(color: context.dividerClr, height: r.s(24)),
-
-                        // Pin to profile toggle
-                        Row(
-                          children: [
-                            Icon(Icons.push_pin_outlined,
-                                color: context.textSecondary, size: r.s(16)),
-                            SizedBox(width: r.s(8)),
-                            Text(
-                              'Fixar no perfil',
-                              style: TextStyle(
-                                color: context.textPrimary,
-                                fontSize: r.fs(13),
-                                fontWeight: FontWeight.w500,
+                        // Stats discretos
+                        if (_wordCount > 0) ...[
+                          SizedBox(height: r.s(12)),
+                          Row(
+                            children: [
+                              Text(
+                                '$_wordCount palavras',
+                                style: TextStyle(
+                                  color: context.textSecondary
+                                      .withValues(alpha: 0.6),
+                                  fontSize: r.fs(12),
+                                ),
                               ),
-                            ),
-                            const Spacer(),
-                            Switch(
-                              value: _pinToProfile,
-                              onChanged: (v) =>
-                                  setState(() => _pinToProfile = v),
-                              activeColor: AppTheme.accentColor,
-                            ),
-                          ],
+                              if (_readingTime.isNotEmpty) ...[
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: r.s(6)),
+                                  child: Text(
+                                    '·',
+                                    style: TextStyle(
+                                      color: context.textSecondary
+                                          .withValues(alpha: 0.4),
+                                      fontSize: r.fs(12),
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  _readingTime,
+                                  style: TextStyle(
+                                    color: context.textSecondary
+                                        .withValues(alpha: 0.6),
+                                    fontSize: r.fs(12),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ],
+
+                        SizedBox(height: r.s(16)),
+                        Divider(
+                          color:
+                              context.dividerClr.withValues(alpha: 0.3),
+                          height: 1,
                         ),
+                        SizedBox(height: r.s(16)),
 
-                        Divider(color: context.dividerClr, height: r.s(16)),
-
-                        // Block editor
+                        // ── Block Editor ──
                         BlockEditor(
                           initialBlocks: _blocks,
                           communityId: widget.communityId,
                           onChanged: (blocks) =>
                               setState(() => _blocks = blocks),
                         ),
-                        SizedBox(height: r.s(80)),
+
+                        SizedBox(height: r.s(100)),
                       ],
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
     );
   }
 
-  // ─── Cover Section ──────────────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════════════
+  // COVER SECTION
+  // ═══════════════════════════════════════════════════════════════════════════
+
   Widget _buildCoverSection(Responsive r) {
     if (_coverImageUrl != null) {
       return Stack(
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(r.s(16)),
-            child: Image.network(
-              _coverImageUrl!,
-              width: double.infinity,
-              height: r.s(180),
-              fit: BoxFit.cover,
+          Image.network(
+            _coverImageUrl!,
+            width: double.infinity,
+            height: r.s(220),
+            fit: BoxFit.cover,
+          ),
+          // Gradient overlay
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    context.scaffoldBg.withValues(alpha: 0.8),
+                  ],
+                ),
+              ),
             ),
           ),
+          // Action buttons
           Positioned(
-            top: r.s(8),
-            right: r.s(8),
+            top: r.s(12),
+            right: r.s(12),
             child: Row(
               children: [
-                _coverButton(
+                _CoverActionButton(
                   icon: Icons.camera_alt_rounded,
+                  label: 'Trocar',
                   onTap: _pickCoverImage,
-                  r: r,
                 ),
                 SizedBox(width: r.s(8)),
-                _coverButton(
+                _CoverActionButton(
                   icon: Icons.close_rounded,
+                  label: 'Remover',
                   onTap: () => setState(() => _coverImageUrl = null),
-                  r: r,
                 ),
               ],
             ),
@@ -1114,28 +1544,56 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
     return GestureDetector(
       onTap: _isUploadingCover ? null : _pickCoverImage,
       child: Container(
-        height: r.s(120),
+        margin: EdgeInsets.fromLTRB(r.s(20), r.s(8), r.s(20), 0),
+        height: r.s(140),
         decoration: BoxDecoration(
-          color: context.cardBg,
+          color: context.surfaceColor,
           borderRadius: BorderRadius.circular(r.s(16)),
-          border:
-              Border.all(color: context.dividerClr.withValues(alpha: 0.4)),
+          border: Border.all(
+            color: context.dividerClr.withValues(alpha: 0.3),
+            width: 1.5,
+            strokeAlign: BorderSide.strokeAlignInside,
+          ),
         ),
         child: Center(
           child: _isUploadingCover
               ? CircularProgressIndicator(
-                  color: AppTheme.primaryColor, strokeWidth: 2)
+                  color: AppTheme.primaryColor,
+                  strokeWidth: 2,
+                )
               : Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.add_photo_alternate_rounded,
-                        color: AppTheme.primaryColor, size: r.s(36)),
-                    SizedBox(height: r.s(6)),
+                    Container(
+                      padding: EdgeInsets.all(r.s(12)),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryColor
+                            .withValues(alpha: 0.08),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.add_photo_alternate_outlined,
+                        color: AppTheme.primaryColor
+                            .withValues(alpha: 0.7),
+                        size: r.s(28),
+                      ),
+                    ),
+                    SizedBox(height: r.s(10)),
                     Text(
-                      'Adicionar capa do blog',
+                      'Adicionar capa',
                       style: TextStyle(
                         color: context.textSecondary,
                         fontSize: r.fs(13),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    SizedBox(height: r.s(2)),
+                    Text(
+                      'Recomendado: 1200 x 630px',
+                      style: TextStyle(
+                        color: context.textSecondary
+                            .withValues(alpha: 0.5),
+                        fontSize: r.fs(11),
                       ),
                     ),
                   ],
@@ -1144,219 +1602,295 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen> {
       ),
     );
   }
+}
 
-  Widget _coverButton(
-      {required IconData icon,
-      required VoidCallback onTap,
-      required Responsive r}) {
+// =============================================================================
+// WIDGETS AUXILIARES
+// =============================================================================
+
+class _CoverActionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _CoverActionButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.all(r.s(6)),
+        padding:
+            EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(6)),
         decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: 0.6),
-          shape: BoxShape.circle,
+          borderRadius: BorderRadius.circular(r.s(8)),
         ),
-        child: Icon(icon, color: Colors.white, size: r.s(18)),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: Colors.white, size: r.s(14)),
+            SizedBox(width: r.s(4)),
+            Text(
+              label,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: r.fs(11),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
+}
 
-  // ─── Tags Section ───────────────────────────────────────────────────────────
-  Widget _buildTagsSection(Responsive r) {
+class _SettingsSection extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final Widget child;
+
+  const _SettingsSection({
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (_tags.isNotEmpty) ...[
-          Wrap(
-            spacing: r.s(6),
-            runSpacing: r.s(4),
-            children: _tags
-                .map((tag) => Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: r.s(10), vertical: r.s(4)),
-                      decoration: BoxDecoration(
-                        color: AppTheme.accentColor.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(r.s(12)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            '#$tag',
-                            style: TextStyle(
-                              color: AppTheme.accentColor,
-                              fontSize: r.fs(12),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          SizedBox(width: r.s(4)),
-                          GestureDetector(
-                            onTap: () =>
-                                setState(() => _tags.remove(tag)),
-                            child: Icon(Icons.close_rounded,
-                                color: AppTheme.accentColor, size: r.s(14)),
-                          ),
-                        ],
-                      ),
-                    ))
-                .toList(),
-          ),
-          SizedBox(height: r.s(8)),
-        ],
-        if (_tags.length < 10)
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _tagController,
-                  style: TextStyle(
-                      color: context.textPrimary, fontSize: r.fs(13)),
-                  decoration: InputDecoration(
-                    hintText: 'Adicionar tag...',
-                    hintStyle: TextStyle(
-                        color: context.textSecondary, fontSize: r.fs(13)),
-                    border: InputBorder.none,
-                    isDense: true,
-                    prefixIcon: Icon(Icons.tag_rounded,
-                        color: context.textSecondary, size: r.s(16)),
-                  ),
-                  onSubmitted: (_) => _addTag(),
+        Row(
+          children: [
+            Icon(icon, color: context.textSecondary, size: r.s(16)),
+            SizedBox(width: r.s(8)),
+            Text(
+              title,
+              style: TextStyle(
+                color: context.textPrimary,
+                fontSize: r.fs(14),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            if (subtitle != null) ...[
+              const Spacer(),
+              Text(
+                subtitle!,
+                style: TextStyle(
+                  color: context.textSecondary,
+                  fontSize: r.fs(11),
                 ),
               ),
-              GestureDetector(
-                onTap: _addTag,
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: r.s(12), vertical: r.s(6)),
-                  decoration: BoxDecoration(
-                    color: AppTheme.accentColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(r.s(8)),
-                  ),
-                  child: Text(
-                    'Adicionar',
-                    style: TextStyle(
-                      color: AppTheme.accentColor,
-                      fontSize: r.fs(12),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+            ],
+          ],
+        ),
+        SizedBox(height: r.s(12)),
+        child,
+      ],
+    );
+  }
+}
+
+class _TagChip extends StatelessWidget {
+  final String tag;
+  final VoidCallback onRemove;
+
+  const _TagChip({required this.tag, required this.onRemove});
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    return Container(
+      padding:
+          EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(5)),
+      decoration: BoxDecoration(
+        color: AppTheme.accentColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(r.s(8)),
+        border: Border.all(
+          color: AppTheme.accentColor.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '#$tag',
+            style: TextStyle(
+              color: AppTheme.accentColor,
+              fontSize: r.fs(12),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(width: r.s(4)),
+          GestureDetector(
+            onTap: onRemove,
+            child: Icon(Icons.close_rounded,
+                color: AppTheme.accentColor.withValues(alpha: 0.6),
+                size: r.s(14)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SmallButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _SmallButton({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding:
+            EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(10)),
+        decoration: BoxDecoration(
+          color: AppTheme.primaryColor.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(r.s(10)),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: AppTheme.primaryColor,
+            fontSize: r.fs(13),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _VisibilityChip extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _VisibilityChip({
+    required this.label,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: r.s(10)),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppTheme.primaryColor.withValues(alpha: 0.12)
+                : context.surfaceColor,
+            borderRadius: BorderRadius.circular(r.s(10)),
+            border: Border.all(
+              color: isSelected
+                  ? AppTheme.primaryColor
+                  : context.dividerClr,
+              width: isSelected ? 1.5 : 1,
+            ),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                icon,
+                color: isSelected
+                    ? AppTheme.primaryColor
+                    : context.textSecondary,
+                size: r.s(18),
+              ),
+              SizedBox(height: r.s(4)),
+              Text(
+                label,
+                style: TextStyle(
+                  color: isSelected
+                      ? AppTheme.primaryColor
+                      : context.textSecondary,
+                  fontSize: r.fs(11),
+                  fontWeight:
+                      isSelected ? FontWeight.w700 : FontWeight.w500,
                 ),
               ),
             ],
           ),
-      ],
-    );
-  }
-
-  // ─── Customization Bar ──────────────────────────────────────────────────────
-  Widget _buildCustomizationBar(Responsive r) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(12)),
-      decoration: BoxDecoration(
-        color: context.surfaceColor,
-        border: Border(
-          bottom: BorderSide(color: context.dividerClr),
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Fonte do título
-          Text(
-            'Fonte do título',
-            style: TextStyle(
-              color: context.textSecondary,
-              fontSize: r.fs(11),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: r.s(8)),
-          SizedBox(
-            height: r.s(32),
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: _titleFonts.length,
-              itemBuilder: (_, i) {
-                final font = _titleFonts[i];
-                final isSelected = _titleFont == font;
-                return GestureDetector(
-                  onTap: () => setState(() => _titleFont = font),
-                  child: Container(
-                    margin: EdgeInsets.only(right: r.s(8)),
-                    padding: EdgeInsets.symmetric(
-                        horizontal: r.s(14), vertical: r.s(6)),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppTheme.accentColor.withValues(alpha: 0.2)
-                          : context.cardBg,
-                      borderRadius: BorderRadius.circular(r.s(16)),
-                      border: isSelected
-                          ? Border.all(
-                              color:
-                                  AppTheme.accentColor.withValues(alpha: 0.5))
-                          : Border.all(
-                              color:
-                                  context.dividerClr.withValues(alpha: 0.3)),
-                    ),
-                    child: Text(
-                      font,
-                      style: TextStyle(
-                        color: isSelected
-                            ? AppTheme.accentColor
-                            : context.textPrimary,
-                        fontSize: r.fs(12),
-                        fontWeight:
-                            isSelected ? FontWeight.w700 : FontWeight.w500,
-                        fontFamily: _fontFamilyFromName(font),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          SizedBox(height: r.s(12)),
+    );
+  }
+}
 
-          // Cor do título
-          Text(
-            'Cor do título',
-            style: TextStyle(
-              color: context.textSecondary,
-              fontSize: r.fs(11),
-              fontWeight: FontWeight.w600,
+class _ColorPaletteRow extends StatelessWidget {
+  final List<Color> colors;
+  final Color selected;
+  final ValueChanged<Color> onSelect;
+
+  const _ColorPaletteRow({
+    required this.colors,
+    required this.selected,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    return SizedBox(
+      height: r.s(36),
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: colors.length,
+        separatorBuilder: (_, __) => SizedBox(width: r.s(8)),
+        itemBuilder: (_, i) {
+          final color = colors[i];
+          final isSelected = color.value == selected.value;
+          return GestureDetector(
+            onTap: () => onSelect(color),
+            child: Container(
+              width: r.s(36),
+              height: r.s(36),
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected
+                      ? AppTheme.primaryColor
+                      : Colors.white.withValues(alpha: 0.1),
+                  width: isSelected ? 2.5 : 1,
+                ),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: color.withValues(alpha: 0.4),
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                        ),
+                      ]
+                    : null,
+              ),
+              child: isSelected
+                  ? Icon(Icons.check_rounded,
+                      color: Colors.white, size: r.s(16))
+                  : null,
             ),
-          ),
-          SizedBox(height: r.s(8)),
-          SizedBox(
-            height: r.s(28),
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: _textColorPresets.length,
-              itemBuilder: (_, i) {
-                final color = _textColorPresets[i];
-                final isSelected = _titleColor.value == color.value;
-                return GestureDetector(
-                  onTap: () => setState(() => _titleColor = color),
-                  child: Container(
-                    width: r.s(28),
-                    height: r.s(28),
-                    margin: EdgeInsets.only(right: r.s(6)),
-                    decoration: BoxDecoration(
-                      color: color,
-                      shape: BoxShape.circle,
-                      border: isSelected
-                          ? Border.all(
-                              color: AppTheme.accentColor, width: r.s(2.5))
-                          : Border.all(
-                              color: Colors.white24, width: 1),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
