@@ -79,6 +79,7 @@ class MessageBubble extends ConsumerWidget {
     }
 
     final isMediaOnly = _isMediaOnlyType(message);
+    final isAudioType = message.type == 'audio' || message.type == 'voice_note';
 
     return Padding(
       padding: EdgeInsets.only(
@@ -187,7 +188,8 @@ class MessageBubble extends ConsumerWidget {
                     // ── Mensagem com bubble normal (texto, áudio, sticker, etc.) ──
                     : Container(
                         padding: EdgeInsets.symmetric(
-                            horizontal: r.s(14), vertical: r.s(10)),
+                            horizontal: r.s(isAudioType ? 8 : 14),
+                            vertical: r.s(isAudioType ? 4 : 10)),
                         decoration: BoxDecoration(
                           color: isMe
                               ? AppTheme.primaryColor
@@ -220,7 +222,7 @@ class MessageBubble extends ConsumerWidget {
                             _buildContent(context),
                             // Hora + indicador de editado
                             Padding(
-                              padding: EdgeInsets.only(top: r.s(4)),
+                              padding: EdgeInsets.only(top: r.s(isAudioType ? 2 : 4)),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [

@@ -452,68 +452,71 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
         : AppTheme.accentColor.withValues(alpha: 0.1);
     final fgColor = widget.isMine ? Colors.white : AppTheme.accentColor;
 
-    // Fix de altura: padding vertical reduzido de 8 para 4,
-    // waveform de 24 para 18, e duração inline na mesma linha da waveform.
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(4)),
-      constraints: const BoxConstraints(minWidth: 160),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Play/Pause button — levemente menor (32 em vez de 36)
-          GestureDetector(
-            onTap: _togglePlay,
-            child: Container(
-              width: r.s(32),
-              height: r.s(32),
-              decoration: BoxDecoration(
-                color: bgColor,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                color: fgColor,
-                size: r.s(20),
-              ),
-            ),
-          ),
-          SizedBox(width: r.s(8)),
+    // Largura da waveform proporcional à duração do áudio:
+    // mínimo 80px, máximo 180px, crescendo 2px por segundo.
+    // Isso evita o espaço vazio verde para áudios curtos.
+    final durationSecs = _duration.inSeconds > 0
+        ? _duration.inSeconds
+        : widget.durationSeconds;
+    final waveformWidth = (80.0 + durationSecs * 2.0).clamp(80.0, 180.0);
 
-          // Waveform + duração na mesma coluna compacta
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Waveform com altura reduzida
-                SizedBox(
-                  height: r.s(18),
-                  child: CustomPaint(
-                    size: const Size(double.infinity, 18),
-                    painter: _StaticWaveformPainter(
-                      progress: _progress,
-                      activeColor: fgColor,
-                      inactiveColor: fgColor.withValues(alpha: 0.3),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                // Duração: posição atual durante reprodução, total em pausa
-                Text(
-                  _isPlaying
-                      ? _formatDuration(_position)
-                      : _formatDuration(_duration),
-                  style: TextStyle(
-                    color: fgColor.withValues(alpha: 0.7),
-                    fontSize: r.fs(9),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Play/Pause button
+        GestureDetector(
+          onTap: _togglePlay,
+          child: Container(
+            width: r.s(32),
+            height: r.s(32),
+            decoration: BoxDecoration(
+              color: bgColor,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+              color: fgColor,
+              size: r.s(20),
             ),
           ),
-        ],
-      ),
+        ),
+        SizedBox(width: r.s(8)),
+
+        // Waveform + duração com largura proporcional à duração do áudio
+        SizedBox(
+          width: r.s(waveformWidth),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Waveform
+              SizedBox(
+                height: r.s(18),
+                child: CustomPaint(
+                  size: Size(waveformWidth, 18),
+                  painter: _StaticWaveformPainter(
+                    progress: _progress,
+                    activeColor: fgColor,
+                    inactiveColor: fgColor.withValues(alpha: 0.3),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 2),
+              // Duração: posição atual durante reprodução, total em pausa
+              Text(
+                _isPlaying
+                    ? _formatDuration(_position)
+                    : _formatDuration(_duration),
+                style: TextStyle(
+                  color: fgColor.withValues(alpha: 0.7),
+                  fontSize: r.fs(9),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
