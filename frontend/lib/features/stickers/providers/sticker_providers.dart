@@ -97,6 +97,7 @@ class StickerPickerNotifier extends StateNotifier<StickerPickerState> {
       stickerId: sticker.id,
       stickerUrl: sticker.imageUrl,
       packId: sticker.packId.isNotEmpty ? sticker.packId : null,
+      stickerName: sticker.name,
     );
 
     final currentFavs = List<StickerModel>.from(state.favorites);

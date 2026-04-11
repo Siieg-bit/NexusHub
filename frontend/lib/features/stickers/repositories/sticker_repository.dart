@@ -217,6 +217,7 @@ class StickerRepository {
     required String stickerId,
     required String stickerUrl,
     String? packId,
+    String stickerName = '',
   }) async {
     try {
       final res = await SupabaseService.rpc('toggle_sticker_favorite', params: {
@@ -224,6 +225,7 @@ class StickerRepository {
         'p_sticker_url': stickerUrl,
         'p_pack_id': packId,
         'p_category': 'favorite',
+        'p_sticker_name': stickerName,
       });
       return res as bool? ?? false;
     } catch (e) {
@@ -252,7 +254,7 @@ class StickerRepository {
       if (userId == null) return [];
 
       final res = await SupabaseService.table('user_sticker_favorites')
-          .select('sticker_id, sticker_url, pack_id')
+          .select('sticker_id, sticker_url, sticker_name, pack_id')
           .eq('user_id', userId)
           .eq('category', 'favorite')
           .order('created_at', ascending: false);
@@ -261,6 +263,7 @@ class StickerRepository {
       return list.map((e) => StickerModel(
         id: e['sticker_id'] as String? ?? '',
         packId: e['pack_id'] as String? ?? '',
+        name: e['sticker_name'] as String? ?? '',
         imageUrl: e['sticker_url'] as String? ?? '',
       )).toList();
     } catch (e) {
