@@ -643,7 +643,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
-            SizedBox(height: r.sh(0.18)),
+            SizedBox(height: r.screenHeight * 0.18),
             Icon(
               Icons.storefront_outlined,
               size: r.s(48),

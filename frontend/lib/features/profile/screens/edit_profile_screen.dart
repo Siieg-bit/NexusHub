@@ -314,7 +314,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     final user = ref.watch(currentUserProvider);
 
@@ -502,12 +502,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
                   fontSize: r.fs(12),
                 ),
               ),
-
+              SizedBox(height: r.s(16)),
+              // Rich Bio Editor
+              _buildRichBioEditor(r),
+            ],
+          ),
         ),
       ),
     );
   }
-
   Widget _buildRichBioEditor(Responsive r) {
     final s = getStrings();
     return Container(
@@ -784,10 +787,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
           labelText: label,
           labelStyle: TextStyle(color: Colors.grey[500]),
           hintText: hintText,
-          hintStyle: TextStyle(color: Colors.grey[600]),          prefixIcon: Icon(icon, color: AppTheme.primaryColor),
+          hintStyle: TextStyle(color: Colors.grey[600]),
+          prefixIcon: Icon(icon, color: AppTheme.primaryColor),
           suffixIcon: suffixIcon,
-        ),
-alignLabelWithHint: maxLines > 1,
+          alignLabelWithHint: maxLines > 1,
           border: InputBorder.none,
           contentPadding:
               EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(16)),
