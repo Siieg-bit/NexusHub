@@ -136,75 +136,91 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
             ),
 
             // ── Grade horizontal de cards com drag & drop ──
-            // Layout: o SizedBox total = iconOverflow(18) + cardHeight(175) = 193.
-            // O ReorderableListView tem padding.top = iconOverflow para que os
-            // cards fiquem alinhados ao fundo. O ícone usa top:0 no Stack
-            // (que começa no topo do SizedBox, acima do card). O JoinCard usa
-            // margin.top = iconOverflow para alinhar com os cards de comunidade.
-            SizedBox(
-              height: r.s(193), // overflow(18) + cardHeight(175)
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(
-                    child: ReorderableListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: EdgeInsets.only(
-                          left: r.s(14), right: r.s(8), top: r.s(18)),
-                      itemCount: (_reorderedCommunities ?? communities).length,
-                      onReorder: (oldIndex, newIndex) {
-                        HapticFeedback.mediumImpact();
-                        setState(() {
-                          if (newIndex > oldIndex) newIndex--;
-                          final list = List<CommunityModel>.from(
-                              _reorderedCommunities ?? communities);
-                          final item = list.removeAt(oldIndex);
-                          list.insert(newIndex, item);
-                          _reorderedCommunities = list;
-                        });
-                      },
-                      proxyDecorator: (child, index, animation) {
-                        return AnimatedBuilder(
-                          animation: animation,
-                          builder: (context, child) => Transform.scale(
-                            scale: 1.05,
-                            child: Material(
-                              color: Colors.transparent,
-                              child: child,
+            // Largura do card calculada dinamicamente para caber exatamente
+            // 3 cards na tela + ~30% do 4º como hint de scroll.
+            // Formula: (screenWidth - leftPad - joinCardW - joinPad) / 3.3
+            // onde joinCardW é fixo em 90dp e gaps entre cards = 8dp.
+            LayoutBuilder(builder: (context, constraints) {
+              final screenW = r.screenWidth;
+              // Padding esquerdo da lista + gap direito de cada card
+              const double leftPad  = 14.0; // padding.left do ReorderableListView
+              const double cardGap  = 8.0;  // padding.right de cada card
+              const double joinW    = 90.0; // largura fixa do JoinCard
+              const double joinPad  = 8.0;  // padding.right do JoinCard
+              // Espaço disponível para os cards de comunidade
+              final double available = screenW - leftPad - joinW - joinPad;
+              // Divide por 3.3 para mostrar 3 cards completos + hint do 4º
+              final double cardW = (available / 3.3).clamp(80.0, 140.0);
+              final double overflow = r.s(_AminoCommunityCard._iconOverflow);
+              final double cardH    = r.s(_AminoCommunityCard._cardHeight);
+
+              return SizedBox(
+                height: overflow + cardH, // 18 + 175 = 193
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      child: ReorderableListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: EdgeInsets.only(
+                            left: leftPad, right: cardGap, top: overflow),
+                        itemCount: (_reorderedCommunities ?? communities).length,
+                        onReorder: (oldIndex, newIndex) {
+                          HapticFeedback.mediumImpact();
+                          setState(() {
+                            if (newIndex > oldIndex) newIndex--;
+                            final list = List<CommunityModel>.from(
+                                _reorderedCommunities ?? communities);
+                            final item = list.removeAt(oldIndex);
+                            list.insert(newIndex, item);
+                            _reorderedCommunities = list;
+                          });
+                        },
+                        proxyDecorator: (child, index, animation) {
+                          return AnimatedBuilder(
+                            animation: animation,
+                            builder: (context, child) => Transform.scale(
+                              scale: 1.05,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: child,
+                              ),
                             ),
-                          ),
-                          child: child,
-                        );
-                      },
-                      itemBuilder: (context, index) {
-                        final community =
-                            (_reorderedCommunities ?? communities)[index];
-                        return Padding(
-                          key: ValueKey(community.id),
-                          padding: EdgeInsets.only(right: r.s(8)),
-                          child: _AminoCommunityCard(
-                            community: community,
-                            onTap: () =>
-                                context.push('/community/${community.id}'),
-                            onLongPress: () {
-                              HapticFeedback.mediumImpact();
-                              _showCommunityPreview(context, community);
-                            },
-                          ),
-                        );
-                      },
+                            child: child,
+                          );
+                        },
+                        itemBuilder: (context, index) {
+                          final community =
+                              (_reorderedCommunities ?? communities)[index];
+                          return Padding(
+                            key: ValueKey(community.id),
+                            padding: EdgeInsets.only(right: cardGap),
+                            child: _AminoCommunityCard(
+                              community: community,
+                              cardWidth: cardW,
+                              onTap: () =>
+                                  context.push('/community/${community.id}'),
+                              onLongPress: () {
+                                HapticFeedback.mediumImpact();
+                                _showCommunityPreview(context, community);
+                              },
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                  // Card fixo para entrar em nova comunidade
-                  Padding(
-                    padding: EdgeInsets.only(right: r.s(8)),
-                    child: _JoinCommunityCard(
-                      onTap: () => context.push('/explore'),
+                    // Card fixo para entrar em nova comunidade
+                    Padding(
+                      padding: EdgeInsets.only(right: joinPad),
+                      child: _JoinCommunityCard(
+                        cardWidth: joinW,
+                        onTap: () => context.push('/explore'),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
+                  ],
+                ),
+              );
+            }),
             // ── Texto instrucional ───
             Padding(
               padding: EdgeInsets.only(top: r.s(16), bottom: r.s(16)),
@@ -574,15 +590,17 @@ class _AminoCommunityCard extends ConsumerStatefulWidget {
   final CommunityModel community;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
+  /// Largura do card em dp (calculada dinamicamente pelo pai).
+  final double cardWidth;
 
-  static const double _cardWidth = 120;
-  static const double _cardHeight = 175;
-  static const double _bannerHeight = 130;
-  static const double _iconSize = 36;
-  static const double _iconOverflow = 18;
+  static const double _cardHeight    = 175;
+  static const double _bannerHeight  = 130;
+  static const double _iconSize      = 36;
+  static const double _iconOverflow  = 18;
 
   const _AminoCommunityCard({
     required this.community,
+    required this.cardWidth,
     required this.onTap,
     required this.onLongPress,
   });
@@ -674,9 +692,10 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
     final hasCheckedIn = myStatus?['has_checkin_today'] as bool? ?? false;
     final streak = myStatus?['consecutive_checkin_days'] as int? ?? 0;
 
-    // Dimensões escaladas do card
+    // Dimensões do card
+    // cardWidth vem do pai (calculado dinamicamente por LayoutBuilder)
     final double scaledCardH   = r.s(_AminoCommunityCard._cardHeight);   // 175
-    final double scaledWidth   = r.s(_AminoCommunityCard._cardWidth);    // 120
+    final double scaledWidth   = widget.cardWidth;                       // dinâmico
     final double scaledBannerH = r.s(_AminoCommunityCard._bannerHeight); // 130
     final double scaledIconSz  = r.s(_AminoCommunityCard._iconSize);     // 36
 
@@ -962,23 +981,23 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
 // ============================================================================
 class _JoinCommunityCard extends ConsumerWidget {
   final VoidCallback onTap;
-  const _JoinCommunityCard({required this.onTap});
+  /// Largura do card em dp (passada pelo pai).
+  final double cardWidth;
+  const _JoinCommunityCard({required this.onTap, required this.cardWidth});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final r = context.r;
-    // Mesmas dimensões do _AminoCommunityCard
     final double overflow = r.s(_AminoCommunityCard._iconOverflow); // 18
     final double cardH    = r.s(_AminoCommunityCard._cardHeight);   // 175
-    final double cardW    = r.s(_AminoCommunityCard._cardWidth);    // 120
 
     // O JoinCard fica fora do ReorderableListView (sem padding.top).
-    // Para alinhar com os cards de comunidade, usamos margin.top = overflow.
+    // Para alinhar com os cards de comunidade, usamos Padding.top = overflow.
     // Altura total = overflow + cardH = 193, igual ao SizedBox pai.
     return GestureDetector(
       onTap: onTap,
       child: SizedBox(
-        width: cardW,
+        width: cardWidth,
         height: overflow + cardH,
         child: Padding(
           padding: EdgeInsets.only(top: overflow),
