@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
+import 'package:audioplayers/audioplayers.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
 
@@ -359,46 +360,72 @@ class VoiceNotePlayer extends StatefulWidget {
 }
 
 class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
+  // Bug fix (migration 058): reprodução real com audioplayers.
+  late final AudioPlayer _player;
   bool _isPlaying = false;
   double _progress = 0.0;
-  Timer? _progressTimer;
+  Duration _position = Duration.zero;
+  Duration _duration = Duration.zero;
+  StreamSubscription? _positionSub;
+  StreamSubscription? _stateSub;
 
-  String _formatDuration(int totalSeconds) {
-    final minutes = totalSeconds ~/ 60;
-    final seconds = totalSeconds % 60;
-    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  @override
+  void initState() {
+    super.initState();
+    _player = AudioPlayer();
+    _duration = Duration(seconds: widget.durationSeconds);
+
+    _positionSub = _player.onPositionChanged.listen((pos) {
+      if (!mounted) return;
+      final total = _duration.inMilliseconds;
+      setState(() {
+        _position = pos;
+        _progress = total > 0 ? (pos.inMilliseconds / total).clamp(0.0, 1.0) : 0.0;
+      });
+    });
+
+    _stateSub = _player.onPlayerStateChanged.listen((state) {
+      if (!mounted) return;
+      if (state == PlayerState.completed) {
+        setState(() {
+          _isPlaying = false;
+          _progress = 0.0;
+          _position = Duration.zero;
+        });
+      }
+    });
   }
 
-  void _togglePlay() {
-    setState(() => _isPlaying = !_isPlaying);
+  String _formatDuration(Duration d) {
+    final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
 
-    if (_isPlaying) {
-      // Simular progresso (será substituído por player real)
-      _progressTimer = Timer.periodic(
-        Duration(
-            milliseconds:
-                (widget.durationSeconds * 1000 / 100).round().clamp(50, 500)),
-        (_) {
-          if (mounted) {
-            setState(() {
-              _progress += 0.01;
-              if (_progress >= 1.0) {
-                _progress = 0.0;
-                _isPlaying = false;
-                _progressTimer?.cancel();
-              }
-            });
-          }
-        },
-      );
-    } else {
-      _progressTimer?.cancel();
+  Future<void> _togglePlay() async {
+    try {
+      if (_isPlaying) {
+        await _player.pause();
+        setState(() => _isPlaying = false);
+      } else {
+        final url = widget.audioUrl;
+        if (_position > Duration.zero && _position < _duration) {
+          await _player.resume();
+        } else {
+          await _player.play(UrlSource(url));
+        }
+        setState(() => _isPlaying = true);
+      }
+    } catch (e) {
+      debugPrint('[VoiceNotePlayer] Erro ao reproduzir: $e');
     }
   }
 
   @override
   void dispose() {
-    _progressTimer?.cancel();
+    _positionSub?.cancel();
+    _stateSub?.cancel();
+    _player.dispose();
     super.dispose();
   }
 
@@ -418,7 +445,7 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
         children: [
           // Play/Pause button
           GestureDetector(
-            onTap: _togglePlay,
+            onTap: () => _togglePlay(),
             child: Container(
               width: r.s(36),
               height: r.s(36),
@@ -454,9 +481,11 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
                   ),
                 ),
                 const SizedBox(height: 2),
-                // Duration
+                // Duração: mostra posição atual durante reprodução
                 Text(
-                  _formatDuration(widget.durationSeconds),
+                  _isPlaying
+                      ? _formatDuration(_position)
+                      : _formatDuration(Duration(seconds: widget.durationSeconds)),
                   style: TextStyle(
                     color: fgColor.withValues(alpha: 0.7),
                     fontSize: r.fs(10),

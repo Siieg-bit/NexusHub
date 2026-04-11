@@ -255,35 +255,36 @@ class ThreadMessagesNotifier
     String type = 'text',
     String? mediaUrl,
     String? mediaType,
+    int? mediaDuration,
     String? replyToId,
     String? stickerId,
     String? stickerUrl,
+    String? stickerName,
+    String? packId,
     String? sharedUrl,
     int? tipAmount,
   }) async {
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return false;
-
       final mappedType = _mapMessageType(type);
-
       // Determinar media_url final
-      String? finalMediaUrl = mediaUrl ?? stickerUrl;
-
-      // Usar RPC SECURITY DEFINER que:
-      // 1. Verifica membership (status='active')
-      // 2. Insere a mensagem
-      // 3. O trigger handle_chat_message atualiza last_message_at, preview, unread
-      // 4. Adiciona reputação automaticamente
+      String? finalMediaUrl = mediaUrl ?? (stickerUrl != null && stickerUrl.isNotEmpty ? stickerUrl : null);
+      // Bug fix (migration 058): enviar media_type e media_duration para que
+      // imagens, GIFs e áudios sejam identificados corretamente no banco.
       await SupabaseService.rpc('send_chat_message_with_reputation', params: {
         'p_thread_id': arg,
         'p_content': content.isNotEmpty ? content : '',
         'p_type': mappedType,
         'p_media_url': finalMediaUrl,
+        if (mediaType != null) 'p_media_type': mediaType,
+        if (mediaDuration != null) 'p_media_duration': mediaDuration,
         'p_reply_to': replyToId,
-        if (stickerUrl != null) 'p_sticker_url': stickerUrl,
+        if (stickerId != null) 'p_sticker_id': stickerId,
+        if (stickerUrl != null && stickerUrl.isNotEmpty) 'p_sticker_url': stickerUrl,
+        if (stickerName != null && stickerName.isNotEmpty) 'p_sticker_name': stickerName,
+        if (packId != null && packId.isNotEmpty) 'p_pack_id': packId,
       });
-
       return true;
     } catch (e) {
       return false;

@@ -566,12 +566,21 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // ==========================================================================
 
   String _mapMessageType(String type) {
-    final validTypes = {
+    // Bug fix (migration 058): image, gif, audio, poll, forward e file
+    // agora existem como valores nativos no enum chat_message_type do banco.
+    // Não mapear esses tipos para 'text' ou 'voice_note'.
+    const validTypes = {
       'text',
       'strike',
       'voice_note',
       'sticker',
       'video',
+      'image',
+      'gif',
+      'audio',
+      'poll',
+      'forward',
+      'file',
       'share_url',
       'share_user',
       'system_deleted',
@@ -589,12 +598,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     };
     if (validTypes.contains(type)) return type;
     switch (type) {
-      case 'image':
-        return 'text';
-      case 'gif':
-        return 'text';
-      case 'audio':
-        return 'voice_note';
       case 'reply':
         return 'text';
       case 'voice_chat':
@@ -603,16 +606,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         return 'system_voice_start';
       case 'screening_room':
         return 'system_screen_start';
-      case 'poll':
-        return 'text';
       case 'link':
         return 'share_url';
       case 'tip':
         return 'system_tip';
-      case 'forward':
-        return 'text';
-      case 'file':
-        return 'text';
       default:
         return 'text';
     }
@@ -713,6 +710,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         'p_content': content,
         'p_type': mappedType,
         'p_media_url': finalMediaUrl,
+        // Bug fix (migration 058): enviar media_type e media_duration para que
+        // imagens, GIFs e áudios sejam identificados corretamente no banco.
+        if (mediaType != null) 'p_media_type': mediaType,
+        if (mediaDuration != null) 'p_media_duration': mediaDuration,
         'p_reply_to': replyToId,
         if (stickerId != null) 'p_sticker_id': stickerId,
         if (stickerUrl != null && stickerUrl.isNotEmpty) 'p_sticker_url': stickerUrl,

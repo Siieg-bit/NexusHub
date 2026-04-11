@@ -9,6 +9,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../stickers/widgets/sticker_message_bubble.dart';
+import 'voice_recorder.dart' show VoiceNotePlayer;
 
 /// ============================================================================
 /// MESSAGE BUBBLE (suporta todos os 19+ tipos) — Estilo Amino
@@ -261,11 +262,12 @@ class MessageBubble extends ConsumerWidget {
     final type = message.type;
     final textColor = isMe ? Colors.white : context.textPrimary;
 
-    // O banco armazena o tipo mapeado (ex: 'text' para imagens, 'system_tip' para tips)
-    // Precisamos detectar o tipo real pelo conteúdo/campos
+    // Bug fix (migration 058): os tipos image, gif, audio agora existem nativamente
+    // no enum. Detectar pelo type nativo OU pelo mediaType para retrocompatibilidade.
 
-    // Imagem: tipo text mas com media_url e media_type == 'image'
-    if (message.mediaUrl != null && message.mediaType == 'image') {
+    // Imagem: tipo 'image' (nativo) OU tipo 'text' com media_type == 'image' (legado)
+    if ((type == 'image' && message.mediaUrl != null) ||
+        (message.mediaUrl != null && message.mediaType == 'image')) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(r.s(8)),
         child: CachedNetworkImage(
@@ -283,8 +285,9 @@ class MessageBubble extends ConsumerWidget {
       );
     }
 
-    // GIF: tipo text mas com media_url e media_type == 'gif'
-    if (message.mediaUrl != null && message.mediaType == 'gif') {
+    // GIF: tipo 'gif' (nativo) OU tipo 'text' com media_type == 'gif' (legado)
+    if ((type == 'gif' && message.mediaUrl != null) ||
+        (message.mediaUrl != null && message.mediaType == 'gif')) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(r.s(8)),
         child: CachedNetworkImage(
@@ -316,43 +319,19 @@ class MessageBubble extends ConsumerWidget {
       return Text(emoji, style: TextStyle(fontSize: r.fs(48)));
     }
 
-    // Audio (tipo nativo do enum)
-    if (type == 'audio') {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.audiotrack_rounded, color: textColor, size: r.s(32)),
-          SizedBox(width: r.s(8)),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(s.audio2,
-                  style: TextStyle(
-                      color: textColor,
-                      fontSize: r.fs(13),
-                      fontWeight: FontWeight.w600)),
-              if (message.mediaDuration != null)
-                Text('${message.mediaDuration}s',
-                    style: TextStyle(
-                        color: textColor.withValues(alpha: 0.6),
-                        fontSize: r.fs(11))),
-              Container(
-                width: r.s(120),
-                height: r.s(4),
-                margin: EdgeInsets.only(top: r.s(4)),
-                decoration: BoxDecoration(
-                  color: textColor.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ],
-          ),
-        ],
-      );
-    }
-
-    // Voice note
-    if (type == 'voice_note') {
+    // Áudio: tipo 'audio' (nativo, gravado pelo VoiceRecorder) ou 'voice_note' (legado)
+    // Bug fix (migration 058): ambos os tipos agora usam VoiceNotePlayer com URL real.
+    if (type == 'audio' || type == 'voice_note') {
+      final audioUrl = message.mediaUrl;
+      final duration = message.mediaDuration ?? 0;
+      if (audioUrl != null && audioUrl.isNotEmpty) {
+        return VoiceNotePlayer(
+          audioUrl: audioUrl,
+          durationSeconds: duration,
+          isMine: isMe,
+        );
+      }
+      // Fallback sem URL (mensagem legada sem media_url)
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -363,8 +342,8 @@ class MessageBubble extends ConsumerWidget {
             children: [
               Text(s.audio2,
                   style: TextStyle(color: textColor, fontSize: r.fs(13))),
-              if (message.mediaDuration != null)
-                Text('${message.mediaDuration}s',
+              if (duration > 0)
+                Text('${duration}s',
                     style: TextStyle(
                         color: textColor.withValues(alpha: 0.6),
                         fontSize: r.fs(11))),

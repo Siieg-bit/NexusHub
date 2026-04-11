@@ -143,16 +143,21 @@ class MessageModel {
   }
 
   // Getters de conveniência para identificar o tipo visual da mensagem.
-  // Como o banco usa tipos mapeados (ex: 'text' para imagens), estes getters
-  // verificam campos adicionais para determinar o tipo real.
+  // Bug fix (migration 058): os tipos image, gif, audio agora existem nativamente
+  // no enum. Detectar pelo type nativo OU pelo mediaType para retrocompatibilidade.
   bool get isTextMessage =>
       type == 'text' && mediaUrl == null && replyToId == null;
-  bool get isImageMessage => mediaType == 'image' && mediaUrl != null;
-  bool get isGifMessage => mediaType == 'gif' && mediaUrl != null;
+  // image: tipo nativo 'image' OU legado 'text' com mediaType == 'image'
+  bool get isImageMessage =>
+      type == 'image' || (mediaType == 'image' && mediaUrl != null);
+  // gif: tipo nativo 'gif' OU legado 'text' com mediaType == 'gif'
+  bool get isGifMessage =>
+      type == 'gif' || (mediaType == 'gif' && mediaUrl != null);
   bool get isSystemMessage => type == 'system' || type.startsWith('system_');
   bool get isStickerMessage => type == 'sticker' || stickerUrl != null;
-  bool get isVoiceNote => type == 'voice_note';
-  bool get isGif => mediaType == 'gif';
+  // voice_note: tipo nativo 'voice_note' (legado) ou 'audio' (novo)
+  bool get isVoiceNote => type == 'voice_note' || type == 'audio';
+  bool get isGif => type == 'gif' || mediaType == 'gif';
   bool get isVideo => type == 'video';
   bool get isFile => type == 'file';
   bool get isLink => type == 'share_url' || sharedUrl != null;
@@ -161,7 +166,7 @@ class MessageModel {
   bool get isTip => type == 'system_tip' || tipAmount != null;
   bool get isReply => replyToId != null;
   bool get isForward => type == 'forward';
-  bool get isAudio => type == 'audio';
+  bool get isAudio => type == 'audio' || type == 'voice_note';
   bool get isEdited => editedAt != null;
 
   /// Cria uma cópia do modelo com campos alterados.
