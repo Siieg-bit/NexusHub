@@ -237,7 +237,7 @@ SELECT
   cm.sticker_name,
   cm.pack_id,
   cm.created_at,
-  p.display_name AS author_name,
+  p.nickname AS author_name,
   p.icon_url AS author_icon
 FROM public.chat_messages cm
 LEFT JOIN public.profiles p ON p.id = cm.author_id
