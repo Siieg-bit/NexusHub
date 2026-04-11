@@ -37,11 +37,16 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]));
 
-  // Configurar barra de status
+  // Ativar edge-to-edge globalmente e manter as barras do sistema transparentes.
+  unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.light,
+      systemNavigationBarDividerColor: Colors.transparent,
+      systemNavigationBarContrastEnforced: false,
     ),
   );
 
@@ -243,16 +248,18 @@ class _NexusHubAppState extends ConsumerState<NexusHubApp> {
     // Conectar push notification stream ao router para navegação
     _setupPushNotificationListener(router);
 
-    // Atualizar barra de status conforme o tema
+    // Manter edge-to-edge com contraste e legibilidade adequados em Android 15/16.
     final isDark = themeMode == ThemeMode.dark;
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
-        systemNavigationBarColor:
-            isDark ? AppTheme.bottomNavBg : AppTheme.bottomNavBgLight,
+        statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarDividerColor: Colors.transparent,
         systemNavigationBarIconBrightness:
             isDark ? Brightness.light : Brightness.dark,
+        systemNavigationBarContrastEnforced: false,
       ),
     );
 
