@@ -94,7 +94,7 @@ class _ShortCodeRedirectScreenState extends State<ShortCodeRedirectScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.darkBackground,
+      backgroundColor: AppTheme.scaffoldBg,
       body: Center(
         child: _error
             ? Column(

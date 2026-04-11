@@ -8,6 +8,7 @@ import 'dart:io';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show FileOptions;
 import '../../../core/l10n/locale_provider.dart';
 
 // =============================================================================

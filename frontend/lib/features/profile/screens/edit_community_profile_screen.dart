@@ -131,7 +131,7 @@ class _EditCommunityProfileScreenState
       // Abre o picker
       final file = await MediaUploadService.pickImage(
         maxWidth: folder == 'avatar' ? 512 : 1200,
-        maxHeight: folder == 'avatar' ? 512 : null,
+        maxHeight: folder == 'avatar' ? 512 : 1200,
         imageQuality: folder == 'gallery' ? 80 : 85,
       );
       if (file == null) return null;

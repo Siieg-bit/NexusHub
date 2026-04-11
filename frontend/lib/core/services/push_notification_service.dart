@@ -7,6 +7,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'supabase_service.dart';
 import '../l10n/locale_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show CountOption;
 
 /// Handler para mensagens em background (deve ser top-level function)
 @pragma('vm:entry-point')
