@@ -178,7 +178,6 @@ class DeepLinkService {
       case 'wiki':
         if (segments.length > 1) { _navigateToWiki(segments[1]); return true; }
         break;
-      case 'ch':
       case 'chat':
         if (segments.length > 1) { _navigateToChat(segments[1]); return true; }
         break;
@@ -186,8 +185,14 @@ class DeepLinkService {
       case 'sticker':
         if (segments.length > 1) { _navigateToStickerPack(segments[1]); return true; }
         break;
-      case 'i':
       case 'invite':
+        if (segments.length > 1) { _handleInviteCode(segments[1]); return true; }
+        break;
+      // Legado
+      case 'ch':
+        if (segments.length > 1) { _navigateToChat(segments[1]); return true; }
+        break;
+      case 'i':
         if (segments.length > 1) { _handleInviteCode(segments[1]); return true; }
         break;
     }
@@ -203,10 +208,12 @@ class DeepLinkService {
       case 'c': _navigateToCommunity(segments.length > 1 ? segments[1] : ''); return segments.length > 1;
       case 'p': _navigateToPost(segments.length > 1 ? segments[1] : ''); return segments.length > 1;
       case 'w': _navigateToWiki(segments.length > 1 ? segments[1] : ''); return segments.length > 1;
-      case 'ch': _navigateToChat(segments.length > 1 ? segments[1] : ''); return segments.length > 1;
+      case 'chat': _navigateToChat(segments.length > 1 ? segments[1] : ''); return segments.length > 1;
       case 's': _navigateToStickerPack(segments.length > 1 ? segments[1] : ''); return segments.length > 1;
+      case 'invite': if (segments.length > 1) { _handleInviteCode(segments[1]); return true; } break;
+      // Legado (compatibilidade retroativa)
+      case 'ch': _navigateToChat(segments.length > 1 ? segments[1] : ''); return segments.length > 1;
       case 'i': if (segments.length > 1) { _handleInviteCode(segments[1]); return true; } break;
-      // Legado
       case 'user': if (segments.length > 1) { _router?.push('/user/${segments[1]}'); return true; } break;
       case 'community': if (segments.length > 1) { _router?.push('/community/${segments[1]}'); return true; } break;
     }
@@ -317,9 +324,9 @@ class DeepLinkService {
       case 'post':
       case 'blog':         return 'p';
       case 'wiki':         return 'w';
-      case 'chat':         return 'ch';
+      case 'chat':         return 'chat';
       case 'sticker_pack': return 's';
-      case 'invite':       return 'i';
+      case 'invite':       return 'invite';
       default:             return type;
     }
   }
