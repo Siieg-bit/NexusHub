@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/models/community_model.dart';
 import '../../../core/services/supabase_service.dart';
@@ -1379,6 +1380,78 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
             label: s.moderationActions30d,
             value: _modActions30d.toString(),
             color: AppTheme.warningColor,
+          ),
+          SizedBox(height: r.s(12)),
+          // Botão de acesso à Central de Moderação Avançada
+          GestureDetector(
+            onTap: () => context.push(
+              '/community/${widget.communityId}/moderation',
+            ),
+            child: Container(
+              padding: EdgeInsets.all(r.s(14)),
+              decoration: BoxDecoration(
+                color: AppTheme.errorColor.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(r.s(12)),
+                border: Border.all(
+                    color: AppTheme.errorColor.withValues(alpha: 0.25)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(r.s(8)),
+                    decoration: BoxDecoration(
+                      color: AppTheme.errorColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(r.s(8)),
+                    ),
+                    child: Icon(Icons.shield_rounded,
+                        color: AppTheme.errorColor, size: r.s(20)),
+                  ),
+                  SizedBox(width: r.s(12)),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Central de Moderação',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: r.fs(14),
+                          ),
+                        ),
+                        Text(
+                          'Denúncias, snapshots e bot de controle',
+                          style: TextStyle(
+                            color: context.textSecondary,
+                            fontSize: r.fs(12),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (_pendingFlags > 0)
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: r.s(8), vertical: r.s(4)),
+                      decoration: BoxDecoration(
+                        color: AppTheme.errorColor,
+                        borderRadius: BorderRadius.circular(r.s(10)),
+                      ),
+                      child: Text(
+                        '$_pendingFlags',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: r.fs(12),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  SizedBox(width: r.s(8)),
+                  Icon(Icons.arrow_forward_ios_rounded,
+                      size: r.s(14),
+                      color: context.textSecondary),
+                ],
+              ),
+            ),
           ),
           SizedBox(height: r.s(24)),
           Text(s.currentConfiguration,

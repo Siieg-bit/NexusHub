@@ -68,6 +68,8 @@ import '../features/communities/screens/community_search_screen.dart';
 import '../features/communities/screens/community_general_links_screen.dart';
 import '../features/moderation/screens/edit_guidelines_screen.dart';
 import '../features/moderation/screens/admin_reports_screen.dart';
+import '../features/moderation/screens/moderation_center_screen.dart';
+import '../features/moderation/screens/flag_detail_screen.dart';
 import '../features/stories/screens/create_story_screen.dart';
 import '../features/live/screens/screening_room_screen.dart';
 import '../features/feed/screens/drafts_screen.dart';
@@ -503,6 +505,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'flag-center',
         builder: (context, state) => FlagCenterScreen(
           communityId: state.pathParameters['communityId']!,
+        ),
+      ),
+      // Central de moderação avançada (com bot stats + snapshots)
+      GoRoute(
+        path: '/community/:communityId/moderation',
+        name: 'moderation-center',
+        builder: (context, state) => ModerationCenterScreen(
+          communityId: state.pathParameters['communityId']!,
+        ),
+      ),
+      // Detalhe de uma denúncia (snapshot + bot analysis)
+      GoRoute(
+        path: '/community/:communityId/flags/:flagId',
+        name: 'flag-detail',
+        builder: (context, state) => FlagDetailScreen(
+          flagId: state.pathParameters['flagId']!,
         ),
       ),
       GoRoute(
