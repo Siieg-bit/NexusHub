@@ -203,7 +203,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       icon: Icon(Icons.share_outlined,
                           color: Colors.white, size: r.s(22)),
                       onPressed: () => DeepLinkService.shareUrl(
-                        type: 'profile',
+                        type: 'user',
                         targetId: widget.userId,
                         title: s.shareProfile,
                         text: s.shareProfile,

@@ -412,7 +412,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             GestureDetector(
               onTap: () => DeepLinkService.shareUrl(
                 type: 'community',
-                targetId: community.endpoint ?? widget.communityId,
+                targetId: widget.communityId,
                 title: community.name,
                 text: community.name,
               ),
