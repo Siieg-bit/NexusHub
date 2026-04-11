@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:go_router/go_router.dart';
@@ -28,6 +30,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
   bool _isLoading = false;
   bool _bioPreviewMode = false;
   late TabController _bioTabController;
+  Timer? _aminoIdDebounce;
+  bool _isCheckingAminoId = false;
+  bool? _isAminoIdAvailable;
+  String? _aminoIdAvailabilityMessage;
+  String _initialAminoId = '';
 
   // FIX Bug #4: FocusNode persistente para o campo de bio
   final FocusNode _bioFocusNode = FocusNode();
@@ -44,6 +51,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
     _nicknameController = TextEditingController(text: user?.nickname ?? '');
     _bioController = TextEditingController(text: user?.bio ?? '');
     _aminoIdController = TextEditingController(text: user?.aminoId ?? '');
+    _initialAminoId = _normalizeAminoId(user?.aminoId ?? '');
+    _isAminoIdAvailable = _initialAminoId.isEmpty ? null : true;
     _avatarUrl = user?.iconUrl;
     _originalAvatarUrl = user?.iconUrl;
     _bioTabController = TabController(length: 2, vsync: this);
@@ -56,10 +65,132 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
   void dispose() {
     _nicknameController.dispose();
     _bioController.dispose();
+    _aminoIdDebounce?.cancel();
     _aminoIdController.dispose();
     _bioTabController.dispose();
     _bioFocusNode.dispose();
     super.dispose();
+  }
+
+  String _normalizeAminoId(String value) {
+    return value.trim().replaceFirst(RegExp(r'^@+'), '').toLowerCase();
+  }
+
+  String? _validateAminoIdValue(String? value, dynamic s) {
+    if (value == null || value.trim().isEmpty) return null;
+    final trimmed = _normalizeAminoId(value);
+    if (trimmed.length < 3) return s.min3Chars;
+    if (trimmed.length > 30) return s.max30Chars;
+    final validChars = RegExp(r'^[a-z0-9_]+$');
+    if (!validChars.hasMatch(trimmed)) {
+      return 'Use apenas letras minúsculas, números e _';
+    }
+    return null;
+  }
+
+  Future<bool> _checkAminoIdAvailability({required bool silent}) async {
+    final s = getStrings();
+    final userId = SupabaseService.currentUserId;
+    final normalizedAminoId = _normalizeAminoId(_aminoIdController.text);
+    final validationError = _validateAminoIdValue(normalizedAminoId, s);
+
+    if (normalizedAminoId.isEmpty) {
+      if (mounted) {
+        setState(() {
+          _isCheckingAminoId = false;
+          _isAminoIdAvailable = null;
+          _aminoIdAvailabilityMessage = null;
+        });
+      }
+      return true;
+    }
+
+    if (validationError != null) {
+      if (mounted && !silent) {
+        setState(() {
+          _isCheckingAminoId = false;
+          _isAminoIdAvailable = false;
+          _aminoIdAvailabilityMessage = validationError;
+        });
+      }
+      return false;
+    }
+
+    if (normalizedAminoId == _initialAminoId) {
+      if (mounted) {
+        setState(() {
+          _isCheckingAminoId = false;
+          _isAminoIdAvailable = true;
+          _aminoIdAvailabilityMessage = 'Seu @username global atual';
+        });
+      }
+      return true;
+    }
+
+    if (mounted) {
+      setState(() {
+        _isCheckingAminoId = true;
+        _isAminoIdAvailable = null;
+        _aminoIdAvailabilityMessage = null;
+      });
+    }
+
+    try {
+      final existing = await SupabaseService.table('profiles')
+          .select('id')
+          .eq('amino_id', normalizedAminoId)
+          .neq('id', userId ?? '')
+          .maybeSingle();
+      final available = existing == null;
+      if (mounted) {
+        setState(() {
+          _isCheckingAminoId = false;
+          _isAminoIdAvailable = available;
+          _aminoIdAvailabilityMessage = available
+              ? '@username disponível globalmente'
+              : s.aminoIdInUse;
+        });
+      }
+      return available;
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isCheckingAminoId = false;
+          _isAminoIdAvailable = null;
+          _aminoIdAvailabilityMessage = s.tryAgainGeneric;
+        });
+      }
+      return false;
+    }
+  }
+
+  void _onAminoIdChanged(String value) {
+    _aminoIdDebounce?.cancel();
+    setState(() {
+      _aminoIdAvailabilityMessage = null;
+      _isAminoIdAvailable = null;
+    });
+
+    final normalizedAminoId = _normalizeAminoId(value);
+    final s = getStrings();
+    final validationError = _validateAminoIdValue(normalizedAminoId, s);
+
+    if (normalizedAminoId.isEmpty) {
+      return;
+    }
+
+    if (validationError != null) {
+      setState(() {
+        _isCheckingAminoId = false;
+        _isAminoIdAvailable = false;
+        _aminoIdAvailabilityMessage = validationError;
+      });
+      return;
+    }
+
+    _aminoIdDebounce = Timer(const Duration(milliseconds: 450), () {
+      _checkAminoIdAvailability(silent: false);
+    });
   }
 
   Future<void> _saveProfile() async {
@@ -71,11 +202,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
       final aminoId = _aminoIdController.text.trim();
+      final normalizedAminoId = _normalizeAminoId(aminoId);
+      final isAminoIdAvailable = await _checkAminoIdAvailability(silent: false);
+      if (!isAminoIdAvailable) {
+        setState(() => _isLoading = false);
+        return;
+      }
       final updateData = <String, dynamic>{
         'nickname': _nicknameController.text.trim(),
         'bio': _bioController.text.trim(),
-        // amino_id tem UNIQUE constraint — enviar null se vazio para evitar violação
-        'amino_id': aminoId.isEmpty ? null : aminoId,
+        // amino_id representa o @username global — enviar null se vazio para evitar violação
+        'amino_id': normalizedAminoId.isEmpty ? null : normalizedAminoId,
       };
       // Incluir avatar apenas se foi alterado pelo usuário
       if (_avatarUrl != null && _avatarUrl != _originalAvatarUrl) {
@@ -95,9 +232,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
             iconUrl: (_avatarUrl != null && _avatarUrl != _originalAvatarUrl)
                 ? _avatarUrl
                 : currentUser.iconUrl,
-            // Atualizar aminoId no estado local para refletir imediatamente.
+            // Atualizar o @username global no estado local para refletir imediatamente.
             // String vazia quando apagado (consistente com fromJson: ?? '').
-            aminoId: aminoId, // já é trim(); vazio = sem amino_id
+            aminoId: normalizedAminoId,
           ),
         );
       }
@@ -320,28 +457,52 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
               ),
               SizedBox(height: r.s(16)),
 
-              // Amino ID
+              // @username global
               _buildTextField(
                 controller: _aminoIdController,
-                label: s.aminoId,
+                label: '@username',
                 icon: Icons.alternate_email_rounded,
-                hintText: s.uniqueIdentifier,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) return null; // opcional
-                  final trimmed = value.trim();
-                  if (trimmed.length < 3) return s.min3Chars;
-                  if (trimmed.length > 30) return s.max30Chars;
-                  final validChars = RegExp(r'^[a-zA-Z0-9_]+$');
-                  if (!validChars.hasMatch(trimmed)) return s.aminoIdInvalidChars;
-                  return null;
-                },
+                hintText: 'Único no app inteiro • exibido só no perfil global',
+                validator: (value) => _validateAminoIdValue(value, s),
+                maxLength: 30,
+                onChanged: _onAminoIdChanged,
+                suffixIcon: _isCheckingAminoId
+                    ? Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: SizedBox(
+                          width: r.s(18),
+                          height: r.s(18),
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+                          ),
+                        ),
+                      )
+                    : _isAminoIdAvailable == null
+                        ? null
+                        : Icon(
+                            _isAminoIdAvailable!
+                                ? Icons.check_circle_rounded
+                                : Icons.error_outline_rounded,
+                            color: _isAminoIdAvailable!
+                                ? AppTheme.primaryColor
+                                : AppTheme.errorColor,
+                          ),
               ),
-              SizedBox(height: r.s(16)),
+              SizedBox(height: r.s(6)),
+              Text(
+                _aminoIdAvailabilityMessage ??
+                    'Esse @username é o identificador único da sua conta em todo o app. Ele não aparece dentro das comunidades.',
+                style: TextStyle(
+                  color: (_isAminoIdAvailable == false)
+                      ? AppTheme.errorColor
+                      : (_isAminoIdAvailable == true
+                          ? AppTheme.primaryColor
+                          : Colors.grey[500]),
+                  fontSize: r.fs(12),
+                ),
+              ),
 
-              // Rich Bio Editor
-              _buildRichBioEditor(r),
-            ],
-          ),
         ),
       ),
     );
@@ -600,6 +761,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
     int maxLines = 1,
     int? maxLength,
     String? Function(String?)? validator,
+    ValueChanged<String>? onChanged,
+    Widget? suffixIcon,
   }) {
     final r = context.r;
     return Container(
@@ -615,14 +778,16 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
         maxLines: maxLines,
         maxLength: maxLength,
         validator: validator,
+        onChanged: onChanged,
         style: TextStyle(color: context.textPrimary),
         decoration: InputDecoration(
           labelText: label,
           labelStyle: TextStyle(color: Colors.grey[500]),
           hintText: hintText,
-          hintStyle: TextStyle(color: Colors.grey[600]),
-          prefixIcon: Icon(icon, color: AppTheme.primaryColor),
-          alignLabelWithHint: maxLines > 1,
+          hintStyle: TextStyle(color: Colors.grey[600]),          prefixIcon: Icon(icon, color: AppTheme.primaryColor),
+          suffixIcon: suffixIcon,
+        ),
+alignLabelWithHint: maxLines > 1,
           border: InputBorder.none,
           contentPadding:
               EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(16)),

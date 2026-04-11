@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../config/app_theme.dart';
@@ -26,6 +28,10 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
   final _bioController = TextEditingController();
   final Set<String> _selectedInterests = {};
   bool _isLoading = false;
+  Timer? _aminoIdDebounce;
+  bool _isCheckingAminoId = false;
+  bool? _isAminoIdAvailable;
+  String? _aminoIdAvailabilityMessage;
 
   static List<_InterestItem> _getInterestCategories(AppStrings s) => [
     _InterestItem(
@@ -77,6 +83,115 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
     }
   }
 
+  String _normalizeAminoId(String value) {
+    return value.trim().replaceFirst(RegExp(r'^@+'), '').toLowerCase();
+  }
+
+  String? _validateAminoIdValue(String? value, AppStrings s) {
+    if (value == null || value.trim().isEmpty) return null;
+    final trimmed = _normalizeAminoId(value);
+    if (trimmed.length < 3) return s.min3Chars;
+    if (trimmed.length > 30) return s.max30Chars;
+     if (!RegExp(r'^[a-z0-9_]+$').hasMatch(trimmed)) {
+      return s.aminoIdInvalidChars;
+    }
+   return null;
+  }
+
+  Future<bool> _checkAminoIdAvailability({required bool silent}) async {
+    final s = getStrings();
+    final userId = SupabaseService.currentUserId;
+    final normalizedAminoId = _normalizeAminoId(_aminoIdController.text);
+    final validationError = _validateAminoIdValue(normalizedAminoId, s);
+
+    if (normalizedAminoId.isEmpty) {
+      if (mounted) {
+        setState(() {
+          _isCheckingAminoId = false;
+          _isAminoIdAvailable = null;
+          _aminoIdAvailabilityMessage = null;
+        });
+      }
+      return true;
+    }
+
+    if (validationError != null) {
+      if (mounted && !silent) {
+        setState(() {
+          _isCheckingAminoId = false;
+          _isAminoIdAvailable = false;
+          _aminoIdAvailabilityMessage = validationError;
+        });
+      }
+      return false;
+    }
+
+    if (mounted) {
+      setState(() {
+        _isCheckingAminoId = true;
+        _isAminoIdAvailable = null;
+        _aminoIdAvailabilityMessage = null;
+      });
+    }
+
+    try {
+      final existing = await SupabaseService.table('profiles')
+          .select('id')
+          .eq('amino_id', normalizedAminoId)
+          .neq('id', userId ?? '')
+          .maybeSingle();
+      final available = existing == null;
+      if (mounted) {
+        setState(() {
+          _isCheckingAminoId = false;
+          _isAminoIdAvailable = available;
+          _aminoIdAvailabilityMessage = available
+              ? '@username disponível globalmente'
+              : s.aminoIdInUse;
+        });
+      }
+      return available;
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isCheckingAminoId = false;
+          _isAminoIdAvailable = null;
+          _aminoIdAvailabilityMessage = s.tryAgainGeneric;
+        });
+      }
+      return false;
+    }
+  }
+
+  void _onAminoIdChanged(String value) {
+    _aminoIdDebounce?.cancel();
+    setState(() {
+      _isAminoIdAvailable = null;
+      _aminoIdAvailabilityMessage = null;
+      _isCheckingAminoId = false;
+    });
+
+    final s = getStrings();
+    final normalizedAminoId = _normalizeAminoId(value);
+    final validationError = _validateAminoIdValue(normalizedAminoId, s);
+
+    if (normalizedAminoId.isEmpty) {
+      return;
+    }
+
+    if (validationError != null) {
+      setState(() {
+        _isAminoIdAvailable = false;
+        _aminoIdAvailabilityMessage = validationError;
+      });
+      return;
+    }
+
+    _aminoIdDebounce = Timer(const Duration(milliseconds: 450), () {
+      _checkAminoIdAvailability(silent: false);
+    });
+  }
+
   Future<void> _finishWizard() async {
     final s = getStrings();
     setState(() => _isLoading = true);
@@ -84,10 +199,16 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
 
-      // Atualizar perfil com Amino ID e bio
+      // Atualizar perfil com @username global e bio
       final updates = <String, dynamic>{};
-      if (_aminoIdController.text.trim().isNotEmpty) {
-        updates['amino_id'] = _aminoIdController.text.trim();
+      final normalizedAminoId = _normalizeAminoId(_aminoIdController.text);
+      final isAminoIdAvailable = await _checkAminoIdAvailability(silent: false);
+      if (!isAminoIdAvailable) {
+        setState(() => _isLoading = false);
+        return;
+      }
+      if (normalizedAminoId.isNotEmpty) {
+        updates['amino_id'] = normalizedAminoId;
       }
       if (_bioController.text.trim().isNotEmpty) {
         updates['bio'] = _bioController.text.trim();
@@ -127,6 +248,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
   @override
   void dispose() {
     _pageController.dispose();
+    _aminoIdDebounce?.cancel();
     _aminoIdController.dispose();
     _bioController.dispose();
     super.dispose();
@@ -338,7 +460,7 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
           ),
           SizedBox(height: r.s(32)),
           Text(
-            'Escolha seu ID',
+            'Escolha seu @username',
             style: TextStyle(
               color: context.textPrimary,
               fontSize: r.fs(28),
@@ -359,10 +481,10 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
           SizedBox(height: r.s(32)),
           TextField(
             controller: _aminoIdController,
-            maxLength: 24,
+            maxLength: 30,
             style: TextStyle(color: context.textPrimary),
             decoration: InputDecoration(
-              hintText: 'ex: gamer_pro_2026',
+              hintText: 'ex: nexus_user_2026',
               hintStyle: TextStyle(color: Colors.grey[600]),
               prefixIcon: const Icon(Icons.alternate_email_rounded,
                   color: AppTheme.primaryColor),
@@ -383,22 +505,66 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
                 borderRadius: BorderRadius.circular(r.s(16)),
                 borderSide: const BorderSide(color: AppTheme.primaryColor),
               ),
-              suffixIcon: _aminoIdController.text.length >= 3
-                  ? const Icon(Icons.check_circle_rounded,
-                      color: AppTheme.primaryColor)
-                  : null,
+              suffixIcon: _isCheckingAminoId
+                  ? Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: SizedBox(
+                        width: r.s(18),
+                        height: r.s(18),
+                        child: const CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+                        ),
+                      ),
+                    )
+                  : _isAminoIdAvailable == null
+                      ? (_aminoIdController.text.length >= 3
+                          ? const Icon(Icons.alternate_email_rounded,
+                              color: AppTheme.primaryColor)
+                          : null)
+                      : Icon(
+                          _isAminoIdAvailable!
+                              ? Icons.check_circle_rounded
+                              : Icons.error_outline_rounded,
+                          color: _isAminoIdAvailable!
+                              ? AppTheme.primaryColor
+                              : AppTheme.errorColor,
+                        ),
             ),
-            onChanged: (_) => setState(() {}),
+            onChanged: _onAminoIdChanged,
           ),
           SizedBox(height: r.s(8)),
           Text(
-            'Mínimo 3 caracteres. Letras, números e underscores.',
-            style: TextStyle(color: Colors.grey[600], fontSize: r.fs(12)),
+            _aminoIdAvailabilityMessage ??
+                'Mínimo 3 caracteres. Use letras minúsculas, números e underscores. Esse @username é global e aparece só no seu perfil principal.',
+            style: TextStyle(
+              color: (_isAminoIdAvailable == false)
+                  ? AppTheme.errorColor
+                  : (_isAminoIdAvailable == true
+                      ? AppTheme.primaryColor
+                      : Colors.grey[600]),
+              fontSize: r.fs(12),
+            ),
+            textAlign: TextAlign.center,
           ),
           SizedBox(height: r.s(40)),
           _buildCustomButton(
             text: s.continueAction,
-            onTap: _nextStep,
+            onTap: () async {
+              final validationError =
+                  _validateAminoIdValue(_aminoIdController.text, s);
+              if (validationError != null) {
+                setState(() {
+                  _isAminoIdAvailable = false;
+                  _aminoIdAvailabilityMessage = validationError;
+                });
+                return;
+              }
+              final isAminoIdAvailable =
+                  await _checkAminoIdAvailability(silent: false);
+              if (!isAminoIdAvailable) return;
+              _nextStep();
+            },
           ),
         ],
       ),
