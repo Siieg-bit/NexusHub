@@ -439,10 +439,10 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
     // Não existe mais bottom sheet.
     return Column(
       children: [
-        // Composer fixo no topo
-        _buildComposer(r),
-        // Lista de comentários ocupa o restante
+        // Lista de comentários ocupa o restante (acima do composer)
         Expanded(child: _buildCommentList(r, null, commentsAsync)),
+        // Composer fixo na parte inferior
+        _buildComposer(r),
       ],
     );
   }

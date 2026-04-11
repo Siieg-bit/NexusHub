@@ -114,6 +114,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         final isAminoPlus = user.isPremium || IAPService.isAminoPlus;
 
         return Scaffold(
+          resizeToAvoidBottomInset: true,
           backgroundColor: context.scaffoldBg,
           body: RefreshIndicator(
             color: AppTheme.primaryColor,

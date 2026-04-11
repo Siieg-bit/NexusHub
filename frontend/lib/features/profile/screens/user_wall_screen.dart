@@ -23,6 +23,7 @@ class UserWallScreen extends ConsumerWidget {
     final profileAsync = ref.watch(userProfileProvider(userId));
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: context.surfaceColor,

@@ -195,6 +195,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
         (roleTitle != null ? r.s(28) : 0);
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: context.scaffoldBg,
       floatingActionButton: _isOwnProfile
           ? AminoCommunityFab(
