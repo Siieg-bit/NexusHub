@@ -166,10 +166,18 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
       // Capturar welcomeMessage ANTES de invalidar o provider
       final communityState = ref.read(communityDetailProvider(widget.communityId));
       final welcomeMsg = communityState.valueOrNull?.welcomeMessage;
+      final profile = await SupabaseService.table('profiles')
+          .select('nickname, bio, icon_url, banner_url')
+          .eq('id', userId)
+          .single();
       await SupabaseService.table('community_members').insert({
         'community_id': widget.communityId,
         'user_id': userId,
         'role': 'member',
+        'local_nickname': profile['nickname'],
+        'local_bio': profile['bio'],
+        'local_icon_url': profile['icon_url'],
+        'local_banner_url': profile['banner_url'],
       });
       ref.invalidate(communityMembershipProvider(widget.communityId));
       ref.invalidate(communityDetailProvider(widget.communityId));

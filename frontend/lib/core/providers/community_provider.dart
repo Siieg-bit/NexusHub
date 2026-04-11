@@ -47,10 +47,19 @@ class MyCommunitiesNotifier extends AsyncNotifier<List<CommunityModel>> {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return false;
 
+      final profile = await SupabaseService.table('profiles')
+          .select('nickname, bio, icon_url, banner_url')
+          .eq('id', userId)
+          .single();
+
       await SupabaseService.table('community_members').insert({
         'community_id': communityId,
         'user_id': userId,
         'role': 'member',
+        'local_nickname': profile['nickname'],
+        'local_bio': profile['bio'],
+        'local_icon_url': profile['icon_url'],
+        'local_banner_url': profile['banner_url'],
       });
 
       await refresh();

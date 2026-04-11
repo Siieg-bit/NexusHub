@@ -102,10 +102,18 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
+      final profile = await SupabaseService.table('profiles')
+          .select('nickname, bio, icon_url, banner_url')
+          .eq('id', userId)
+          .single();
       await SupabaseService.table('community_members').insert({
         'community_id': widget.communityId,
         'user_id': userId,
         'role': 'member',
+        'local_nickname': profile['nickname'],
+        'local_bio': profile['bio'],
+        'local_icon_url': profile['icon_url'],
+        'local_banner_url': profile['banner_url'],
       });
       if (mounted) {
         setState(() {

@@ -64,17 +64,65 @@ class _EditCommunityProfileScreenState
           .eq('community_id', widget.communityId)
           .eq('user_id', userId)
           .maybeSingle();
+
+      Map<String, dynamic>? hydratedMembership = membership != null
+          ? Map<String, dynamic>.from(membership as Map)
+          : null;
+
+      if (hydratedMembership != null) {
+        final profileSeed = <String, dynamic>{};
+        final profile = await SupabaseService.table('profiles')
+            .select('nickname, bio, icon_url, banner_url')
+            .eq('id', userId)
+            .single();
+
+        final localNickname =
+            (hydratedMembership['local_nickname'] as String?)?.trim();
+        final localBio = (hydratedMembership['local_bio'] as String?)?.trim();
+        final localIconUrl =
+            (hydratedMembership['local_icon_url'] as String?)?.trim();
+        final localBannerUrl =
+            (hydratedMembership['local_banner_url'] as String?)?.trim();
+
+        if ((localNickname == null || localNickname.isEmpty) &&
+            ((profile['nickname'] as String?)?.trim().isNotEmpty ?? false)) {
+          profileSeed['local_nickname'] = (profile['nickname'] as String).trim();
+        }
+        if ((localBio == null || localBio.isEmpty) &&
+            ((profile['bio'] as String?)?.trim().isNotEmpty ?? false)) {
+          profileSeed['local_bio'] = (profile['bio'] as String).trim();
+        }
+        if ((localIconUrl == null || localIconUrl.isEmpty) &&
+            ((profile['icon_url'] as String?)?.trim().isNotEmpty ?? false)) {
+          profileSeed['local_icon_url'] = (profile['icon_url'] as String).trim();
+        }
+        if ((localBannerUrl == null || localBannerUrl.isEmpty) &&
+            ((profile['banner_url'] as String?)?.trim().isNotEmpty ?? false)) {
+          profileSeed['local_banner_url'] =
+              (profile['banner_url'] as String).trim();
+        }
+
+        if (profileSeed.isNotEmpty) {
+          await SupabaseService.table('community_members')
+              .update(profileSeed)
+              .eq('community_id', widget.communityId)
+              .eq('user_id', userId);
+          hydratedMembership.addAll(profileSeed);
+        }
+      }
+
       if (mounted) {
         setState(() {
-          if (membership != null) {
+          if (hydratedMembership != null) {
             _nicknameController.text =
-                (membership['local_nickname'] as String?) ?? '';
-            _bioController.text = (membership['local_bio'] as String?) ?? '';
-            _localIconUrl = membership['local_icon_url'] as String?;
-            _localBannerUrl = membership['local_banner_url'] as String?;
+                (hydratedMembership['local_nickname'] as String?) ?? '';
+            _bioController.text =
+                (hydratedMembership['local_bio'] as String?) ?? '';
+            _localIconUrl = hydratedMembership['local_icon_url'] as String?;
+            _localBannerUrl = hydratedMembership['local_banner_url'] as String?;
             _localBackgroundUrl =
-                membership['local_background_url'] as String?;
-            final rawGallery = membership['local_gallery'];
+                hydratedMembership['local_background_url'] as String?;
+            final rawGallery = hydratedMembership['local_gallery'];
             if (rawGallery is List) {
               _gallery = rawGallery.map((e) => e.toString()).toList();
             }

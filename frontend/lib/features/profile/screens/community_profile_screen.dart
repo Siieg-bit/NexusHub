@@ -94,6 +94,42 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
           .eq('user_id', widget.userId)
           .eq('community_id', widget.communityId)
           .maybeSingle();
+
+      if (_isOwnProfile && memberRes != null) {
+        final profileSeed = <String, dynamic>{};
+        final localNickname = (memberRes['local_nickname'] as String?)?.trim();
+        final localBio = (memberRes['local_bio'] as String?)?.trim();
+        final localIconUrl = (memberRes['local_icon_url'] as String?)?.trim();
+        final localBannerUrl = (memberRes['local_banner_url'] as String?)?.trim();
+
+        if ((localNickname == null || localNickname.isEmpty) &&
+            (_user?.nickname.trim().isNotEmpty ?? false)) {
+          profileSeed['local_nickname'] = _user!.nickname.trim();
+        }
+        if ((localBio == null || localBio.isEmpty) &&
+            (_user?.bio.trim().isNotEmpty ?? false)) {
+          profileSeed['local_bio'] = _user!.bio.trim();
+        }
+        if ((localIconUrl == null || localIconUrl.isEmpty) &&
+            (_user?.iconUrl?.trim().isNotEmpty ?? false)) {
+          profileSeed['local_icon_url'] = _user!.iconUrl!.trim();
+        }
+        if ((localBannerUrl == null || localBannerUrl.isEmpty) &&
+            (_user?.bannerUrl?.trim().isNotEmpty ?? false)) {
+          profileSeed['local_banner_url'] = _user!.bannerUrl!.trim();
+        }
+
+        if (profileSeed.isNotEmpty) {
+          try {
+            await SupabaseService.table('community_members')
+                .update(profileSeed)
+                .eq('user_id', widget.userId)
+                .eq('community_id', widget.communityId);
+            memberRes.addAll(profileSeed);
+          } catch (_) {}
+        }
+      }
+
       _membership = memberRes;
 
       // Membership do usuário logado (para verificar se pode moderar)
@@ -196,10 +232,14 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     final coins = _user?.coins ?? 0;
     final isOnline = _user?.isOnline ?? false;
     final isPremium = _user?.isPremium ?? false;
-    final displayName = localNickname ?? _user?.nickname ?? s.user;
-    final displayAvatar = localIconUrl ?? _user?.iconUrl;
-    final displayBanner = localBannerUrl ?? _user?.bannerUrl;
-    final displayBio = localBio ?? _user?.bio ?? '';
+    final displayName =
+        (localNickname?.trim().isNotEmpty ?? false) ? localNickname!.trim() : (_user?.nickname ?? s.user);
+    final displayAvatar =
+        (localIconUrl?.trim().isNotEmpty ?? false) ? localIconUrl!.trim() : null;
+    final displayBanner =
+        (localBannerUrl?.trim().isNotEmpty ?? false) ? localBannerUrl!.trim() : null;
+    final displayBio =
+        (localBio?.trim().isNotEmpty ?? false) ? localBio!.trim() : '';
 
     // Título do cargo (role title)
     String? roleTitle;
