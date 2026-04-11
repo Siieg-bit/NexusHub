@@ -16,7 +16,11 @@ import '../../../core/l10n/locale_provider.dart';
 // =============================================================================
 
 class NotificationsScreen extends ConsumerStatefulWidget {
-  const NotificationsScreen({super.key});
+  final String? communityId;
+
+  const NotificationsScreen({super.key, this.communityId});
+
+  bool get isCommunityScoped => communityId != null;
 
   @override
   ConsumerState<NotificationsScreen> createState() =>
@@ -47,7 +51,13 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         _scrollController.position.maxScrollExtent - 300) {
       if (_scrollDebounce?.isActive ?? false) return;
       _scrollDebounce = Timer(const Duration(milliseconds: 100), () {
-        ref.read(notificationProvider.notifier).loadMore();
+        if (widget.isCommunityScoped) {
+          ref
+              .read(communityNotificationProvider(widget.communityId!).notifier)
+              .loadMore();
+        } else {
+          ref.read(notificationProvider.notifier).loadMore();
+        }
       });
     }
   }
@@ -87,16 +97,34 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       ),
     );
     if (confirmed == true) {
-      await ref.read(notificationProvider.notifier).deleteAll();
+      if (widget.isCommunityScoped) {
+        await ref
+            .read(communityNotificationProvider(widget.communityId!).notifier)
+            .deleteAll();
+      } else {
+        await ref.read(notificationProvider.notifier).deleteAll();
+      }
     }
   }
 
   void _onCategoryChanged(NotificationCategory category) {
-    ref.read(notificationProvider.notifier).setCategory(category);
+    if (widget.isCommunityScoped) {
+      ref
+          .read(communityNotificationProvider(widget.communityId!).notifier)
+          .setCategory(category);
+    } else {
+      ref.read(notificationProvider.notifier).setCategory(category);
+    }
   }
 
   Future<void> _deleteNotification(String id) async {
-    await ref.read(notificationProvider.notifier).deleteNotification(id);
+    if (widget.isCommunityScoped) {
+      await ref
+          .read(communityNotificationProvider(widget.communityId!).notifier)
+          .deleteNotification(id);
+    } else {
+      await ref.read(notificationProvider.notifier).deleteNotification(id);
+    }
   }
 
   Map<String, dynamic> _notificationData(Map<String, dynamic> notification) {
@@ -155,11 +183,23 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
       if (error == null || error == 'already_member') {
         if (notificationId != null) {
-          await ref
-              .read(notificationProvider.notifier)
-              .markAsRead(notificationId);
+          if (widget.isCommunityScoped) {
+            await ref
+                .read(communityNotificationProvider(widget.communityId!).notifier)
+                .markAsRead(notificationId);
+          } else {
+            await ref
+                .read(notificationProvider.notifier)
+                .markAsRead(notificationId);
+          }
         }
-        await ref.read(notificationProvider.notifier).refresh();
+        if (widget.isCommunityScoped) {
+          await ref
+              .read(communityNotificationProvider(widget.communityId!).notifier)
+              .refresh();
+        } else {
+          await ref.read(notificationProvider.notifier).refresh();
+        }
 
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -214,7 +254,13 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     final notifId = notification['id'] as String?;
     final isRead = notification['is_read'] as bool? ?? false;
     if (!isRead && notifId != null) {
-      ref.read(notificationProvider.notifier).markAsRead(notifId);
+      if (widget.isCommunityScoped) {
+        ref
+            .read(communityNotificationProvider(widget.communityId!).notifier)
+            .markAsRead(notifId);
+      } else {
+        ref.read(notificationProvider.notifier).markAsRead(notifId);
+      }
     }
 
     final type = notification['type'] as String? ?? '';
@@ -291,7 +337,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   Widget build(BuildContext context) {
       final s = ref.watch(stringsProvider);
     final r = context.r;
-    final notifAsync = ref.watch(notificationProvider);
+    final notifAsync = widget.isCommunityScoped
+        ? ref.watch(communityNotificationProvider(widget.communityId!))
+        : ref.watch(notificationProvider);
 
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -306,7 +354,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          s.alerts,
+          widget.isCommunityScoped ? 'Alertas da comunidade' : s.alerts,
           style: TextStyle(
             color: context.textPrimary,
             fontWeight: FontWeight.w800,
@@ -356,7 +404,15 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               ),
               SizedBox(height: r.s(12)),
               GestureDetector(
-                onTap: () => ref.read(notificationProvider.notifier).refresh(),
+                onTap: () {
+                  if (widget.isCommunityScoped) {
+                    ref
+                        .read(communityNotificationProvider(widget.communityId!).notifier)
+                        .refresh();
+                  } else {
+                    ref.read(notificationProvider.notifier).refresh();
+                  }
+                },
                 child: Container(
                   padding: EdgeInsets.symmetric(
                       horizontal: r.s(20), vertical: r.s(10)),
@@ -382,16 +438,57 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           return RefreshIndicator(
             color: AppTheme.primaryColor,
             onRefresh: () async {
-              await ref.read(notificationProvider.notifier).refresh();
+              if (widget.isCommunityScoped) {
+                await ref
+                    .read(communityNotificationProvider(widget.communityId!).notifier)
+                    .refresh();
+              } else {
+                await ref.read(notificationProvider.notifier).refresh();
+              }
             },
             child: CustomScrollView(
               controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 // ── Link para configurações de push ──────────────────────
-                SliverToBoxAdapter(
-                  child: InkWell(
-                    onTap: () => context.push('/settings/notifications'),
+                if (!widget.isCommunityScoped)
+                  SliverToBoxAdapter(
+                    child: InkWell(
+                      onTap: () => context.push('/settings/notifications'),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: r.s(16), vertical: r.s(14)),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: context.dividerClr.withValues(alpha: 0.15),
+                              width: 0.5,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.settings_rounded,
+                                color: context.textSecondary, size: r.s(18)),
+                            SizedBox(width: r.s(10)),
+                            Text(
+                              s.pushNotificationSettings,
+                              style: TextStyle(
+                                color: context.textSecondary,
+                                fontSize: r.fs(13),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const Spacer(),
+                            Icon(Icons.chevron_right_rounded,
+                                color: context.textSecondary, size: r.s(18)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  SliverToBoxAdapter(
                     child: Container(
                       padding: EdgeInsets.symmetric(
                           horizontal: r.s(16), vertical: r.s(14)),
@@ -405,25 +502,23 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.settings_rounded,
+                          Icon(Icons.campaign_rounded,
                               color: context.textSecondary, size: r.s(18)),
                           SizedBox(width: r.s(10)),
-                          Text(
-                            s.pushNotificationSettings,
-                            style: TextStyle(
-                              color: context.textSecondary,
-                              fontSize: r.fs(13),
-                              fontWeight: FontWeight.w500,
+                          Expanded(
+                            child: Text(
+                              'Aqui aparecem apenas alertas desta comunidade.',
+                              style: TextStyle(
+                                color: context.textSecondary,
+                                fontSize: r.fs(13),
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
-                          const Spacer(),
-                          Icon(Icons.chevron_right_rounded,
-                              color: context.textSecondary, size: r.s(18)),
                         ],
                       ),
                     ),
                   ),
-                ),
 
                 // ── Filtros de categoria ─────────────────────────────────
                 SliverToBoxAdapter(
@@ -555,9 +650,17 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                   SliverToBoxAdapter(
                     child: notifState.loadMoreError != null
                         ? _RetryBanner(
-                            onRetry: () => ref
-                                .read(notificationProvider.notifier)
-                                .retryLoadMore(),
+                            onRetry: () {
+                              if (widget.isCommunityScoped) {
+                                ref
+                                    .read(communityNotificationProvider(widget.communityId!).notifier)
+                                    .retryLoadMore();
+                              } else {
+                                ref
+                                    .read(notificationProvider.notifier)
+                                    .retryLoadMore();
+                              }
+                            },
                           )
                         : notifState.hasMore
                             ? Padding(

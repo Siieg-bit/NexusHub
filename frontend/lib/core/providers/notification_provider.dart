@@ -524,10 +524,364 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
   }
 }
 
+class CommunityNotificationNotifier
+    extends FamilyAsyncNotifier<NotificationState, String> {
+  static const int _pageSize = 30;
+  int _page = 0;
+  bool _isLoadingMore = false;
+
+  @override
+  Future<NotificationState> build(String communityId) async {
+    _page = 0;
+    _isLoadingMore = false;
+    _subscribeRealtime(communityId);
+
+    ref.onDispose(() {
+      final userId = SupabaseService.currentUserId;
+      if (userId != null) {
+        RealtimeService.instance.unsubscribe(
+          'community_notifications:$userId:$communityId',
+        );
+      }
+    });
+
+    return _fetchFromNetwork(
+      communityId: communityId,
+      category: NotificationCategory.all,
+    );
+  }
+
+  Future<NotificationState> _fetchFromNetwork({
+    required String communityId,
+    required NotificationCategory category,
+    int offset = 0,
+    List<Map<String, dynamic>> existing = const [],
+  }) async {
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) return const NotificationState(hasMore: false);
+
+    try {
+      PostgrestFilterBuilder<List<Map<String, dynamic>>> query =
+          SupabaseService.table('notifications').select(
+        '*, profiles!notifications_actor_id_fkey(id, nickname, icon_url, display_name, avatar_url)',
+      );
+
+      query = query.eq('user_id', userId).eq('community_id', communityId);
+
+      switch (category) {
+        case NotificationCategory.social:
+          query = query.inFilter('type', ['like', 'comment', 'follow', 'mention', 'wall_post']);
+          break;
+        case NotificationCategory.chat:
+          query = query.inFilter('type', ['chat_message', 'chat_mention', 'dm_invite']);
+          break;
+        case NotificationCategory.community:
+          query = query.inFilter('type', ['community_invite', 'community_update', 'join_request', 'role_change']);
+          break;
+        case NotificationCategory.system:
+          query = query.inFilter('type', ['level_up', 'achievement', 'check_in_streak', 'moderation', 'strike', 'ban', 'broadcast', 'wiki_approved', 'wiki_rejected', 'tip']);
+          break;
+        case NotificationCategory.all:
+          break;
+      }
+
+      final rows = await query
+          .order('created_at', ascending: false)
+          .range(offset, offset + _pageSize - 1);
+
+      final items = rows
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
+
+      final unreadCount = await _fetchUnreadCount(communityId);
+
+      return NotificationState(
+        notifications: [...existing, ...items],
+        unreadCount: unreadCount,
+        hasMore: items.length == _pageSize,
+        category: category,
+      );
+    } catch (e) {
+      debugPrint('[community_notification_provider] Falha ao buscar alertas da comunidade: $e');
+      return NotificationState(
+        notifications: existing,
+        unreadCount: existing.where((n) => n['is_read'] != true).length,
+        hasMore: false,
+        category: category,
+      );
+    }
+  }
+
+  Future<int> _fetchUnreadCount(String communityId) async {
+    try {
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) return 0;
+      final res = await SupabaseService.table('notifications')
+          .select()
+          .eq('user_id', userId)
+          .eq('community_id', communityId)
+          .eq('is_read', false)
+          .count(CountOption.exact);
+      return res.count;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  void _subscribeRealtime(String communityId) {
+    final userId = SupabaseService.currentUserId;
+    if (userId == null) return;
+
+    RealtimeService.instance.subscribeWithRetry(
+      channelName: 'community_notifications:$userId:$communityId',
+      configure: (channel) {
+        channel
+            .onPostgresChanges(
+              event: PostgresChangeEvent.insert,
+              schema: 'public',
+              table: 'notifications',
+              filter: PostgresChangeFilter(
+                type: PostgresChangeFilterType.eq,
+                column: 'user_id',
+                value: userId,
+              ),
+              callback: (payload) => _onNewNotification(
+                communityId,
+                payload.newRecord,
+              ),
+            )
+            .onPostgresChanges(
+              event: PostgresChangeEvent.update,
+              schema: 'public',
+              table: 'notifications',
+              filter: PostgresChangeFilter(
+                type: PostgresChangeFilterType.eq,
+                column: 'user_id',
+                value: userId,
+              ),
+              callback: (payload) => _onUpdateNotification(
+                communityId,
+                payload.newRecord,
+              ),
+            );
+      },
+    );
+  }
+
+  void _onNewNotification(String communityId, Map<String, dynamic> record) {
+    if (record['community_id'] != communityId) return;
+
+    final current = state.valueOrNull;
+    if (current == null) return;
+
+    final groupKey = record['group_key'] as String?;
+    if (groupKey != null) {
+      final existingIndex = current.notifications.indexWhere(
+        (n) => n['group_key'] == groupKey && n['is_read'] == false,
+      );
+      if (existingIndex >= 0) {
+        final updated = List<Map<String, dynamic>>.from(current.notifications);
+        updated[existingIndex] = {...updated[existingIndex], ...record};
+        state = AsyncData(current.copyWith(notifications: updated));
+        return;
+      }
+    }
+
+    state = AsyncData(current.copyWith(
+      notifications: [record, ...current.notifications],
+      unreadCount: current.unreadCount + 1,
+    ));
+  }
+
+  void _onUpdateNotification(String communityId, Map<String, dynamic> record) {
+    if (record['community_id'] != communityId) return;
+
+    final current = state.valueOrNull;
+    if (current == null) return;
+
+    final id = record['id'] as String?;
+    if (id == null) return;
+
+    final updated = current.notifications.map((n) {
+      if (n['id'] == id) return {...n, ...record};
+      return n;
+    }).toList();
+
+    state = AsyncData(current.copyWith(notifications: updated));
+  }
+
+  Future<void> setCategory(NotificationCategory category) async {
+    _page = 0;
+    _isLoadingMore = false;
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(
+      () => _fetchFromNetwork(communityId: arg, category: category),
+    );
+  }
+
+  Future<void> loadMore() async {
+    final current = state.valueOrNull;
+    if (current == null || !current.hasMore || _isLoadingMore) return;
+
+    _isLoadingMore = true;
+    _page++;
+    state = AsyncData(current.copyWith(isLoadingMore: true, clearLoadMoreError: true));
+
+    try {
+      final offset = _page * _pageSize;
+      final next = await _fetchFromNetwork(
+        communityId: arg,
+        category: current.category,
+        offset: offset,
+        existing: current.notifications,
+      );
+      state = AsyncData(next.copyWith(isLoadingMore: false));
+    } catch (_) {
+      _page--;
+      final cur = state.valueOrNull ?? current;
+      state = AsyncData(cur.copyWith(
+        isLoadingMore: false,
+        loadMoreError: 'Erro ao carregar mais alertas da comunidade',
+      ));
+    } finally {
+      _isLoadingMore = false;
+    }
+  }
+
+  Future<void> retryLoadMore() async {
+    final current = state.valueOrNull;
+    if (current == null) return;
+    state = AsyncData(current.copyWith(clearLoadMoreError: true));
+    await loadMore();
+  }
+
+  Future<void> markAsRead(String notificationId) async {
+    try {
+      await SupabaseService.table('notifications')
+          .update({'is_read': true})
+          .eq('id', notificationId)
+          .eq('user_id', SupabaseService.currentUserId ?? '')
+          .eq('community_id', arg);
+
+      final current = state.valueOrNull;
+      if (current == null) return;
+
+      bool wasUnread = false;
+      final updated = current.notifications.map((n) {
+        if (n['id'] == notificationId && n['is_read'] == false) {
+          wasUnread = true;
+          return {...n, 'is_read': true};
+        }
+        return n;
+      }).toList();
+
+      state = AsyncData(current.copyWith(
+        notifications: updated,
+        unreadCount: wasUnread
+            ? (current.unreadCount - 1).clamp(0, 999)
+            : current.unreadCount,
+      ));
+    } catch (e) {
+      debugPrint('[community_notification_provider] Erro markAsRead: $e');
+    }
+  }
+
+  Future<void> markAllAsRead() async {
+    try {
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) return;
+
+      await SupabaseService.table('notifications')
+          .update({'is_read': true})
+          .eq('user_id', userId)
+          .eq('community_id', arg)
+          .eq('is_read', false);
+
+      final current = state.valueOrNull;
+      if (current == null) return;
+
+      final updated = current.notifications
+          .map((n) => {...n, 'is_read': true})
+          .toList();
+
+      state = AsyncData(current.copyWith(
+        notifications: updated,
+        unreadCount: 0,
+      ));
+    } catch (e) {
+      debugPrint('[community_notification_provider] Erro markAllAsRead: $e');
+    }
+  }
+
+  Future<void> deleteNotification(String notificationId) async {
+    try {
+      await SupabaseService.rpc('delete_notification', params: {
+        'p_notification_id': notificationId,
+      });
+
+      final current = state.valueOrNull;
+      if (current == null) return;
+
+      final wasUnread = current.notifications
+          .any((n) => n['id'] == notificationId && n['is_read'] == false);
+
+      final updated = current.notifications
+          .where((n) => n['id'] != notificationId)
+          .toList();
+
+      state = AsyncData(current.copyWith(
+        notifications: updated,
+        unreadCount: wasUnread
+            ? (current.unreadCount - 1).clamp(0, 999)
+            : current.unreadCount,
+      ));
+    } catch (e) {
+      debugPrint('[community_notification_provider] Erro deleteNotification: $e');
+    }
+  }
+
+  Future<void> deleteAll() async {
+    try {
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) return;
+
+      await SupabaseService.table('notifications')
+          .delete()
+          .eq('user_id', userId)
+          .eq('community_id', arg);
+
+      final current = state.valueOrNull;
+      if (current == null) return;
+      state = AsyncData(current.copyWith(
+        notifications: [],
+        unreadCount: 0,
+        hasMore: false,
+      ));
+    } catch (e) {
+      debugPrint('[community_notification_provider] Erro deleteAll: $e');
+    }
+  }
+
+  Future<void> refresh() async {
+    _page = 0;
+    _isLoadingMore = false;
+    final currentCategory = state.valueOrNull?.category ?? NotificationCategory.all;
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(
+      () => _fetchFromNetwork(communityId: arg, category: currentCategory),
+    );
+  }
+}
+
 // ── Providers ─────────────────────────────────────────────────────────────────
 final notificationProvider =
     AsyncNotifierProvider<NotificationNotifier, NotificationState>(
         NotificationNotifier.new);
+
+final communityNotificationProvider = AsyncNotifierProvider.family<
+    CommunityNotificationNotifier, NotificationState, String>(
+  CommunityNotificationNotifier.new,
+);
 
 /// Badge count — derivado do provider principal (leve, sem rebuild desnecessário)
 /// Também atualiza o badge no ícone do app automaticamente.
