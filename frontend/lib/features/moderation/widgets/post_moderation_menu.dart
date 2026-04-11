@@ -924,9 +924,17 @@ class _ManageCategoriesSheetState
   Future<void> _saveCategory(String? categoryId) async {
     setState(() => _isSaving = true);
     try {
-      await SupabaseService.table('posts')
-          .update({'category_id': categoryId}).eq('id', widget.postId);
-      if (mounted) {
+      final result = await SupabaseService.rpc('assign_post_category', params: {
+        'p_community_id': widget.communityId,
+        'p_post_id': widget.postId,
+        'p_category_id': categoryId,
+      });
+      if (!mounted) return;
+      final error = result is Map ? result['error'] : null;
+      if (error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erro: $error')));
+      } else {
         setState(() => _currentCategoryId = categoryId);
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Categoria atualizada!'),
