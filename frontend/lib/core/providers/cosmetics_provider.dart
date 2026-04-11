@@ -37,21 +37,9 @@ class UserCosmetics {
 }
 
 /// Provider que busca e cacheia os cosméticos equipados de um usuário.
-///
-/// Uso:
-/// ```dart
-/// final cosmetics = ref.watch(userCosmeticsProvider(userId));
-/// cosmetics.when(
-///   data: (c) => AvatarWithFrame(
-///     avatarUrl: user.iconUrl,
-///     frameUrl: c.avatarFrameUrl,
-///   ),
-/// );
-/// ```
 final userCosmeticsProvider =
     FutureProvider.family<UserCosmetics, String>((ref, userId) async {
   try {
-    // Buscar itens equipados do inventário do usuário
     final equipped = await SupabaseService.table('user_purchases')
         .select('*, store_items!user_purchases_item_id_fkey(*)')
         .eq('user_id', userId)
@@ -64,25 +52,45 @@ final userCosmeticsProvider =
     String? chatBubbleImageUrl;
 
     for (final item in ((equipped as List? ?? []))) {
-      final storeItem = item['store_items'] as Map<String, dynamic>?;
-      if (storeItem == null) continue;
+      final storeItem = _asMap(item['store_items']);
+      if (storeItem.isEmpty) continue;
 
-      final type = storeItem['type'] as String? ?? '';
-      final metadata = storeItem['metadata'] as Map<String, dynamic>? ?? {};
+      final type = _asString(storeItem['type']);
+      final assetConfig = _asMap(storeItem['asset_config']);
+      final legacyMetadata = _asMap(storeItem['metadata']);
 
       if (type == 'avatar_frame') {
-        avatarFrameUrl = (metadata['image_url'] as String?) ??
-            (storeItem['image_url'] as String?);
+        avatarFrameUrl = _firstNonEmpty([
+          _asString(assetConfig['frame_url']),
+          _asString(assetConfig['image_url']),
+          _asString(storeItem['asset_url']),
+          _asString(storeItem['preview_url']),
+          _asString(legacyMetadata['image_url']),
+          _asString(storeItem['image_url']),
+        ]);
       } else if (type == 'chat_bubble') {
-        chatBubbleId = storeItem['id'] as String?;
-        chatBubbleStyle = metadata['style'] as String?;
-        chatBubbleColor = metadata['color'] as String?;
-        chatBubbleImageUrl = (metadata['image_url'] as String?) ??
-            (storeItem['image_url'] as String?);
+        chatBubbleId = _asString(storeItem['id']);
+        chatBubbleStyle = _firstNonEmpty([
+          _asString(assetConfig['style']),
+          _asString(assetConfig['bubble_style']),
+          _asString(legacyMetadata['style']),
+        ]);
+        chatBubbleColor = _firstNonEmpty([
+          _asString(assetConfig['color']),
+          _asString(assetConfig['bubble_color']),
+          _asString(legacyMetadata['color']),
+        ]);
+        chatBubbleImageUrl = _firstNonEmpty([
+          _asString(assetConfig['image_url']),
+          _asString(assetConfig['bubble_image_url']),
+          _asString(storeItem['asset_url']),
+          _asString(storeItem['preview_url']),
+          _asString(legacyMetadata['image_url']),
+          _asString(storeItem['image_url']),
+        ]);
       }
     }
 
-    // Verificar se é Amino+
     final profile = await SupabaseService.table('profiles')
         .select('amino_plus')
         .eq('id', userId)
@@ -104,7 +112,6 @@ final userCosmeticsProvider =
 });
 
 /// Provider para buscar cosméticos de múltiplos usuários de uma vez.
-/// Útil para listas de membros, comentários, leaderboard.
 final batchCosmeticsProvider =
     FutureProvider.family<Map<String, UserCosmetics>, List<String>>(
         (ref, userIds) async {
@@ -113,17 +120,17 @@ final batchCosmeticsProvider =
   if (userIds.isEmpty) return result;
 
   try {
-    // Buscar todos os itens equipados de todos os usuários de uma vez
     final equipped = await SupabaseService.table('user_purchases')
         .select('*, store_items!user_purchases_item_id_fkey(*)')
         .inFilter('user_id', userIds)
         .eq('is_equipped', true);
 
-    // Agrupar por user_id
     final byUser = <String, List<Map<String, dynamic>>>{};
     for (final item in ((equipped as List? ?? []))) {
-      final uid = (item['user_id'] as String?) ?? '';
-      byUser.putIfAbsent(uid, () => []).add(Map<String, dynamic>.from(item));
+      final map = _asMap(item);
+      final uid = _asString(map['user_id']);
+      if (uid.isEmpty) continue;
+      byUser.putIfAbsent(uid, () => []).add(map);
     }
 
     for (final userId in userIds) {
@@ -135,20 +142,42 @@ final batchCosmeticsProvider =
       String? chatBubbleImageUrl;
 
       for (final item in items) {
-        final storeItem = item['store_items'] as Map<String, dynamic>?;
-        if (storeItem == null) continue;
-        final type = storeItem['type'] as String? ?? '';
-        final metadata = storeItem['metadata'] as Map<String, dynamic>? ?? {};
+        final storeItem = _asMap(item['store_items']);
+        if (storeItem.isEmpty) continue;
+
+        final type = _asString(storeItem['type']);
+        final assetConfig = _asMap(storeItem['asset_config']);
+        final legacyMetadata = _asMap(storeItem['metadata']);
 
         if (type == 'avatar_frame') {
-          avatarFrameUrl = (metadata['image_url'] as String?) ??
-              (storeItem['image_url'] as String?);
+          avatarFrameUrl = _firstNonEmpty([
+            _asString(assetConfig['frame_url']),
+            _asString(assetConfig['image_url']),
+            _asString(storeItem['asset_url']),
+            _asString(storeItem['preview_url']),
+            _asString(legacyMetadata['image_url']),
+            _asString(storeItem['image_url']),
+          ]);
         } else if (type == 'chat_bubble') {
-          chatBubbleId = storeItem['id'] as String?;
-          chatBubbleStyle = metadata['style'] as String?;
-          chatBubbleColor = metadata['color'] as String?;
-          chatBubbleImageUrl = (metadata['image_url'] as String?) ??
-              (storeItem['image_url'] as String?);
+          chatBubbleId = _asString(storeItem['id']);
+          chatBubbleStyle = _firstNonEmpty([
+            _asString(assetConfig['style']),
+            _asString(assetConfig['bubble_style']),
+            _asString(legacyMetadata['style']),
+          ]);
+          chatBubbleColor = _firstNonEmpty([
+            _asString(assetConfig['color']),
+            _asString(assetConfig['bubble_color']),
+            _asString(legacyMetadata['color']),
+          ]);
+          chatBubbleImageUrl = _firstNonEmpty([
+            _asString(assetConfig['image_url']),
+            _asString(assetConfig['bubble_image_url']),
+            _asString(storeItem['asset_url']),
+            _asString(storeItem['preview_url']),
+            _asString(legacyMetadata['image_url']),
+            _asString(storeItem['image_url']),
+          ]);
         }
       }
 
@@ -169,3 +198,21 @@ final batchCosmeticsProvider =
 
   return result;
 });
+
+Map<String, dynamic> _asMap(dynamic value) {
+  if (value is Map<String, dynamic>) return value;
+  if (value is Map) return Map<String, dynamic>.from(value);
+  return const {};
+}
+
+String _asString(dynamic value) {
+  if (value == null) return '';
+  return value.toString().trim();
+}
+
+String? _firstNonEmpty(List<String> values) {
+  for (final value in values) {
+    if (value.trim().isNotEmpty) return value.trim();
+  }
+  return null;
+}

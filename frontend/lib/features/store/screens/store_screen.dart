@@ -1,5 +1,5 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
@@ -8,7 +8,14 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 
 /// Tela Store — Loja de itens virtuais (Avatar Frames, Chat Bubbles, Sticker Packs).
-/// Design fiel ao Amino Apps: header azul celeste com moeda dourada, banner Amino+.
+///
+/// Esta implementação usa o schema real do backend:
+/// - `store_items.price_coins`
+/// - `store_items.preview_url` / `store_items.asset_url`
+/// - `store_items.is_limited_edition`
+/// - `user_purchases.is_equipped`
+///
+/// Também respeita estados reais de posse/equipar para itens cosméticos globais.
 class StoreScreen extends ConsumerStatefulWidget {
   const StoreScreen({super.key});
 
@@ -18,14 +25,24 @@ class StoreScreen extends ConsumerStatefulWidget {
 
 class _StoreScreenState extends ConsumerState<StoreScreen>
     with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  List<Map<String, dynamic>> _items = [];
+  late final TabController _tabController;
+
+  final List<Map<String, dynamic>> _items = [];
+  final Map<String, Map<String, dynamic>> _purchasesByItemId = {};
+  final Set<String> _busyItemIds = <String>{};
+
   bool _isLoading = true;
   int _userCoins = 0;
 
-  // Amino original: tabs com ícones
-  final _tabs = ['Todos', 'Frames', 'Bubbles', 'Stickers', 'Backgrounds'];
-  final _tabIcons = const [
+  final List<String> _tabs = const [
+    'Todos',
+    'Frames',
+    'Bubbles',
+    'Stickers',
+    'Backgrounds',
+  ];
+
+  final List<IconData> _tabIcons = const [
     Icons.storefront_rounded,
     Icons.face_rounded,
     Icons.chat_bubble_rounded,
@@ -40,43 +57,128 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
     _loadStore();
   }
 
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadStore() async {
+    if (mounted) {
+      setState(() => _isLoading = true);
+    }
+
     try {
       final userId = SupabaseService.currentUserId;
-      if (userId != null) {
-        final profile = await SupabaseService.table('profiles')
-            .select('coins')
-            .eq('id', userId)
-            .single();
-        _userCoins = profile['coins'] as int? ?? 0;
+      if (userId == null) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+        return;
       }
-      final res = await SupabaseService.table('store_items')
+
+      final profileFuture = SupabaseService.table('profiles')
+          .select('coins')
+          .eq('id', userId)
+          .maybeSingle();
+
+      final itemsFuture = SupabaseService.table('store_items')
           .select()
           .eq('is_active', true)
-          .order('created_at', ascending: false);
-      _items = List<Map<String, dynamic>>.from(res as List? ?? []);
-      if (mounted) setState(() => _isLoading = false);
+          .order('sort_order', ascending: true);
+
+      final purchasesFuture = SupabaseService.table('user_purchases')
+          .select(
+            'id, item_id, is_equipped, equipped_in_community, purchased_at, '
+            'store_items!user_purchases_item_id_fkey(id, type, name)',
+          )
+          .eq('user_id', userId);
+
+      final results = await Future.wait([
+        profileFuture,
+        itemsFuture,
+        purchasesFuture,
+      ]);
+
+      final profile = results[0] as Map<String, dynamic>?;
+      final items = List<Map<String, dynamic>>.from(results[1] as List? ?? []);
+      final purchases =
+          List<Map<String, dynamic>>.from(results[2] as List? ?? []);
+
+      _items
+        ..clear()
+        ..addAll(items);
+
+      _purchasesByItemId
+        ..clear()
+        ..addEntries(
+          purchases
+              .where((purchase) => _asString(purchase['item_id']).isNotEmpty)
+              .map(
+                (purchase) => MapEntry(
+                  _asString(purchase['item_id']),
+                  purchase,
+                ),
+              ),
+        );
+
+      _userCoins = _asInt(profile?['coins']);
     } catch (e) {
-      if (mounted) setState(() => _isLoading = false);
+      debugPrint('[store_screen] Erro ao carregar loja: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   List<Map<String, dynamic>> _filterItems(int tabIndex) {
     if (tabIndex == 0) return _items;
-    final types = [
+
+    const types = [
       '',
       'avatar_frame',
       'chat_bubble',
       'sticker_pack',
-      'profile_background'
+      'profile_background',
     ];
-    return _items.where((i) => i['type'] == types[tabIndex]).toList();
+
+    final targetType = types[tabIndex];
+    return _items.where((item) => _asString(item['type']) == targetType).toList();
+  }
+
+  bool _isOwned(Map<String, dynamic> item) {
+    final itemId = _asString(item['id']);
+    return itemId.isNotEmpty && _purchasesByItemId.containsKey(itemId);
+  }
+
+  bool _isEquipped(Map<String, dynamic> item) {
+    final itemId = _asString(item['id']);
+    final purchase = _purchasesByItemId[itemId];
+    return _asBool(purchase?['is_equipped']);
+  }
+
+  bool _isEquipableType(String type) {
+    return type == 'avatar_frame' ||
+        type == 'chat_bubble' ||
+        type == 'profile_background' ||
+        type == 'chat_background';
   }
 
   Future<void> _purchaseItem(Map<String, dynamic> item) async {
     final s = getStrings();
     final r = context.r;
-    final price = item['price'] as int? ?? 0;
+    final itemId = _asString(item['id']);
+    final itemName = _asString(item['name'], fallback: 'Item');
+    final price = _asInt(item['price_coins']);
+
+    if (itemId.isEmpty || _busyItemIds.contains(itemId)) return;
+
+    if (_isOwned(item)) {
+      await _equipItem(item);
+      return;
+    }
+
     if (_userCoins < price) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -84,70 +186,176 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
           backgroundColor: AppTheme.errorColor,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(r.s(10))),
+            borderRadius: BorderRadius.circular(r.s(10)),
+          ),
         ),
       );
       return;
     }
+
+    setState(() => _busyItemIds.add(itemId));
+
     try {
-      await SupabaseService.client.rpc('purchase_store_item', params: {
-        'p_item_id': item['id'],
-      });
-      if (!mounted) return;
-      setState(() => _userCoins -= price);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${item['name']} comprado!'),
-            backgroundColor: AppTheme.primaryColor,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(r.s(10))),
-          ),
-        );
+      final result = await SupabaseService.client.rpc(
+        'purchase_store_item',
+        params: {'p_item_id': itemId},
+      );
+
+      final payload = result is Map<String, dynamic>
+          ? result
+          : Map<String, dynamic>.from(result as Map? ?? const {});
+      final error = _asString(payload['error']);
+
+      if (error.isNotEmpty) {
+        final message = switch (error) {
+          'already_purchased' => '$itemName já foi adquirido.',
+          'insufficient_coins' => 'Você não tem moedas suficientes.',
+          'sold_out' => '$itemName está esgotado.',
+          'item_not_found' => 'Este item não está mais disponível.',
+          _ => s.errorPurchase(error),
+        };
+        _showSnack(message, isError: true);
+        return;
       }
+
+      await _loadStore();
+
+      if (!mounted) return;
+      _showSnack('$itemName comprado com sucesso!');
     } catch (e) {
+      _showSnack(s.errorPurchase(e.toString()), isError: true);
+    } finally {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(s.errorPurchase(e.toString())),
-            backgroundColor: AppTheme.errorColor,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(r.s(10))),
-          ),
-        );
+        setState(() => _busyItemIds.remove(itemId));
       }
     }
   }
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+  Future<void> _equipItem(Map<String, dynamic> item) async {
+    final itemId = _asString(item['id']);
+    final itemName = _asString(item['name'], fallback: 'Item');
+    final type = _asString(item['type']);
+
+    if (itemId.isEmpty || !_isOwned(item) || !_isEquipableType(type)) {
+      return;
+    }
+
+    if (_busyItemIds.contains(itemId)) return;
+
+    final purchase = _purchasesByItemId[itemId];
+    final purchaseId = _asString(purchase?['id']);
+    if (purchaseId.isEmpty) return;
+
+    setState(() => _busyItemIds.add(itemId));
+
+    try {
+      final conflictingPurchaseIds = _purchasesByItemId.values
+          .where((entry) {
+            final storeItem = _asMap(entry['store_items']);
+            return _asString(storeItem['type']) == type &&
+                _asBool(entry['is_equipped']) &&
+                _asString(entry['id']) != purchaseId;
+          })
+          .map((entry) => _asString(entry['id']))
+          .where((id) => id.isNotEmpty)
+          .toList();
+
+      if (conflictingPurchaseIds.isNotEmpty) {
+        await SupabaseService.table('user_purchases')
+            .update({'is_equipped': false})
+            .inFilter('id', conflictingPurchaseIds);
+      }
+
+      final alreadyEquipped = _asBool(purchase?['is_equipped']);
+      await SupabaseService.table('user_purchases').update({
+        'is_equipped': !alreadyEquipped,
+        'equipped_in_community': null,
+      }).eq('id', purchaseId);
+
+      await _loadStore();
+      if (!mounted) return;
+
+      _showSnack(
+        alreadyEquipped
+            ? '$itemName removido dos itens ativos.'
+            : '$itemName equipado globalmente.',
+      );
+    } catch (e) {
+      _showSnack('Não foi possível atualizar $itemName.', isError: true);
+    } finally {
+      if (mounted) {
+        setState(() => _busyItemIds.remove(itemId));
+      }
+    }
+  }
+
+  void _showSnack(String message, {bool isError = false}) {
+    if (!mounted) return;
+    final r = context.r;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? AppTheme.errorColor : AppTheme.primaryColor,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(r.s(10)),
+        ),
+      ),
+    );
+  }
+
+  String _buttonLabel(Map<String, dynamic> item) {
+    final type = _asString(item['type']);
+    final price = _asInt(item['price_coins']);
+    final owned = _isOwned(item);
+
+    if (!owned) {
+      return '$price';
+    }
+
+    if (_isEquipableType(type)) {
+      return _isEquipped(item) ? 'Equipado' : 'Equipar';
+    }
+
+    if (type == 'sticker_pack') {
+      return 'Adquirido';
+    }
+
+    return 'Possuído';
+  }
+
+  String _subtitle(Map<String, dynamic> item) {
+    final description = _asString(item['description']);
+    if (description.isNotEmpty) return description;
+
+    final type = _asString(item['type']);
+    return switch (type) {
+      'avatar_frame' => 'Moldura global para o seu perfil.',
+      'chat_bubble' => 'Bolha visual para conversas do app.',
+      'sticker_pack' => 'Pack integrado ao ecossistema de stickers.',
+      'profile_background' => 'Plano de fundo para personalização global.',
+      _ => 'Item exclusivo da loja.',
+    };
   }
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
+
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          // ================================================================
-          // HEADER AZUL CELESTE — Estilo Amino original
-          // Amino usa um header azul brilhante com moeda dourada grande
-          // ================================================================
           SliverToBoxAdapter(
             child: Container(
               width: double.infinity,
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Color(0xFF00B4D8), // Azul celeste brilhante
-                    Color(0xFF0096C7), // Azul celeste mais escuro
-                    Color(0xFF0077B6), // Azul profundo
+                    Color(0xFF00B4D8),
+                    Color(0xFF0096C7),
+                    Color(0xFF0077B6),
                   ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -157,10 +365,11 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
                 bottom: false,
                 child: Column(
                   children: [
-                    // Top row: back + title + saldo
                     Padding(
                       padding: EdgeInsets.symmetric(
-                          horizontal: r.s(12), vertical: r.s(8)),
+                        horizontal: r.s(12),
+                        vertical: r.s(8),
+                      ),
                       child: Row(
                         children: [
                           Text(
@@ -172,10 +381,11 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
                             ),
                           ),
                           const Spacer(),
-                          // Saldo de moedas — pill dourada
                           Container(
                             padding: EdgeInsets.symmetric(
-                                horizontal: r.s(12), vertical: r.s(6)),
+                              horizontal: r.s(12),
+                              vertical: r.s(6),
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(r.s(20)),
@@ -186,8 +396,11 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.monetization_on_rounded,
-                                    color: Color(0xFFFFD700), size: r.s(18)),
+                                Icon(
+                                  Icons.monetization_on_rounded,
+                                  color: const Color(0xFFFFD700),
+                                  size: r.s(18),
+                                ),
                                 SizedBox(width: r.s(4)),
                                 Text(
                                   formatCount(_userCoins),
@@ -203,14 +416,11 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
                         ],
                       ),
                     ),
-
-                    // Moeda dourada grande central — ícone do Amino Store
                     Padding(
                       padding: EdgeInsets.symmetric(vertical: r.s(16)),
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          // Glow effect
                           Container(
                             width: r.s(100),
                             height: r.s(100),
@@ -226,7 +436,6 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
                               ],
                             ),
                           ),
-                          // Moeda
                           Container(
                             width: r.s(80),
                             height: r.s(80),
@@ -265,8 +474,6 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
                         ],
                       ),
                     ),
-
-                    // Saldo grande
                     Text(
                       '${formatCount(_userCoins)} Moedas',
                       style: TextStyle(
@@ -277,21 +484,19 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
                     ),
                     SizedBox(height: r.s(4)),
                     Text(
-                      'Compre itens exclusivos para personalizar seu perfil',
+                      'Compre itens exclusivos para personalizar sua identidade global.',
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.7),
                         fontSize: r.fs(12),
                       ),
                     ),
                     SizedBox(height: r.s(16)),
-
-                    // ========================================================
-                    // BANNER AMINO+ — laranja/dourado
-                    // ========================================================
                     Container(
                       margin: EdgeInsets.symmetric(horizontal: r.s(16)),
                       padding: EdgeInsets.symmetric(
-                          horizontal: r.s(16), vertical: r.s(12)),
+                        horizontal: r.s(16),
+                        vertical: r.s(12),
+                      ),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Color(0xFFFF8C00), Color(0xFFFFA500)],
@@ -299,8 +504,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
                         borderRadius: BorderRadius.circular(r.s(12)),
                         boxShadow: [
                           BoxShadow(
-                            color:
-                                const Color(0xFFFF8C00).withValues(alpha: 0.3),
+                            color: const Color(0xFFFF8C00)
+                                .withValues(alpha: 0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -315,8 +520,11 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
                               color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(r.s(10)),
                             ),
-                            child: Icon(Icons.workspace_premium_rounded,
-                                color: Colors.white, size: r.s(20)),
+                            child: Icon(
+                              Icons.workspace_premium_rounded,
+                              color: Colors.white,
+                              size: r.s(20),
+                            ),
                           ),
                           SizedBox(width: r.s(12)),
                           Expanded(
@@ -332,7 +540,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
                                   ),
                                 ),
                                 Text(
-                                  'Itens exclusivos e moedas b\u00f4nus!',
+                                  'Catálogo real com compra por moedas e itens equipáveis.',
                                   style: TextStyle(
                                     color: Colors.white70,
                                     fontSize: r.fs(11),
@@ -343,15 +551,17 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
                           ),
                           Container(
                             padding: EdgeInsets.symmetric(
-                                horizontal: r.s(12), vertical: r.s(6)),
+                              horizontal: r.s(12),
+                              vertical: r.s(6),
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(r.s(20)),
                             ),
                             child: Text(
-                              s.subscribe,
+                              'Loja ativa',
                               style: TextStyle(
-                                color: Color(0xFFFF8C00),
+                                color: const Color(0xFFFF8C00),
                                 fontWeight: FontWeight.w800,
                                 fontSize: r.fs(12),
                               ),
@@ -366,10 +576,6 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
               ),
             ),
           ),
-
-          // ================================================================
-          // TABS — Estilo Amino (scrollable, dentro do body escuro)
-          // ================================================================
           SliverPersistentHeader(
             pinned: true,
             delegate: _SliverTabBarDelegate(
@@ -383,10 +589,14 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
                 indicatorWeight: 2.5,
                 indicatorSize: TabBarIndicatorSize.label,
                 dividerColor: Colors.transparent,
-                labelStyle:
-                    TextStyle(fontWeight: FontWeight.w700, fontSize: r.fs(13)),
-                unselectedLabelStyle:
-                    TextStyle(fontWeight: FontWeight.w500, fontSize: r.fs(13)),
+                labelStyle: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: r.fs(13),
+                ),
+                unselectedLabelStyle: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: r.fs(13),
+                ),
                 tabs: List.generate(
                   _tabs.length,
                   (i) => Tab(
@@ -407,7 +617,10 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
         body: _isLoading
             ? const Center(
                 child: CircularProgressIndicator(
-                    color: AppTheme.primaryColor, strokeWidth: 2))
+                  color: AppTheme.primaryColor,
+                  strokeWidth: 2,
+                ),
+              )
             : TabBarView(
                 controller: _tabController,
                 children: List.generate(
@@ -422,17 +635,30 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
   Widget _buildItemGrid(List<Map<String, dynamic>> items) {
     final s = getStrings();
     final r = context.r;
+
     if (items.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      return RefreshIndicator(
+        color: AppTheme.primaryColor,
+        onRefresh: _loadStore,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
           children: [
-            Icon(Icons.storefront_outlined,
-                size: r.s(48), color: Colors.grey[700]),
+            SizedBox(height: r.sh(0.18)),
+            Icon(
+              Icons.storefront_outlined,
+              size: r.s(48),
+              color: Colors.grey[700],
+            ),
             SizedBox(height: r.s(12)),
-            Text(s.noItemAvailable,
+            Center(
+              child: Text(
+                s.noItemAvailable,
                 style: TextStyle(
-                    color: Colors.grey[500], fontWeight: FontWeight.w600)),
+                  color: Colors.grey[500],
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
           ],
         ),
       );
@@ -440,11 +666,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
 
     return RefreshIndicator(
       color: AppTheme.primaryColor,
-      onRefresh: () async {
-        setState(() => _isLoading = true);
-        await _loadStore();
-        if (!mounted) return;
-      },
+      onRefresh: _loadStore,
       child: GridView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.all(r.s(16)),
@@ -452,14 +674,20 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
           crossAxisCount: 2,
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
-          childAspectRatio: 0.72,
+          childAspectRatio: 0.66,
         ),
         itemCount: items.length,
         itemBuilder: (context, index) {
           final item = items[index];
+          final itemId = _asString(item['id']);
           return _StoreItemCard(
             item: item,
-            onPurchase: () => _purchaseItem(item),
+            subtitle: _subtitle(item),
+            actionLabel: _buttonLabel(item),
+            isOwned: _isOwned(item),
+            isEquipped: _isEquipped(item),
+            isBusy: _busyItemIds.contains(itemId),
+            onPressed: () => _purchaseItem(item),
           );
         },
       ),
@@ -467,15 +695,14 @@ class _StoreScreenState extends ConsumerState<StoreScreen>
   }
 }
 
-// =============================================================================
-// SLIVER TAB BAR DELEGATE
-// =============================================================================
 class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar tabBar;
+
   _SliverTabBarDelegate(this.tabBar);
 
   @override
   double get minExtent => tabBar.preferredSize.height;
+
   @override
   double get maxExtent => tabBar.preferredSize.height;
 
@@ -489,18 +716,29 @@ class _SliverTabBarDelegate extends SliverPersistentHeaderDelegate {
   }
 
   @override
-  bool shouldRebuild(covariant _SliverTabBarDelegate oldDelegate) =>
-      tabBar != oldDelegate.tabBar;
+  bool shouldRebuild(covariant _SliverTabBarDelegate oldDelegate) {
+    return tabBar != oldDelegate.tabBar;
+  }
 }
 
-// =============================================================================
-// STORE ITEM CARD — Estilo Amino
-// =============================================================================
 class _StoreItemCard extends ConsumerStatefulWidget {
   final Map<String, dynamic> item;
-  final VoidCallback onPurchase;
+  final String subtitle;
+  final String actionLabel;
+  final bool isOwned;
+  final bool isEquipped;
+  final bool isBusy;
+  final VoidCallback onPressed;
 
-  const _StoreItemCard({required this.item, required this.onPurchase});
+  const _StoreItemCard({
+    required this.item,
+    required this.subtitle,
+    required this.actionLabel,
+    required this.isOwned,
+    required this.isEquipped,
+    required this.isBusy,
+    required this.onPressed,
+  });
 
   @override
   ConsumerState<_StoreItemCard> createState() => _StoreItemCardState();
@@ -508,7 +746,7 @@ class _StoreItemCard extends ConsumerStatefulWidget {
 
 class _StoreItemCardState extends ConsumerState<_StoreItemCard>
     with SingleTickerProviderStateMixin {
-  late AnimationController _shimmerController;
+  late final AnimationController _shimmerController;
 
   @override
   void initState() {
@@ -528,25 +766,33 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard>
   @override
   Widget build(BuildContext context) {
     final r = context.r;
-    final price = widget.item['price'] as int? ?? 0;
-    final name = widget.item['name'] as String? ?? 'Item';
-    final imageUrl = widget.item['image_url'] as String?;
-    final isLimited = widget.item['is_limited'] as bool? ?? false;
-    final type = widget.item['type'] as String? ?? '';
+    final price = _asInt(widget.item['price_coins']);
+    final name = _asString(widget.item['name'], fallback: 'Item');
+    final imageUrl = _previewUrl(widget.item);
+    final isLimited = _asBool(widget.item['is_limited_edition']) ||
+        _asInt(widget.item['max_purchases']) > 0;
+    final type = _asString(widget.item['type']);
+    final isSoldOut = _isSoldOut(widget.item);
+
+    final isActionDisabled = widget.isBusy ||
+        isSoldOut ||
+        (widget.isOwned && !_isEquipableType(type) && !widget.isEquipped);
 
     return Container(
       decoration: BoxDecoration(
         color: context.cardBg,
         borderRadius: BorderRadius.circular(r.s(16)),
         border: Border.all(
-          color: isLimited
-              ? AppTheme.errorColor.withValues(alpha: 0.3)
-              : Colors.white.withValues(alpha: 0.05),
+          color: widget.isEquipped
+              ? AppTheme.primaryColor.withValues(alpha: 0.35)
+              : isLimited
+                  ? AppTheme.errorColor.withValues(alpha: 0.25)
+                  : Colors.white.withValues(alpha: 0.05),
         ),
-        boxShadow: isLimited
+        boxShadow: widget.isEquipped
             ? [
                 BoxShadow(
-                  color: AppTheme.errorColor.withValues(alpha: 0.1),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.15),
                   blurRadius: 12,
                   spreadRadius: 1,
                 ),
@@ -556,15 +802,15 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Imagem do item
           Expanded(
             flex: 3,
             child: Stack(
               children: [
                 Container(
                   decoration: BoxDecoration(
-                    borderRadius:
-                        const BorderRadius.vertical(top: Radius.circular(16)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(16),
+                    ),
                     gradient: LinearGradient(
                       colors: [
                         AppTheme.primaryColor.withValues(alpha: 0.08),
@@ -574,14 +820,22 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard>
                       end: Alignment.bottomRight,
                     ),
                   ),
-                  child: imageUrl != null
+                  child: imageUrl != null && imageUrl.isNotEmpty
                       ? ClipRRect(
                           borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(16)),
+                            top: Radius.circular(16),
+                          ),
                           child: CachedNetworkImage(
                             imageUrl: imageUrl,
                             fit: BoxFit.cover,
                             width: double.infinity,
+                            errorWidget: (_, __, ___) => Center(
+                              child: Icon(
+                                _getTypeIcon(type),
+                                color: Colors.grey[700],
+                                size: r.s(40),
+                              ),
+                            ),
                           ),
                         )
                       : Center(
@@ -592,7 +846,6 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard>
                           ),
                         ),
                 ),
-                // Shimmer effect for limited items
                 if (isLimited)
                   Positioned.fill(
                     child: AnimatedBuilder(
@@ -600,7 +853,8 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard>
                       builder: (context, child) {
                         return ClipRRect(
                           borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(16)),
+                            top: Radius.circular(16),
+                          ),
                           child: ShaderMask(
                             shaderCallback: (bounds) {
                               return LinearGradient(
@@ -610,9 +864,11 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard>
                                   Colors.transparent,
                                 ],
                                 stops: [
-                                  _shimmerController.value - 0.3,
-                                  _shimmerController.value,
-                                  _shimmerController.value + 0.3,
+                                  (_shimmerController.value - 0.3)
+                                      .clamp(0.0, 1.0),
+                                  _shimmerController.value.clamp(0.0, 1.0),
+                                  (_shimmerController.value + 0.3)
+                                      .clamp(0.0, 1.0),
                                 ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
@@ -625,66 +881,38 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard>
                       },
                     ),
                   ),
-                // LIMITADO badge
                 if (isLimited)
                   Positioned(
                     top: 8,
                     right: 8,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: r.s(8), vertical: r.s(3)),
-                      decoration: BoxDecoration(
-                        color: AppTheme.errorColor,
-                        borderRadius: BorderRadius.circular(r.s(6)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppTheme.errorColor.withValues(alpha: 0.4),
-                            blurRadius: 6,
-                          ),
-                        ],
-                      ),
-                      child: Text(
-                        'LIMITADO',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: r.fs(9),
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.5),
-                      ),
+                    child: _Badge(
+                      label: isSoldOut ? 'ESGOTADO' : 'LIMITADO',
+                      color: AppTheme.errorColor,
                     ),
                   ),
-                // Type badge
                 Positioned(
                   top: 8,
                   left: 8,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: r.s(6), vertical: r.s(3)),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.4),
-                      borderRadius: BorderRadius.circular(r.s(6)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(_getTypeIcon(type),
-                            size: r.s(10), color: Colors.white70),
-                        SizedBox(width: r.s(3)),
-                        Text(
-                          _getTypeLabel(type),
-                          style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: r.fs(9),
-                              fontWeight: FontWeight.w600),
-                        ),
-                      ],
-                    ),
+                  child: _Badge(
+                    label: _getTypeLabel(type),
+                    color: Colors.black.withValues(alpha: 0.55),
+                    icon: _getTypeIcon(type),
                   ),
                 ),
+                if (widget.isOwned)
+                  Positioned(
+                    bottom: 8,
+                    left: 8,
+                    child: _Badge(
+                      label: widget.isEquipped ? 'ATIVO' : 'SEU ITEM',
+                      color: widget.isEquipped
+                          ? AppTheme.primaryColor
+                          : const Color(0xFF2E7D32),
+                    ),
+                  ),
               ],
             ),
           ),
-          // Info + Purchase
           Padding(
             padding: EdgeInsets.all(r.s(10)),
             child: Column(
@@ -693,44 +921,114 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard>
                 Text(
                   name,
                   style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: r.fs(13),
-                      color: context.textPrimary),
+                    fontWeight: FontWeight.w700,
+                    fontSize: r.fs(13),
+                    color: context.textPrimary,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: r.s(8)),
+                SizedBox(height: r.s(4)),
+                Text(
+                  widget.subtitle,
+                  style: TextStyle(
+                    fontSize: r.fs(10.5),
+                    height: 1.25,
+                    color: context.textHint,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: r.s(10)),
                 GestureDetector(
-                  onTap: widget.onPurchase,
-                  child: Container(
+                  onTap: isActionDisabled ? null : widget.onPressed,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
                     width: double.infinity,
                     padding: EdgeInsets.symmetric(vertical: r.s(8)),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          AppTheme.warningColor.withValues(alpha: 0.2),
-                          AppTheme.warningColor.withValues(alpha: 0.1),
-                        ],
-                      ),
+                      gradient: widget.isEquipped
+                          ? null
+                          : LinearGradient(
+                              colors: isActionDisabled
+                                  ? [
+                                      Colors.grey.shade700,
+                                      Colors.grey.shade800,
+                                    ]
+                                  : [
+                                      AppTheme.warningColor
+                                          .withValues(alpha: 0.25),
+                                      AppTheme.warningColor
+                                          .withValues(alpha: 0.12),
+                                    ],
+                            ),
+                      color: widget.isEquipped
+                          ? AppTheme.primaryColor.withValues(alpha: 0.18)
+                          : null,
                       borderRadius: BorderRadius.circular(r.s(10)),
                       border: Border.all(
-                          color: AppTheme.warningColor.withValues(alpha: 0.3)),
+                        color: widget.isEquipped
+                            ? AppTheme.primaryColor.withValues(alpha: 0.45)
+                            : isActionDisabled
+                                ? Colors.grey.shade700
+                                : AppTheme.warningColor.withValues(alpha: 0.3),
+                      ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.monetization_on_rounded,
-                            color: AppTheme.warningColor, size: r.s(14)),
-                        SizedBox(width: r.s(4)),
-                        Text(
-                          price.toString(),
-                          style: TextStyle(
-                            color: AppTheme.warningColor,
-                            fontWeight: FontWeight.w800,
-                            fontSize: r.fs(13),
-                          ),
-                        ),
-                      ],
+                    child: Center(
+                      child: widget.isBusy
+                          ? SizedBox(
+                              width: r.s(16),
+                              height: r.s(16),
+                              child: const CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  widget.isOwned
+                                      ? (widget.isEquipped
+                                          ? Icons.check_circle_rounded
+                                          : Icons.auto_awesome_rounded)
+                                      : Icons.monetization_on_rounded,
+                                  color: widget.isEquipped
+                                      ? AppTheme.primaryColor
+                                      : isActionDisabled
+                                          ? Colors.white70
+                                          : AppTheme.warningColor,
+                                  size: r.s(14),
+                                ),
+                                SizedBox(width: r.s(4)),
+                                Text(
+                                  isSoldOut && !widget.isOwned
+                                      ? 'Esgotado'
+                                      : widget.actionLabel,
+                                  style: TextStyle(
+                                    color: widget.isEquipped
+                                        ? AppTheme.primaryColor
+                                        : isActionDisabled
+                                            ? Colors.white70
+                                            : AppTheme.warningColor,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: r.fs(12.5),
+                                  ),
+                                ),
+                                if (!widget.isOwned && price > 0) ...[
+                                  SizedBox(width: r.s(2)),
+                                  Text(
+                                    'coins',
+                                    style: TextStyle(
+                                      color: AppTheme.warningColor
+                                          .withValues(alpha: 0.8),
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: r.fs(9),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
                     ),
                   ),
                 ),
@@ -741,35 +1039,135 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard>
       ),
     );
   }
+}
 
-  IconData _getTypeIcon(String type) {
-    switch (type) {
-      case 'avatar_frame':
-        return Icons.face_rounded;
-      case 'chat_bubble':
-        return Icons.chat_bubble_rounded;
-      case 'sticker_pack':
-        return Icons.emoji_emotions_rounded;
-      case 'profile_background':
-        return Icons.wallpaper_rounded;
-      default:
-        return Icons.shopping_bag_rounded;
-    }
+class _Badge extends StatelessWidget {
+  final String label;
+  final Color color;
+  final IconData? icon;
+
+  const _Badge({
+    required this.label,
+    required this.color,
+    this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: r.s(6),
+        vertical: r.s(3),
+      ),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(r.s(6)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: r.s(10), color: Colors.white70),
+            SizedBox(width: r.s(3)),
+          ],
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: r.fs(9),
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ],
+      ),
+    );
   }
+}
 
-  String _getTypeLabel(String type) {
-    final s = getStrings();
-    switch (type) {
-      case 'avatar_frame':
-        return 'Frame';
-      case 'chat_bubble':
-        return s.bubble;
-      case 'sticker_pack':
-        return s.sticker;
-      case 'profile_background':
-        return 'Fundo';
-      default:
-        return 'Item';
-    }
+Map<String, dynamic> _asMap(dynamic value) {
+  if (value is Map<String, dynamic>) return value;
+  if (value is Map) return Map<String, dynamic>.from(value);
+  return const {};
+}
+
+String _asString(dynamic value, {String fallback = ''}) {
+  if (value == null) return fallback;
+  final text = value.toString().trim();
+  return text.isEmpty ? fallback : text;
+}
+
+int _asInt(dynamic value) {
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  return int.tryParse(value?.toString() ?? '') ?? 0;
+}
+
+bool _asBool(dynamic value) {
+  if (value is bool) return value;
+  if (value is num) return value != 0;
+  final text = value?.toString().toLowerCase().trim();
+  return text == 'true' || text == '1';
+}
+
+bool _isEquipableType(String type) {
+  return type == 'avatar_frame' ||
+      type == 'chat_bubble' ||
+      type == 'profile_background' ||
+      type == 'chat_background';
+}
+
+bool _isSoldOut(Map<String, dynamic> item) {
+  final maxPurchases = _asInt(item['max_purchases']);
+  if (maxPurchases <= 0) return false;
+  final currentPurchases = _asInt(item['current_purchases']);
+  return currentPurchases >= maxPurchases;
+}
+
+String? _previewUrl(Map<String, dynamic> item) {
+  final directPreview = _asString(item['preview_url']);
+  if (directPreview.isNotEmpty) return directPreview;
+
+  final directAsset = _asString(item['asset_url']);
+  if (directAsset.isNotEmpty) return directAsset;
+
+  final assetConfig = _asMap(item['asset_config']);
+  final previewFromConfig = _asString(assetConfig['preview_url']);
+  if (previewFromConfig.isNotEmpty) return previewFromConfig;
+
+  final imageFromConfig = _asString(assetConfig['image_url']);
+  if (imageFromConfig.isNotEmpty) return imageFromConfig;
+
+  return null;
+}
+
+IconData _getTypeIcon(String type) {
+  switch (type) {
+    case 'avatar_frame':
+      return Icons.face_rounded;
+    case 'chat_bubble':
+      return Icons.chat_bubble_rounded;
+    case 'sticker_pack':
+      return Icons.emoji_emotions_rounded;
+    case 'profile_background':
+      return Icons.wallpaper_rounded;
+    default:
+      return Icons.shopping_bag_rounded;
+  }
+}
+
+String _getTypeLabel(String type) {
+  switch (type) {
+    case 'avatar_frame':
+      return 'Frame';
+    case 'chat_bubble':
+      return 'Bubble';
+    case 'sticker_pack':
+      return 'Sticker';
+    case 'profile_background':
+      return 'Fundo';
+    default:
+      return 'Item';
   }
 }
