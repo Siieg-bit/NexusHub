@@ -39,6 +39,7 @@ class _EditCommunityProfileScreenState
   String? _localBackgroundUrl;
   List<String> _gallery = [];
   bool _galleryLoaded = false; // garante que galeria só é enviada após carregamento
+  bool _mediaLoaded = false;  // garante que icon/banner/background só são enviados após carregamento
 
   bool _isLoading = true;
   bool _isSaving = false;
@@ -79,10 +80,16 @@ class _EditCommunityProfileScreenState
             }
           }
           _galleryLoaded = true;
+          _mediaLoaded = true;
           _isLoading = false;
         });
       }
     } catch (e) {
+      // Em caso de erro, NÃO definimos _mediaLoaded = true.
+      // Isso faz o _save enviar null para icon/banner/background,
+      // que o RPC trata como "sem mudança" via COALESCE.
+      // Nota: o RPC 068 usa atribuição direta para esses campos,
+      // então precisamos usar COALESCE no _save quando não carregou.
       if (mounted) setState(() {
         _galleryLoaded = true; // mesmo em erro, permite salvar sem apagar galeria
         _isLoading = false;
@@ -215,17 +222,47 @@ class _EditCommunityProfileScreenState
       // a galeria existente por acidente.
       final galleryPayload = _galleryLoaded ? _gallery : null;
 
+      // Se o carregamento inicial falhou, buscamos os valores atuais do banco
+      // antes de salvar para evitar apagar icon/banner/background por acidente.
+      // O RPC usa atribuição direta para esses campos (NULL limpa o campo).
+      String? iconUrlToSave = _localIconUrl;
+      String? bannerUrlToSave = _localBannerUrl;
+      String? backgroundUrlToSave = _localBackgroundUrl;
+
+      if (!_mediaLoaded) {
+        // Carregamento inicial falhou — buscar valores atuais antes de salvar
+        try {
+          final current = await SupabaseService.table('community_members')
+              .select('local_icon_url, local_banner_url, local_background_url')
+              .eq('community_id', widget.communityId)
+              .eq('user_id', userId)
+              .maybeSingle();
+          if (current != null) {
+            iconUrlToSave = current['local_icon_url'] as String?;
+            bannerUrlToSave = current['local_banner_url'] as String?;
+            backgroundUrlToSave = current['local_background_url'] as String?;
+          }
+        } catch (_) {
+          // Se falhar novamente, aborta o save para não apagar dados
+          throw Exception(s.anErrorOccurredTryAgain);
+        }
+      }
+
       await SupabaseService.client.rpc('update_community_profile', params: {
         'p_community_id': widget.communityId,
         'p_local_nickname': nickname.isEmpty ? null : nickname,
         'p_local_bio': bio.isEmpty ? null : bio,
-        'p_local_icon_url': _localIconUrl,
-        'p_local_banner_url': _localBannerUrl,
-        'p_local_background_url': _localBackgroundUrl,
+        'p_local_icon_url': iconUrlToSave,
+        'p_local_banner_url': bannerUrlToSave,
+        'p_local_background_url': backgroundUrlToSave,
         'p_local_gallery': galleryPayload,
       });
 
-      // Invalidar o provider de membership para refletir as mudanças
+      // Nota: community_profile_screen usa _loadProfile() com estado local
+      // (não usa communityMembershipProvider). O recarregamento é feito via
+      // .then((_) => _loadProfile()) no onTap do botão de editar na tela de perfil.
+      // O invalidate abaixo serve apenas para atualizar a community_detail_screen
+      // caso ela esteja na pilha de navegação.
       ref.invalidate(communityMembershipProvider(widget.communityId));
 
       if (mounted) {
