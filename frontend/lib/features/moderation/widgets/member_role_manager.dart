@@ -88,7 +88,7 @@ class _MemberRoleManagerSheetState
   Future<void> _changeRole(String newRole) async {
     setState(() => _isLoading = true);
     try {
-      final result = await SupabaseService.rpc('promote_community_member', params: {
+      final result = await SupabaseService.rpc('change_member_role', params: {
         'p_community_id': widget.communityId,
         'p_target_user_id': widget.targetUserId,
         'p_new_role': newRole,
@@ -101,10 +101,14 @@ class _MemberRoleManagerSheetState
       final error = result is Map ? result['error'] : null;
       if (error != null) {
         String msg = 'Erro ao alterar cargo.';
-        if (error == 'permission_denied') {
+        if (error == 'insufficient_permissions') {
           msg = 'Você não tem permissão para alterar este cargo.';
-        } else if (error == 'cannot_change_agent') {
+        } else if (error == 'cannot_change_agent_role') {
           msg = 'O cargo de Agente não pode ser alterado aqui.';
+        } else if (error == 'leaders_can_only_manage_curators') {
+          msg = 'Líderes só podem gerenciar Curadores.';
+        } else if (error == 'not_authenticated') {
+          msg = 'Você precisa estar autenticado.';
         }
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(msg)));
@@ -140,20 +144,27 @@ class _MemberRoleManagerSheetState
 
     setState(() => _isLoading = true);
     try {
-      await SupabaseService.rpc('assign_member_title', params: {
+      final titleResult = await SupabaseService.rpc('manage_member_title', params: {
         'p_community_id': widget.communityId,
         'p_target_user_id': widget.targetUserId,
+        'p_action': 'add',
         'p_title': title,
         'p_color': _selectedTitleColor,
       });
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Título "$title" atribuído a ${widget.targetUserName}!'),
-        backgroundColor: AppTheme.primaryColor,
-        behavior: SnackBarBehavior.floating,
-      ));
-      if (mounted) Navigator.of(context).pop(true);
+      final titleError = titleResult is Map ? titleResult['error'] : null;
+      if (titleError != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erro: $titleError')));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Título "$title" atribuído a ${widget.targetUserName}!'),
+          backgroundColor: AppTheme.primaryColor,
+          behavior: SnackBarBehavior.floating,
+        ));
+        if (mounted) Navigator.of(context).pop(true);
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)
@@ -164,21 +175,35 @@ class _MemberRoleManagerSheetState
     }
   }
 
-  /// Remove o título customizado do membro
+  /// Remove o título customizado do membro via RPC manage_member_title
   Future<void> _removeCustomTitle() async {
+    final titleToRemove = widget.currentTitle ?? _titleController.text.trim();
+    if (titleToRemove.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Nenhum título para remover.')));
+      return;
+    }
     setState(() => _isLoading = true);
     try {
-      await SupabaseService.table('member_titles')
-          .delete()
-          .eq('community_id', widget.communityId)
-          .eq('user_id', widget.targetUserId);
+      final removeResult = await SupabaseService.rpc('manage_member_title', params: {
+        'p_community_id': widget.communityId,
+        'p_target_user_id': widget.targetUserId,
+        'p_action': 'remove',
+        'p_title': titleToRemove,
+      });
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Título removido de ${widget.targetUserName}.'),
-        behavior: SnackBarBehavior.floating,
-      ));
-      if (mounted) Navigator.of(context).pop(true);
+      final removeError = removeResult is Map ? removeResult['error'] : null;
+      if (removeError != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erro: $removeError')));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Título removido de ${widget.targetUserName}.'),
+          behavior: SnackBarBehavior.floating,
+        ));
+        if (mounted) Navigator.of(context).pop(true);
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)
