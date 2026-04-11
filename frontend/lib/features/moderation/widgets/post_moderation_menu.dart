@@ -684,17 +684,21 @@ class _ModerationHistorySheetState
       case 'unfeature_post':
         return 'Destaque removido';
       case 'pin_post':
-      case 'feature_post':
         return 'Fixado';
       case 'unpin_post':
-      case 'unfeature_post':
         return 'Desafixado';
       case 'hide_post':
         return 'Desabilitado';
+      case 'unhide_post':
+        return 'Reabilitado';
       case 'delete_post':
         return 'Excluído';
+      case 'broadcast':
+        return 'Notificação enviada';
+      case 'assign_category':
+        return 'Categoria atribuída';
       default:
-        return action;
+        return action.replaceAll('_', ' ');
     }
   }
 
