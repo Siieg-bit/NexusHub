@@ -136,26 +136,24 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
             ),
 
             // ── Grade horizontal de cards com drag & drop ──
-            // Largura do card calculada dinamicamente para caber exatamente
-            // 3 cards na tela + ~30% do 4º como hint de scroll.
-            // Formula: (screenWidth - leftPad - joinCardW - joinPad) / 3.3
-            // onde joinCardW é fixo em 90dp e gaps entre cards = 8dp.
+            // Objetivo: exatamente 3 itens visiveis na tela (2 cards + JoinCard).
+            // Todos com a mesma largura. O 3o card (JoinCard) fica fixo no Row,
+            // os demais ficam no ReorderableListView com scroll horizontal.
+            // Formula: cardW = (screenWidth - leftPad - 2*gap - rightPad) / 3
             LayoutBuilder(builder: (context, constraints) {
               final screenW = r.screenWidth;
-              // Padding esquerdo da lista + gap direito de cada card
-              const double leftPad  = 14.0; // padding.left do ReorderableListView
-              const double cardGap  = 8.0;  // padding.right de cada card
-              const double joinW    = 90.0; // largura fixa do JoinCard
-              const double joinPad  = 8.0;  // padding.right do JoinCard
-              // Espaço disponível para os cards de comunidade
-              final double available = screenW - leftPad - joinW - joinPad;
-              // Divide por 3.3 para mostrar 3 cards completos + hint do 4º
-              final double cardW = (available / 3.3).clamp(80.0, 140.0);
-              final double overflow = r.s(_AminoCommunityCard._iconOverflow);
-              final double cardH    = r.s(_AminoCommunityCard._cardHeight);
+              const double leftPad = 14.0; // padding.left da lista
+              const double gap     = 8.0;  // espaco entre cada item
+              const double rightPad = 8.0; // padding.right do JoinCard
+              // 3 itens: cada um tem gap a direita, exceto o ultimo que tem rightPad
+              // total ocupado pelos gaps: gap*2 (entre item1-2 e item2-3) + rightPad
+              final double cardW    = (screenW - leftPad - gap * 2 - rightPad) / 3;
+              final double overflow  = r.s(_AminoCommunityCard._iconOverflow);
+              // cardH proporcional à cardW (mesma razão usada dentro do card)
+              final double cardH    = cardW * (175.0 / 120.0);
 
               return SizedBox(
-                height: overflow + cardH, // 18 + 175 = 193
+                height: overflow + cardH,
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -163,7 +161,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                       child: ReorderableListView.builder(
                         scrollDirection: Axis.horizontal,
                         padding: EdgeInsets.only(
-                            left: leftPad, right: cardGap, top: overflow),
+                            left: leftPad, right: gap, top: overflow),
                         itemCount: (_reorderedCommunities ?? communities).length,
                         onReorder: (oldIndex, newIndex) {
                           HapticFeedback.mediumImpact();
@@ -194,7 +192,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                               (_reorderedCommunities ?? communities)[index];
                           return Padding(
                             key: ValueKey(community.id),
-                            padding: EdgeInsets.only(right: cardGap),
+                            padding: EdgeInsets.only(right: gap),
                             child: _AminoCommunityCard(
                               community: community,
                               cardWidth: cardW,
@@ -209,11 +207,11 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                         },
                       ),
                     ),
-                    // Card fixo para entrar em nova comunidade
+                    // JoinCard fixo com mesma largura dos cards de comunidade
                     Padding(
-                      padding: EdgeInsets.only(right: joinPad),
+                      padding: EdgeInsets.only(right: rightPad),
                       child: _JoinCommunityCard(
-                        cardWidth: joinW,
+                        cardWidth: cardW,
                         onTap: () => context.push('/explore'),
                       ),
                     ),
@@ -693,11 +691,15 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
     final streak = myStatus?['consecutive_checkin_days'] as int? ?? 0;
 
     // Dimensões do card
-    // cardWidth vem do pai (calculado dinamicamente por LayoutBuilder)
-    final double scaledCardH   = r.s(_AminoCommunityCard._cardHeight);   // 175
-    final double scaledWidth   = widget.cardWidth;                       // dinâmico
-    final double scaledBannerH = r.s(_AminoCommunityCard._bannerHeight); // 130
-    final double scaledIconSz  = r.s(_AminoCommunityCard._iconSize);     // 36
+    // cardWidth vem do pai (calculado dinamicamente por LayoutBuilder).
+    // cardHeight e bannerHeight são proporcionais à cardWidth para manter
+    // a proporção original do design (120 x 175, banner 130).
+    final double scaledWidth   = widget.cardWidth;
+    // Razão de aspecto original: height/width = 175/120 ≈ 1.458
+    final double scaledCardH   = scaledWidth * (175.0 / 120.0);
+    // Razão do banner: bannerHeight/cardHeight = 130/175 ≈ 0.743
+    final double scaledBannerH = scaledCardH * (130.0 / 175.0);
+    final double scaledIconSz  = r.s(_AminoCommunityCard._iconSize);     // 36 (fixo)
 
     return GestureDetector(
       onTap: widget.onTap,
@@ -988,12 +990,12 @@ class _JoinCommunityCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final r = context.r;
-    final double overflow = r.s(_AminoCommunityCard._iconOverflow); // 18
-    final double cardH    = r.s(_AminoCommunityCard._cardHeight);   // 175
+    final double overflow = r.s(_AminoCommunityCard._iconOverflow); // 18 (fixo)
+    // cardH proporcional à cardWidth (mesma razão do _AminoCommunityCard)
+    final double cardH    = cardWidth * (175.0 / 120.0);
 
     // O JoinCard fica fora do ReorderableListView (sem padding.top).
     // Para alinhar com os cards de comunidade, usamos Padding.top = overflow.
-    // Altura total = overflow + cardH = 193, igual ao SizedBox pai.
     return GestureDetector(
       onTap: onTap,
       child: SizedBox(
