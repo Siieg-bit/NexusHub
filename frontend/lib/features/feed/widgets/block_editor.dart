@@ -762,8 +762,12 @@ class _SeamlessBlock extends ConsumerWidget {
   Widget _buildDividerContent(
       BuildContext context, Responsive r, String style) {
     final color = context.textHint.withValues(alpha: 0.3);
+    final softPink = const Color(0xFFE8A0BF).withValues(alpha: 0.6);
+    final softPurple = const Color(0xFFB983FF).withValues(alpha: 0.6);
+    final softBlue = const Color(0xFF94B3FD).withValues(alpha: 0.5);
 
     switch (style) {
+      // --- Estilos clássicos ---
       case 'line':
         return Container(
           height: 1,
@@ -786,25 +790,104 @@ class _SeamlessBlock extends ConsumerWidget {
             ),
           ),
         );
-      case 'stars':
+      case 'dots':
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(
             3,
-            (_) => Padding(
-              padding: EdgeInsets.symmetric(horizontal: r.s(4)),
-              child: Text(
-                '*',
-                style: TextStyle(
-                  color: context.textHint.withValues(alpha: 0.4),
-                  fontSize: r.fs(16),
-                  fontWeight: FontWeight.w700,
-                ),
+            (_) => Container(
+              margin: EdgeInsets.symmetric(horizontal: r.s(3)),
+              width: r.s(3),
+              height: r.s(3),
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
               ),
             ),
           ),
         );
-      case 'dots':
+
+      // --- Estilos fofinhos / estéticos ---
+      case 'hearts':
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '♡ ♥ ♡ ♥ ♡',
+              style: TextStyle(color: softPink, fontSize: r.fs(14), letterSpacing: 4),
+            ),
+          ],
+        );
+      case 'sparkles':
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '✩ · ✩ · ✩ · ✩',
+              style: TextStyle(color: softPurple, fontSize: r.fs(14), letterSpacing: 3),
+            ),
+          ],
+        );
+      case 'flowers':
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '❀ • ✿ • ❀ • ✿ • ❀',
+              style: TextStyle(color: softPink, fontSize: r.fs(13), letterSpacing: 2),
+            ),
+          ],
+        );
+      case 'stars':
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '☆ ★ ☆ ★ ☆',
+              style: TextStyle(color: softPurple, fontSize: r.fs(13), letterSpacing: 4),
+            ),
+          ],
+        );
+      case 'moon':
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '✩ ☽ ✩',
+              style: TextStyle(color: softBlue, fontSize: r.fs(15), letterSpacing: 6),
+            ),
+          ],
+        );
+      case 'ribbon':
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '── ♡ ─── ♡ ──',
+              style: TextStyle(color: softPink, fontSize: r.fs(12), letterSpacing: 1),
+            ),
+          ],
+        );
+      case 'wave':
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '∼∼∼∼∼∼∼∼∼∼',
+              style: TextStyle(color: softBlue, fontSize: r.fs(14), letterSpacing: 2),
+            ),
+          ],
+        );
+      case 'butterfly':
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '•·•·• ๑ •·•·•',
+              style: TextStyle(color: softPurple, fontSize: r.fs(13), letterSpacing: 1),
+            ),
+          ],
+        );
       default:
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -984,15 +1067,15 @@ class _DividerToolbar extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
-            // Estilos de divisor
+            // Estilos clássicos
             _DividerStyleChip(
-              label: '...',
+              label: '•••',
               isSelected: currentStyle == 'dots',
               onTap: () => onStyleChanged('dots'),
             ),
             SizedBox(width: r.s(4)),
             _DividerStyleChip(
-              label: '---',
+              label: '───',
               isSelected: currentStyle == 'line',
               onTap: () => onStyleChanged('line'),
             ),
@@ -1003,10 +1086,53 @@ class _DividerToolbar extends StatelessWidget {
               onTap: () => onStyleChanged('dashed'),
             ),
             SizedBox(width: r.s(4)),
+            // Estilos fofinhos
             _DividerStyleChip(
-              label: '* * *',
+              label: '♡♥♡',
+              isSelected: currentStyle == 'hearts',
+              onTap: () => onStyleChanged('hearts'),
+            ),
+            SizedBox(width: r.s(4)),
+            _DividerStyleChip(
+              label: '✩·✩',
+              isSelected: currentStyle == 'sparkles',
+              onTap: () => onStyleChanged('sparkles'),
+            ),
+            SizedBox(width: r.s(4)),
+            _DividerStyleChip(
+              label: '✿❀✿',
+              isSelected: currentStyle == 'flowers',
+              onTap: () => onStyleChanged('flowers'),
+            ),
+            SizedBox(width: r.s(4)),
+            _DividerStyleChip(
+              label: '☆★☆',
               isSelected: currentStyle == 'stars',
               onTap: () => onStyleChanged('stars'),
+            ),
+            SizedBox(width: r.s(4)),
+            _DividerStyleChip(
+              label: '☽✩',
+              isSelected: currentStyle == 'moon',
+              onTap: () => onStyleChanged('moon'),
+            ),
+            SizedBox(width: r.s(4)),
+            _DividerStyleChip(
+              label: '─♡─',
+              isSelected: currentStyle == 'ribbon',
+              onTap: () => onStyleChanged('ribbon'),
+            ),
+            SizedBox(width: r.s(4)),
+            _DividerStyleChip(
+              label: '∼∼∼',
+              isSelected: currentStyle == 'wave',
+              onTap: () => onStyleChanged('wave'),
+            ),
+            SizedBox(width: r.s(4)),
+            _DividerStyleChip(
+              label: '๑',
+              isSelected: currentStyle == 'butterfly',
+              onTap: () => onStyleChanged('butterfly'),
             ),
             // Separador visual
             SizedBox(width: r.s(6)),
