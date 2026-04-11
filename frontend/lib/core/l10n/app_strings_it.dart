@@ -3573,2071 +3573,2071 @@ class AppStringsIt implements AppStrings {
 
   // ── Getters adicionados para completar a interface ──
   @override
-  String get aboutMe => 'aboutMe';
+  String get aboutMe => 'Su di me';
   @override
-  String get accountDeleted => 'accountDeleted';
+  String get accountDeleted => 'Account eliminato';
   @override
-  String get accountSettings => 'accountSettings';
+  String get accountSettings => 'Impostazioni dell\'account';
   @override
-  String get adNotAvailableDesc => 'adNotAvailableDesc';
+  String get adNotAvailableDesc => 'Annuncio non disponibile Desc';
   @override
-  String get addAtLeastOneQuestionDesc => 'addAtLeastOneQuestionDesc';
+  String get addAtLeastOneQuestionDesc => 'Aggiungi almeno una domanda Desc';
   @override
-  String get addCoverImage => 'addCoverImage';
+  String get addCoverImage => 'Aggiungi immagine di copertina';
   @override
-  String get addDescription => 'addDescription';
+  String get addDescription => 'Aggiungi descrizione';
   @override
-  String get addDescriptionOptional => 'addDescriptionOptional';
+  String get addDescriptionOptional => 'Aggiungi descrizione Facoltativo';
   @override
-  String get addFriend => 'addFriend';
+  String get addFriend => 'Aggiungi amico';
   @override
-  String get addMembersToChat => 'addMembersToChat';
+  String get addMembersToChat => 'Aggiungi membri alla chat';
   @override
-  String get addMoreInterests => 'addMoreInterests';
+  String get addMoreInterests => 'Aggiungi altri interessi';
   @override
-  String get addPollOption => 'addPollOption';
+  String get addPollOption => 'Aggiungi opzione sondaggio';
   @override
-  String get addQuizQuestion => 'addQuizQuestion';
+  String get addQuizQuestion => 'Aggiungi domanda al quiz';
   @override
-  String get addSomething => 'addSomething';
+  String get addSomething => 'Aggiungi qualcosa';
   @override
-  String get addYourComment => 'addYourComment';
+  String get addYourComment => 'Aggiungi il tuo commento';
   @override
-  String get addYourInterests => 'addYourInterests';
+  String get addYourInterests => 'Aggiungi i tuoi interessi';
   @override
-  String get adminTools => 'adminTools';
+  String get adminTools => 'Strumenti di amministrazione';
   @override
-  String get advanced => 'advanced';
+  String get advanced => 'Avanzato';
   @override
-  String get advancedSettings => 'advancedSettings';
+  String get advancedSettings => 'Impostazioni avanzate';
   @override
-  String get all => 'all';
+  String get all => 'Tutto';
   @override
-  String get allCommunities => 'allCommunities';
+  String get allCommunities => 'Tutte le comunità';
   @override
-  String get allLabel => 'allLabel';
+  String get allLabel => 'Tutte le etichette';
   @override
-  String get allMembers => 'allMembers';
+  String get allMembers => 'Tutti i membri';
   @override
-  String get allPosts => 'allPosts';
+  String get allPosts => 'Tutti i post';
   @override
-  String get allowChatInvites => 'allowChatInvites';
+  String get allowChatInvites => 'Consenti inviti in chat';
   @override
-  String get allowChatInvitesDesc => 'allowChatInvitesDesc';
+  String get allowChatInvitesDesc => 'Consenti inviti in chat Desc';
   @override
-  String get allowCommentsDesc => 'allowCommentsDesc';
+  String get allowCommentsDesc => 'Consenti commenti Desc';
   @override
-  String get allowContentHighlightDesc => 'allowContentHighlightDesc';
+  String get allowContentHighlightDesc => 'Consenti contenuto Evidenzia Desc';
   @override
-  String get allowDirectMessages => 'allowDirectMessages';
+  String get allowDirectMessages => 'Consenti messaggi diretti';
   @override
-  String get allowDirectMessagesDesc => 'allowDirectMessagesDesc';
+  String get allowDirectMessagesDesc => 'Consenti messaggi diretti Desc';
   @override
-  String get allowFollowers => 'allowFollowers';
+  String get allowFollowers => 'Consenti follower';
   @override
-  String get allowFollowersDesc => 'allowFollowersDesc';
+  String get allowFollowersDesc => 'Consenti follower Desc';
   @override
-  String get allowMentionsDesc => 'allowMentionsDesc';
+  String get allowMentionsDesc => 'Consenti menzioni Desc';
   @override
-  String get allowProfileComments => 'allowProfileComments';
+  String get allowProfileComments => 'Consenti commenti sul profilo';
   @override
-  String get allowProfileCommentsDesc => 'allowProfileCommentsDesc';
+  String get allowProfileCommentsDesc => 'Consenti commenti profilo Desc';
   @override
-  String get allowProps => 'allowProps';
+  String get allowProps => 'Consenti oggetti di scena';
   @override
-  String get allowPropsDesc => 'allowPropsDesc';
+  String get allowPropsDesc => 'Consenti oggetti Desc';
   @override
-  String get allowWallComments => 'allowWallComments';
+  String get allowWallComments => 'Consenti commenti sul muro';
   @override
-  String get allowWallCommentsDesc => 'allowWallCommentsDesc';
+  String get allowWallCommentsDesc => 'Consenti commenti sul muro Desc';
   @override
-  String get amount => 'amount';
+  String get amount => 'Quantità';
   @override
-  String get anErrorOccurred => 'anErrorOccurred';
+  String get anErrorOccurred => 'Si è verificato un errore';
   @override
-  String get anErrorOccurredWhile => 'anErrorOccurredWhile';
+  String get anErrorOccurredWhile => 'Si è verificato un errore durante';
   @override
-  String get and => 'and';
+  String get and => 'E';
   @override
-  String get animation => 'animation';
+  String get animation => 'Animazione';
   @override
-  String get appearOffline => 'appearOffline';
+  String get appearOffline => 'Appare offline';
   @override
-  String get applyTheme => 'applyTheme';
+  String get applyTheme => 'Applica tema';
   @override
-  String get approveEntry => 'approveEntry';
+  String get approveEntry => 'Approva l\'iscrizione';
   @override
-  String get approveJoinRequests => 'approveJoinRequests';
+  String get approveJoinRequests => 'Approva le richieste di adesione';
   @override
-  String get approveJoinRequestsDesc => 'approveJoinRequestsDesc';
+  String get approveJoinRequestsDesc => 'Approva richieste di adesione Desc';
   @override
-  String get approveWikiSubmission => 'approveWikiSubmission';
+  String get approveWikiSubmission => 'Approva l\'invio del Wiki';
   @override
-  String get approvedEntries => 'approvedEntries';
+  String get approvedEntries => 'Iscrizioni approvate';
   @override
-  String get areYouSure => 'areYouSure';
+  String get areYouSure => 'Sei sicuro';
   @override
-  String get areYouSureBan => 'areYouSureBan';
+  String get areYouSureBan => 'Sei sicuro di vietare?';
   @override
-  String get areYouSureDelete => 'areYouSureDelete';
+  String get areYouSureDelete => 'Sei sicuro di eliminare';
   @override
-  String get areYouSureDeleteAccount => 'areYouSureDeleteAccount';
+  String get areYouSureDeleteAccount => 'Sei sicuro di eliminare l\'account';
   @override
-  String get areYouSureDeletePost => 'areYouSureDeletePost';
+  String get areYouSureDeletePost => 'Sei sicuro di eliminare il post?';
   @override
-  String get areYouSureKick => 'areYouSureKick';
+  String get areYouSureKick => 'Sei sicuro di calciare?';
   @override
-  String get areYouSureLeave => 'areYouSureLeave';
+  String get areYouSureLeave => 'Sei sicuro di andartene?';
   @override
-  String get areYouSureMute => 'areYouSureMute';
+  String get areYouSureMute => 'Sei sicuro di essere muto?';
   @override
-  String get areYouSureReject => 'areYouSureReject';
+  String get areYouSureReject => 'Sei sicuro di rifiutare?';
   @override
-  String get areYouSureRemove => 'areYouSureRemove';
+  String get areYouSureRemove => 'Sei sicuro di rimuovere';
   @override
-  String get areYouSureRevoke => 'areYouSureRevoke';
+  String get areYouSureRevoke => 'Sei sicuro di revocare?';
   @override
-  String get areYouSureStrike => 'areYouSureStrike';
+  String get areYouSureStrike => 'Sei sicuro di colpire?';
   @override
-  String get areYouSureUnban => 'areYouSureUnban';
+  String get areYouSureUnban => 'Sei sicuro di sbloccare?';
   @override
-  String get areYouSureUnfollowUser => 'areYouSureUnfollowUser';
+  String get areYouSureUnfollowUser => 'Sei sicuro di non seguire più l\'utente';
   @override
-  String get areYouSureWarn => 'areYouSureWarn';
+  String get areYouSureWarn => 'Sei sicuro Avvisare';
   @override
-  String get article => 'article';
+  String get article => 'Articolo';
   @override
-  String get askJoinCommunity => 'askJoinCommunity';
+  String get askJoinCommunity => 'Chiedi unisciti alla comunità';
   @override
-  String get attachFile => 'attachFile';
+  String get attachFile => 'Allega file';
   @override
-  String get attachMedia => 'attachMedia';
+  String get attachMedia => 'Allega supporto';
   @override
-  String get author => 'author';
+  String get author => 'Autore';
   @override
-  String get autoPlayVideos => 'autoPlayVideos';
+  String get autoPlayVideos => 'Riproduzione automatica dei video';
   @override
-  String get autoPlayVideosDesc => 'autoPlayVideosDesc';
+  String get autoPlayVideosDesc => 'Riproduzione automatica video Desc';
   @override
-  String get avatar => 'avatar';
+  String get avatar => 'Avatar';
   @override
-  String get avatarAndCover => 'avatarAndCover';
+  String get avatarAndCover => 'Avatar e copertina';
   @override
-  String get banUser => 'banUser';
+  String get banUser => 'Utente bannato';
   @override
-  String get banUserFromChat => 'banUserFromChat';
+  String get banUserFromChat => 'Escludi l\'utente dalla chat';
   @override
-  String get banned => 'banned';
+  String get banned => 'Vietato';
   @override
-  String get beTheFirstToComment => 'beTheFirstToComment';
+  String get beTheFirstToComment => 'Sii il primo a commentare';
   @override
-  String get beTheFirstToPost => 'beTheFirstToPost';
+  String get beTheFirstToPost => 'Sii il primo a pubblicare';
   @override
-  String get blockUser => 'blockUser';
+  String get blockUser => 'Blocca utente';
   @override
-  String get blocked => 'blocked';
+  String get blocked => 'Bloccato';
   @override
-  String get blogLabel => 'blogLabel';
+  String get blogLabel => 'Etichetta del blog';
   @override
-  String get blogs => 'blogs';
+  String get blogs => 'Blog';
   @override
-  String get bookmarkAdded => 'bookmarkAdded';
+  String get bookmarkAdded => 'Segnalibro aggiunto';
   @override
-  String get bookmarkRemoved => 'bookmarkRemoved';
+  String get bookmarkRemoved => 'Segnalibro rimosso';
   @override
-  String get broadcast => 'broadcast';
+  String get broadcast => 'Trasmissione';
   @override
-  String get broadcastMessage => 'broadcastMessage';
+  String get broadcastMessage => 'Messaggio trasmesso';
   @override
-  String get broadcastNotification => 'broadcastNotification';
+  String get broadcastNotification => 'Notifica di trasmissione';
   @override
-  String get broadcastTitle => 'broadcastTitle';
+  String get broadcastTitle => 'Titolo della trasmissione';
   @override
-  String get by => 'by';
+  String get by => 'Di';
   @override
-  String get call => 'call';
+  String get call => 'Chiamata';
   @override
-  String get cameraPermission => 'cameraPermission';
+  String get cameraPermission => 'Autorizzazione della fotocamera';
   @override
-  String get cannotBeEmpty => 'cannotBeEmpty';
+  String get cannotBeEmpty => 'Non può essere vuoto';
   @override
-  String get cannotBeUndone => 'cannotBeUndone';
+  String get cannotBeUndone => 'Impossibile annullare';
   @override
-  String get cannotRemoveLastLeader => 'cannotRemoveLastLeader';
+  String get cannotRemoveLastLeader => 'Impossibile rimuovere l\'ultimo leader';
   @override
-  String get cannotReportYourself => 'cannotReportYourself';
+  String get cannotReportYourself => 'Non puoi denunciarti';
   @override
-  String get caption => 'caption';
+  String get caption => 'Didascalia';
   @override
-  String get category => 'category';
+  String get category => 'Categoria';
   @override
-  String get changeCommunity => 'changeCommunity';
+  String get changeCommunity => 'Cambia Comunità';
   @override
-  String get changeCover => 'changeCover';
+  String get changeCover => 'Cambia copertina';
   @override
-  String get changeNickname => 'changeNickname';
+  String get changeNickname => 'Cambia soprannome';
   @override
-  String get changePassword => 'changePassword';
+  String get changePassword => 'Cambiare la password';
   @override
-  String get changePhoto => 'changePhoto';
+  String get changePhoto => 'Cambia foto';
   @override
-  String get changeUsername => 'changeUsername';
+  String get changeUsername => 'Cambia nome utente';
   @override
-  String get chatInvites => 'chatInvites';
+  String get chatInvites => 'Inviti alla chat';
   @override
-  String get chatSettings => 'chatSettings';
+  String get chatSettings => 'Impostazioni della chat';
   @override
-  String get chatWallpaper => 'chatWallpaper';
+  String get chatWallpaper => 'Sfondo della chat';
   @override
-  String get chooseACommunity => 'chooseACommunity';
+  String get chooseACommunity => 'Scegli una comunità';
   @override
-  String get chooseACover => 'chooseACover';
+  String get chooseACover => 'Scegli una copertina';
   @override
-  String get chooseAnImage => 'chooseAnImage';
+  String get chooseAnImage => 'Scegli un\'immagine';
   @override
-  String get chooseCategory => 'chooseCategory';
+  String get chooseCategory => 'Scegli Categoria';
   @override
-  String get chooseColor => 'chooseColor';
+  String get chooseColor => 'Scegli il colore';
   @override
-  String get chooseCover => 'chooseCover';
+  String get chooseCover => 'Scegli Copertina';
   @override
-  String get chooseDuration => 'chooseDuration';
+  String get chooseDuration => 'Scegli Durata';
   @override
-  String get chooseImage => 'chooseImage';
+  String get chooseImage => 'Scegli Immagine';
   @override
-  String get chooseLanguage => 'chooseLanguage';
+  String get chooseLanguage => 'Scegli la lingua';
   @override
-  String get chooseLayout => 'chooseLayout';
+  String get chooseLayout => 'Scegli Disposizione';
   @override
-  String get chooseNicknameDesc => 'chooseNicknameDesc';
+  String get chooseNicknameDesc => 'Scegli Soprannome Desc';
   @override
-  String get chooseOption => 'chooseOption';
+  String get chooseOption => 'Scegli Opzione';
   @override
-  String get choosePollEndDate => 'choosePollEndDate';
+  String get choosePollEndDate => 'Scegli la data di fine del sondaggio';
   @override
-  String get chooseReason => 'chooseReason';
+  String get chooseReason => 'Scegli Motivo';
   @override
-  String get chooseSticker => 'chooseSticker';
+  String get chooseSticker => 'Scegli Adesivo';
   @override
-  String get chooseTheme => 'chooseTheme';
+  String get chooseTheme => 'Scegli Tema';
   @override
-  String get chooseVisibility => 'chooseVisibility';
+  String get chooseVisibility => 'Scegli Visibilità';
   @override
-  String get clearAll => 'clearAll';
+  String get clearAll => 'Cancella tutto';
   @override
-  String get clearCacheConfirmation => 'clearCacheConfirmation';
+  String get clearCacheConfirmation => 'Conferma cancellazione cache';
   @override
-  String get clearHistory => 'clearHistory';
+  String get clearHistory => 'Cancella cronologia';
   @override
-  String get clearHistoryConfirmation => 'clearHistoryConfirmation';
+  String get clearHistoryConfirmation => 'Conferma della cancellazione della cronologia';
   @override
-  String get clearRecentSearches => 'clearRecentSearches';
+  String get clearRecentSearches => 'Cancella ricerche recenti';
   @override
-  String get closeAndSaveChanges => 'closeAndSaveChanges';
+  String get closeAndSaveChanges => 'Chiudi e salva le modifiche';
   @override
-  String get coinBalance => 'coinBalance';
+  String get coinBalance => 'Saldo delle monete';
   @override
-  String get coinHistory => 'coinHistory';
+  String get coinHistory => 'Storia delle monete';
   @override
-  String get coins => 'coins';
+  String get coins => 'Monete';
   @override
-  String get coinsSpent => 'coinsSpent';
+  String get coinsSpent => 'Monete spese';
   @override
-  String get collapse => 'collapse';
+  String get collapse => 'Crollo';
   @override
-  String get color => 'color';
+  String get color => 'Colore';
   @override
-  String get commentDeleted => 'commentDeleted';
+  String get commentDeleted => 'Commento eliminato';
   @override
-  String get commentNotifications => 'commentNotifications';
+  String get commentNotifications => 'Notifiche sui commenti';
   @override
-  String get commentOptions => 'commentOptions';
+  String get commentOptions => 'Opzioni di commento';
   @override
-  String get commentSent => 'commentSent';
+  String get commentSent => 'Commento inviato';
   @override
-  String get commentsLabel => 'commentsLabel';
+  String get commentsLabel => 'Etichetta dei commenti';
   @override
-  String get commentsOnYourProfile => 'commentsOnYourProfile';
+  String get commentsOnYourProfile => 'Commenti sul tuo profilo';
   @override
-  String get communityCreated => 'communityCreated';
+  String get communityCreated => 'Comunità creata';
   @override
-  String get communityDeleted => 'communityDeleted';
+  String get communityDeleted => 'Comunità eliminata';
   @override
-  String get communityDescriptionHint => 'communityDescriptionHint';
+  String get communityDescriptionHint => 'Descrizione della comunità Suggerimento';
   @override
-  String get communityGuidelinesShort => 'communityGuidelinesShort';
+  String get communityGuidelinesShort => 'Breve linee guida della community';
   @override
-  String get communityInvites => 'communityInvites';
+  String get communityInvites => 'Inviti della comunità';
   @override
-  String get communityLeader => 'communityLeader';
+  String get communityLeader => 'Leader della comunità';
   @override
-  String get communityLink => 'communityLink';
+  String get communityLink => 'Collegamento comunitario';
   @override
-  String get communityMembers => 'communityMembers';
+  String get communityMembers => 'Membri della comunità';
   @override
-  String get communityModeration => 'communityModeration';
+  String get communityModeration => 'Moderazione della comunità';
   @override
-  String get communityNameHint => 'communityNameHint';
+  String get communityNameHint => 'Suggerimento sul nome della comunità';
   @override
-  String get communityPrivacy => 'communityPrivacy';
+  String get communityPrivacy => 'Privacy della comunità';
   @override
-  String get communitySettings => 'communitySettings';
+  String get communitySettings => 'Impostazioni della comunità';
   @override
-  String get communityStats => 'communityStats';
+  String get communityStats => 'Statistiche della comunità';
   @override
-  String get communityTheme => 'communityTheme';
+  String get communityTheme => 'Tema comunitario';
   @override
-  String get communityUpdated => 'communityUpdated';
+  String get communityUpdated => 'Comunità aggiornata';
   @override
-  String get confirmAction => 'confirmAction';
+  String get confirmAction => 'Conferma azione';
   @override
-  String get confirmAndContinue => 'confirmAndContinue';
+  String get confirmAndContinue => 'Conferma e continua';
   @override
-  String get confirmBlockUser => 'confirmBlockUser';
+  String get confirmBlockUser => 'Conferma Blocca utente';
   @override
-  String get confirmChanges => 'confirmChanges';
+  String get confirmChanges => 'Conferma modifiche';
   @override
-  String get confirmDelete => 'confirmDelete';
+  String get confirmDelete => 'Conferma eliminazione';
   @override
-  String get confirmDeleteAccount => 'confirmDeleteAccount';
+  String get confirmDeleteAccount => 'Conferma l\'eliminazione dell\'account';
   @override
-  String get confirmDeleteConversation => 'confirmDeleteConversation';
+  String get confirmDeleteConversation => 'Conferma l\'eliminazione della conversazione';
   @override
-  String get confirmDeleteFile => 'confirmDeleteFile';
+  String get confirmDeleteFile => 'Conferma l\'eliminazione del file';
   @override
-  String get confirmEmail => 'confirmEmail';
+  String get confirmEmail => 'Conferma email';
   @override
-  String get confirmLeave => 'confirmLeave';
+  String get confirmLeave => 'Conferma uscita';
   @override
-  String get confirmLeaveCommunity => 'confirmLeaveCommunity';
+  String get confirmLeaveCommunity => 'Conferma l\'uscita dalla comunità';
   @override
-  String get confirmLeaveGroup => 'confirmLeaveGroup';
+  String get confirmLeaveGroup => 'Conferma l\'uscita dal gruppo';
   @override
-  String get confirmLogout => 'confirmLogout';
+  String get confirmLogout => 'Conferma il logout';
   @override
-  String get confirmNewPassword => 'confirmNewPassword';
+  String get confirmNewPassword => 'Conferma nuova password';
   @override
-  String get confirmPurchase => 'confirmPurchase';
+  String get confirmPurchase => 'Conferma acquisto';
   @override
-  String get confirmReport => 'confirmReport';
+  String get confirmReport => 'Conferma rapporto';
   @override
-  String get confirmSelection => 'confirmSelection';
+  String get confirmSelection => 'Conferma la selezione';
   @override
-  String get confirmUnfollow => 'confirmUnfollow';
+  String get confirmUnfollow => 'Conferma Smetti di seguire';
   @override
-  String get connectWithFriends => 'connectWithFriends';
+  String get connectWithFriends => 'Connettiti con gli amici';
   @override
-  String get connecting => 'connecting';
+  String get connecting => 'Connessione';
   @override
-  String get contactUs => 'contactUs';
+  String get contactUs => 'Contattaci';
   @override
-  String get contentAndConduct => 'contentAndConduct';
+  String get contentAndConduct => 'Contenuto e condotta';
   @override
-  String get contentFormat => 'contentFormat';
+  String get contentFormat => 'Formato del contenuto';
   @override
-  String get contentLabel => 'contentLabel';
+  String get contentLabel => 'Etichetta contenuto';
   @override
-  String get contentPolicies => 'contentPolicies';
+  String get contentPolicies => 'Politiche sui contenuti';
   @override
-  String get continueAnyway => 'continueAnyway';
+  String get continueAnyway => 'Continua comunque';
   @override
-  String get continueWithEmail => 'continueWithEmail';
+  String get continueWithEmail => 'Continua con l\'e-mail';
   @override
-  String get copiedToClipboardMsg => 'copiedToClipboardMsg';
+  String get copiedToClipboardMsg => 'Copiato negli appunti Msg';
   @override
-  String get copyAction => 'copyAction';
+  String get copyAction => 'Azione di copia';
   @override
-  String get copyLinkAction => 'copyLinkAction';
+  String get copyLinkAction => 'Azione Copia collegamento';
   @override
-  String get copyPostLink => 'copyPostLink';
+  String get copyPostLink => 'Copia il collegamento al post';
   @override
-  String get copyProfileLink => 'copyProfileLink';
+  String get copyProfileLink => 'Copia collegamento al profilo';
   @override
-  String get copyToClipboard => 'copyToClipboard';
+  String get copyToClipboard => 'Copia negli appunti';
   @override
-  String get couldNotLaunchUrl => 'couldNotLaunchUrl';
+  String get couldNotLaunchUrl => 'Impossibile avviare l\'URL';
   @override
-  String get createAPoll => 'createAPoll';
+  String get createAPoll => 'Crea un sondaggio';
   @override
-  String get createAQuiz => 'createAQuiz';
+  String get createAQuiz => 'Crea un quiz';
   @override
-  String get createChat => 'createChat';
+  String get createChat => 'Crea chat';
   @override
-  String get createEvent => 'createEvent';
+  String get createEvent => 'Crea evento';
   @override
-  String get createFirstPost => 'createFirstPost';
+  String get createFirstPost => 'Crea il primo post';
   @override
-  String get createFolder => 'createFolder';
+  String get createFolder => 'Crea cartella';
   @override
-  String get createYourAccount => 'createYourAccount';
+  String get createYourAccount => 'Crea il tuo account';
   @override
-  String get createYourCommunity => 'createYourCommunity';
+  String get createYourCommunity => 'Crea la tua comunità';
   @override
-  String get created => 'created';
+  String get created => 'Creato';
   @override
-  String get createdBy => 'createdBy';
+  String get createdBy => 'Creato da';
   @override
-  String get creating => 'creating';
+  String get creating => 'Creare';
   @override
-  String get creatingAccount => 'creatingAccount';
+  String get creatingAccount => 'Creazione dell\'account';
   @override
-  String get creatingCommunity => 'creatingCommunity';
+  String get creatingCommunity => 'Creazione di comunità';
   @override
-  String get creatingPost => 'creatingPost';
+  String get creatingPost => 'Creazione della posta';
   @override
-  String get creative => 'creative';
+  String get creative => 'Creativo';
   @override
-  String get custom => 'custom';
+  String get custom => 'Costume';
   @override
-  String get customColor => 'customColor';
+  String get customColor => 'Colore personalizzato';
   @override
-  String get customImage => 'customImage';
+  String get customImage => 'Immagine personalizzata';
   @override
-  String get customTheme => 'customTheme';
+  String get customTheme => 'Tema personalizzato';
   @override
-  String get customize => 'customize';
+  String get customize => 'Personalizza';
   @override
-  String get dailyActiveMembers => 'dailyActiveMembers';
+  String get dailyActiveMembers => 'Membri attivi giornalieri';
   @override
-  String get dailyBonus => 'dailyBonus';
+  String get dailyBonus => 'Bonus giornaliero';
   @override
-  String get dailyCheckInCoins => 'dailyCheckInCoins';
+  String get dailyCheckInCoins => 'Check-in giornaliero delle monete';
   @override
-  String get dailyCheckInDesc => 'dailyCheckInDesc';
+  String get dailyCheckInDesc => 'Check-in giornaliero Desc';
   @override
-  String get dailyCheckInHistory => 'dailyCheckInHistory';
+  String get dailyCheckInHistory => 'Cronologia del controllo giornaliero';
   @override
-  String get dailyCheckInReward => 'dailyCheckInReward';
+  String get dailyCheckInReward => 'Premio per il check-in giornaliero';
   @override
-  String get dailyCheckInStreak => 'dailyCheckInStreak';
+  String get dailyCheckInStreak => 'Serie di check-in giornalieri';
   @override
-  String get dark => 'dark';
+  String get dark => 'Buio';
   @override
-  String get dataAndStorage => 'dataAndStorage';
+  String get dataAndStorage => 'Dati e archiviazione';
   @override
-  String get dataExport => 'dataExport';
+  String get dataExport => 'Esportazione dati';
   @override
-  String get dataExportDesc => 'dataExportDesc';
+  String get dataExportDesc => 'Esportazione dati Desc';
   @override
-  String get dataProcessing => 'dataProcessing';
+  String get dataProcessing => 'Elaborazione dei dati';
   @override
-  String get dataUsage => 'dataUsage';
+  String get dataUsage => 'Utilizzo dei dati';
   @override
-  String get dateJoined => 'dateJoined';
+  String get dateJoined => 'Data di iscrizione';
   @override
-  String get deactivateAccount => 'deactivateAccount';
+  String get deactivateAccount => 'Disattiva account';
   @override
-  String get defaultLabel => 'defaultLabel';
+  String get defaultLabel => 'Etichetta predefinita';
   @override
-  String get deleteAccountConfirmation => 'deleteAccountConfirmation';
+  String get deleteAccountConfirmation => 'Conferma eliminazione account';
   @override
-  String get deleteChat => 'deleteChat';
+  String get deleteChat => 'Elimina chat';
   @override
-  String get deleteChatConfirmation => 'deleteChatConfirmation';
+  String get deleteChatConfirmation => 'Elimina conferma chat';
   @override
-  String get deleteComment => 'deleteComment';
+  String get deleteComment => 'Elimina commento';
   @override
-  String get deleteCommentConfirmation => 'deleteCommentConfirmation';
+  String get deleteCommentConfirmation => 'Conferma eliminazione commento';
   @override
-  String get deleteDraft => 'deleteDraft';
+  String get deleteDraft => 'Elimina bozza';
   @override
-  String get deleteForEveryone => 'deleteForEveryone';
+  String get deleteForEveryone => 'Elimina per tutti';
   @override
-  String get deleteForMe => 'deleteForMe';
+  String get deleteForMe => 'Elimina per me';
   @override
-  String get deleteFromHistory => 'deleteFromHistory';
+  String get deleteFromHistory => 'Elimina dalla cronologia';
   @override
-  String get deleteMessageConfirmation => 'deleteMessageConfirmation';
+  String get deleteMessageConfirmation => 'Conferma eliminazione messaggio';
   @override
-  String get deletePermanently => 'deletePermanently';
+  String get deletePermanently => 'Elimina definitivamente';
   @override
-  String get deletePostConfirmation => 'deletePostConfirmation';
+  String get deletePostConfirmation => 'Elimina messaggio di conferma';
   @override
-  String get deleteStory => 'deleteStory';
+  String get deleteStory => 'Elimina storia';
   @override
-  String get deleteStoryConfirmation => 'deleteStoryConfirmation';
+  String get deleteStoryConfirmation => 'Conferma eliminazione storia';
   @override
-  String get deleteWiki => 'deleteWiki';
+  String get deleteWiki => 'Elimina Wiki';
   @override
-  String get deleteWikiConfirmation => 'deleteWikiConfirmation';
+  String get deleteWikiConfirmation => 'Conferma eliminazione Wiki';
   @override
-  String get describeYourCommunity => 'describeYourCommunity';
+  String get describeYourCommunity => 'Descrivi la tua comunità';
   @override
-  String get description => 'description';
+  String get description => 'Descrizione';
   @override
-  String get details => 'details';
+  String get details => 'Dettagli';
   @override
-  String get deviceAndOs => 'deviceAndOs';
+  String get deviceAndOs => 'Dispositivo e sistema operativo';
   @override
-  String get deviceManager => 'deviceManager';
+  String get deviceManager => 'Gestore dispositivi';
   @override
-  String get deviceName => 'deviceName';
+  String get deviceName => 'Nome del dispositivo';
   @override
-  String get deviceNotSupported => 'deviceNotSupported';
+  String get deviceNotSupported => 'Dispositivo non supportato';
   @override
-  String get disable => 'disable';
+  String get disable => 'Disabilita';
   @override
-  String get disableAccount => 'disableAccount';
+  String get disableAccount => 'Disabilita account';
   @override
-  String get disableAccountConfirmation => 'disableAccountConfirmation';
+  String get disableAccountConfirmation => 'Disabilita la conferma dell\'account';
   @override
-  String get disableComments => 'disableComments';
+  String get disableComments => 'Disabilita commenti';
   @override
-  String get disabled => 'disabled';
+  String get disabled => 'Disabilitato';
   @override
-  String get discard => 'discard';
+  String get discard => 'Scartare';
   @override
-  String get discardChanges => 'discardChanges';
+  String get discardChanges => 'Annulla modifiche';
   @override
-  String get discardDraft => 'discardDraft';
+  String get discardDraft => 'Scarta bozza';
   @override
-  String get disconnected => 'disconnected';
+  String get disconnected => 'Disconnesso';
   @override
-  String get discoverLabel => 'discoverLabel';
+  String get discoverLabel => 'Scopri l\'etichetta';
   @override
-  String get discoverMore => 'discoverMore';
+  String get discoverMore => 'Scopri di più';
   @override
-  String get discussion => 'discussion';
+  String get discussion => 'Discussione';
   @override
-  String get discussions => 'discussions';
+  String get discussions => 'Discussioni';
   @override
-  String get dismiss => 'dismiss';
+  String get dismiss => 'Congedare';
   @override
-  String get doNotShowAgain => 'doNotShowAgain';
+  String get doNotShowAgain => 'Non mostrare più';
   @override
-  String get doneEditing => 'doneEditing';
+  String get doneEditing => 'Modifica completata';
   @override
-  String get download => 'download';
+  String get download => 'Scaricamento';
   @override
-  String get downloadData => 'downloadData';
+  String get downloadData => 'Scarica dati';
   @override
-  String get downloading => 'downloading';
+  String get downloading => 'Download in corso';
   @override
-  String get draftDiscarded => 'draftDiscarded';
+  String get draftDiscarded => 'Bozza scartata';
   @override
-  String get draftNotFound => 'draftNotFound';
+  String get draftNotFound => 'Bozza non trovata';
   @override
-  String get draftPublished => 'draftPublished';
+  String get draftPublished => 'Bozza pubblicata';
   @override
-  String get duplicateContent => 'duplicateContent';
+  String get duplicateContent => 'Contenuto duplicato';
   @override
-  String get earnCoins => 'earnCoins';
+  String get earnCoins => 'Guadagna monete';
   @override
-  String get editBio => 'editBio';
+  String get editBio => 'Modifica biografia';
   @override
-  String get editChat => 'editChat';
+  String get editChat => 'Modifica chat';
   @override
-  String get editCommunity => 'editCommunity';
+  String get editCommunity => 'Modifica comunità';
   @override
-  String get editCover => 'editCover';
+  String get editCover => 'Modifica copertina';
   @override
-  String get editDraft => 'editDraft';
+  String get editDraft => 'Modifica bozza';
   @override
-  String get editEntry => 'editEntry';
+  String get editEntry => 'Modifica voce';
   @override
-  String get editImage => 'editImage';
+  String get editImage => 'Modifica immagine';
   @override
-  String get editNickname => 'editNickname';
+  String get editNickname => 'Modifica soprannome';
   @override
-  String get editPoll => 'editPoll';
+  String get editPoll => 'Modifica sondaggio';
   @override
-  String get editPostPermission => 'editPostPermission';
+  String get editPostPermission => 'Modifica autorizzazione post';
   @override
-  String get editPostTitle => 'editPostTitle';
+  String get editPostTitle => 'Modifica il titolo del post';
   @override
-  String get editProfileLabel => 'editProfileLabel';
+  String get editProfileLabel => 'Modifica etichetta profilo';
   @override
-  String get editQuiz => 'editQuiz';
+  String get editQuiz => 'Modifica quiz';
   @override
-  String get editStory => 'editStory';
+  String get editStory => 'Modifica storia';
   @override
-  String get editTags => 'editTags';
+  String get editTags => 'Modifica tag';
   @override
-  String get editThePost => 'editThePost';
+  String get editThePost => 'Modifica il post';
   @override
-  String get editTheme => 'editTheme';
+  String get editTheme => 'Modifica tema';
   @override
-  String get editTitle => 'editTitle';
+  String get editTitle => 'Modifica titolo';
   @override
-  String get editWiki => 'editWiki';
+  String get editWiki => 'ModificaWiki';
   @override
-  String get editYourProfile => 'editYourProfile';
+  String get editYourProfile => 'Modifica il tuo profilo';
   @override
-  String get emailAddress => 'emailAddress';
+  String get emailAddress => 'Indirizzo e-mail';
   @override
-  String get emailInUse => 'emailInUse';
+  String get emailInUse => 'E-mail in uso';
   @override
-  String get emailIsRequired => 'emailIsRequired';
+  String get emailIsRequired => 'L\'e-mail è obbligatoria';
   @override
-  String get emailNotVerified => 'emailNotVerified';
+  String get emailNotVerified => 'E-mail non verificata';
   @override
-  String get emailSent => 'emailSent';
+  String get emailSent => 'E-mail inviata';
   @override
-  String get emailVerified => 'emailVerified';
+  String get emailVerified => 'E-mail verificata';
   @override
-  String get empty => 'empty';
+  String get empty => 'Vuoto';
   @override
-  String get emptyChat => 'emptyChat';
+  String get emptyChat => 'Chat vuota';
   @override
-  String get emptyChatStart => 'emptyChatStart';
+  String get emptyChatStart => 'Inizio chat vuota';
   @override
-  String get emptyFeed => 'emptyFeed';
+  String get emptyFeed => 'Mangime vuoto';
   @override
-  String get emptyFeedFollow => 'emptyFeedFollow';
+  String get emptyFeedFollow => 'Segui feed vuoto';
   @override
-  String get emptyWall => 'emptyWall';
+  String get emptyWall => 'Muro vuoto';
   @override
-  String get enable => 'enable';
+  String get enable => 'Abilitare';
   @override
-  String get enableModule => 'enableModule';
+  String get enableModule => 'Abilita modulo';
   @override
-  String get enablePushNotifications => 'enablePushNotifications';
+  String get enablePushNotifications => 'Abilita le notifiche push';
   @override
-  String get enabled => 'enabled';
+  String get enabled => 'Abilitato';
   @override
-  String get endDate => 'endDate';
+  String get endDate => 'Data di fine';
   @override
-  String get endPoll => 'endPoll';
+  String get endPoll => 'Fine sondaggio';
   @override
-  String get endQuiz => 'endQuiz';
+  String get endQuiz => 'Fine del quiz';
   @override
-  String get english => 'english';
+  String get english => 'Inglese';
   @override
-  String get enterADescription => 'enterADescription';
+  String get enterADescription => 'Inserisci una descrizione';
   @override
-  String get enterAName => 'enterAName';
+  String get enterAName => 'Inserisci un nome';
   @override
-  String get enterATitle => 'enterATitle';
+  String get enterATitle => 'Inserisci un titolo';
   @override
-  String get enterCode => 'enterCode';
+  String get enterCode => 'Inserisci il codice';
   @override
-  String get enterCommunityName => 'enterCommunityName';
+  String get enterCommunityName => 'Inserisci il nome della comunità';
   @override
-  String get enterCurrentPassword => 'enterCurrentPassword';
+  String get enterCurrentPassword => 'Inserisci la password attuale';
   @override
-  String get enterDescription => 'enterDescription';
+  String get enterDescription => 'Inserisci la descrizione';
   @override
-  String get enterEmail => 'enterEmail';
+  String get enterEmail => 'Inserisci l\'e-mail';
   @override
-  String get enterLink => 'enterLink';
+  String get enterLink => 'Inserisci collegamento';
   @override
-  String get enterNewPassword => 'enterNewPassword';
+  String get enterNewPassword => 'Inserisci la nuova password';
   @override
-  String get enterNickname => 'enterNickname';
+  String get enterNickname => 'Inserisci il soprannome';
   @override
-  String get enterPassword => 'enterPassword';
+  String get enterPassword => 'Inserisci la password';
   @override
-  String get enterReason => 'enterReason';
+  String get enterReason => 'Inserisci il motivo';
   @override
-  String get enterTheReason => 'enterTheReason';
+  String get enterTheReason => 'Inserisci il motivo';
   @override
-  String get enterTitle => 'enterTitle';
+  String get enterTitle => 'Inserisci il titolo';
   @override
-  String get enterYourBio => 'enterYourBio';
+  String get enterYourBio => 'Inserisci la tua biografia';
   @override
-  String get enterYourMessage => 'enterYourMessage';
+  String get enterYourMessage => 'Inserisci il tuo messaggio';
   @override
-  String get enterYourNickname => 'enterYourNickname';
+  String get enterYourNickname => 'Inserisci il tuo soprannome';
   @override
-  String get entry => 'entry';
+  String get entry => 'Iscrizione';
   @override
-  String get entrySubmitted => 'entrySubmitted';
+  String get entrySubmitted => 'Voce inviata';
   @override
-  String get errorAcceptingInvite => 'errorAcceptingInvite';
+  String get errorAcceptingInvite => 'Errore durante l\'accettazione dell\'invito';
   @override
-  String get errorAddingMember => 'errorAddingMember';
+  String get errorAddingMember => 'Errore durante l\'aggiunta del membro';
   @override
-  String get errorAddingToFavorites => 'errorAddingToFavorites';
+  String get errorAddingToFavorites => 'Errore durante l\'aggiunta ai preferiti';
   @override
-  String get errorApprovingEntry => 'errorApprovingEntry';
+  String get errorApprovingEntry => 'Errore durante l\'approvazione dell\'inserimento';
   @override
-  String get errorBanningUser => 'errorBanningUser';
+  String get errorBanningUser => 'Errore durante l\'esclusione dell\'utente';
   @override
-  String get errorBlockingUser => 'errorBlockingUser';
+  String get errorBlockingUser => 'Errore nel blocco dell\'utente';
   @override
-  String get errorChangingEmail => 'errorChangingEmail';
+  String get errorChangingEmail => 'Errore durante la modifica dell\'e-mail';
   @override
-  String get errorChangingNickname => 'errorChangingNickname';
+  String get errorChangingNickname => 'Errore durante la modifica del soprannome';
   @override
-  String get errorChangingPassword => 'errorChangingPassword';
+  String get errorChangingPassword => 'Errore durante la modifica della password';
   @override
-  String get errorCreatingDraft => 'errorCreatingDraft';
+  String get errorCreatingDraft => 'Errore durante la creazione della bozza';
   @override
-  String get errorCreatingEntry => 'errorCreatingEntry';
+  String get errorCreatingEntry => 'Errore durante la creazione della voce';
   @override
-  String get errorCreatingFolder => 'errorCreatingFolder';
+  String get errorCreatingFolder => 'Errore durante la creazione della cartella';
   @override
-  String get errorCreatingPost => 'errorCreatingPost';
+  String get errorCreatingPost => 'Errore durante la creazione del post';
   @override
-  String get errorCreatingStory => 'errorCreatingStory';
+  String get errorCreatingStory => 'Errore durante la creazione della storia';
   @override
-  String get errorDeleting => 'errorDeleting';
+  String get errorDeleting => 'Errore durante l\'eliminazione';
   @override
-  String get errorDeletingAccount => 'errorDeletingAccount';
+  String get errorDeletingAccount => 'Errore durante l\'eliminazione dell\'account';
   @override
-  String get errorDeletingComment => 'errorDeletingComment';
+  String get errorDeletingComment => 'Errore durante l\'eliminazione del commento';
   @override
-  String get errorDeletingDraft => 'errorDeletingDraft';
+  String get errorDeletingDraft => 'Errore durante l\'eliminazione della bozza';
   @override
-  String get errorDeletingEntry => 'errorDeletingEntry';
+  String get errorDeletingEntry => 'Errore durante l\'eliminazione della voce';
   @override
-  String get errorDeletingFolder => 'errorDeletingFolder';
+  String get errorDeletingFolder => 'Errore durante l\'eliminazione della cartella';
   @override
-  String get errorDeletingMessage => 'errorDeletingMessage';
+  String get errorDeletingMessage => 'Errore durante l\'eliminazione del messaggio';
   @override
-  String get errorDeletingPost => 'errorDeletingPost';
+  String get errorDeletingPost => 'Errore durante l\'eliminazione del messaggio';
   @override
-  String get errorDeletingStory => 'errorDeletingStory';
+  String get errorDeletingStory => 'Errore durante l\'eliminazione della storia';
   @override
-  String get errorDownloading => 'errorDownloading';
+  String get errorDownloading => 'Errore durante il download';
   @override
-  String get errorEditingChat => 'errorEditingChat';
+  String get errorEditingChat => 'Errore durante la modifica della chat';
   @override
-  String get errorEditingEntry => 'errorEditingEntry';
+  String get errorEditingEntry => 'Errore durante la modifica della voce';
   @override
-  String get errorEditingPost => 'errorEditingPost';
+  String get errorEditingPost => 'Errore durante la modifica del post';
   @override
-  String get errorEditingProfile => 'errorEditingProfile';
+  String get errorEditingProfile => 'Errore durante la modifica del profilo';
   @override
-  String get errorFetchingData => 'errorFetchingData';
+  String get errorFetchingData => 'Errore durante il recupero dei dati';
   @override
-  String get errorFetchingFeed => 'errorFetchingFeed';
+  String get errorFetchingFeed => 'Errore durante il recupero del feed';
   @override
-  String get errorFetchingLink => 'errorFetchingLink';
+  String get errorFetchingLink => 'Errore durante il recupero del collegamento';
   @override
-  String get errorFetchingMembers => 'errorFetchingMembers';
+  String get errorFetchingMembers => 'Errore durante il recupero dei membri';
   @override
-  String get errorFetchingNotifications => 'errorFetchingNotifications';
+  String get errorFetchingNotifications => 'Errore durante il recupero delle notifiche';
   @override
-  String get errorFetchingPosts => 'errorFetchingPosts';
+  String get errorFetchingPosts => 'Errore durante il recupero dei post';
   @override
-  String get errorFetchingProfile => 'errorFetchingProfile';
+  String get errorFetchingProfile => 'Errore durante il recupero del profilo';
   @override
-  String get errorFetchingResults => 'errorFetchingResults';
+  String get errorFetchingResults => 'Errore durante il recupero dei risultati';
   @override
-  String get errorFetchingSettings => 'errorFetchingSettings';
+  String get errorFetchingSettings => 'Errore durante il recupero delle impostazioni';
   @override
-  String get errorFetchingUser => 'errorFetchingUser';
+  String get errorFetchingUser => 'Errore durante il recupero dell\'utente';
   @override
-  String get errorFetchingWiki => 'errorFetchingWiki';
+  String get errorFetchingWiki => 'Errore durante il recupero del Wiki';
   @override
-  String get errorFollowingUser => 'errorFollowingUser';
+  String get errorFollowingUser => 'Errore nel seguire l\'utente';
   @override
-  String get errorJoiningCommunity => 'errorJoiningCommunity';
+  String get errorJoiningCommunity => 'Errore nell\'iscrizione alla comunità';
   @override
-  String get errorKickingUser => 'errorKickingUser';
+  String get errorKickingUser => 'Errore durante l\'espulsione dell\'utente';
   @override
-  String get errorLeavingCommunity => 'errorLeavingCommunity';
+  String get errorLeavingCommunity => 'Errore durante l\'uscita dalla community';
   @override
-  String get errorLeavingGroup => 'errorLeavingGroup';
+  String get errorLeavingGroup => 'Errore durante l\'uscita dal gruppo';
   @override
-  String get errorLoading => 'errorLoading';
+  String get errorLoading => 'Errore durante il caricamento';
   @override
-  String get errorLoadingAchievements => 'errorLoadingAchievements';
+  String get errorLoadingAchievements => 'Errore durante il caricamento degli obiettivi';
   @override
-  String get errorLoadingBlockedUsers => 'errorLoadingBlockedUsers';
+  String get errorLoadingBlockedUsers => 'Errore durante il caricamento degli utenti bloccati';
   @override
-  String get errorLoadingCategories => 'errorLoadingCategories';
+  String get errorLoadingCategories => 'Errore durante il caricamento delle categorie';
   @override
-  String get errorLoadingChat => 'errorLoadingChat';
+  String get errorLoadingChat => 'Errore durante il caricamento della chat';
   @override
-  String get errorLoadingComments => 'errorLoadingComments';
+  String get errorLoadingComments => 'Errore durante il caricamento dei commenti';
   @override
-  String get errorLoadingCommunities => 'errorLoadingCommunities';
+  String get errorLoadingCommunities => 'Errore durante il caricamento delle comunità';
   @override
-  String get errorLoadingCommunity => 'errorLoadingCommunity';
+  String get errorLoadingCommunity => 'Errore durante il caricamento della comunità';
   @override
-  String get errorLoadingContent => 'errorLoadingContent';
+  String get errorLoadingContent => 'Errore durante il caricamento del contenuto';
   @override
-  String get errorLoadingDrafts => 'errorLoadingDrafts';
+  String get errorLoadingDrafts => 'Errore durante il caricamento delle bozze';
   @override
-  String get errorLoadingFollowers => 'errorLoadingFollowers';
+  String get errorLoadingFollowers => 'Errore durante il caricamento dei follower';
   @override
-  String get errorLoadingFollowing => 'errorLoadingFollowing';
+  String get errorLoadingFollowing => 'Errore durante il caricamento di quanto segue';
   @override
-  String get errorLoadingHistory => 'errorLoadingHistory';
+  String get errorLoadingHistory => 'Errore durante il caricamento della cronologia';
   @override
-  String get errorLoadingLeaderboard => 'errorLoadingLeaderboard';
+  String get errorLoadingLeaderboard => 'Errore durante il caricamento della classifica';
   @override
-  String get errorLoadingMedia => 'errorLoadingMedia';
+  String get errorLoadingMedia => 'Errore durante il caricamento del supporto';
   @override
-  String get errorLoadingMembers => 'errorLoadingMembers';
+  String get errorLoadingMembers => 'Errore durante il caricamento dei membri';
   @override
-  String get errorLoadingMessages => 'errorLoadingMessages';
+  String get errorLoadingMessages => 'Errore durante il caricamento dei messaggi';
   @override
-  String get errorLoadingMore => 'errorLoadingMore';
+  String get errorLoadingMore => 'Errore durante il caricamento di altro';
   @override
-  String get errorLoadingPage => 'errorLoadingPage';
+  String get errorLoadingPage => 'Errore durante il caricamento della pagina';
   @override
-  String get errorLoadingPoll => 'errorLoadingPoll';
+  String get errorLoadingPoll => 'Errore durante il caricamento del sondaggio';
   @override
-  String get errorLoadingPost => 'errorLoadingPost';
+  String get errorLoadingPost => 'Errore durante il caricamento del messaggio';
   @override
-  String get errorLoadingQuiz => 'errorLoadingQuiz';
+  String get errorLoadingQuiz => 'Errore durante il caricamento del quiz';
   @override
-  String get errorLoadingReplies => 'errorLoadingReplies';
+  String get errorLoadingReplies => 'Errore durante il caricamento delle risposte';
   @override
-  String get errorLoadingUsers => 'errorLoadingUsers';
+  String get errorLoadingUsers => 'Errore durante il caricamento degli utenti';
   @override
-  String get errorLoadingWallet => 'errorLoadingWallet';
+  String get errorLoadingWallet => 'Errore durante il caricamento del portafoglio';
   @override
-  String get errorLoadingWikiEntries => 'errorLoadingWikiEntries';
+  String get errorLoadingWikiEntries => 'Errore durante il caricamento delle voci wiki';
   @override
-  String get errorLoggingIn => 'errorLoggingIn';
+  String get errorLoggingIn => 'Errore durante l\'accesso';
   @override
-  String get errorMutingUser => 'errorMutingUser';
+  String get errorMutingUser => 'Errore durante la disattivazione dell\'utente';
   @override
-  String get errorOpeningImage => 'errorOpeningImage';
+  String get errorOpeningImage => 'Errore durante l\'apertura dell\'immagine';
   @override
-  String get errorPinningPost => 'errorPinningPost';
+  String get errorPinningPost => 'Errore durante l\'inserimento del post';
   @override
-  String get errorRejectingEntry => 'errorRejectingEntry';
+  String get errorRejectingEntry => 'Errore durante il rifiuto dell\'immissione';
   @override
-  String get errorRemovingAdmin => 'errorRemovingAdmin';
+  String get errorRemovingAdmin => 'Errore durante la rimozione dell\'amministratore';
   @override
-  String get errorRemovingCurator => 'errorRemovingCurator';
+  String get errorRemovingCurator => 'Errore durante la rimozione del curatore';
   @override
-  String get errorRemovingFavorite => 'errorRemovingFavorite';
+  String get errorRemovingFavorite => 'Errore durante la rimozione dei preferiti';
   @override
-  String get errorRemovingLeader => 'errorRemovingLeader';
+  String get errorRemovingLeader => 'Errore durante la rimozione del leader';
   @override
-  String get errorRemovingMember => 'errorRemovingMember';
+  String get errorRemovingMember => 'Errore durante la rimozione del membro';
   @override
-  String get errorReporting => 'errorReporting';
+  String get errorReporting => 'Segnalazione errori';
   @override
-  String get errorResendingEmail => 'errorResendingEmail';
+  String get errorResendingEmail => 'Errore durante l\'invio dell\'e-mail';
   @override
-  String get errorResettingPassword => 'errorResettingPassword';
+  String get errorResettingPassword => 'Errore durante la reimpostazione della password';
   @override
-  String get errorSavingChanges => 'errorSavingChanges';
+  String get errorSavingChanges => 'Errore durante il salvataggio delle modifiche';
   @override
-  String get errorSavingDraft => 'errorSavingDraft';
+  String get errorSavingDraft => 'Errore durante il salvataggio della bozza';
   @override
-  String get errorSavingSettings => 'errorSavingSettings';
+  String get errorSavingSettings => 'Errore durante il salvataggio delle impostazioni';
   @override
-  String get errorSendingMessage => 'errorSendingMessage';
+  String get errorSendingMessage => 'Errore durante l\'invio del messaggio';
   @override
-  String get errorSendingVerificationEmail => 'errorSendingVerificationEmail';
+  String get errorSendingVerificationEmail => 'Errore durante l\'invio dell\'e-mail di verifica';
   @override
-  String get errorSigningUp => 'errorSigningUp';
+  String get errorSigningUp => 'Errore durante la registrazione';
   @override
-  String get errorStartingChat => 'errorStartingChat';
+  String get errorStartingChat => 'Errore durante l\'avvio della chat';
   @override
-  String get errorStrikingUser => 'errorStrikingUser';
+  String get errorStrikingUser => 'Errore che colpisce l\'utente';
   @override
-  String get errorSubmittingEntry => 'errorSubmittingEntry';
+  String get errorSubmittingEntry => 'Errore durante l\'invio della voce';
   @override
-  String get errorUnbanningUser => 'errorUnbanningUser';
+  String get errorUnbanningUser => 'Errore durante lo sblocco dell\'utente';
   @override
-  String get errorUnblockingUser => 'errorUnblockingUser';
+  String get errorUnblockingUser => 'Errore durante lo sblocco dell\'utente';
   @override
-  String get errorUnfollowingUser => 'errorUnfollowingUser';
+  String get errorUnfollowingUser => 'Errore nel smettere di seguire l\'utente';
   @override
-  String get errorUnpinningPost => 'errorUnpinningPost';
+  String get errorUnpinningPost => 'Errore durante lo sblocco del post';
   @override
-  String get errorUpdatingCommunity => 'errorUpdatingCommunity';
+  String get errorUpdatingCommunity => 'Errore durante l\'aggiornamento della community';
   @override
-  String get errorUpdatingPost => 'errorUpdatingPost';
+  String get errorUpdatingPost => 'Errore durante l\'aggiornamento del post';
   @override
-  String get errorUpdatingSettings => 'errorUpdatingSettings';
+  String get errorUpdatingSettings => 'Errore durante l\'aggiornamento delle impostazioni';
   @override
-  String get errorUploadingImage => 'errorUploadingImage';
+  String get errorUploadingImage => 'Errore durante il caricamento dell\'immagine';
   @override
-  String get errorVerifyingEmail => 'errorVerifyingEmail';
+  String get errorVerifyingEmail => 'Errore durante la verifica dell\'e-mail';
   @override
-  String get errorVoting => 'errorVoting';
+  String get errorVoting => 'Errore nel voto';
   @override
-  String get errorWarningUser => 'errorWarningUser';
+  String get errorWarningUser => 'Utente di avviso di errore';
   @override
-  String get events => 'events';
+  String get events => 'Eventi';
   @override
-  String get expand => 'expand';
+  String get expand => 'Espandere';
   @override
-  String get explicitContent => 'explicitContent';
+  String get explicitContent => 'Contenuto esplicito';
   @override
-  String get failedToLoadImage => 'failedToLoadImage';
+  String get failedToLoadImage => 'Impossibile caricare l\'immagine';
   @override
-  String get fanArt => 'fanArt';
+  String get fanArt => 'Arte dei fan';
   @override
-  String get faq => 'faq';
+  String get faq => 'Domande frequenti';
   @override
-  String get feature => 'feature';
+  String get feature => 'Caratteristica';
   @override
-  String get featurePostInCommunity => 'featurePostInCommunity';
+  String get featurePostInCommunity => 'Post in evidenza nella community';
   @override
-  String get featuredLabel => 'featuredLabel';
+  String get featuredLabel => 'Etichetta in primo piano';
   @override
-  String get featuredMembers => 'featuredMembers';
+  String get featuredMembers => 'Membri in primo piano';
   @override
-  String get featuredPosts => 'featuredPosts';
+  String get featuredPosts => 'Post in primo piano';
   @override
-  String get feedAndPosts => 'feedAndPosts';
+  String get feedAndPosts => 'Feed e post';
   @override
-  String get feedback => 'feedback';
+  String get feedback => 'Feedback';
   @override
-  String get fileIsTooLarge => 'fileIsTooLarge';
+  String get fileIsTooLarge => 'Il file è troppo grande';
   @override
-  String get fileName => 'fileName';
+  String get fileName => 'Nome del file';
   @override
-  String get fileSize => 'fileSize';
+  String get fileSize => 'Dimensioni del file';
   @override
-  String get fileType => 'fileType';
+  String get fileType => 'Tipo di file';
   @override
-  String get fileUploadedSuccessfully => 'fileUploadedSuccessfully';
+  String get fileUploadedSuccessfully => 'File caricato correttamente';
   @override
-  String get fillAllFields => 'fillAllFields';
+  String get fillAllFields => 'Compila tutti i campi';
   @override
-  String get fillInTheFields => 'fillInTheFields';
+  String get fillInTheFields => 'Compila i campi';
   @override
-  String get filterBy => 'filterBy';
+  String get filterBy => 'Filtra per';
   @override
-  String get findFriends => 'findFriends';
+  String get findFriends => 'Trova amici';
   @override
-  String get flag => 'flag';
+  String get flag => 'Bandiera';
   @override
-  String get flagContent => 'flagContent';
+  String get flagContent => 'Segnala contenuto';
   @override
-  String get flagDetails => 'flagDetails';
+  String get flagDetails => 'Dettagli della bandiera';
   @override
-  String get flagSent => 'flagSent';
+  String get flagSent => 'Segnalazione inviata';
   @override
-  String get flagUser => 'flagUser';
+  String get flagUser => 'Segnala utente';
   @override
-  String get flaggedContent => 'flaggedContent';
+  String get flaggedContent => 'Contenuto segnalato';
   @override
-  String get followNotifications => 'followNotifications';
+  String get followNotifications => 'Segui le notifiche';
   @override
-  String get followUser => 'followUser';
+  String get followUser => 'Segui l\'utente';
   @override
-  String get followersOnly => 'followersOnly';
+  String get followersOnly => 'Solo follower';
   @override
-  String get followingLabel => 'followingLabel';
+  String get followingLabel => 'Etichetta seguente';
   @override
-  String get font => 'font';
+  String get font => 'Font';
   @override
-  String get forReview => 'forReview';
+  String get forReview => 'Per la revisione';
   @override
-  String get forgotYourPassword => 'forgotYourPassword';
+  String get forgotYourPassword => 'Hai dimenticato la password';
   @override
-  String get format => 'format';
+  String get format => 'Formato';
   @override
-  String get frame => 'frame';
+  String get frame => 'Telaio';
   @override
-  String get friends => 'friends';
+  String get friends => 'Amici';
   @override
-  String get from => 'from';
+  String get from => 'Da';
   @override
-  String get galleryPermission => 'galleryPermission';
+  String get galleryPermission => 'Autorizzazione della Galleria';
   @override
-  String get gaming => 'gaming';
+  String get gaming => 'Gioco';
   @override
-  String get generalChat => 'generalChat';
+  String get generalChat => 'Chat generale';
   @override
-  String get getCoins => 'getCoins';
+  String get getCoins => 'Ottieni monete';
   @override
-  String get getHelp => 'getHelp';
+  String get getHelp => 'Ottieni aiuto';
   @override
-  String get getStartedDesc => 'getStartedDesc';
+  String get getStartedDesc => 'Inizia Desc';
   @override
-  String get giphy => 'giphy';
+  String get giphy => 'Giphy';
   @override
-  String get giveProps => 'giveProps';
+  String get giveProps => 'Dai oggetti di scena';
   @override
-  String get globalProfile => 'globalProfile';
+  String get globalProfile => 'Profilo globale';
   @override
-  String get goBack => 'goBack';
+  String get goBack => 'Torna indietro';
   @override
-  String get goLive => 'goLive';
+  String get goLive => 'Vai in diretta';
   @override
-  String get goToChat => 'goToChat';
+  String get goToChat => 'Vai alla chat';
   @override
-  String get goToCommunity => 'goToCommunity';
+  String get goToCommunity => 'Vai alla comunità';
   @override
-  String get goToPost => 'goToPost';
+  String get goToPost => 'Vai alla pubblicazione';
   @override
-  String get goToProfile => 'goToProfile';
+  String get goToProfile => 'Vai al profilo';
   @override
-  String get group => 'group';
+  String get group => 'Gruppo';
   @override
-  String get groupAdmin => 'groupAdmin';
+  String get groupAdmin => 'Amministratore del gruppo';
   @override
-  String get groupCreated => 'groupCreated';
+  String get groupCreated => 'Gruppo creato';
   @override
-  String get groupIcon => 'groupIcon';
+  String get groupIcon => 'Icona del gruppo';
   @override
-  String get groupMembers => 'groupMembers';
+  String get groupMembers => 'Membri del gruppo';
   @override
-  String get groupSettings => 'groupSettings';
+  String get groupSettings => 'Impostazioni del gruppo';
   @override
-  String get guidelinesLabel => 'guidelinesLabel';
+  String get guidelinesLabel => 'Etichetta delle linee guida';
   @override
-  String get hasLeftTheChat => 'hasLeftTheChat';
+  String get hasLeftTheChat => 'Ha lasciato la chat';
   @override
-  String get helpAndSupport => 'helpAndSupport';
+  String get helpAndSupport => 'Aiuto e supporto';
   @override
-  String get insertYoutube => 'insertYoutube';
+  String get insertYoutube => 'Inserisci Youtube';
   @override
-  String get invalidYoutubeUrl => 'invalidYoutubeUrl';
+  String get invalidYoutubeUrl => 'URL di YouTube non valido';
   @override
-  String get lastActivity => 'lastActivity';
+  String get lastActivity => 'Ultima attività';
   @override
-  String get lastPost => 'lastPost';
+  String get lastPost => 'Ultimo messaggio';
   @override
-  String get lastPostBy => 'lastPostBy';
+  String get lastPostBy => 'Ultimo messaggio di';
   @override
-  String get latest2 => 'latest2';
+  String get latest2 => 'Ultimi2';
   @override
-  String get leaveChat2 => 'leaveChat2';
+  String get leaveChat2 => 'Lascia la Chat2';
   @override
-  String get leaveCommunity2 => 'leaveCommunity2';
+  String get leaveCommunity2 => 'Lascia la comunità2';
   @override
-  String get leaveGroup2 => 'leaveGroup2';
+  String get leaveGroup2 => 'Lascia il Gruppo2';
   @override
-  String get leaveScreening => 'leaveScreening';
+  String get leaveScreening => 'Lascia lo screening';
   @override
-  String get legendary2 => 'legendary2';
+  String get legendary2 => 'Leggendario2';
   @override
-  String get light => 'light';
+  String get light => 'Leggero';
   @override
-  String get link2 => 'link2';
+  String get link2 => 'Collegamento2';
   @override
-  String get linkCopied2 => 'linkCopied2';
+  String get linkCopied2 => 'Collegamento copiato2';
   @override
-  String get linkToPost => 'linkToPost';
+  String get linkToPost => 'Collegamento al post';
   @override
-  String get loading2 => 'loading2';
+  String get loading2 => 'Caricamento2';
   @override
-  String get loadingGifs => 'loadingGifs';
+  String get loadingGifs => 'Caricamento Gif';
   @override
-  String get loadingImages => 'loadingImages';
+  String get loadingImages => 'Caricamento immagini';
   @override
-  String get loadingMedia => 'loadingMedia';
+  String get loadingMedia => 'Caricamento supporto';
   @override
-  String get loadingPosts => 'loadingPosts';
+  String get loadingPosts => 'Caricamento post';
   @override
-  String get loadingStickers => 'loadingStickers';
+  String get loadingStickers => 'Caricamento adesivi';
   @override
-  String get loadingUsers => 'loadingUsers';
+  String get loadingUsers => 'Caricamento utenti';
   @override
-  String get loginError => 'loginError';
+  String get loginError => 'Errore di accesso';
   @override
-  String get loginRequired => 'loginRequired';
+  String get loginRequired => 'Accesso richiesto';
   @override
-  String get loginToContinue2 => 'loginToContinue2';
+  String get loginToContinue2 => 'Accedi per continuare2';
   @override
-  String get loginToJoin => 'loginToJoin';
+  String get loginToJoin => 'Accedi per iscriverti';
   @override
-  String get loginToVote => 'loginToVote';
+  String get loginToVote => 'Accedi per votare';
   @override
-  String get longestStreak => 'longestStreak';
+  String get longestStreak => 'Serie più lunga';
   @override
-  String get manageBlockedUsers => 'manageBlockedUsers';
+  String get manageBlockedUsers => 'Gestisci gli utenti bloccati';
   @override
-  String get manageDevices => 'manageDevices';
+  String get manageDevices => 'Gestisci dispositivi';
   @override
-  String get managePosts => 'managePosts';
+  String get managePosts => 'Gestisci i post';
   @override
-  String get manageUsers => 'manageUsers';
+  String get manageUsers => 'Gestisci utenti';
   @override
-  String get master => 'master';
+  String get master => 'Maestro';
   @override
-  String get max100Chars => 'max100Chars';
+  String get max100Chars => 'Massimo 100 caratteri';
   @override
-  String get max150Chars => 'max150Chars';
+  String get max150Chars => 'Massimo 150 caratteri';
   @override
-  String get max200Chars => 'max200Chars';
+  String get max200Chars => 'Max200 caratteri';
   @override
-  String get max300Chars => 'max300Chars';
+  String get max300Chars => 'Max300 caratteri';
   @override
-  String get max50Chars => 'max50Chars';
+  String get max50Chars => 'Max50 caratteri';
   @override
-  String get member2 => 'member2';
+  String get member2 => 'Membro2';
   @override
-  String get memberList => 'memberList';
+  String get memberList => 'Elenco dei membri';
   @override
-  String get memberRole => 'memberRole';
+  String get memberRole => 'Ruolo del membro';
   @override
-  String get members2 => 'members2';
+  String get members2 => 'Membri2';
   @override
-  String get mention => 'mention';
+  String get mention => 'Menzione';
   @override
-  String get message2 => 'message2';
+  String get message2 => 'Messaggio2';
   @override
-  String get messageFrom => 'messageFrom';
+  String get messageFrom => 'Messaggio da';
   @override
-  String get messageToBroadcast => 'messageToBroadcast';
+  String get messageToBroadcast => 'Messaggio da trasmettere';
   @override
-  String get min2Options => 'min2Options';
+  String get min2Options => 'Opzioni Min2';
   @override
-  String get moreOptions => 'moreOptions';
+  String get moreOptions => 'Più opzioni';
   @override
-  String get moviesTv => 'moviesTv';
+  String get moviesTv => 'Film televisivi';
   @override
-  String get music2 => 'music2';
+  String get music2 => 'Musica2';
   @override
-  String get myDrafts => 'myDrafts';
+  String get myDrafts => 'Le mie bozze';
   @override
-  String get myPosts => 'myPosts';
+  String get myPosts => 'I miei post';
   @override
-  String get myProfile => 'myProfile';
+  String get myProfile => 'Il mio profilo';
   @override
-  String get mySavedPosts => 'mySavedPosts';
+  String get mySavedPosts => 'I miei post salvati';
   @override
-  String get myStickers => 'myStickers';
+  String get myStickers => 'I miei adesivi';
   @override
-  String get nameYourCommunity => 'nameYourCommunity';
+  String get nameYourCommunity => 'Dai un nome alla tua comunità';
   @override
-  String get newPassword => 'newPassword';
+  String get newPassword => 'Nuova parola d\'ordine';
   @override
-  String get newPasswordConfirmation => 'newPasswordConfirmation';
+  String get newPasswordConfirmation => 'Conferma nuova password';
   @override
-  String get newPasswordConfirmationHint => 'newPasswordConfirmationHint';
+  String get newPasswordConfirmationHint => 'Nuovo suggerimento per la conferma della password';
   @override
-  String get newPasswordHint => 'newPasswordHint';
+  String get newPasswordHint => 'Nuovo suggerimento per la password';
   @override
-  String get newPasswordIsRequired => 'newPasswordIsRequired';
+  String get newPasswordIsRequired => 'È richiesta una nuova password';
   @override
-  String get newTag => 'newTag';
+  String get newTag => 'Nuova etichetta';
   @override
-  String get newTagHint => 'newTagHint';
+  String get newTagHint => 'Nuovo suggerimento tag';
   @override
-  String get nickname2 => 'nickname2';
+  String get nickname2 => 'Soprannome2';
   @override
-  String get nicknameInCommunity => 'nicknameInCommunity';
+  String get nicknameInCommunity => 'Soprannome nella comunità';
   @override
-  String get no2 => 'no2';
+  String get no2 => 'N.2';
   @override
-  String get noActivity => 'noActivity';
+  String get noActivity => 'Nessuna attività';
   @override
-  String get noActivityInCommunity => 'noActivityInCommunity';
+  String get noActivityInCommunity => 'Nessuna attività nella comunità';
   @override
-  String get noActivityYet => 'noActivityYet';
+  String get noActivityYet => 'Nessuna attività ancora';
   @override
-  String get noAdAvailable => 'noAdAvailable';
+  String get noAdAvailable => 'Nessun annuncio disponibile';
   @override
-  String get noAdOffers => 'noAdOffers';
+  String get noAdOffers => 'Nessuna offerta di annunci';
   @override
-  String get noBannedUsers => 'noBannedUsers';
+  String get noBannedUsers => 'Nessun utente bannato';
   @override
-  String get noBannedUsersMsg => 'noBannedUsersMsg';
+  String get noBannedUsersMsg => 'Nessun utente escluso Msg';
   @override
-  String get noChatsFound => 'noChatsFound';
+  String get noChatsFound => 'Nessuna chat trovata';
   @override
-  String get noChatsHere => 'noChatsHere';
+  String get noChatsHere => 'Nessuna chat qui';
   @override
-  String get noCommonCommunities => 'noCommonCommunities';
+  String get noCommonCommunities => 'Nessuna comunità comune';
   @override
-  String get noCommonFollowers => 'noCommonFollowers';
+  String get noCommonFollowers => 'Nessun follower comune';
   @override
-  String get noCommonFollowing => 'noCommonFollowing';
+  String get noCommonFollowing => 'Nessun seguito comune';
   @override
-  String get noCommunityFound => 'noCommunityFound';
+  String get noCommunityFound => 'Nessuna comunità trovata';
   @override
-  String get noCommunityMembers => 'noCommunityMembers';
+  String get noCommunityMembers => 'Nessun membro della comunità';
   @override
-  String get noCommunityPosts => 'noCommunityPosts';
+  String get noCommunityPosts => 'Nessun post della community';
   @override
-  String get noFollowers => 'noFollowers';
+  String get noFollowers => 'Nessun follower';
   @override
-  String get noFollowers2 => 'noFollowers2';
+  String get noFollowers2 => 'Nessun follower2';
   @override
-  String get noFollowersYet => 'noFollowersYet';
+  String get noFollowersYet => 'Nessun follower ancora';
   @override
-  String get noFollowing => 'noFollowing';
+  String get noFollowing => 'Nessun seguito';
   @override
-  String get noFollowing2 => 'noFollowing2';
+  String get noFollowing2 => 'Nessun seguito2';
   @override
-  String get noFollowingYet => 'noFollowingYet';
+  String get noFollowingYet => 'Nessun seguito ancora';
   @override
-  String get noGifsFound => 'noGifsFound';
+  String get noGifsFound => 'Nessuna gif trovata';
   @override
-  String get noImagesFound => 'noImagesFound';
+  String get noImagesFound => 'Nessuna immagine trovata';
   @override
-  String get noInvites => 'noInvites';
+  String get noInvites => 'Nessun invito';
   @override
-  String get noMembersFound => 'noMembersFound';
+  String get noMembersFound => 'Nessun membro trovato';
   @override
-  String get noMembersInCommunity => 'noMembersInCommunity';
+  String get noMembersInCommunity => 'Nessun membro nella comunità';
   @override
-  String get noMessagesHere => 'noMessagesHere';
+  String get noMessagesHere => 'Nessun messaggio qui';
   @override
-  String get noMorePosts => 'noMorePosts';
+  String get noMorePosts => 'Niente più post';
   @override
-  String get noNotificationsYet => 'noNotificationsYet';
+  String get noNotificationsYet => 'Nessuna notifica ancora';
   @override
-  String get noOneCanFollow => 'noOneCanFollow';
+  String get noOneCanFollow => 'Nessuno può seguirlo';
   @override
-  String get noOneCanMessage => 'noOneCanMessage';
+  String get noOneCanMessage => 'Nessuno può inviare messaggi';
   @override
-  String get noOneCanMessageDesc => 'noOneCanMessageDesc';
+  String get noOneCanMessageDesc => 'Nessuno può inviare messaggi Desc';
   @override
-  String get noPosts2 => 'noPosts2';
+  String get noPosts2 => 'Nessun post2';
   @override
-  String get noPostsFound => 'noPostsFound';
+  String get noPostsFound => 'Nessun post trovato';
   @override
-  String get noPostsToSee => 'noPostsToSee';
+  String get noPostsToSee => 'Nessun post da vedere';
   @override
-  String get noRecentSearches => 'noRecentSearches';
+  String get noRecentSearches => 'Nessuna ricerca recente';
   @override
-  String get noResultsFound => 'noResultsFound';
+  String get noResultsFound => 'Nessun risultato trovato';
   @override
-  String get noResultsFoundMsg => 'noResultsFoundMsg';
+  String get noResultsFoundMsg => 'Nessun risultato trovato Msg';
   @override
-  String get noSharedContent => 'noSharedContent';
+  String get noSharedContent => 'Nessun contenuto condiviso';
   @override
-  String get noStickersFound => 'noStickersFound';
+  String get noStickersFound => 'Nessun adesivo trovato';
   @override
-  String get noUsersFound => 'noUsersFound';
+  String get noUsersFound => 'Nessun utente trovato';
   @override
-  String get noUsersFound2 => 'noUsersFound2';
+  String get noUsersFound2 => 'Nessun utente trovato2';
   @override
-  String get noUsersFoundMsg => 'noUsersFoundMsg';
+  String get noUsersFoundMsg => 'Nessun utente trovato Msg';
   @override
-  String get noUsersToSee => 'noUsersToSee';
+  String get noUsersToSee => 'Nessun utente da vedere';
   @override
-  String get noWikiEntries => 'noWikiEntries';
+  String get noWikiEntries => 'Nessuna voce Wiki';
   @override
-  String get notAMember => 'notAMember';
+  String get notAMember => 'Non un membro';
   @override
-  String get notEnoughCoins => 'notEnoughCoins';
+  String get notEnoughCoins => 'Monete insufficienti';
   @override
-  String get notNow => 'notNow';
+  String get notNow => 'Non adesso';
   @override
-  String get notifications2 => 'notifications2';
+  String get notifications2 => 'Notifiche2';
   @override
-  String get notificationsFrom => 'notificationsFrom';
+  String get notificationsFrom => 'Notifiche da';
   @override
-  String get notificationsFromChats => 'notificationsFromChats';
+  String get notificationsFromChats => 'Notifiche dalle chat';
   @override
-  String get notificationsFromNexusHub => 'notificationsFromNexusHub';
+  String get notificationsFromNexusHub => 'Notifiche dal Nexus Hub';
   @override
-  String get notificationsLabel => 'notificationsLabel';
+  String get notificationsLabel => 'Etichetta notifiche';
   @override
-  String get nowOnline => 'nowOnline';
+  String get nowOnline => 'Ora in linea';
   @override
-  String get off => 'off';
+  String get off => 'Spento';
   @override
-  String get officialEvents => 'officialEvents';
+  String get officialEvents => 'Eventi ufficiali';
   @override
-  String get offlineStatus => 'offlineStatus';
+  String get offlineStatus => 'Stato offline';
   @override
-  String get on => 'on';
+  String get on => 'SU';
   @override
-  String get online2 => 'online2';
+  String get online2 => 'In linea2';
   @override
-  String get onlineStatus => 'onlineStatus';
+  String get onlineStatus => 'Stato in linea';
   @override
-  String get onlyFriendsCanComment => 'onlyFriendsCanComment';
+  String get onlyFriendsCanComment => 'Solo gli amici possono commentare';
   @override
-  String get onlyFriendsCanMessage => 'onlyFriendsCanMessage';
+  String get onlyFriendsCanMessage => 'Solo gli amici possono inviare messaggi';
   @override
-  String get onlyFriendsCanMessageDesc => 'onlyFriendsCanMessageDesc';
+  String get onlyFriendsCanMessageDesc => 'Solo gli amici possono inviare messaggi Desc';
   @override
-  String get onlyHostCanDoThis => 'onlyHostCanDoThis';
+  String get onlyHostCanDoThis => 'Solo l\'host può farlo';
   @override
-  String get onlyHostCanInvite => 'onlyHostCanInvite';
+  String get onlyHostCanInvite => 'Solo l\'host può invitare';
   @override
-  String get onlyHostCanRemove => 'onlyHostCanRemove';
+  String get onlyHostCanRemove => 'Solo l\'host può rimuovere';
   @override
-  String get onlyHostCanSee => 'onlyHostCanSee';
+  String get onlyHostCanSee => 'Solo l\'host può vedere';
   @override
-  String get onlyLeadersCanFeature => 'onlyLeadersCanFeature';
+  String get onlyLeadersCanFeature => 'Solo i leader possono partecipare';
   @override
-  String get onlyLeadersCanPin => 'onlyLeadersCanPin';
+  String get onlyLeadersCanPin => 'Solo i leader possono appuntare';
   @override
-  String get onlyYouCanSeeThis => 'onlyYouCanSeeThis';
+  String get onlyYouCanSeeThis => 'Solo tu puoi vederlo';
   @override
-  String get openCamera => 'openCamera';
+  String get openCamera => 'Apri Fotocamera';
   @override
-  String get openGallery => 'openGallery';
+  String get openGallery => 'Apri Galleria';
   @override
-  String get openImage => 'openImage';
+  String get openImage => 'Apri immagine';
   @override
-  String get openInBrowser => 'openInBrowser';
+  String get openInBrowser => 'Apri nel browser';
   @override
-  String get openToEveryone => 'openToEveryone';
+  String get openToEveryone => 'Aperto a tutti';
   @override
-  String get openToEveryoneDesc => 'openToEveryoneDesc';
+  String get openToEveryoneDesc => 'Aperto a tutti Desc';
   @override
-  String get option => 'option';
+  String get option => 'Opzione';
   @override
-  String get optionCannotBeEmpty => 'optionCannotBeEmpty';
+  String get optionCannotBeEmpty => 'L\'opzione non può essere vuota';
   @override
-  String get optional => 'optional';
+  String get optional => 'Opzionale';
   @override
-  String get or => 'or';
+  String get or => 'O';
   @override
-  String get originalContent => 'originalContent';
+  String get originalContent => 'Contenuto originale';
   @override
-  String get originalPoster => 'originalPoster';
+  String get originalPoster => 'Manifesto originale';
   @override
-  String get other2 => 'other2';
+  String get other2 => 'Altro2';
   @override
-  String get otherLabel => 'otherLabel';
+  String get otherLabel => 'Altra etichetta';
   @override
-  String get otherOffenses => 'otherOffenses';
+  String get otherOffenses => 'Altri reati';
   @override
-  String get otherReason => 'otherReason';
+  String get otherReason => 'Altro motivo';
   @override
-  String get password2 => 'password2';
+  String get password2 => 'Password2';
   @override
-  String get passwordChanged => 'passwordChanged';
+  String get passwordChanged => 'Password modificata';
   @override
-  String get passwordChangedSuccess => 'passwordChangedSuccess';
+  String get passwordChangedSuccess => 'Modifica password riuscita';
   @override
-  String get passwordDoNotMatch => 'passwordDoNotMatch';
+  String get passwordDoNotMatch => 'La password non corrisponde';
   @override
-  String get passwordIsRequired => 'passwordIsRequired';
+  String get passwordIsRequired => 'La password è obbligatoria';
   @override
-  String get passwordRequired => 'passwordRequired';
+  String get passwordRequired => 'Password richiesta';
   @override
-  String get passwordReset => 'passwordReset';
+  String get passwordReset => 'Reimpostazione della password';
   @override
-  String get passwordResetEmailSent => 'passwordResetEmailSent';
+  String get passwordResetEmailSent => 'E-mail di reimpostazione password inviata';
   @override
-  String get passwordUpdated => 'passwordUpdated';
+  String get passwordUpdated => 'Password aggiornata';
   @override
-  String get pasteGiphyLink => 'pasteGiphyLink';
+  String get pasteGiphyLink => 'Incolla il collegamento Giphy';
   @override
-  String get pasteImageUrl => 'pasteImageUrl';
+  String get pasteImageUrl => 'Incolla l\'URL dell\'immagine';
   @override
-  String get pasteLink => 'pasteLink';
+  String get pasteLink => 'Incolla collegamento';
   @override
-  String get pasteLink2 => 'pasteLink2';
+  String get pasteLink2 => 'Incolla collegamento2';
   @override
-  String get pasteYoutubeLink => 'pasteYoutubeLink';
+  String get pasteYoutubeLink => 'Incolla il collegamento di Youtube';
   @override
-  String get pendingLabel => 'pendingLabel';
+  String get pendingLabel => 'Etichetta in sospeso';
   @override
-  String get permanentlyBanUser => 'permanentlyBanUser';
+  String get permanentlyBanUser => 'Escludi permanentemente l\'utente';
   @override
-  String get permissions => 'permissions';
+  String get permissions => 'Autorizzazioni';
   @override
-  String get personalInformation => 'personalInformation';
+  String get personalInformation => 'Informazioni personali';
   @override
-  String get phone => 'phone';
+  String get phone => 'Telefono';
   @override
-  String get phoneNotVerified => 'phoneNotVerified';
+  String get phoneNotVerified => 'Telefono non verificato';
   @override
-  String get photo => 'photo';
+  String get photo => 'Foto';
   @override
-  String get pin => 'pin';
+  String get pin => 'Spillo';
   @override
-  String get pinChat => 'pinChat';
+  String get pinChat => 'Metti in chat';
   @override
-  String get pinMessage => 'pinMessage';
+  String get pinMessage => 'Segnala messaggio';
   @override
-  String get pinToBlog => 'pinToBlog';
+  String get pinToBlog => 'Aggiungi al blog';
   @override
-  String get pinToCommunityHome => 'pinToCommunityHome';
+  String get pinToCommunityHome => 'Aggiungi alla home page della comunità';
   @override
-  String get pinWiki => 'pinWiki';
+  String get pinWiki => 'Blocca Wiki';
   @override
-  String get plagiarism => 'plagiarism';
+  String get plagiarism => 'Plagio';
   @override
-  String get pollDuration => 'pollDuration';
+  String get pollDuration => 'Durata del sondaggio';
   @override
-  String get pollEndsIn => 'pollEndsIn';
+  String get pollEndsIn => 'Il sondaggio termina tra';
   @override
-  String get pollOptions => 'pollOptions';
+  String get pollOptions => 'Opzioni sondaggio';
   @override
-  String get pollPublishedSuccess => 'pollPublishedSuccess';
+  String get pollPublishedSuccess => 'Sondaggio pubblicato con successo';
   @override
-  String get popular2 => 'popular2';
+  String get popular2 => 'Popolare2';
   @override
-  String get post2 => 'post2';
+  String get post2 => 'Posta2';
   @override
-  String get postCreationSuccess => 'postCreationSuccess';
+  String get postCreationSuccess => 'Successo dopo la creazione';
   @override
-  String get postFeatured => 'postFeatured';
+  String get postFeatured => 'Pubblica in primo piano';
   @override
-  String get postHidden => 'postHidden';
+  String get postHidden => 'Posta nascosta';
   @override
-  String get postHighlighted => 'postHighlighted';
+  String get postHighlighted => 'Post evidenziato';
   @override
-  String get postHistory => 'postHistory';
+  String get postHistory => 'Storia della pubblicazione';
   @override
-  String get postInYourFeed => 'postInYourFeed';
+  String get postInYourFeed => 'Pubblica nel tuo feed';
   @override
-  String get postIsHidden => 'postIsHidden';
+  String get postIsHidden => 'Il post è nascosto';
   @override
-  String get postIsVisible => 'postIsVisible';
+  String get postIsVisible => 'Il post è visibile';
   @override
-  String get postLink => 'postLink';
+  String get postLink => 'Collegamento postale';
   @override
-  String get postOptions => 'postOptions';
+  String get postOptions => 'Opzioni di pubblicazione';
   @override
-  String get postOptions2 => 'postOptions2';
+  String get postOptions2 => 'Opzioni di pubblicazione2';
   @override
-  String get postPinned => 'postPinned';
+  String get postPinned => 'Post appuntato';
   @override
-  String get postSentForReview => 'postSentForReview';
+  String get postSentForReview => 'Post inviato per la revisione';
   @override
-  String get postSucessfully => 'postSucessfully';
+  String get postSucessfully => 'Pubblica con successo';
   @override
-  String get postUnfeatured => 'postUnfeatured';
+  String get postUnfeatured => 'Post non in primo piano';
   @override
-  String get postUnhidden => 'postUnhidden';
+  String get postUnhidden => 'Posta non nascosta';
   @override
-  String get postUnpinned => 'postUnpinned';
+  String get postUnpinned => 'Post sbloccato';
   @override
-  String get postVisibility => 'postVisibility';
+  String get postVisibility => 'Visibilità post';
   @override
-  String get posts2 => 'posts2';
+  String get posts2 => 'Messaggi2';
   @override
-  String get postsLabel => 'postsLabel';
+  String get postsLabel => 'Etichetta dei post';
   @override
-  String get postsYouMightLike => 'postsYouMightLike';
+  String get postsYouMightLike => 'Post che potrebbero piacerti';
   @override
-  String get poweredByGiphy => 'poweredByGiphy';
+  String get poweredByGiphy => 'Alimentato da Giphy';
   @override
-  String get presence => 'presence';
+  String get presence => 'Presenza';
   @override
-  String get presenceStatus => 'presenceStatus';
+  String get presenceStatus => 'Stato di presenza';
   @override
-  String get privacy2 => 'privacy2';
+  String get privacy2 => 'Privacy2';
   @override
-  String get privacyLabel => 'privacyLabel';
+  String get privacyLabel => 'Etichetta sulla privacy';
   @override
-  String get private2 => 'private2';
+  String get private2 => 'Privato2';
   @override
-  String get privateChatInvite => 'privateChatInvite';
+  String get privateChatInvite => 'Invito alla chat privata';
   @override
-  String get privateCommunity => 'privateCommunity';
+  String get privateCommunity => 'Comunità privata';
   @override
-  String get privateCommunityDesc => 'privateCommunityDesc';
+  String get privateCommunityDesc => 'Comunità privata Desc';
   @override
-  String get profile2 => 'profile2';
+  String get profile2 => 'Profilo2';
   @override
-  String get profileComments => 'profileComments';
+  String get profileComments => 'Commenti sul profilo';
   @override
-  String get profileCommentsDisabled => 'profileCommentsDisabled';
+  String get profileCommentsDisabled => 'Commenti del profilo disabilitati';
   @override
-  String get profileCustomization => 'profileCustomization';
+  String get profileCustomization => 'Personalizzazione del profilo';
   @override
-  String get profileFrame => 'profileFrame';
+  String get profileFrame => 'Cornice del profilo';
   @override
-  String get profileFrames => 'profileFrames';
+  String get profileFrames => 'Cornici di profilo';
   @override
-  String get profileIsPrivate => 'profileIsPrivate';
+  String get profileIsPrivate => 'Il profilo è privato';
   @override
-  String get profileIsPublic => 'profileIsPublic';
+  String get profileIsPublic => 'Il profilo è pubblico';
   @override
-  String get profileLabel => 'profileLabel';
+  String get profileLabel => 'Etichetta del profilo';
   @override
-  String get profileOptions => 'profileOptions';
+  String get profileOptions => 'Opzioni del profilo';
   @override
-  String get profileViewers => 'profileViewers';
+  String get profileViewers => 'Visualizzatori del profilo';
   @override
-  String get profileVisibility => 'profileVisibility';
+  String get profileVisibility => 'Visibilità del profilo';
   @override
-  String get public2 => 'public2';
+  String get public2 => 'Pubblico2';
   @override
-  String get publicChatrooms => 'publicChatrooms';
+  String get publicChatrooms => 'Chat room pubbliche';
   @override
-  String get publish2 => 'publish2';
+  String get publish2 => 'Pubblica2';
   @override
-  String get publishChanges => 'publishChanges';
+  String get publishChanges => 'Pubblica modifiche';
   @override
-  String get purchase => 'purchase';
+  String get purchase => 'Acquistare';
   @override
-  String get purchaseHistory => 'purchaseHistory';
+  String get purchaseHistory => 'Cronologia acquisti';
   @override
-  String get purchaseRestored => 'purchaseRestored';
+  String get purchaseRestored => 'Acquisto restaurato';
   @override
-  String get purchasesRestored => 'purchasesRestored';
+  String get purchasesRestored => 'Acquisti ripristinati';
   @override
-  String get question2 => 'question2';
+  String get question2 => 'Domanda2';
   @override
-  String get questionCannotBeEmpty => 'questionCannotBeEmpty';
+  String get questionCannotBeEmpty => 'La domanda non può essere vuota';
   @override
-  String get questionCreatedSuccess => 'questionCreatedSuccess';
+  String get questionCreatedSuccess => 'La domanda ha creato successo';
   @override
-  String get questionIsRequired => 'questionIsRequired';
+  String get questionIsRequired => 'La domanda è obbligatoria';
   @override
-  String get questionLabel => 'questionLabel';
+  String get questionLabel => 'Etichetta della domanda';
   @override
-  String get quizExplanation => 'quizExplanation';
+  String get quizExplanation => 'Spiegazione del quiz';
   @override
-  String get quizExplanationHint => 'quizExplanationHint';
+  String get quizExplanationHint => 'Suggerimento per la spiegazione del quiz';
   @override
-  String get quizLabel => 'quizLabel';
+  String get quizLabel => 'Etichetta del quiz';
   @override
-  String get quizOptions => 'quizOptions';
+  String get quizOptions => 'Opzioni del quiz';
   @override
-  String get quizPublishedSuccess => 'quizPublishedSuccess';
+  String get quizPublishedSuccess => 'Successo pubblicato del quiz';
   @override
-  String get quizPublishedSuccess2 => 'quizPublishedSuccess2';
+  String get quizPublishedSuccess2 => 'Successo pubblicato del quiz2';
   @override
-  String get quizResults => 'quizResults';
+  String get quizResults => 'Risultati del quiz';
   @override
-  String get quizzes => 'quizzes';
+  String get quizzes => 'Quiz';
   @override
-  String get readOnly => 'readOnly';
+  String get readOnly => 'Sola lettura';
   @override
-  String get reason2 => 'reason2';
+  String get reason2 => 'Motivo2';
   @override
-  String get reasonForAction => 'reasonForAction';
+  String get reasonForAction => 'Motivo dell\'azione';
   @override
-  String get reasonForReport => 'reasonForReport';
+  String get reasonForReport => 'Motivo della segnalazione';
   @override
-  String get reasonLabel => 'reasonLabel';
+  String get reasonLabel => 'Etichetta motivo';
   @override
-  String get recentPosts => 'recentPosts';
+  String get recentPosts => 'Post recenti';
   @override
-  String get recentSearchesCleared => 'recentSearchesCleared';
+  String get recentSearchesCleared => 'Ricerche recenti cancellate';
   @override
-  String get recentVisitors => 'recentVisitors';
+  String get recentVisitors => 'Visitatori recenti';
   @override
-  String get remove2 => 'remove2';
+  String get remove2 => 'Rimuovi2';
   @override
-  String get removeAdmin => 'removeAdmin';
+  String get removeAdmin => 'Rimuovi amministratore';
   @override
-  String get removeAtLeastOneImage => 'removeAtLeastOneImage';
+  String get removeAtLeastOneImage => 'Rimuovi almeno un\'immagine';
   @override
-  String get removeAtLeastOneQuestion => 'removeAtLeastOneQuestion';
+  String get removeAtLeastOneQuestion => 'Rimuovi almeno una domanda';
   @override
-  String get removeCover => 'removeCover';
+  String get removeCover => 'Rimuovere la copertura';
   @override
-  String get removeCurator => 'removeCurator';
+  String get removeCurator => 'Rimuovi curatore';
   @override
-  String get removeFavorite => 'removeFavorite';
+  String get removeFavorite => 'Rimuovi preferito';
   @override
-  String get removeFriend => 'removeFriend';
+  String get removeFriend => 'Rimuovi amico';
   @override
-  String get removeFromFavorites => 'removeFromFavorites';
+  String get removeFromFavorites => 'Rimuovi dai preferiti';
   @override
-  String get removeLeader => 'removeLeader';
+  String get removeLeader => 'Rimuovi leader';
   @override
-  String get removeLink => 'removeLink';
+  String get removeLink => 'Rimuovi collegamento';
   @override
-  String get removeMember => 'removeMember';
+  String get removeMember => 'Rimuovi membro';
   @override
-  String get removeMusic => 'removeMusic';
+  String get removeMusic => 'Rimuovi musica';
   @override
-  String get removePoll => 'removePoll';
+  String get removePoll => 'Rimuovi sondaggio';
   @override
-  String get removeQuiz => 'removeQuiz';
+  String get removeQuiz => 'Rimuovi quiz';
   @override
-  String get removeUser => 'removeUser';
+  String get removeUser => 'Rimuovi utente';
   @override
-  String get removeUserFromChat => 'removeUserFromChat';
+  String get removeUserFromChat => 'Rimuovi utente dalla chat';
   @override
-  String get removedFromFavorites => 'removedFromFavorites';
+  String get removedFromFavorites => 'Rimosso dai preferiti';
   @override
-  String get reorder2 => 'reorder2';
+  String get reorder2 => 'Riordina2';
   @override
-  String get report2 => 'report2';
+  String get report2 => 'Rapporto2';
   @override
-  String get reportBug2 => 'reportBug2';
+  String get reportBug2 => 'Segnala Bug2';
   @override
-  String get reportDetails => 'reportDetails';
+  String get reportDetails => 'Dettagli del rapporto';
   @override
-  String get reportSentSuccess => 'reportSentSuccess';
+  String get reportSentSuccess => 'Rapporto inviato con successo';
   @override
-  String get reportSubmittedSuccess => 'reportSubmittedSuccess';
+  String get reportSubmittedSuccess => 'Segnalazione inviata con successo';
   @override
-  String get reportSummary => 'reportSummary';
+  String get reportSummary => 'Riepilogo del rapporto';
   @override
-  String get reportedUser => 'reportedUser';
+  String get reportedUser => 'Utente segnalato';
   @override
-  String get reportsCenter => 'reportsCenter';
+  String get reportsCenter => 'Centro rapporti';
   @override
-  String get reputation2 => 'reputation2';
+  String get reputation2 => 'Reputazione2';
   @override
-  String get reputationLevel => 'reputationLevel';
+  String get reputationLevel => 'Livello di reputazione';
   @override
-  String get reputationPoints => 'reputationPoints';
+  String get reputationPoints => 'Punti reputazione';
   @override
-  String get requestData => 'requestData';
+  String get requestData => 'Richiedi dati';
   @override
-  String get requestDataMsg => 'requestDataMsg';
+  String get requestDataMsg => 'Richiedi dati Msg';
   @override
-  String get requestToJoinSent => 'requestToJoinSent';
+  String get requestToJoinSent => 'Richiesta di iscrizione inviata';
   @override
-  String get required => 'required';
+  String get required => 'Necessario';
   @override
-  String get resendCode => 'resendCode';
+  String get resendCode => 'Invia nuovamente il codice';
   @override
-  String get resendEmail => 'resendEmail';
+  String get resendEmail => 'Invia nuovamente l\'e-mail';
   @override
-  String get resendVerificationEmail => 'resendVerificationEmail';
+  String get resendVerificationEmail => 'Invia nuovamente l\'e-mail di verifica';
   @override
-  String get reset => 'reset';
+  String get reset => 'Reset';
   @override
-  String get reset2 => 'reset2';
+  String get reset2 => 'Ripristina2';
   @override
-  String get resetLayout => 'resetLayout';
+  String get resetLayout => 'Reimposta layout';
   @override
-  String get resetPasswordSuccess => 'resetPasswordSuccess';
+  String get resetPasswordSuccess => 'Reimpostazione della password riuscita';
   @override
-  String get restore => 'restore';
+  String get restore => 'Ripristinare';
   @override
-  String get restrictContent => 'restrictContent';
+  String get restrictContent => 'Limita contenuto';
   @override
-  String get results => 'results';
+  String get results => 'Risultati';
   @override
-  String get resume => 'resume';
+  String get resume => 'Riprendere';
   @override
-  String get review => 'review';
+  String get review => 'Revisione';
   @override
-  String get revokeAllDevices => 'revokeAllDevices';
+  String get revokeAllDevices => 'Revoca tutti i dispositivi';
   @override
-  String get rookie => 'rookie';
+  String get rookie => 'Principiante';
   @override
-  String get saveDraft => 'saveDraft';
+  String get saveDraft => 'Salva bozza';
   @override
-  String get searchByUsername => 'searchByUsername';
+  String get searchByUsername => 'Cerca per nome utente';
   @override
-  String get searchForCommunities => 'searchForCommunities';
+  String get searchForCommunities => 'Cerca comunità';
   @override
-  String get searchForGifs => 'searchForGifs';
+  String get searchForGifs => 'Cerca Gif';
   @override
-  String get searchForMembers => 'searchForMembers';
+  String get searchForMembers => 'Cerca membri';
   @override
-  String get searchForMusic => 'searchForMusic';
+  String get searchForMusic => 'Cerca musica';
   @override
-  String get searchForPosts => 'searchForPosts';
+  String get searchForPosts => 'Cerca post';
   @override
-  String get searchForStickers => 'searchForStickers';
+  String get searchForStickers => 'Cerca adesivi';
   @override
-  String get searchForStickers2 => 'searchForStickers2';
+  String get searchForStickers2 => 'Cerca adesivi2';
   @override
-  String get searchForUsers => 'searchForUsers';
+  String get searchForUsers => 'Cerca utenti';
   @override
-  String get searchForUsers2 => 'searchForUsers2';
+  String get searchForUsers2 => 'Cerca utenti2';
   @override
-  String get searchGifs => 'searchGifs';
+  String get searchGifs => 'Cerca Gif';
   @override
-  String get searchImages => 'searchImages';
+  String get searchImages => 'Cerca immagini';
   @override
-  String get searchPosts => 'searchPosts';
+  String get searchPosts => 'Cerca post';
   @override
-  String get searchStickers => 'searchStickers';
+  String get searchStickers => 'Cerca adesivi';
   @override
-  String get searchUsers => 'searchUsers';
+  String get searchUsers => 'Cerca utenti';
   @override
-  String get securityAndPrivacy => 'securityAndPrivacy';
+  String get securityAndPrivacy => 'Sicurezza e privacy';
   @override
-  String get seeWhoVoted => 'seeWhoVoted';
+  String get seeWhoVoted => 'Guarda chi ha votato';
   @override
-  String get selectAction => 'selectAction';
+  String get selectAction => 'Seleziona Azione';
   @override
-  String get selectAtLeastOne => 'selectAtLeastOne';
+  String get selectAtLeastOne => 'Seleziona almeno uno';
   @override
-  String get selectAtLeastOneInterest => 'selectAtLeastOneInterest';
+  String get selectAtLeastOneInterest => 'Seleziona almeno un interesse';
   @override
-  String get selectAtLeastTwo => 'selectAtLeastTwo';
+  String get selectAtLeastTwo => 'Seleziona almeno due';
   @override
-  String get selectCover => 'selectCover';
+  String get selectCover => 'Seleziona Copertina';
   @override
-  String get selectCoverImage => 'selectCoverImage';
+  String get selectCoverImage => 'Seleziona Immagine di copertina';
   @override
-  String get selectDuration => 'selectDuration';
+  String get selectDuration => 'Seleziona Durata';
   @override
-  String get selectIcon => 'selectIcon';
+  String get selectIcon => 'Seleziona l\'icona';
   @override
-  String get selectPollEndDate => 'selectPollEndDate';
+  String get selectPollEndDate => 'Seleziona Data di fine sondaggio';
   @override
-  String get selectQuizEndDate => 'selectQuizEndDate';
+  String get selectQuizEndDate => 'Seleziona la data di fine del quiz';
   @override
-  String get selectReason => 'selectReason';
+  String get selectReason => 'Seleziona Motivo';
   @override
-  String get selectSticker => 'selectSticker';
+  String get selectSticker => 'Seleziona Adesivo';
   @override
-  String get selectVideo => 'selectVideo';
+  String get selectVideo => 'Seleziona Video';
   @override
-  String get selfHarm => 'selfHarm';
+  String get selfHarm => 'Autolesionismo';
   @override
-  String get sendAMessage => 'sendAMessage';
+  String get sendAMessage => 'Invia un messaggio';
   @override
-  String get sendBroadcastTo => 'sendBroadcastTo';
+  String get sendBroadcastTo => 'Invia trasmissione a';
   @override
-  String get sendCoinsToUser => 'sendCoinsToUser';
+  String get sendCoinsToUser => 'Invia monete all\'utente';
   @override
-  String get sendFile => 'sendFile';
+  String get sendFile => 'Invia file';
   @override
-  String get sendFileToChat => 'sendFileToChat';
+  String get sendFileToChat => 'Invia file alla chat';
   @override
-  String get sendGif => 'sendGif';
+  String get sendGif => 'Invia Gif';
   @override
-  String get sendToEveryone => 'sendToEveryone';
+  String get sendToEveryone => 'Invia a tutti';
   @override
-  String get sendingAudio => 'sendingAudio';
+  String get sendingAudio => 'Invio dell\'audio';
   @override
-  String get sendingMessage => 'sendingMessage';
+  String get sendingMessage => 'Invio messaggio';
   @override
-  String get sendingVideo => 'sendingVideo';
+  String get sendingVideo => 'Invio video';
   @override
-  String get sessionExpiredMessage => 'sessionExpiredMessage';
+  String get sessionExpiredMessage => 'Messaggio di sessione scaduta';
   @override
-  String get sexualContent => 'sexualContent';
+  String get sexualContent => 'Contenuti sessuali';
   @override
-  String get sexuallyExplicit => 'sexuallyExplicit';
+  String get sexuallyExplicit => 'Sessualmente esplicito';
   @override
-  String get shareCommunity => 'shareCommunity';
+  String get shareCommunity => 'Condividi comunità';
   @override
-  String get shareImage => 'shareImage';
+  String get shareImage => 'Condividi immagine';
   @override
-  String get sharePost => 'sharePost';
+  String get sharePost => 'Condividi il messaggio';
   @override
-  String get shareProfile2 => 'shareProfile2';
+  String get shareProfile2 => 'Condividi profilo2';
   @override
-  String get shareTheCommunity => 'shareTheCommunity';
+  String get shareTheCommunity => 'Condividi la comunità';
   @override
-  String get shareWiki => 'shareWiki';
+  String get shareWiki => 'Condividi Wiki';
   @override
-  String get shareYourThoughts => 'shareYourThoughts';
+  String get shareYourThoughts => 'Condividi i tuoi pensieri';
   @override
-  String get showLess => 'showLess';
+  String get showLess => 'Mostra meno';
   @override
-  String get showMore => 'showMore';
+  String get showMore => 'Mostra altro';
   @override
-  String get showOriginal => 'showOriginal';
+  String get showOriginal => 'Mostra originale';
   @override
-  String get silent => 'silent';
+  String get silent => 'Silenzioso';
   @override
-  String get soundOnNotifications => 'soundOnNotifications';
+  String get soundOnNotifications => 'Suono sulle notifiche';
   @override
-  String get soundOnNotificationsDesc => 'soundOnNotificationsDesc';
+  String get soundOnNotificationsDesc => 'Suono sulle notifiche Desc';
   @override
-  String get start => 'start';
+  String get start => 'Inizio';
   @override
-  String get startAConversation => 'startAConversation';
+  String get startAConversation => 'Inizia una conversazione';
   @override
-  String get startChat => 'startChat';
+  String get startChat => 'Avvia chat';
   @override
-  String get startChatting => 'startChatting';
+  String get startChatting => 'Inizia a chattare';
   @override
-  String get startFollowing => 'startFollowing';
+  String get startFollowing => 'Inizia a seguire';
   @override
-  String get startNewChat => 'startNewChat';
+  String get startNewChat => 'Avvia una nuova chat';
   @override
-  String get startTyping => 'startTyping';
+  String get startTyping => 'Inizia a digitare';
   @override
-  String get stickerAddedToPost => 'stickerAddedToPost';
+  String get stickerAddedToPost => 'Adesivo aggiunto al post';
   @override
-  String get stickerPack => 'stickerPack';
+  String get stickerPack => 'Pacchetto adesivi';
   @override
-  String get stickerPacks => 'stickerPacks';
+  String get stickerPacks => 'Pacchetti di adesivi';
   @override
-  String get story => 'story';
+  String get story => 'Storia';
   @override
-  String get storyCreatedSuccess => 'storyCreatedSuccess';
+  String get storyCreatedSuccess => 'Storia creata successo';
   @override
-  String get storyOptions => 'storyOptions';
+  String get storyOptions => 'Opzioni della storia';
   @override
-  String get storyViews => 'storyViews';
+  String get storyViews => 'Visualizzazioni della storia';
   @override
-  String get strikeUser => 'strikeUser';
+  String get strikeUser => 'Colpisci l\'utente';
   @override
-  String get submit => 'submit';
+  String get submit => 'Invia';
   @override
-  String get submitForReview => 'submitForReview';
+  String get submitForReview => 'Invia per la revisione';
   @override
-  String get submitToCatalog => 'submitToCatalog';
+  String get submitToCatalog => 'Invia al catalogo';
   @override
-  String get submitted => 'submitted';
+  String get submitted => 'Inviato';
   @override
-  String get subscribeToPlus => 'subscribeToPlus';
+  String get subscribeToPlus => 'Iscriviti a Plus';
   @override
-  String get subscription => 'subscription';
+  String get subscription => 'Sottoscrizione';
   @override
-  String get success => 'success';
+  String get success => 'Successo';
   @override
-  String get successfullyUnfollowed => 'successfullyUnfollowed';
+  String get successfullyUnfollowed => 'Non seguito con successo';
   @override
-  String get successfullyUnlinked => 'successfullyUnlinked';
+  String get successfullyUnlinked => 'Scollegato correttamente';
   @override
-  String get takeAPhoto => 'takeAPhoto';
+  String get takeAPhoto => 'Scatta una foto';
   @override
-  String get takePicture => 'takePicture';
+  String get takePicture => 'Scatta una foto';
   @override
-  String get tapAnAnswer => 'tapAnAnswer';
+  String get tapAnAnswer => 'Tocca Una risposta';
   @override
-  String get tapHereToStart => 'tapHereToStart';
+  String get tapHereToStart => 'Tocca qui per iniziare';
   @override
-  String get tapToAdd => 'tapToAdd';
+  String get tapToAdd => 'Tocca per aggiungere';
   @override
-  String get tapToAddDescription => 'tapToAddDescription';
+  String get tapToAddDescription => 'Tocca per aggiungere una descrizione';
   @override
-  String get tapToChange => 'tapToChange';
+  String get tapToChange => 'Tocca per modificare';
   @override
-  String get tapToCopy => 'tapToCopy';
+  String get tapToCopy => 'Tocca per copiare';
   @override
-  String get tapToEdit => 'tapToEdit';
+  String get tapToEdit => 'Tocca per modificare';
   @override
-  String get tapToJoin => 'tapToJoin';
+  String get tapToJoin => 'Tocca per partecipare';
   @override
-  String get tapToRecord => 'tapToRecord';
+  String get tapToRecord => 'Tocca per registrare';
   @override
-  String get tapToReply => 'tapToReply';
+  String get tapToReply => 'Tocca per rispondere';
   @override
-  String get tapToSee => 'tapToSee';
+  String get tapToSee => 'Tocca per vedere';
   @override
-  String get tapToSeeDetails => 'tapToSeeDetails';
+  String get tapToSeeDetails => 'Tocca per vedere i dettagli';
   @override
-  String get tapToSelect => 'tapToSelect';
+  String get tapToSelect => 'Tocca per selezionare';
   @override
-  String get tapToStartChat => 'tapToStartChat';
+  String get tapToStartChat => 'Tocca per avviare la chat';
   @override
-  String get tapToUnfollow => 'tapToUnfollow';
+  String get tapToUnfollow => 'Tocca per non seguire più';
   @override
-  String get tapToView => 'tapToView';
+  String get tapToView => 'Tocca per visualizzare';
   @override
-  String get tapToVote => 'tapToVote';
+  String get tapToVote => 'Tocca per votare';
   @override
-  String get textCopied => 'textCopied';
+  String get textCopied => 'Testo copiato';
   @override
-  String get textFormatting => 'textFormatting';
+  String get textFormatting => 'Formattazione del testo';
   @override
-  String get theme => 'theme';
+  String get theme => 'Tema';
   @override
-  String get thisActionIsIrreversible => 'thisActionIsIrreversible';
+  String get thisActionIsIrreversible => 'Questa azione è irreversibile';
   @override
-  String get thisChatIsPrivate => 'thisChatIsPrivate';
+  String get thisChatIsPrivate => 'Questa chat è privata';
   @override
-  String get thisChatIsPublic => 'thisChatIsPublic';
+  String get thisChatIsPublic => 'Questa chat è pubblica';
   @override
-  String get thisContentIsHidden => 'thisContentIsHidden';
+  String get thisContentIsHidden => 'Questo contenuto è nascosto';
   @override
-  String get thisPostIsPrivate => 'thisPostIsPrivate';
+  String get thisPostIsPrivate => 'Questo post è privato';
   @override
-  String get thisPostIsPublic => 'thisPostIsPublic';
+  String get thisPostIsPublic => 'Questo post è pubblico';
   @override
-  String get title2 => 'title2';
+  String get title2 => 'Titolo2';
   @override
-  String get titleIsRequired => 'titleIsRequired';
+  String get titleIsRequired => 'Il titolo è obbligatorio';
   @override
-  String get titleLabel => 'titleLabel';
+  String get titleLabel => 'Etichetta del titolo';
   @override
-  String get titleOptional => 'titleOptional';
+  String get titleOptional => 'Titolo Facoltativo';
   @override
-  String get todayAt => 'todayAt';
+  String get todayAt => 'Oggi a';
   @override
-  String get topFans => 'topFans';
+  String get topFans => 'I migliori fan';
   @override
-  String get transferCoins => 'transferCoins';
+  String get transferCoins => 'Trasferisci monete';
   @override
-  String get transferLeadership => 'transferLeadership';
+  String get transferLeadership => 'Trasferire la direzione';
   @override
-  String get transferOwnership => 'transferOwnership';
+  String get transferOwnership => 'Trasferimento di proprietà';
   @override
-  String get transferTo => 'transferTo';
+  String get transferTo => 'Trasferisci a';
   @override
-  String get transfering => 'transfering';
+  String get transfering => 'Trasferimento';
   @override
-  String get transferingOwner => 'transferingOwner';
+  String get transferingOwner => 'Trasferimento del proprietario';
   @override
-  String get translate => 'translate';
+  String get translate => 'Tradurre';
   @override
-  String get translation => 'translation';
+  String get translation => 'Traduzione';
   @override
-  String get typeSomething => 'typeSomething';
+  String get typeSomething => 'Digita qualcosa';
   @override
-  String get typeYourMessage => 'typeYourMessage';
+  String get typeYourMessage => 'Digita il tuo messaggio';
   @override
-  String get typeYourMessageHere => 'typeYourMessageHere';
+  String get typeYourMessageHere => 'Scrivi qui il tuo messaggio';
   @override
-  String get unbanUser => 'unbanUser';
+  String get unbanUser => 'Utente sbloccato';
   @override
-  String get unblockUserConfirmation => 'unblockUserConfirmation';
+  String get unblockUserConfirmation => 'Sblocca la conferma dell\'utente';
   @override
-  String get underlineFormat => 'underlineFormat';
+  String get underlineFormat => 'Sottolinea il formato';
   @override
-  String get unfeature => 'unfeature';
+  String get unfeature => 'Disattivazione';
   @override
-  String get unfeaturePost => 'unfeaturePost';
+  String get unfeaturePost => 'Post non in evidenza';
   @override
-  String get unfollowUser => 'unfollowUser';
+  String get unfollowUser => 'Smetti di seguire l\'utente';
   @override
-  String get unfollowUserConfirmation => 'unfollowUserConfirmation';
+  String get unfollowUserConfirmation => 'Smetti di seguire la conferma dell\'utente';
   @override
-  String get unknownUser => 'unknownUser';
+  String get unknownUser => 'Utente sconosciuto';
   @override
-  String get unlinkProvider => 'unlinkProvider';
+  String get unlinkProvider => 'Scollega fornitore';
   @override
-  String get unpin => 'unpin';
+  String get unpin => 'Sblocca';
   @override
-  String get unpinFromBlog => 'unpinFromBlog';
+  String get unpinFromBlog => 'Sblocca dal blog';
   @override
-  String get unpinFromCommunityHome => 'unpinFromCommunityHome';
+  String get unpinFromCommunityHome => 'Sblocca dalla home page della comunità';
   @override
-  String get unpinMessage => 'unpinMessage';
+  String get unpinMessage => 'Sblocca messaggio';
   @override
-  String get unread => 'unread';
+  String get unread => 'Non letto';
   @override
-  String get unreadChats => 'unreadChats';
+  String get unreadChats => 'Chat non lette';
   @override
-  String get unsupportedLink => 'unsupportedLink';
+  String get unsupportedLink => 'Collegamento non supportato';
   @override
-  String get until => 'until';
+  String get until => 'Fino a';
   @override
-  String get upcoming => 'upcoming';
+  String get upcoming => 'Prossimamente';
   @override
-  String get updateAction => 'updateAction';
+  String get updateAction => 'Azione di aggiornamento';
   @override
-  String get updateAvailable => 'updateAvailable';
+  String get updateAvailable => 'Aggiornamento disponibile';
   @override
-  String get updateEmail => 'updateEmail';
+  String get updateEmail => 'Aggiorna e-mail';
   @override
-  String get updateNow => 'updateNow';
+  String get updateNow => 'Aggiorna ora';
   @override
-  String get uploadFromGallery => 'uploadFromGallery';
+  String get uploadFromGallery => 'Carica dalla Galleria';
   @override
-  String get uploadVideo => 'uploadVideo';
+  String get uploadVideo => 'Carica video';
   @override
-  String get uploading => 'uploading';
+  String get uploading => 'Caricamento in corso';
   @override
-  String get uploadingFile => 'uploadingFile';
+  String get uploadingFile => 'Caricamento file';
   @override
-  String get uploadingImage => 'uploadingImage';
+  String get uploadingImage => 'Caricamento immagine';
   @override
-  String get uploadingVideo => 'uploadingVideo';
+  String get uploadingVideo => 'Caricamento video';
   @override
-  String get userBanned => 'userBanned';
+  String get userBanned => 'Utente bannato';
   @override
-  String get userHasBeenBanned => 'userHasBeenBanned';
+  String get userHasBeenBanned => 'L\'utente è stato bannato';
   @override
-  String get userHasBeenKicked => 'userHasBeenKicked';
+  String get userHasBeenKicked => 'L\'utente è stato espulso';
   @override
-  String get userHasBeenMuted => 'userHasBeenMuted';
+  String get userHasBeenMuted => 'L\'utente è stato disattivato';
   @override
-  String get userHasBeenUnbanned => 'userHasBeenUnbanned';
+  String get userHasBeenUnbanned => 'L\'utente è stato sbloccato';
   @override
-  String get userHasBeenWarned => 'userHasBeenWarned';
+  String get userHasBeenWarned => 'L\'utente è stato avvisato';
   @override
-  String get userKicked => 'userKicked';
+  String get userKicked => 'Utente espulso';
   @override
-  String get userMuted => 'userMuted';
+  String get userMuted => 'Utente disattivato';
   @override
-  String get userNotFound => 'userNotFound';
+  String get userNotFound => 'Utente non trovato';
   @override
-  String get userProfile => 'userProfile';
+  String get userProfile => 'Profilo utente';
   @override
-  String get userUnbanned => 'userUnbanned';
+  String get userUnbanned => 'Utente non bannato';
   @override
-  String get userWarned => 'userWarned';
+  String get userWarned => 'Utente avvisato';
   @override
-  String get verificationEmailSent => 'verificationEmailSent';
+  String get verificationEmailSent => 'E-mail di verifica inviata';
   @override
-  String get veteran => 'veteran';
+  String get veteran => 'Veterano';
   @override
-  String get video2 => 'video2';
+  String get video2 => 'Video2';
   @override
-  String get videoAddedToPost => 'videoAddedToPost';
+  String get videoAddedToPost => 'Video aggiunto al post';
   @override
-  String get videoPublishedSuccess => 'videoPublishedSuccess';
+  String get videoPublishedSuccess => 'Successo nella pubblicazione del video';
   @override
-  String get videoTitle => 'videoTitle';
+  String get videoTitle => 'Titolo del video';
   @override
-  String get viewAll => 'viewAll';
+  String get viewAll => 'Visualizza tutto';
   @override
-  String get viewAll2 => 'viewAll2';
+  String get viewAll2 => 'Visualizza tutto2';
   @override
-  String get viewParticipants => 'viewParticipants';
+  String get viewParticipants => 'Visualizza partecipanti';
   @override
-  String get viewPost => 'viewPost';
+  String get viewPost => 'Visualizza messaggio';
   @override
-  String get viewProfile => 'viewProfile';
+  String get viewProfile => 'Visualizza profilo';
   @override
-  String get viewResults => 'viewResults';
+  String get viewResults => 'Visualizza risultati';
   @override
-  String get viewStory => 'viewStory';
+  String get viewStory => 'Visualizza la storia';
   @override
-  String get violentContent => 'violentContent';
+  String get violentContent => 'Contenuti violenti';
   @override
-  String get visitor => 'visitor';
+  String get visitor => 'Visitatore';
   @override
-  String get voiceChat => 'voiceChat';
+  String get voiceChat => 'Chat vocale';
   @override
-  String get voiceNote => 'voiceNote';
+  String get voiceNote => 'Nota vocale';
   @override
-  String get waitingForWifi => 'waitingForWifi';
+  String get waitingForWifi => 'In attesa del Wi-Fi';
   @override
-  String get wall2 => 'wall2';
+  String get wall2 => 'Muro2';
   @override
-  String get wallComments => 'wallComments';
+  String get wallComments => 'Commenti sul muro';
   @override
-  String get warnUser => 'warnUser';
+  String get warnUser => 'Avvisa l\'utente';
   @override
-  String get warning => 'warning';
+  String get warning => 'Avvertimento';
   @override
-  String get warningSent => 'warningSent';
+  String get warningSent => 'Avviso inviato';
   @override
-  String get watch => 'watch';
+  String get watch => 'Orologio';
   @override
-  String get watchAds => 'watchAds';
+  String get watchAds => 'Guarda gli annunci';
   @override
-  String get watchVideo => 'watchVideo';
+  String get watchVideo => 'Guarda il video';
   @override
-  String get welcome2 => 'welcome2';
+  String get welcome2 => 'Benvenuto2';
   @override
-  String get welcomeToOurCommunity => 'welcomeToOurCommunity';
+  String get welcomeToOurCommunity => 'Benvenuto nella nostra comunità';
   @override
-  String get wiki2 => 'wiki2';
+  String get wiki2 => 'Wiki2';
   @override
-  String get writeAComment => 'writeAComment';
+  String get writeAComment => 'Scrivi un commento';
   @override
-  String get writeAMessage => 'writeAMessage';
+  String get writeAMessage => 'Scrivi un messaggio';
   @override
-  String get writeAPost => 'writeAPost';
+  String get writeAPost => 'Scrivi un post';
   @override
-  String get writeAReply => 'writeAReply';
+  String get writeAReply => 'Scrivi una risposta';
   @override
-  String get writeSomething => 'writeSomething';
+  String get writeSomething => 'Scrivi qualcosa';
   @override
-  String get writeYourMessage => 'writeYourMessage';
+  String get writeYourMessage => 'Scrivi il tuo messaggio';
   @override
-  String get yes2 => 'yes2';
+  String get yes2 => 'Sì2';
   @override
-  String get yesDeleteIt => 'yesDeleteIt';
+  String get yesDeleteIt => 'Sì, eliminalo';
   @override
-  String get youAreBanned => 'youAreBanned';
+  String get youAreBanned => 'Sei bannato';
   @override
-  String get youAreMuted => 'youAreMuted';
+  String get youAreMuted => 'Sei disattivato';
   @override
-  String get youAreNotFollowingAnyone => 'youAreNotFollowingAnyone';
+  String get youAreNotFollowingAnyone => 'Non stai seguendo nessuno';
   @override
-  String get youHaveBeenBanned => 'youHaveBeenBanned';
+  String get youHaveBeenBanned => 'Sei stato bannato';
   @override
-  String get youHaveBeenKicked => 'youHaveBeenKicked';
+  String get youHaveBeenKicked => 'Sei stato preso a calci';
   @override
-  String get youHaveBeenMuted => 'youHaveBeenMuted';
+  String get youHaveBeenMuted => 'Sei stato disattivato';
   @override
-  String get youHaveBeenWarned => 'youHaveBeenWarned';
+  String get youHaveBeenWarned => 'Sei stato avvisato';
   @override
-  String get youHaveNoDrafts => 'youHaveNoDrafts';
+  String get youHaveNoDrafts => 'Non hai bozze';
   @override
-  String get youHaveNoFollowers => 'youHaveNoFollowers';
+  String get youHaveNoFollowers => 'Non hai follower';
   @override
-  String get youHaveNoPosts => 'youHaveNoPosts';
+  String get youHaveNoPosts => 'Non hai post';
   @override
-  String get youHaveNoSavedPosts => 'youHaveNoSavedPosts';
+  String get youHaveNoSavedPosts => 'Non hai post salvati';
   @override
-  String get yourAccount => 'yourAccount';
+  String get yourAccount => 'Il tuo conto';
   @override
-  String get yourAccountHasBeenDeleted => 'yourAccountHasBeenDeleted';
+  String get yourAccountHasBeenDeleted => 'Il tuo account è stato eliminato';
   @override
-  String get yourChangesHaveBeenSaved => 'yourChangesHaveBeenSaved';
+  String get yourChangesHaveBeenSaved => 'Le tue modifiche sono state salvate';
   @override
-  String get yourEmailHasBeenVerified => 'yourEmailHasBeenVerified';
+  String get yourEmailHasBeenVerified => 'La tua email è stata verificata';
   @override
-  String get yourInterests => 'yourInterests';
+  String get yourInterests => 'I tuoi interessi';
   @override
-  String get yourLanguages => 'yourLanguages';
+  String get yourLanguages => 'Le tue lingue';
   @override
-  String get yourNickname => 'yourNickname';
+  String get yourNickname => 'Il tuo soprannome';
   @override
-  String get yourProfile => 'yourProfile';
+  String get yourProfile => 'Il tuo profilo';
   @override
-  String get yourProfileIsNowPublic => 'yourProfileIsNowPublic';
+  String get yourProfileIsNowPublic => 'Il tuo profilo è ora pubblico';
   @override
-  String get yourTopCommunities => 'yourTopCommunities';
+  String get yourTopCommunities => 'Le tue community principali';
   @override
-  String get yourWallIsEmpty => 'yourWallIsEmpty';
+  String get yourWallIsEmpty => 'Il tuo muro è vuoto';
   @override
-  String get youtubeVideo => 'youtubeVideo';
+  String get youtubeVideo => 'Video di Youtube';
   // FORMATTED COUNTS & NOTIFICATIONS
   @override
   String followersCount(int count) => '$count follower';
@@ -5694,23 +5694,23 @@ class AppStringsIt implements AppStrings {
 
   // ── Getters faltantes (placeholder) ──
   @override
-  String get reorder => 'reorder';
+  String get reorder => 'Riordina';
   @override
-  String get reportSent => 'reportSent';
+  String get reportSent => 'Rapporto inviato';
   @override
-  String get reportUser => 'reportUser';
+  String get reportUser => 'Segnala utente';
   @override
-  String get reportedContent => 'reportedContent';
+  String get reportedContent => 'Contenuto segnalato';
   @override
-  String get requestToJoin => 'requestToJoin';
+  String get requestToJoin => 'Richiedi di aderire';
   @override
-  String get requested => 'requested';
+  String get requested => 'Richiesto';
   @override
-  String get resetAction => 'resetAction';
+  String get resetAction => 'Azione di ripristino';
   @override
-  String get restorePurchases => 'restorePurchases';
+  String get restorePurchases => 'Ripristina gli acquisti';
   @override
-  String get reviewEntry => 'reviewEntry';
+  String get reviewEntry => 'Revisione della voce';
 
   @override
   String get coverPhoto => 'Foto di copertina';
@@ -5763,23 +5763,23 @@ class AppStringsIt implements AppStrings {
   @override
   String get privateChatDesc => 'Solo i membri invitati possono unirsi';
   @override
-  String get editProfileFrames => 'editProfileFrames';
+  String get editProfileFrames => 'Modifica cornici profilo';
   @override
-  String get profileBackgroundOptional => 'profileBackgroundOptional';
+  String get profileBackgroundOptional => 'Sfondo del profilo Facoltativo';
   @override
-  String get removeBackground => 'removeBackground';
+  String get removeBackground => 'Rimuovi sfondo';
   @override
-  String get addPhotoToGallery => 'addPhotoToGallery';
+  String get addPhotoToGallery => 'Aggiungi foto alla galleria';
   @override
-  String get removePhoto => 'removePhoto';
+  String get removePhoto => 'Rimuovi foto';
   @override
-  String get galleryCount => 'galleryCount';
+  String get galleryCount => 'Conteggio della galleria';
   @override
-  String get nicknameStyleHint => 'nicknameStyleHint';
+  String get nicknameStyleHint => 'Suggerimento sullo stile del soprannome';
   @override
-  String get tapToEditAvatar => 'tapToEditAvatar';
+  String get tapToEditAvatar => 'Tocca per modificare l\'avatar';
   @override
-  String get localAvatarRemoved => 'localAvatarRemoved';
+  String get localAvatarRemoved => 'Avatar locale rimosso';
   @override
-  String get maxGalleryPhotos => 'maxGalleryPhotos';
+  String get maxGalleryPhotos => 'Foto della Galleria Max';
 }

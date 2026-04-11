@@ -3572,1279 +3572,1279 @@ class AppStringsAr implements AppStrings {
 
   // ── Getters adicionados para completar a interface ──
   @override
-  String get adNotAvailableDesc => 'adNotAvailableDesc';
+  String get adNotAvailableDesc => 'الإعلان غير متوفر';
   @override
-  String get addAtLeastOneQuestionDesc => 'addAtLeastOneQuestionDesc';
+  String get addAtLeastOneQuestionDesc => 'أضف وصف سؤال واحد على الأقل';
   @override
-  String get addCoverImage => 'addCoverImage';
+  String get addCoverImage => 'إضافة صورة الغلاف';
   @override
-  String get addMembersToChat => 'addMembersToChat';
+  String get addMembersToChat => 'إضافة أعضاء للدردشة';
   @override
-  String get addPollOption => 'addPollOption';
+  String get addPollOption => 'إضافة خيار الاستطلاع';
   @override
-  String get addQuizQuestion => 'addQuizQuestion';
+  String get addQuizQuestion => 'إضافة سؤال مسابقة';
   @override
-  String get addSomething => 'addSomething';
+  String get addSomething => 'أضف شيئا';
   @override
-  String get addYourComment => 'addYourComment';
+  String get addYourComment => 'أضف تعليقك';
   @override
-  String get adminTools => 'adminTools';
+  String get adminTools => 'أدوات الإدارة';
   @override
-  String get allCommunities => 'allCommunities';
+  String get allCommunities => 'جميع المجتمعات';
   @override
-  String get allLabel => 'allLabel';
+  String get allLabel => 'كل التسمية';
   @override
-  String get allowChatInvites => 'allowChatInvites';
+  String get allowChatInvites => 'السماح بدعوات الدردشة';
   @override
-  String get allowChatInvitesDesc => 'allowChatInvitesDesc';
+  String get allowChatInvitesDesc => 'السماح بدعوات الدردشة';
   @override
-  String get allowCommentsDesc => 'allowCommentsDesc';
+  String get allowCommentsDesc => 'السماح بالتعليقات';
   @override
-  String get allowContentHighlightDesc => 'allowContentHighlightDesc';
+  String get allowContentHighlightDesc => 'السماح بتمييز المحتوى';
   @override
-  String get allowDirectMessages => 'allowDirectMessages';
+  String get allowDirectMessages => 'السماح بالرسائل المباشرة';
   @override
-  String get allowDirectMessagesDesc => 'allowDirectMessagesDesc';
+  String get allowDirectMessagesDesc => 'السماح بوصف الرسائل المباشرة';
   @override
-  String get allowFollowers => 'allowFollowers';
+  String get allowFollowers => 'السماح للمتابعين';
   @override
-  String get allowFollowersDesc => 'allowFollowersDesc';
+  String get allowFollowersDesc => 'السماح للمتابعين بوصف';
   @override
-  String get allowMentionsDesc => 'allowMentionsDesc';
+  String get allowMentionsDesc => 'السماح بالإشارات الموضحة';
   @override
-  String get allowProfileComments => 'allowProfileComments';
+  String get allowProfileComments => 'السماح بتعليقات الملف الشخصي';
   @override
-  String get allowProfileCommentsDesc => 'allowProfileCommentsDesc';
+  String get allowProfileCommentsDesc => 'السماح بتعليقات الملف الشخصي';
   @override
-  String get allowProps => 'allowProps';
+  String get allowProps => 'السماح بالدعائم';
   @override
-  String get allowPropsDesc => 'allowPropsDesc';
+  String get allowPropsDesc => 'السماح بوصف الدعائم';
   @override
-  String get allowWallComments => 'allowWallComments';
+  String get allowWallComments => 'السماح بتعليقات الحائط';
   @override
-  String get allowWallCommentsDesc => 'allowWallCommentsDesc';
+  String get allowWallCommentsDesc => 'السماح بتعليقات الحائط';
   @override
-  String get amount => 'amount';
+  String get amount => 'كمية';
   @override
-  String get anErrorOccurred => 'anErrorOccurred';
+  String get anErrorOccurred => 'حدث خطأ';
   @override
-  String get anErrorOccurredWhile => 'anErrorOccurredWhile';
+  String get anErrorOccurredWhile => 'حدث خطأ أثناء';
   @override
-  String get and => 'and';
+  String get and => 'و';
   @override
-  String get animation => 'animation';
+  String get animation => 'الرسوم المتحركة';
   @override
-  String get appearOffline => 'appearOffline';
+  String get appearOffline => 'تظهر دون اتصال';
   @override
-  String get applyTheme => 'applyTheme';
+  String get applyTheme => 'تطبيق الموضوع';
   @override
-  String get approveEntry => 'approveEntry';
+  String get approveEntry => 'الموافقة على الدخول';
   @override
-  String get approveJoinRequests => 'approveJoinRequests';
+  String get approveJoinRequests => 'الموافقة على طلبات الانضمام';
   @override
-  String get approveJoinRequestsDesc => 'approveJoinRequestsDesc';
+  String get approveJoinRequestsDesc => 'الموافقة على طلبات الانضمام Desc';
   @override
-  String get approveWikiSubmission => 'approveWikiSubmission';
+  String get approveWikiSubmission => 'الموافقة على تقديم ويكي';
   @override
-  String get approvedEntries => 'approvedEntries';
+  String get approvedEntries => 'الإدخالات المعتمدة';
   @override
-  String get areYouSure => 'areYouSure';
+  String get areYouSure => 'هل أنت متأكد';
   @override
-  String get areYouSureBan => 'areYouSureBan';
+  String get areYouSureBan => 'هل أنت متأكد بان';
   @override
-  String get areYouSureDelete => 'areYouSureDelete';
+  String get areYouSureDelete => 'هل أنت متأكد من حذف';
   @override
-  String get areYouSureDeleteAccount => 'areYouSureDeleteAccount';
+  String get areYouSureDeleteAccount => 'هل أنت متأكد من حذف الحساب';
   @override
-  String get areYouSureDeletePost => 'areYouSureDeletePost';
+  String get areYouSureDeletePost => 'هل أنت متأكد من حذف المشاركة';
   @override
-  String get areYouSureKick => 'areYouSureKick';
+  String get areYouSureKick => 'هل أنت متأكد من ركلة';
   @override
-  String get areYouSureLeave => 'areYouSureLeave';
+  String get areYouSureLeave => 'هل أنت متأكد من المغادرة';
   @override
-  String get areYouSureMute => 'areYouSureMute';
+  String get areYouSureMute => 'هل أنت متأكد من كتم الصوت';
   @override
-  String get areYouSureReject => 'areYouSureReject';
+  String get areYouSureReject => 'هل أنت متأكد من الرفض';
   @override
-  String get areYouSureRemove => 'areYouSureRemove';
+  String get areYouSureRemove => 'هل أنت متأكد من إزالة';
   @override
-  String get areYouSureRevoke => 'areYouSureRevoke';
+  String get areYouSureRevoke => 'هل أنت متأكد من إلغاء';
   @override
-  String get areYouSureStrike => 'areYouSureStrike';
+  String get areYouSureStrike => 'هل أنت متأكد من الإضراب';
   @override
-  String get areYouSureUnban => 'areYouSureUnban';
+  String get areYouSureUnban => 'هل أنت متأكد من Unban';
   @override
-  String get areYouSureUnfollowUser => 'areYouSureUnfollowUser';
+  String get areYouSureUnfollowUser => 'هل أنت متأكد من إلغاء متابعة المستخدم';
   @override
-  String get areYouSureWarn => 'areYouSureWarn';
+  String get areYouSureWarn => 'هل أنت متأكد من التحذير';
   @override
-  String get article => 'article';
+  String get article => 'شرط';
   @override
-  String get askJoinCommunity => 'askJoinCommunity';
+  String get askJoinCommunity => 'اسأل الانضمام إلى المجتمع';
   @override
-  String get attachFile => 'attachFile';
+  String get attachFile => 'إرفاق الملف';
   @override
-  String get attachMedia => 'attachMedia';
+  String get attachMedia => 'إرفاق وسائل الإعلام';
   @override
-  String get author => 'author';
+  String get author => 'مؤلف';
   @override
-  String get autoPlayVideos => 'autoPlayVideos';
+  String get autoPlayVideos => 'تشغيل مقاطع الفيديو تلقائيًا';
   @override
-  String get autoPlayVideosDesc => 'autoPlayVideosDesc';
+  String get autoPlayVideosDesc => 'وصف التشغيل التلقائي لمقاطع الفيديو';
   @override
-  String get avatar => 'avatar';
+  String get avatar => 'الصورة الرمزية';
   @override
-  String get avatarAndCover => 'avatarAndCover';
+  String get avatarAndCover => 'الصورة الرمزية والغلاف';
   @override
-  String get banUser => 'banUser';
+  String get banUser => 'حظر المستخدم';
   @override
-  String get banUserFromChat => 'banUserFromChat';
+  String get banUserFromChat => 'حظر المستخدم من الدردشة';
   @override
-  String get banned => 'banned';
+  String get banned => 'محظور';
   @override
-  String get beTheFirstToComment => 'beTheFirstToComment';
+  String get beTheFirstToComment => 'كن أول من يعلق';
   @override
-  String get beTheFirstToPost => 'beTheFirstToPost';
+  String get beTheFirstToPost => 'كن أول من ينشر';
   @override
-  String get blockUser => 'blockUser';
+  String get blockUser => 'حظر المستخدم';
   @override
-  String get blocked => 'blocked';
+  String get blocked => 'محظور';
   @override
-  String get blogLabel => 'blogLabel';
+  String get blogLabel => 'تسمية المدونة';
   @override
-  String get blogs => 'blogs';
+  String get blogs => 'مدونات';
   @override
-  String get bookmarkAdded => 'bookmarkAdded';
+  String get bookmarkAdded => 'تمت إضافة الإشارة المرجعية';
   @override
-  String get bookmarkRemoved => 'bookmarkRemoved';
+  String get bookmarkRemoved => 'تمت إزالة الإشارة المرجعية';
   @override
-  String get broadcast => 'broadcast';
+  String get broadcast => 'إذاعة';
   @override
-  String get broadcastMessage => 'broadcastMessage';
+  String get broadcastMessage => 'رسالة البث';
   @override
-  String get broadcastNotification => 'broadcastNotification';
+  String get broadcastNotification => 'إشعار البث';
   @override
-  String get broadcastTitle => 'broadcastTitle';
+  String get broadcastTitle => 'عنوان البث';
   @override
-  String get by => 'by';
+  String get by => 'بواسطة';
   @override
-  String get call => 'call';
+  String get call => 'يتصل';
   @override
-  String get cameraPermission => 'cameraPermission';
+  String get cameraPermission => 'إذن الكاميرا';
   @override
-  String get cannotBeEmpty => 'cannotBeEmpty';
+  String get cannotBeEmpty => 'لا يمكن أن تكون فارغة';
   @override
-  String get cannotBeUndone => 'cannotBeUndone';
+  String get cannotBeUndone => 'لا يمكن التراجع';
   @override
-  String get cannotRemoveLastLeader => 'cannotRemoveLastLeader';
+  String get cannotRemoveLastLeader => 'لا يمكن إزالة القائد الأخير';
   @override
-  String get cannotReportYourself => 'cannotReportYourself';
+  String get cannotReportYourself => 'لا يمكن الإبلاغ عن نفسك';
   @override
-  String get caption => 'caption';
+  String get caption => 'التسمية التوضيحية';
   @override
-  String get category => 'category';
+  String get category => 'فئة';
   @override
-  String get changeCommunity => 'changeCommunity';
+  String get changeCommunity => 'تغيير المجتمع';
   @override
-  String get changeCover => 'changeCover';
+  String get changeCover => 'تغيير الغلاف';
   @override
-  String get changeNickname => 'changeNickname';
+  String get changeNickname => 'تغيير اللقب';
   @override
-  String get changePassword => 'changePassword';
+  String get changePassword => 'تغيير كلمة المرور';
   @override
-  String get changePhoto => 'changePhoto';
+  String get changePhoto => 'تغيير الصورة';
   @override
-  String get changeUsername => 'changeUsername';
+  String get changeUsername => 'تغيير اسم المستخدم';
   @override
-  String get chatInvites => 'chatInvites';
+  String get chatInvites => 'دعوات الدردشة';
   @override
-  String get chatSettings => 'chatSettings';
+  String get chatSettings => 'إعدادات الدردشة';
   @override
-  String get chatWallpaper => 'chatWallpaper';
+  String get chatWallpaper => 'خلفيات الدردشة';
   @override
-  String get chooseACommunity => 'chooseACommunity';
+  String get chooseACommunity => 'اختر مجتمعًا';
   @override
-  String get chooseACover => 'chooseACover';
+  String get chooseACover => 'اختر الغلاف';
   @override
-  String get chooseAnImage => 'chooseAnImage';
+  String get chooseAnImage => 'اختر صورة';
   @override
-  String get chooseCategory => 'chooseCategory';
+  String get chooseCategory => 'اختر الفئة';
   @override
-  String get chooseColor => 'chooseColor';
+  String get chooseColor => 'اختر اللون';
   @override
-  String get chooseCover => 'chooseCover';
+  String get chooseCover => 'اختر الغلاف';
   @override
-  String get chooseDuration => 'chooseDuration';
+  String get chooseDuration => 'اختر المدة';
   @override
-  String get chooseImage => 'chooseImage';
+  String get chooseImage => 'اختر الصورة';
   @override
-  String get chooseLanguage => 'chooseLanguage';
+  String get chooseLanguage => 'اختر اللغة';
   @override
-  String get chooseLayout => 'chooseLayout';
+  String get chooseLayout => 'اختر التخطيط';
   @override
-  String get chooseNicknameDesc => 'chooseNicknameDesc';
+  String get chooseNicknameDesc => 'اختر وصف اللقب';
   @override
-  String get chooseOption => 'chooseOption';
+  String get chooseOption => 'اختر الخيار';
   @override
-  String get choosePollEndDate => 'choosePollEndDate';
+  String get choosePollEndDate => 'اختر تاريخ انتهاء الاستطلاع';
   @override
-  String get chooseReason => 'chooseReason';
+  String get chooseReason => 'اختر السبب';
   @override
-  String get chooseSticker => 'chooseSticker';
+  String get chooseSticker => 'اختر ملصقًا';
   @override
-  String get chooseTheme => 'chooseTheme';
+  String get chooseTheme => 'اختر الموضوع';
   @override
-  String get chooseVisibility => 'chooseVisibility';
+  String get chooseVisibility => 'اختر الرؤية';
   @override
-  String get clearAll => 'clearAll';
+  String get clearAll => 'مسح الكل';
   @override
-  String get clearCacheConfirmation => 'clearCacheConfirmation';
+  String get clearCacheConfirmation => 'مسح تأكيد ذاكرة التخزين المؤقت';
   @override
-  String get clearHistory => 'clearHistory';
+  String get clearHistory => 'مسح التاريخ';
   @override
-  String get clearHistoryConfirmation => 'clearHistoryConfirmation';
+  String get clearHistoryConfirmation => 'مسح تأكيد التاريخ';
   @override
-  String get clearRecentSearches => 'clearRecentSearches';
+  String get clearRecentSearches => 'مسح عمليات البحث الأخيرة';
   @override
-  String get closeAndSaveChanges => 'closeAndSaveChanges';
+  String get closeAndSaveChanges => 'إغلاق وحفظ التغييرات';
   @override
-  String get coinBalance => 'coinBalance';
+  String get coinBalance => 'رصيد العملة';
   @override
-  String get coinsSpent => 'coinsSpent';
+  String get coinsSpent => 'العملات المعدنية التي أنفقتها';
   @override
-  String get collapse => 'collapse';
+  String get collapse => 'ينهار';
   @override
-  String get commentDeleted => 'commentDeleted';
+  String get commentDeleted => 'تم حذف التعليق';
   @override
-  String get commentNotifications => 'commentNotifications';
+  String get commentNotifications => 'إشعارات التعليق';
   @override
-  String get commentOptions => 'commentOptions';
+  String get commentOptions => 'خيارات التعليق';
   @override
-  String get commentSent => 'commentSent';
+  String get commentSent => 'تم إرسال التعليق';
   @override
-  String get commentsLabel => 'commentsLabel';
+  String get commentsLabel => 'تسمية التعليقات';
   @override
-  String get commentsOnYourProfile => 'commentsOnYourProfile';
+  String get commentsOnYourProfile => 'التعليقات على ملفك الشخصي';
   @override
-  String get communityCreated => 'communityCreated';
+  String get communityCreated => 'تم إنشاء المجتمع';
   @override
-  String get communityDeleted => 'communityDeleted';
+  String get communityDeleted => 'تم حذف المجتمع';
   @override
-  String get communityDescriptionHint => 'communityDescriptionHint';
+  String get communityDescriptionHint => 'تلميح وصف المجتمع';
   @override
-  String get communityGuidelinesShort => 'communityGuidelinesShort';
+  String get communityGuidelinesShort => 'إرشادات المجتمع قصيرة';
   @override
-  String get communityInvites => 'communityInvites';
+  String get communityInvites => 'دعوات المجتمع';
   @override
-  String get communityLeader => 'communityLeader';
+  String get communityLeader => 'زعيم المجتمع';
   @override
-  String get communityLink => 'communityLink';
+  String get communityLink => 'رابط المجتمع';
   @override
-  String get communityMembers => 'communityMembers';
+  String get communityMembers => 'أعضاء المجتمع';
   @override
-  String get communityNameHint => 'communityNameHint';
+  String get communityNameHint => 'تلميح اسم المجتمع';
   @override
-  String get communityPrivacy => 'communityPrivacy';
+  String get communityPrivacy => 'خصوصية المجتمع';
   @override
-  String get communitySettings => 'communitySettings';
+  String get communitySettings => 'إعدادات المجتمع';
   @override
-  String get communityStats => 'communityStats';
+  String get communityStats => 'إحصائيات المجتمع';
   @override
-  String get communityUpdated => 'communityUpdated';
+  String get communityUpdated => 'تم تحديث المجتمع';
   @override
-  String get confirmBlockUser => 'confirmBlockUser';
+  String get confirmBlockUser => 'تأكيد حظر المستخدم';
   @override
-  String get confirmChanges => 'confirmChanges';
+  String get confirmChanges => 'تأكيد التغييرات';
   @override
-  String get confirmDelete => 'confirmDelete';
+  String get confirmDelete => 'تأكيد الحذف';
   @override
-  String get confirmDeleteAccount => 'confirmDeleteAccount';
+  String get confirmDeleteAccount => 'تأكيد حذف الحساب';
   @override
-  String get confirmDeleteConversation => 'confirmDeleteConversation';
+  String get confirmDeleteConversation => 'تأكيد حذف المحادثة';
   @override
-  String get confirmDeleteFile => 'confirmDeleteFile';
+  String get confirmDeleteFile => 'تأكيد حذف الملف';
   @override
-  String get confirmEmail => 'confirmEmail';
+  String get confirmEmail => '.تأكيد عنوان البريد الإلكتروني';
   @override
-  String get confirmLeaveCommunity => 'confirmLeaveCommunity';
+  String get confirmLeaveCommunity => 'تأكيد مغادرة المجتمع';
   @override
-  String get confirmLeaveGroup => 'confirmLeaveGroup';
+  String get confirmLeaveGroup => 'تأكيد مغادرة المجموعة';
   @override
-  String get confirmNewPassword => 'confirmNewPassword';
+  String get confirmNewPassword => 'تأكيد كلمة المرور الجديدة';
   @override
-  String get confirmPurchase => 'confirmPurchase';
+  String get confirmPurchase => 'تأكيد الشراء';
   @override
-  String get confirmReport => 'confirmReport';
+  String get confirmReport => 'تأكيد التقرير';
   @override
-  String get confirmSelection => 'confirmSelection';
+  String get confirmSelection => 'تأكيد الاختيار';
   @override
-  String get confirmUnfollow => 'confirmUnfollow';
+  String get confirmUnfollow => 'تأكيد إلغاء المتابعة';
   @override
-  String get connectWithFriends => 'connectWithFriends';
+  String get connectWithFriends => 'تواصل مع الأصدقاء';
   @override
-  String get connecting => 'connecting';
+  String get connecting => 'الاتصال';
   @override
-  String get contactUs => 'contactUs';
+  String get contactUs => 'اتصل بنا';
   @override
-  String get contentAndConduct => 'contentAndConduct';
+  String get contentAndConduct => 'المحتوى والسلوك';
   @override
-  String get contentFormat => 'contentFormat';
+  String get contentFormat => 'تنسيق المحتوى';
   @override
-  String get contentPolicies => 'contentPolicies';
+  String get contentPolicies => 'سياسات المحتوى';
   @override
-  String get continueWithEmail => 'continueWithEmail';
+  String get continueWithEmail => 'تواصل مع البريد الإلكتروني';
   @override
-  String get copiedToClipboardMsg => 'copiedToClipboardMsg';
+  String get copiedToClipboardMsg => 'تم النسخ إلى الحافظة Msg';
   @override
-  String get copyAction => 'copyAction';
+  String get copyAction => 'إجراء النسخ';
   @override
-  String get copyPostLink => 'copyPostLink';
+  String get copyPostLink => 'انسخ رابط المشاركة';
   @override
-  String get copyProfileLink => 'copyProfileLink';
+  String get copyProfileLink => 'انسخ رابط الملف الشخصي';
   @override
-  String get copyToClipboard => 'copyToClipboard';
+  String get copyToClipboard => 'نسخ إلى الحافظة';
   @override
-  String get couldNotLaunchUrl => 'couldNotLaunchUrl';
+  String get couldNotLaunchUrl => 'تعذر تشغيل عنوان URL';
   @override
-  String get createAPoll => 'createAPoll';
+  String get createAPoll => 'إنشاء استطلاع';
   @override
-  String get createAQuiz => 'createAQuiz';
+  String get createAQuiz => 'إنشاء اختبار';
   @override
-  String get createChat => 'createChat';
+  String get createChat => 'إنشاء دردشة';
   @override
-  String get createEvent => 'createEvent';
+  String get createEvent => 'إنشاء حدث';
   @override
-  String get createFirstPost => 'createFirstPost';
+  String get createFirstPost => 'إنشاء المشاركة الأولى';
   @override
-  String get createFolder => 'createFolder';
+  String get createFolder => 'إنشاء مجلد';
   @override
-  String get createYourCommunity => 'createYourCommunity';
+  String get createYourCommunity => 'أنشئ مجتمعك';
   @override
-  String get created => 'created';
+  String get created => 'مخلوق';
   @override
-  String get createdBy => 'createdBy';
+  String get createdBy => 'تم الإنشاء بواسطة';
   @override
-  String get creative => 'creative';
+  String get creative => 'مبدع';
   @override
-  String get customColor => 'customColor';
+  String get customColor => 'لون مخصص';
   @override
-  String get customImage => 'customImage';
+  String get customImage => 'صورة مخصصة';
   @override
-  String get customTheme => 'customTheme';
+  String get customTheme => 'موضوع مخصص';
   @override
-  String get dailyActiveMembers => 'dailyActiveMembers';
+  String get dailyActiveMembers => 'الأعضاء النشطين يوميا';
   @override
-  String get dailyBonus => 'dailyBonus';
+  String get dailyBonus => 'المكافأة اليومية';
   @override
-  String get dailyCheckInCoins => 'dailyCheckInCoins';
+  String get dailyCheckInCoins => 'عملات تسجيل الدخول اليومية';
   @override
-  String get dailyCheckInDesc => 'dailyCheckInDesc';
+  String get dailyCheckInDesc => 'تسجيل الوصول اليومي';
   @override
-  String get dailyCheckInHistory => 'dailyCheckInHistory';
+  String get dailyCheckInHistory => 'تسجيل الدخول اليومي في التاريخ';
   @override
-  String get dailyCheckInReward => 'dailyCheckInReward';
+  String get dailyCheckInReward => 'مكافأة تسجيل الدخول اليومية';
   @override
-  String get dailyCheckInStreak => 'dailyCheckInStreak';
+  String get dailyCheckInStreak => 'خط تسجيل الوصول اليومي';
   @override
-  String get dataAndStorage => 'dataAndStorage';
+  String get dataAndStorage => 'البيانات والتخزين';
   @override
-  String get dataExport => 'dataExport';
+  String get dataExport => 'تصدير البيانات';
   @override
-  String get dataExportDesc => 'dataExportDesc';
+  String get dataExportDesc => 'وصف تصدير البيانات';
   @override
-  String get dataUsage => 'dataUsage';
+  String get dataUsage => 'استخدام البيانات';
   @override
-  String get dateJoined => 'dateJoined';
+  String get dateJoined => 'تاريخ الانضمام';
   @override
-  String get deactivateAccount => 'deactivateAccount';
+  String get deactivateAccount => 'تعطيل الحساب';
   @override
-  String get defaultLabel => 'defaultLabel';
+  String get defaultLabel => 'التسمية الافتراضية';
   @override
-  String get deleteAccountConfirmation => 'deleteAccountConfirmation';
+  String get deleteAccountConfirmation => 'حذف تأكيد الحساب';
   @override
-  String get deleteChat => 'deleteChat';
+  String get deleteChat => 'حذف الدردشة';
   @override
-  String get deleteChatConfirmation => 'deleteChatConfirmation';
+  String get deleteChatConfirmation => 'حذف تأكيد الدردشة';
   @override
-  String get deleteComment => 'deleteComment';
+  String get deleteComment => 'حذف التعليق';
   @override
-  String get deleteCommentConfirmation => 'deleteCommentConfirmation';
+  String get deleteCommentConfirmation => 'حذف تأكيد التعليق';
   @override
-  String get deleteDraft => 'deleteDraft';
+  String get deleteDraft => 'حذف المسودة';
   @override
-  String get deleteForEveryone => 'deleteForEveryone';
+  String get deleteForEveryone => 'حذف للجميع';
   @override
-  String get deleteForMe => 'deleteForMe';
+  String get deleteForMe => 'حذف بالنسبة لي';
   @override
-  String get deleteFromHistory => 'deleteFromHistory';
+  String get deleteFromHistory => 'حذف من التاريخ';
   @override
-  String get deleteMessageConfirmation => 'deleteMessageConfirmation';
+  String get deleteMessageConfirmation => 'حذف تأكيد الرسالة';
   @override
-  String get deletePermanently => 'deletePermanently';
+  String get deletePermanently => 'حذف نهائيا';
   @override
-  String get deletePostConfirmation => 'deletePostConfirmation';
+  String get deletePostConfirmation => 'حذف تأكيد المشاركة';
   @override
-  String get deleteStory => 'deleteStory';
+  String get deleteStory => 'حذف القصة';
   @override
-  String get deleteStoryConfirmation => 'deleteStoryConfirmation';
+  String get deleteStoryConfirmation => 'حذف تأكيد القصة';
   @override
-  String get deleteWiki => 'deleteWiki';
+  String get deleteWiki => 'حذف ويكي';
   @override
-  String get deleteWikiConfirmation => 'deleteWikiConfirmation';
+  String get deleteWikiConfirmation => 'حذف تأكيد ويكي';
   @override
-  String get describeYourCommunity => 'describeYourCommunity';
+  String get describeYourCommunity => 'قم بوصف مجتمعك';
   @override
-  String get details => 'details';
+  String get details => 'تفاصيل';
   @override
-  String get deviceAndOs => 'deviceAndOs';
+  String get deviceAndOs => 'الجهاز ونظام التشغيل';
   @override
-  String get deviceManager => 'deviceManager';
+  String get deviceManager => 'مدير الجهاز';
   @override
-  String get deviceNotSupported => 'deviceNotSupported';
+  String get deviceNotSupported => 'الجهاز غير مدعوم';
   @override
-  String get disable => 'disable';
+  String get disable => 'إبطال';
   @override
-  String get disableAccount => 'disableAccount';
+  String get disableAccount => 'تعطيل الحساب';
   @override
-  String get disableAccountConfirmation => 'disableAccountConfirmation';
+  String get disableAccountConfirmation => 'تعطيل تأكيد الحساب';
   @override
-  String get disableComments => 'disableComments';
+  String get disableComments => 'تعطيل التعليقات';
   @override
-  String get discard => 'discard';
+  String get discard => 'ينبذ';
   @override
-  String get discardDraft => 'discardDraft';
+  String get discardDraft => 'تجاهل المسودة';
   @override
-  String get disconnected => 'disconnected';
+  String get disconnected => 'غير متصل';
   @override
-  String get discoverMore => 'discoverMore';
+  String get discoverMore => 'اكتشف المزيد';
   @override
-  String get discussion => 'discussion';
+  String get discussion => 'مناقشة';
   @override
-  String get discussions => 'discussions';
+  String get discussions => 'المناقشات';
   @override
-  String get doneEditing => 'doneEditing';
+  String get doneEditing => 'تم التحرير';
   @override
-  String get download => 'download';
+  String get download => 'تحميل';
   @override
-  String get downloadData => 'downloadData';
+  String get downloadData => 'تنزيل البيانات';
   @override
-  String get draftDiscarded => 'draftDiscarded';
+  String get draftDiscarded => 'تم تجاهل المسودة';
   @override
-  String get draftNotFound => 'draftNotFound';
+  String get draftNotFound => 'لم يتم العثور على المسودة';
   @override
-  String get draftPublished => 'draftPublished';
+  String get draftPublished => 'تم نشر المسودة';
   @override
-  String get duplicateContent => 'duplicateContent';
+  String get duplicateContent => 'محتوى مكرر';
   @override
-  String get earnCoins => 'earnCoins';
+  String get earnCoins => 'كسب العملات المعدنية';
   @override
-  String get editBio => 'editBio';
+  String get editBio => 'تحرير السيرة الذاتية';
   @override
-  String get editChat => 'editChat';
+  String get editChat => 'تحرير الدردشة';
   @override
-  String get editCover => 'editCover';
+  String get editCover => 'تحرير الغلاف';
   @override
-  String get editDraft => 'editDraft';
+  String get editDraft => 'تحرير المسودة';
   @override
-  String get editEntry => 'editEntry';
+  String get editEntry => 'تحرير الإدخال';
   @override
-  String get editImage => 'editImage';
+  String get editImage => 'تحرير الصورة';
   @override
-  String get editNickname => 'editNickname';
+  String get editNickname => 'تحرير اللقب';
   @override
-  String get editPostPermission => 'editPostPermission';
+  String get editPostPermission => 'تحرير إذن النشر';
   @override
-  String get editPostTitle => 'editPostTitle';
+  String get editPostTitle => 'تحرير عنوان المشاركة';
   @override
-  String get editProfileLabel => 'editProfileLabel';
+  String get editProfileLabel => 'تحرير تسمية الملف الشخصي';
   @override
-  String get editStory => 'editStory';
+  String get editStory => 'تحرير القصة';
   @override
-  String get editTags => 'editTags';
+  String get editTags => 'تحرير العلامات';
   @override
-  String get editThePost => 'editThePost';
+  String get editThePost => 'تحرير المشاركة';
   @override
-  String get editTheme => 'editTheme';
+  String get editTheme => 'تحرير الموضوع';
   @override
-  String get editTitle => 'editTitle';
+  String get editTitle => 'تحرير العنوان';
   @override
-  String get editYourProfile => 'editYourProfile';
+  String get editYourProfile => 'تحرير ملف التعريف الخاص بك';
   @override
-  String get emailInUse => 'emailInUse';
+  String get emailInUse => 'البريد الإلكتروني قيد الاستخدام';
   @override
-  String get emailIsRequired => 'emailIsRequired';
+  String get emailIsRequired => 'البريد الإلكتروني مطلوب';
   @override
-  String get emailSent => 'emailSent';
+  String get emailSent => 'تم إرسال البريد الإلكتروني';
   @override
-  String get emailVerified => 'emailVerified';
+  String get emailVerified => 'تم التحقق من البريد الإلكتروني';
   @override
-  String get emptyChat => 'emptyChat';
+  String get emptyChat => 'دردشة فارغة';
   @override
-  String get emptyChatStart => 'emptyChatStart';
+  String get emptyChatStart => 'بداية محادثة فارغة';
   @override
-  String get emptyFeed => 'emptyFeed';
+  String get emptyFeed => 'تغذية فارغة';
   @override
-  String get emptyFeedFollow => 'emptyFeedFollow';
+  String get emptyFeedFollow => 'متابعة التغذية الفارغة';
   @override
-  String get emptyWall => 'emptyWall';
+  String get emptyWall => 'الجدار الفارغ';
   @override
-  String get enableModule => 'enableModule';
+  String get enableModule => 'تمكين الوحدة النمطية';
   @override
-  String get enablePushNotifications => 'enablePushNotifications';
+  String get enablePushNotifications => 'تمكين دفع الإخطارات';
   @override
-  String get endDate => 'endDate';
+  String get endDate => 'تاريخ الانتهاء';
   @override
-  String get endPoll => 'endPoll';
+  String get endPoll => 'إنهاء الاستطلاع';
   @override
-  String get endQuiz => 'endQuiz';
+  String get endQuiz => 'إنهاء الاختبار';
   @override
-  String get english => 'english';
+  String get english => 'إنجليزي';
   @override
-  String get enterADescription => 'enterADescription';
+  String get enterADescription => 'أدخل الوصف';
   @override
-  String get enterAName => 'enterAName';
+  String get enterAName => 'أدخل اسما';
   @override
-  String get enterATitle => 'enterATitle';
+  String get enterATitle => 'أدخل عنوانا';
   @override
-  String get enterCode => 'enterCode';
+  String get enterCode => 'أدخل الرمز';
   @override
-  String get enterCommunityName => 'enterCommunityName';
+  String get enterCommunityName => 'أدخل اسم المجتمع';
   @override
-  String get enterCurrentPassword => 'enterCurrentPassword';
+  String get enterCurrentPassword => 'أدخل كلمة المرور الحالية';
   @override
-  String get enterDescription => 'enterDescription';
+  String get enterDescription => 'أدخل الوصف';
   @override
-  String get enterEmail => 'enterEmail';
+  String get enterEmail => 'أدخل البريد الإلكتروني';
   @override
-  String get enterLink => 'enterLink';
+  String get enterLink => 'أدخل الرابط';
   @override
-  String get enterNewPassword => 'enterNewPassword';
+  String get enterNewPassword => 'أدخل كلمة المرور الجديدة';
   @override
-  String get enterNickname => 'enterNickname';
+  String get enterNickname => 'أدخل اللقب';
   @override
-  String get enterPassword => 'enterPassword';
+  String get enterPassword => 'أدخل كلمة المرور';
   @override
-  String get enterReason => 'enterReason';
+  String get enterReason => 'أدخل السبب';
   @override
-  String get enterTheReason => 'enterTheReason';
+  String get enterTheReason => 'أدخل السبب';
   @override
-  String get enterTitle => 'enterTitle';
+  String get enterTitle => 'أدخل العنوان';
   @override
-  String get enterYourBio => 'enterYourBio';
+  String get enterYourBio => 'أدخل السيرة الذاتية الخاصة بك';
   @override
-  String get enterYourMessage => 'enterYourMessage';
+  String get enterYourMessage => 'أدخل رسالتك';
   @override
-  String get enterYourNickname => 'enterYourNickname';
+  String get enterYourNickname => 'أدخل لقبك';
   @override
-  String get entry => 'entry';
+  String get entry => 'دخول';
   @override
-  String get entrySubmitted => 'entrySubmitted';
+  String get entrySubmitted => 'تم إرسال الإدخال';
   @override
-  String get errorAddingMember => 'errorAddingMember';
+  String get errorAddingMember => 'حدث خطأ أثناء إضافة عضو';
   @override
-  String get errorAddingToFavorites => 'errorAddingToFavorites';
+  String get errorAddingToFavorites => 'حدث خطأ أثناء الإضافة إلى المفضلة';
   @override
-  String get errorApprovingEntry => 'errorApprovingEntry';
+  String get errorApprovingEntry => 'خطأ في الموافقة على الإدخال';
   @override
-  String get errorBanningUser => 'errorBanningUser';
+  String get errorBanningUser => 'حدث خطأ أثناء حظر المستخدم';
   @override
-  String get errorBlockingUser => 'errorBlockingUser';
+  String get errorBlockingUser => 'حدث خطأ أثناء حظر المستخدم';
   @override
-  String get errorChangingEmail => 'errorChangingEmail';
+  String get errorChangingEmail => 'خطأ في تغيير البريد الإلكتروني';
   @override
-  String get errorChangingNickname => 'errorChangingNickname';
+  String get errorChangingNickname => 'خطأ في تغيير الاسم المستعار';
   @override
-  String get errorChangingPassword => 'errorChangingPassword';
+  String get errorChangingPassword => 'خطأ في تغيير كلمة المرور';
   @override
-  String get errorCreatingDraft => 'errorCreatingDraft';
+  String get errorCreatingDraft => 'حدث خطأ أثناء إنشاء مسودة';
   @override
-  String get errorCreatingEntry => 'errorCreatingEntry';
+  String get errorCreatingEntry => 'خطأ في إنشاء الإدخال';
   @override
-  String get errorCreatingFolder => 'errorCreatingFolder';
+  String get errorCreatingFolder => 'حدث خطأ أثناء إنشاء المجلد';
   @override
-  String get errorCreatingPost => 'errorCreatingPost';
+  String get errorCreatingPost => 'حدث خطأ أثناء إنشاء المشاركة';
   @override
-  String get errorCreatingStory => 'errorCreatingStory';
+  String get errorCreatingStory => 'حدث خطأ أثناء إنشاء القصة';
   @override
-  String get errorDeletingAccount => 'errorDeletingAccount';
+  String get errorDeletingAccount => 'حدث خطأ أثناء حذف الحساب';
   @override
-  String get errorDeletingComment => 'errorDeletingComment';
+  String get errorDeletingComment => 'حدث خطأ أثناء حذف التعليق';
   @override
-  String get errorDeletingDraft => 'errorDeletingDraft';
+  String get errorDeletingDraft => 'حدث خطأ أثناء حذف المسودة';
   @override
-  String get errorDeletingEntry => 'errorDeletingEntry';
+  String get errorDeletingEntry => 'حدث خطأ أثناء حذف الإدخال';
   @override
-  String get errorDeletingFolder => 'errorDeletingFolder';
+  String get errorDeletingFolder => 'حدث خطأ أثناء حذف المجلد';
   @override
-  String get errorDeletingPost => 'errorDeletingPost';
+  String get errorDeletingPost => 'حدث خطأ أثناء حذف المشاركة';
   @override
-  String get errorDeletingStory => 'errorDeletingStory';
+  String get errorDeletingStory => 'حدث خطأ أثناء حذف القصة';
   @override
-  String get errorDownloading => 'errorDownloading';
+  String get errorDownloading => 'حدث خطأ أثناء التنزيل';
   @override
-  String get errorEditingChat => 'errorEditingChat';
+  String get errorEditingChat => 'حدث خطأ أثناء تحرير الدردشة';
   @override
-  String get errorEditingEntry => 'errorEditingEntry';
+  String get errorEditingEntry => 'خطأ في تحرير الإدخال';
   @override
-  String get errorEditingPost => 'errorEditingPost';
+  String get errorEditingPost => 'خطأ في تحرير المشاركة';
   @override
-  String get errorEditingProfile => 'errorEditingProfile';
+  String get errorEditingProfile => 'خطأ في تحرير الملف الشخصي';
   @override
-  String get errorFetchingData => 'errorFetchingData';
+  String get errorFetchingData => 'حدث خطأ أثناء جلب البيانات';
   @override
-  String get errorFetchingFeed => 'errorFetchingFeed';
+  String get errorFetchingFeed => 'حدث خطأ أثناء جلب الخلاصة';
   @override
-  String get errorFetchingMembers => 'errorFetchingMembers';
+  String get errorFetchingMembers => 'حدث خطأ أثناء جلب الأعضاء';
   @override
-  String get errorFetchingNotifications => 'errorFetchingNotifications';
+  String get errorFetchingNotifications => 'خطأ في جلب الإخطارات';
   @override
-  String get errorFetchingPosts => 'errorFetchingPosts';
+  String get errorFetchingPosts => 'حدث خطأ أثناء جلب المشاركات';
   @override
-  String get errorFetchingProfile => 'errorFetchingProfile';
+  String get errorFetchingProfile => 'حدث خطأ أثناء جلب الملف الشخصي';
   @override
-  String get errorFetchingResults => 'errorFetchingResults';
+  String get errorFetchingResults => 'حدث خطأ أثناء جلب النتائج';
   @override
-  String get errorFetchingSettings => 'errorFetchingSettings';
+  String get errorFetchingSettings => 'حدث خطأ أثناء جلب الإعدادات';
   @override
-  String get errorFetchingUser => 'errorFetchingUser';
+  String get errorFetchingUser => 'حدث خطأ أثناء جلب المستخدم';
   @override
-  String get errorFetchingWiki => 'errorFetchingWiki';
+  String get errorFetchingWiki => 'حدث خطأ أثناء جلب Wiki';
   @override
-  String get errorFollowingUser => 'errorFollowingUser';
+  String get errorFollowingUser => 'خطأ في متابعة المستخدم';
   @override
-  String get errorKickingUser => 'errorKickingUser';
+  String get errorKickingUser => 'خطأ في طرد المستخدم';
   @override
-  String get errorLeavingGroup => 'errorLeavingGroup';
+  String get errorLeavingGroup => 'حدث خطأ أثناء مغادرة المجموعة';
   @override
-  String get errorLoadingAchievements => 'errorLoadingAchievements';
+  String get errorLoadingAchievements => 'حدث خطأ أثناء تحميل الإنجازات';
   @override
-  String get errorLoadingBlockedUsers => 'errorLoadingBlockedUsers';
+  String get errorLoadingBlockedUsers => 'حدث خطأ أثناء تحميل المستخدمين المحظورين';
   @override
-  String get errorLoadingCategories => 'errorLoadingCategories';
+  String get errorLoadingCategories => 'حدث خطأ أثناء تحميل الفئات';
   @override
-  String get errorLoadingChat => 'errorLoadingChat';
+  String get errorLoadingChat => 'حدث خطأ أثناء تحميل الدردشة';
   @override
-  String get errorLoadingComments => 'errorLoadingComments';
+  String get errorLoadingComments => 'حدث خطأ أثناء تحميل التعليقات';
   @override
-  String get errorLoadingCommunities => 'errorLoadingCommunities';
+  String get errorLoadingCommunities => 'حدث خطأ أثناء تحميل المجتمعات';
   @override
-  String get errorLoadingContent => 'errorLoadingContent';
+  String get errorLoadingContent => 'حدث خطأ أثناء تحميل المحتوى';
   @override
-  String get errorLoadingHistory => 'errorLoadingHistory';
+  String get errorLoadingHistory => 'حدث خطأ أثناء تحميل السجل';
   @override
-  String get errorLoadingLeaderboard => 'errorLoadingLeaderboard';
+  String get errorLoadingLeaderboard => 'حدث خطأ أثناء تحميل لوحة الصدارة';
   @override
-  String get errorLoadingMedia => 'errorLoadingMedia';
+  String get errorLoadingMedia => 'حدث خطأ أثناء تحميل الوسائط';
   @override
-  String get errorLoadingMore => 'errorLoadingMore';
+  String get errorLoadingMore => 'حدث خطأ أثناء تحميل المزيد';
   @override
-  String get errorLoadingPoll => 'errorLoadingPoll';
+  String get errorLoadingPoll => 'حدث خطأ أثناء تحميل الاستطلاع';
   @override
-  String get errorLoadingPost => 'errorLoadingPost';
+  String get errorLoadingPost => 'حدث خطأ أثناء تحميل المشاركة';
   @override
-  String get errorLoadingQuiz => 'errorLoadingQuiz';
+  String get errorLoadingQuiz => 'حدث خطأ أثناء تحميل الاختبار';
   @override
-  String get errorLoadingReplies => 'errorLoadingReplies';
+  String get errorLoadingReplies => 'حدث خطأ أثناء تحميل الردود';
   @override
-  String get errorLoadingUsers => 'errorLoadingUsers';
+  String get errorLoadingUsers => 'حدث خطأ أثناء تحميل المستخدمين';
   @override
-  String get errorLoadingWallet => 'errorLoadingWallet';
+  String get errorLoadingWallet => 'حدث خطأ أثناء تحميل المحفظة';
   @override
-  String get errorLoadingWikiEntries => 'errorLoadingWikiEntries';
+  String get errorLoadingWikiEntries => 'حدث خطأ أثناء تحميل إدخالات Wiki';
   @override
-  String get errorLoggingIn => 'errorLoggingIn';
+  String get errorLoggingIn => 'خطأ في تسجيل الدخول';
   @override
-  String get errorMutingUser => 'errorMutingUser';
+  String get errorMutingUser => 'حدث خطأ أثناء تجاهل المستخدم';
   @override
-  String get errorOpeningImage => 'errorOpeningImage';
+  String get errorOpeningImage => 'خطأ في فتح الصورة';
   @override
-  String get errorPinningPost => 'errorPinningPost';
+  String get errorPinningPost => 'خطأ في تثبيت المشاركة';
   @override
-  String get errorRejectingEntry => 'errorRejectingEntry';
+  String get errorRejectingEntry => 'خطأ في رفض الإدخال';
   @override
-  String get errorRemovingAdmin => 'errorRemovingAdmin';
+  String get errorRemovingAdmin => 'حدث خطأ أثناء إزالة المشرف';
   @override
-  String get errorRemovingCurator => 'errorRemovingCurator';
+  String get errorRemovingCurator => 'حدث خطأ أثناء إزالة المنسق';
   @override
-  String get errorRemovingFavorite => 'errorRemovingFavorite';
+  String get errorRemovingFavorite => 'حدث خطأ أثناء إزالة المفضلة';
   @override
-  String get errorRemovingLeader => 'errorRemovingLeader';
+  String get errorRemovingLeader => 'حدث خطأ أثناء إزالة القائد';
   @override
-  String get errorRemovingMember => 'errorRemovingMember';
+  String get errorRemovingMember => 'حدث خطأ أثناء إزالة العضو';
   @override
-  String get errorReporting => 'errorReporting';
+  String get errorReporting => 'الإبلاغ عن الأخطاء';
   @override
-  String get errorResendingEmail => 'errorResendingEmail';
+  String get errorResendingEmail => 'خطأ في إعادة إرسال البريد الإلكتروني';
   @override
-  String get errorResettingPassword => 'errorResettingPassword';
+  String get errorResettingPassword => 'خطأ في إعادة تعيين كلمة المرور';
   @override
-  String get errorSavingChanges => 'errorSavingChanges';
+  String get errorSavingChanges => 'حدث خطأ أثناء حفظ التغييرات';
   @override
-  String get errorSavingDraft => 'errorSavingDraft';
+  String get errorSavingDraft => 'حدث خطأ أثناء حفظ المسودة';
   @override
-  String get errorSavingSettings => 'errorSavingSettings';
+  String get errorSavingSettings => 'خطأ في حفظ الإعدادات';
   @override
-  String get errorSendingMessage => 'errorSendingMessage';
+  String get errorSendingMessage => 'خطأ في إرسال الرسالة';
   @override
-  String get errorSendingVerificationEmail => 'errorSendingVerificationEmail';
+  String get errorSendingVerificationEmail => 'خطأ في إرسال البريد الإلكتروني للتحقق';
   @override
-  String get errorSigningUp => 'errorSigningUp';
+  String get errorSigningUp => 'خطأ في التسجيل';
   @override
-  String get errorStartingChat => 'errorStartingChat';
+  String get errorStartingChat => 'خطأ في بدء الدردشة';
   @override
-  String get errorStrikingUser => 'errorStrikingUser';
+  String get errorStrikingUser => 'خطأ في ضرب المستخدم';
   @override
-  String get errorSubmittingEntry => 'errorSubmittingEntry';
+  String get errorSubmittingEntry => 'خطأ في إرسال الإدخال';
   @override
-  String get errorUnbanningUser => 'errorUnbanningUser';
+  String get errorUnbanningUser => 'حدث خطأ أثناء إلغاء حظر المستخدم';
   @override
-  String get errorUnblockingUser => 'errorUnblockingUser';
+  String get errorUnblockingUser => 'حدث خطأ أثناء إلغاء حظر المستخدم';
   @override
-  String get errorUnfollowingUser => 'errorUnfollowingUser';
+  String get errorUnfollowingUser => 'حدث خطأ أثناء إلغاء متابعة المستخدم';
   @override
-  String get errorUnpinningPost => 'errorUnpinningPost';
+  String get errorUnpinningPost => 'حدث خطأ أثناء إزالة تثبيت المشاركة';
   @override
-  String get errorUpdatingCommunity => 'errorUpdatingCommunity';
+  String get errorUpdatingCommunity => 'حدث خطأ أثناء تحديث المجتمع';
   @override
-  String get errorUpdatingPost => 'errorUpdatingPost';
+  String get errorUpdatingPost => 'حدث خطأ أثناء تحديث المشاركة';
   @override
-  String get errorUpdatingSettings => 'errorUpdatingSettings';
+  String get errorUpdatingSettings => 'حدث خطأ أثناء تحديث الإعدادات';
   @override
-  String get errorUploadingImage => 'errorUploadingImage';
+  String get errorUploadingImage => 'حدث خطأ أثناء تحميل الصورة';
   @override
-  String get errorVerifyingEmail => 'errorVerifyingEmail';
+  String get errorVerifyingEmail => 'خطأ في التحقق من البريد الإلكتروني';
   @override
-  String get errorVoting => 'errorVoting';
+  String get errorVoting => 'خطأ في التصويت';
   @override
-  String get errorWarningUser => 'errorWarningUser';
+  String get errorWarningUser => 'خطأ تحذير المستخدم';
   @override
-  String get events => 'events';
+  String get events => 'الأحداث';
   @override
-  String get expand => 'expand';
+  String get expand => 'يوسع';
   @override
-  String get explicitContent => 'explicitContent';
+  String get explicitContent => 'محتوى صريح';
   @override
-  String get failedToLoadImage => 'failedToLoadImage';
+  String get failedToLoadImage => 'فشل تحميل الصورة';
   @override
-  String get fanArt => 'fanArt';
+  String get fanArt => 'فن المعجبين';
   @override
-  String get faq => 'faq';
+  String get faq => 'التعليمات';
   @override
-  String get feature => 'feature';
+  String get feature => 'ميزة';
   @override
-  String get featurePostInCommunity => 'featurePostInCommunity';
+  String get featurePostInCommunity => 'ميزة المشاركة في المجتمع';
   @override
-  String get featuredLabel => 'featuredLabel';
+  String get featuredLabel => 'التسمية المميزة';
   @override
-  String get featuredMembers => 'featuredMembers';
+  String get featuredMembers => 'الأعضاء المميزون';
   @override
-  String get featuredPosts => 'featuredPosts';
+  String get featuredPosts => 'المشاركات المميزة';
   @override
-  String get feedAndPosts => 'feedAndPosts';
+  String get feedAndPosts => 'الأعلاف والمشاركات';
   @override
-  String get feedback => 'feedback';
+  String get feedback => 'تعليق';
   @override
-  String get fileIsTooLarge => 'fileIsTooLarge';
+  String get fileIsTooLarge => 'الملف كبير جدًا';
   @override
-  String get fileName => 'fileName';
+  String get fileName => 'اسم الملف';
   @override
-  String get fileSize => 'fileSize';
+  String get fileSize => 'حجم الملف';
   @override
-  String get fileType => 'fileType';
+  String get fileType => 'نوع الملف';
   @override
-  String get fileUploadedSuccessfully => 'fileUploadedSuccessfully';
+  String get fileUploadedSuccessfully => 'تم تحميل الملف بنجاح';
   @override
-  String get fillAllFields => 'fillAllFields';
+  String get fillAllFields => 'املأ جميع الحقول';
   @override
-  String get fillInTheFields => 'fillInTheFields';
+  String get fillInTheFields => 'املأ الحقول';
   @override
-  String get filterBy => 'filterBy';
+  String get filterBy => 'تصفية حسب';
   @override
-  String get findFriends => 'findFriends';
+  String get findFriends => 'البحث عن أصدقاء';
   @override
-  String get flag => 'flag';
+  String get flag => 'علَم';
   @override
-  String get flagContent => 'flagContent';
+  String get flagContent => 'الإبلاغ عن المحتوى';
   @override
-  String get flagDetails => 'flagDetails';
+  String get flagDetails => 'تفاصيل العلم';
   @override
-  String get flagSent => 'flagSent';
+  String get flagSent => 'تم إرسال العلم';
   @override
-  String get flagUser => 'flagUser';
+  String get flagUser => 'الإبلاغ عن المستخدم';
   @override
-  String get flaggedContent => 'flaggedContent';
+  String get flaggedContent => 'المحتوى الذي تم الإبلاغ عنه';
   @override
-  String get followNotifications => 'followNotifications';
+  String get followNotifications => 'اتبع الإخطارات';
   @override
-  String get followUser => 'followUser';
+  String get followUser => 'اتبع المستخدم';
   @override
-  String get followersOnly => 'followersOnly';
+  String get followersOnly => 'المتابعين فقط';
   @override
-  String get followingLabel => 'followingLabel';
+  String get followingLabel => 'التسمية التالية';
   @override
-  String get font => 'font';
+  String get font => 'الخط';
   @override
-  String get forReview => 'forReview';
+  String get forReview => 'للمراجعة';
   @override
-  String get forgotYourPassword => 'forgotYourPassword';
+  String get forgotYourPassword => 'نسيت كلمة السر';
   @override
-  String get format => 'format';
+  String get format => 'شكل';
   @override
-  String get frame => 'frame';
+  String get frame => 'إطار';
   @override
-  String get friends => 'friends';
+  String get friends => 'أصدقاء';
   @override
-  String get from => 'from';
+  String get from => 'من';
   @override
-  String get galleryPermission => 'galleryPermission';
+  String get galleryPermission => 'إذن المعرض';
   @override
-  String get gaming => 'gaming';
+  String get gaming => 'الألعاب';
   @override
-  String get generalChat => 'generalChat';
+  String get generalChat => 'الدردشة العامة';
   @override
-  String get getCoins => 'getCoins';
+  String get getCoins => 'احصل على عملات معدنية';
   @override
-  String get getHelp => 'getHelp';
+  String get getHelp => 'احصل على المساعدة';
   @override
-  String get getStartedDesc => 'getStartedDesc';
+  String get getStartedDesc => 'ابدأ الوصف';
   @override
-  String get giphy => 'giphy';
+  String get giphy => 'جيفي';
   @override
-  String get giveProps => 'giveProps';
+  String get giveProps => 'إعطاء الدعائم';
   @override
-  String get globalProfile => 'globalProfile';
+  String get globalProfile => 'الملف الشخصي العالمي';
   @override
-  String get goBack => 'goBack';
+  String get goBack => 'عُد';
   @override
-  String get goLive => 'goLive';
+  String get goLive => 'اذهب للبث المباشر';
   @override
-  String get goToChat => 'goToChat';
+  String get goToChat => 'اذهب إلى الدردشة';
   @override
-  String get goToCommunity => 'goToCommunity';
+  String get goToCommunity => 'اذهب إلى المجتمع';
   @override
-  String get goToPost => 'goToPost';
+  String get goToPost => 'اذهب إلى المشاركة';
   @override
-  String get goToProfile => 'goToProfile';
+  String get goToProfile => 'انتقل إلى الملف الشخصي';
   @override
-  String get group => 'group';
+  String get group => 'مجموعة';
   @override
-  String get groupAdmin => 'groupAdmin';
+  String get groupAdmin => 'مشرف المجموعة';
   @override
-  String get groupCreated => 'groupCreated';
+  String get groupCreated => 'تم إنشاء المجموعة';
   @override
-  String get groupIcon => 'groupIcon';
+  String get groupIcon => 'أيقونة المجموعة';
   @override
-  String get groupMembers => 'groupMembers';
+  String get groupMembers => 'أعضاء المجموعة';
   @override
-  String get groupSettings => 'groupSettings';
+  String get groupSettings => 'إعدادات المجموعة';
   @override
-  String get guidelinesLabel => 'guidelinesLabel';
+  String get guidelinesLabel => 'تسمية المبادئ التوجيهية';
   @override
-  String get hasLeftTheChat => 'hasLeftTheChat';
+  String get hasLeftTheChat => 'لقد غادر الدردشة';
   @override
-  String get helpAndSupport => 'helpAndSupport';
+  String get helpAndSupport => 'المساعدة والدعم';
   @override
-  String get lastPost => 'lastPost';
+  String get lastPost => 'آخر مشاركة';
   @override
-  String get lastPostBy => 'lastPostBy';
+  String get lastPostBy => 'آخر مشاركة بواسطة';
   @override
-  String get linkToPost => 'linkToPost';
+  String get linkToPost => 'رابط للنشر';
   @override
-  String get loadingGifs => 'loadingGifs';
+  String get loadingGifs => 'تحميل صور متحركة';
   @override
-  String get loadingImages => 'loadingImages';
+  String get loadingImages => 'تحميل الصور';
   @override
-  String get loadingStickers => 'loadingStickers';
+  String get loadingStickers => 'تحميل الملصقات';
   @override
-  String get manageBlockedUsers => 'manageBlockedUsers';
+  String get manageBlockedUsers => 'إدارة المستخدمين المحظورين';
   @override
-  String get manageDevices => 'manageDevices';
+  String get manageDevices => 'إدارة الأجهزة';
   @override
-  String get managePosts => 'managePosts';
+  String get managePosts => 'إدارة المشاركات';
   @override
-  String get manageUsers => 'manageUsers';
+  String get manageUsers => 'إدارة المستخدمين';
   @override
-  String get memberList => 'memberList';
+  String get memberList => 'قائمة الأعضاء';
   @override
-  String get messageFrom => 'messageFrom';
+  String get messageFrom => 'رسالة من';
   @override
-  String get messageToBroadcast => 'messageToBroadcast';
+  String get messageToBroadcast => 'رسالة للبث';
   @override
-  String get moreOptions => 'moreOptions';
+  String get moreOptions => 'المزيد من الخيارات';
   @override
-  String get newPasswordIsRequired => 'newPasswordIsRequired';
+  String get newPasswordIsRequired => 'كلمة المرور الجديدة مطلوبة';
   @override
-  String get noAdOffers => 'noAdOffers';
+  String get noAdOffers => 'لا توجد عروض إعلانية';
   @override
-  String get noChatsFound => 'noChatsFound';
+  String get noChatsFound => 'لم يتم العثور على أي محادثات';
   @override
-  String get noChatsHere => 'noChatsHere';
+  String get noChatsHere => 'لا توجد محادثات هنا';
   @override
-  String get noCommunityFound => 'noCommunityFound';
+  String get noCommunityFound => 'لم يتم العثور على المجتمع';
   @override
-  String get noCommunityMembers => 'noCommunityMembers';
+  String get noCommunityMembers => 'لا يوجد أعضاء المجتمع';
   @override
-  String get noCommunityPosts => 'noCommunityPosts';
+  String get noCommunityPosts => 'لا توجد مشاركات المجتمع';
   @override
-  String get noGifsFound => 'noGifsFound';
+  String get noGifsFound => 'لم يتم العثور على صور متحركة';
   @override
-  String get noImagesFound => 'noImagesFound';
+  String get noImagesFound => 'لم يتم العثور على صور';
   @override
-  String get noInvites => 'noInvites';
+  String get noInvites => 'لا توجد دعوات';
   @override
-  String get noMessagesHere => 'noMessagesHere';
+  String get noMessagesHere => 'لا توجد رسائل هنا';
   @override
-  String get noMorePosts => 'noMorePosts';
+  String get noMorePosts => 'لا مزيد من المشاركات';
   @override
-  String get noNotificationsYet => 'noNotificationsYet';
+  String get noNotificationsYet => 'لا توجد إخطارات حتى الآن';
   @override
-  String get noOneCanFollow => 'noOneCanFollow';
+  String get noOneCanFollow => 'لا أحد يستطيع المتابعة';
   @override
-  String get noRecentSearches => 'noRecentSearches';
+  String get noRecentSearches => 'لا توجد عمليات بحث حديثة';
   @override
-  String get noResultsFound => 'noResultsFound';
+  String get noResultsFound => 'لم يتم العثور على نتائج';
   @override
-  String get noResultsFoundMsg => 'noResultsFoundMsg';
+  String get noResultsFoundMsg => 'لم يتم العثور على نتائج';
   @override
-  String get noSharedContent => 'noSharedContent';
+  String get noSharedContent => 'لا يوجد محتوى مشترك';
   @override
-  String get noStickersFound => 'noStickersFound';
+  String get noStickersFound => 'لم يتم العثور على ملصقات';
   @override
-  String get noWikiEntries => 'noWikiEntries';
+  String get noWikiEntries => 'لا توجد إدخالات ويكي';
   @override
-  String get notificationsLabel => 'notificationsLabel';
+  String get notificationsLabel => 'تسمية الإخطارات';
   @override
-  String get onlyFriendsCanComment => 'onlyFriendsCanComment';
+  String get onlyFriendsCanComment => 'يمكن للأصدقاء فقط التعليق';
   @override
-  String get onlyHostCanInvite => 'onlyHostCanInvite';
+  String get onlyHostCanInvite => 'يمكن للمضيف فقط الدعوة';
   @override
-  String get onlyHostCanRemove => 'onlyHostCanRemove';
+  String get onlyHostCanRemove => 'يمكن للمضيف فقط الإزالة';
   @override
-  String get onlyHostCanSee => 'onlyHostCanSee';
+  String get onlyHostCanSee => 'المضيف فقط يمكنه الرؤية';
   @override
-  String get onlyLeadersCanFeature => 'onlyLeadersCanFeature';
+  String get onlyLeadersCanFeature => 'يمكن للقادة فقط أن يتميزوا';
   @override
-  String get onlyLeadersCanPin => 'onlyLeadersCanPin';
+  String get onlyLeadersCanPin => 'يمكن للقادة فقط التثبيت';
   @override
-  String get openCamera => 'openCamera';
+  String get openCamera => 'افتح الكاميرا';
   @override
-  String get openGallery => 'openGallery';
+  String get openGallery => 'افتح المعرض';
   @override
-  String get openImage => 'openImage';
+  String get openImage => 'افتح الصورة';
   @override
-  String get openInBrowser => 'openInBrowser';
+  String get openInBrowser => 'فتح في المتصفح';
   @override
-  String get option => 'option';
+  String get option => 'خيار';
   @override
-  String get otherLabel => 'otherLabel';
+  String get otherLabel => 'تسمية أخرى';
   @override
-  String get passwordChanged => 'passwordChanged';
+  String get passwordChanged => 'تم تغيير كلمة المرور';
   @override
-  String get passwordIsRequired => 'passwordIsRequired';
+  String get passwordIsRequired => 'كلمة المرور مطلوبة';
   @override
-  String get passwordReset => 'passwordReset';
+  String get passwordReset => 'إعادة تعيين كلمة المرور';
   @override
-  String get passwordUpdated => 'passwordUpdated';
+  String get passwordUpdated => 'تم تحديث كلمة المرور';
   @override
-  String get pendingLabel => 'pendingLabel';
+  String get pendingLabel => 'التصنيف في انتظار المراجعة';
   @override
-  String get personalInformation => 'personalInformation';
+  String get personalInformation => 'معلومات شخصية';
   @override
-  String get pinChat => 'pinChat';
+  String get pinChat => 'دبوس الدردشة';
   @override
-  String get pinToBlog => 'pinToBlog';
+  String get pinToBlog => 'دبوس للمدونة';
   @override
-  String get pinWiki => 'pinWiki';
+  String get pinWiki => 'دبوس ويكي';
   @override
-  String get postCreationSuccess => 'postCreationSuccess';
+  String get postCreationSuccess => 'نجاح ما بعد الإنشاء';
   @override
-  String get postFeatured => 'postFeatured';
+  String get postFeatured => 'مشاركة مميزة';
   @override
-  String get postIsHidden => 'postIsHidden';
+  String get postIsHidden => 'المشاركة مخفية';
   @override
-  String get postIsVisible => 'postIsVisible';
+  String get postIsVisible => 'المشاركة مرئية';
   @override
-  String get postLink => 'postLink';
+  String get postLink => 'رابط المشاركة';
   @override
-  String get postPinned => 'postPinned';
+  String get postPinned => 'تم تثبيت المشاركة';
   @override
-  String get postSucessfully => 'postSucessfully';
+  String get postSucessfully => 'النشر بنجاح';
   @override
-  String get postUnfeatured => 'postUnfeatured';
+  String get postUnfeatured => 'مشاركة غير مميزة';
   @override
-  String get postsLabel => 'postsLabel';
+  String get postsLabel => 'تسمية المشاركات';
   @override
-  String get poweredByGiphy => 'poweredByGiphy';
+  String get poweredByGiphy => 'مدعوم من جيفي';
   @override
-  String get privacyLabel => 'privacyLabel';
+  String get privacyLabel => 'تسمية الخصوصية';
   @override
-  String get profileIsPrivate => 'profileIsPrivate';
+  String get profileIsPrivate => 'الملف الشخصي خاص';
   @override
-  String get profileIsPublic => 'profileIsPublic';
+  String get profileIsPublic => 'الملف الشخصي عام';
   @override
-  String get profileLabel => 'profileLabel';
+  String get profileLabel => 'تسمية الملف الشخصي';
   @override
-  String get profileVisibility => 'profileVisibility';
+  String get profileVisibility => 'رؤية الملف الشخصي';
   @override
-  String get publishChanges => 'publishChanges';
+  String get publishChanges => 'نشر التغييرات';
   @override
-  String get purchase => 'purchase';
+  String get purchase => 'شراء';
   @override
-  String get purchaseHistory => 'purchaseHistory';
+  String get purchaseHistory => 'تاريخ الشراء';
   @override
-  String get purchaseRestored => 'purchaseRestored';
+  String get purchaseRestored => 'تمت استعادة الشراء';
   @override
-  String get purchasesRestored => 'purchasesRestored';
+  String get purchasesRestored => 'تمت استعادة المشتريات';
   @override
-  String get question2 => 'question2';
+  String get question2 => 'سؤال2';
   @override
-  String get questionCreatedSuccess => 'questionCreatedSuccess';
+  String get questionCreatedSuccess => 'السؤال خلق النجاح';
   @override
-  String get questionIsRequired => 'questionIsRequired';
+  String get questionIsRequired => 'السؤال مطلوب';
   @override
-  String get quizExplanation => 'quizExplanation';
+  String get quizExplanation => 'شرح المسابقة';
   @override
-  String get quizExplanationHint => 'quizExplanationHint';
+  String get quizExplanationHint => 'تلميح شرح الاختبار';
   @override
-  String get quizOptions => 'quizOptions';
+  String get quizOptions => 'خيارات الاختبار';
   @override
-  String get reasonForAction => 'reasonForAction';
+  String get reasonForAction => 'سبب العمل';
   @override
-  String get reasonForReport => 'reasonForReport';
+  String get reasonForReport => 'سبب التقرير';
   @override
-  String get reasonLabel => 'reasonLabel';
+  String get reasonLabel => 'تسمية السبب';
   @override
-  String get recentSearchesCleared => 'recentSearchesCleared';
+  String get recentSearchesCleared => 'تم مسح عمليات البحث الأخيرة';
   @override
-  String get removeAdmin => 'removeAdmin';
+  String get removeAdmin => 'إزالة المشرف';
   @override
-  String get removeCurator => 'removeCurator';
+  String get removeCurator => 'إزالة المنسق';
   @override
-  String get removeFavorite => 'removeFavorite';
+  String get removeFavorite => 'إزالة المفضلة';
   @override
-  String get removeLeader => 'removeLeader';
+  String get removeLeader => 'إزالة الزعيم';
   @override
-  String get removeLink => 'removeLink';
+  String get removeLink => 'إزالة الارتباط';
   @override
-  String get removeUser => 'removeUser';
+  String get removeUser => 'إزالة المستخدم';
   @override
-  String get removedFromFavorites => 'removedFromFavorites';
+  String get removedFromFavorites => 'تمت الإزالة من المفضلة';
   @override
-  String get reportSentSuccess => 'reportSentSuccess';
+  String get reportSentSuccess => 'تم إرسال التقرير بنجاح';
   @override
-  String get requestToJoinSent => 'requestToJoinSent';
+  String get requestToJoinSent => 'تم إرسال طلب الانضمام';
   @override
-  String get requested => 'requested';
+  String get requested => 'مطلوب';
   @override
-  String get resetAction => 'resetAction';
+  String get resetAction => 'إعادة تعيين الإجراء';
   @override
-  String get restrictContent => 'restrictContent';
+  String get restrictContent => 'تقييد المحتوى';
   @override
-  String get results => 'results';
+  String get results => 'نتائج';
   @override
-  String get resume => 'resume';
+  String get resume => 'سيرة ذاتية';
   @override
-  String get reviewEntry => 'reviewEntry';
+  String get reviewEntry => 'مراجعة الإدخال';
   @override
-  String get searchImages => 'searchImages';
+  String get searchImages => 'البحث عن الصور';
   @override
-  String get searchPosts => 'searchPosts';
+  String get searchPosts => 'البحث في المشاركات';
   @override
-  String get searchStickers => 'searchStickers';
+  String get searchStickers => 'ملصقات البحث';
   @override
-  String get searchUsers => 'searchUsers';
+  String get searchUsers => 'بحث المستخدمين';
   @override
-  String get securityAndPrivacy => 'securityAndPrivacy';
+  String get securityAndPrivacy => 'الأمن والخصوصية';
   @override
-  String get seeWhoVoted => 'seeWhoVoted';
+  String get seeWhoVoted => 'انظر من صوت';
   @override
-  String get selectAtLeastTwo => 'selectAtLeastTwo';
+  String get selectAtLeastTwo => 'حدد اثنين على الأقل';
   @override
-  String get selectCoverImage => 'selectCoverImage';
+  String get selectCoverImage => 'حدد صورة الغلاف';
   @override
-  String get selectIcon => 'selectIcon';
+  String get selectIcon => 'حدد الرمز';
   @override
-  String get selectQuizEndDate => 'selectQuizEndDate';
+  String get selectQuizEndDate => 'حدد تاريخ انتهاء الاختبار';
   @override
-  String get selectSticker => 'selectSticker';
+  String get selectSticker => 'حدد الملصق';
   @override
-  String get selectVideo => 'selectVideo';
+  String get selectVideo => 'حدد فيديو';
   @override
-  String get sendBroadcastTo => 'sendBroadcastTo';
+  String get sendBroadcastTo => 'إرسال البث إلى';
   @override
-  String get sendToEveryone => 'sendToEveryone';
+  String get sendToEveryone => 'أرسل إلى الجميع';
   @override
-  String get sendingAudio => 'sendingAudio';
+  String get sendingAudio => 'إرسال الصوت';
   @override
-  String get sexuallyExplicit => 'sexuallyExplicit';
+  String get sexuallyExplicit => 'صريح جنسيا';
   @override
-  String get shareTheCommunity => 'shareTheCommunity';
+  String get shareTheCommunity => 'مشاركة المجتمع';
   @override
-  String get start => 'start';
+  String get start => 'يبدأ';
   @override
-  String get startAConversation => 'startAConversation';
+  String get startAConversation => 'ابدأ محادثة';
   @override
-  String get startChatting => 'startChatting';
+  String get startChatting => 'ابدأ الدردشة';
   @override
-  String get stickerAddedToPost => 'stickerAddedToPost';
+  String get stickerAddedToPost => 'تمت إضافة الملصق إلى المشاركة';
   @override
-  String get story => 'story';
+  String get story => 'قصة';
   @override
-  String get storyCreatedSuccess => 'storyCreatedSuccess';
+  String get storyCreatedSuccess => 'قصة خلقت النجاح';
   @override
-  String get storyOptions => 'storyOptions';
+  String get storyOptions => 'خيارات القصة';
   @override
-  String get submitToCatalog => 'submitToCatalog';
+  String get submitToCatalog => 'إرسال إلى الكتالوج';
   @override
-  String get subscribeToPlus => 'subscribeToPlus';
+  String get subscribeToPlus => 'اشترك في بلس';
   @override
-  String get successfullyUnfollowed => 'successfullyUnfollowed';
+  String get successfullyUnfollowed => 'تم إلغاء المتابعة بنجاح';
   @override
-  String get takePicture => 'takePicture';
+  String get takePicture => 'التقاط صورة';
   @override
-  String get tapAnAnswer => 'tapAnAnswer';
+  String get tapAnAnswer => 'اضغط على إجابة';
   @override
-  String get tapHereToStart => 'tapHereToStart';
+  String get tapHereToStart => 'انقر هنا للبدء';
   @override
-  String get tapToAdd => 'tapToAdd';
+  String get tapToAdd => 'انقر للإضافة';
   @override
-  String get tapToJoin => 'tapToJoin';
+  String get tapToJoin => 'انقر للانضمام';
   @override
-  String get tapToRecord => 'tapToRecord';
+  String get tapToRecord => 'انقر للتسجيل';
   @override
-  String get tapToReply => 'tapToReply';
+  String get tapToReply => 'انقر للرد';
   @override
-  String get tapToSee => 'tapToSee';
+  String get tapToSee => 'انقر للرؤية';
   @override
-  String get tapToSelect => 'tapToSelect';
+  String get tapToSelect => 'انقر للتحديد';
   @override
-  String get tapToStartChat => 'tapToStartChat';
+  String get tapToStartChat => 'انقر لبدء الدردشة';
   @override
-  String get tapToUnfollow => 'tapToUnfollow';
+  String get tapToUnfollow => 'اضغط لإلغاء المتابعة';
   @override
-  String get tapToView => 'tapToView';
+  String get tapToView => 'انقر للعرض';
   @override
-  String get textCopied => 'textCopied';
+  String get textCopied => 'تم نسخ النص';
   @override
-  String get textFormatting => 'textFormatting';
+  String get textFormatting => 'تنسيق النص';
   @override
-  String get thisPostIsPrivate => 'thisPostIsPrivate';
+  String get thisPostIsPrivate => 'هذه المشاركة خاصة';
   @override
-  String get thisPostIsPublic => 'thisPostIsPublic';
+  String get thisPostIsPublic => 'هذه المشاركة عامة';
   @override
-  String get title2 => 'title2';
+  String get title2 => 'العنوان2';
   @override
-  String get titleIsRequired => 'titleIsRequired';
+  String get titleIsRequired => 'العنوان مطلوب';
   @override
-  String get todayAt => 'todayAt';
+  String get todayAt => 'اليوم في';
   @override
-  String get topFans => 'topFans';
+  String get topFans => 'أهم المعجبين';
   @override
-  String get transferCoins => 'transferCoins';
+  String get transferCoins => 'نقل العملات';
   @override
-  String get transferTo => 'transferTo';
+  String get transferTo => 'نقل إلى';
   @override
-  String get transfering => 'transfering';
+  String get transfering => 'نقل';
   @override
-  String get transferingOwner => 'transferingOwner';
+  String get transferingOwner => 'نقل المالك';
   @override
-  String get typeSomething => 'typeSomething';
+  String get typeSomething => 'اكتب شيئا';
   @override
-  String get typeYourMessage => 'typeYourMessage';
+  String get typeYourMessage => 'اكتب رسالتك';
   @override
-  String get unfollowUserConfirmation => 'unfollowUserConfirmation';
+  String get unfollowUserConfirmation => 'إلغاء متابعة تأكيد المستخدم';
   @override
-  String get unpinFromBlog => 'unpinFromBlog';
+  String get unpinFromBlog => 'إزالة التثبيت من المدونة';
   @override
-  String get unreadChats => 'unreadChats';
+  String get unreadChats => 'الدردشات غير المقروءة';
   @override
-  String get updateEmail => 'updateEmail';
+  String get updateEmail => 'تحديث البريد الإلكتروني';
   @override
-  String get uploadVideo => 'uploadVideo';
+  String get uploadVideo => 'تحميل الفيديو';
   @override
-  String get uploadingFile => 'uploadingFile';
+  String get uploadingFile => 'تحميل الملف';
   @override
-  String get uploadingImage => 'uploadingImage';
+  String get uploadingImage => 'تحميل الصورة';
   @override
-  String get uploadingVideo => 'uploadingVideo';
+  String get uploadingVideo => 'تحميل الفيديو';
   @override
-  String get verificationEmailSent => 'verificationEmailSent';
+  String get verificationEmailSent => 'تم إرسال البريد الإلكتروني للتحقق';
   @override
-  String get video2 => 'video2';
+  String get video2 => 'فيديو2';
   @override
-  String get videoAddedToPost => 'videoAddedToPost';
+  String get videoAddedToPost => 'تمت إضافة الفيديو إلى المشاركة';
   @override
-  String get videoTitle => 'videoTitle';
+  String get videoTitle => 'عنوان الفيديو';
   @override
-  String get viewAll2 => 'viewAll2';
+  String get viewAll2 => 'عرض الكل2';
   @override
-  String get viewPost => 'viewPost';
+  String get viewPost => 'عرض المشاركة';
   @override
-  String get viewStory => 'viewStory';
+  String get viewStory => 'عرض القصة';
   @override
-  String get voiceChat => 'voiceChat';
+  String get voiceChat => 'الدردشة الصوتية';
   @override
-  String get wall2 => 'wall2';
+  String get wall2 => 'الجدار2';
   @override
-  String get warnUser => 'warnUser';
+  String get warnUser => 'تحذير المستخدم';
   @override
-  String get warning => 'warning';
+  String get warning => 'تحذير';
   @override
-  String get warningSent => 'warningSent';
+  String get warningSent => 'تم إرسال التحذير';
   @override
-  String get watch => 'watch';
+  String get watch => 'يشاهد';
   @override
-  String get watchAds => 'watchAds';
+  String get watchAds => 'مشاهدة الإعلانات';
   @override
-  String get watchVideo => 'watchVideo';
+  String get watchVideo => 'شاهد الفيديو';
   @override
-  String get welcome2 => 'welcome2';
+  String get welcome2 => 'مرحبًا2';
   @override
-  String get welcomeToOurCommunity => 'welcomeToOurCommunity';
+  String get welcomeToOurCommunity => 'مرحبا بكم في مجتمعنا';
   @override
-  String get wiki2 => 'wiki2';
+  String get wiki2 => 'ويكي2';
   @override
-  String get writeAComment => 'writeAComment';
+  String get writeAComment => 'اكتب تعليقا';
   @override
-  String get writeAMessage => 'writeAMessage';
+  String get writeAMessage => 'اكتب رسالة';
   @override
-  String get writeAPost => 'writeAPost';
+  String get writeAPost => 'اكتب مشاركة';
   @override
-  String get writeAReply => 'writeAReply';
+  String get writeAReply => 'اكتب ردا';
   @override
-  String get writeSomething => 'writeSomething';
+  String get writeSomething => 'اكتب شيئا';
   @override
-  String get yes2 => 'yes2';
+  String get yes2 => 'نعم2';
   @override
-  String get youAreNotFollowingAnyone => 'youAreNotFollowingAnyone';
+  String get youAreNotFollowingAnyone => 'أنت لا تتبع أي شخص';
   @override
-  String get youHaveBeenBanned => 'youHaveBeenBanned';
+  String get youHaveBeenBanned => 'لقد تم حظرك';
   @override
-  String get youHaveBeenKicked => 'youHaveBeenKicked';
+  String get youHaveBeenKicked => 'لقد تم طردك';
   @override
-  String get youHaveBeenMuted => 'youHaveBeenMuted';
+  String get youHaveBeenMuted => 'لقد تم كتم صوتك';
   @override
-  String get youHaveNoFollowers => 'youHaveNoFollowers';
+  String get youHaveNoFollowers => 'ليس لديك متابعين';
   @override
-  String get yourAccountHasBeenDeleted => 'yourAccountHasBeenDeleted';
+  String get yourAccountHasBeenDeleted => 'لقد تم حذف حسابك';
   @override
-  String get yourChangesHaveBeenSaved => 'yourChangesHaveBeenSaved';
+  String get yourChangesHaveBeenSaved => 'تم حفظ التغييرات الخاصة بك';
   @override
-  String get yourEmailHasBeenVerified => 'yourEmailHasBeenVerified';
+  String get yourEmailHasBeenVerified => 'لقد تم التحقق من بريدك الإلكتروني';
   @override
-  String get yourLanguages => 'yourLanguages';
+  String get yourLanguages => 'لغاتك';
   @override
-  String get yourNickname => 'yourNickname';
+  String get yourNickname => 'اللقب الخاص بك';
   @override
-  String get yourProfile => 'yourProfile';
+  String get yourProfile => 'ملفك الشخصي';
   @override
-  String get yourProfileIsNowPublic => 'yourProfileIsNowPublic';
+  String get yourProfileIsNowPublic => 'أصبح ملفك الشخصي عامًا الآن';
   @override
-  String get yourTopCommunities => 'yourTopCommunities';
+  String get yourTopCommunities => 'أهم مجتمعاتك';
   @override
-  String get yourWallIsEmpty => 'yourWallIsEmpty';
+  String get yourWallIsEmpty => 'جدارك فارغ';
   @override
-  String get youtubeVideo => 'youtubeVideo';
+  String get youtubeVideo => 'يوتيوب فيديو';
   // FORMATTED COUNTS & NOTIFICATIONS
   @override
   String followersCount(int count) => '$count متابع';
@@ -4901,815 +4901,815 @@ class AppStringsAr implements AppStrings {
 
   // ── Getters faltantes (placeholder) ──
   @override
-  String get aboutMe => 'aboutMe';
+  String get aboutMe => 'ْعَنِّي';
   @override
-  String get accountDeleted => 'accountDeleted';
+  String get accountDeleted => 'تم حذف الحساب';
   @override
-  String get accountSettings => 'accountSettings';
+  String get accountSettings => 'إعدادات الحساب';
   @override
-  String get addDescription => 'addDescription';
+  String get addDescription => 'أضف الوصف';
   @override
-  String get addDescriptionOptional => 'addDescriptionOptional';
+  String get addDescriptionOptional => 'إضافة الوصف اختياري';
   @override
-  String get addFriend => 'addFriend';
+  String get addFriend => 'إضافة صديق';
   @override
-  String get addMoreInterests => 'addMoreInterests';
+  String get addMoreInterests => 'أضف المزيد من الاهتمامات';
   @override
-  String get addYourInterests => 'addYourInterests';
+  String get addYourInterests => 'أضف اهتماماتك';
   @override
-  String get advanced => 'advanced';
+  String get advanced => 'متقدم';
   @override
-  String get advancedSettings => 'advancedSettings';
+  String get advancedSettings => 'الإعدادات المتقدمة';
   @override
-  String get all => 'all';
+  String get all => 'الجميع';
   @override
-  String get allMembers => 'allMembers';
+  String get allMembers => 'جميع الأعضاء';
   @override
-  String get allPosts => 'allPosts';
+  String get allPosts => 'جميع المشاركات';
   @override
-  String get coinHistory => 'coinHistory';
+  String get coinHistory => 'تاريخ العملة';
   @override
-  String get coins => 'coins';
+  String get coins => 'عملات معدنية';
   @override
-  String get color => 'color';
+  String get color => 'لون';
   @override
-  String get communityModeration => 'communityModeration';
+  String get communityModeration => 'الاعتدال المجتمعي';
   @override
-  String get communityTheme => 'communityTheme';
+  String get communityTheme => 'موضوع المجتمع';
   @override
-  String get confirmAction => 'confirmAction';
+  String get confirmAction => 'تأكيد الإجراء';
   @override
-  String get confirmAndContinue => 'confirmAndContinue';
+  String get confirmAndContinue => 'تأكيد والمتابعة';
   @override
-  String get confirmLeave => 'confirmLeave';
+  String get confirmLeave => 'تأكيد الإجازة';
   @override
-  String get confirmLogout => 'confirmLogout';
+  String get confirmLogout => 'تأكيد الخروج';
   @override
-  String get contentLabel => 'contentLabel';
+  String get contentLabel => 'تسمية المحتوى';
   @override
-  String get continueAnyway => 'continueAnyway';
+  String get continueAnyway => 'استمر على أي حال';
   @override
-  String get copyLinkAction => 'copyLinkAction';
+  String get copyLinkAction => 'إجراء نسخ الارتباط';
   @override
-  String get createYourAccount => 'createYourAccount';
+  String get createYourAccount => 'قم بإنشاء حسابك';
   @override
-  String get creating => 'creating';
+  String get creating => 'خلق';
   @override
-  String get creatingAccount => 'creatingAccount';
+  String get creatingAccount => 'إنشاء الحساب';
   @override
-  String get creatingCommunity => 'creatingCommunity';
+  String get creatingCommunity => 'خلق المجتمع';
   @override
-  String get creatingPost => 'creatingPost';
+  String get creatingPost => 'إنشاء مشاركة';
   @override
-  String get custom => 'custom';
+  String get custom => 'مخصص';
   @override
-  String get customize => 'customize';
+  String get customize => 'تخصيص';
   @override
-  String get dark => 'dark';
+  String get dark => 'مظلم';
   @override
-  String get dataProcessing => 'dataProcessing';
+  String get dataProcessing => 'معالجة البيانات';
   @override
-  String get description => 'description';
+  String get description => 'وصف';
   @override
-  String get deviceName => 'deviceName';
+  String get deviceName => 'اسم الجهاز';
   @override
-  String get disabled => 'disabled';
+  String get disabled => 'عاجز';
   @override
-  String get discardChanges => 'discardChanges';
+  String get discardChanges => 'تجاهل التغييرات';
   @override
-  String get discoverLabel => 'discoverLabel';
+  String get discoverLabel => 'اكتشف التسمية';
   @override
-  String get dismiss => 'dismiss';
+  String get dismiss => 'رفض';
   @override
-  String get doNotShowAgain => 'doNotShowAgain';
+  String get doNotShowAgain => 'لا تظهر مرة أخرى';
   @override
-  String get downloading => 'downloading';
+  String get downloading => 'جارٍ التنزيل';
   @override
-  String get editCommunity => 'editCommunity';
+  String get editCommunity => 'تحرير المجتمع';
   @override
-  String get editPoll => 'editPoll';
+  String get editPoll => 'تحرير الاستطلاع';
   @override
-  String get editQuiz => 'editQuiz';
+  String get editQuiz => 'تحرير الاختبار';
   @override
-  String get editWiki => 'editWiki';
+  String get editWiki => 'تحرير ويكي';
   @override
-  String get emailAddress => 'emailAddress';
+  String get emailAddress => 'عنوان البريد الإلكتروني';
   @override
-  String get emailNotVerified => 'emailNotVerified';
+  String get emailNotVerified => 'لم يتم التحقق من البريد الإلكتروني';
   @override
-  String get empty => 'empty';
+  String get empty => 'فارغ';
   @override
-  String get enable => 'enable';
+  String get enable => 'يُمكَِن';
   @override
-  String get enabled => 'enabled';
+  String get enabled => 'ممكّن';
   @override
-  String get errorAcceptingInvite => 'errorAcceptingInvite';
+  String get errorAcceptingInvite => 'حدث خطأ أثناء قبول الدعوة';
   @override
-  String get errorDeleting => 'errorDeleting';
+  String get errorDeleting => 'خطأ في الحذف';
   @override
-  String get errorDeletingMessage => 'errorDeletingMessage';
+  String get errorDeletingMessage => 'حدث خطأ أثناء حذف الرسالة';
   @override
-  String get errorFetchingLink => 'errorFetchingLink';
+  String get errorFetchingLink => 'حدث خطأ أثناء جلب الرابط';
   @override
-  String get errorJoiningCommunity => 'errorJoiningCommunity';
+  String get errorJoiningCommunity => 'حدث خطأ أثناء الانضمام إلى المجتمع';
   @override
-  String get errorLeavingCommunity => 'errorLeavingCommunity';
+  String get errorLeavingCommunity => 'حدث خطأ أثناء مغادرة المجتمع';
   @override
-  String get errorLoading => 'errorLoading';
+  String get errorLoading => 'حدث خطأ أثناء التحميل';
   @override
-  String get errorLoadingCommunity => 'errorLoadingCommunity';
+  String get errorLoadingCommunity => 'حدث خطأ أثناء تحميل المجتمع';
   @override
-  String get errorLoadingDrafts => 'errorLoadingDrafts';
+  String get errorLoadingDrafts => 'حدث خطأ أثناء تحميل المسودات';
   @override
-  String get errorLoadingFollowers => 'errorLoadingFollowers';
+  String get errorLoadingFollowers => 'حدث خطأ أثناء تحميل المتابعين';
   @override
-  String get errorLoadingFollowing => 'errorLoadingFollowing';
+  String get errorLoadingFollowing => 'حدث خطأ أثناء تحميل المتابعة';
   @override
-  String get errorLoadingMembers => 'errorLoadingMembers';
+  String get errorLoadingMembers => 'حدث خطأ أثناء تحميل الأعضاء';
   @override
-  String get errorLoadingMessages => 'errorLoadingMessages';
+  String get errorLoadingMessages => 'حدث خطأ أثناء تحميل الرسائل';
   @override
-  String get errorLoadingPage => 'errorLoadingPage';
+  String get errorLoadingPage => 'حدث خطأ أثناء تحميل الصفحة';
   @override
-  String get insertYoutube => 'insertYoutube';
+  String get insertYoutube => 'أدخل يوتيوب';
   @override
-  String get invalidYoutubeUrl => 'invalidYoutubeUrl';
+  String get invalidYoutubeUrl => 'عنوان URL لليوتيوب غير صالح';
   @override
-  String get lastActivity => 'lastActivity';
+  String get lastActivity => 'النشاط الأخير';
   @override
-  String get latest2 => 'latest2';
+  String get latest2 => 'الأحدث2';
   @override
-  String get leaveChat2 => 'leaveChat2';
+  String get leaveChat2 => 'ترك الدردشة2';
   @override
-  String get leaveCommunity2 => 'leaveCommunity2';
+  String get leaveCommunity2 => 'ترك المجتمع2';
   @override
-  String get leaveGroup2 => 'leaveGroup2';
+  String get leaveGroup2 => 'ترك المجموعة 2';
   @override
-  String get leaveScreening => 'leaveScreening';
+  String get leaveScreening => 'ترك الفحص';
   @override
-  String get legendary2 => 'legendary2';
+  String get legendary2 => 'الأسطوري2';
   @override
-  String get light => 'light';
+  String get light => 'ضوء';
   @override
-  String get link2 => 'link2';
+  String get link2 => 'الرابط2';
   @override
-  String get linkCopied2 => 'linkCopied2';
+  String get linkCopied2 => 'تم نسخ الرابط 2';
   @override
-  String get loading2 => 'loading2';
+  String get loading2 => 'جاري التحميل2';
   @override
-  String get loadingMedia => 'loadingMedia';
+  String get loadingMedia => 'تحميل الوسائط';
   @override
-  String get loadingPosts => 'loadingPosts';
+  String get loadingPosts => 'تحميل المشاركات';
   @override
-  String get loadingUsers => 'loadingUsers';
+  String get loadingUsers => 'جارٍ تحميل المستخدمين';
   @override
-  String get loginError => 'loginError';
+  String get loginError => 'خطأ في تسجيل الدخول';
   @override
-  String get loginRequired => 'loginRequired';
+  String get loginRequired => 'تسجيل الدخول مطلوب';
   @override
-  String get loginToContinue2 => 'loginToContinue2';
+  String get loginToContinue2 => 'تسجيل الدخول للمتابعة2';
   @override
-  String get loginToJoin => 'loginToJoin';
+  String get loginToJoin => 'تسجيل الدخول للانضمام';
   @override
-  String get loginToVote => 'loginToVote';
+  String get loginToVote => 'تسجيل الدخول للتصويت';
   @override
-  String get longestStreak => 'longestStreak';
+  String get longestStreak => 'أطول خط';
   @override
-  String get master => 'master';
+  String get master => 'يتقن';
   @override
-  String get max100Chars => 'max100Chars';
+  String get max100Chars => 'الحد الأقصى 100 حرف';
   @override
-  String get max150Chars => 'max150Chars';
+  String get max150Chars => 'الحد الأقصى 150 حرفًا';
   @override
-  String get max200Chars => 'max200Chars';
+  String get max200Chars => 'الحد الأقصى 200 حرف';
   @override
-  String get max300Chars => 'max300Chars';
+  String get max300Chars => 'ماكس 300 حرف';
   @override
-  String get max50Chars => 'max50Chars';
+  String get max50Chars => 'الحد الأقصى 50 حرفًا';
   @override
-  String get member2 => 'member2';
+  String get member2 => 'عضو2';
   @override
-  String get memberRole => 'memberRole';
+  String get memberRole => 'دور العضو';
   @override
-  String get members2 => 'members2';
+  String get members2 => 'الأعضاء2';
   @override
-  String get mention => 'mention';
+  String get mention => 'يذكر';
   @override
-  String get message2 => 'message2';
+  String get message2 => 'الرسالة2';
   @override
-  String get min2Options => 'min2Options';
+  String get min2Options => 'خيارات الحد الأدنى 2';
   @override
-  String get moviesTv => 'moviesTv';
+  String get moviesTv => 'أفلام تلفزيون';
   @override
-  String get music2 => 'music2';
+  String get music2 => 'الموسيقى2';
   @override
-  String get myDrafts => 'myDrafts';
+  String get myDrafts => 'مسوداتي';
   @override
-  String get myPosts => 'myPosts';
+  String get myPosts => 'مشاركاتي';
   @override
-  String get myProfile => 'myProfile';
+  String get myProfile => 'ملفي الشخصي';
   @override
-  String get mySavedPosts => 'mySavedPosts';
+  String get mySavedPosts => 'مشاركاتي المحفوظة';
   @override
-  String get myStickers => 'myStickers';
+  String get myStickers => 'ملصقاتي';
   @override
-  String get nameYourCommunity => 'nameYourCommunity';
+  String get nameYourCommunity => 'قم بتسمية مجتمعك';
   @override
-  String get newPassword => 'newPassword';
+  String get newPassword => 'كلمة المرور الجديدة';
   @override
-  String get newPasswordConfirmation => 'newPasswordConfirmation';
+  String get newPasswordConfirmation => 'تأكيد كلمة المرور الجديدة';
   @override
-  String get newPasswordConfirmationHint => 'newPasswordConfirmationHint';
+  String get newPasswordConfirmationHint => 'تلميح تأكيد كلمة المرور الجديدة';
   @override
-  String get newPasswordHint => 'newPasswordHint';
+  String get newPasswordHint => 'تلميح كلمة المرور الجديدة';
   @override
-  String get newTag => 'newTag';
+  String get newTag => 'علامة جديدة';
   @override
-  String get newTagHint => 'newTagHint';
+  String get newTagHint => 'تلميح العلامة الجديدة';
   @override
-  String get nickname2 => 'nickname2';
+  String get nickname2 => 'اللقب2';
   @override
-  String get nicknameInCommunity => 'nicknameInCommunity';
+  String get nicknameInCommunity => 'اللقب في المجتمع';
   @override
-  String get no2 => 'no2';
+  String get no2 => 'رقم2';
   @override
-  String get noActivity => 'noActivity';
+  String get noActivity => 'لا يوجد نشاط';
   @override
-  String get noActivityInCommunity => 'noActivityInCommunity';
+  String get noActivityInCommunity => 'لا يوجد نشاط في المجتمع';
   @override
-  String get noActivityYet => 'noActivityYet';
+  String get noActivityYet => 'لا يوجد نشاط حتى الآن';
   @override
-  String get noAdAvailable => 'noAdAvailable';
+  String get noAdAvailable => 'لا يوجد إعلان متاح';
   @override
-  String get noBannedUsers => 'noBannedUsers';
+  String get noBannedUsers => 'لا يوجد مستخدمين محظورين';
   @override
-  String get noBannedUsersMsg => 'noBannedUsersMsg';
+  String get noBannedUsersMsg => 'لا توجد رسالة للمستخدمين المحظورين';
   @override
-  String get noCommonCommunities => 'noCommonCommunities';
+  String get noCommonCommunities => 'لا توجد مجتمعات مشتركة';
   @override
-  String get noCommonFollowers => 'noCommonFollowers';
+  String get noCommonFollowers => 'لا يوجد متابعين مشتركين';
   @override
-  String get noCommonFollowing => 'noCommonFollowing';
+  String get noCommonFollowing => 'لا يوجد متابعة مشتركة';
   @override
-  String get noFollowers => 'noFollowers';
+  String get noFollowers => 'لا يوجد متابعين';
   @override
-  String get noFollowers2 => 'noFollowers2';
+  String get noFollowers2 => 'لا يوجد متابعين2';
   @override
-  String get noFollowersYet => 'noFollowersYet';
+  String get noFollowersYet => 'لا يوجد متابعين حتى الآن';
   @override
-  String get noFollowing => 'noFollowing';
+  String get noFollowing => 'لا يوجد متابعة';
   @override
-  String get noFollowing2 => 'noFollowing2';
+  String get noFollowing2 => 'لا يوجد متابعة2';
   @override
-  String get noFollowingYet => 'noFollowingYet';
+  String get noFollowingYet => 'لا يوجد متابعة حتى الآن';
   @override
-  String get noMembersFound => 'noMembersFound';
+  String get noMembersFound => 'لم يتم العثور على أعضاء';
   @override
-  String get noMembersInCommunity => 'noMembersInCommunity';
+  String get noMembersInCommunity => 'لا يوجد أعضاء في المجتمع';
   @override
-  String get noOneCanMessage => 'noOneCanMessage';
+  String get noOneCanMessage => 'لا أحد يستطيع إرسال رسالة';
   @override
-  String get noOneCanMessageDesc => 'noOneCanMessageDesc';
+  String get noOneCanMessageDesc => 'لا أحد يستطيع إرسال رسالة';
   @override
-  String get noPosts2 => 'noPosts2';
+  String get noPosts2 => 'لا توجد مشاركات2';
   @override
-  String get noPostsFound => 'noPostsFound';
+  String get noPostsFound => 'لم يتم العثور على أي مشاركات';
   @override
-  String get noPostsToSee => 'noPostsToSee';
+  String get noPostsToSee => 'لا توجد مشاركات لنرى';
   @override
-  String get noUsersFound => 'noUsersFound';
+  String get noUsersFound => 'لم يتم العثور على مستخدمين';
   @override
-  String get noUsersFound2 => 'noUsersFound2';
+  String get noUsersFound2 => 'لم يتم العثور على مستخدمين2';
   @override
-  String get noUsersFoundMsg => 'noUsersFoundMsg';
+  String get noUsersFoundMsg => 'لم يتم العثور على مستخدمين';
   @override
-  String get noUsersToSee => 'noUsersToSee';
+  String get noUsersToSee => 'لا يوجد مستخدمون لرؤيتهم';
   @override
-  String get notAMember => 'notAMember';
+  String get notAMember => 'ليس عضوا';
   @override
-  String get notEnoughCoins => 'notEnoughCoins';
+  String get notEnoughCoins => 'لا توجد عملات كافية';
   @override
-  String get notNow => 'notNow';
+  String get notNow => 'ليس الآن';
   @override
-  String get notifications2 => 'notifications2';
+  String get notifications2 => 'الإخطارات2';
   @override
-  String get notificationsFrom => 'notificationsFrom';
+  String get notificationsFrom => 'الإخطارات من';
   @override
-  String get notificationsFromChats => 'notificationsFromChats';
+  String get notificationsFromChats => 'الإخطارات من الدردشات';
   @override
-  String get notificationsFromNexusHub => 'notificationsFromNexusHub';
+  String get notificationsFromNexusHub => 'الإخطارات من Nexus Hub';
   @override
-  String get nowOnline => 'nowOnline';
+  String get nowOnline => 'الآن على الانترنت';
   @override
-  String get off => 'off';
+  String get off => 'عن';
   @override
-  String get officialEvents => 'officialEvents';
+  String get officialEvents => 'الأحداث الرسمية';
   @override
-  String get offlineStatus => 'offlineStatus';
+  String get offlineStatus => 'حالة عدم الاتصال بالإنترنت';
   @override
-  String get on => 'on';
+  String get on => 'على';
   @override
-  String get online2 => 'online2';
+  String get online2 => 'عبر الإنترنت2';
   @override
-  String get onlineStatus => 'onlineStatus';
+  String get onlineStatus => 'حالة الاتصال بالإنترنت';
   @override
-  String get onlyFriendsCanMessage => 'onlyFriendsCanMessage';
+  String get onlyFriendsCanMessage => 'يمكن للأصدقاء فقط إرسال الرسائل';
   @override
-  String get onlyFriendsCanMessageDesc => 'onlyFriendsCanMessageDesc';
+  String get onlyFriendsCanMessageDesc => 'يمكن للأصدقاء فقط إرسال رسالة Desc';
   @override
-  String get onlyHostCanDoThis => 'onlyHostCanDoThis';
+  String get onlyHostCanDoThis => 'المضيف فقط يمكنه القيام بذلك';
   @override
-  String get onlyYouCanSeeThis => 'onlyYouCanSeeThis';
+  String get onlyYouCanSeeThis => 'أنت فقط تستطيع رؤية هذا';
   @override
-  String get openToEveryone => 'openToEveryone';
+  String get openToEveryone => 'مفتوحة للجميع';
   @override
-  String get openToEveryoneDesc => 'openToEveryoneDesc';
+  String get openToEveryoneDesc => 'مفتوح للجميع';
   @override
-  String get optionCannotBeEmpty => 'optionCannotBeEmpty';
+  String get optionCannotBeEmpty => 'لا يمكن أن يكون الخيار فارغًا';
   @override
-  String get optional => 'optional';
+  String get optional => 'خياري';
   @override
-  String get or => 'or';
+  String get or => 'أو';
   @override
-  String get originalContent => 'originalContent';
+  String get originalContent => 'المحتوى الأصلي';
   @override
-  String get originalPoster => 'originalPoster';
+  String get originalPoster => 'الملصق الأصلي';
   @override
-  String get other2 => 'other2';
+  String get other2 => 'أخرى2';
   @override
-  String get otherOffenses => 'otherOffenses';
+  String get otherOffenses => 'جرائم أخرى';
   @override
-  String get otherReason => 'otherReason';
+  String get otherReason => 'سبب آخر';
   @override
-  String get password2 => 'password2';
+  String get password2 => 'كلمة المرور2';
   @override
-  String get passwordChangedSuccess => 'passwordChangedSuccess';
+  String get passwordChangedSuccess => 'تم تغيير كلمة المرور بنجاح';
   @override
-  String get passwordDoNotMatch => 'passwordDoNotMatch';
+  String get passwordDoNotMatch => 'كلمة المرور غير متطابقة';
   @override
-  String get passwordRequired => 'passwordRequired';
+  String get passwordRequired => 'كلمة المرور مطلوبة';
   @override
-  String get passwordResetEmailSent => 'passwordResetEmailSent';
+  String get passwordResetEmailSent => 'إعادة تعيين كلمة المرور البريد الإلكتروني المرسل';
   @override
-  String get pasteGiphyLink => 'pasteGiphyLink';
+  String get pasteGiphyLink => 'الصق رابط Giphy';
   @override
-  String get pasteImageUrl => 'pasteImageUrl';
+  String get pasteImageUrl => 'لصق عنوان URL للصورة';
   @override
-  String get pasteLink => 'pasteLink';
+  String get pasteLink => 'لصق الرابط';
   @override
-  String get pasteLink2 => 'pasteLink2';
+  String get pasteLink2 => 'لصق الرابط 2';
   @override
-  String get pasteYoutubeLink => 'pasteYoutubeLink';
+  String get pasteYoutubeLink => 'الصق رابط اليوتيوب';
   @override
-  String get permanentlyBanUser => 'permanentlyBanUser';
+  String get permanentlyBanUser => 'حظر المستخدم بشكل دائم';
   @override
-  String get permissions => 'permissions';
+  String get permissions => 'الأذونات';
   @override
-  String get phone => 'phone';
+  String get phone => 'هاتف';
   @override
-  String get phoneNotVerified => 'phoneNotVerified';
+  String get phoneNotVerified => 'لم يتم التحقق من الهاتف';
   @override
-  String get photo => 'photo';
+  String get photo => 'صورة';
   @override
-  String get pin => 'pin';
+  String get pin => 'دبوس';
   @override
-  String get pinMessage => 'pinMessage';
+  String get pinMessage => 'دبوس الرسالة';
   @override
-  String get pinToCommunityHome => 'pinToCommunityHome';
+  String get pinToCommunityHome => 'تثبيت على الصفحة الرئيسية للمجتمع';
   @override
-  String get plagiarism => 'plagiarism';
+  String get plagiarism => 'سرقة علمية';
   @override
-  String get pollDuration => 'pollDuration';
+  String get pollDuration => 'مدة الاستطلاع';
   @override
-  String get pollEndsIn => 'pollEndsIn';
+  String get pollEndsIn => 'ينتهي الاستطلاع في';
   @override
-  String get pollOptions => 'pollOptions';
+  String get pollOptions => 'خيارات الاستطلاع';
   @override
-  String get pollPublishedSuccess => 'pollPublishedSuccess';
+  String get pollPublishedSuccess => 'تم نشر الاستطلاع بنجاح';
   @override
-  String get popular2 => 'popular2';
+  String get popular2 => 'شعبية2';
   @override
-  String get post2 => 'post2';
+  String get post2 => 'بوست2';
   @override
-  String get postHidden => 'postHidden';
+  String get postHidden => 'مشاركة مخفية';
   @override
-  String get postHighlighted => 'postHighlighted';
+  String get postHighlighted => 'تم تسليط الضوء على المشاركة';
   @override
-  String get postHistory => 'postHistory';
+  String get postHistory => 'تاريخ ما بعد';
   @override
-  String get postInYourFeed => 'postInYourFeed';
+  String get postInYourFeed => 'انشر في خلاصتك';
   @override
-  String get postOptions => 'postOptions';
+  String get postOptions => 'خيارات النشر';
   @override
-  String get postOptions2 => 'postOptions2';
+  String get postOptions2 => 'خيارات المشاركة2';
   @override
-  String get postSentForReview => 'postSentForReview';
+  String get postSentForReview => 'تم إرسال المشاركة للمراجعة';
   @override
-  String get postUnhidden => 'postUnhidden';
+  String get postUnhidden => 'مشاركة غير مخفية';
   @override
-  String get postUnpinned => 'postUnpinned';
+  String get postUnpinned => 'تم إلغاء تثبيت المشاركة';
   @override
-  String get postVisibility => 'postVisibility';
+  String get postVisibility => 'مشاركة الرؤية';
   @override
-  String get posts2 => 'posts2';
+  String get posts2 => 'المشاركات2';
   @override
-  String get postsYouMightLike => 'postsYouMightLike';
+  String get postsYouMightLike => 'المشاركات التي قد تعجبك';
   @override
-  String get presence => 'presence';
+  String get presence => 'حضور';
   @override
-  String get presenceStatus => 'presenceStatus';
+  String get presenceStatus => 'حالة التواجد';
   @override
-  String get privacy2 => 'privacy2';
+  String get privacy2 => 'الخصوصية2';
   @override
-  String get private2 => 'private2';
+  String get private2 => 'خاص2';
   @override
-  String get privateChatInvite => 'privateChatInvite';
+  String get privateChatInvite => 'دعوة للدردشة الخاصة';
   @override
-  String get privateCommunity => 'privateCommunity';
+  String get privateCommunity => 'المجتمع الخاص';
   @override
-  String get privateCommunityDesc => 'privateCommunityDesc';
+  String get privateCommunityDesc => 'وصف المجتمع الخاص';
   @override
-  String get profile2 => 'profile2';
+  String get profile2 => 'الملف الشخصي2';
   @override
-  String get profileComments => 'profileComments';
+  String get profileComments => 'تعليقات الملف الشخصي';
   @override
-  String get profileCommentsDisabled => 'profileCommentsDisabled';
+  String get profileCommentsDisabled => 'تعليقات الملف الشخصي معطلة';
   @override
-  String get profileCustomization => 'profileCustomization';
+  String get profileCustomization => 'تخصيص الملف الشخصي';
   @override
-  String get profileFrame => 'profileFrame';
+  String get profileFrame => 'إطار الملف الشخصي';
   @override
-  String get profileFrames => 'profileFrames';
+  String get profileFrames => 'إطارات الملف الشخصي';
   @override
-  String get profileOptions => 'profileOptions';
+  String get profileOptions => 'خيارات الملف الشخصي';
   @override
-  String get profileViewers => 'profileViewers';
+  String get profileViewers => 'عارضو الملفات الشخصية';
   @override
-  String get public2 => 'public2';
+  String get public2 => 'عام2';
   @override
-  String get publicChatrooms => 'publicChatrooms';
+  String get publicChatrooms => 'غرف الدردشة العامة';
   @override
-  String get publish2 => 'publish2';
+  String get publish2 => 'نشر2';
   @override
-  String get questionCannotBeEmpty => 'questionCannotBeEmpty';
+  String get questionCannotBeEmpty => 'لا يمكن أن يكون السؤال فارغًا';
   @override
-  String get questionLabel => 'questionLabel';
+  String get questionLabel => 'تسمية السؤال';
   @override
-  String get quizLabel => 'quizLabel';
+  String get quizLabel => 'تسمية الاختبار';
   @override
-  String get quizPublishedSuccess => 'quizPublishedSuccess';
+  String get quizPublishedSuccess => 'مسابقة نشرت النجاح';
   @override
-  String get quizPublishedSuccess2 => 'quizPublishedSuccess2';
+  String get quizPublishedSuccess2 => 'مسابقة نشرت النجاح2';
   @override
-  String get quizResults => 'quizResults';
+  String get quizResults => 'نتائج الاختبار';
   @override
-  String get quizzes => 'quizzes';
+  String get quizzes => 'مسابقات';
   @override
-  String get readOnly => 'readOnly';
+  String get readOnly => 'قراءة فقط';
   @override
-  String get reason2 => 'reason2';
+  String get reason2 => 'السبب2';
   @override
-  String get recentPosts => 'recentPosts';
+  String get recentPosts => 'المشاركات الأخيرة';
   @override
-  String get recentVisitors => 'recentVisitors';
+  String get recentVisitors => 'الزوار الأخيرة';
   @override
-  String get remove2 => 'remove2';
+  String get remove2 => 'إزالة2';
   @override
-  String get removeAtLeastOneImage => 'removeAtLeastOneImage';
+  String get removeAtLeastOneImage => 'قم بإزالة صورة واحدة على الأقل';
   @override
-  String get removeAtLeastOneQuestion => 'removeAtLeastOneQuestion';
+  String get removeAtLeastOneQuestion => 'قم بإزالة سؤال واحد على الأقل';
   @override
-  String get removeCover => 'removeCover';
+  String get removeCover => 'إزالة الغطاء';
   @override
-  String get removeFriend => 'removeFriend';
+  String get removeFriend => 'إزالة صديق';
   @override
-  String get removeFromFavorites => 'removeFromFavorites';
+  String get removeFromFavorites => 'إزالة من المفضلة';
   @override
-  String get removeMember => 'removeMember';
+  String get removeMember => 'إزالة العضو';
   @override
-  String get removeMusic => 'removeMusic';
+  String get removeMusic => 'إزالة الموسيقى';
   @override
-  String get removePoll => 'removePoll';
+  String get removePoll => 'إزالة الاستطلاع';
   @override
-  String get removeQuiz => 'removeQuiz';
+  String get removeQuiz => 'إزالة الاختبار';
   @override
-  String get removeUserFromChat => 'removeUserFromChat';
+  String get removeUserFromChat => 'إزالة المستخدم من الدردشة';
   @override
-  String get reorder => 'reorder';
+  String get reorder => 'إعادة الترتيب';
   @override
-  String get reorder2 => 'reorder2';
+  String get reorder2 => 'إعادة الطلب2';
   @override
-  String get report2 => 'report2';
+  String get report2 => 'تقرير2';
   @override
-  String get reportBug2 => 'reportBug2';
+  String get reportBug2 => 'الإبلاغ عن الخطأ2';
   @override
-  String get reportDetails => 'reportDetails';
+  String get reportDetails => 'تفاصيل التقرير';
   @override
-  String get reportSent => 'reportSent';
+  String get reportSent => 'تم إرسال التقرير';
   @override
-  String get reportSubmittedSuccess => 'reportSubmittedSuccess';
+  String get reportSubmittedSuccess => 'تم إرسال التقرير بنجاح';
   @override
-  String get reportSummary => 'reportSummary';
+  String get reportSummary => 'ملخص التقرير';
   @override
-  String get reportUser => 'reportUser';
+  String get reportUser => 'الإبلاغ عن المستخدم';
   @override
-  String get reportedContent => 'reportedContent';
+  String get reportedContent => 'المحتوى المبلغ عنه';
   @override
-  String get reportedUser => 'reportedUser';
+  String get reportedUser => 'مستخدم تم الإبلاغ عنه';
   @override
-  String get reportsCenter => 'reportsCenter';
+  String get reportsCenter => 'مركز التقارير';
   @override
-  String get reputation2 => 'reputation2';
+  String get reputation2 => 'السمعة2';
   @override
-  String get reputationLevel => 'reputationLevel';
+  String get reputationLevel => 'مستوى السمعة';
   @override
-  String get reputationPoints => 'reputationPoints';
+  String get reputationPoints => 'نقاط السمعة';
   @override
-  String get requestData => 'requestData';
+  String get requestData => 'طلب البيانات';
   @override
-  String get requestDataMsg => 'requestDataMsg';
+  String get requestDataMsg => 'رسالة طلب البيانات';
   @override
-  String get requestToJoin => 'requestToJoin';
+  String get requestToJoin => 'طلب الانضمام';
   @override
-  String get required => 'required';
+  String get required => 'مطلوب';
   @override
-  String get resendCode => 'resendCode';
+  String get resendCode => 'إعادة إرسال الرمز';
   @override
-  String get resendEmail => 'resendEmail';
+  String get resendEmail => 'إعادة إرسال البريد الإلكتروني';
   @override
-  String get resendVerificationEmail => 'resendVerificationEmail';
+  String get resendVerificationEmail => 'إعادة إرسال البريد الإلكتروني للتحقق';
   @override
-  String get reset => 'reset';
+  String get reset => 'إعادة ضبط';
   @override
-  String get reset2 => 'reset2';
+  String get reset2 => 'إعادة تعيين2';
   @override
-  String get resetLayout => 'resetLayout';
+  String get resetLayout => 'إعادة تعيين التخطيط';
   @override
-  String get resetPasswordSuccess => 'resetPasswordSuccess';
+  String get resetPasswordSuccess => 'نجاح إعادة تعيين كلمة المرور';
   @override
-  String get restore => 'restore';
+  String get restore => 'يعيد';
   @override
-  String get restorePurchases => 'restorePurchases';
+  String get restorePurchases => 'استعادة المشتريات';
   @override
-  String get review => 'review';
+  String get review => 'مراجعة';
   @override
-  String get revokeAllDevices => 'revokeAllDevices';
+  String get revokeAllDevices => 'إبطال كافة الأجهزة';
   @override
-  String get rookie => 'rookie';
+  String get rookie => 'مبتدئ';
   @override
-  String get saveDraft => 'saveDraft';
+  String get saveDraft => 'حفظ المسودة';
   @override
-  String get searchByUsername => 'searchByUsername';
+  String get searchByUsername => 'البحث حسب اسم المستخدم';
   @override
-  String get searchForCommunities => 'searchForCommunities';
+  String get searchForCommunities => 'البحث عن المجتمعات';
   @override
-  String get searchForGifs => 'searchForGifs';
+  String get searchForGifs => 'البحث عن صور متحركة';
   @override
-  String get searchForMembers => 'searchForMembers';
+  String get searchForMembers => 'البحث عن الأعضاء';
   @override
-  String get searchForMusic => 'searchForMusic';
+  String get searchForMusic => 'البحث عن الموسيقى';
   @override
-  String get searchForPosts => 'searchForPosts';
+  String get searchForPosts => 'البحث عن المشاركات';
   @override
-  String get searchForStickers => 'searchForStickers';
+  String get searchForStickers => 'البحث عن الملصقات';
   @override
-  String get searchForStickers2 => 'searchForStickers2';
+  String get searchForStickers2 => 'البحث عن ملصقات2';
   @override
-  String get searchForUsers => 'searchForUsers';
+  String get searchForUsers => 'البحث عن المستخدمين';
   @override
-  String get searchForUsers2 => 'searchForUsers2';
+  String get searchForUsers2 => 'البحث عن المستخدمين2';
   @override
-  String get searchGifs => 'searchGifs';
+  String get searchGifs => 'بحث صور متحركة';
   @override
-  String get selectAction => 'selectAction';
+  String get selectAction => 'حدد الإجراء';
   @override
-  String get selectAtLeastOne => 'selectAtLeastOne';
+  String get selectAtLeastOne => 'حدد واحدًا على الأقل';
   @override
-  String get selectAtLeastOneInterest => 'selectAtLeastOneInterest';
+  String get selectAtLeastOneInterest => 'حدد اهتمامًا واحدًا على الأقل';
   @override
-  String get selectCover => 'selectCover';
+  String get selectCover => 'حدد الغلاف';
   @override
-  String get selectDuration => 'selectDuration';
+  String get selectDuration => 'حدد المدة';
   @override
-  String get selectPollEndDate => 'selectPollEndDate';
+  String get selectPollEndDate => 'حدد تاريخ انتهاء الاستطلاع';
   @override
-  String get selectReason => 'selectReason';
+  String get selectReason => 'حدد السبب';
   @override
-  String get selfHarm => 'selfHarm';
+  String get selfHarm => 'الأذى الذاتي';
   @override
-  String get sendAMessage => 'sendAMessage';
+  String get sendAMessage => 'أرسل رسالة';
   @override
-  String get sendCoinsToUser => 'sendCoinsToUser';
+  String get sendCoinsToUser => 'إرسال العملات المعدنية إلى المستخدم';
   @override
-  String get sendFile => 'sendFile';
+  String get sendFile => 'إرسال الملف';
   @override
-  String get sendFileToChat => 'sendFileToChat';
+  String get sendFileToChat => 'إرسال ملف للدردشة';
   @override
-  String get sendGif => 'sendGif';
+  String get sendGif => 'أرسل جيف';
   @override
-  String get sendingMessage => 'sendingMessage';
+  String get sendingMessage => 'إرسال الرسالة';
   @override
-  String get sendingVideo => 'sendingVideo';
+  String get sendingVideo => 'إرسال الفيديو';
   @override
-  String get sessionExpiredMessage => 'sessionExpiredMessage';
+  String get sessionExpiredMessage => 'رسالة انتهاء صلاحية الجلسة';
   @override
-  String get sexualContent => 'sexualContent';
+  String get sexualContent => 'المحتوى الجنسي';
   @override
-  String get shareCommunity => 'shareCommunity';
+  String get shareCommunity => 'مشاركة المجتمع';
   @override
-  String get shareImage => 'shareImage';
+  String get shareImage => 'مشاركة الصورة';
   @override
-  String get sharePost => 'sharePost';
+  String get sharePost => 'مشاركة المنشور';
   @override
-  String get shareProfile2 => 'shareProfile2';
+  String get shareProfile2 => 'مشاركة الملف الشخصي2';
   @override
-  String get shareWiki => 'shareWiki';
+  String get shareWiki => 'شارك ويكي';
   @override
-  String get shareYourThoughts => 'shareYourThoughts';
+  String get shareYourThoughts => 'شارك أفكارك';
   @override
-  String get showLess => 'showLess';
+  String get showLess => 'عرض أقل';
   @override
-  String get showMore => 'showMore';
+  String get showMore => 'عرض المزيد';
   @override
-  String get showOriginal => 'showOriginal';
+  String get showOriginal => 'عرض الأصل';
   @override
-  String get silent => 'silent';
+  String get silent => 'صامت';
   @override
-  String get soundOnNotifications => 'soundOnNotifications';
+  String get soundOnNotifications => 'الصوت على الإخطارات';
   @override
-  String get soundOnNotificationsDesc => 'soundOnNotificationsDesc';
+  String get soundOnNotificationsDesc => 'الصوت على وصف الإخطارات';
   @override
-  String get startChat => 'startChat';
+  String get startChat => 'ابدأ الدردشة';
   @override
-  String get startFollowing => 'startFollowing';
+  String get startFollowing => 'ابدأ بالمتابعة';
   @override
-  String get startNewChat => 'startNewChat';
+  String get startNewChat => 'ابدأ محادثة جديدة';
   @override
-  String get startTyping => 'startTyping';
+  String get startTyping => 'ابدأ الكتابة';
   @override
-  String get stickerPack => 'stickerPack';
+  String get stickerPack => 'حزمة الملصقات';
   @override
-  String get stickerPacks => 'stickerPacks';
+  String get stickerPacks => 'حزم الملصقات';
   @override
-  String get storyViews => 'storyViews';
+  String get storyViews => 'مشاهدات القصة';
   @override
-  String get strikeUser => 'strikeUser';
+  String get strikeUser => 'ضرب المستخدم';
   @override
-  String get submit => 'submit';
+  String get submit => 'يُقدِّم';
   @override
-  String get submitForReview => 'submitForReview';
+  String get submitForReview => 'إرسال للمراجعة';
   @override
-  String get submitted => 'submitted';
+  String get submitted => 'مُقَدَّم';
   @override
-  String get subscription => 'subscription';
+  String get subscription => 'الاشتراك';
   @override
-  String get success => 'success';
+  String get success => 'نجاح';
   @override
-  String get successfullyUnlinked => 'successfullyUnlinked';
+  String get successfullyUnlinked => 'تم إلغاء الارتباط بنجاح';
   @override
-  String get takeAPhoto => 'takeAPhoto';
+  String get takeAPhoto => 'التقط صورة';
   @override
-  String get tapToAddDescription => 'tapToAddDescription';
+  String get tapToAddDescription => 'انقر لإضافة الوصف';
   @override
-  String get tapToChange => 'tapToChange';
+  String get tapToChange => 'انقر للتغيير';
   @override
-  String get tapToCopy => 'tapToCopy';
+  String get tapToCopy => 'انقر للنسخ';
   @override
-  String get tapToEdit => 'tapToEdit';
+  String get tapToEdit => 'انقر للتحرير';
   @override
-  String get tapToSeeDetails => 'tapToSeeDetails';
+  String get tapToSeeDetails => 'انقر لرؤية التفاصيل';
   @override
-  String get tapToVote => 'tapToVote';
+  String get tapToVote => 'انقر للتصويت';
   @override
-  String get theme => 'theme';
+  String get theme => 'سمة';
   @override
-  String get thisActionIsIrreversible => 'thisActionIsIrreversible';
+  String get thisActionIsIrreversible => 'هذا الإجراء لا رجعة فيه';
   @override
-  String get thisChatIsPrivate => 'thisChatIsPrivate';
+  String get thisChatIsPrivate => 'هذه الدردشة خاصة';
   @override
-  String get thisChatIsPublic => 'thisChatIsPublic';
+  String get thisChatIsPublic => 'هذه الدردشة عامة';
   @override
-  String get thisContentIsHidden => 'thisContentIsHidden';
+  String get thisContentIsHidden => 'هذا المحتوى مخفي';
   @override
-  String get titleLabel => 'titleLabel';
+  String get titleLabel => 'تسمية العنوان';
   @override
-  String get titleOptional => 'titleOptional';
+  String get titleOptional => 'العنوان اختياري';
   @override
-  String get transferLeadership => 'transferLeadership';
+  String get transferLeadership => 'نقل القيادة';
   @override
-  String get transferOwnership => 'transferOwnership';
+  String get transferOwnership => 'نقل الملكية';
   @override
-  String get translate => 'translate';
+  String get translate => 'يترجم';
   @override
-  String get translation => 'translation';
+  String get translation => 'ترجمة';
   @override
-  String get typeYourMessageHere => 'typeYourMessageHere';
+  String get typeYourMessageHere => 'اكتب رسالتك هنا';
   @override
-  String get unbanUser => 'unbanUser';
+  String get unbanUser => 'إلغاء حظر المستخدم';
   @override
-  String get unblockUserConfirmation => 'unblockUserConfirmation';
+  String get unblockUserConfirmation => 'إلغاء حظر تأكيد المستخدم';
   @override
-  String get underlineFormat => 'underlineFormat';
+  String get underlineFormat => 'تسطير التنسيق';
   @override
-  String get unfeature => 'unfeature';
+  String get unfeature => 'غير مميز';
   @override
-  String get unfeaturePost => 'unfeaturePost';
+  String get unfeaturePost => 'مشاركة غير مميزة';
   @override
-  String get unfollowUser => 'unfollowUser';
+  String get unfollowUser => 'إلغاء متابعة المستخدم';
   @override
-  String get unknownUser => 'unknownUser';
+  String get unknownUser => 'مستخدم غير معروف';
   @override
-  String get unlinkProvider => 'unlinkProvider';
+  String get unlinkProvider => 'إلغاء ربط الموفر';
   @override
-  String get unpin => 'unpin';
+  String get unpin => 'إزالة التثبيت';
   @override
-  String get unpinFromCommunityHome => 'unpinFromCommunityHome';
+  String get unpinFromCommunityHome => 'إزالة التثبيت من صفحة المجتمع الرئيسية';
   @override
-  String get unpinMessage => 'unpinMessage';
+  String get unpinMessage => 'إزالة تثبيت الرسالة';
   @override
-  String get unread => 'unread';
+  String get unread => 'غير مقروءة';
   @override
-  String get unsupportedLink => 'unsupportedLink';
+  String get unsupportedLink => 'رابط غير مدعوم';
   @override
-  String get until => 'until';
+  String get until => 'حتى';
   @override
-  String get upcoming => 'upcoming';
+  String get upcoming => 'القادمة';
   @override
-  String get updateAction => 'updateAction';
+  String get updateAction => 'إجراء التحديث';
   @override
-  String get updateAvailable => 'updateAvailable';
+  String get updateAvailable => 'التحديث متاح';
   @override
-  String get updateNow => 'updateNow';
+  String get updateNow => 'التحديث الآن';
   @override
-  String get uploadFromGallery => 'uploadFromGallery';
+  String get uploadFromGallery => 'تحميل من المعرض';
   @override
-  String get uploading => 'uploading';
+  String get uploading => 'جارٍ التحميل';
   @override
-  String get userBanned => 'userBanned';
+  String get userBanned => 'المستخدم محظور';
   @override
-  String get userHasBeenBanned => 'userHasBeenBanned';
+  String get userHasBeenBanned => 'تم حظر المستخدم';
   @override
-  String get userHasBeenKicked => 'userHasBeenKicked';
+  String get userHasBeenKicked => 'تم طرد المستخدم';
   @override
-  String get userHasBeenMuted => 'userHasBeenMuted';
+  String get userHasBeenMuted => 'تم كتم صوت المستخدم';
   @override
-  String get userHasBeenUnbanned => 'userHasBeenUnbanned';
+  String get userHasBeenUnbanned => 'تم إلغاء حظر المستخدم';
   @override
-  String get userHasBeenWarned => 'userHasBeenWarned';
+  String get userHasBeenWarned => 'لقد تم تحذير المستخدم';
   @override
-  String get userKicked => 'userKicked';
+  String get userKicked => 'ركل المستخدم';
   @override
-  String get userMuted => 'userMuted';
+  String get userMuted => 'تم كتم صوت المستخدم';
   @override
-  String get userNotFound => 'userNotFound';
+  String get userNotFound => 'لم يتم العثور على المستخدم';
   @override
-  String get userProfile => 'userProfile';
+  String get userProfile => 'ملف تعريف المستخدم';
   @override
-  String get userUnbanned => 'userUnbanned';
+  String get userUnbanned => 'المستخدم غير محظور';
   @override
-  String get userWarned => 'userWarned';
+  String get userWarned => 'حذر المستخدم';
   @override
-  String get veteran => 'veteran';
+  String get veteran => 'محارب قديم';
   @override
-  String get videoPublishedSuccess => 'videoPublishedSuccess';
+  String get videoPublishedSuccess => 'تم نشر الفيديو بنجاح';
   @override
-  String get viewAll => 'viewAll';
+  String get viewAll => 'عرض الكل';
   @override
-  String get viewParticipants => 'viewParticipants';
+  String get viewParticipants => 'عرض المشاركين';
   @override
-  String get viewProfile => 'viewProfile';
+  String get viewProfile => 'عرض الملف الشخصي';
   @override
-  String get viewResults => 'viewResults';
+  String get viewResults => 'عرض النتائج';
   @override
-  String get violentContent => 'violentContent';
+  String get violentContent => 'محتوى عنيف';
   @override
-  String get visitor => 'visitor';
+  String get visitor => 'زائر';
   @override
-  String get voiceNote => 'voiceNote';
+  String get voiceNote => 'ملاحظة صوتية';
   @override
-  String get waitingForWifi => 'waitingForWifi';
+  String get waitingForWifi => 'في انتظار واي فاي';
   @override
-  String get wallComments => 'wallComments';
+  String get wallComments => 'تعليقات الحائط';
   @override
-  String get writeYourMessage => 'writeYourMessage';
+  String get writeYourMessage => 'اكتب رسالتك';
   @override
-  String get yesDeleteIt => 'yesDeleteIt';
+  String get yesDeleteIt => 'نعم احذفها';
   @override
-  String get youAreBanned => 'youAreBanned';
+  String get youAreBanned => 'أنت محظور';
   @override
-  String get youAreMuted => 'youAreMuted';
+  String get youAreMuted => 'أنت كتم الصوت';
   @override
-  String get youHaveBeenWarned => 'youHaveBeenWarned';
+  String get youHaveBeenWarned => 'لقد تم تحذيرك';
   @override
-  String get youHaveNoDrafts => 'youHaveNoDrafts';
+  String get youHaveNoDrafts => 'ليس لديك مسودات';
   @override
-  String get youHaveNoPosts => 'youHaveNoPosts';
+  String get youHaveNoPosts => 'ليس لديك أي مشاركات';
   @override
-  String get youHaveNoSavedPosts => 'youHaveNoSavedPosts';
+  String get youHaveNoSavedPosts => 'ليس لديك أي مشاركات محفوظة';
   @override
-  String get yourAccount => 'yourAccount';
+  String get yourAccount => 'حسابك';
   @override
-  String get yourInterests => 'yourInterests';
+  String get yourInterests => 'اهتماماتك';
 
   @override
   String get coverPhoto => 'صورة الغلاف';
@@ -5762,23 +5762,23 @@ class AppStringsAr implements AppStrings {
   @override
   String get privateChatDesc => 'يمكن للأعضاء المدعوين فقط الانضمام';
   @override
-  String get editProfileFrames => 'editProfileFrames';
+  String get editProfileFrames => 'تحرير إطارات الملف الشخصي';
   @override
-  String get profileBackgroundOptional => 'profileBackgroundOptional';
+  String get profileBackgroundOptional => 'خلفية الملف الشخصي اختيارية';
   @override
-  String get removeBackground => 'removeBackground';
+  String get removeBackground => 'إزالة الخلفية';
   @override
-  String get addPhotoToGallery => 'addPhotoToGallery';
+  String get addPhotoToGallery => 'إضافة صورة إلى المعرض';
   @override
-  String get removePhoto => 'removePhoto';
+  String get removePhoto => 'إزالة الصورة';
   @override
-  String get galleryCount => 'galleryCount';
+  String get galleryCount => 'عدد المعرض';
   @override
-  String get nicknameStyleHint => 'nicknameStyleHint';
+  String get nicknameStyleHint => 'تلميح على نمط اللقب';
   @override
-  String get tapToEditAvatar => 'tapToEditAvatar';
+  String get tapToEditAvatar => 'انقر لتحرير الصورة الرمزية';
   @override
-  String get localAvatarRemoved => 'localAvatarRemoved';
+  String get localAvatarRemoved => 'تمت إزالة الصورة الرمزية المحلية';
   @override
-  String get maxGalleryPhotos => 'maxGalleryPhotos';
+  String get maxGalleryPhotos => 'صور معرض ماكس';
 }
