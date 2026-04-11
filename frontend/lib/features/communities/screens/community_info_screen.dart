@@ -260,11 +260,11 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // Banner image
-                  if (community.bannerUrl != null &&
-                      community.bannerUrl!.isNotEmpty)
+                  // Banner image — usa banner específico para a tela Info
+                  if ((community.bannerForContext('info') ?? community.bannerUrl) != null &&
+                      (community.bannerForContext('info') ?? community.bannerUrl)!.isNotEmpty)
                     CachedNetworkImage(
-                      imageUrl: community.bannerUrl!,
+                      imageUrl: (community.bannerForContext('info') ?? community.bannerUrl)!,
                       fit: BoxFit.cover,
                       placeholder: (_, __) => Container(
                         decoration: BoxDecoration(
@@ -550,12 +550,13 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
 
                   SizedBox(height: r.s(24)),
 
-                  // ── Description ──
-                  if (community.description.isNotEmpty) ...[
+                  // ── About ── (novo campo aboutText, fallback para description)
+                  if ((community.aboutText?.isNotEmpty ?? false) ||
+                      community.description.isNotEmpty) ...[
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Description',
+                        'Sobre a Comunidade',
                         style: TextStyle(
                           color: context.textPrimary,
                           fontSize: r.fs(16),
@@ -567,11 +568,49 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        community.description,
+                        community.aboutText?.isNotEmpty == true
+                            ? community.aboutText!
+                            : community.description,
                         style: TextStyle(
                           color: context.textSecondary,
                           fontSize: r.fs(14),
-                          height: 1.5,
+                          height: 1.6,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: r.s(24)),
+                  ],
+
+                  // ── Regras ── (campo rules do CommunityModel)
+                  if (community.rules.isNotEmpty) ...[
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Regras da Comunidade',
+                        style: TextStyle(
+                          color: context.textPrimary,
+                          fontSize: r.fs(16),
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: r.s(10)),
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(r.s(14)),
+                      decoration: BoxDecoration(
+                        color: context.cardBg,
+                        borderRadius: BorderRadius.circular(r.s(12)),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.06),
+                        ),
+                      ),
+                      child: Text(
+                        community.rules,
+                        style: TextStyle(
+                          color: context.textSecondary,
+                          fontSize: r.fs(13),
+                          height: 1.6,
                         ),
                       ),
                     ),

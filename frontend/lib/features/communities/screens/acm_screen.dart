@@ -57,7 +57,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
   int _totalPosts = 0;
   int _totalChats = 0;
 
-  final _tabs = ['Módulos', 'Acesso', 'Visual', 'Banners', 'Conteúdo', 'Home', 'Stats'];
+  final _tabs = ['Módulos', 'Acesso', 'Visual', 'Banners', 'Conteúdo', 'Home', 'Categorias', 'Stats'];
 
   @override
   void initState() {
@@ -246,7 +246,6 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
     final s = ref.watch(stringsProvider);
     final r = context.r;
@@ -305,6 +304,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
                 _buildBannersTab(),
                 _buildContentTab(),
                 _buildHomeLayoutTab(),
+                _buildCategoriesTab(),
                 _buildStatsTab(),
               ],
             ),
@@ -1315,6 +1315,17 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
   // ========================================================================
   // TAB: Stats
   // ========================================================================
+  // ─────────────────────────────────────────────────────────────────────────
+  // ABA: CATEGORIAS
+  // ─────────────────────────────────────────────────────────────────────────
+  Widget _buildCategoriesTab() {
+    final r = context.r;
+    return _CategoriesTabContent(
+      communityId: widget.communityId,
+      themeColor: _parseColor(_themeColor),
+    );
+  }
+
   Widget _buildStatsTab() {
     final s = getStrings();
     final r = context.r;
@@ -1401,6 +1412,343 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
 }
 
 // ============================================================================
+// WIDGET: _CategoriesTabContent
+// ============================================================================
+
+class _CategoriesTabContent extends ConsumerStatefulWidget {
+  final String communityId;
+  final Color themeColor;
+
+  const _CategoriesTabContent({
+    required this.communityId,
+    required this.themeColor,
+  });
+
+  @override
+  ConsumerState<_CategoriesTabContent> createState() =>
+      _CategoriesTabContentState();
+}
+
+class _CategoriesTabContentState
+    extends ConsumerState<_CategoriesTabContent> {
+  List<Map<String, dynamic>> _categories = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final res = await SupabaseService.table('community_categories')
+          .select()
+          .eq('community_id', widget.communityId)
+          .order('sort_order')
+          .order('name');
+      if (mounted) {
+        setState(() {
+          _categories = (res as List).cast<Map<String, dynamic>>();
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _showAddDialog({Map<String, dynamic>? existing}) async {
+    final nameCtrl =
+        TextEditingController(text: existing?['name'] as String? ?? '');
+    final descCtrl =
+        TextEditingController(text: existing?['description'] as String? ?? '');
+    String selectedColor = existing?['color'] as String? ?? '#7C4DFF';
+    final r = context.r;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) => AlertDialog(
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          title: Text(
+            existing == null ? 'Nova Categoria' : 'Editar Categoria',
+            style: TextStyle(fontSize: r.fs(16), fontWeight: FontWeight.w700),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Nome da categoria',
+                  hintText: 'Ex: Arte, Tecnologia, Humor...',
+                ),
+                textCapitalization: TextCapitalization.words,
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: descCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Descrição (opcional)',
+                ),
+                maxLines: 2,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const Text('Cor: '),
+                  const SizedBox(width: 8),
+                  ...['#7C4DFF', '#00BCD4', '#FF5722', '#4CAF50', '#FF9800', '#E91E63']
+                      .map((c) => GestureDetector(
+                            onTap: () => setS(() => selectedColor = c),
+                            child: Container(
+                              margin: const EdgeInsets.only(right: 6),
+                              width: 24,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                color: Color(int.parse(
+                                    c.replaceFirst('#', '0xFF'))),
+                                shape: BoxShape.circle,
+                                border: selectedColor == c
+                                    ? Border.all(
+                                        color: Colors.white, width: 2)
+                                    : null,
+                              ),
+                            ),
+                          ))
+                      .toList(),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(
+                existing == null ? 'Criar' : 'Salvar',
+                style: TextStyle(color: widget.themeColor),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmed != true) return;
+    if (nameCtrl.text.trim().isEmpty) return;
+
+    try {
+      final result = await SupabaseService.rpc(
+        'manage_community_category',
+        params: {
+          'p_community_id': widget.communityId,
+          'p_action': existing == null ? 'create' : 'update',
+          if (existing != null) 'p_category_id': existing['id'],
+          'p_name': nameCtrl.text.trim(),
+          'p_description': descCtrl.text.trim(),
+          'p_color': selectedColor,
+        },
+      );
+      final res = Map<String, dynamic>.from(result as Map);
+      if (res['success'] == true) {
+        await _load();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(existing == null
+                ? 'Categoria criada!'
+                : 'Categoria atualizada!'),
+            backgroundColor: AppTheme.primaryColor,
+            behavior: SnackBarBehavior.floating,
+          ));
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Erro: ${res["error"]}'),
+          ));
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erro: ${e.toString()}')));
+      }
+    }
+  }
+
+  Future<void> _deleteCategory(Map<String, dynamic> cat) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        title: const Text('Excluir Categoria'),
+        content: Text(
+            'Excluir a categoria "${cat['name']}"? Os posts desta categoria não serão excluídos.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Excluir',
+                style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      await SupabaseService.rpc(
+        'manage_community_category',
+        params: {
+          'p_community_id': widget.communityId,
+          'p_action': 'delete',
+          'p_category_id': cat['id'],
+        },
+      );
+      await _load();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Categoria excluída.'),
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erro: ${e.toString()}')));
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showAddDialog(),
+        backgroundColor: widget.themeColor,
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: const Text('Nova Categoria',
+            style: TextStyle(color: Colors.white)),
+      ),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: AppTheme.primaryColor))
+          : _categories.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.label_off_rounded,
+                          size: r.s(56), color: Colors.grey[600]),
+                      SizedBox(height: r.s(16)),
+                      Text(
+                        'Nenhuma categoria criada',
+                        style: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: r.fs(16),
+                        ),
+                      ),
+                      SizedBox(height: r.s(8)),
+                      Text(
+                        'Crie categorias para organizar os posts da comunidade.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: r.fs(13),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : RefreshIndicator(
+                  onRefresh: _load,
+                  child: ListView.separated(
+                    padding: EdgeInsets.fromLTRB(
+                        r.s(16), r.s(16), r.s(16), r.s(100)),
+                    itemCount: _categories.length,
+                    separatorBuilder: (_, __) => SizedBox(height: r.s(8)),
+                    itemBuilder: (_, i) {
+                      final cat = _categories[i];
+                      final catColor = Color(int.parse(
+                          (cat['color'] as String? ?? '#7C4DFF')
+                              .replaceFirst('#', '0xFF')));
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: context.cardBg,
+                          borderRadius: BorderRadius.circular(r.s(12)),
+                          border: Border.all(
+                            color: catColor.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: ListTile(
+                          leading: Container(
+                            width: r.s(40),
+                            height: r.s(40),
+                            decoration: BoxDecoration(
+                              color: catColor.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(r.s(8)),
+                            ),
+                            child: Icon(
+                              Icons.label_rounded,
+                              color: catColor,
+                              size: r.s(20),
+                            ),
+                          ),
+                          title: Text(
+                            cat['name'] as String? ?? '',
+                            style: TextStyle(
+                              color: context.textPrimary,
+                              fontWeight: FontWeight.w600,
+                              fontSize: r.fs(14),
+                            ),
+                          ),
+                          subtitle: (cat['description'] as String?)?.isNotEmpty == true
+                              ? Text(
+                                  cat['description'] as String,
+                                  style: TextStyle(
+                                    color: context.textSecondary,
+                                    fontSize: r.fs(12),
+                                  ),
+                                )
+                              : null,
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.edit_rounded,
+                                    color: Colors.grey[400], size: r.s(18)),
+                                onPressed: () => _showAddDialog(existing: cat),
+                                tooltip: 'Editar',
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.delete_outline_rounded,
+                                    color: Colors.red[400], size: r.s(18)),
+                                onPressed: () => _deleteCategory(cat),
+                                tooltip: 'Excluir',
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+    );
+  }
+}
+
+// ============================================================================
 // WIDGETS AUXILIARES
 // ============================================================================
 
@@ -1438,7 +1786,6 @@ class _FeaturedStyleOption extends ConsumerWidget {
     required this.onTap,
   });
 
-  @override
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final r = context.r;
@@ -1496,7 +1843,6 @@ class _AccessOption extends ConsumerWidget {
     required this.onTap,
   });
 
-  @override
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final r = context.r;
@@ -1566,7 +1912,6 @@ class _StatCard extends ConsumerWidget {
   });
 
   @override
-  @override
   Widget build(BuildContext context, WidgetRef ref) {
     final r = context.r;
     return Container(
@@ -1612,7 +1957,6 @@ class _InfoRow extends ConsumerWidget {
   final String value;
   const _InfoRow(this.label, this.value);
 
-  @override
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final r = context.r;
