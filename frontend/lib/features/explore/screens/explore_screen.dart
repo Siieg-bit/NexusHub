@@ -9,9 +9,9 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../core/widgets/amino_top_bar.dart';
 import '../../../core/widgets/amino_particles_bg.dart';
-import '../../../core/providers/notification_provider.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../communities/providers/community_shared_providers.dart';
 
 /// Provider para busca de comunidades.
 final searchCommunitiesProvider =
@@ -290,9 +290,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 TextStyle(color: ctx.textPrimary, fontWeight: FontWeight.w800),
           ),
           content: Text(
-            'Tem certeza que deseja sair de "${community.name}"? Voc\u00ea poder\u00e1 entrar novamente depois.',
+            s.leaveCommunityConfirmMsg(community.name),
             style: TextStyle(color: ctx.textSecondary, fontSize: r.fs(14)),
           ),
+
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
@@ -301,7 +302,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: Text(s.logout,
+              child: Text(s.leaveCommunity,
                   style: TextStyle(
                       color: AppTheme.errorColor, fontWeight: FontWeight.w700)),
             ),
@@ -593,7 +594,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                                 borderRadius: BorderRadius.circular(r.s(20)),
                               ),
                               child: Text(
-                                s.login,
+                                s.joinCommunity,
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: r.fs(12),
@@ -686,10 +687,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 // WIDGETS AUXILIARES — Estilo Amino Original
 // ============================================================================
 
-/// Card "Minhas Comunidades" — estilo Amino com imagem de fundo + nome + CHECK IN
-/// Cards verticais com imagem de fundo cobrindo todo o card, nome sobreposto,
-/// avatar do usuário e botão "CHECK IN" verde na parte inferior.
-class _MyCommunityCard extends ConsumerWidget {
+/// Card "Minhas Comunidades" — estilo Amino com imagem de fundo + nome.
+/// No Descubra ele funciona apenas como atalho visual para a comunidade,
+/// sem check-in rápido, para não misturar este fluxo com a área principal de comunidades.
+class _MyCommunityCard extends StatelessWidget {
   final CommunityModel community;
   final void Function(CommunityModel)? onLongPress;
   const _MyCommunityCard({required this.community, this.onLongPress});
@@ -703,9 +704,10 @@ class _MyCommunityCard extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final r = context.r;
     final color = _parseColor(community.themeColor);
+
     return GestureDetector(
       onTap: () => context.push('/community/${community.id}'),
       onLongPress: () => onLongPress?.call(community),
@@ -720,7 +722,6 @@ class _MyCommunityCard extends ConsumerWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Imagem de fundo cobrindo todo o card
             if (community.bannerUrl != null && community.bannerUrl!.isNotEmpty)
               CachedNetworkImage(
                 imageUrl: community.bannerUrl ?? '',
@@ -758,8 +759,6 @@ class _MyCommunityCard extends ConsumerWidget {
                       color: Colors.white54, size: r.s(36)),
                 ),
               ),
-
-            // Gradiente escuro na parte inferior
             Positioned(
               bottom: 0,
               left: 0,
@@ -778,8 +777,6 @@ class _MyCommunityCard extends ConsumerWidget {
                 ),
               ),
             ),
-
-            // Ícone da comunidade (centro-superior)
             Positioned(
               top: 10,
               left: 0,
@@ -797,57 +794,56 @@ class _MyCommunityCard extends ConsumerWidget {
                     ),
                   ),
                   clipBehavior: Clip.antiAlias,
-                  child:
-                      community.iconUrl != null && community.iconUrl!.isNotEmpty
-                          ? CachedNetworkImage(
-                              imageUrl: community.iconUrl ?? '',
-                              fit: BoxFit.cover,
-                            )
-                          : Icon(Icons.groups_rounded,
-                              color: context.textHint, size: r.s(22)),
+                  child: community.iconUrl != null && community.iconUrl!.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: community.iconUrl ?? '',
+                          fit: BoxFit.cover,
+                        )
+                      : Icon(Icons.groups_rounded,
+                          color: context.textHint, size: r.s(22)),
                 ),
               ),
             ),
-
-            // Nome da comunidade
             Positioned(
-              bottom: 32,
+              bottom: 20,
               left: 8,
               right: 8,
-              child: Text(
-                community.name,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: r.fs(12),
-                  fontWeight: FontWeight.w700,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-              ),
-            ),
-
-            // Botão CHECK IN — verde Amino (estilo original)
-            Positioned(
-              bottom: 8,
-              left: 16,
-              right: 16,
-              child: Container(
-                padding: EdgeInsets.symmetric(vertical: r.s(4)),
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryColor,
-                  borderRadius: BorderRadius.circular(r.s(4)),
-                ),
-                child: Text(
-                  'CHECK IN',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: r.fs(10),
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.5,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    community.name,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: r.fs(12),
+                      fontWeight: FontWeight.w700,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
+                  SizedBox(height: r.s(6)),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: r.s(10), vertical: r.s(4)),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.35),
+                      borderRadius: BorderRadius.circular(r.s(20)),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.15),
+                      ),
+                    ),
+                    child: Text(
+                      '${formatCount(community.membersCount)} membros',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: r.fs(10),
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -1238,7 +1234,7 @@ class _RecommendedCommunityTile extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(r.s(20)),
               ),
               child: Text(
-                s.login,
+                s.joinCommunity,
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: r.fs(12),
