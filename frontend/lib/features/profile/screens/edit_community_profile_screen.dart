@@ -445,12 +445,13 @@ class _EditCommunityProfileScreenState
                         ],
                       ),
                       trailing: _localBackgroundUrl != null
-                          ? GestureDetector(
-                              onTap: () {},
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  ClipRRect(
+                          ? Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Thumbnail clicável: abre o picker para trocar o background
+                                GestureDetector(
+                                  onTap: _pickBackground,
+                                  child: ClipRRect(
                                     borderRadius:
                                         BorderRadius.circular(r.s(4)),
                                     child: CachedNetworkImage(
@@ -460,16 +461,17 @@ class _EditCommunityProfileScreenState
                                       fit: BoxFit.cover,
                                     ),
                                   ),
-                                  SizedBox(width: r.s(4)),
-                                  GestureDetector(
-                                    onTap: () => setState(
-                                        () => _localBackgroundUrl = null),
-                                    child: Icon(Icons.close_rounded,
-                                        color: Colors.grey[500],
-                                        size: r.s(18)),
-                                  ),
-                                ],
-                              ),
+                                ),
+                                SizedBox(width: r.s(4)),
+                                // Botão X: remove o background
+                                GestureDetector(
+                                  onTap: () => setState(
+                                      () => _localBackgroundUrl = null),
+                                  child: Icon(Icons.close_rounded,
+                                      color: Colors.grey[500],
+                                      size: r.s(18)),
+                                ),
+                              ],
                             )
                           : Icon(Icons.chevron_right_rounded,
                               color: Colors.grey[400], size: r.s(22)),
