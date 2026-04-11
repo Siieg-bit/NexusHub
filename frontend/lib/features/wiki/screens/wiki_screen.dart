@@ -7,6 +7,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/services/deep_link_service.dart';
 
 // ============================================================================
 // WIKI LIST SCREEN
@@ -609,6 +610,25 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
                 style: TextStyle(
                     fontWeight: FontWeight.w800, color: context.textPrimary)),
             actions: [
+              // Share
+              GestureDetector(
+                onTap: () => DeepLinkService.shareUrl(
+                  type: 'wiki',
+                  targetId: widget.wikiId,
+                  title: title,
+                  text: title,
+                ),
+                child: Container(
+                  margin: EdgeInsets.only(right: r.s(4)),
+                  padding: EdgeInsets.all(r.s(8)),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.share_outlined,
+                      color: context.textPrimary, size: r.s(20)),
+                ),
+              ),
               // Pin to profile button
               GestureDetector(
                 onTap: _togglePinToProfile,

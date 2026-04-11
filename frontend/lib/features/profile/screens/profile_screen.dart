@@ -20,6 +20,7 @@ import '../widgets/profile_pinned_wikis.dart';
 import '../widgets/profile_blogs_tab.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/providers/block_provider.dart';
+import '../../../core/services/deep_link_service.dart';
 
 // =============================================================================
 // PROFILE SCREEN — Layout fiel ao Amino Apps
@@ -201,16 +202,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     IconButton(
                       icon: Icon(Icons.share_outlined,
                           color: Colors.white, size: r.s(22)),
-                      onPressed: () {
-                        final link = 'https://nexushub.app/u/${widget.userId}';
-                        Clipboard.setData(ClipboardData(text: link));
-                        ScaffoldMessenger.of(context).showSnackBar(
-                           SnackBar(
-                            content: Text(s.profileLinkCopied),
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
-                      },
+                      onPressed: () => DeepLinkService.shareUrl(
+                        type: 'profile',
+                        targetId: widget.userId,
+                        title: s.shareProfile,
+                        text: s.shareProfile,
+                      ),
                     ),
                     IconButton(
                       icon: Icon(

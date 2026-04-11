@@ -28,6 +28,7 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/utils/media_utils.dart';
 import 'chat_list_screen.dart' show chatListProvider, chatCommunitiesProvider;
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/services/deep_link_service.dart';
 // screening_room_screen.dart — navegação via GoRouter ('/screening-room/:threadId')
 
 /// =============================================================================
@@ -1902,6 +1903,16 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 borderRadius: BorderRadius.circular(r.s(12))),
             onSelected: (val) {
               switch (val) {
+                case 'share':
+                  if (threadType == 'public') {
+                    DeepLinkService.shareUrl(
+                      type: 'chat',
+                      targetId: widget.threadId,
+                      title: threadTitle,
+                      text: threadTitle,
+                    );
+                  }
+                  break;
                 case 'members':
                   _showChatMembers();
                   break;
@@ -1917,6 +1928,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               }
             },
             itemBuilder: (ctx) => [
+              if (threadType == 'public')
+                _buildPopupItem(r, 'share', Icons.share_outlined, s.share),
               _buildPopupItem(r, 'members', Icons.people_rounded, s.members),
               _buildPopupItem(
                   r, 'settings', Icons.settings_rounded, s.settings),

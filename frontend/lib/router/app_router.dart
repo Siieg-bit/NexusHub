@@ -79,6 +79,7 @@ import '../features/stickers/screens/sticker_explore_screen.dart';
 import '../features/profile/screens/edit_community_profile_screen.dart';
 import 'shell_screen.dart';
 import '../features/stories/screens/story_viewer_screen.dart';
+import '../core/screens/short_code_redirect_screen.dart';
 
 /// Router principal do app com GoRouter.
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -724,6 +725,62 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           );
         },
       ),
+      // ====================================================================
+      // ROTAS DE SHORT CODES (URLs curtas)
+      // Recebem o código curto e redirecionam para a tela correta.
+      // ====================================================================
+      GoRoute(
+        path: '/p/:code',
+        name: 'short-post',
+        builder: (context, state) => ShortCodeRedirectScreen(
+          type: 'post',
+          code: state.pathParameters['code']!,
+        ),
+      ),
+      GoRoute(
+        path: '/w/:code',
+        name: 'short-wiki',
+        builder: (context, state) => ShortCodeRedirectScreen(
+          type: 'wiki',
+          code: state.pathParameters['code']!,
+        ),
+      ),
+      GoRoute(
+        path: '/u/:code',
+        name: 'short-user',
+        builder: (context, state) => ShortCodeRedirectScreen(
+          type: 'user',
+          code: state.pathParameters['code']!,
+        ),
+      ),
+      GoRoute(
+        path: '/c/:code',
+        name: 'short-community',
+        builder: (context, state) => ShortCodeRedirectScreen(
+          type: 'community',
+          code: state.pathParameters['code']!,
+        ),
+      ),
+      GoRoute(
+        path: '/s/:code',
+        name: 'short-sticker',
+        builder: (context, state) => ShortCodeRedirectScreen(
+          type: 'sticker_pack',
+          code: state.pathParameters['code']!,
+        ),
+      ),
+      GoRoute(
+        path: '/invite/:code',
+        name: 'short-invite',
+        builder: (context, state) => ShortCodeRedirectScreen(
+          type: 'invite',
+          code: state.pathParameters['code']!,
+        ),
+      ),
+      // Nota: /chat/:id já existe e aceita tanto UUID quanto short code
+      // pois ChatRoomScreen recebe o threadId diretamente.
+      // O DeepLinkService resolve o short code antes de navegar para /chat/:id.
+
       // ====================================================================
       // STICKERS
       // ====================================================================

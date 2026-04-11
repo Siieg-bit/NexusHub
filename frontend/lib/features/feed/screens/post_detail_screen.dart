@@ -22,6 +22,7 @@ import '../../../core/utils/media_utils.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
+import '../../../core/services/deep_link_service.dart';
 
 /// Provider para comentários de um post.
 final postCommentsProvider =
@@ -508,16 +509,13 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     }
   }
 
-  void _sharePost() {
+  Future<void> _sharePost() async {
     final s = getStrings();
-    final link = 'https://nexushub.app/p/${widget.postId}';
-    Clipboard.setData(ClipboardData(text: link));
-    ScaffoldMessenger.of(context).showSnackBar(
-       SnackBar(
-        content: Text(s.linkCopied),
-        behavior: SnackBarBehavior.floating,
-        duration: Duration(seconds: 2),
-      ),
+    await DeepLinkService.shareUrl(
+      type: 'post',
+      targetId: widget.postId,
+      title: s.sharePost,
+      text: s.sharePost,
     );
   }
 

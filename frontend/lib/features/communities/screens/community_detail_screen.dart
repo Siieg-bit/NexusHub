@@ -23,6 +23,7 @@ import '../widgets/community_online_tab.dart';
 import '../widgets/community_chat_tab.dart';
 import '../widgets/community_create_menu.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/services/deep_link_service.dart';
 
 // =============================================================================
 // MAIN SCREEN — Estilo Amino Apps
@@ -407,6 +408,26 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             ),
           ),
           actions: [
+            // Share
+            GestureDetector(
+              onTap: () => DeepLinkService.shareUrl(
+                type: 'community',
+                targetId: community.endpoint ?? widget.communityId,
+                title: community.name,
+                text: community.name,
+              ),
+              child: Container(
+                width: r.s(34),
+                height: r.s(34),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.share_outlined,
+                    color: Colors.white, size: r.s(18)),
+              ),
+            ),
+            SizedBox(width: r.s(6)),
             // Gallery
             GestureDetector(
               onTap: () {
