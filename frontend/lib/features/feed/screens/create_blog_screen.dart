@@ -1357,9 +1357,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                       color: const Color(0xFF4CAF50),
                       onTap: () {
                         Navigator.pop(ctx);
-                        setState(() {
-                          _blocks.add(ContentBlock(type: BlockType.text));
-                        });
+                        _blockEditorKey.currentState?.addBlock(BlockType.text);
                       },
                     ),
                     _InsertBlockOption(
@@ -1368,9 +1366,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                       color: const Color(0xFFFF9800),
                       onTap: () {
                         Navigator.pop(ctx);
-                        setState(() {
-                          _blocks.add(ContentBlock(type: BlockType.heading));
-                        });
+                        _blockEditorKey.currentState?.addBlock(BlockType.heading);
                       },
                     ),
                     _InsertBlockOption(
@@ -1379,9 +1375,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                       color: const Color(0xFF9C27B0),
                       onTap: () {
                         Navigator.pop(ctx);
-                        setState(() {
-                          _blocks.add(ContentBlock(type: BlockType.quote));
-                        });
+                        _blockEditorKey.currentState?.addBlock(BlockType.quote);
                       },
                     ),
                     _InsertBlockOption(
@@ -1390,9 +1384,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                       color: const Color(0xFF607D8B),
                       onTap: () {
                         Navigator.pop(ctx);
-                        setState(() {
-                          _blocks.add(ContentBlock(type: BlockType.divider));
-                        });
+                        _blockEditorKey.currentState?.addBlock(BlockType.divider);
                       },
                     ),
                   ],
@@ -1821,9 +1813,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
             icon: Icons.camera_alt_outlined,
             tooltip: 'Inserir imagem',
             onTap: () {
-              setState(() {
-                _blocks.add(ContentBlock(type: BlockType.image));
-              });
+              _blockEditorKey.currentState?.insertImageBlock();
             },
           ),
 

@@ -206,6 +206,11 @@ class BlockEditorState extends ConsumerState<BlockEditor> {
   }
 
   void _addBlock(BlockType type, {int? afterIndex}) {
+    addBlock(type, afterIndex: afterIndex);
+  }
+
+  /// Adiciona um bloco (acessível externamente via GlobalKey)
+  void addBlock(BlockType type, {int? afterIndex}) {
     final insertIndex = (afterIndex ?? (_blocks.length - 1)) + 1;
     final block = ContentBlock(type: type);
     setState(() {
@@ -213,6 +218,12 @@ class BlockEditorState extends ConsumerState<BlockEditor> {
       _focusedBlockIndex = insertIndex;
     });
     _notifyChanged();
+    // Foca no novo bloco se for de texto
+    if (block.isTextBased && block.focusNode != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        block.focusNode!.requestFocus();
+      });
+    }
   }
 
   void _removeBlock(int index) {
@@ -315,7 +326,8 @@ class BlockEditorState extends ConsumerState<BlockEditor> {
     }
   }
 
-  Future<void> _insertImageBlock({int? afterIndex}) async {
+  /// Insere bloco de imagem com picker (acessível externamente via GlobalKey)
+  Future<void> insertImageBlock({int? afterIndex}) async {
     final insertIndex = (afterIndex ?? (_blocks.length - 1)) + 1;
     final block = ContentBlock(type: BlockType.image);
 
@@ -431,7 +443,7 @@ class BlockEditorState extends ConsumerState<BlockEditor> {
           SizedBox(height: r.s(10)),
           _AddBlockBar(
             onAddText: () => _addBlock(BlockType.text),
-            onAddImage: () => _insertImageBlock(),
+            onAddImage: () => insertImageBlock(),
             onAddDivider: () => _addBlock(BlockType.divider),
             onAddHeading: () => _addBlock(BlockType.heading),
           ),
