@@ -21,6 +21,7 @@ import '../widgets/voice_recorder.dart';
 import '../widgets/message_bubble.dart';
 import '../widgets/chat_reply_preview.dart';
 import '../widgets/chat_input_bar.dart';
+import '../widgets/chat_date_separator.dart';
 import '../widgets/chat_media_sheet.dart';
 import '../widgets/chat_message_actions.dart';
 import '../../../core/utils/responsive.dart';
@@ -2041,17 +2042,33 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                 _messages[index + 1].authorId !=
                                     message.authorId;
 
+                            // Separador de data: exibe quando a mensagem atual
+                            // é de um dia diferente da próxima mais antiga.
+                            // Como a lista é reverse: true, index+1 é mais antigo.
+                            final DateTime? prevDate = index < _messages.length - 1
+                                ? _messages[index + 1].createdAt
+                                : null;
+                            final showDateSep = shouldShowDateSeparator(
+                                message.createdAt, prevDate);
+
                             return RepaintBoundary(
-                              child: GestureDetector(
-                                onLongPress: () => _showMessageActions(message),
-                                child: MessageBubble(
-                                  message: message,
-                                  isMe: isMe,
-                                  showAvatar: showAvatar,
-                                  onReactionTap: (emoji) =>
-                                      _addReaction(message.id, emoji),
-                                  communityId: _threadInfo?['community_id'] as String?,
-                                ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  GestureDetector(
+                                    onLongPress: () => _showMessageActions(message),
+                                    child: MessageBubble(
+                                      message: message,
+                                      isMe: isMe,
+                                      showAvatar: showAvatar,
+                                      onReactionTap: (emoji) =>
+                                          _addReaction(message.id, emoji),
+                                      communityId: _threadInfo?['community_id'] as String?,
+                                    ),
+                                  ),
+                                  if (showDateSep)
+                                    ChatDateSeparator(date: message.createdAt),
+                                ],
                               ),
                             );
                           },
