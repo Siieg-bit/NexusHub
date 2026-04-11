@@ -705,13 +705,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         setState(() => _replyingTo = null);
       }
 
-      await SupabaseService.rpc('send_chat_message_with_reputation', params: {
+      final rpcParams = {
         'p_thread_id': widget.threadId,
         'p_content': content,
         'p_type': mappedType,
         'p_media_url': finalMediaUrl,
-        // Bug fix (migration 058): enviar media_type e media_duration para que
-        // imagens, GIFs e áudios sejam identificados corretamente no banco.
         if (mediaType != null) 'p_media_type': mediaType,
         if (mediaDuration != null) 'p_media_duration': mediaDuration,
         'p_reply_to': replyToId,
@@ -719,25 +717,40 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         if (stickerUrl != null && stickerUrl.isNotEmpty) 'p_sticker_url': stickerUrl,
         if (stickerName != null && stickerName.isNotEmpty) 'p_sticker_name': stickerName,
         if (packId != null && packId.isNotEmpty) 'p_pack_id': packId,
-      });
-    } catch (e) {
-      debugPrint('[ChatRoom] Send message error: $e');
+      };
+
+      debugPrint('[ChatRoom] 📤 RPC params: $rpcParams');
+      final result = await SupabaseService.rpc(
+        'send_chat_message_with_reputation',
+        params: rpcParams,
+      );
+      debugPrint('[ChatRoom] ✅ RPC result: $result');
+    } catch (e, stack) {
+      debugPrint('[ChatRoom] ❌ Send message error: $e');
+      debugPrint('[ChatRoom] ❌ Send message stack: $stack');
       if (mounted) {
-        // Mostrar mensagem de erro mais específica
-        String errorMsg = s.errorSendingTryAgain;
         final errorStr = e.toString();
+        String errorMsg;
         if (errorStr.contains('not a member')) {
-          errorMsg =
-              s.notMemberChatRetry;
-          _membershipConfirmed = false; // Resetar para re-tentar join
-        } else if (errorStr.contains('null') || errorStr.contains('session')) {
+          errorMsg = s.notMemberChatRetry;
+          _membershipConfirmed = false;
+        } else if (errorStr.contains('unauthenticated') || errorStr.contains('session')) {
           errorMsg = s.sessionExpiredPleaseLogInAgain;
+        } else {
+          // Mostrar erro técnico completo para diagnóstico
+          errorMsg = '❌ Erro: $errorStr';
         }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMsg),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 10),
+            action: SnackBarAction(
+              label: 'OK',
+              textColor: Colors.white,
+              onPressed: () {},
+            ),
           ),
         );
       }
@@ -1057,18 +1070,24 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       final path = 'chat/$userId/${DateTime.now().millisecondsSinceEpoch}.jpg';
       final rawBytes = await image.readAsBytes();
       final bytes = await MediaUtils.compressImage(rawBytes);
+      debugPrint('[ChatRoom] 🖼️ Uploading image: $path');
       await SupabaseService.storage
           .from('chat-media')
-          .uploadBinary(path, bytes);
+          .uploadBinary(path, bytes,
+              fileOptions: const FileOptions(contentType: 'image/jpeg'));
       final url = SupabaseService.storage.from('chat-media').getPublicUrl(path);
+      debugPrint('[ChatRoom] ✅ Image uploaded: $url');
       await _sendMessage(type: 'image', mediaUrl: url, mediaType: 'image');
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('[ChatRoom] ❌ Image upload error: $e');
+      debugPrint('[ChatRoom] ❌ Image upload stack: $stack');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(s.errorUploadTryAgain),
+            content: Text('❌ Imagem: $e'),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 10),
           ),
         );
       }
@@ -1099,20 +1118,22 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       await SupabaseService.storage.from('chat-media').uploadBinary(path, bytes,
           fileOptions: const FileOptions(contentType: 'video/mp4'));
       final url = SupabaseService.storage.from('chat-media').getPublicUrl(path);
-      await _sendMessage(type: 'video', mediaUrl: url, mediaType: 'video');
-    } catch (e) {
+       await _sendMessage(type: 'video', mediaUrl: url, mediaType: 'video');
+    } catch (e, stack) {
+      debugPrint('[ChatRoom] ❌ Video upload error: $e');
+      debugPrint('[ChatRoom] ❌ Video upload stack: $stack');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(s.errorVideoUpload),
+            content: Text('❌ Vídeo: $e'),
             backgroundColor: AppTheme.errorColor,
             behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 10),
           ),
         );
       }
     }
   }
-
   // ==========================================================================
   // REACTIONS & PIN
   // ==========================================================================
@@ -2328,31 +2349,37 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                           'voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
                       final storagePath =
                           'audio/${widget.threadId}/$fileName';
+                      debugPrint('[ChatRoom] 🎤 Uploading audio: $storagePath');
                       await SupabaseService.client.storage
                           .from('chat-media')
                           .upload(storagePath, file,
                               fileOptions: const FileOptions(
-                                contentType: 'audio/mp4',
+                                // Bug fix: audio/mp4 não era aceito pelo bucket.
+                                // Usar audio/m4a que é o formato correto para .m4a
+                                contentType: 'audio/m4a',
                                 upsert: true,
                               ));
                       if (_isDisposed || !mounted) return;
                       final url = SupabaseService.client.storage
                           .from('chat-media')
                           .getPublicUrl(storagePath);
+                      debugPrint('[ChatRoom] ✅ Audio uploaded: $url');
                       _sendMessage(
                         type: 'audio',
                         mediaUrl: url,
                         mediaType: 'audio',
                         mediaDuration: duration,
                       );
-                    } catch (e) {
+                    } catch (e, stack) {
+                      debugPrint('[ChatRoom] ❌ Audio upload error: $e');
+                      debugPrint('[ChatRoom] ❌ Audio upload stack: $stack');
                       if (!_isDisposed && mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content:
-                                Text(s.errorSendingAudio),
+                            content: Text('❌ Áudio: $e'),
                             backgroundColor: AppTheme.errorColor,
                             behavior: SnackBarBehavior.floating,
+                            duration: const Duration(seconds: 10),
                           ),
                         );
                       }

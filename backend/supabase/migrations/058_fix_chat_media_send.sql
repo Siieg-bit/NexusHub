@@ -1,51 +1,51 @@
 -- ============================================================================
--- Migration 058: Fix chat media send — resolve overload conflict e adiciona
---                suporte a p_media_type e p_media_duration na RPC principal
+-- Migration 058: Fix chat media send — resolve overload conflict, adiciona
+--                suporte a p_media_type/p_media_duration e corrige cast
+--                TEXT→UUID do sticker_id que derrubava TODAS as mensagens.
 -- ============================================================================
--- Problema identificado:
---   Existiam duas versões conflitantes de send_chat_message_with_reputation:
---   1. (p_thread_id, p_content, p_type, p_media_url, p_reply_to, p_sticker_id TEXT, ...)
---      → migration 054 — sem media_type e media_duration
---   2. (p_thread_id, p_content, p_type, p_media_url, p_media_type, p_reply_to,
---       p_sticker_url, p_sticker_id UUID, p_shared_url, p_shared_user_id, p_tip_amount, p_author_id)
---      → migration 021/032 — com media_type mas sticker_id como UUID
 --
---   Isso causava o erro PGRST203 "Could not choose the best candidate function"
---   ao enviar imagens, GIFs, áudios e stickers no chat.
+-- PROBLEMAS IDENTIFICADOS E CORRIGIDOS:
 --
---   Além disso, o Flutter não enviava p_media_type e p_media_duration,
---   fazendo com que imagens, GIFs e áudios não fossem identificados corretamente.
+-- Bug #1 (CRÍTICO): column "sticker_id" is of type uuid but expression is of type text
+--   A função recebia p_sticker_id como TEXT mas a coluna chat_messages.sticker_id
+--   é UUID. O PostgreSQL NÃO faz cast implícito TEXT→UUID em PL/pgSQL, então o
+--   INSERT falhava para TODAS as mensagens (inclusive texto simples).
+--   Correção: converter com CASE/EXCEPTION WHEN invalid_text_representation.
+--
+-- Bug #2: Conflito de overload (PGRST203)
+--   Existiam duas versões conflitantes da função com assinaturas diferentes.
+--   Correção: remover ambas e recriar uma única versão unificada.
+--
+-- Bug #3: Função sem p_media_type e p_media_duration
+--   A versão anterior (054) não salvava tipo de mídia nem duração do áudio.
+--   Correção: adicionar esses parâmetros na nova versão unificada.
 -- ============================================================================
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- PASSO 1: Remover a versão legada com p_author_id (migration 021/032)
+-- PASSO 1: Remover versões conflitantes anteriores
 -- ─────────────────────────────────────────────────────────────────────────────
 DROP FUNCTION IF EXISTS public.send_chat_message_with_reputation(
   uuid, text, text, text, text, uuid, text, uuid, text, uuid, integer, uuid
 );
-
--- ─────────────────────────────────────────────────────────────────────────────
--- PASSO 2: Remover a versão da migration 054 (sem media_type/media_duration)
--- ─────────────────────────────────────────────────────────────────────────────
 DROP FUNCTION IF EXISTS public.send_chat_message_with_reputation(
   uuid, text, text, text, uuid, text, text, text, text
 );
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- PASSO 3: Recriar a função unificada com TODOS os parâmetros necessários
+-- PASSO 2: Recriar a função unificada com cast seguro TEXT→UUID
 -- ─────────────────────────────────────────────────────────────────────────────
 CREATE OR REPLACE FUNCTION public.send_chat_message_with_reputation(
   p_thread_id      UUID,
   p_content        TEXT,
-  p_type           TEXT    DEFAULT 'text',
-  p_media_url      TEXT    DEFAULT NULL,
-  p_media_type     TEXT    DEFAULT NULL,   -- 'image' | 'gif' | 'audio' | 'video' | NULL
-  p_media_duration INTEGER DEFAULT NULL,   -- duração em segundos (áudio/vídeo)
-  p_reply_to       UUID    DEFAULT NULL,
-  p_sticker_id     TEXT    DEFAULT NULL,
-  p_sticker_url    TEXT    DEFAULT NULL,
-  p_sticker_name   TEXT    DEFAULT NULL,
-  p_pack_id        TEXT    DEFAULT NULL
+  p_type           TEXT     DEFAULT 'text',
+  p_media_url      TEXT     DEFAULT NULL,
+  p_media_type     TEXT     DEFAULT NULL,
+  p_media_duration INTEGER  DEFAULT NULL,
+  p_reply_to       UUID     DEFAULT NULL,
+  p_sticker_id     TEXT     DEFAULT NULL,
+  p_sticker_url    TEXT     DEFAULT NULL,
+  p_sticker_name   TEXT     DEFAULT NULL,
+  p_pack_id        TEXT     DEFAULT NULL
 )
 RETURNS UUID
 LANGUAGE plpgsql
@@ -58,6 +58,7 @@ DECLARE
   v_is_member    BOOLEAN;
   v_author_id    UUID := auth.uid();
   v_mapped_type  TEXT;
+  v_sticker_uuid UUID;
 BEGIN
   -- Validar sessão
   IF v_author_id IS NULL THEN
@@ -81,7 +82,18 @@ BEGIN
     RAISE EXCEPTION 'User is not a member of this chat';
   END IF;
 
-  -- Mapear tipo para o enum (garantir compatibilidade)
+  -- Bug #1 fix: converter p_sticker_id (TEXT) para UUID com segurança.
+  -- Se o valor não for UUID válido (ex: 'emoji_1'), retorna NULL sem falhar.
+  BEGIN
+    v_sticker_uuid := CASE
+      WHEN p_sticker_id IS NULL OR p_sticker_id = '' THEN NULL
+      ELSE p_sticker_id::UUID
+    END;
+  EXCEPTION WHEN invalid_text_representation THEN
+    v_sticker_uuid := NULL;
+  END;
+
+  -- Mapear tipo para o enum (garantir compatibilidade com todos os tipos)
   v_mapped_type := CASE p_type
     WHEN 'image'               THEN 'image'
     WHEN 'gif'                 THEN 'gif'
@@ -133,7 +145,7 @@ BEGIN
     p_media_type,
     p_media_duration,
     p_reply_to,
-    p_sticker_id,
+    v_sticker_uuid,    -- UUID convertido com segurança (era TEXT direto antes)
     p_sticker_url,
     p_sticker_name,
     p_pack_id
@@ -159,14 +171,14 @@ BEGIN
     END;
   END IF;
 
-  -- Registrar uso do sticker nos recentes (se for sticker com URL)
-  IF p_sticker_id IS NOT NULL AND p_sticker_url IS NOT NULL AND p_sticker_url <> '' THEN
+  -- Registrar uso do sticker nos recentes (se for sticker com UUID válido e URL)
+  IF v_sticker_uuid IS NOT NULL AND p_sticker_url IS NOT NULL AND p_sticker_url <> '' THEN
     BEGIN
       INSERT INTO public.recently_used_stickers (
         user_id, sticker_id, sticker_url, sticker_name, used_at
       ) VALUES (
         v_author_id,
-        p_sticker_id,
+        v_sticker_uuid,
         p_sticker_url,
         COALESCE(p_sticker_name, ''),
         NOW()
@@ -177,7 +189,7 @@ BEGIN
       -- Incrementar contador de usos do sticker
       UPDATE public.stickers
       SET uses_count = uses_count + 1
-      WHERE id = p_sticker_id::UUID;
+      WHERE id = v_sticker_uuid;
     EXCEPTION WHEN OTHERS THEN
       NULL; -- Não falhar o envio por causa do sticker tracking
     END;
@@ -187,12 +199,14 @@ BEGIN
 END;
 $$;
 
--- ─────────────────────────────────────────────────────────────────────────────
--- PASSO 4: Comentário de documentação
--- ─────────────────────────────────────────────────────────────────────────────
+-- Garantir permissões
+GRANT EXECUTE ON FUNCTION public.send_chat_message_with_reputation(
+  UUID, TEXT, TEXT, TEXT, TEXT, INTEGER, UUID, TEXT, TEXT, TEXT, TEXT
+) TO authenticated;
+
 COMMENT ON FUNCTION public.send_chat_message_with_reputation IS
   'Envia uma mensagem de chat com suporte completo a mídia (image, gif, audio, video, sticker).
+   Bug fix 058: corrige cast TEXT→UUID do sticker_id que derrubava TODAS as mensagens.
    Resolve o conflito de overload das migrations 021/032 e 054.
    Parâmetros: p_thread_id, p_content, p_type, p_media_url, p_media_type,
-   p_media_duration, p_reply_to, p_sticker_id, p_sticker_url, p_sticker_name, p_pack_id.
-   Migration: 058_fix_chat_media_send.sql';
+   p_media_duration, p_reply_to, p_sticker_id, p_sticker_url, p_sticker_name, p_pack_id.';

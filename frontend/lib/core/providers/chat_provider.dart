@@ -266,13 +266,15 @@ class ThreadMessagesNotifier
   }) async {
     try {
       final userId = SupabaseService.currentUserId;
-      if (userId == null) return false;
+      if (userId == null) {
+        debugPrint('[ChatProvider] ❌ sendMessage: userId is null (not authenticated)');
+        return false;
+      }
       final mappedType = _mapMessageType(type);
       // Determinar media_url final
       String? finalMediaUrl = mediaUrl ?? (stickerUrl != null && stickerUrl.isNotEmpty ? stickerUrl : null);
-      // Bug fix (migration 058): enviar media_type e media_duration para que
-      // imagens, GIFs e áudios sejam identificados corretamente no banco.
-      await SupabaseService.rpc('send_chat_message_with_reputation', params: {
+
+      final rpcParams = {
         'p_thread_id': arg,
         'p_content': content.isNotEmpty ? content : '',
         'p_type': mappedType,
@@ -284,10 +286,16 @@ class ThreadMessagesNotifier
         if (stickerUrl != null && stickerUrl.isNotEmpty) 'p_sticker_url': stickerUrl,
         if (stickerName != null && stickerName.isNotEmpty) 'p_sticker_name': stickerName,
         if (packId != null && packId.isNotEmpty) 'p_pack_id': packId,
-      });
+      };
+
+      debugPrint('[ChatProvider] 📤 sendMessage RPC params: $rpcParams');
+      final result = await SupabaseService.rpc('send_chat_message_with_reputation', params: rpcParams);
+      debugPrint('[ChatProvider] ✅ sendMessage RPC result: $result');
       return true;
-    } catch (e) {
-      return false;
+    } catch (e, stack) {
+      debugPrint('[ChatProvider] ❌ sendMessage error: $e');
+      debugPrint('[ChatProvider] ❌ sendMessage stack: $stack');
+      rethrow; // Re-throw para que o chat_room_screen mostre o erro na UI
     }
   }
 
