@@ -9,8 +9,10 @@ import '../../../core/utils/responsive.dart';
 
 /// Rich Text Block Editor — Editor de blocos estilo Amino.
 ///
-/// Serializa os blocos em um formato compatível com o renderer atual,
-/// mantendo chaves legadas e novas ao mesmo tempo:
+/// Renderiza como uma área de texto contínua com imagens inline.
+/// Sem containers visíveis, sem cards, sem bordas nos blocos.
+///
+/// Serializa os blocos em formato compatível com o renderer:
 /// - texto: `content` e `text`
 /// - imagem: `url` e `image_url`
 /// - heading: `level`
@@ -45,7 +47,9 @@ class ContentBlock {
   }
 
   bool get isTextBased =>
-      type == BlockType.text || type == BlockType.heading || type == BlockType.quote;
+      type == BlockType.text ||
+      type == BlockType.heading ||
+      type == BlockType.quote;
 
   void _ensureControllers() {
     if (isTextBased) {
@@ -64,12 +68,8 @@ class ContentBlock {
   }
 
   void syncFromControllers() {
-    if (controller != null) {
-      text = controller!.text;
-    }
-    if (captionController != null) {
-      caption = captionController!.text.trim();
-    }
+    if (controller != null) text = controller!.text;
+    if (captionController != null) caption = captionController!.text.trim();
   }
 
   void setType(BlockType newType) {
@@ -106,7 +106,7 @@ class ContentBlock {
       orElse: () => BlockType.text,
     );
 
-    final block = ContentBlock(
+    return ContentBlock(
       type: type,
       text: (json['content'] ?? json['text'] ?? '') as String,
       imageUrl: (json['url'] ?? json['image_url']) as String?,
@@ -116,8 +116,6 @@ class ContentBlock {
       align: (json['align'] as String?) ?? 'left',
       level: (json['level'] as num?)?.toInt() ?? 2,
     );
-
-    return block;
   }
 
   ContentBlock clone() => ContentBlock.fromJson(toJson());
@@ -128,6 +126,10 @@ class ContentBlock {
   }
 }
 
+// =============================================================================
+// BlockEditor Widget
+// =============================================================================
+
 class BlockEditor extends ConsumerStatefulWidget {
   final List<ContentBlock> initialBlocks;
   final ValueChanged<List<ContentBlock>> onChanged;
@@ -137,7 +139,6 @@ class BlockEditor extends ConsumerStatefulWidget {
   final String? placeholder;
 
   /// Se false, esconde a barra de adicionar blocos no final.
-  /// Útil quando a tela pai controla a inserção de blocos (estilo Amino).
   final bool showAddBar;
 
   const BlockEditor({
@@ -196,9 +197,7 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
     setState(() {
       _blocks[index].dispose();
       _blocks.removeAt(index);
-      if (_focusedBlockIndex == index) {
-        _focusedBlockIndex = null;
-      }
+      if (_focusedBlockIndex == index) _focusedBlockIndex = null;
     });
     _notifyChanged();
   }
@@ -219,7 +218,6 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
         nextType == BlockType.quote)) {
       return;
     }
-
     setState(() {
       _blocks[index].setType(nextType);
       _focusedBlockIndex = index;
@@ -240,7 +238,8 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
   void _cycleAlignment(int index) {
     const alignments = ['left', 'center', 'right'];
     final current = _blocks[index].align;
-    final next = alignments[(alignments.indexOf(current) + 1) % alignments.length];
+    final next =
+        alignments[(alignments.indexOf(current) + 1) % alignments.length];
     setState(() => _blocks[index].align = next);
     _notifyChanged();
   }
@@ -356,6 +355,7 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
   Widget build(BuildContext context) {
     final r = context.r;
 
+    // Renderiza como uma lista contínua sem separação visual entre blocos
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -372,25 +372,25 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
               animation: animation,
               builder: (context, _) => Material(
                 color: Colors.transparent,
-                elevation: 4,
+                elevation: 2,
                 child: child,
               ),
             );
           },
           itemBuilder: (context, index) {
             final block = _blocks[index];
-            // Determinar placeholder: só o primeiro bloco de texto usa o placeholder custom
             String? blockPlaceholder;
             if (index == 0 && block.isTextBased && widget.placeholder != null) {
               blockPlaceholder = widget.placeholder;
             }
-            return _BlockWidget(
+            return _SeamlessBlock(
               key: ValueKey(block.id),
               block: block,
               index: index,
               isFocused: _focusedBlockIndex == index,
               isUploading: _isUploading && _focusedBlockIndex == index,
               placeholder: blockPlaceholder,
+              totalBlocks: _blocks.length,
               onFocus: () => setState(() => _focusedBlockIndex = index),
               onRemove: () => _removeBlock(index),
               onPickImage: () => _pickImageForBlock(index),
@@ -399,8 +399,8 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
               onToggleBold: () => _toggleBold(index),
               onToggleItalic: () => _toggleItalic(index),
               onCycleAlignment: () => _cycleAlignment(index),
-              onTypeChanged: (nextType) => _changeTextBlockType(index, nextType),
-              onHeadingLevelChanged: (level) => _changeHeadingLevel(index, level),
+              onTypeChanged: (t) => _changeTextBlockType(index, t),
+              onHeadingLevelChanged: (l) => _changeHeadingLevel(index, l),
             );
           },
         ),
@@ -419,15 +419,16 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
 }
 
 // =============================================================================
-// _BlockWidget — renderiza cada bloco individual
+// _SeamlessBlock — bloco individual sem container visível
 // =============================================================================
 
-class _BlockWidget extends ConsumerWidget {
+class _SeamlessBlock extends ConsumerWidget {
   final ContentBlock block;
   final int index;
   final bool isFocused;
   final bool isUploading;
   final String? placeholder;
+  final int totalBlocks;
   final VoidCallback onFocus;
   final VoidCallback onRemove;
   final VoidCallback onPickImage;
@@ -439,13 +440,14 @@ class _BlockWidget extends ConsumerWidget {
   final ValueChanged<BlockType> onTypeChanged;
   final ValueChanged<int> onHeadingLevelChanged;
 
-  const _BlockWidget({
+  const _SeamlessBlock({
     super.key,
     required this.block,
     required this.index,
     required this.isFocused,
     required this.isUploading,
     this.placeholder,
+    required this.totalBlocks,
     required this.onFocus,
     required this.onRemove,
     required this.onPickImage,
@@ -464,73 +466,63 @@ class _BlockWidget extends ConsumerWidget {
 
     return GestureDetector(
       onTap: onFocus,
-      child: Container(
-        // Sem margin extra, sem background — estilo Amino limpo
-        padding: EdgeInsets.symmetric(vertical: r.s(2)),
-        decoration: BoxDecoration(
-          // Borda lateral sutil apenas quando focado (não card inteiro)
-          border: isFocused
-              ? Border(
-                  left: BorderSide(
-                    color: AppTheme.accentColor.withValues(alpha: 0.4),
-                    width: r.s(2),
-                  ),
-                )
-              : null,
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      // Sem padding, sem margin, sem decoration — completamente transparente
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Toolbar de formatação — aparece discretamente acima do bloco focado
+          if (isFocused && block.isTextBased)
+            _InlineFormatBar(
+              block: block,
+              canRemove: totalBlocks > 1,
+              onToggleBold: onToggleBold,
+              onToggleItalic: onToggleItalic,
+              onCycleAlignment: onCycleAlignment,
+              onTypeChanged: onTypeChanged,
+              onHeadingLevelChanged: onHeadingLevelChanged,
+              onRemove: onRemove,
+            ),
+          _buildContent(context, r),
+          // Ações de imagem focada
+          if (isFocused && block.type == BlockType.image && totalBlocks > 1)
+            Padding(
+              padding: EdgeInsets.only(top: r.s(2)),
+              child: Row(
                 children: [
-                  // Toolbar de formatação compacta — só quando focado
-                  if (isFocused && block.isTextBased)
-                    _FormatToolbar(
-                      block: block,
-                      onToggleBold: onToggleBold,
-                      onToggleItalic: onToggleItalic,
-                      onCycleAlignment: onCycleAlignment,
-                      onTypeChanged: onTypeChanged,
-                      onHeadingLevelChanged: onHeadingLevelChanged,
+                  GestureDetector(
+                    onTap: onPickImage,
+                    child: Text(
+                      'Trocar',
+                      style: TextStyle(
+                        color: AppTheme.accentColor.withValues(alpha: 0.7),
+                        fontSize: r.fs(11),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  _buildContent(context),
+                  ),
+                  SizedBox(width: r.s(12)),
+                  GestureDetector(
+                    onTap: onRemove,
+                    child: Text(
+                      'Remover',
+                      style: TextStyle(
+                        color: AppTheme.errorColor.withValues(alpha: 0.7),
+                        fontSize: r.fs(11),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
-            // Ações mínimas apenas quando focado
-            if (isFocused)
-              Padding(
-                padding: EdgeInsets.only(top: r.s(2), right: r.s(2)),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ReorderableDragStartListener(
-                      index: index,
-                      child: _MiniAction(
-                        icon: Icons.drag_indicator_rounded,
-                        color: context.textSecondary.withValues(alpha: 0.5),
-                        onTap: () {},
-                      ),
-                    ),
-                    _MiniAction(
-                      icon: Icons.close_rounded,
-                      color: AppTheme.errorColor.withValues(alpha: 0.7),
-                      onTap: onRemove,
-                    ),
-                  ],
-                ),
-              ),
-          ],
-        ),
+        ],
       ),
     );
   }
 
-  Widget _buildContent(BuildContext context) {
+  Widget _buildContent(BuildContext context, Responsive r) {
     final s = getStrings();
-    final r = context.r;
 
     switch (block.type) {
       case BlockType.text:
@@ -540,15 +532,20 @@ class _BlockWidget extends ConsumerWidget {
         final isQuote = block.type == BlockType.quote;
         final baseStyle = TextStyle(
           fontSize: isHeading
-              ? (block.level == 1 ? r.fs(20) : block.level == 2 ? r.fs(17) : r.fs(15))
+              ? (block.level == 1
+                  ? r.fs(18)
+                  : block.level == 2
+                      ? r.fs(16)
+                      : r.fs(14))
               : r.fs(14),
-          height: isQuote ? 1.6 : 1.7,
+          height: 1.6,
           color: context.textPrimary,
-          fontWeight: isHeading || block.bold ? FontWeight.w700 : FontWeight.w400,
-          fontStyle: block.italic || isQuote ? FontStyle.italic : FontStyle.normal,
+          fontWeight:
+              isHeading || block.bold ? FontWeight.w700 : FontWeight.w400,
+          fontStyle:
+              block.italic || isQuote ? FontStyle.italic : FontStyle.normal,
         );
 
-        // Determinar hint text
         final hintText = placeholder ??
             (isHeading
                 ? 'Subtítulo'
@@ -563,16 +560,17 @@ class _BlockWidget extends ConsumerWidget {
           decoration: InputDecoration(
             hintText: hintText,
             hintStyle: TextStyle(
-              color: context.textHint.withValues(alpha: 0.5),
+              color: context.textHint.withValues(alpha: 0.4),
               fontSize: baseStyle.fontSize,
               fontWeight: isHeading ? FontWeight.w700 : FontWeight.w400,
               fontStyle: isQuote ? FontStyle.italic : FontStyle.normal,
             ),
+            // IMPORTANTE: sobrescrever o tema global que tem filled:true
+            filled: false,
             border: InputBorder.none,
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: r.s(4),
-              vertical: r.s(4),
-            ),
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            contentPadding: EdgeInsets.zero,
             isDense: true,
           ),
           maxLines: null,
@@ -582,42 +580,46 @@ class _BlockWidget extends ConsumerWidget {
 
         if (!isQuote) return field;
 
+        // Citação com borda lateral sutil
         return Container(
           decoration: BoxDecoration(
             border: Border(
               left: BorderSide(
-                color: AppTheme.accentColor.withValues(alpha: 0.5),
-                width: r.s(2.5),
+                color: AppTheme.accentColor.withValues(alpha: 0.4),
+                width: r.s(2),
               ),
             ),
           ),
+          padding: EdgeInsets.only(left: r.s(8)),
           child: field,
         );
 
       case BlockType.image:
         if (isUploading) {
           return Container(
-            height: r.s(120),
+            height: r.s(100),
+            margin: EdgeInsets.symmetric(vertical: r.s(4)),
             decoration: BoxDecoration(
-              color: context.cardBg.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(r.s(8)),
+              color: context.scaffoldBg,
+              borderRadius: BorderRadius.circular(r.s(6)),
             ),
             child: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   SizedBox(
-                    width: r.s(20),
-                    height: r.s(20),
+                    width: r.s(18),
+                    height: r.s(18),
                     child: const CircularProgressIndicator(
                       color: AppTheme.accentColor,
                       strokeWidth: 2,
                     ),
                   ),
-                  SizedBox(height: r.s(6)),
+                  SizedBox(height: r.s(4)),
                   Text(
                     s.sendingImage,
-                    style: TextStyle(color: context.textSecondary, fontSize: r.fs(11)),
+                    style: TextStyle(
+                        color: context.textSecondary, fontSize: r.fs(10)),
                   ),
                 ],
               ),
@@ -629,29 +631,23 @@ class _BlockWidget extends ConsumerWidget {
           return GestureDetector(
             onTap: onPickImage,
             child: Container(
-              height: r.s(100),
-              decoration: BoxDecoration(
-                color: context.cardBg.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(r.s(8)),
-                border: Border.all(
-                  color: context.dividerClr.withValues(alpha: 0.3),
-                ),
-              ),
+              height: r.s(80),
+              margin: EdgeInsets.symmetric(vertical: r.s(4)),
               child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
                       Icons.add_photo_alternate_outlined,
-                      color: context.textHint,
-                      size: r.s(24),
+                      color: context.textHint.withValues(alpha: 0.5),
+                      size: r.s(20),
                     ),
-                    SizedBox(height: r.s(4)),
+                    SizedBox(width: r.s(6)),
                     Text(
                       s.tapToAddImage,
                       style: TextStyle(
-                        color: context.textHint,
-                        fontSize: r.fs(11),
+                        color: context.textHint.withValues(alpha: 0.5),
+                        fontSize: r.fs(12),
                       ),
                     ),
                   ],
@@ -661,69 +657,61 @@ class _BlockWidget extends ConsumerWidget {
           );
         }
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(r.s(8)),
-              child: Image.network(
-                block.imageUrl!,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  height: r.s(100),
-                  color: context.cardBg,
-                  child: Center(
-                    child: Icon(
-                      Icons.broken_image_rounded,
-                      color: context.textHint,
-                      size: r.s(24),
+        return Padding(
+          padding: EdgeInsets.symmetric(vertical: r.s(6)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(r.s(6)),
+                child: Image.network(
+                  block.imageUrl!,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    height: r.s(80),
+                    color: context.surfaceColor,
+                    child: Center(
+                      child: Icon(
+                        Icons.broken_image_rounded,
+                        color: context.textHint,
+                        size: r.s(20),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-            if (isFocused) ...[
-              SizedBox(height: r.s(4)),
-              GestureDetector(
-                onTap: onPickImage,
-                child: Text(
-                  'Trocar imagem',
-                  style: TextStyle(
-                    color: AppTheme.accentColor.withValues(alpha: 0.7),
-                    fontSize: r.fs(11),
-                    fontWeight: FontWeight.w600,
-                  ),
+              // Legenda
+              TextField(
+                controller: block.captionController,
+                style: TextStyle(
+                  color: context.textSecondary,
+                  fontSize: r.fs(11),
+                  fontStyle: FontStyle.italic,
                 ),
+                decoration: InputDecoration(
+                  hintText: 'Legenda (opcional)',
+                  hintStyle: TextStyle(
+                    color: context.textHint.withValues(alpha: 0.3),
+                    fontSize: r.fs(11),
+                  ),
+                  filled: false,
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  contentPadding: EdgeInsets.zero,
+                  isDense: true,
+                ),
+                onTap: onFocus,
+                onChanged: onCaptionChanged,
               ),
             ],
-            SizedBox(height: r.s(2)),
-            TextField(
-              controller: block.captionController,
-              style: TextStyle(
-                color: context.textSecondary,
-                fontSize: r.fs(11),
-                fontStyle: FontStyle.italic,
-              ),
-              decoration: InputDecoration(
-                hintText: 'Legenda (opcional)',
-                hintStyle: TextStyle(
-                  color: context.textHint.withValues(alpha: 0.4),
-                  fontSize: r.fs(11),
-                ),
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(horizontal: r.s(2)),
-                isDense: true,
-              ),
-              onTap: onFocus,
-              onChanged: onCaptionChanged,
-            ),
-          ],
+          ),
         );
 
       case BlockType.divider:
         return Padding(
-          padding: EdgeInsets.symmetric(vertical: r.s(12)),
+          padding: EdgeInsets.symmetric(vertical: r.s(10)),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(
@@ -733,7 +721,7 @@ class _BlockWidget extends ConsumerWidget {
                 width: r.s(3),
                 height: r.s(3),
                 decoration: BoxDecoration(
-                  color: context.textHint.withValues(alpha: 0.4),
+                  color: context.textHint.withValues(alpha: 0.3),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -745,24 +733,28 @@ class _BlockWidget extends ConsumerWidget {
 }
 
 // =============================================================================
-// _FormatToolbar — barra de formatação compacta inline
+// _InlineFormatBar — barra de formatação discreta
 // =============================================================================
 
-class _FormatToolbar extends StatelessWidget {
+class _InlineFormatBar extends StatelessWidget {
   final ContentBlock block;
+  final bool canRemove;
   final VoidCallback onToggleBold;
   final VoidCallback onToggleItalic;
   final VoidCallback onCycleAlignment;
   final ValueChanged<BlockType> onTypeChanged;
   final ValueChanged<int> onHeadingLevelChanged;
+  final VoidCallback onRemove;
 
-  const _FormatToolbar({
+  const _InlineFormatBar({
     required this.block,
+    required this.canRemove,
     required this.onToggleBold,
     required this.onToggleItalic,
     required this.onCycleAlignment,
     required this.onTypeChanged,
     required this.onHeadingLevelChanged,
+    required this.onRemove,
   });
 
   @override
@@ -775,16 +767,18 @@ class _FormatToolbar extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
+            // Tipo de bloco
             PopupMenuButton<BlockType>(
               tooltip: 'Estilo',
               color: context.surfaceColor,
               onSelected: onTypeChanged,
               itemBuilder: (_) => const [
                 PopupMenuItem(value: BlockType.text, child: Text('Texto')),
-                PopupMenuItem(value: BlockType.heading, child: Text('Subtítulo')),
+                PopupMenuItem(
+                    value: BlockType.heading, child: Text('Subtítulo')),
                 PopupMenuItem(value: BlockType.quote, child: Text('Citação')),
               ],
-              child: _ToolbarChip(
+              child: _MiniChip(
                 label: switch (block.type) {
                   BlockType.heading => 'H',
                   BlockType.quote => 'Q',
@@ -792,26 +786,24 @@ class _FormatToolbar extends StatelessWidget {
                 },
               ),
             ),
-            SizedBox(width: r.s(4)),
-            _ToolbarIconBtn(
+            SizedBox(width: r.s(2)),
+            _MiniIconBtn(
               icon: Icons.format_bold_rounded,
               selected: block.bold,
               onTap: onToggleBold,
             ),
-            SizedBox(width: r.s(4)),
-            _ToolbarIconBtn(
+            _MiniIconBtn(
               icon: Icons.format_italic_rounded,
               selected: block.italic,
               onTap: onToggleItalic,
             ),
-            SizedBox(width: r.s(4)),
-            _ToolbarIconBtn(
+            _MiniIconBtn(
               icon: _alignmentIcon(block.align),
               selected: false,
               onTap: onCycleAlignment,
             ),
             if (block.type == BlockType.heading) ...[
-              SizedBox(width: r.s(4)),
+              SizedBox(width: r.s(2)),
               PopupMenuButton<int>(
                 tooltip: 'Nível',
                 color: context.surfaceColor,
@@ -821,7 +813,16 @@ class _FormatToolbar extends StatelessWidget {
                   PopupMenuItem(value: 2, child: Text('H2')),
                   PopupMenuItem(value: 3, child: Text('H3')),
                 ],
-                child: _ToolbarChip(label: 'H${block.level}'),
+                child: _MiniChip(label: 'H${block.level}'),
+              ),
+            ],
+            if (canRemove) ...[
+              SizedBox(width: r.s(4)),
+              _MiniIconBtn(
+                icon: Icons.close_rounded,
+                selected: false,
+                onTap: onRemove,
+                color: AppTheme.errorColor.withValues(alpha: 0.6),
               ),
             ],
           ],
@@ -832,7 +833,7 @@ class _FormatToolbar extends StatelessWidget {
 }
 
 // =============================================================================
-// _AddBlockBar — barra de adicionar blocos (visível quando showAddBar = true)
+// _AddBlockBar
 // =============================================================================
 
 class _AddBlockBar extends ConsumerWidget {
@@ -854,11 +855,10 @@ class _AddBlockBar extends ConsumerWidget {
     final r = context.r;
 
     return Container(
-      padding: EdgeInsets.symmetric(vertical: r.s(8), horizontal: r.s(6)),
+      padding: EdgeInsets.symmetric(vertical: r.s(6), horizontal: r.s(6)),
       decoration: BoxDecoration(
-        color: context.cardBg.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(r.s(10)),
-        border: Border.all(color: context.dividerClr.withValues(alpha: 0.15)),
+        color: context.cardBg.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(r.s(8)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -909,22 +909,21 @@ class _AddBlockButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final r = context.r;
-
     return GestureDetector(
       onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: r.s(36),
-            height: r.s(36),
+            width: r.s(32),
+            height: r.s(32),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(r.s(8)),
             ),
-            child: Icon(icon, color: color, size: r.s(18)),
+            child: Icon(icon, color: color, size: r.s(16)),
           ),
-          SizedBox(height: r.s(3)),
+          SizedBox(height: r.s(2)),
           Text(
             label,
             style: TextStyle(
@@ -940,23 +939,22 @@ class _AddBlockButton extends StatelessWidget {
 }
 
 // =============================================================================
-// Widgets auxiliares compactos
+// Widgets auxiliares mínimos
 // =============================================================================
 
-class _ToolbarChip extends StatelessWidget {
+class _MiniChip extends StatelessWidget {
   final String label;
 
-  const _ToolbarChip({required this.label});
+  const _MiniChip({required this.label});
 
   @override
   Widget build(BuildContext context) {
     final r = context.r;
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: r.s(8), vertical: r.s(4)),
+      padding: EdgeInsets.symmetric(horizontal: r.s(6), vertical: r.s(3)),
       decoration: BoxDecoration(
-        color: context.cardBg.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(r.s(12)),
-        border: Border.all(color: context.dividerClr.withValues(alpha: 0.3)),
+        color: context.surfaceColor.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(r.s(10)),
       ),
       child: Text(
         label,
@@ -970,15 +968,17 @@ class _ToolbarChip extends StatelessWidget {
   }
 }
 
-class _ToolbarIconBtn extends StatelessWidget {
+class _MiniIconBtn extends StatelessWidget {
   final IconData icon;
   final bool selected;
   final VoidCallback onTap;
+  final Color? color;
 
-  const _ToolbarIconBtn({
+  const _MiniIconBtn({
     required this.icon,
     required this.selected,
     required this.onTap,
+    this.color,
   });
 
   @override
@@ -986,44 +986,15 @@ class _ToolbarIconBtn extends StatelessWidget {
     final r = context.r;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(r.s(12)),
-      child: Container(
-        padding: EdgeInsets.all(r.s(5)),
-        decoration: BoxDecoration(
-          color: selected
-              ? AppTheme.accentColor.withValues(alpha: 0.15)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(r.s(12)),
-        ),
+      borderRadius: BorderRadius.circular(r.s(10)),
+      child: Padding(
+        padding: EdgeInsets.all(r.s(4)),
         child: Icon(
           icon,
-          size: r.s(15),
-          color: selected ? AppTheme.accentColor : context.textSecondary,
+          size: r.s(14),
+          color: color ??
+              (selected ? AppTheme.accentColor : context.textSecondary),
         ),
-      ),
-    );
-  }
-}
-
-class _MiniAction extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _MiniAction({
-    required this.icon,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final r = context.r;
-    return GestureDetector(
-      onTap: onTap,
-      child: Padding(
-        padding: EdgeInsets.all(r.s(3)),
-        child: Icon(icon, color: color, size: r.s(14)),
       ),
     );
   }

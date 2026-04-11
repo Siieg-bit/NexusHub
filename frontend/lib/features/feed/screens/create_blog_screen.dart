@@ -1484,7 +1484,10 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                                 fontSize: r.fs(18),
                                 fontWeight: FontWeight.w700,
                               ),
+                              filled: false,
                               border: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
                               counterText: '',
                               contentPadding: EdgeInsets.zero,
                               isDense: true,
@@ -1498,8 +1501,8 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                             color: context.dividerClr.withValues(alpha: 0.25),
                           ),
 
-                          // ── Capa inline (se definida) ──
-                          if (_coverImageUrl != null) ...[
+                          // ── Capa inline (se definida) — discreta ──
+                          if (_coverImageUrl != null && false) ...[
                             Stack(
                               children: [
                                 ClipRRect(
@@ -1538,8 +1541,8 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                             SizedBox(height: r.s(8)),
                           ],
 
-                          // ── Tags inline ──
-                          if (_tags.isNotEmpty) ...[
+                          // ── Tags inline (desabilitado — ficam em Opções) ──
+                          if (_tags.isNotEmpty && false) ...[
                             Wrap(
                               spacing: r.s(4),
                               runSpacing: r.s(3),
@@ -1629,7 +1632,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
   Widget _buildAminoHeader(
       Responsive r, AsyncValue<CommunityModel> communityAsync) {
     final topPadding = MediaQuery.of(context).padding.top;
-    final headerHeight = r.s(80) + topPadding;
+    final headerHeight = r.s(44) + topPadding;
 
     String? bannerUrl;
     Color themeColor = const Color(0xFF1A1A2E);
@@ -1700,7 +1703,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                   icon: Icon(
                     Icons.arrow_back_rounded,
                     color: Colors.white,
-                    size: r.s(22),
+                    size: r.s(20),
                   ),
                   padding: EdgeInsets.all(r.s(8)),
                   constraints: const BoxConstraints(),
@@ -1761,7 +1764,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                         icon: Icon(
                           Icons.check_rounded,
                           color: Colors.white,
-                          size: r.s(24),
+                          size: r.s(22),
                         ),
                         padding: EdgeInsets.all(r.s(8)),
                         constraints: const BoxConstraints(),
