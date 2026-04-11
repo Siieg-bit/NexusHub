@@ -81,6 +81,19 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
   int _page = 0;
   bool _isLoadingMore = false;
 
+  bool _isGlobalNotification(Map<String, dynamic> notification) {
+    final communityId = notification['community_id'];
+    return communityId == null ||
+        (communityId is String && communityId.trim().isEmpty);
+  }
+
+  List<Map<String, dynamic>> _filterGlobalNotifications(List<dynamic> rows) {
+    return rows
+        .map((e) => Map<String, dynamic>.from(e as Map))
+        .where(_isGlobalNotification)
+        .toList();
+  }
+
   @override
   Future<NotificationState> build() async {
     _page = 0;
@@ -110,12 +123,13 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
     if (offset == 0) {
       final cached = CacheService.getCachedNotifications();
       if (cached != null && cached.isNotEmpty) {
+        final globalCached = cached.where(_isGlobalNotification).toList();
         // Retornar cache imediatamente e atualizar em background
         _fetchAndUpdate(category: category);
         return NotificationState(
-          notifications: cached,
-          unreadCount: cached.where((n) => n['is_read'] != true).length,
-          hasMore: cached.length >= _pageSize,
+          notifications: globalCached,
+          unreadCount: globalCached.where((n) => n['is_read'] != true).length,
+          hasMore: globalCached.length >= _pageSize,
           category: category,
         );
       }
@@ -137,22 +151,37 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
     if (userId == null) return const NotificationState(hasMore: false);
 
     try {
-      // Tentar nova RPC paginada com filtro por categoria
-      final rows = await SupabaseService.rpc(
-        'get_notifications_paginated',
-        params: {
-          'p_limit': _pageSize,
-          'p_offset': offset,
-          'p_category': category.rpcValue,
-        },
-      ) as List<dynamic>;
+      PostgrestFilterBuilder<List<Map<String, dynamic>>> query =
+          SupabaseService.table('notifications').select(
+        '*, profiles!notifications_actor_id_fkey(id, nickname, icon_url, display_name, avatar_url)',
+      );
 
-      final items = rows.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      query = query.eq('user_id', userId).isFilter('community_id', null);
 
-      // Contar não lidas
+      switch (category) {
+        case NotificationCategory.social:
+          query = query.inFilter('type', ['like', 'comment', 'follow', 'mention', 'wall_post']);
+          break;
+        case NotificationCategory.chat:
+          query = query.inFilter('type', ['chat_message', 'chat_mention', 'dm_invite']);
+          break;
+        case NotificationCategory.community:
+          query = query.inFilter('type', ['community_invite', 'community_update', 'join_request', 'role_change']);
+          break;
+        case NotificationCategory.system:
+          query = query.inFilter('type', ['level_up', 'achievement', 'check_in_streak', 'moderation', 'strike', 'ban', 'broadcast', 'wiki_approved', 'wiki_rejected', 'tip']);
+          break;
+        case NotificationCategory.all:
+          break;
+      }
+
+      final rows = await query
+          .order('created_at', ascending: false)
+          .range(offset, offset + _pageSize - 1);
+
+      final items = _filterGlobalNotifications(rows);
       final unreadCount = await _fetchUnreadCount();
 
-      // Cachear primeira página
       if (offset == 0) {
         await CacheService.cacheNotifications(items);
       }
@@ -164,8 +193,7 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
         category: category,
       );
     } catch (e) {
-      debugPrint('[notification_provider] RPC falhou, usando fallback: $e');
-      // Fallback: query direta
+      debugPrint('[notification_provider] Falha ao buscar notificações globais: $e');
       return _fetchFallback(
         category: category,
         offset: offset,
@@ -186,16 +214,16 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
       final rows = await SupabaseService.table('notifications')
           .select('*, profiles!notifications_actor_id_fkey(display_name, avatar_url)')
           .eq('user_id', userId)
+          .isFilter('community_id', null)
           .order('created_at', ascending: false)
           .range(offset, offset + _pageSize - 1);
 
-      final items = (rows as List<dynamic>)
-          .map((e) => Map<String, dynamic>.from(e as Map))
-          .toList();
+      final items = _filterGlobalNotifications(rows as List<dynamic>);
 
       final unreadCount = await SupabaseService.table('notifications')
           .select()
           .eq('user_id', userId)
+          .isFilter('community_id', null)
           .eq('is_read', false)
           .count(CountOption.exact);
 
@@ -214,9 +242,10 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
       // Tentar cache como último recurso
       final cached = CacheService.getCachedNotifications();
       if (cached != null && cached.isNotEmpty) {
+        final globalCached = cached.where(_isGlobalNotification).toList();
         return NotificationState(
-          notifications: cached,
-          unreadCount: cached.where((n) => n['is_read'] != true).length,
+          notifications: globalCached,
+          unreadCount: globalCached.where((n) => n['is_read'] != true).length,
           hasMore: false,
           category: category,
         );
@@ -238,21 +267,17 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
 
   Future<int> _fetchUnreadCount() async {
     try {
-      final result = await SupabaseService.rpc('get_unread_notification_count');
-      return (result as int?) ?? 0;
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) return 0;
+      final res = await SupabaseService.table('notifications')
+          .select()
+          .eq('user_id', userId)
+          .isFilter('community_id', null)
+          .eq('is_read', false)
+          .count(CountOption.exact);
+      return res.count;
     } catch (_) {
-      try {
-        final userId = SupabaseService.currentUserId;
-        if (userId == null) return 0;
-        final res = await SupabaseService.table('notifications')
-            .select()
-            .eq('user_id', userId)
-            .eq('is_read', false)
-            .count(CountOption.exact);
-        return res.count;
-      } catch (_) {
-        return 0;
-      }
+      return 0;
     }
   }
 
@@ -292,6 +317,8 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
   }
 
   void _onNewNotification(Map<String, dynamic> record) {
+    if (!_isGlobalNotification(record)) return;
+
     final current = state.valueOrNull;
     if (current == null) return;
 
@@ -317,6 +344,8 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
   }
 
   void _onUpdateNotification(Map<String, dynamic> record) {
+    if (!_isGlobalNotification(record)) return;
+
     final current = state.valueOrNull;
     if (current == null) return;
 
@@ -382,7 +411,8 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
       await SupabaseService.table('notifications')
           .update({'is_read': true})
           .eq('id', notificationId)
-          .eq('user_id', SupabaseService.currentUserId ?? '');
+          .eq('user_id', SupabaseService.currentUserId ?? '')
+          .isFilter('community_id', null);
 
       final current = state.valueOrNull;
       if (current == null) return;
@@ -415,6 +445,7 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
       await SupabaseService.table('notifications')
           .update({'is_read': true})
           .eq('user_id', userId)
+          .isFilter('community_id', null)
           .eq('is_read', false);
 
       final current = state.valueOrNull;
@@ -448,9 +479,15 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
         NotificationCategory.all       => <String>[],
       };
 
-      await SupabaseService.rpc('mark_notifications_read_by_type', params: {
-        'p_types': types,
-      });
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) return;
+
+      await SupabaseService.table('notifications')
+          .update({'is_read': true})
+          .eq('user_id', userId)
+          .isFilter('community_id', null)
+          .eq('is_read', false)
+          .inFilter('type', types);
 
       final current = state.valueOrNull;
       if (current == null) return;
@@ -473,9 +510,11 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
 
   Future<void> deleteNotification(String notificationId) async {
     try {
-      await SupabaseService.rpc('delete_notification', params: {
-        'p_notification_id': notificationId,
-      });
+      await SupabaseService.table('notifications')
+          .delete()
+          .eq('id', notificationId)
+          .eq('user_id', SupabaseService.currentUserId ?? '')
+          .isFilter('community_id', null);
 
       final current = state.valueOrNull;
       if (current == null) return;
@@ -500,7 +539,13 @@ class NotificationNotifier extends AsyncNotifier<NotificationState> {
 
   Future<void> deleteAll() async {
     try {
-      await SupabaseService.rpc('delete_all_notifications');
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) return;
+
+      await SupabaseService.table('notifications')
+          .delete()
+          .eq('user_id', userId)
+          .isFilter('community_id', null);
       final current = state.valueOrNull;
       if (current == null) return;
       state = AsyncData(current.copyWith(
