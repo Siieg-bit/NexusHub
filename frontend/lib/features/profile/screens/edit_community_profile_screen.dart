@@ -1,9 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
+import 'package:image_cropper/image_cropper.dart';
+import '../../../core/services/media_upload_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../communities/providers/community_detail_providers.dart';
@@ -85,29 +86,39 @@ class _EditCommunityProfileScreenState
 
   // ─── Upload helpers ──────────────────────────────────────────────────────────
 
-  Future<String?> _uploadImage(String folder,
-      {double? maxWidth, int quality = 85}) async {
-    final picker = ImagePicker();
-    final image = await picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: maxWidth ?? 1200,
-      imageQuality: quality,
-    );
-    if (image == null) return null;
-
+  Future<String?> _uploadCommunityImage(String folder,
+      {bool crop = false}) async {
     try {
       final userId = SupabaseService.currentUserId ?? 'unknown';
-      final bytes = await image.readAsBytes();
-      final ext = image.name.split('.').last;
-      final path =
+      final customPath =
           'community_profiles/${widget.communityId}/$userId/$folder/'
-          '${DateTime.now().millisecondsSinceEpoch}.$ext';
+          '${DateTime.now().millisecondsSinceEpoch}.jpg';
 
-      await SupabaseService.client.storage
-          .from('avatars')
-          .uploadBinary(path, bytes);
+      // Abre o picker
+      final file = await MediaUploadService.pickImage(
+        maxWidth: folder == 'avatar' ? 512 : 1200,
+        maxHeight: folder == 'avatar' ? 512 : null,
+        imageQuality: folder == 'gallery' ? 80 : 85,
+      );
+      if (file == null) return null;
 
-      return SupabaseService.client.storage.from('avatars').getPublicUrl(path);
+      // Crop circular apenas para avatar
+      final fileToUpload = (crop && folder == 'avatar')
+          ? await MediaUploadService.cropImage(
+              file,
+              aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+              useCircleCrop: true,
+              maxWidth: 512,
+              maxHeight: 512,
+            ) ?? file
+          : file;
+
+      final result = await MediaUploadService.uploadFile(
+        file: fileToUpload,
+        bucket: MediaBucket.avatars,
+        customPath: customPath,
+      );
+      return result?.url;
     } catch (e) {
       if (mounted) {
         final s = getStrings();
@@ -121,17 +132,17 @@ class _EditCommunityProfileScreenState
   }
 
   Future<void> _pickAvatar() async {
-    final url = await _uploadImage('avatar', maxWidth: 400, quality: 90);
+    final url = await _uploadCommunityImage('avatar', crop: true);
     if (url != null && mounted) setState(() => _localIconUrl = url);
   }
 
   Future<void> _pickBanner() async {
-    final url = await _uploadImage('banner', maxWidth: 1200);
+    final url = await _uploadCommunityImage('banner');
     if (url != null && mounted) setState(() => _localBannerUrl = url);
   }
 
   Future<void> _pickBackground() async {
-    final url = await _uploadImage('background', maxWidth: 1200, quality: 80);
+    final url = await _uploadCommunityImage('background');
     if (url != null && mounted) setState(() => _localBackgroundUrl = url);
   }
 
@@ -144,7 +155,7 @@ class _EditCommunityProfileScreenState
       ));
       return;
     }
-    final url = await _uploadImage('gallery', quality: 80);
+    final url = await _uploadCommunityImage('gallery');
     if (url != null && mounted) {
       setState(() => _gallery = [..._gallery, url]);
     }
