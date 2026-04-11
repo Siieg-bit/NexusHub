@@ -5837,4 +5837,24 @@ class AppStringsEn implements AppStrings {
   String get publicChatDesc => 'Anyone in the community can join';
   @override
   String get privateChatDesc => 'Only invited members can join';
+  @override
+  String get editProfileFrames => 'Edit Profile Frames';
+  @override
+  String get profileBackgroundOptional => 'Background (Optional)';
+  @override
+  String get removeBackground => 'Remove background';
+  @override
+  String get addPhotoToGallery => 'Add photo';
+  @override
+  String get removePhoto => 'Remove photo';
+  @override
+  String get galleryCount => 'Gallery';
+  @override
+  String get nicknameStyleHint => 'Nickname style (prefix, color...)';
+  @override
+  String get tapToEditAvatar => 'Tap to edit avatar';
+  @override
+  String get localAvatarRemoved => 'Local avatar removed';
+  @override
+  String get maxGalleryPhotos => 'Maximum 12 photos in gallery';
 }

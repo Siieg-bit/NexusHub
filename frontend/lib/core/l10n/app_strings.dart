@@ -2968,4 +2968,16 @@ abstract class AppStrings {
   String get publicChatDesc;
   String get privateChatDesc;
 
+  // ── Edição de perfil de comunidade ──
+  String get editProfileFrames;
+  String get profileBackgroundOptional;
+  String get removeBackground;
+  String get addPhotoToGallery;
+  String get removePhoto;
+  String get galleryCount;
+  String get nicknameStyleHint;
+  String get tapToEditAvatar;
+  String get localAvatarRemoved;
+  String get maxGalleryPhotos;
+
 }

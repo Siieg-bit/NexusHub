@@ -169,6 +169,9 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
     final localIconUrl = _membership?['local_icon_url'] as String?;
     final localBannerUrl = _membership?['local_banner_url'] as String?;
     final localBio = _membership?['local_bio'] as String?;
+    final localBackgroundUrl = _membership?['local_background_url'] as String?;
+    final rawGallery = _membership?['local_gallery'] as List<dynamic>?;
+    final displayGallery = rawGallery?.map((e) => e.toString()).toList() ?? <String>[];
     final joinedAt = _membership?['joined_at'] != null
         ? DateTime.tryParse(_membership?['joined_at'] as String? ?? '')
         : null;
@@ -456,7 +459,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                           if (_isOwnProfile)
                             GestureDetector(
                               onTap: () => context.push(
-                                  '/community/${widget.communityId}/profile/edit'),
+                                  '/community/${widget.communityId}/profile/edit')
+                                  .then((_) => _loadProfile()),
                               child: Container(
                                 padding: EdgeInsets.symmetric(
                                     horizontal: r.s(28), vertical: r.s(9)),
@@ -880,7 +884,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                     else if (_isOwnProfile)
                       GestureDetector(
                         onTap: () => context.push(
-                            '/community/${widget.communityId}/profile/edit'),
+                            '/community/${widget.communityId}/profile/edit')
+                            .then((_) => _loadProfile()),
                         child: Text(
                           s.tapToAddBio,
                           style: TextStyle(
@@ -899,6 +904,67 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                 ),
               ),
             ),
+
+            // ================================================================
+            // PLANO DE FUNDO LOCAL (se definido)
+            // ================================================================
+            if (localBackgroundUrl != null)
+              SliverToBoxAdapter(
+                child: Container(
+                  margin: EdgeInsets.fromLTRB(0, r.s(4), 0, 0),
+                  height: r.s(180),
+                  width: double.infinity,
+                  child: CachedNetworkImage(
+                    imageUrl: localBackgroundUrl,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+
+            // ================================================================
+            // GALERIA LOCAL (se houver fotos)
+            // ================================================================
+            if (displayGallery.isNotEmpty)
+              SliverToBoxAdapter(
+                child: Container(
+                  margin: EdgeInsets.fromLTRB(0, r.s(4), 0, 0),
+                  padding: EdgeInsets.all(r.s(12)),
+                  color: context.surfaceColor,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        s.gallery,
+                        style: TextStyle(
+                          color: context.textPrimary,
+                          fontSize: r.fs(16),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      SizedBox(height: r.s(10)),
+                      GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          crossAxisSpacing: r.s(4),
+                          mainAxisSpacing: r.s(4),
+                        ),
+                        itemCount: displayGallery.length,
+                        itemBuilder: (context, index) {
+                          return ClipRRect(
+                            borderRadius: BorderRadius.circular(r.s(4)),
+                            child: CachedNetworkImage(
+                              imageUrl: displayGallery[index],
+                              fit: BoxFit.cover,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
 
             // ================================================================
             // TABS — Posts | Mural | Posts Salvos

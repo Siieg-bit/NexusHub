@@ -5891,4 +5891,24 @@ class AppStringsPt implements AppStrings {
   String get publicChatDesc => 'Qualquer membro da comunidade pode entrar';
   @override
   String get privateChatDesc => 'Apenas membros convidados podem entrar';
+  @override
+  String get editProfileFrames => 'Editar Molduras de Perfil';
+  @override
+  String get profileBackgroundOptional => 'Plano de Fundo (Opcional)';
+  @override
+  String get removeBackground => 'Remover plano de fundo';
+  @override
+  String get addPhotoToGallery => 'Adicionar foto';
+  @override
+  String get removePhoto => 'Remover foto';
+  @override
+  String get galleryCount => 'Galeria';
+  @override
+  String get nicknameStyleHint => 'Estilo do nickname (prefixo, cor...)';
+  @override
+  String get tapToEditAvatar => 'Toque para editar o avatar';
+  @override
+  String get localAvatarRemoved => 'Avatar local removido';
+  @override
+  String get maxGalleryPhotos => 'Máximo de 12 fotos na galeria';
 }

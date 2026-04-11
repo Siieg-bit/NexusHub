@@ -5761,4 +5761,24 @@ class AppStringsAr implements AppStrings {
   String get publicChatDesc => 'يمكن لأي عضو في المجتمع الانضمام';
   @override
   String get privateChatDesc => 'يمكن للأعضاء المدعوين فقط الانضمام';
+  @override
+  String get editProfileFrames => 'editProfileFrames';
+  @override
+  String get profileBackgroundOptional => 'profileBackgroundOptional';
+  @override
+  String get removeBackground => 'removeBackground';
+  @override
+  String get addPhotoToGallery => 'addPhotoToGallery';
+  @override
+  String get removePhoto => 'removePhoto';
+  @override
+  String get galleryCount => 'galleryCount';
+  @override
+  String get nicknameStyleHint => 'nicknameStyleHint';
+  @override
+  String get tapToEditAvatar => 'tapToEditAvatar';
+  @override
+  String get localAvatarRemoved => 'localAvatarRemoved';
+  @override
+  String get maxGalleryPhotos => 'maxGalleryPhotos';
 }

@@ -1,20 +1,24 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../communities/providers/community_detail_providers.dart';
 
 /// Editar Perfil da Comunidade — estilo Amino Apps.
 ///
-/// Permite ao usuário customizar seu perfil LOCAL dentro de uma comunidade:
-///   - Nickname local (diferente do global)
-///   - Bio local
-///   - Avatar local
-///   - Banner local
+/// Layout fiel à referência do Amino:
+///   - Topo: banner com avatar circular centralizado + "Editar Molduras de Perfil"
+///   - Linha 1: ícone de pessoa cinza | campo de nickname estilizado
+///   - Linha 2: (espaço para bio)
+///   - Linha 3: ícone de paleta | "Plano de Fundo (Opcional)" | thumbnail à direita
+///   - Linha 4: ícone de câmera | thumbnail da última foto | "Galeria (N)" + seta
 ///
-/// No Amino, cada comunidade pode ter um perfil diferente.
+/// Cada comunidade pode ter um perfil diferente (nickname, avatar, banner,
+/// plano de fundo, galeria de fotos).
 class EditCommunityProfileScreen extends ConsumerStatefulWidget {
   final String communityId;
   const EditCommunityProfileScreen({super.key, required this.communityId});
@@ -28,10 +32,16 @@ class _EditCommunityProfileScreenState
     extends ConsumerState<EditCommunityProfileScreen> {
   final _nicknameController = TextEditingController();
   final _bioController = TextEditingController();
+
   String? _localIconUrl;
   String? _localBannerUrl;
+  String? _localBackgroundUrl;
+  List<String> _gallery = [];
+
   bool _isLoading = true;
   bool _isSaving = false;
+
+  static const int _maxGalleryPhotos = 12;
 
   @override
   void initState() {
@@ -45,7 +55,9 @@ class _EditCommunityProfileScreenState
       if (userId == null) return;
 
       final membership = await SupabaseService.table('community_members')
-          .select('local_nickname, local_bio, local_icon_url, local_banner_url')
+          .select(
+              'local_nickname, local_bio, local_icon_url, local_banner_url, '
+              'local_background_url, local_gallery')
           .eq('community_id', widget.communityId)
           .eq('user_id', userId)
           .single();
@@ -57,6 +69,12 @@ class _EditCommunityProfileScreenState
           _bioController.text = (membership['local_bio'] as String?) ?? '';
           _localIconUrl = membership['local_icon_url'] as String?;
           _localBannerUrl = membership['local_banner_url'] as String?;
+          _localBackgroundUrl =
+              membership['local_background_url'] as String?;
+          final rawGallery = membership['local_gallery'];
+          if (rawGallery is List) {
+            _gallery = rawGallery.map((e) => e.toString()).toList();
+          }
           _isLoading = false;
         });
       }
@@ -65,14 +83,15 @@ class _EditCommunityProfileScreenState
     }
   }
 
-  Future<String?> _uploadImage(String folder) async {
-    final s = getStrings();
-    final r = context.r;
+  // ─── Upload helpers ──────────────────────────────────────────────────────────
+
+  Future<String?> _uploadImage(String folder,
+      {double? maxWidth, int quality = 85}) async {
     final picker = ImagePicker();
     final image = await picker.pickImage(
       source: ImageSource.gallery,
-      maxWidth: r.w(1200),
-      imageQuality: 85,
+      maxWidth: maxWidth ?? 1200,
+      imageQuality: quality,
     );
     if (image == null) return null;
 
@@ -81,7 +100,8 @@ class _EditCommunityProfileScreenState
       final bytes = await image.readAsBytes();
       final ext = image.name.split('.').last;
       final path =
-          'community_profiles/${widget.communityId}/$userId/$folder/${DateTime.now().millisecondsSinceEpoch}.$ext';
+          'community_profiles/${widget.communityId}/$userId/$folder/'
+          '${DateTime.now().millisecondsSinceEpoch}.$ext';
 
       await SupabaseService.client.storage
           .from('avatars')
@@ -90,30 +110,55 @@ class _EditCommunityProfileScreenState
       return SupabaseService.client.storage.from('avatars').getPublicUrl(path);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(s.errorUploadTryAgain),
-            backgroundColor: AppTheme.errorColor,
-          ),
-        );
+        final s = getStrings();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(s.errorUploadTryAgain),
+          backgroundColor: AppTheme.errorColor,
+        ));
       }
       return null;
     }
   }
 
   Future<void> _pickAvatar() async {
-    final url = await _uploadImage('avatar');
-    if (url != null && mounted) {
-      setState(() => _localIconUrl = url);
-    }
+    final url = await _uploadImage('avatar', maxWidth: 400, quality: 90);
+    if (url != null && mounted) setState(() => _localIconUrl = url);
   }
 
   Future<void> _pickBanner() async {
-    final url = await _uploadImage('banner');
+    final url = await _uploadImage('banner', maxWidth: 1200);
+    if (url != null && mounted) setState(() => _localBannerUrl = url);
+  }
+
+  Future<void> _pickBackground() async {
+    final url = await _uploadImage('background', maxWidth: 1200, quality: 80);
+    if (url != null && mounted) setState(() => _localBackgroundUrl = url);
+  }
+
+  Future<void> _addGalleryPhoto() async {
+    if (_gallery.length >= _maxGalleryPhotos) {
+      final s = getStrings();
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(s.maxGalleryPhotos),
+        backgroundColor: AppTheme.warningColor,
+      ));
+      return;
+    }
+    final url = await _uploadImage('gallery', quality: 80);
     if (url != null && mounted) {
-      setState(() => _localBannerUrl = url);
+      setState(() => _gallery = [..._gallery, url]);
     }
   }
+
+  void _removeGalleryPhoto(int index) {
+    setState(() {
+      final updated = List<String>.from(_gallery);
+      updated.removeAt(index);
+      _gallery = updated;
+    });
+  }
+
+  // ─── Save ────────────────────────────────────────────────────────────────────
 
   Future<void> _save() async {
     final s = getStrings();
@@ -123,41 +168,37 @@ class _EditCommunityProfileScreenState
       final userId = SupabaseService.currentUserId;
       if (userId == null) throw Exception(s.notAuthenticated);
 
-      final updates = <String, dynamic>{};
-
       final nickname = _nicknameController.text.trim();
-      updates['local_nickname'] = nickname.isEmpty ? null : nickname;
-
       final bio = _bioController.text.trim();
-      updates['local_bio'] = bio.isEmpty ? null : bio;
 
-      updates['local_icon_url'] = _localIconUrl;
-      updates['local_banner_url'] = _localBannerUrl;
+      await SupabaseService.client.rpc('update_community_profile', params: {
+        'p_community_id': widget.communityId,
+        'p_local_nickname': nickname.isEmpty ? null : nickname,
+        'p_local_bio': bio.isEmpty ? null : bio,
+        'p_local_icon_url': _localIconUrl,
+        'p_local_banner_url': _localBannerUrl,
+        'p_local_background_url': _localBackgroundUrl,
+        'p_local_gallery': _gallery,
+      });
 
-      await SupabaseService.table('community_members')
-          .update(updates)
-          .eq('community_id', widget.communityId)
-          .eq('user_id', userId);
+      // Invalidar o provider de membership para refletir as mudanças
+      ref.invalidate(communityMembershipProvider(widget.communityId));
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(
-            content: Text(s.communityProfileUpdated),
-            backgroundColor: AppTheme.successColor,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(s.communityProfileUpdated),
+          backgroundColor: AppTheme.successColor,
+          behavior: SnackBarBehavior.floating,
+        ));
         Navigator.of(context).pop(true);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(s.anErrorOccurredTryAgain),
-            backgroundColor: AppTheme.errorColor,
-          ),
-        );
+        final s = getStrings();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(s.anErrorOccurredTryAgain),
+          backgroundColor: AppTheme.errorColor,
+        ));
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -171,21 +212,25 @@ class _EditCommunityProfileScreenState
     super.dispose();
   }
 
+  // ─── Build ───────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
+
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: context.scaffoldBg,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.close_rounded, color: context.textPrimary),
+          icon: Icon(Icons.arrow_back_ios_rounded,
+              color: context.textPrimary, size: r.s(20)),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          'Editar Perfil',
+          s.editCommunityProfile,
           style: TextStyle(
             color: context.textPrimary,
             fontSize: r.fs(17),
@@ -199,8 +244,8 @@ class _EditCommunityProfileScreenState
             child: GestureDetector(
               onTap: _isSaving ? null : _save,
               child: Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+                padding: EdgeInsets.symmetric(
+                    horizontal: r.s(16), vertical: r.s(8)),
                 decoration: BoxDecoration(
                   color: _isSaving
                       ? AppTheme.accentColor.withValues(alpha: 0.5)
@@ -211,7 +256,7 @@ class _EditCommunityProfileScreenState
                     ? SizedBox(
                         width: r.s(16),
                         height: r.s(16),
-                        child: CircularProgressIndicator(
+                        child: const CircularProgressIndicator(
                           strokeWidth: 2,
                           color: Colors.white,
                         ),
@@ -237,198 +282,212 @@ class _EditCommunityProfileScreenState
               ),
             )
           : SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: r.s(16)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: r.s(16)),
+                  // ══════════════════════════════════════════════════════
+                  // SEÇÃO DO TOPO: Banner + Avatar + "Editar Molduras"
+                  // ══════════════════════════════════════════════════════
+                  _BannerAvatarSection(
+                    bannerUrl: _localBannerUrl,
+                    avatarUrl: _localIconUrl,
+                    editFramesLabel: s.editProfileFrames,
+                    onTapBanner: _pickBanner,
+                    onTapAvatar: _pickAvatar,
+                    onRemoveBanner: _localBannerUrl != null
+                        ? () => setState(() => _localBannerUrl = null)
+                        : null,
+                  ),
+
+                  SizedBox(height: r.s(8)),
 
                   // ══════════════════════════════════════════════════════
-                  // BANNER
+                  // LINHA: Nickname local
                   // ══════════════════════════════════════════════════════
-                  const _SectionLabel(text: 'Banner'),
-                  SizedBox(height: r.s(8)),
-                  GestureDetector(
-                    onTap: _pickBanner,
-                    child: Container(
-                      height: r.s(140),
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(r.s(12)),
-                        color: context.cardBg,
-                        image: _localBannerUrl != null
-                            ? DecorationImage(
-                                image: NetworkImage(_localBannerUrl!),
-                                fit: BoxFit.cover,
-                              )
-                            : null,
+                  _AminoListTile(
+                    leading: Icon(Icons.person_outline_rounded,
+                        color: Colors.grey[500], size: r.s(28)),
+                    content: _InlineTextField(
+                      controller: _nicknameController,
+                      hintText: s.leaveEmptyGlobal,
+                      maxLength: 24,
+                      style: TextStyle(
+                        color: context.textPrimary,
+                        fontSize: r.fs(15),
+                        fontWeight: FontWeight.w500,
                       ),
-                      child: _localBannerUrl == null
-                          ? Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.add_photo_alternate_rounded,
-                                    color: context.textHint, size: r.s(36)),
-                                SizedBox(height: r.s(4)),
-                                Text(
-                                  'Toque para adicionar banner',
-                                  style: TextStyle(
-                                    color: context.textHint,
-                                    fontSize: r.fs(12),
-                                  ),
-                                ),
-                              ],
-                            )
-                          : Stack(
-                              children: [
-                                Positioned(
-                                  bottom: 8,
-                                  right: 8,
-                                  child: Container(
-                                    padding: EdgeInsets.all(r.s(6)),
-                                    decoration: BoxDecoration(
-                                      color:
-                                          Colors.black.withValues(alpha: 0.6),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Icon(Icons.edit_rounded,
-                                        color: Colors.white, size: r.s(16)),
-                                  ),
-                                ),
-                              ],
-                            ),
                     ),
                   ),
-                  if (_localBannerUrl != null)
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () => setState(() => _localBannerUrl = null),
-                        child: Text(
-                          s.removeBanner,
-                          style: TextStyle(
-                            color: AppTheme.errorColor,
-                            fontSize: r.fs(12),
-                          ),
-                        ),
+
+                  _AminoDivider(),
+
+                  // ══════════════════════════════════════════════════════
+                  // LINHA: Bio local
+                  // ══════════════════════════════════════════════════════
+                  _AminoListTile(
+                    leading: Icon(Icons.edit_note_rounded,
+                        color: Colors.grey[500], size: r.s(28)),
+                    content: _InlineTextField(
+                      controller: _bioController,
+                      hintText: s.leaveEmptyBio,
+                      maxLines: 3,
+                      maxLength: 500,
+                      style: TextStyle(
+                        color: context.textPrimary,
+                        fontSize: r.fs(14),
                       ),
                     ),
+                  ),
 
-                  SizedBox(height: r.s(20)),
+                  _AminoDivider(),
 
                   // ══════════════════════════════════════════════════════
-                  // AVATAR
+                  // LINHA: Plano de Fundo (Opcional)
                   // ══════════════════════════════════════════════════════
-                  const _SectionLabel(text: 'Avatar'),
-                  SizedBox(height: r.s(8)),
-                  Center(
-                    child: GestureDetector(
-                      onTap: _pickAvatar,
-                      child: Stack(
+                  GestureDetector(
+                    onTap: _pickBackground,
+                    child: _AminoListTile(
+                      leading: Icon(Icons.palette_rounded,
+                          color: const Color(0xFF2196F3), size: r.s(28)),
+                      content: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          CircleAvatar(
-                            radius: 48,
-                            backgroundColor: context.cardBg,
-                            backgroundImage: _localIconUrl != null
-                                ? NetworkImage(_localIconUrl!)
-                                : null,
-                            child: _localIconUrl == null
-                                ? Icon(Icons.person_rounded,
-                                    color: context.textHint, size: r.s(40))
-                                : null,
+                          Text(
+                            s.profileBackgroundOptional.split(' (')[0],
+                            style: TextStyle(
+                              color: context.textPrimary,
+                              fontSize: r.fs(15),
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: Container(
-                              padding: EdgeInsets.all(r.s(6)),
-                              decoration: BoxDecoration(
-                                color: AppTheme.accentColor,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: context.scaffoldBg,
-                                  width: 2,
-                                ),
-                              ),
-                              child: Icon(Icons.camera_alt_rounded,
-                                  color: Colors.white, size: r.s(14)),
+                          Text(
+                            '(${s.profileBackgroundOptional.contains('(') ? s.profileBackgroundOptional.split('(')[1].replaceAll(')', '') : 'Opcional'})',
+                            style: TextStyle(
+                              color: context.textSecondary,
+                              fontSize: r.fs(12),
                             ),
                           ),
                         ],
                       ),
+                      trailing: _localBackgroundUrl != null
+                          ? GestureDetector(
+                              onTap: () {},
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius:
+                                        BorderRadius.circular(r.s(4)),
+                                    child: CachedNetworkImage(
+                                      imageUrl: _localBackgroundUrl!,
+                                      width: r.s(44),
+                                      height: r.s(44),
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                  SizedBox(width: r.s(4)),
+                                  GestureDetector(
+                                    onTap: () => setState(
+                                        () => _localBackgroundUrl = null),
+                                    child: Icon(Icons.close_rounded,
+                                        color: Colors.grey[500],
+                                        size: r.s(18)),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : Icon(Icons.chevron_right_rounded,
+                              color: Colors.grey[400], size: r.s(22)),
                     ),
                   ),
-                  if (_localIconUrl != null)
-                    Center(
-                      child: TextButton(
-                        onPressed: () => setState(() => _localIconUrl = null),
-                        child: Text(
-                          'Remover avatar local',
-                          style: TextStyle(
-                            color: AppTheme.errorColor,
-                            fontSize: r.fs(12),
+
+                  _AminoDivider(),
+
+                  // ══════════════════════════════════════════════════════
+                  // LINHA: Galeria de fotos
+                  // ══════════════════════════════════════════════════════
+                  GestureDetector(
+                    onTap: _addGalleryPhoto,
+                    child: _AminoListTile(
+                      leading: Icon(Icons.camera_alt_rounded,
+                          color: const Color(0xFF2196F3), size: r.s(28)),
+                      content: _gallery.isNotEmpty
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(r.s(4)),
+                              child: CachedNetworkImage(
+                                imageUrl: _gallery.last,
+                                width: r.s(44),
+                                height: r.s(44),
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                          : SizedBox(height: r.s(44)),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '${s.galleryCount} (${_gallery.length})',
+                            style: TextStyle(
+                              color: context.textPrimary,
+                              fontSize: r.fs(15),
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        ),
+                          SizedBox(width: r.s(4)),
+                          Icon(Icons.chevron_right_rounded,
+                              color: Colors.grey[400], size: r.s(22)),
+                        ],
                       ),
                     ),
-
-                  SizedBox(height: r.s(24)),
-
-                  // ══════════════════════════════════════════════════════
-                  // NICKNAME LOCAL
-                  // ══════════════════════════════════════════════════════
-                  const _SectionLabel(text: 'Nickname nesta comunidade'),
-                  SizedBox(height: r.s(8)),
-                  _AminoTextField(
-                    controller: _nicknameController,
-                    hintText: s.leaveEmptyGlobal,
-                    maxLength: 24,
                   ),
 
-                  SizedBox(height: r.s(20)),
+                  // ── Grid da galeria (se houver fotos) ─────────────────
+                  if (_gallery.isNotEmpty) ...[
+                    _AminoDivider(),
+                    _GalleryGrid(
+                      photos: _gallery,
+                      onAdd: _gallery.length < _maxGalleryPhotos
+                          ? _addGalleryPhoto
+                          : null,
+                      onRemove: _removeGalleryPhoto,
+                    ),
+                  ],
 
-                  // ══════════════════════════════════════════════════════
-                  // BIO LOCAL
-                  // ══════════════════════════════════════════════════════
-                  _SectionLabel(text: s.bioInCommunity),
-                  SizedBox(height: r.s(8)),
-                  _AminoTextField(
-                    controller: _bioController,
-                    hintText: s.leaveEmptyBio,
-                    maxLines: 5,
-                    maxLength: 500,
-                  ),
-
-                  SizedBox(height: r.s(16)),
+                  _AminoDivider(),
 
                   // ══════════════════════════════════════════════════════
                   // NOTA INFORMATIVA
                   // ══════════════════════════════════════════════════════
-                  Container(
-                    padding: EdgeInsets.all(r.s(12)),
-                    decoration: BoxDecoration(
-                      color: AppTheme.accentColor.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(r.s(10)),
-                      border: Border.all(
-                        color: AppTheme.accentColor.withValues(alpha: 0.2),
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: r.s(16), vertical: r.s(12)),
+                    child: Container(
+                      padding: EdgeInsets.all(r.s(12)),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentColor.withValues(alpha: 0.07),
+                        borderRadius: BorderRadius.circular(r.s(10)),
+                        border: Border.all(
+                          color: AppTheme.accentColor.withValues(alpha: 0.18),
+                        ),
                       ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.info_outline_rounded,
-                            color: AppTheme.accentColor, size: r.s(18)),
-                        SizedBox(width: r.s(10)),
-                        Expanded(
-                          child: Text(
-                            '${s.settingsApplyOnlyCommunity}\n${s.emptyFieldsGlobal}',
-                            style: TextStyle(
-                              color: context.textSecondary,
-                              fontSize: r.fs(12),
-                              height: 1.4,
+                      child: Row(
+                        children: [
+                          Icon(Icons.info_outline_rounded,
+                              color: AppTheme.accentColor, size: r.s(18)),
+                          SizedBox(width: r.s(10)),
+                          Expanded(
+                            child: Text(
+                              '${s.settingsApplyOnlyCommunity}\n${s.emptyFieldsGlobal}',
+                              style: TextStyle(
+                                color: context.textSecondary,
+                                fontSize: r.fs(12),
+                                height: 1.4,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
 
@@ -441,87 +500,329 @@ class _EditCommunityProfileScreenState
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// WIDGETS AUXILIARES
+// SEÇÃO DO TOPO: Banner + Avatar centralizado + "Editar Molduras de Perfil"
 // ═══════════════════════════════════════════════════════════════════════════════
 
-class _SectionLabel extends ConsumerWidget {
-  final String text;
-  const _SectionLabel({required this.text});
+class _BannerAvatarSection extends ConsumerWidget {
+  final String? bannerUrl;
+  final String? avatarUrl;
+  final String editFramesLabel;
+  final VoidCallback onTapBanner;
+  final VoidCallback onTapAvatar;
+  final VoidCallback? onRemoveBanner;
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final r = context.r;
-    return Text(
-      text.toUpperCase(),
-      style: TextStyle(
-        color: context.textSecondary,
-        fontSize: r.fs(11),
-        fontWeight: FontWeight.w700,
-        letterSpacing: 1.2,
-      ),
-    );
-  }
-}
-
-class _AminoTextField extends ConsumerWidget {
-  final TextEditingController controller;
-  final String hintText;
-  final int maxLines;
-  final int? maxLength;
-
-  const _AminoTextField({
-    required this.controller,
-    required this.hintText,
-    this.maxLines = 1,
-    this.maxLength,
+  const _BannerAvatarSection({
+    required this.bannerUrl,
+    required this.avatarUrl,
+    required this.editFramesLabel,
+    required this.onTapBanner,
+    required this.onTapAvatar,
+    this.onRemoveBanner,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final r = context.r;
+
+    return Column(
+      children: [
+        // ── Banner ──────────────────────────────────────────────────────
+        GestureDetector(
+          onTap: onTapBanner,
+          child: Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.bottomCenter,
+            children: [
+              // Banner
+              Container(
+                height: r.s(160),
+                width: double.infinity,
+                color: const Color(0xFFE8E0E0),
+                child: bannerUrl != null
+                    ? CachedNetworkImage(
+                        imageUrl: bannerUrl!,
+                        fit: BoxFit.cover,
+                        color: Colors.black.withValues(alpha: 0.15),
+                        colorBlendMode: BlendMode.darken,
+                      )
+                    : null,
+              ),
+
+              // Botão de remover banner (canto superior direito)
+              if (bannerUrl != null && onRemoveBanner != null)
+                Positioned(
+                  top: r.s(8),
+                  right: r.s(8),
+                  child: GestureDetector(
+                    onTap: onRemoveBanner,
+                    child: Container(
+                      padding: EdgeInsets.all(r.s(5)),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.55),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.close_rounded,
+                          color: Colors.white, size: r.s(14)),
+                    ),
+                  ),
+                ),
+
+              // Avatar sobreposto ao banner (metade dentro, metade fora)
+              Positioned(
+                bottom: -r.s(52),
+                child: GestureDetector(
+                  onTap: onTapAvatar,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      // Círculo do avatar
+                      Container(
+                        width: r.s(96),
+                        height: r.s(96),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: const Color(0xFFD0C8C8),
+                          border: Border.all(
+                            color: const Color(0xFFE8E0E0),
+                            width: 3,
+                          ),
+                        ),
+                        child: ClipOval(
+                          child: avatarUrl != null
+                              ? CachedNetworkImage(
+                                  imageUrl: avatarUrl!,
+                                  fit: BoxFit.cover,
+                                )
+                              : Icon(Icons.person_rounded,
+                                  color: Colors.grey[600], size: r.s(52)),
+                        ),
+                      ),
+                      // Ícone de câmera no canto inferior direito
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          padding: EdgeInsets.all(r.s(5)),
+                          decoration: BoxDecoration(
+                            color: AppTheme.accentColor,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: const Color(0xFFE8E0E0),
+                              width: 2,
+                            ),
+                          ),
+                          child: Icon(Icons.camera_alt_rounded,
+                              color: Colors.white, size: r.s(12)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Espaço para o avatar que sobrepõe
+        SizedBox(height: r.s(60)),
+
+        // "Editar Molduras de Perfil" — link azul clicável
+        GestureDetector(
+          onTap: () {
+            // TODO: navegar para a tela de molduras
+          },
+          child: Text(
+            editFramesLabel,
+            style: TextStyle(
+              color: const Color(0xFF5B9BD5),
+              fontSize: r.fs(14),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+
+        SizedBox(height: r.s(16)),
+      ],
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LIST TILE ESTILO AMINO (linha com leading, content e trailing)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+class _AminoListTile extends StatelessWidget {
+  final Widget leading;
+  final Widget content;
+  final Widget? trailing;
+
+  const _AminoListTile({
+    required this.leading,
+    required this.content,
+    this.trailing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    return Container(
+      color: context.surfaceColor,
+      padding: EdgeInsets.symmetric(
+          horizontal: r.s(16), vertical: r.s(12)),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(width: r.s(32), child: leading),
+          SizedBox(width: r.s(12)),
+          Expanded(child: content),
+          if (trailing != null) ...[
+            SizedBox(width: r.s(8)),
+            trailing!,
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DIVISOR ESTILO AMINO (linha fina de separação)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+class _AminoDivider extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 0.5,
+      color: context.dividerClr,
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CAMPO DE TEXTO INLINE (sem borda, integrado ao tile)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+class _InlineTextField extends StatelessWidget {
+  final TextEditingController controller;
+  final String hintText;
+  final int maxLines;
+  final int? maxLength;
+  final TextStyle? style;
+
+  const _InlineTextField({
+    required this.controller,
+    required this.hintText,
+    this.maxLines = 1,
+    this.maxLength,
+    this.style,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
     return TextField(
       controller: controller,
       maxLines: maxLines,
       maxLength: maxLength,
-      style: TextStyle(
-        color: context.textPrimary,
-        fontSize: r.fs(15),
-      ),
+      style: style ??
+          TextStyle(color: context.textPrimary, fontSize: r.fs(15)),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: TextStyle(
-          color: context.textHint,
-          fontSize: r.fs(14),
-        ),
-        filled: true,
-        fillColor: context.cardBg,
-        counterStyle: TextStyle(
-          color: context.textHint,
-          fontSize: r.fs(11),
-        ),
-        contentPadding:
-            EdgeInsets.symmetric(horizontal: r.s(14), vertical: r.s(12)),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(r.s(10)),
-          borderSide: BorderSide(
-            color: context.dividerClr,
-            width: 0.5,
-          ),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(r.s(10)),
-          borderSide: BorderSide(
-            color: context.dividerClr,
-            width: 0.5,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(r.s(10)),
-          borderSide: const BorderSide(
-            color: AppTheme.accentColor,
-            width: 1.5,
-          ),
-        ),
+        hintStyle: TextStyle(color: context.textHint, fontSize: r.fs(14)),
+        border: InputBorder.none,
+        isDense: true,
+        contentPadding: EdgeInsets.zero,
+        counterStyle:
+            TextStyle(color: context.textHint, fontSize: r.fs(10)),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GRID DA GALERIA
+// ═══════════════════════════════════════════════════════════════════════════════
+
+class _GalleryGrid extends StatelessWidget {
+  final List<String> photos;
+  final VoidCallback? onAdd;
+  final void Function(int index) onRemove;
+
+  const _GalleryGrid({
+    required this.photos,
+    required this.onAdd,
+    required this.onRemove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    final itemSize = (MediaQuery.of(context).size.width - r.s(32) - r.s(8) * 2) / 3;
+
+    return Padding(
+      padding: EdgeInsets.all(r.s(16)),
+      child: Wrap(
+        spacing: r.s(8),
+        runSpacing: r.s(8),
+        children: [
+          // Fotos existentes
+          ...photos.asMap().entries.map((entry) {
+            final index = entry.key;
+            final url = entry.value;
+            return Stack(
+              clipBehavior: Clip.none,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(r.s(6)),
+                  child: CachedNetworkImage(
+                    imageUrl: url,
+                    width: itemSize,
+                    height: itemSize,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Positioned(
+                  top: -r.s(6),
+                  right: -r.s(6),
+                  child: GestureDetector(
+                    onTap: () => onRemove(index),
+                    child: Container(
+                      width: r.s(20),
+                      height: r.s(20),
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.close_rounded,
+                          color: Colors.white, size: r.s(12)),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }),
+
+          // Botão de adicionar (se não atingiu o limite)
+          if (onAdd != null)
+            GestureDetector(
+              onTap: onAdd,
+              child: Container(
+                width: itemSize,
+                height: itemSize,
+                decoration: BoxDecoration(
+                  color: context.cardBg,
+                  borderRadius: BorderRadius.circular(r.s(6)),
+                  border: Border.all(
+                    color: context.dividerClr,
+                    width: 1,
+                  ),
+                ),
+                child: Icon(Icons.add_rounded,
+                    color: context.textHint, size: r.s(28)),
+              ),
+            ),
+        ],
       ),
     );
   }
