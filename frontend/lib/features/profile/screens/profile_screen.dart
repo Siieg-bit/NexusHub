@@ -126,6 +126,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               await Future.delayed(const Duration(milliseconds: 300));
             },
             child: NestedScrollView(
+              floatHeaderSlivers: true,
               headerSliverBuilder: (context, innerBoxIsScrolled) => [
                 // ================================================================
                 // TOP BAR
