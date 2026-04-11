@@ -2,22 +2,26 @@ import 'dart:async';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Serviço de Deep Links — processa URLs do tipo nexushub://
-/// e https://nexushub.app/ para navegação direta.
+/// Serviço de Deep Links e URLs Curtas do NexusHub.
 ///
-/// Padrões suportados:
-///   nexushub://community/{id}
-///   nexushub://post/{id}
-///   nexushub://user/{id}
-///   nexushub://chat/{threadId}
-///   nexushub://invite/{code}
-///   https://nexushub.app/c/{id}
-///   https://nexushub.app/p/{id}
-///   https://nexushub.app/u/{id}
+/// ## Padrão de URLs
+/// | Prefixo | Tipo         | Exemplo                          |
+/// |---------|--------------|----------------------------------|
+/// | /u/     | Perfil       | nexushub.app/u/crystopher        |
+/// | /c/     | Comunidade   | nexushub.app/c/anime-br          |
+/// | /p/     | Post / Blog  | nexushub.app/p/xK9mZ             |
+/// | /w/     | Wiki         | nexushub.app/w/aB3nQ             |
+/// | /ch/    | Chat público | nexushub.app/ch/yT7pL            |
+/// | /s/     | Sticker pack | nexushub.app/s/mN2kR             |
+/// | /i/     | Convite      | nexushub.app/i/abc123            |
 class DeepLinkService {
   DeepLinkService._();
+
+  static const String _baseUrl = 'https://nexushub.app';
+  static const List<String> _hosts = ['nexushub.app', 'www.nexushub.app'];
 
   static GoRouter? _router;
   static StreamSubscription? _authSubscription;
@@ -52,24 +56,39 @@ class DeepLinkService {
   }
 
   /// Escuta links recebidos enquanto o app está aberto ou em background.
-  /// Necessário para processar o link de confirmação de email do Supabase.
   static void _listenToIncomingLinks() {
     _linkSubscription?.cancel();
     final appLinks = AppLinks();
 
     // Link recebido com o app já aberto
     _linkSubscription = appLinks.uriLinkStream.listen((uri) {
-      _processAuthUri(uri);
+      _processUri(uri);
     }, onError: (e) {
       debugPrint('DeepLink: Erro ao receber link: $e');
     });
 
     // Link que abriu o app (cold start)
     appLinks.getInitialLink().then((uri) {
-      if (uri != null) _processAuthUri(uri);
+      if (uri != null) _processUri(uri);
     }).catchError((e) {
       debugPrint('DeepLink: Erro ao obter link inicial: $e');
     });
+  }
+
+  static Future<void> _processUri(Uri uri) async {
+    // Auth URIs do Supabase (confirmação de email, magic link)
+    if (_isAuthUri(uri)) {
+      await _processAuthUri(uri);
+      return;
+    }
+    // Deep links de navegação
+    handleDeepLink(uri.toString());
+  }
+
+  static bool _isAuthUri(Uri uri) {
+    return uri.queryParameters.containsKey('code') ||
+        uri.fragment.contains('access_token') ||
+        uri.path.contains('/auth/');
   }
 
   /// Processa URIs de autenticação do Supabase (confirmação de email, magic link).
@@ -143,41 +162,33 @@ class DeepLinkService {
     if (segments.isEmpty) return false;
 
     switch (segments[0]) {
-      case 'community':
-        if (segments.length > 1) {
-          _router?.push('/community/${segments[1]}');
-          return true;
-        }
-        break;
-      case 'post':
-        if (segments.length > 1) {
-          _router?.push('/post/${segments[1]}');
-          return true;
-        }
-        break;
+      case 'u':
       case 'user':
-        if (segments.length > 1) {
-          _router?.push('/user/${segments[1]}');
-          return true;
-        }
+        if (segments.length > 1) { _navigateToUser(segments[1]); return true; }
         break;
-      case 'chat':
-        if (segments.length > 1) {
-          _router?.push('/chat/${segments[1]}');
-          return true;
-        }
+      case 'c':
+      case 'community':
+        if (segments.length > 1) { _navigateToCommunity(segments[1]); return true; }
         break;
-      case 'invite':
-        if (segments.length > 1) {
-          _handleInviteCode(segments[1]);
-          return true;
-        }
+      case 'p':
+      case 'post':
+        if (segments.length > 1) { _navigateToPost(segments[1]); return true; }
         break;
+      case 'w':
       case 'wiki':
-        if (segments.length > 1) {
-          _router?.push('/wiki/${segments[1]}');
-          return true;
-        }
+        if (segments.length > 1) { _navigateToWiki(segments[1]); return true; }
+        break;
+      case 'ch':
+      case 'chat':
+        if (segments.length > 1) { _navigateToChat(segments[1]); return true; }
+        break;
+      case 's':
+      case 'sticker':
+        if (segments.length > 1) { _navigateToStickerPack(segments[1]); return true; }
+        break;
+      case 'i':
+      case 'invite':
+        if (segments.length > 1) { _handleInviteCode(segments[1]); return true; }
         break;
     }
     return false;
@@ -188,33 +199,95 @@ class DeepLinkService {
     if (segments.isEmpty) return false;
 
     switch (segments[0]) {
-      case 'c': // community
-        if (segments.length > 1) {
-          _router?.push('/community/${segments[1]}');
-          return true;
-        }
-        break;
-      case 'p': // post
-        if (segments.length > 1) {
-          _router?.push('/post/${segments[1]}');
-          return true;
-        }
-        break;
-      case 'u': // user
-        if (segments.length > 1) {
-          _router?.push('/user/${segments[1]}');
-          return true;
-        }
-        break;
-      case 'i': // invite
-        if (segments.length > 1) {
-          _handleInviteCode(segments[1]);
-          return true;
-        }
-        break;
+      case 'u': _navigateToUser(segments.length > 1 ? segments[1] : ''); return segments.length > 1;
+      case 'c': _navigateToCommunity(segments.length > 1 ? segments[1] : ''); return segments.length > 1;
+      case 'p': _navigateToPost(segments.length > 1 ? segments[1] : ''); return segments.length > 1;
+      case 'w': _navigateToWiki(segments.length > 1 ? segments[1] : ''); return segments.length > 1;
+      case 'ch': _navigateToChat(segments.length > 1 ? segments[1] : ''); return segments.length > 1;
+      case 's': _navigateToStickerPack(segments.length > 1 ? segments[1] : ''); return segments.length > 1;
+      case 'i': if (segments.length > 1) { _handleInviteCode(segments[1]); return true; } break;
+      // Legado
+      case 'user': if (segments.length > 1) { _router?.push('/user/${segments[1]}'); return true; } break;
+      case 'community': if (segments.length > 1) { _router?.push('/community/${segments[1]}'); return true; } break;
     }
     return false;
   }
+
+  // ─────────────────────────────────────────────────────────────
+  // Navegação por tipo (resolve short codes via RPC quando necessário)
+  // ─────────────────────────────────────────────────────────────
+
+  static Future<void> _navigateToUser(String idOrSlug) async {
+    if (idOrSlug.isEmpty) return;
+    if (_isUuid(idOrSlug)) { _router?.push('/user/$idOrSlug'); return; }
+    try {
+      final r = await Supabase.instance.client
+          .from('profiles').select('id').eq('amino_id', idOrSlug).maybeSingle();
+      if (r != null) _router?.push('/user/${r['id']}');
+    } catch (e) { debugPrint('DeepLink: Erro ao resolver perfil: $e'); }
+  }
+
+  static Future<void> _navigateToCommunity(String idOrSlug) async {
+    if (idOrSlug.isEmpty) return;
+    if (_isUuid(idOrSlug)) { _router?.push('/community/$idOrSlug'); return; }
+    try {
+      final r = await Supabase.instance.client
+          .from('communities').select('id').eq('endpoint', idOrSlug).maybeSingle();
+      if (r != null) _router?.push('/community/${r['id']}');
+    } catch (e) { debugPrint('DeepLink: Erro ao resolver comunidade: $e'); }
+  }
+
+  static Future<void> _navigateToPost(String codeOrId) async {
+    if (codeOrId.isEmpty) return;
+    if (_isUuid(codeOrId)) { _router?.push('/post/$codeOrId'); return; }
+    await _resolveShortCode(codeOrId, onResolved: (_, targetId, __, ___) {
+      _router?.push('/post/$targetId');
+    });
+  }
+
+  static Future<void> _navigateToWiki(String codeOrId) async {
+    if (codeOrId.isEmpty) return;
+    if (_isUuid(codeOrId)) { _router?.push('/wiki/$codeOrId'); return; }
+    await _resolveShortCode(codeOrId, onResolved: (_, targetId, __, ___) {
+      _router?.push('/wiki/$targetId');
+    });
+  }
+
+  static Future<void> _navigateToChat(String codeOrId) async {
+    if (codeOrId.isEmpty) return;
+    if (_isUuid(codeOrId)) { _router?.push('/chat/$codeOrId'); return; }
+    await _resolveShortCode(codeOrId, onResolved: (_, targetId, __, ___) {
+      _router?.push('/chat/$targetId');
+    });
+  }
+
+  static Future<void> _navigateToStickerPack(String codeOrId) async {
+    if (codeOrId.isEmpty) return;
+    if (_isUuid(codeOrId)) { _router?.push('/stickers/pack/$codeOrId'); return; }
+    await _resolveShortCode(codeOrId, onResolved: (_, targetId, __, ___) {
+      _router?.push('/stickers/pack/$targetId');
+    });
+  }
+
+  static Future<void> _resolveShortCode(
+    String code, {
+    required void Function(String type, String targetId, String? communityId, Map<String, dynamic>? extra) onResolved,
+  }) async {
+    try {
+      final result = await Supabase.instance.client
+          .rpc('resolve_short_url', params: {'p_code': code});
+      if (result != null && result is List && result.isNotEmpty) {
+        final row = result.first as Map<String, dynamic>;
+        onResolved(row['type'] as String, row['target_id'] as String,
+            row['community_id'] as String?, row['extra_data'] as Map<String, dynamic>?);
+      }
+    } catch (e) { debugPrint('DeepLink: Erro ao resolver short code "$code": $e'); }
+  }
+
+  static bool _isUuid(String value) => RegExp(
+    r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+    caseSensitive: false,
+  ).hasMatch(value);
 
   /// Processa um código de convite para entrar em uma comunidade.
   static Future<void> _handleInviteCode(String code) async {
@@ -233,22 +306,62 @@ class DeepLinkService {
     }
   }
 
-  /// Gera uma URL de deep link para compartilhamento.
+  // ─────────────────────────────────────────────────────────────
+  // Geração de URLs para compartilhamento
+  // ─────────────────────────────────────────────────────────────
+
+  static String _prefixForType(String type) {
+    switch (type) {
+      case 'user':         return 'u';
+      case 'community':    return 'c';
+      case 'post':
+      case 'blog':         return 'p';
+      case 'wiki':         return 'w';
+      case 'chat':         return 'ch';
+      case 'sticker_pack': return 's';
+      case 'invite':       return 'i';
+      default:             return type;
+    }
+  }
+
+  /// Gera URL curta via RPC do banco (usa slug/amino_id quando disponível,
+  /// short code Base62 de 5 chars para posts/wiki/chat/stickers).
+  static Future<String> generateShareUrl({
+    required String type,
+    required String targetId,
+  }) async {
+    try {
+      final result = await Supabase.instance.client.rpc(
+        'get_share_url',
+        params: {'p_type': type, 'p_target_id': targetId},
+      );
+      if (result != null && result is String && result.isNotEmpty) return result;
+    } catch (e) {
+      debugPrint('DeepLink: Erro ao gerar share URL: $e');
+    }
+    return '$_baseUrl/${_prefixForType(type)}/$targetId';
+  }
+
+  /// Compartilha uma URL usando o share sheet nativo do sistema.
+  static Future<void> shareUrl({
+    required String type,
+    required String targetId,
+    String? title,
+    String? text,
+  }) async {
+    final url = await generateShareUrl(type: type, targetId: targetId);
+    final shareText = text != null ? '$text\n$url' : url;
+    await Share.share(shareText, subject: title);
+  }
+
+  /// [Legado] Gera URL de forma síncrona sem short code.
+  /// Prefira usar [generateShareUrl] para URLs curtas reais.
   static String generateLink({
     required String type,
     required String id,
     bool useWebUrl = true,
   }) {
-    if (useWebUrl) {
-      final prefix = {
-            'community': 'c',
-            'post': 'p',
-            'user': 'u',
-            'invite': 'i',
-          }[type] ??
-          type;
-      return 'https://nexushub.app/$prefix/$id';
-    }
+    if (useWebUrl) return '$_baseUrl/${_prefixForType(type)}/$id';
     return 'nexushub://$type/$id';
   }
 }
