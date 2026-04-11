@@ -51,6 +51,12 @@
     public static ** valueOf(java.lang.String);
 }
 
+# flutter_inappwebview — WebView para Screening Room
+-keep class com.pichillilorenzo.flutter_inappwebview.** { *; }
+-dontwarn com.pichillilorenzo.flutter_inappwebview.**
+-keep class android.webkit.** { *; }
+-dontwarn android.webkit.**
+
 # Suprime avisos de libs de terceiros
 -dontwarn javax.annotation.**
 -dontwarn org.conscrypt.**

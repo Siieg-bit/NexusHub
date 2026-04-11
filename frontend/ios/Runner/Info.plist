@@ -85,5 +85,24 @@
 		<string>audio</string>
 		<string>voip</string>
 	</array>
+
+	<!-- flutter_inappwebview: permite carregamento de conteúdo HTTP e HTTPS arbitrário (Screening Room) -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<key>NSAllowsArbitraryLoadsInWebContent</key>
+		<true/>
+	</dict>
+
+	<!-- flutter_inappwebview: habilita reprodução de mídia inline no WebView -->
+	<key>WebKitMediaPlaybackAllowsInline</key>
+	<true/>
+	<key>WebKitMediaPlaybackRequiresUserAction</key>
+	<false/>
+
+	<!-- Suporte a JavaScript no WebView -->
+	<key>WebKitJavaScriptEnabled</key>
+	<true/>
 </dict>
 </plist>

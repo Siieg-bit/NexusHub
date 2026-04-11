@@ -101,6 +101,12 @@
             </intent-filter>
         </activity>
 
+        <!-- flutter_inappwebview: suporte a WebView para Screening Room -->
+        <!-- Permite Mixed Content (HTTP dentro de HTTPS) no WebView -->
+        <meta-data
+            android:name="android.webkit.WebView.MetricsOptOut"
+            android:value="true" />
+
         <!-- Flutter background execution -->
         <meta-data
             android:name="flutterEmbedding"
