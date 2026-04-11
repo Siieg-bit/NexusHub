@@ -29,6 +29,8 @@ class ContentBlock {
   bool italic;
   String align;
   int level;
+  /// Estilo do divisor: 'dots', 'line', 'dashed', 'stars'
+  String dividerStyle;
   TextEditingController? controller;
   TextEditingController? captionController;
   FocusNode? focusNode;
@@ -43,6 +45,7 @@ class ContentBlock {
     this.italic = false,
     this.align = 'left',
     this.level = 2,
+    this.dividerStyle = 'dots',
   }) : id = id ?? DateTime.now().microsecondsSinceEpoch.toString() {
     _ensureControllers();
   }
@@ -100,6 +103,7 @@ class ContentBlock {
       if (type == BlockType.text || type == BlockType.quote) 'italic': italic,
       if (type == BlockType.text || type == BlockType.quote) 'align': align,
       if (type == BlockType.heading) 'level': level,
+      if (type == BlockType.divider) 'divider_style': dividerStyle,
     };
   }
 
@@ -119,6 +123,7 @@ class ContentBlock {
       italic: json['italic'] == true,
       align: (json['align'] as String?) ?? 'left',
       level: (json['level'] as num?)?.toInt() ?? 2,
+      dividerStyle: (json['divider_style'] as String?) ?? 'dots',
     );
   }
 
@@ -170,7 +175,6 @@ class BlockEditorState extends ConsumerState<BlockEditor> {
       if (_blocks[i].isTextBased && _blocks[i].focusNode != null) {
         setState(() => _focusedBlockIndex = i);
         _blocks[i].focusNode!.requestFocus();
-        // Move cursor para o final do texto
         final controller = _blocks[i].controller;
         if (controller != null) {
           controller.selection = TextSelection.collapsed(
@@ -218,10 +222,9 @@ class BlockEditorState extends ConsumerState<BlockEditor> {
       _focusedBlockIndex = insertIndex;
     });
     _notifyChanged();
-    // Foca no novo bloco se for de texto
     if (block.isTextBased && block.focusNode != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        block.focusNode!.requestFocus();
+        if (mounted) block.focusNode!.requestFocus();
       });
     }
   }
@@ -256,6 +259,12 @@ class BlockEditorState extends ConsumerState<BlockEditor> {
       _blocks[index].setType(nextType);
       _focusedBlockIndex = index;
     });
+    // Foca após o rebuild para evitar crash de TextPainter
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _blocks.length > index) {
+        _blocks[index].focusNode?.requestFocus();
+      }
+    });
     _notifyChanged();
   }
 
@@ -280,6 +289,11 @@ class BlockEditorState extends ConsumerState<BlockEditor> {
 
   void _changeHeadingLevel(int index, int level) {
     setState(() => _blocks[index].level = level);
+    _notifyChanged();
+  }
+
+  void _changeDividerStyle(int index, String style) {
+    setState(() => _blocks[index].dividerStyle = style);
     _notifyChanged();
   }
 
@@ -390,28 +404,16 @@ class BlockEditorState extends ConsumerState<BlockEditor> {
   Widget build(BuildContext context) {
     final r = context.r;
 
-    // Renderiza como uma lista contínua sem separação visual entre blocos
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ReorderableListView.builder(
+        // Usar ListView.builder normal em vez de ReorderableListView
+        // para evitar conflitos de gestos com TextField.
+        // Reordenação é feita via botões de mover no toolbar.
+        ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: _blocks.length,
-          onReorder: (from, to) {
-            if (to > from) to--;
-            _moveBlock(from, to);
-          },
-          proxyDecorator: (child, index, animation) {
-            return AnimatedBuilder(
-              animation: animation,
-              builder: (context, _) => Material(
-                color: Colors.transparent,
-                elevation: 2,
-                child: child,
-              ),
-            );
-          },
           itemBuilder: (context, index) {
             final block = _blocks[index];
             String? blockPlaceholder;
@@ -436,6 +438,13 @@ class BlockEditorState extends ConsumerState<BlockEditor> {
               onCycleAlignment: () => _cycleAlignment(index),
               onTypeChanged: (t) => _changeTextBlockType(index, t),
               onHeadingLevelChanged: (l) => _changeHeadingLevel(index, l),
+              onMoveUp: index > 0 ? () => _moveBlock(index, index - 1) : null,
+              onMoveDown: index < _blocks.length - 1
+                  ? () => _moveBlock(index, index + 1)
+                  : null,
+              onDividerStyleChanged: block.type == BlockType.divider
+                  ? (style) => _changeDividerStyle(index, style)
+                  : null,
             );
           },
         ),
@@ -474,6 +483,9 @@ class _SeamlessBlock extends ConsumerWidget {
   final VoidCallback onCycleAlignment;
   final ValueChanged<BlockType> onTypeChanged;
   final ValueChanged<int> onHeadingLevelChanged;
+  final VoidCallback? onMoveUp;
+  final VoidCallback? onMoveDown;
+  final ValueChanged<String>? onDividerStyleChanged;
 
   const _SeamlessBlock({
     super.key,
@@ -493,6 +505,9 @@ class _SeamlessBlock extends ConsumerWidget {
     required this.onCycleAlignment,
     required this.onTypeChanged,
     required this.onHeadingLevelChanged,
+    this.onMoveUp,
+    this.onMoveDown,
+    this.onDividerStyleChanged,
   });
 
   @override
@@ -501,12 +516,11 @@ class _SeamlessBlock extends ConsumerWidget {
 
     return GestureDetector(
       onTap: onFocus,
-      // Sem padding, sem margin, sem decoration — completamente transparente
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Toolbar de formatação — aparece discretamente acima do bloco focado
+          // Toolbar de formatação para blocos de texto focados
           if (isFocused && block.isTextBased)
             _InlineFormatBar(
               block: block,
@@ -517,39 +531,28 @@ class _SeamlessBlock extends ConsumerWidget {
               onTypeChanged: onTypeChanged,
               onHeadingLevelChanged: onHeadingLevelChanged,
               onRemove: onRemove,
+              onMoveUp: onMoveUp,
+              onMoveDown: onMoveDown,
+            ),
+          // Toolbar para divisor focado
+          if (isFocused && block.type == BlockType.divider)
+            _DividerToolbar(
+              currentStyle: block.dividerStyle,
+              canRemove: totalBlocks > 1,
+              onStyleChanged: onDividerStyleChanged ?? (_) {},
+              onRemove: onRemove,
+              onMoveUp: onMoveUp,
+              onMoveDown: onMoveDown,
             ),
           _buildContent(context, r),
           // Ações de imagem focada
-          if (isFocused && block.type == BlockType.image && totalBlocks > 1)
-            Padding(
-              padding: EdgeInsets.only(top: r.s(2)),
-              child: Row(
-                children: [
-                  GestureDetector(
-                    onTap: onPickImage,
-                    child: Text(
-                      'Trocar',
-                      style: TextStyle(
-                        color: AppTheme.accentColor.withValues(alpha: 0.7),
-                        fontSize: r.fs(11),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: r.s(12)),
-                  GestureDetector(
-                    onTap: onRemove,
-                    child: Text(
-                      'Remover',
-                      style: TextStyle(
-                        color: AppTheme.errorColor.withValues(alpha: 0.7),
-                        fontSize: r.fs(11),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+          if (isFocused && block.type == BlockType.image)
+            _ImageToolbar(
+              totalBlocks: totalBlocks,
+              onPickImage: onPickImage,
+              onRemove: onRemove,
+              onMoveUp: onMoveUp,
+              onMoveDown: onMoveDown,
             ),
         ],
       ),
@@ -588,10 +591,13 @@ class _SeamlessBlock extends ConsumerWidget {
                     ? 'Citação...'
                     : s.writeHereHint);
 
+        // Usar textAlign fixo baseado no valor atual do bloco
+        final textAlign = _parseTextAlign(block.align);
+
         final field = TextField(
           controller: block.controller,
           focusNode: block.focusNode,
-          textAlign: _parseTextAlign(block.align),
+          textAlign: textAlign,
           style: baseStyle,
           decoration: InputDecoration(
             hintText: hintText,
@@ -601,7 +607,6 @@ class _SeamlessBlock extends ConsumerWidget {
               fontWeight: isHeading ? FontWeight.w700 : FontWeight.w400,
               fontStyle: isQuote ? FontStyle.italic : FontStyle.normal,
             ),
-            // IMPORTANTE: sobrescrever o tema global que tem filled:true
             filled: false,
             border: InputBorder.none,
             enabledBorder: InputBorder.none,
@@ -616,7 +621,6 @@ class _SeamlessBlock extends ConsumerWidget {
 
         if (!isQuote) return field;
 
-        // Citação com borda lateral sutil
         return Container(
           decoration: BoxDecoration(
             border: Border(
@@ -717,7 +721,6 @@ class _SeamlessBlock extends ConsumerWidget {
                   ),
                 ),
               ),
-              // Legenda
               TextField(
                 controller: block.captionController,
                 style: TextStyle(
@@ -746,20 +749,74 @@ class _SeamlessBlock extends ConsumerWidget {
         );
 
       case BlockType.divider:
+        return GestureDetector(
+          onTap: onFocus,
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: r.s(10)),
+            child: _buildDividerContent(context, r, block.dividerStyle),
+          ),
+        );
+    }
+  }
+
+  Widget _buildDividerContent(
+      BuildContext context, Responsive r, String style) {
+    final color = context.textHint.withValues(alpha: 0.3);
+
+    switch (style) {
+      case 'line':
+        return Container(
+          height: 1,
+          margin: EdgeInsets.symmetric(horizontal: r.s(20)),
+          color: color,
+        );
+      case 'dashed':
         return Padding(
-          padding: EdgeInsets.symmetric(vertical: r.s(10)),
+          padding: EdgeInsets.symmetric(horizontal: r.s(20)),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(
-              3,
-              (_) => Container(
-                margin: EdgeInsets.symmetric(horizontal: r.s(3)),
-                width: r.s(3),
-                height: r.s(3),
-                decoration: BoxDecoration(
-                  color: context.textHint.withValues(alpha: 0.3),
-                  shape: BoxShape.circle,
+              20,
+              (_) => Expanded(
+                child: Container(
+                  height: 1,
+                  margin: EdgeInsets.symmetric(horizontal: r.s(2)),
+                  color: color,
                 ),
+              ),
+            ),
+          ),
+        );
+      case 'stars':
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(
+            3,
+            (_) => Padding(
+              padding: EdgeInsets.symmetric(horizontal: r.s(4)),
+              child: Text(
+                '*',
+                style: TextStyle(
+                  color: context.textHint.withValues(alpha: 0.4),
+                  fontSize: r.fs(16),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+        );
+      case 'dots':
+      default:
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(
+            3,
+            (_) => Container(
+              margin: EdgeInsets.symmetric(horizontal: r.s(3)),
+              width: r.s(3),
+              height: r.s(3),
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
               ),
             ),
           ),
@@ -769,7 +826,7 @@ class _SeamlessBlock extends ConsumerWidget {
 }
 
 // =============================================================================
-// _InlineFormatBar — barra de formatação discreta
+// _InlineFormatBar — barra de formatação para blocos de texto
 // =============================================================================
 
 class _InlineFormatBar extends StatelessWidget {
@@ -781,6 +838,8 @@ class _InlineFormatBar extends StatelessWidget {
   final ValueChanged<BlockType> onTypeChanged;
   final ValueChanged<int> onHeadingLevelChanged;
   final VoidCallback onRemove;
+  final VoidCallback? onMoveUp;
+  final VoidCallback? onMoveDown;
 
   const _InlineFormatBar({
     required this.block,
@@ -791,6 +850,8 @@ class _InlineFormatBar extends StatelessWidget {
     required this.onTypeChanged,
     required this.onHeadingLevelChanged,
     required this.onRemove,
+    this.onMoveUp,
+    this.onMoveDown,
   });
 
   @override
@@ -798,7 +859,7 @@ class _InlineFormatBar extends StatelessWidget {
     final r = context.r;
 
     return Padding(
-      padding: EdgeInsets.only(bottom: r.s(2)),
+      padding: EdgeInsets.only(bottom: r.s(4)),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
@@ -854,6 +915,28 @@ class _InlineFormatBar extends StatelessWidget {
                 child: _MiniChip(label: 'H${block.level}'),
               ),
             ],
+            // Separador visual
+            SizedBox(width: r.s(6)),
+            Container(
+              width: 1,
+              height: r.s(16),
+              color: context.dividerClr.withValues(alpha: 0.3),
+            ),
+            SizedBox(width: r.s(4)),
+            // Mover para cima
+            if (onMoveUp != null)
+              _MiniIconBtn(
+                icon: Icons.arrow_upward_rounded,
+                selected: false,
+                onTap: onMoveUp!,
+              ),
+            // Mover para baixo
+            if (onMoveDown != null)
+              _MiniIconBtn(
+                icon: Icons.arrow_downward_rounded,
+                selected: false,
+                onTap: onMoveDown!,
+              ),
             if (canRemove) ...[
               SizedBox(width: r.s(4)),
               _MiniIconBtn(
@@ -863,6 +946,181 @@ class _InlineFormatBar extends StatelessWidget {
                 color: AppTheme.errorColor.withValues(alpha: 0.6),
               ),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// _DividerToolbar — toolbar para blocos de divisor
+// =============================================================================
+
+class _DividerToolbar extends StatelessWidget {
+  final String currentStyle;
+  final bool canRemove;
+  final ValueChanged<String> onStyleChanged;
+  final VoidCallback onRemove;
+  final VoidCallback? onMoveUp;
+  final VoidCallback? onMoveDown;
+
+  const _DividerToolbar({
+    required this.currentStyle,
+    required this.canRemove,
+    required this.onStyleChanged,
+    required this.onRemove,
+    this.onMoveUp,
+    this.onMoveDown,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: r.s(4)),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            // Estilos de divisor
+            _DividerStyleChip(
+              label: '...',
+              isSelected: currentStyle == 'dots',
+              onTap: () => onStyleChanged('dots'),
+            ),
+            SizedBox(width: r.s(4)),
+            _DividerStyleChip(
+              label: '---',
+              isSelected: currentStyle == 'line',
+              onTap: () => onStyleChanged('line'),
+            ),
+            SizedBox(width: r.s(4)),
+            _DividerStyleChip(
+              label: '- - -',
+              isSelected: currentStyle == 'dashed',
+              onTap: () => onStyleChanged('dashed'),
+            ),
+            SizedBox(width: r.s(4)),
+            _DividerStyleChip(
+              label: '* * *',
+              isSelected: currentStyle == 'stars',
+              onTap: () => onStyleChanged('stars'),
+            ),
+            // Separador visual
+            SizedBox(width: r.s(6)),
+            Container(
+              width: 1,
+              height: r.s(16),
+              color: context.dividerClr.withValues(alpha: 0.3),
+            ),
+            SizedBox(width: r.s(4)),
+            // Mover para cima
+            if (onMoveUp != null)
+              _MiniIconBtn(
+                icon: Icons.arrow_upward_rounded,
+                selected: false,
+                onTap: onMoveUp!,
+              ),
+            // Mover para baixo
+            if (onMoveDown != null)
+              _MiniIconBtn(
+                icon: Icons.arrow_downward_rounded,
+                selected: false,
+                onTap: onMoveDown!,
+              ),
+            if (canRemove) ...[
+              SizedBox(width: r.s(4)),
+              _MiniIconBtn(
+                icon: Icons.close_rounded,
+                selected: false,
+                onTap: onRemove,
+                color: AppTheme.errorColor.withValues(alpha: 0.6),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// _ImageToolbar — toolbar para blocos de imagem
+// =============================================================================
+
+class _ImageToolbar extends StatelessWidget {
+  final int totalBlocks;
+  final VoidCallback onPickImage;
+  final VoidCallback onRemove;
+  final VoidCallback? onMoveUp;
+  final VoidCallback? onMoveDown;
+
+  const _ImageToolbar({
+    required this.totalBlocks,
+    required this.onPickImage,
+    required this.onRemove,
+    this.onMoveUp,
+    this.onMoveDown,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+
+    return Padding(
+      padding: EdgeInsets.only(top: r.s(2)),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            GestureDetector(
+              onTap: onPickImage,
+              child: Text(
+                'Trocar',
+                style: TextStyle(
+                  color: AppTheme.accentColor.withValues(alpha: 0.7),
+                  fontSize: r.fs(12),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            SizedBox(width: r.s(12)),
+            if (totalBlocks > 1)
+              GestureDetector(
+                onTap: onRemove,
+                child: Text(
+                  'Remover',
+                  style: TextStyle(
+                    color: AppTheme.errorColor.withValues(alpha: 0.7),
+                    fontSize: r.fs(12),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            // Separador visual
+            SizedBox(width: r.s(8)),
+            Container(
+              width: 1,
+              height: r.s(16),
+              color: context.dividerClr.withValues(alpha: 0.3),
+            ),
+            SizedBox(width: r.s(6)),
+            // Mover para cima
+            if (onMoveUp != null)
+              _MiniIconBtn(
+                icon: Icons.arrow_upward_rounded,
+                selected: false,
+                onTap: onMoveUp!,
+              ),
+            // Mover para baixo
+            if (onMoveDown != null)
+              _MiniIconBtn(
+                icon: Icons.arrow_downward_rounded,
+                selected: false,
+                onTap: onMoveDown!,
+              ),
           ],
         ),
       ),
@@ -977,7 +1235,7 @@ class _AddBlockButton extends StatelessWidget {
 }
 
 // =============================================================================
-// Widgets auxiliares mínimos
+// Widgets auxiliares
 // =============================================================================
 
 class _MiniChip extends StatelessWidget {
@@ -1032,6 +1290,49 @@ class _MiniIconBtn extends StatelessWidget {
           size: r.s(20),
           color: color ??
               (selected ? AppTheme.accentColor : context.textSecondary),
+        ),
+      ),
+    );
+  }
+}
+
+class _DividerStyleChip extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _DividerStyleChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(5)),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppTheme.accentColor.withValues(alpha: 0.15)
+              : context.surfaceColor.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(r.s(12)),
+          border: isSelected
+              ? Border.all(
+                  color: AppTheme.accentColor.withValues(alpha: 0.4),
+                  width: 1,
+                )
+              : null,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? AppTheme.accentColor : context.textPrimary,
+            fontSize: r.fs(12),
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
     );
