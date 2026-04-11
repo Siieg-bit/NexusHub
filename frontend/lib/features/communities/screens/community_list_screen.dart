@@ -700,6 +700,7 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
     // Razão do banner: bannerHeight/cardHeight = 130/175 ≈ 0.743
     final double scaledBannerH = scaledCardH * (130.0 / 175.0);
     final double scaledIconSz  = r.s(_AminoCommunityCard._iconSize);     // 36 (fixo)
+    final String? cardBannerUrl = widget.community.bannerForContext('card');
 
     return GestureDetector(
       onTap: widget.onTap,
@@ -735,15 +736,22 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
                         fit: StackFit.expand,
                         children: [
                           // Imagem com BoxFit.cover garantido
-                          widget.community.bannerUrl != null &&
-                                  widget.community.bannerUrl!.isNotEmpty
+                          cardBannerUrl != null && cardBannerUrl.isNotEmpty
                               ? CachedNetworkImage(
-                                  imageUrl: widget.community.bannerUrl!,
-                                  fit: BoxFit.cover,
+                                  imageUrl: cardBannerUrl,
                                   width: double.infinity,
                                   height: double.infinity,
                                   memCacheWidth: 240,
                                   memCacheHeight: 260,
+                                  imageBuilder: (context, imageProvider) => Container(
+                                    decoration: BoxDecoration(
+                                      image: DecorationImage(
+                                        image: imageProvider,
+                                        fit: BoxFit.cover,
+                                        alignment: Alignment.center,
+                                      ),
+                                    ),
+                                  ),
                                   placeholder: (_, __) => Container(
                                     color: color.withValues(alpha: 0.3),
                                   ),
