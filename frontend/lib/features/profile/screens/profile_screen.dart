@@ -244,7 +244,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           padding: EdgeInsets.only(top: r.s(16)),
                           child: isOwnProfile
                               ? GestureDetector(
-                                  onTap: () => context.push('/profile/edit'),
+                                  onTap: () async {
+                                    await context.push('/profile/edit');
+                                    if (mounted) {
+                                      ref.invalidate(userProfileProvider(widget.userId));
+                                    }
+                                  },
                                   child: Container(
                                     padding: EdgeInsets.symmetric(
                                         horizontal: r.s(16), vertical: r.s(8)),
@@ -266,7 +271,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                             color: Colors.grey[400]),
                                         SizedBox(width: r.s(6)),
                                         Text(
-                                          'Edit Profile',
+                                          s.editProfile,
                                           style: TextStyle(
                                             color: Colors.grey[300],
                                             fontWeight: FontWeight.w600,
@@ -480,9 +485,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           )
                         : isOwnProfile
                             ? GestureDetector(
-                                onTap: () => context.push('/profile/edit'),
+                                onTap: () async {
+                                  await context.push('/profile/edit');
+                                  if (mounted) {
+                                    ref.invalidate(userProfileProvider(widget.userId));
+                                  }
+                                },
                                 child: Text(
-                                  'Clique aqui para adicionar sua biografia!',
+                                  s.tapToAddBio,
                                   style: TextStyle(
                                     color: AppTheme.accentColor,
                                     fontSize: r.fs(13),

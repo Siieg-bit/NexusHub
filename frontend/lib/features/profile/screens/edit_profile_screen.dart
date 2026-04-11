@@ -34,6 +34,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
 
   // FIX Bug #5: Estado do avatar
   String? _avatarUrl;
+  String? _originalAvatarUrl; // para detectar mudança real
   bool _isUploadingAvatar = false;
 
   @override
@@ -44,6 +45,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
     _bioController = TextEditingController(text: user?.bio ?? '');
     _aminoIdController = TextEditingController(text: user?.aminoId ?? '');
     _avatarUrl = user?.iconUrl;
+    _originalAvatarUrl = user?.iconUrl;
     _bioTabController = TabController(length: 2, vsync: this);
     _bioTabController.addListener(() {
       setState(() => _bioPreviewMode = _bioTabController.index == 1);
@@ -75,13 +77,27 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
         // amino_id tem UNIQUE constraint — enviar null se vazio para evitar violação
         'amino_id': aminoId.isEmpty ? null : aminoId,
       };
-      // Incluir avatar se foi alterado
-      if (_avatarUrl != null) {
+      // Incluir avatar apenas se foi alterado pelo usuário
+      if (_avatarUrl != null && _avatarUrl != _originalAvatarUrl) {
         updateData['icon_url'] = _avatarUrl;
       }
       await SupabaseService.table('profiles')
           .update(updateData)
           .eq('id', userId);
+
+      // Atualizar estado local do authProvider para refletir imediatamente
+      final currentUser = ref.read(currentUserProvider);
+      if (currentUser != null) {
+        ref.read(authProvider.notifier).updateUserProfile(
+          currentUser.copyWith(
+            nickname: _nicknameController.text.trim(),
+            bio: _bioController.text.trim(),
+            iconUrl: (_avatarUrl != null && _avatarUrl != _originalAvatarUrl)
+                ? _avatarUrl
+                : currentUser.iconUrl,
+          ),
+        );
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -112,6 +128,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
 
   /// FIX Bug #5: Upload de avatar via MediaUploadService
   Future<void> _pickAndUploadAvatar() async {
+    final s = getStrings();
     setState(() => _isUploadingAvatar = true);
     try {
       final url = await MediaUploadService.uploadAvatar();
@@ -122,7 +139,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Erro ao fazer upload da foto.'),
+            content: Text(s.errorUploadingImage),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -169,7 +186,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
         elevation: 0,
         iconTheme: IconThemeData(color: context.textPrimary),
         title: Text(
-          'Editar Perfil',
+          s.editProfile,
           style: TextStyle(
             color: context.textPrimary,
             fontWeight: FontWeight.w800,
@@ -525,7 +542,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
               controller: labelCtrl,
               style: TextStyle(color: context.textPrimary),
               decoration: InputDecoration(
-                labelText: 'Texto do link',
+                labelText: s.linkTitle,
                 labelStyle: TextStyle(color: Colors.grey[500]),
                 border: const OutlineInputBorder(),
               ),
@@ -535,7 +552,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
               controller: urlCtrl,
               style: TextStyle(color: context.textPrimary),
               decoration: InputDecoration(
-                labelText: 'URL',
+                labelText: s.linkUrl,
                 labelStyle: TextStyle(color: Colors.grey[500]),
                 hintText: 'https://',
                 hintStyle: TextStyle(color: Colors.grey[600]),
@@ -560,8 +577,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
               }
               Navigator.pop(ctx);
             },
-            child: const Text('Inserir',
-                style: TextStyle(
+            child: Text(s.insertLink,
+                style: const TextStyle(
                     color: AppTheme.primaryColor, fontWeight: FontWeight.w700)),
           ),
         ],
