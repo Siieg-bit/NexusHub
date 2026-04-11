@@ -395,7 +395,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    'Following',
+                                    s.following,
                                     style: TextStyle(
                                         color: Colors.grey[500],
                                         fontSize: r.fs(12)),
@@ -431,7 +431,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    'Followers',
+                                    s.followers,
                                     style: TextStyle(
                                         color: Colors.grey[500],
                                         fontSize: r.fs(12)),
