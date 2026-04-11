@@ -37,7 +37,11 @@ final communityMyChatsProvider =
         threadMap['unread_count'] = e['unread_count'] as int? ?? 0;
         return ChatRoomModel.fromJson(threadMap);
       })
-      .where((c) => c.communityId == communityId)
+      .where((c) =>
+          c.communityId == communityId ||
+          c.type == 'dm' ||
+          c.type == 'direct' ||
+          c.type == 'private')
       .toList();
   all.sort((a, b) {
     if (a.isPinnedByUser && !b.isPinnedByUser) return -1;

@@ -13,6 +13,7 @@ import '../../../core/widgets/amino_drawer.dart';
 import '../../../core/widgets/amino_bottom_nav.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/providers/presence_provider.dart';
+import '../../../core/providers/chat_provider.dart';
 
 // Extracted providers & widgets
 import '../providers/community_detail_providers.dart';
@@ -317,6 +318,11 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
                         return p['icon_url'] as String?;
                       }).toList();
                     }(),
+                    showChatUnreadBadge: (ref
+                                .watch(unreadCountByCommunityProvider)
+                                .valueOrNull?[widget.communityId] ??
+                            0) >
+                        0,
                     avatarUrl: ref.watch(
                       currentUserProfileProvider
                           .select((a) => a.valueOrNull?.iconUrl),

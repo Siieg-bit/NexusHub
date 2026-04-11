@@ -52,6 +52,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   bool _isInitialLoading = true;
   bool _savedPostsLoaded = false;
   bool _bioExpanded = false;
+  bool _viewerIsTeamMember = false;
   int _followersCount = 0;
   int _followingCount = 0;
   String _communityName = '';
@@ -132,7 +133,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
 
       _membership = memberRes;
 
-      // Membership do usuário logado (para verificar se pode moderar)
+      // Contexto do usuário logado (para verificar moderação e visibilidade)
       if (!_isOwnProfile) {
         try {
           final myId = SupabaseService.currentUserId;
@@ -143,6 +144,18 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                 .eq('community_id', widget.communityId)
                 .maybeSingle();
             _myMembership = myMemberRes;
+
+            final viewerProfileRes = await SupabaseService.table('profiles')
+                .select('is_team_admin, is_team_moderator')
+                .eq('id', myId)
+                .maybeSingle();
+            if (viewerProfileRes != null) {
+              final viewerProfile = UserModel.fromJson({
+                'id': myId,
+                ...viewerProfileRes,
+              });
+              _viewerIsTeamMember = viewerProfile.isTeamMember;
+            }
           }
         } catch (_) {}
       }
@@ -230,6 +243,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
         ? DateTime.tryParse(_membership?['joined_at'] as String? ?? '')
         : null;
     final coins = _user?.coins ?? 0;
+    final canViewCoins = _isOwnProfile || _viewerIsTeamMember;
     final isOnline = _user?.isOnline ?? false;
     final isPremium = _user?.isPremium ?? false;
     final displayName =
@@ -662,27 +676,6 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                                             fontWeight: FontWeight.w700,
                                           ),
                                         ),
-                                        // Badge "!" vermelho (notificação) — sempre visível
-                                        SizedBox(width: r.s(4)),
-                                        Container(
-                                          width: r.s(16),
-                                          height: r.s(16),
-                                          decoration: const BoxDecoration(
-                                            color: Colors.red,
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              '!',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: r.fs(10),
-                                                fontWeight: FontWeight.w900,
-                                                height: 1.0,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
                                       ],
                                     ),
                                   ),
@@ -690,7 +683,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                                 const Spacer(),
                                 // Moedas badge
                                 GestureDetector(
-                                  onTap: () => context.push('/wallet'),
+                                  onTap: canViewCoins ? () => context.push('/wallet') : null,
                                   child: Container(
                                     padding: EdgeInsets.symmetric(
                                         horizontal: r.s(10), vertical: r.s(6)),
@@ -733,26 +726,30 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                                         ),
                                         SizedBox(width: r.s(4)),
                                         Text(
-                                          formatCount(coins),
+                                          canViewCoins
+                                              ? formatCount(coins)
+                                              : s.privateLabel,
                                           style: TextStyle(
                                             color: Colors.white,
                                             fontSize: r.fs(12),
                                             fontWeight: FontWeight.w700,
                                           ),
                                         ),
-                                        SizedBox(width: r.s(4)),
-                                        Container(
-                                          width: r.s(16),
-                                          height: r.s(16),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white
-                                                .withValues(alpha: 0.3),
-                                            shape: BoxShape.circle,
+                                        if (canViewCoins) ...[
+                                          SizedBox(width: r.s(4)),
+                                          Container(
+                                            width: r.s(16),
+                                            height: r.s(16),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white
+                                                  .withValues(alpha: 0.3),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Icon(Icons.add,
+                                                color: Colors.white,
+                                                size: r.s(11)),
                                           ),
-                                          child: Icon(Icons.add,
-                                              color: Colors.white,
-                                              size: r.s(11)),
-                                        ),
+                                        ],
                                       ],
                                     ),
                                   ),

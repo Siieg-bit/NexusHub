@@ -552,12 +552,16 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // _startCall removido — chamadas de voz/vídeo foram substituídas pelo sistema de projeção.
 
   // ==========================================================================
-  // INICIAR PROJEÇÃO (Sala de Projeção)
+  // INICIAR VOICE CHAT / PROJEÇÃO
   // ==========================================================================
+
+  Future<void> _startVoiceChat() async {
+    await _sendMessage(type: 'voice_chat');
+  }
 
   Future<void> _startProjection() async {
     // Envia mensagem de sistema informando o início da projeção
-    _sendMessage(type: 'screening_room');
+    await _sendMessage(type: 'screening_room');
     if (!mounted) return;
     // Navega para a Sala de Projeção passando o threadId
     context.push('/screening-room/${widget.threadId}');
@@ -1883,6 +1887,20 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               child: _badgeIcon(Icons.push_pin_rounded, _pinnedMessages.length),
             ),
           GestureDetector(
+            onTap: _startVoiceChat,
+            child: Container(
+              width: r.s(34),
+              height: r.s(34),
+              margin: EdgeInsets.only(right: r.s(4)),
+              decoration: BoxDecoration(
+                color: context.surfaceColor,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.headset_mic_rounded,
+                  color: Colors.grey[500], size: r.s(16)),
+            ),
+          ),
+          GestureDetector(
             onTap: _startProjection,
             child: Container(
               width: r.s(34),
@@ -2086,6 +2104,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
+                                  if (showDateSep)
+                                    ChatDateSeparator(date: message.createdAt),
                                   GestureDetector(
                                     onLongPress: () => _showMessageActions(message),
                                     child: MessageBubble(
@@ -2097,8 +2117,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                       communityId: _threadInfo?['community_id'] as String?,
                                     ),
                                   ),
-                                  if (showDateSep)
-                                    ChatDateSeparator(date: message.createdAt),
                                 ],
                               ),
                             );

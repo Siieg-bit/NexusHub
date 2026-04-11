@@ -24,6 +24,7 @@ class AminoBottomNavBar extends ConsumerWidget {
   final bool showOnline;
   final bool showCreate;
   final int onlineCount;
+  final bool showChatUnreadBadge;
   final String? avatarUrl;
 
   /// Avatares dos membros online (até 3) para exibir no botão Online
@@ -42,6 +43,7 @@ class AminoBottomNavBar extends ConsumerWidget {
     this.showOnline = true,
     this.showCreate = true,
     this.onlineCount = 0,
+    this.showChatUnreadBadge = false,
     this.avatarUrl,
     this.onlineAvatars = const [],
   });
@@ -110,7 +112,7 @@ class AminoBottomNavBar extends ConsumerWidget {
                       _OnlineAvatarStack(
                         avatars: onlineAvatars,
                         count: onlineCount,
-                        size: r.s(24),
+                        size: r.s(28),
                         isSelected: currentIndex == 1,
                       ),
                       SizedBox(height: r.s(2)),
@@ -191,18 +193,19 @@ class AminoBottomNavBar extends ConsumerWidget {
                               : Colors.white.withValues(alpha: 0.5),
                           size: r.s(22),
                         ),
-                        Positioned(
-                          top: -r.s(2),
-                          right: -r.s(4),
-                          child: Container(
-                            width: r.s(8),
-                            height: r.s(8),
-                            decoration: const BoxDecoration(
-                              color: Colors.red,
-                              shape: BoxShape.circle,
+                        if (showChatUnreadBadge)
+                          Positioned(
+                            top: -r.s(2),
+                            right: -r.s(4),
+                            child: Container(
+                              width: r.s(8),
+                              height: r.s(8),
+                              decoration: const BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                              ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                     SizedBox(height: r.s(2)),
