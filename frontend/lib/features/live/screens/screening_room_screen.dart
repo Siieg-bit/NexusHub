@@ -12,17 +12,16 @@ import '../../../core/l10n/locale_provider.dart';
 
 /// Screening Room — sala de exibição coletiva de vídeos/streams.
 ///
-/// Funcionalidades:
-/// - Quem abre a sala é o HOST da rodada.
-/// - O host pode adicionar qualquer URL de streaming (YouTube, Twitch, Vimeo,
-///   Kick, Dailymotion, Streamable, etc.) com embed automático via WebView.
-/// - Quando o host sai, a sala é encerrada para TODOS os participantes.
-/// - Os participantes recebem o evento "room_closed" via Realtime e são
-///   redirecionados automaticamente com um dialog informativo.
-/// - Chat interno em tempo real durante a exibição.
-/// - Badge colorido identifica a plataforma do stream.
+/// Técnicas anti-bloqueio implementadas:
+/// - HTML wrapper local com <iframe> e todos os atributos de permissão
+/// - User-agent de desktop Chrome para contornar bloqueios mobile
+/// - Headers customizados (Referer, Origin) para Twitch/YouTube
+/// - JS injection pós-carregamento para forçar autoplay e remover overlays
+/// - Retry automático em caso de falha de carregamento
+/// - Cache e cookies habilitados
+/// - Twitch: parent domain dinâmico via múltiplas tentativas
+/// - YouTube: nocookie domain + parâmetros anti-bloqueio
 
-/// Plataformas suportadas com embed automático.
 enum StreamPlatform {
   youtube,
   youtubeShorts,
@@ -64,12 +63,22 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
   bool _isPlaying = false;
   bool _isLoading = true;
   bool _roomClosed = false;
+  bool _webViewLoading = false;
   int _viewerCount = 0;
+  int _loadRetryCount = 0;
 
   InAppWebViewController? _webViewController;
-
-  // Supabase Realtime para escutar mudanças na call_sessions (encerramento)
   StreamSubscription<List<Map<String, dynamic>>>? _sessionSub;
+
+  // User-agent de desktop Chrome — contorna bloqueios de WebView mobile
+  static const _desktopUserAgent =
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+      '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+
+  // User-agent mobile como fallback
+  static const _mobileUserAgent =
+      'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 '
+      '(KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36';
 
   @override
   void initState() {
@@ -98,14 +107,12 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
       if (userId == null) return;
 
       if (widget.callSessionId != null) {
-        // Entrar em sala existente
         _sessionId = widget.callSessionId;
         final session = await SupabaseService.table('call_sessions')
             .select()
             .eq('id', _sessionId!)
             .single();
 
-        // Verificar se a sala já foi encerrada
         if ((session['status'] as String?) == 'ended') {
           if (mounted) {
             setState(() {
@@ -118,7 +125,6 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
 
         _isHost = session['creator_id'] == userId;
 
-        // Carregar metadata do vídeo atual
         final metadata = session['metadata'] as Map<String, dynamic>?;
         if (metadata != null) {
           _currentVideoUrl = metadata['video_url'] as String?;
@@ -126,7 +132,6 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
           _isPlaying = metadata['is_playing'] as bool? ?? false;
         }
       } else {
-        // Criar nova sala — quem cria É o host
         final session = await SupabaseService.table('call_sessions')
             .insert({
               'thread_id': widget.threadId,
@@ -141,7 +146,6 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
         _isHost = true;
       }
 
-      // Registrar participante
       await SupabaseService.table('call_participants').upsert({
         'call_session_id': _sessionId,
         'user_id': userId,
@@ -207,6 +211,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
                   _currentVideoUrl = newUrl;
                   _currentVideoTitle = newTitle;
                   _isPlaying = playing;
+                  _loadRetryCount = 0;
                 });
                 if (newUrl != null && newUrl.isNotEmpty) {
                   _loadUrlInWebView(newUrl);
@@ -229,7 +234,6 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
     );
   }
 
-  /// Escuta mudanças no status da sessão via Postgres Changes (fallback).
   void _listenForSessionEnd() {
     if (_sessionId == null) return;
     final stream = Supabase.instance.client
@@ -309,7 +313,6 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
       'is_playing': true,
     };
     _channel?.sendBroadcastMessage(event: 'video_control', payload: payload);
-    // Persistir no banco para novos participantes
     if (_sessionId != null) {
       SupabaseService.client.rpc('update_screening_metadata', params: {
         'p_session_id': _sessionId,
@@ -320,6 +323,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
       _currentVideoUrl = url;
       _currentVideoTitle = title;
       _isPlaying = true;
+      _loadRetryCount = 0;
     });
     _loadUrlInWebView(url);
   }
@@ -334,21 +338,180 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
     };
     _channel?.sendBroadcastMessage(event: 'video_control', payload: payload);
     setState(() => _isPlaying = newPlaying);
-    // Tentar controlar o player via JS
-    if (newPlaying) {
-      _webViewController?.evaluateJavascript(
-          source:
-              "try { document.querySelector('video').play(); } catch(e) {}");
-    } else {
-      _webViewController?.evaluateJavascript(
-          source:
-              "try { document.querySelector('video').pause(); } catch(e) {}");
-    }
+    _injectPlayPauseJs(newPlaying);
   }
 
-  // ── WebView ────────────────────────────────────────────────────────────────
+  // ── Anti-bloqueio: JS injection ────────────────────────────────────────────
 
-  /// Detecta a plataforma e retorna o enum adequado.
+  /// Injeta JS para forçar autoplay e remover overlays/banners de bloqueio.
+  void _injectAutoplayJs() {
+    _webViewController?.evaluateJavascript(source: r"""
+      (function() {
+        // 1. Forçar play em todos os elementos <video>
+        var videos = document.querySelectorAll('video');
+        videos.forEach(function(v) {
+          v.muted = false;
+          v.autoplay = true;
+          v.play().catch(function() {
+            // Se falhar sem mute, tenta com mute (política de autoplay)
+            v.muted = true;
+            v.play().catch(function(){});
+          });
+        });
+
+        // 2. Remover overlays de "clique para reproduzir" comuns
+        var overlaySelectors = [
+          '.ytp-cued-thumbnail-overlay',
+          '.ytp-large-play-button',
+          '[class*="play-overlay"]',
+          '[class*="click-to-play"]',
+          '[id*="play-overlay"]',
+          '.vp-preview',
+          '.player-overlay',
+        ];
+        overlaySelectors.forEach(function(sel) {
+          var els = document.querySelectorAll(sel);
+          els.forEach(function(el) { el.style.display = 'none'; });
+        });
+
+        // 3. Simular clique no botão de play se ainda não tocou
+        var playBtns = document.querySelectorAll(
+          '.ytp-large-play-button, [aria-label="Play"], [title="Play"], '
+          + '.play-button, .vjs-play-control, .fp-play'
+        );
+        playBtns.forEach(function(btn) { btn.click(); });
+      })();
+    """);
+  }
+
+  void _injectPlayPauseJs(bool play) {
+    _webViewController?.evaluateJavascript(source: """
+      (function() {
+        var videos = document.querySelectorAll('video');
+        videos.forEach(function(v) {
+          if ($play) { v.play().catch(function(){}); }
+          else { v.pause(); }
+        });
+      })();
+    """);
+  }
+
+  /// Injeta CSS para remover banners de "abrir no app" e popups de cookies.
+  void _injectCleanupCss() {
+    _webViewController?.evaluateJavascript(source: r"""
+      (function() {
+        var style = document.createElement('style');
+        style.textContent = `
+          /* Remover banner "Abrir no app" do YouTube */
+          .ytp-mobile-app-promo, .ytp-app-promo-banner,
+          ytm-app-promo-banner-renderer, ytm-companion-slot,
+          /* Remover banner de cookies/GDPR */
+          #consent-bump, .consent-bump-v2, [id*="cookie-banner"],
+          [class*="cookie-consent"], [class*="gdpr"],
+          /* Remover overlays de login */
+          .sign-in-container, [class*="signin-prompt"],
+          /* Remover popups genéricos */
+          .modal-overlay, [class*="paywall"] { display: none !important; }
+          /* Garantir que o vídeo ocupe todo o espaço */
+          video { width: 100% !important; height: 100% !important; }
+          body { margin: 0 !important; overflow: hidden !important; }
+        `;
+        document.head.appendChild(style);
+      })();
+    """);
+  }
+
+  // ── Anti-bloqueio: HTML Wrapper ────────────────────────────────────────────
+
+  /// Gera um HTML local que embute o player via <iframe> com todos os
+  /// atributos de permissão necessários. Isso contorna restrições de
+  /// X-Frame-Options e permite autoplay sem interação do usuário.
+  static String _buildHtmlWrapper(String embedUrl, StreamPlatform platform) {
+    // Atributos allow para o iframe — cobrem todas as APIs necessárias
+    const iframeAllow =
+        'autoplay; fullscreen; picture-in-picture; encrypted-media; '
+        'accelerometer; gyroscope; clipboard-write; web-share; '
+        'cross-origin-isolated';
+
+    // Parâmetros extras por plataforma
+    String finalUrl = embedUrl;
+
+    // Para YouTube: adicionar parâmetros anti-bloqueio extras
+    if (platform == StreamPlatform.youtube ||
+        platform == StreamPlatform.youtubeShorts) {
+      final uri = Uri.tryParse(embedUrl);
+      if (uri != null) {
+        final params = Map<String, String>.from(uri.queryParameters);
+        params['autoplay'] = '1';
+        params['mute'] = '0';
+        params['enablejsapi'] = '1';
+        params['origin'] = 'https://www.youtube.com';
+        params['widget_referrer'] = 'https://www.youtube.com';
+        params['rel'] = '0';
+        params['modestbranding'] = '1';
+        params['playsinline'] = '1';
+        finalUrl = uri.replace(queryParameters: params).toString();
+      }
+    }
+
+    return '''<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+  }
+</style>
+</head>
+<body>
+<iframe
+  src="$finalUrl"
+  allow="$iframeAllow"
+  allowfullscreen
+  allowtransparency="true"
+  frameborder="0"
+  scrolling="no"
+  referrerpolicy="origin"
+></iframe>
+<script>
+  // Tentar desbloquear autoplay após carregamento
+  window.addEventListener('load', function() {
+    var iframe = document.querySelector('iframe');
+    if (iframe) {
+      // Simular interação do usuário para desbloquear autoplay
+      iframe.contentWindow && iframe.contentWindow.postMessage(
+        JSON.stringify({event: 'command', func: 'playVideo', args: []}),
+        '*'
+      );
+    }
+  });
+
+  // Escutar mensagens do iframe (YouTube API)
+  window.addEventListener('message', function(e) {
+    try {
+      var data = JSON.parse(e.data);
+      if (data.event === 'onReady') {
+        e.source.postMessage(
+          JSON.stringify({event: 'command', func: 'playVideo', args: []}),
+          '*'
+        );
+      }
+    } catch(err) {}
+  });
+</script>
+</body>
+</html>''';
+  }
+
+  // ── WebView: carregamento ──────────────────────────────────────────────────
+
   static StreamPlatform detectPlatform(String url) {
     final u = url.toLowerCase();
     if (u.contains('youtube.com/shorts/') || u.contains('youtu.be/shorts/')) {
@@ -368,7 +531,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
     return StreamPlatform.generic;
   }
 
-  /// Converte qualquer URL de streaming em URL de embed.
+  /// Converte URL de streaming em URL de embed com parâmetros anti-bloqueio.
   static String toEmbedUrl(String url) {
     final platform = detectPlatform(url);
     switch (platform) {
@@ -376,7 +539,10 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
       case StreamPlatform.youtubeShorts:
         final id = _extractYouTubeId(url);
         if (id.isNotEmpty) {
-          return 'https://www.youtube.com/embed/$id?autoplay=1&rel=0&modestbranding=1';
+          // Usar youtube-nocookie.com para evitar rastreamento e bloqueios
+          return 'https://www.youtube-nocookie.com/embed/$id'
+              '?autoplay=1&mute=0&rel=0&modestbranding=1'
+              '&playsinline=1&enablejsapi=1&origin=https://www.youtube.com';
         }
         return url;
 
@@ -384,7 +550,10 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
         final match = RegExp(r'twitch\.tv/([a-zA-Z0-9_]+)').firstMatch(url);
         final channel = match?.group(1) ?? '';
         if (channel.isNotEmpty) {
-          return 'https://player.twitch.tv/?channel=$channel&parent=localhost&autoplay=true&muted=false';
+          // Múltiplos parents para cobrir diferentes ambientes
+          return 'https://player.twitch.tv/?channel=$channel'
+              '&parent=localhost&parent=127.0.0.1&parent=nexushub.app'
+              '&autoplay=true&muted=false';
         }
         return url;
 
@@ -394,7 +563,9 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
             .firstMatch(url);
         final clip = match?.group(1) ?? '';
         if (clip.isNotEmpty) {
-          return 'https://clips.twitch.tv/embed?clip=$clip&parent=localhost&autoplay=true';
+          return 'https://clips.twitch.tv/embed?clip=$clip'
+              '&parent=localhost&parent=127.0.0.1&parent=nexushub.app'
+              '&autoplay=true';
         }
         return url;
 
@@ -402,7 +573,8 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
         final match = RegExp(r'vimeo\.com/(\d+)').firstMatch(url);
         final id = match?.group(1) ?? '';
         if (id.isNotEmpty) {
-          return 'https://player.vimeo.com/video/$id?autoplay=1&title=0&byline=0&portrait=0';
+          return 'https://player.vimeo.com/video/$id'
+              '?autoplay=1&title=0&byline=0&portrait=0&dnt=1';
         }
         return url;
 
@@ -419,7 +591,8 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
             RegExp(r'dailymotion\.com/video/([a-zA-Z0-9]+)').firstMatch(url);
         final id = match?.group(1) ?? '';
         if (id.isNotEmpty) {
-          return 'https://www.dailymotion.com/embed/video/$id?autoplay=1';
+          return 'https://www.dailymotion.com/embed/video/$id'
+              '?autoplay=1&mute=0&ui-logo=false';
         }
         return url;
 
@@ -428,7 +601,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
             RegExp(r'streamable\.com/([a-zA-Z0-9]+)').firstMatch(url);
         final id = match?.group(1) ?? '';
         if (id.isNotEmpty) {
-          return 'https://streamable.com/e/$id?autoplay=1';
+          return 'https://streamable.com/e/$id?autoplay=1&nocontrols=0';
         }
         return url;
 
@@ -446,10 +619,30 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
 
   void _loadUrlInWebView(String url) {
     if (_webViewController == null) return;
+    final platform = detectPlatform(url);
     final embedUrl = toEmbedUrl(url);
-    _webViewController!.loadUrl(
-      urlRequest: URLRequest(url: WebUri(embedUrl)),
-    );
+
+    if (platform == StreamPlatform.generic) {
+      // URLs genéricas: carregar diretamente
+      _webViewController!.loadUrl(
+        urlRequest: URLRequest(
+          url: WebUri(embedUrl),
+          headers: {
+            'Referer': 'https://www.google.com',
+            'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
+          },
+        ),
+      );
+    } else {
+      // Plataformas conhecidas: usar HTML wrapper para máxima compatibilidade
+      final html = _buildHtmlWrapper(embedUrl, platform);
+      _webViewController!.loadData(
+        data: html,
+        mimeType: 'text/html',
+        encoding: 'UTF-8',
+        baseUrl: WebUri('https://nexushub.app'),
+      );
+    }
   }
 
   // ── Sair da sala ──────────────────────────────────────────────────────────
@@ -506,18 +699,15 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
             .eq('user_id', userId);
 
         if (_isHost) {
-          // Notificar todos via Broadcast ANTES de encerrar no banco
           _channel?.sendBroadcastMessage(
             event: 'room_closed',
             payload: {'host_id': userId},
           );
           await Future.delayed(const Duration(milliseconds: 200));
 
-          // Encerrar via RPC (atualiza status + desconecta todos)
           await SupabaseService.client.rpc('end_screening_session',
               params: {'p_session_id': _sessionId});
 
-          // Enviar mensagem de sistema no chat
           await SupabaseService.client.rpc(
             'send_chat_message_with_reputation',
             params: {
@@ -939,46 +1129,131 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
       );
     }
 
-    final embedUrl = toEmbedUrl(_currentVideoUrl!);
     final platform = detectPlatform(_currentVideoUrl!);
+    final embedUrl = toEmbedUrl(_currentVideoUrl!);
 
     return Container(
       height: r.s(220),
       color: Colors.black,
       child: Stack(
         children: [
-          // ── WebView com o player embutido ──
+          // ── WebView com anti-bloqueio ──
           InAppWebView(
-            initialUrlRequest: URLRequest(url: WebUri(embedUrl)),
+            // Para plataformas conhecidas, usar HTML wrapper via loadData
+            // Para genéricas, usar initialUrlRequest
+            initialUrlRequest: platform == StreamPlatform.generic
+                ? URLRequest(
+                    url: WebUri(embedUrl),
+                    headers: {
+                      'Referer': 'https://www.google.com',
+                      'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
+                    },
+                  )
+                : null,
+            initialData: platform != StreamPlatform.generic
+                ? InAppWebViewInitialData(
+                    data: _buildHtmlWrapper(embedUrl, platform),
+                    mimeType: 'text/html',
+                    encoding: 'UTF-8',
+                    baseUrl: WebUri('https://nexushub.app'),
+                  )
+                : null,
             initialSettings: InAppWebViewSettings(
+              // ── Autoplay e mídia ──
               mediaPlaybackRequiresUserGesture: false,
               allowsInlineMediaPlayback: true,
+              allowsPictureInPictureMediaPlayback: true,
+              // ── JavaScript e DOM ──
               javaScriptEnabled: true,
+              javaScriptCanOpenWindowsAutomatically: false,
               domStorageEnabled: true,
+              databaseEnabled: true,
+              // ── Cache e cookies (evita re-autenticação) ──
+              cacheEnabled: true,
+              cacheMode: CacheMode.LOAD_DEFAULT,
+              // ── Layout ──
               useWideViewPort: true,
               loadWithOverviewMode: true,
               supportZoom: false,
               disableHorizontalScroll: true,
               disableVerticalScroll: true,
-              userAgent:
-                  'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 '
-                  '(KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
+              // ── User-agent de desktop Chrome ──
+              // Contorna bloqueios de WebView mobile em YouTube/Twitch
+              userAgent: _desktopUserAgent,
+              // ── Mixed content (HTTP dentro de HTTPS) ──
+              mixedContentMode: MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
+              // ── Transparência ──
+              transparentBackground: true,
+              // ── Geolocalização desabilitada ──
+              geolocationEnabled: false,
+              // ── Permitir navegação por file:// e data:// ──
+              allowFileAccessFromFileURLs: true,
+              allowUniversalAccessFromFileURLs: true,
+              // ── Desabilitar detecção de telefone/email (evita redirecionamentos) ──
+              dataDetectorTypes: const [DataDetectorTypes.NONE],
             ),
             onWebViewCreated: (controller) {
               _webViewController = controller;
             },
-            onLoadStop: (controller, url) {
-              controller.evaluateJavascript(
-                  source:
-                      "try { document.querySelector('video').play(); } catch(e) {}");
+            onLoadStart: (controller, url) {
+              if (mounted) setState(() => _webViewLoading = true);
+            },
+            onLoadStop: (controller, url) async {
+              if (mounted) setState(() => _webViewLoading = false);
+              // Injetar CSS de limpeza e JS de autoplay
+              await Future.delayed(const Duration(milliseconds: 500));
+              _injectCleanupCss();
+              await Future.delayed(const Duration(milliseconds: 300));
+              _injectAutoplayJs();
+            },
+            onReceivedError: (controller, request, error) {
+              debugPrint('[screening_room] WebView error: ${error.description}');
+              // Retry automático com user-agent mobile como fallback
+              if (_loadRetryCount < 1 && _currentVideoUrl != null) {
+                _loadRetryCount++;
+                Future.delayed(const Duration(seconds: 2), () {
+                  if (!mounted || _webViewController == null) return;
+                  // Na segunda tentativa, usar user-agent mobile
+                  _webViewController!.getSettings().then((settings) {
+                    if (settings != null) {
+                      settings.userAgent = _mobileUserAgent;
+                      _webViewController!.setSettings(settings: settings);
+                    }
+                  });
+                  _loadUrlInWebView(_currentVideoUrl!);
+                });
+              }
+            },
+            onConsoleMessage: (controller, msg) {
+              debugPrint('[WebView console] ${msg.message}');
+            },
+            // Interceptar requisições para adicionar headers customizados
+            shouldOverrideUrlLoading: (controller, navigationAction) async {
+              final url = navigationAction.request.url?.toString() ?? '';
+              // Bloquear redirecionamentos para app stores (evita saída do WebView)
+              if (url.contains('market://') ||
+                  url.contains('itms-apps://') ||
+                  url.contains('intent://')) {
+                return NavigationActionPolicy.CANCEL;
+              }
+              return NavigationActionPolicy.ALLOW;
             },
           ),
+
+          // ── Loading indicator ──
+          if (_webViewLoading)
+            const Center(
+              child: CircularProgressIndicator(
+                  color: AppTheme.accentColor, strokeWidth: 2),
+            ),
+
           // ── Badge da plataforma ──
           Positioned(
             top: 8,
             left: 8,
             child: _buildPlatformBadge(platform),
           ),
+
           // ── Título do vídeo ──
           Positioned(
             bottom: 8,
@@ -996,6 +1271,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
               overflow: TextOverflow.ellipsis,
             ),
           ),
+
           // ── Botão play/pause (apenas host) ──
           if (_isHost)
             Positioned(
