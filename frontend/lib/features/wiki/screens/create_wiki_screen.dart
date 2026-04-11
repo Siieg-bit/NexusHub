@@ -555,10 +555,18 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
           'p_content': contentBuffer.toString().trim(),
           'p_type': 'wiki',
           'p_visibility': _visibility,
-          'p_media_urls': mediaUrls,
+          'p_media_list': mediaUrls
+              .map((url) => {'url': url, 'type': 'image'})
+              .toList(),
+          'p_tags': _tags,
           'p_cover_image_url': _coverImageUrl,
           'p_editor_type': 'wiki',
           'p_editor_metadata': editorMetadata,
+          'p_wiki_data': {
+            'sections': sectionsJson,
+            'subtitle': _subtitleController.text.trim(),
+            'references': _references,
+          },
         });
       } catch (_) {
         // Fallback: insert direto

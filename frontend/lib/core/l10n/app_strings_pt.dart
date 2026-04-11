@@ -5840,4 +5840,55 @@ class AppStringsPt implements AppStrings {
   String yourWikiWasRejected(String wikiTitle) => 'Sua wiki "$wikiTitle" foi rejeitada.';
   @override
   String get youtubeVideo => 'youtubeVideo';
+
+  @override
+  String get coverPhoto => 'Foto de Capa';
+  @override
+  String get chatIcon => 'Ícone do Chat';
+  @override
+  String get chatIconHint => 'URL do ícone (opcional)';
+  @override
+  String get coverPhotoHint => 'Toque para adicionar uma foto de capa';
+  @override
+  String get chatAppearance => 'Aparência';
+  @override
+  String get chatSettings2 => 'Configurações';
+  @override
+  String get slowMode => 'Modo Lento';
+  @override
+  String get slowModeDesc => 'Membros só podem enviar uma mensagem a cada alguns segundos';
+  @override
+  String get announcementOnlyMode => 'Somente Anúncios';
+  @override
+  String get announcementOnlyModeDesc => 'Apenas hosts e co-hosts podem enviar mensagens';
+  @override
+  String get voiceChatEnabled => 'Chat de Voz';
+  @override
+  String get voiceChatEnabledDesc => 'Permitir chamadas de voz neste chat';
+  @override
+  String get videoChatEnabled => 'Chat de Vídeo';
+  @override
+  String get videoChatEnabledDesc => 'Permitir chamadas de vídeo neste chat';
+  @override
+  String get projectionRoomEnabled => 'Sala de Projeção';
+  @override
+  String get projectionRoomEnabledDesc => 'Permitir sessões de projeção de vídeo';
+  @override
+  String get tapToChangeCover => 'Toque para alterar a capa';
+  @override
+  String get tapToChangeIcon => 'Toque para alterar o ícone';
+  @override
+  String get chatCreatedSuccess => 'Chat criado com sucesso!';
+  @override
+  String get chatPermissions => 'Permissões';
+  @override
+  String get onlyHostsCanSend => 'Apenas hosts podem enviar mensagens';
+  @override
+  String get allMembersCanSend => 'Todos os membros podem enviar mensagens';
+  @override
+  String get chatVisibility => 'Visibilidade';
+  @override
+  String get publicChatDesc => 'Qualquer membro da comunidade pode entrar';
+  @override
+  String get privateChatDesc => 'Apenas membros convidados podem entrar';
 }

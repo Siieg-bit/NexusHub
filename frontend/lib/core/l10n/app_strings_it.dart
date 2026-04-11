@@ -5711,4 +5711,55 @@ class AppStringsIt implements AppStrings {
   String get restorePurchases => 'restorePurchases';
   @override
   String get reviewEntry => 'reviewEntry';
+
+  @override
+  String get coverPhoto => 'Foto di copertina';
+  @override
+  String get chatIcon => 'Icona chat';
+  @override
+  String get chatIconHint => 'URL icona (opzionale)';
+  @override
+  String get coverPhotoHint => 'Tocca per aggiungere una foto di copertina';
+  @override
+  String get chatAppearance => 'Aspetto';
+  @override
+  String get chatSettings2 => 'Impostazioni';
+  @override
+  String get slowMode => 'Modalità lenta';
+  @override
+  String get slowModeDesc => 'I membri possono inviare solo un messaggio ogni pochi secondi';
+  @override
+  String get announcementOnlyMode => 'Solo annunci';
+  @override
+  String get announcementOnlyModeDesc => 'Solo gli host e co-host possono inviare messaggi';
+  @override
+  String get voiceChatEnabled => 'Chat vocale';
+  @override
+  String get voiceChatEnabledDesc => 'Consenti chiamate vocali in questa chat';
+  @override
+  String get videoChatEnabled => 'Chat video';
+  @override
+  String get videoChatEnabledDesc => 'Consenti videochiamate in questa chat';
+  @override
+  String get projectionRoomEnabled => 'Sala proiezioni';
+  @override
+  String get projectionRoomEnabledDesc => 'Consenti sessioni di proiezione video';
+  @override
+  String get tapToChangeCover => 'Tocca per cambiare la copertina';
+  @override
+  String get tapToChangeIcon => 'Tocca per cambiare l\'icona';
+  @override
+  String get chatCreatedSuccess => 'Chat creata con successo!';
+  @override
+  String get chatPermissions => 'Permessi';
+  @override
+  String get onlyHostsCanSend => 'Solo gli host possono inviare messaggi';
+  @override
+  String get allMembersCanSend => 'Tutti i membri possono inviare messaggi';
+  @override
+  String get chatVisibility => 'Visibilità';
+  @override
+  String get publicChatDesc => 'Qualsiasi membro della community può unirsi';
+  @override
+  String get privateChatDesc => 'Solo i membri invitati possono unirsi';
 }

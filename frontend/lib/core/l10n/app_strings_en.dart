@@ -5786,4 +5786,55 @@ class AppStringsEn implements AppStrings {
   String yourWikiWasRejected(String wikiTitle) => 'Your wiki "$wikiTitle" was rejected.';
   @override
   String get youtubeVideo => 'youtubeVideo';
+
+  @override
+  String get coverPhoto => 'Cover Photo';
+  @override
+  String get chatIcon => 'Chat Icon';
+  @override
+  String get chatIconHint => 'Icon URL (optional)';
+  @override
+  String get coverPhotoHint => 'Tap to add a cover photo';
+  @override
+  String get chatAppearance => 'Appearance';
+  @override
+  String get chatSettings2 => 'Settings';
+  @override
+  String get slowMode => 'Slow Mode';
+  @override
+  String get slowModeDesc => 'Members can only send one message every few seconds';
+  @override
+  String get announcementOnlyMode => 'Announcement Only';
+  @override
+  String get announcementOnlyModeDesc => 'Only hosts and co-hosts can send messages';
+  @override
+  String get voiceChatEnabled => 'Voice Chat';
+  @override
+  String get voiceChatEnabledDesc => 'Allow voice calls in this chat';
+  @override
+  String get videoChatEnabled => 'Video Chat';
+  @override
+  String get videoChatEnabledDesc => 'Allow video calls in this chat';
+  @override
+  String get projectionRoomEnabled => 'Projection Room';
+  @override
+  String get projectionRoomEnabledDesc => 'Allow video projection sessions';
+  @override
+  String get tapToChangeCover => 'Tap to change cover';
+  @override
+  String get tapToChangeIcon => 'Tap to change icon';
+  @override
+  String get chatCreatedSuccess => 'Chat created successfully!';
+  @override
+  String get chatPermissions => 'Permissions';
+  @override
+  String get onlyHostsCanSend => 'Only hosts can send messages';
+  @override
+  String get allMembersCanSend => 'All members can send messages';
+  @override
+  String get chatVisibility => 'Visibility';
+  @override
+  String get publicChatDesc => 'Anyone in the community can join';
+  @override
+  String get privateChatDesc => 'Only invited members can join';
 }

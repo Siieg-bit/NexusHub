@@ -5711,4 +5711,55 @@ class AppStringsRu implements AppStrings {
   String get writeAReply => 'writeAReply';
   @override
   String get writeSomething => 'writeSomething';
+
+  @override
+  String get coverPhoto => 'Обложка';
+  @override
+  String get chatIcon => 'Иконка чата';
+  @override
+  String get chatIconHint => 'URL иконки (необязательно)';
+  @override
+  String get coverPhotoHint => 'Нажмите, чтобы добавить обложку';
+  @override
+  String get chatAppearance => 'Внешний вид';
+  @override
+  String get chatSettings2 => 'Настройки';
+  @override
+  String get slowMode => 'Медленный режим';
+  @override
+  String get slowModeDesc => 'Участники могут отправлять только одно сообщение каждые несколько секунд';
+  @override
+  String get announcementOnlyMode => 'Только объявления';
+  @override
+  String get announcementOnlyModeDesc => 'Только хосты и со-хосты могут отправлять сообщения';
+  @override
+  String get voiceChatEnabled => 'Голосовой чат';
+  @override
+  String get voiceChatEnabledDesc => 'Разрешить голосовые звонки в этом чате';
+  @override
+  String get videoChatEnabled => 'Видеочат';
+  @override
+  String get videoChatEnabledDesc => 'Разрешить видеозвонки в этом чате';
+  @override
+  String get projectionRoomEnabled => 'Зал проекций';
+  @override
+  String get projectionRoomEnabledDesc => 'Разрешить сеансы видеопроекции';
+  @override
+  String get tapToChangeCover => 'Нажмите, чтобы изменить обложку';
+  @override
+  String get tapToChangeIcon => 'Нажмите, чтобы изменить иконку';
+  @override
+  String get chatCreatedSuccess => 'Чат успешно создан!';
+  @override
+  String get chatPermissions => 'Разрешения';
+  @override
+  String get onlyHostsCanSend => 'Только хосты могут отправлять сообщения';
+  @override
+  String get allMembersCanSend => 'Все участники могут отправлять сообщения';
+  @override
+  String get chatVisibility => 'Видимость';
+  @override
+  String get publicChatDesc => 'Любой участник сообщества может присоединиться';
+  @override
+  String get privateChatDesc => 'Только приглашённые участники могут присоединиться';
 }

@@ -5709,4 +5709,55 @@ class AppStringsJa implements AppStrings {
   String yourWikiWasApproved(String wikiTitle) => 'あなたのウィキ「$wikiTitle」が承認されました！';
   @override
   String yourWikiWasRejected(String wikiTitle) => 'あなたのウィキ「$wikiTitle」が拒否されました。';
+
+  @override
+  String get coverPhoto => 'カバー写真';
+  @override
+  String get chatIcon => 'チャットアイコン';
+  @override
+  String get chatIconHint => 'アイコンURL（任意）';
+  @override
+  String get coverPhotoHint => 'タップしてカバー写真を追加';
+  @override
+  String get chatAppearance => '外観';
+  @override
+  String get chatSettings2 => '設定';
+  @override
+  String get slowMode => 'スローモード';
+  @override
+  String get slowModeDesc => 'メンバーは数秒ごとに1つのメッセージしか送れません';
+  @override
+  String get announcementOnlyMode => 'アナウンスのみ';
+  @override
+  String get announcementOnlyModeDesc => 'ホストとコホストのみメッセージを送れます';
+  @override
+  String get voiceChatEnabled => 'ボイスチャット';
+  @override
+  String get voiceChatEnabledDesc => 'このチャットでの音声通話を許可';
+  @override
+  String get videoChatEnabled => 'ビデオチャット';
+  @override
+  String get videoChatEnabledDesc => 'このチャットでのビデオ通話を許可';
+  @override
+  String get projectionRoomEnabled => '上映室';
+  @override
+  String get projectionRoomEnabledDesc => 'ビデオ上映セッションを許可';
+  @override
+  String get tapToChangeCover => 'タップしてカバーを変更';
+  @override
+  String get tapToChangeIcon => 'タップしてアイコンを変更';
+  @override
+  String get chatCreatedSuccess => 'チャットが作成されました！';
+  @override
+  String get chatPermissions => '権限';
+  @override
+  String get onlyHostsCanSend => 'ホストのみメッセージを送れます';
+  @override
+  String get allMembersCanSend => '全メンバーがメッセージを送れます';
+  @override
+  String get chatVisibility => '公開設定';
+  @override
+  String get publicChatDesc => 'コミュニティの誰でも参加できます';
+  @override
+  String get privateChatDesc => '招待されたメンバーのみ参加できます';
 }

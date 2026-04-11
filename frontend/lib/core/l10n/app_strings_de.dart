@@ -5711,4 +5711,55 @@ class AppStringsDe implements AppStrings {
   String get errorLoadingPost => 'errorLoadingPost';
   @override
   String get helpAndSupport => 'helpAndSupport';
+
+  @override
+  String get coverPhoto => 'Titelbild';
+  @override
+  String get chatIcon => 'Chat-Symbol';
+  @override
+  String get chatIconHint => 'Symbol-URL (optional)';
+  @override
+  String get coverPhotoHint => 'Tippen, um ein Titelbild hinzuzufügen';
+  @override
+  String get chatAppearance => 'Erscheinungsbild';
+  @override
+  String get chatSettings2 => 'Einstellungen';
+  @override
+  String get slowMode => 'Langsamer Modus';
+  @override
+  String get slowModeDesc => 'Mitglieder können nur alle paar Sekunden eine Nachricht senden';
+  @override
+  String get announcementOnlyMode => 'Nur Ankündigungen';
+  @override
+  String get announcementOnlyModeDesc => 'Nur Hosts und Co-Hosts können Nachrichten senden';
+  @override
+  String get voiceChatEnabled => 'Sprachanruf';
+  @override
+  String get voiceChatEnabledDesc => 'Sprachanrufe in diesem Chat erlauben';
+  @override
+  String get videoChatEnabled => 'Videoanruf';
+  @override
+  String get videoChatEnabledDesc => 'Videoanrufe in diesem Chat erlauben';
+  @override
+  String get projectionRoomEnabled => 'Projektionsraum';
+  @override
+  String get projectionRoomEnabledDesc => 'Videoprojektionssitzungen erlauben';
+  @override
+  String get tapToChangeCover => 'Tippen, um das Titelbild zu ändern';
+  @override
+  String get tapToChangeIcon => 'Tippen, um das Symbol zu ändern';
+  @override
+  String get chatCreatedSuccess => 'Chat erfolgreich erstellt!';
+  @override
+  String get chatPermissions => 'Berechtigungen';
+  @override
+  String get onlyHostsCanSend => 'Nur Hosts können Nachrichten senden';
+  @override
+  String get allMembersCanSend => 'Alle Mitglieder können Nachrichten senden';
+  @override
+  String get chatVisibility => 'Sichtbarkeit';
+  @override
+  String get publicChatDesc => 'Jedes Community-Mitglied kann beitreten';
+  @override
+  String get privateChatDesc => 'Nur eingeladene Mitglieder können beitreten';
 }

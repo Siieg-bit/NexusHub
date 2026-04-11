@@ -5711,4 +5711,55 @@ class AppStringsKo implements AppStrings {
   String get yourProfile => 'yourProfile';
   @override
   String get youtubeVideo => 'youtubeVideo';
+
+  @override
+  String get coverPhoto => '커버 사진';
+  @override
+  String get chatIcon => '채팅 아이콘';
+  @override
+  String get chatIconHint => '아이콘 URL (선택사항)';
+  @override
+  String get coverPhotoHint => '탭하여 커버 사진 추가';
+  @override
+  String get chatAppearance => '외관';
+  @override
+  String get chatSettings2 => '설정';
+  @override
+  String get slowMode => '느린 모드';
+  @override
+  String get slowModeDesc => '멤버는 몇 초마다 메시지 하나만 보낼 수 있습니다';
+  @override
+  String get announcementOnlyMode => '공지 전용';
+  @override
+  String get announcementOnlyModeDesc => '호스트와 공동 호스트만 메시지를 보낼 수 있습니다';
+  @override
+  String get voiceChatEnabled => '음성 채팅';
+  @override
+  String get voiceChatEnabledDesc => '이 채팅에서 음성 통화 허용';
+  @override
+  String get videoChatEnabled => '비디오 채팅';
+  @override
+  String get videoChatEnabledDesc => '이 채팅에서 화상 통화 허용';
+  @override
+  String get projectionRoomEnabled => '상영실';
+  @override
+  String get projectionRoomEnabledDesc => '비디오 상영 세션 허용';
+  @override
+  String get tapToChangeCover => '탭하여 커버 변경';
+  @override
+  String get tapToChangeIcon => '탭하여 아이콘 변경';
+  @override
+  String get chatCreatedSuccess => '채팅이 성공적으로 생성되었습니다!';
+  @override
+  String get chatPermissions => '권한';
+  @override
+  String get onlyHostsCanSend => '호스트만 메시지를 보낼 수 있습니다';
+  @override
+  String get allMembersCanSend => '모든 멤버가 메시지를 보낼 수 있습니다';
+  @override
+  String get chatVisibility => '공개 설정';
+  @override
+  String get publicChatDesc => '커뮤니티 누구나 참여할 수 있습니다';
+  @override
+  String get privateChatDesc => '초대된 멤버만 참여할 수 있습니다';
 }

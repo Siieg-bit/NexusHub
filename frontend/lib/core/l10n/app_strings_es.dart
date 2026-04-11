@@ -5709,4 +5709,55 @@ class AppStringsEs implements AppStrings {
   String yourWikiWasApproved(String wikiTitle) => '¡Tu wiki "$wikiTitle" fue aprobado!';
   @override
   String yourWikiWasRejected(String wikiTitle) => 'Tu wiki "$wikiTitle" fue rechazado.';
+
+  @override
+  String get coverPhoto => 'Foto de portada';
+  @override
+  String get chatIcon => 'Ícono del chat';
+  @override
+  String get chatIconHint => 'URL del ícono (opcional)';
+  @override
+  String get coverPhotoHint => 'Toca para agregar foto de portada';
+  @override
+  String get chatAppearance => 'Apariencia';
+  @override
+  String get chatSettings2 => 'Configuración';
+  @override
+  String get slowMode => 'Modo lento';
+  @override
+  String get slowModeDesc => 'Los miembros solo pueden enviar un mensaje cada pocos segundos';
+  @override
+  String get announcementOnlyMode => 'Solo anuncios';
+  @override
+  String get announcementOnlyModeDesc => 'Solo los hosts y co-hosts pueden enviar mensajes';
+  @override
+  String get voiceChatEnabled => 'Chat de voz';
+  @override
+  String get voiceChatEnabledDesc => 'Permitir llamadas de voz en este chat';
+  @override
+  String get videoChatEnabled => 'Chat de video';
+  @override
+  String get videoChatEnabledDesc => 'Permitir videollamadas en este chat';
+  @override
+  String get projectionRoomEnabled => 'Sala de proyección';
+  @override
+  String get projectionRoomEnabledDesc => 'Permitir sesiones de proyección de video';
+  @override
+  String get tapToChangeCover => 'Toca para cambiar la portada';
+  @override
+  String get tapToChangeIcon => 'Toca para cambiar el ícono';
+  @override
+  String get chatCreatedSuccess => '¡Chat creado con éxito!';
+  @override
+  String get chatPermissions => 'Permisos';
+  @override
+  String get onlyHostsCanSend => 'Solo los hosts pueden enviar mensajes';
+  @override
+  String get allMembersCanSend => 'Todos los miembros pueden enviar mensajes';
+  @override
+  String get chatVisibility => 'Visibilidad';
+  @override
+  String get publicChatDesc => 'Cualquier miembro de la comunidad puede unirse';
+  @override
+  String get privateChatDesc => 'Solo los miembros invitados pueden unirse';
 }

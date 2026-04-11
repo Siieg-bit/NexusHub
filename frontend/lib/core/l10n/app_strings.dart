@@ -2941,4 +2941,31 @@ abstract class AppStrings {
   String yourPostWasCrossposted(String postTitle);
   String yourWikiWasApproved(String wikiTitle);
   String yourWikiWasRejected(String wikiTitle);
+  // Chat creation - new fields
+  String get coverPhoto;
+  String get chatIcon;
+  String get chatIconHint;
+  String get coverPhotoHint;
+  String get chatAppearance;
+  String get chatSettings2;
+  String get slowMode;
+  String get slowModeDesc;
+  String get announcementOnlyMode;
+  String get announcementOnlyModeDesc;
+  String get voiceChatEnabled;
+  String get voiceChatEnabledDesc;
+  String get videoChatEnabled;
+  String get videoChatEnabledDesc;
+  String get projectionRoomEnabled;
+  String get projectionRoomEnabledDesc;
+  String get tapToChangeCover;
+  String get tapToChangeIcon;
+  String get chatCreatedSuccess;
+  String get chatPermissions;
+  String get onlyHostsCanSend;
+  String get allMembersCanSend;
+  String get chatVisibility;
+  String get publicChatDesc;
+  String get privateChatDesc;
+
 }

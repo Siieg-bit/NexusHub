@@ -5711,4 +5711,55 @@ class AppStringsFr implements AppStrings {
   String get yourTopCommunities => 'yourTopCommunities';
   @override
   String get yourWallIsEmpty => 'yourWallIsEmpty';
+
+  @override
+  String get coverPhoto => 'Photo de couverture';
+  @override
+  String get chatIcon => 'Icône du chat';
+  @override
+  String get chatIconHint => 'URL de l\'icône (optionnel)';
+  @override
+  String get coverPhotoHint => 'Appuyez pour ajouter une photo de couverture';
+  @override
+  String get chatAppearance => 'Apparence';
+  @override
+  String get chatSettings2 => 'Paramètres';
+  @override
+  String get slowMode => 'Mode lent';
+  @override
+  String get slowModeDesc => 'Les membres ne peuvent envoyer qu\'un message toutes les quelques secondes';
+  @override
+  String get announcementOnlyMode => 'Annonces uniquement';
+  @override
+  String get announcementOnlyModeDesc => 'Seuls les hôtes et co-hôtes peuvent envoyer des messages';
+  @override
+  String get voiceChatEnabled => 'Chat vocal';
+  @override
+  String get voiceChatEnabledDesc => 'Autoriser les appels vocaux dans ce chat';
+  @override
+  String get videoChatEnabled => 'Chat vidéo';
+  @override
+  String get videoChatEnabledDesc => 'Autoriser les appels vidéo dans ce chat';
+  @override
+  String get projectionRoomEnabled => 'Salle de projection';
+  @override
+  String get projectionRoomEnabledDesc => 'Autoriser les sessions de projection vidéo';
+  @override
+  String get tapToChangeCover => 'Appuyez pour changer la couverture';
+  @override
+  String get tapToChangeIcon => 'Appuyez pour changer l\'icône';
+  @override
+  String get chatCreatedSuccess => 'Chat créé avec succès !';
+  @override
+  String get chatPermissions => 'Permissions';
+  @override
+  String get onlyHostsCanSend => 'Seuls les hôtes peuvent envoyer des messages';
+  @override
+  String get allMembersCanSend => 'Tous les membres peuvent envoyer des messages';
+  @override
+  String get chatVisibility => 'Visibilité';
+  @override
+  String get publicChatDesc => 'Tout membre de la communauté peut rejoindre';
+  @override
+  String get privateChatDesc => 'Seuls les membres invités peuvent rejoindre';
 }

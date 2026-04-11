@@ -5710,4 +5710,55 @@ class AppStringsAr implements AppStrings {
   String get yourAccount => 'yourAccount';
   @override
   String get yourInterests => 'yourInterests';
+
+  @override
+  String get coverPhoto => 'صورة الغلاف';
+  @override
+  String get chatIcon => 'أيقونة المحادثة';
+  @override
+  String get chatIconHint => 'رابط الأيقونة (اختياري)';
+  @override
+  String get coverPhotoHint => 'اضغط لإضافة صورة غلاف';
+  @override
+  String get chatAppearance => 'المظهر';
+  @override
+  String get chatSettings2 => 'الإعدادات';
+  @override
+  String get slowMode => 'الوضع البطيء';
+  @override
+  String get slowModeDesc => 'يمكن للأعضاء إرسال رسالة واحدة فقط كل بضع ثوانٍ';
+  @override
+  String get announcementOnlyMode => 'الإعلانات فقط';
+  @override
+  String get announcementOnlyModeDesc => 'يمكن للمضيفين والمضيفين المشاركين فقط إرسال الرسائل';
+  @override
+  String get voiceChatEnabled => 'محادثة صوتية';
+  @override
+  String get voiceChatEnabledDesc => 'السماح بالمكالمات الصوتية في هذه المحادثة';
+  @override
+  String get videoChatEnabled => 'محادثة مرئية';
+  @override
+  String get videoChatEnabledDesc => 'السماح بمكالمات الفيديو في هذه المحادثة';
+  @override
+  String get projectionRoomEnabled => 'غرفة العرض';
+  @override
+  String get projectionRoomEnabledDesc => 'السماح بجلسات عرض الفيديو';
+  @override
+  String get tapToChangeCover => 'اضغط لتغيير الغلاف';
+  @override
+  String get tapToChangeIcon => 'اضغط لتغيير الأيقونة';
+  @override
+  String get chatCreatedSuccess => 'تم إنشاء المحادثة بنجاح!';
+  @override
+  String get chatPermissions => 'الأذونات';
+  @override
+  String get onlyHostsCanSend => 'يمكن للمضيفين فقط إرسال الرسائل';
+  @override
+  String get allMembersCanSend => 'يمكن لجميع الأعضاء إرسال الرسائل';
+  @override
+  String get chatVisibility => 'الخصوصية';
+  @override
+  String get publicChatDesc => 'يمكن لأي عضو في المجتمع الانضمام';
+  @override
+  String get privateChatDesc => 'يمكن للأعضاء المدعوين فقط الانضمام';
 }
