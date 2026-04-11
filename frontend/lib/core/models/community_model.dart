@@ -70,6 +70,8 @@ class CommunityModel {
   final List<String> communityTags;
   /// Número máximo de posts que podem ser fixados simultaneamente
   final int maxPinnedPosts;
+  /// Mensagem de boas-vindas exibida para novos membros
+  final String welcomeMessage;
 
   const CommunityModel({
     required this.id,
@@ -108,6 +110,7 @@ class CommunityModel {
     this.aboutText = '',
     this.communityTags = const [],
     this.maxPinnedPosts = 5,
+    this.welcomeMessage = '',
   });
 
   factory CommunityModel.fromJson(Map<String, dynamic> json) {
@@ -155,6 +158,7 @@ class CommunityModel {
       aboutText: json['about_text'] as String? ?? '',
       communityTags: parseTags(json['community_tags']),
       maxPinnedPosts: json['max_pinned_posts'] as int? ?? 5,
+      welcomeMessage: json['welcome_message'] as String? ?? '',
     );
   }
 
@@ -183,6 +187,7 @@ class CommunityModel {
       'about_text': aboutText,
       'community_tags': communityTags,
       'max_pinned_posts': maxPinnedPosts,
+      'welcome_message': welcomeMessage,
     };
   }
 
