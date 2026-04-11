@@ -31,9 +31,21 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
 
   // Visual customization
   String _themeColor = '#2196F3';
+  String _themeGradientEnd = '';
+  String _themeApplyMode = 'accent'; // accent | full | gradient
   String _iconUrl = '';
   String _bannerUrl = '';
+  // Banners por contexto
+  String _bannerHeaderUrl = '';
+  String _bannerDrawerUrl = '';
+  String _bannerCardUrl = '';
+  String _bannerInfoUrl = '';
   String _welcomeMessage = '';
+  // Conteúdo editorial
+  String _description = '';
+  String _rules = '';
+  String _aboutText = '';
+  String _tagline = '';
 
   // Home Layout customization
   Map<String, dynamic> _homeLayout = {};
@@ -45,7 +57,7 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
   int _totalPosts = 0;
   int _totalChats = 0;
 
-  final _tabs = ['Módulos', 'Acesso', 'Visual', 'Home', 'Stats'];
+  final _tabs = ['Módulos', 'Acesso', 'Visual', 'Banners', 'Conteúdo', 'Home', 'Stats'];
 
   @override
   void initState() {
@@ -66,9 +78,19 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
       _joinType = res['join_type'] as String? ?? 'open';
       _listedStatus = res['listed_status'] as String? ?? 'listed';
       _themeColor = res['theme_color'] as String? ?? '#2196F3';
+      _themeGradientEnd = res['theme_gradient_end'] as String? ?? '';
+      _themeApplyMode = res['theme_apply_mode'] as String? ?? 'accent';
       _iconUrl = res['icon_url'] as String? ?? '';
       _bannerUrl = res['banner_url'] as String? ?? '';
+      _bannerHeaderUrl = res['banner_header_url'] as String? ?? '';
+      _bannerDrawerUrl = res['banner_drawer_url'] as String? ?? '';
+      _bannerCardUrl = res['banner_card_url'] as String? ?? '';
+      _bannerInfoUrl = res['banner_info_url'] as String? ?? '';
       _welcomeMessage = res['welcome_message'] as String? ?? '';
+      _description = res['description'] as String? ?? '';
+      _rules = res['rules'] as String? ?? '';
+      _aboutText = res['about_text'] as String? ?? '';
+      _tagline = res['tagline'] as String? ?? '';
       _homeLayout = Map<String, dynamic>.from(
           res['home_layout'] as Map<String, dynamic>? ?? _defaultHomeLayout());
 
@@ -170,11 +192,21 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
         'join_type': _joinType,
         'listed_status': _listedStatus,
         'theme_color': _themeColor,
+        'theme_apply_mode': _themeApplyMode,
         'welcome_message': _welcomeMessage,
         'home_layout': _homeLayout,
+        'description': _description,
+        'rules': _rules,
+        'about_text': _aboutText,
+        'tagline': _tagline,
       };
       if (_iconUrl.isNotEmpty) updates['icon_url'] = _iconUrl;
       if (_bannerUrl.isNotEmpty) updates['banner_url'] = _bannerUrl;
+      if (_bannerHeaderUrl.isNotEmpty) updates['banner_header_url'] = _bannerHeaderUrl;
+      if (_bannerDrawerUrl.isNotEmpty) updates['banner_drawer_url'] = _bannerDrawerUrl;
+      if (_bannerCardUrl.isNotEmpty) updates['banner_card_url'] = _bannerCardUrl;
+      if (_bannerInfoUrl.isNotEmpty) updates['banner_info_url'] = _bannerInfoUrl;
+      if (_themeGradientEnd.isNotEmpty) updates['theme_gradient_end'] = _themeGradientEnd;
 
       await SupabaseService.table('communities')
           .update(updates)
@@ -270,6 +302,8 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
                 _buildModulesTab(),
                 _buildAccessTab(),
                 _buildVisualTab(),
+                _buildBannersTab(),
+                _buildContentTab(),
                 _buildHomeLayoutTab(),
                 _buildStatsTab(),
               ],
@@ -649,6 +683,308 @@ class _AcmScreenState extends ConsumerState<AcmScreen>
                   isDense: true,
                 ),
                 style: TextStyle(fontSize: r.fs(13)),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ========================================================================
+  // TAB: Banners — Banners personalizados por contexto
+  // ========================================================================
+  Widget _buildBannersTab() {
+    final r = context.r;
+
+    Widget _bannerField({
+      required String label,
+      required String hint,
+      required String value,
+      required ValueChanged<String> onChanged,
+      required IconData icon,
+    }) {
+      return Container(
+        padding: EdgeInsets.all(r.s(16)),
+        margin: EdgeInsets.only(bottom: r.s(12)),
+        decoration: BoxDecoration(
+          color: context.surfaceColor,
+          borderRadius: BorderRadius.circular(r.s(12)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: AppTheme.primaryColor, size: r.s(20)),
+                SizedBox(width: r.s(10)),
+                Expanded(
+                  child: Text(label,
+                      style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: r.fs(14))),
+                ),
+              ],
+            ),
+            SizedBox(height: r.s(10)),
+            if (value.isNotEmpty)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(r.s(10)),
+                child: Image.network(
+                  value,
+                  height: r.s(90),
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    height: r.s(90),
+                    color: context.scaffoldBg,
+                    child: const Center(
+                        child: Icon(Icons.broken_image_rounded)),
+                  ),
+                ),
+              ),
+            SizedBox(height: r.s(8)),
+            TextField(
+              controller: TextEditingController(text: value),
+              onChanged: onChanged,
+              decoration: InputDecoration(
+                hintText: hint,
+                prefixIcon: Icon(Icons.link_rounded, size: r.s(16)),
+                filled: true,
+                fillColor: context.scaffoldBg,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(r.s(8)),
+                  borderSide: BorderSide.none,
+                ),
+                isDense: true,
+              ),
+              style: TextStyle(fontSize: r.fs(13)),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView(
+      padding: EdgeInsets.all(r.s(16)),
+      children: [
+        Text('Banners por Contexto',
+            style: Theme.of(context).textTheme.titleLarge),
+        SizedBox(height: r.s(6)),
+        Text(
+          'Cada local da comunidade pode ter um banner diferente. Se não configurado, usa o banner padrão.',
+          style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
+        ),
+        SizedBox(height: r.s(16)),
+        _bannerField(
+          label: 'Banner Padrão',
+          hint: 'URL do banner padrão (fallback)',
+          value: _bannerUrl,
+          onChanged: (v) => setState(() => _bannerUrl = v),
+          icon: Icons.panorama_rounded,
+        ),
+        _bannerField(
+          label: 'Banner do Header',
+          hint: 'URL do banner no topo da comunidade',
+          value: _bannerHeaderUrl,
+          onChanged: (v) => setState(() => _bannerHeaderUrl = v),
+          icon: Icons.web_asset_rounded,
+        ),
+        _bannerField(
+          label: 'Banner do Drawer (Menu Lateral)',
+          hint: 'URL do banner no menu lateral',
+          value: _bannerDrawerUrl,
+          onChanged: (v) => setState(() => _bannerDrawerUrl = v),
+          icon: Icons.menu_rounded,
+        ),
+        _bannerField(
+          label: 'Banner do Card (Lista de Comunidades)',
+          hint: 'URL do banner no card da lista',
+          value: _bannerCardUrl,
+          onChanged: (v) => setState(() => _bannerCardUrl = v),
+          icon: Icons.grid_view_rounded,
+        ),
+        _bannerField(
+          label: 'Banner da Página de Informações',
+          hint: 'URL do banner na página de info/sobre',
+          value: _bannerInfoUrl,
+          onChanged: (v) => setState(() => _bannerInfoUrl = v),
+          icon: Icons.info_outline_rounded,
+        ),
+        SizedBox(height: r.s(16)),
+        // Modo de aplicação da cor
+        Text('Aplicação da Cor Predominante',
+            style: Theme.of(context).textTheme.titleLarge),
+        SizedBox(height: r.s(12)),
+        ...[('accent', 'Acento', 'Cor usada em botões e destaques'),
+          ('full', 'Completo', 'Cor aplicada no fundo do header'),
+          ('gradient', 'Gradiente', 'Gradiente da cor predominante até a cor secundária'),
+        ].map((opt) {
+          final (key, label, desc) = opt;
+          return Container(
+            margin: EdgeInsets.only(bottom: r.s(8)),
+            decoration: BoxDecoration(
+              color: context.surfaceColor,
+              borderRadius: BorderRadius.circular(r.s(12)),
+              border: Border.all(
+                color: _themeApplyMode == key
+                    ? AppTheme.primaryColor
+                    : Colors.white.withValues(alpha: 0.05),
+                width: _themeApplyMode == key ? 1.5 : 1,
+              ),
+            ),
+            child: RadioListTile<String>(
+              title: Text(label,
+                  style: const TextStyle(fontWeight: FontWeight.w500)),
+              subtitle: Text(desc,
+                  style: TextStyle(
+                      color: Colors.grey[500], fontSize: r.fs(12))),
+              value: key,
+              groupValue: _themeApplyMode,
+              onChanged: (v) => setState(() => _themeApplyMode = v!),
+              activeColor: AppTheme.primaryColor,
+            ),
+          );
+        }),
+        if (_themeApplyMode == 'gradient') ...[
+          SizedBox(height: r.s(12)),
+          Container(
+            padding: EdgeInsets.all(r.s(16)),
+            decoration: BoxDecoration(
+              color: context.surfaceColor,
+              borderRadius: BorderRadius.circular(r.s(12)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Cor Final do Gradiente',
+                    style: TextStyle(fontWeight: FontWeight.w600)),
+                SizedBox(height: r.s(8)),
+                TextField(
+                  controller: TextEditingController(text: _themeGradientEnd),
+                  onChanged: (v) {
+                    if (v.startsWith('#') && v.length == 7) {
+                      setState(() => _themeGradientEnd = v);
+                    }
+                  },
+                  decoration: InputDecoration(
+                    hintText: '#RRGGBB (cor final do gradiente)',
+                    prefixIcon: Icon(Icons.tag_rounded, size: r.s(16)),
+                    filled: true,
+                    fillColor: context.scaffoldBg,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(r.s(8)),
+                      borderSide: BorderSide.none,
+                    ),
+                    isDense: true,
+                  ),
+                  style: TextStyle(fontSize: r.fs(13)),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  // ========================================================================
+  // TAB: Conteúdo — Descrição, Regras e Sobre
+  // ========================================================================
+  Widget _buildContentTab() {
+    final r = context.r;
+
+    return ListView(
+      padding: EdgeInsets.all(r.s(16)),
+      children: [
+        Text('Informações da Comunidade',
+            style: Theme.of(context).textTheme.titleLarge),
+        SizedBox(height: r.s(6)),
+        Text(
+          'Configure a descrição, tagline, regras e texto sobre a comunidade.',
+          style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
+        ),
+        SizedBox(height: r.s(16)),
+        // Tagline
+        _ContentField(
+          label: 'Tagline',
+          hint: 'Frase curta que define a comunidade...',
+          value: _tagline,
+          onChanged: (v) => setState(() => _tagline = v),
+          maxLines: 2,
+          icon: Icons.short_text_rounded,
+        ),
+        SizedBox(height: r.s(12)),
+        // Descrição
+        _ContentField(
+          label: 'Descrição',
+          hint: 'Descrição exibida na página de informações...',
+          value: _description,
+          onChanged: (v) => setState(() => _description = v),
+          maxLines: 6,
+          icon: Icons.description_rounded,
+        ),
+        SizedBox(height: r.s(12)),
+        // Sobre (About)
+        _ContentField(
+          label: 'Sobre a Comunidade',
+          hint: 'Texto detalhado sobre a comunidade, história, objetivos...',
+          value: _aboutText,
+          onChanged: (v) => setState(() => _aboutText = v),
+          maxLines: 8,
+          icon: Icons.info_rounded,
+        ),
+        SizedBox(height: r.s(24)),
+        Text('Regras da Comunidade',
+            style: Theme.of(context).textTheme.titleLarge),
+        SizedBox(height: r.s(6)),
+        Text(
+          'As regras serão exibidas na aba de Guidelines. Suporta Markdown.',
+          style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
+        ),
+        SizedBox(height: r.s(12)),
+        Container(
+          padding: EdgeInsets.all(r.s(16)),
+          decoration: BoxDecoration(
+            color: context.surfaceColor,
+            borderRadius: BorderRadius.circular(r.s(12)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.gavel_rounded,
+                      color: AppTheme.primaryColor, size: r.s(20)),
+                  SizedBox(width: r.s(10)),
+                  const Text('Regras',
+                      style: TextStyle(fontWeight: FontWeight.w600)),
+                ],
+              ),
+              SizedBox(height: r.s(12)),
+              TextField(
+                controller: TextEditingController(text: _rules),
+                onChanged: (v) => setState(() => _rules = v),
+                maxLines: 12,
+                decoration: InputDecoration(
+                  hintText: '## Regra 1\nNão seja ofensivo...\n\n## Regra 2\n...',
+                  filled: true,
+                  fillColor: context.scaffoldBg,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(r.s(8)),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+                style: TextStyle(fontSize: r.fs(13)),
+              ),
+              SizedBox(height: r.s(8)),
+              Text(
+                'Dica: Use ## para títulos de regras, **negrito** para ênfase.',
+                style: TextStyle(
+                    color: Colors.grey[600], fontSize: r.fs(11)),
               ),
             ],
           ),
@@ -1290,6 +1626,68 @@ class _InfoRow extends ConsumerWidget {
           Text(value,
               style:
                   TextStyle(fontWeight: FontWeight.w600, fontSize: r.fs(13))),
+        ],
+      ),
+    );
+  }
+}
+
+/// Campo de texto para edição de conteúdo editorial da comunidade.
+class _ContentField extends StatelessWidget {
+  final String label;
+  final String hint;
+  final String value;
+  final ValueChanged<String> onChanged;
+  final int maxLines;
+  final IconData icon;
+
+  const _ContentField({
+    required this.label,
+    required this.hint,
+    required this.value,
+    required this.onChanged,
+    this.maxLines = 4,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = context.r;
+    return Container(
+      padding: EdgeInsets.all(r.s(16)),
+      decoration: BoxDecoration(
+        color: context.surfaceColor,
+        borderRadius: BorderRadius.circular(r.s(12)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: AppTheme.primaryColor, size: r.s(20)),
+              SizedBox(width: r.s(10)),
+              Text(label,
+                  style: TextStyle(
+                      fontWeight: FontWeight.w600, fontSize: r.fs(14))),
+            ],
+          ),
+          SizedBox(height: r.s(10)),
+          TextField(
+            controller: TextEditingController(text: value),
+            onChanged: onChanged,
+            maxLines: maxLines,
+            decoration: InputDecoration(
+              hintText: hint,
+              filled: true,
+              fillColor: context.scaffoldBg,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(r.s(8)),
+                borderSide: BorderSide.none,
+              ),
+            ),
+            style: TextStyle(fontSize: r.fs(13)),
+          ),
         ],
       ),
     );

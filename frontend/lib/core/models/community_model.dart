@@ -45,6 +45,32 @@ class CommunityModel {
   // Campos calculados (não na tabela)
   final bool? isMember;
 
+  // ── Novos campos: Banners múltiplos por contexto ──
+  /// Banner exibido no header da tela de detalhe da comunidade
+  final String? bannerHeaderUrl;
+  /// Banner exibido no drawer lateral da comunidade
+  final String? bannerDrawerUrl;
+  /// Banner exibido no card da lista de comunidades
+  final String? bannerCardUrl;
+  /// Banner exibido na tela de informações/sobre da comunidade
+  final String? bannerInfoUrl;
+
+  // ── Novos campos: Tema avançado ──
+  /// Cor final do gradiente do tema (opcional)
+  final String? themeGradientEnd;
+  /// Como a cor predominante é aplicada: accent, full, gradient
+  final String themeApplyMode;
+
+  // ── Novos campos: Conteúdo editorial ──
+  /// Regras da comunidade em formato Markdown
+  final String rules;
+  /// Texto de descrição expandida da comunidade
+  final String aboutText;
+  /// Tags/categorias da comunidade
+  final List<String> communityTags;
+  /// Número máximo de posts que podem ser fixados simultaneamente
+  final int maxPinnedPosts;
+
   const CommunityModel({
     required this.id,
     required this.name,
@@ -71,9 +97,25 @@ class CommunityModel {
     required this.createdAt,
     required this.updatedAt,
     this.isMember,
+    // Novos campos
+    this.bannerHeaderUrl,
+    this.bannerDrawerUrl,
+    this.bannerCardUrl,
+    this.bannerInfoUrl,
+    this.themeGradientEnd,
+    this.themeApplyMode = 'accent',
+    this.rules = '',
+    this.aboutText = '',
+    this.communityTags = const [],
+    this.maxPinnedPosts = 5,
   });
 
   factory CommunityModel.fromJson(Map<String, dynamic> json) {
+    List<String> parseTags(dynamic raw) {
+      if (raw == null) return [];
+      if (raw is List) return raw.map((e) => e.toString()).toList();
+      return [];
+    }
     return CommunityModel(
       id: json['id'] as String,
       name: json['name'] as String? ?? '',
@@ -102,6 +144,17 @@ class CommunityModel {
       updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '') ??
           DateTime.now(),
       isMember: json['is_member'] as bool?,
+      // Novos campos
+      bannerHeaderUrl: json['banner_header_url'] as String?,
+      bannerDrawerUrl: json['banner_drawer_url'] as String?,
+      bannerCardUrl: json['banner_card_url'] as String?,
+      bannerInfoUrl: json['banner_info_url'] as String?,
+      themeGradientEnd: json['theme_gradient_end'] as String?,
+      themeApplyMode: json['theme_apply_mode'] as String? ?? 'accent',
+      rules: json['rules'] as String? ?? '',
+      aboutText: json['about_text'] as String? ?? '',
+      communityTags: parseTags(json['community_tags']),
+      maxPinnedPosts: json['max_pinned_posts'] as int? ?? 5,
     );
   }
 
@@ -119,6 +172,110 @@ class CommunityModel {
       'join_type': joinType,
       'is_searchable': isSearchable,
       'theme_color': themeColor,
+      // Novos campos
+      'banner_header_url': bannerHeaderUrl,
+      'banner_drawer_url': bannerDrawerUrl,
+      'banner_card_url': bannerCardUrl,
+      'banner_info_url': bannerInfoUrl,
+      'theme_gradient_end': themeGradientEnd,
+      'theme_apply_mode': themeApplyMode,
+      'rules': rules,
+      'about_text': aboutText,
+      'community_tags': communityTags,
+      'max_pinned_posts': maxPinnedPosts,
     };
+  }
+
+  /// Retorna o banner mais adequado para o contexto especificado.
+  /// Fallback: bannerUrl genérico.
+  String? bannerForContext(String ctx) {
+    switch (ctx) {
+      case 'header':
+        return bannerHeaderUrl ?? bannerUrl;
+      case 'drawer':
+        return bannerDrawerUrl ?? bannerHeaderUrl ?? bannerUrl;
+      case 'card':
+        return bannerCardUrl ?? bannerUrl;
+      case 'info':
+        return bannerInfoUrl ?? bannerHeaderUrl ?? bannerUrl;
+      default:
+        return bannerUrl;
+    }
+  }
+
+  CommunityModel copyWith({
+    String? id,
+    String? name,
+    String? tagline,
+    String? description,
+    String? iconUrl,
+    String? bannerUrl,
+    String? endpoint,
+    String? link,
+    String? joinType,
+    String? listedStatus,
+    bool? isSearchable,
+    int? membersCount,
+    int? postsCount,
+    double? communityHeat,
+    String? primaryLanguage,
+    String? category,
+    String? agentId,
+    String? themeColor,
+    Map<String, dynamic>? themePack,
+    Map<String, dynamic>? configuration,
+    String? status,
+    int? probationStatus,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    bool? isMember,
+    String? bannerHeaderUrl,
+    String? bannerDrawerUrl,
+    String? bannerCardUrl,
+    String? bannerInfoUrl,
+    String? themeGradientEnd,
+    String? themeApplyMode,
+    String? rules,
+    String? aboutText,
+    List<String>? communityTags,
+    int? maxPinnedPosts,
+  }) {
+    return CommunityModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      tagline: tagline ?? this.tagline,
+      description: description ?? this.description,
+      iconUrl: iconUrl ?? this.iconUrl,
+      bannerUrl: bannerUrl ?? this.bannerUrl,
+      endpoint: endpoint ?? this.endpoint,
+      link: link ?? this.link,
+      joinType: joinType ?? this.joinType,
+      listedStatus: listedStatus ?? this.listedStatus,
+      isSearchable: isSearchable ?? this.isSearchable,
+      membersCount: membersCount ?? this.membersCount,
+      postsCount: postsCount ?? this.postsCount,
+      communityHeat: communityHeat ?? this.communityHeat,
+      primaryLanguage: primaryLanguage ?? this.primaryLanguage,
+      category: category ?? this.category,
+      agentId: agentId ?? this.agentId,
+      themeColor: themeColor ?? this.themeColor,
+      themePack: themePack ?? this.themePack,
+      configuration: configuration ?? this.configuration,
+      status: status ?? this.status,
+      probationStatus: probationStatus ?? this.probationStatus,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isMember: isMember ?? this.isMember,
+      bannerHeaderUrl: bannerHeaderUrl ?? this.bannerHeaderUrl,
+      bannerDrawerUrl: bannerDrawerUrl ?? this.bannerDrawerUrl,
+      bannerCardUrl: bannerCardUrl ?? this.bannerCardUrl,
+      bannerInfoUrl: bannerInfoUrl ?? this.bannerInfoUrl,
+      themeGradientEnd: themeGradientEnd ?? this.themeGradientEnd,
+      themeApplyMode: themeApplyMode ?? this.themeApplyMode,
+      rules: rules ?? this.rules,
+      aboutText: aboutText ?? this.aboutText,
+      communityTags: communityTags ?? this.communityTags,
+      maxPinnedPosts: maxPinnedPosts ?? this.maxPinnedPosts,
+    );
   }
 }
