@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_service.dart';
 import '../services/cache_service.dart';
 import '../services/realtime_service.dart';
+import '../services/push_notification_service.dart';
 
 // =============================================================================
 // NotificationProvider — Sistema completo de notificações
@@ -529,9 +530,13 @@ final notificationProvider =
         NotificationNotifier.new);
 
 /// Badge count — derivado do provider principal (leve, sem rebuild desnecessário)
+/// Também atualiza o badge no ícone do app automaticamente.
 final unreadNotificationCountProvider = Provider<int>((ref) {
   final notifState = ref.watch(notificationProvider);
-  return notifState.valueOrNull?.unreadCount ?? 0;
+  final count = notifState.valueOrNull?.unreadCount ?? 0;
+  // Atualizar badge no ícone do app sempre que o count mudar
+  PushNotificationService.updateBadgeFromUnreadCount(count);
+  return count;
 });
 
 /// Categoria selecionada atual

@@ -156,7 +156,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             name: 'chats',
             builder: (context, state) => const ChatListScreen(),
           ),
-          // STORE (tab 3)
+          // NOTIFICAÇÕES (tab 3)
+          GoRoute(
+            path: '/notifications',
+            name: 'notifications',
+            builder: (context, state) => const NotificationsScreen(),
+          ),
+          // STORE (tab 4)
           GoRoute(
             path: '/store',
             name: 'store',
@@ -540,15 +546,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           return null;
         },
         builder: (context, state) => const AdminReportsScreen(),
-      ),
-
-      // ====================================================================
-      // NOTIFICAÇÕES
-      // ====================================================================
-      GoRoute(
-        path: '/notifications',
-        name: 'notifications',
-        builder: (context, state) => const NotificationsScreen(),
       ),
 
       // ====================================================================

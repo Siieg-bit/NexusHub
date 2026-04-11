@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'supabase_service.dart';
 import '../l10n/locale_provider.dart';
 
@@ -254,12 +255,58 @@ class PushNotificationService {
 
     // Emitir para a stream
     _notificationStreamController?.add(message.data);
+    // Incrementar badge no ícone do app
+    _incrementAppBadge();
   }
-
   /// Lida com toque na notificação (app em background/terminated)
   static void _handleNotificationTap(RemoteMessage message) {
     debugPrint('[Push] Notification tap: ${message.data}');
     _notificationStreamController?.add(message.data);
+    // Limpar badge ao abrir notificação
+    clearAppBadge();
+  }
+  /// Incrementa o badge do ícone do app
+  static Future<void> _incrementAppBadge() async {
+    try {
+      final supported = await FlutterAppBadger.isAppBadgeSupported();
+      if (!supported) return;
+      // Buscar contagem real de não lidas do Supabase
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) return;
+      final res = await SupabaseService.client
+          .from('notifications')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('is_read', false)
+          .count(CountOption.exact);
+      final count = res.count ?? 1;
+      await FlutterAppBadger.updateBadgeCount(count);
+    } catch (e) {
+      debugPrint('[Push] Erro ao atualizar badge: \$e');
+    }
+  }
+  /// Limpa o badge do ícone do app
+  static Future<void> clearAppBadge() async {
+    try {
+      final supported = await FlutterAppBadger.isAppBadgeSupported();
+      if (supported) await FlutterAppBadger.removeBadge();
+    } catch (e) {
+      debugPrint('[Push] Erro ao limpar badge: \$e');
+    }
+  }
+  /// Atualiza o badge com a contagem atual de não lidas
+  static Future<void> updateBadgeFromUnreadCount(int count) async {
+    try {
+      final supported = await FlutterAppBadger.isAppBadgeSupported();
+      if (!supported) return;
+      if (count > 0) {
+        await FlutterAppBadger.updateBadgeCount(count);
+      } else {
+        await FlutterAppBadger.removeBadge();
+      }
+    } catch (e) {
+      debugPrint('[Push] Erro ao atualizar badge: \$e');
+    }
   }
 
   /// Inscrever-se em um tópico (ex: comunidade)

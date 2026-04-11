@@ -4,15 +4,17 @@ import 'package:go_router/go_router.dart';
 import 'package:badges/badges.dart' as badges;
 import '../config/app_theme.dart';
 import '../core/l10n/locale_provider.dart';
+import '../core/providers/notification_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Bottom Navigation Bar Global — réplica pixel-perfect do Amino Apps.
 ///
-/// 4 Tabs exatas do Amino original:
-///   1. Discover  (ícone pena/feather — edit_outlined / edit)
-///   2. Communities (ícone grid 2x2 — grid_view_outlined / grid_view)
-///   3. Chats (ícone balão — chat_bubble_outline / chat_bubble)
-///   4. Store (ícone prédio/loja — store_mall_directory_outlined / store_mall_directory)
+/// 5 Tabs:
+///   1. Discover  (ícone pena/feather)
+///   2. Communities (ícone grid 2x2)
+///   3. Chats (ícone balão de chat)
+///   4. Notificações (ícone sino — com badge dinâmico)
+///   5. Store (ícone prédio/loja)
 ///
 /// Cor ativa: ciano (#00BCD4) — NÃO branco.
 /// Cor inativa: cinza translúcido.
@@ -27,7 +29,8 @@ class ShellScreen extends ConsumerWidget {
     if (location == '/explore' || location == '/') return 0;
     if (location == '/communities') return 1;
     if (location == '/chats') return 2;
-    if (location == '/store') return 3;
+    if (location.startsWith('/notifications')) return 3;
+    if (location == '/store') return 4;
     return 0;
   }
 
@@ -43,6 +46,9 @@ class ShellScreen extends ConsumerWidget {
         context.go('/chats');
         break;
       case 3:
+        context.go('/notifications');
+        break;
+      case 4:
         context.go('/store');
         break;
     }
@@ -50,8 +56,9 @@ class ShellScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final selectedIndex = _getSelectedIndex(context);
+    final unreadNotifCount = ref.watch(unreadNotificationCountProvider);
 
     return Scaffold(
       body: child,
@@ -75,7 +82,7 @@ class ShellScreen extends ConsumerWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    // ── Discover (ícone pena/feather — Amino usa ícone de pena)
+                    // ── Discover
                     _AminoNavItem(
                       icon: Icons.edit_outlined,
                       activeIcon: Icons.edit,
@@ -83,7 +90,7 @@ class ShellScreen extends ConsumerWidget {
                       isSelected: selectedIndex == 0,
                       onTap: () => _onItemTapped(context, 0),
                     ),
-                    // ── Communities (ícone grid 2x2)
+                    // ── Communities
                     _AminoNavItem(
                       icon: Icons.grid_view_outlined,
                       activeIcon: Icons.grid_view_rounded,
@@ -91,7 +98,7 @@ class ShellScreen extends ConsumerWidget {
                       isSelected: selectedIndex == 1,
                       onTap: () => _onItemTapped(context, 1),
                     ),
-                    // ── Chats (ícone balão de chat)
+                    // ── Chats
                     _AminoNavItem(
                       icon: Icons.chat_bubble_outline_rounded,
                       activeIcon: Icons.chat_bubble_rounded,
@@ -100,13 +107,22 @@ class ShellScreen extends ConsumerWidget {
                       onTap: () => _onItemTapped(context, 2),
                       badgeCount: 0,
                     ),
-                    // ── Store (ícone prédio/loja — Amino usa store_mall_directory)
+                    // ── Notificações (com badge dinâmico)
+                    _AminoNavItem(
+                      icon: Icons.notifications_outlined,
+                      activeIcon: Icons.notifications_rounded,
+                      label: 'Alertas',
+                      isSelected: selectedIndex == 3,
+                      onTap: () => _onItemTapped(context, 3),
+                      badgeCount: unreadNotifCount,
+                    ),
+                    // ── Store
                     _AminoNavItem(
                       icon: Icons.store_mall_directory_outlined,
                       activeIcon: Icons.store_mall_directory,
                       label: s.shop,
-                      isSelected: selectedIndex == 3,
-                      onTap: () => _onItemTapped(context, 3),
+                      isSelected: selectedIndex == 4,
+                      onTap: () => _onItemTapped(context, 4),
                     ),
                   ],
                 ),
@@ -184,7 +200,7 @@ class _AminoNavItem extends ConsumerWidget {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
-        width: 72,
+        width: 64,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
