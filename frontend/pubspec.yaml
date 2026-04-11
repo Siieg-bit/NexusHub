@@ -100,6 +100,12 @@ dependencies:
   flutter_local_notifications: ^18.0.0
   permission_handler: ^11.3.0
 
+# Patch local para corrigir o namespace ausente no flutter_app_badger 1.5.0
+# (requisito do AGP 8+ — sem isso o build falha com "Namespace not specified")
+dependency_overrides:
+  flutter_app_badger:
+    path: patches/flutter_app_badger
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
