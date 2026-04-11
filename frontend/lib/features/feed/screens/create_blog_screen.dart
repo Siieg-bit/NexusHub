@@ -41,6 +41,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
   final _tagController = TextEditingController();
   final _scrollController = ScrollController();
   final _contentFocusNode = FocusNode();
+  final _blockEditorKey = GlobalKey<BlockEditorState>();
 
   List<ContentBlock> _blocks = [];
   bool _isSubmitting = false;
@@ -1454,7 +1455,9 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                     builder: (context, constraints) {
                       return GestureDetector(
                         behavior: HitTestBehavior.translucent,
-                        onTap: () => _contentFocusNode.requestFocus(),
+                        onTap: () {
+                          _blockEditorKey.currentState?.focusLastTextBlock();
+                        },
                         child: SingleChildScrollView(
                           controller: _scrollController,
                           padding: EdgeInsets.symmetric(horizontal: r.s(16)),
@@ -1570,6 +1573,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
 
                           // ── Block Editor (sem barra de adicionar) ──
                           BlockEditor(
+                            key: _blockEditorKey,
                             initialBlocks: _blocks,
                             communityId: widget.communityId,
                             showAddBar: false,

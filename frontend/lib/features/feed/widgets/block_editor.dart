@@ -31,6 +31,7 @@ class ContentBlock {
   int level;
   TextEditingController? controller;
   TextEditingController? captionController;
+  FocusNode? focusNode;
 
   ContentBlock({
     String? id,
@@ -54,9 +55,12 @@ class ContentBlock {
   void _ensureControllers() {
     if (isTextBased) {
       controller ??= TextEditingController(text: text);
+      focusNode ??= FocusNode();
     } else {
       controller?.dispose();
       controller = null;
+      focusNode?.dispose();
+      focusNode = null;
     }
 
     if (type == BlockType.image) {
@@ -123,6 +127,7 @@ class ContentBlock {
   void dispose() {
     controller?.dispose();
     captionController?.dispose();
+    focusNode?.dispose();
   }
 }
 
@@ -151,13 +156,31 @@ class BlockEditor extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<BlockEditor> createState() => _BlockEditorState();
+  ConsumerState<BlockEditor> createState() => BlockEditorState();
 }
 
-class _BlockEditorState extends ConsumerState<BlockEditor> {
+class BlockEditorState extends ConsumerState<BlockEditor> {
   late List<ContentBlock> _blocks;
   int? _focusedBlockIndex;
   bool _isUploading = false;
+
+  /// Foca no último bloco de texto (chamado externamente via GlobalKey)
+  void focusLastTextBlock() {
+    for (int i = _blocks.length - 1; i >= 0; i--) {
+      if (_blocks[i].isTextBased && _blocks[i].focusNode != null) {
+        setState(() => _focusedBlockIndex = i);
+        _blocks[i].focusNode!.requestFocus();
+        // Move cursor para o final do texto
+        final controller = _blocks[i].controller;
+        if (controller != null) {
+          controller.selection = TextSelection.collapsed(
+            offset: controller.text.length,
+          );
+        }
+        return;
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -555,6 +578,7 @@ class _SeamlessBlock extends ConsumerWidget {
 
         final field = TextField(
           controller: block.controller,
+          focusNode: block.focusNode,
           textAlign: _parseTextAlign(block.align),
           style: baseStyle,
           decoration: InputDecoration(
