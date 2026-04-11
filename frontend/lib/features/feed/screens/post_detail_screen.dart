@@ -528,9 +528,56 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     final postAsync = ref.watch(postDetailProvider(widget.postId));
     final commentsAsync = ref.watch(postCommentsProvider(widget.postId));
 
+    final post = postAsync.valueOrNull;
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: context.scaffoldBg,
+      // Barra Share/Like/Save/Next fora do body para não ser afetada pelo teclado
+      bottomNavigationBar: post == null
+          ? null
+          : Container(
+              decoration: BoxDecoration(
+                color: context.surfaceColor,
+                border: Border(
+                  top: BorderSide(color: Colors.grey.withValues(alpha: 0.15)),
+                ),
+              ),
+              child: SafeArea(
+                top: false,
+                child: Row(
+                  children: [
+                    _BottomBarButton(
+                      icon: Icons.share_outlined,
+                      label: s.share,
+                      onTap: _sharePost,
+                    ),
+                    _BottomBarButton(
+                      icon: post.isLiked
+                          ? Icons.favorite_rounded
+                          : Icons.favorite_border_rounded,
+                      label: s.like,
+                      color: post.isLiked ? AppTheme.errorColor : null,
+                      onTap: _toggleLike,
+                    ),
+                    _BottomBarButton(
+                      icon: _isBookmarked
+                          ? Icons.bookmark_rounded
+                          : Icons.bookmark_border_rounded,
+                      label: s.save,
+                      color: _isBookmarked ? AppTheme.primaryColor : null,
+                      onTap: _toggleBookmark,
+                    ),
+                    _BottomBarButton(
+                      icon: Icons.arrow_forward_rounded,
+                      label: s.nextPost,
+                      onTap: () {
+                        context.pop();
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -1467,52 +1514,6 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 ),
               ),
 
-              // ================================================================
-              // BARRA INFERIOR FIXA — estilo Amino (Share | Like | Save | Next)
-              // ================================================================
-              Container(
-                decoration: BoxDecoration(
-                  color: context.surfaceColor,
-                  border: Border(
-                    top: BorderSide(color: Colors.grey.withValues(alpha: 0.15)),
-                  ),
-                ),
-                child: SafeArea(
-                  child: Row(
-                    children: [
-                      _BottomBarButton(
-                        icon: Icons.share_outlined,
-                        label: s.share,
-                        onTap: _sharePost,
-                      ),
-                      _BottomBarButton(
-                        icon: post.isLiked
-                            ? Icons.favorite_rounded
-                            : Icons.favorite_border_rounded,
-                        label: s.like,
-                        color: post.isLiked ? AppTheme.errorColor : null,
-                        onTap: _toggleLike,
-                      ),
-                      _BottomBarButton(
-                        icon: _isBookmarked
-                            ? Icons.bookmark_rounded
-                            : Icons.bookmark_border_rounded,
-                        label: s.save,
-                        color: _isBookmarked ? AppTheme.primaryColor : null,
-                        onTap: _toggleBookmark,
-                      ),
-                      _BottomBarButton(
-                        icon: Icons.arrow_forward_rounded,
-                        label: s.nextPost,
-                        onTap: () {
-                          // Navegar para o próximo post do feed
-                          context.pop();
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
             ],
           );
         },

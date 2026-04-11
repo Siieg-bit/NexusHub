@@ -433,14 +433,17 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
   Widget build(BuildContext context) {
     final r = context.r;
     final commentsAsync = ref.watch(wallCommentsProvider(widget.wallUserId));
+    // Captura o viewInsets aqui no build (onde o NestedScrollView ainda propaga)
+    // e injeta manualmente no MediaQuery dos filhos.
+    final mq = MediaQuery.of(context);
+    final keyboardHeight = mq.viewInsets.bottom;
 
     // Layout sempre inline fixo: composer no topo, lista de comentários abaixo.
     // O campo de texto fica sempre visível — ao tocar, o teclado abre direto.
-    // Não existe mais bottom sheet.
     return Column(
       children: [
         // Composer fixo no topo
-        _buildComposer(r),
+        _buildComposer(r, keyboardHeight),
         // Lista de comentários ocupa o restante
         Expanded(child: _buildCommentList(r, null, commentsAsync)),
       ],
@@ -518,23 +521,20 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
     );
   }
 
-  Widget _buildComposer(Responsive r) {
+  Widget _buildComposer(Responsive r, double keyboardHeight) {
     final hasContent = _pendingMediaUrl != null || _pendingStickerUrl != null;
+    // Padding inferior: quando teclado aberto, adiciona a altura do teclado
+    // para empurrar o composer acima dele.
+    final bottomPad = keyboardHeight > 0
+        ? keyboardHeight + MediaQuery.of(context).padding.bottom
+        : MediaQuery.of(context).padding.bottom + r.s(4);
 
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-    return AnimatedPadding(
-      duration: const Duration(milliseconds: 150),
-      curve: Curves.easeOut,
-      padding: EdgeInsets.only(bottom: bottomInset),
-      child: SafeArea(
-        top: false,
-        bottom: bottomInset == 0,
-        child: Container(
-          color: context.scaffoldBg,
-          padding: EdgeInsets.fromLTRB(r.s(16), r.s(12), r.s(16), r.s(12)),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+    return Container(
+      color: context.scaffoldBg,
+      padding: EdgeInsets.fromLTRB(r.s(16), r.s(12), r.s(16), bottomPad),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
           // Banner de reply
           if (_replyingTo != null)
             Container(
@@ -769,9 +769,7 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
                 ),
               ),
             ),
-            ],
-          ),
-        ),
+        ],
       ),
     );
   }
