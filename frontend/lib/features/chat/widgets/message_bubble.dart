@@ -451,7 +451,7 @@ class MessageBubble extends ConsumerWidget {
         ),
       );
       // Screening Room é clicavel para entrar na sala
-      if (!isVoice && threadId != null && threadId.isNotEmpty) {
+      if (!isVoice && threadId.isNotEmpty) {
         return GestureDetector(
           onTap: () => context.push('/screening-room/$threadId'),
           child: container,

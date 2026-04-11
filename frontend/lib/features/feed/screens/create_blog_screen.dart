@@ -1486,66 +1486,6 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                             color: context.dividerClr.withValues(alpha: 0.25),
                           ),
 
-                          // ── Capa inline (se definida) — discreta ──
-                          if (_coverImageUrl != null && false) ...[
-                            Stack(
-                              children: [
-                                ClipRRect(
-                                  borderRadius:
-                                      BorderRadius.circular(r.s(8)),
-                                  child: Image.network(
-                                    _coverImageUrl!,
-                                    width: double.infinity,
-                                    height: r.s(140),
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                Positioned(
-                                  top: r.s(6),
-                                  right: r.s(6),
-                                  child: GestureDetector(
-                                    onTap: () => setState(
-                                        () => _coverImageUrl = null),
-                                    child: Container(
-                                      padding: EdgeInsets.all(r.s(3)),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black
-                                            .withValues(alpha: 0.5),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Icon(
-                                        Icons.close_rounded,
-                                        color: Colors.white,
-                                        size: r.s(14),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: r.s(8)),
-                          ],
-
-                          // ── Tags inline (desabilitado — ficam em Opções) ──
-                          if (_tags.isNotEmpty && false) ...[
-                            Wrap(
-                              spacing: r.s(4),
-                              runSpacing: r.s(3),
-                              children: _tags
-                                  .map((tag) => Text(
-                                        '#$tag',
-                                        style: TextStyle(
-                                          color: AppTheme.accentColor
-                                              .withValues(alpha: 0.6),
-                                          fontSize: r.fs(12),
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ))
-                                  .toList(),
-                            ),
-                            SizedBox(height: r.s(6)),
-                          ],
-
                           // ── Block Editor (sem barra de adicionar) ──
                           BlockEditor(
                             key: _blockEditorKey,
@@ -2221,7 +2161,7 @@ class _ColorPaletteRow extends StatelessWidget {
         separatorBuilder: (_, __) => SizedBox(width: r.s(6)),
         itemBuilder: (_, i) {
           final color = colors[i];
-          final isSelected = color.value == selected.value;
+          final isSelected = color == selected;
           return GestureDetector(
             onTap: () => onSelect(color),
             child: Container(

@@ -171,7 +171,6 @@ class ErrorHandler {
 
     // Unique constraint violation
     if (code == '23505') {
-      final s = getStrings();
       if (msg.contains('nickname')) return s.nicknameInUse;
       if (msg.contains('email')) return s.emailAlreadyRegistered;
       if (msg.contains('community_members'))
@@ -180,7 +179,6 @@ class ErrorHandler {
     }
     // Foreign key violation
     if (code == '23503') {
-      final s = getStrings();
       return s.invalidReference;
     }
     // Not null violation
@@ -189,7 +187,6 @@ class ErrorHandler {
     }
     // Check constraint violation
     if (code == '23514') {
-      final s = getStrings();
       if (msg.contains('coins') || msg.contains('balance')) {
         return 'Saldo insuficiente.';
       }
@@ -197,17 +194,14 @@ class ErrorHandler {
     }
     // RLS policy violation
     if (code == '42501' || msg.contains('policy')) {
-      final s = getStrings();
       return s.noPermission;
     }
     // Function not found
     if (code == '42883') {
-      final s = getStrings();
       return s.featureTemporarilyUnavailable;
     }
     // Raised exception (from RPCs)
     if (code == 'P0001') {
-      final s = getStrings();
       // Tentar extrair mensagem amigável
       if (msg.contains('insufficient')) return 'Saldo insuficiente.';
       if (msg.contains('not a member'))
@@ -228,15 +222,12 @@ class ErrorHandler {
       return 'Arquivo muito grande. Reduza o tamanho e tente novamente.';
     }
     if (msg.contains('not found')) {
-      final s = getStrings();
       return s.fileNotFoundMsg;
     }
     if (msg.contains('permission') || msg.contains('policy')) {
-      final s = getStrings();
       return s.noUploadPermission;
     }
     if (msg.contains('mime') || msg.contains('type')) {
-      final s = getStrings();
       return s.fileTypeNotAllowed;
     }
 

@@ -40,16 +40,12 @@ class _StickerCreatorScreenState extends ConsumerState<StickerCreatorScreen> {
   Color _textColor = Colors.white;
   double _textSize = 24;
   bool _textBold = false;
-  bool _showTextInput = false;
-
   // Emoji overlay
   String _overlayEmoji = '';
-  Offset _emojiOffset = const Offset(0.5, 0.5); // posição relativa (0-1)
 
   // Borda/moldura
   Color _borderColor = Colors.transparent;
   double _borderWidth = 0;
-  BorderStyle _borderStyle = BorderStyle.none;
 
   // Background color (quando não há imagem)
   Color _bgColor = const Color(0xFF1B2838);
@@ -533,7 +529,7 @@ class _StickerCreatorScreenState extends ConsumerState<StickerCreatorScreen> {
             separatorBuilder: (_, __) => SizedBox(width: r.s(6)),
             itemBuilder: (_, i) {
               final c = _textColors[i];
-              final isSelected = _textColor.value == c.value;
+              final isSelected = _textColor == c;
               return GestureDetector(
                 onTap: () => setState(() => _textColor = c),
                 child: Container(
@@ -604,7 +600,7 @@ class _StickerCreatorScreenState extends ConsumerState<StickerCreatorScreen> {
             separatorBuilder: (_, __) => SizedBox(width: r.s(8)),
             itemBuilder: (_, i) {
               final c = _bgColors[i];
-              final isSelected = _bgColor.value == c.value;
+              final isSelected = _bgColor == c;
               return GestureDetector(
                 onTap: () => setState(() {
                   _bgColor = c;
@@ -699,7 +695,7 @@ class _StickerCreatorScreenState extends ConsumerState<StickerCreatorScreen> {
             separatorBuilder: (_, __) => SizedBox(width: r.s(6)),
             itemBuilder: (_, i) {
               final c = _borderColors[i];
-              final isSelected = _borderColor.value == c.value;
+              final isSelected = _borderColor == c;
               return GestureDetector(
                 onTap: () => setState(() {
                   _borderColor = c;

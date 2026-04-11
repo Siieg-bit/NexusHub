@@ -475,7 +475,6 @@ class _AminoTextField extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return TextFormField(
       controller: controller,

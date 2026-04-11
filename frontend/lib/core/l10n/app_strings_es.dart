@@ -5656,4 +5656,57 @@ class AppStringsEs implements AppStrings {
   String get yourWallIsEmpty => 'yourWallIsEmpty';
   @override
   String get youtubeVideo => 'youtubeVideo';
+  // FORMATTED COUNTS & NOTIFICATIONS
+  @override
+  String followersCount(int count) => '$count seguidores';
+  @override
+  String followingCount(int count) => '$count siguiendo';
+  @override
+  String postsCount(int count) => '$count publicaciones';
+  @override
+  String onlineMembersCount(int count) => '$count en línea';
+  @override
+  String commentsCount(int count) => '$count comentarios';
+  @override
+  String memberSinceDate(String date) => 'Miembro desde $date';
+  @override
+  String userIsTyping(String user) => '$user está escribiendo...';
+  @override
+  String userLikedYourPost(String user) => 'A $user le gustó tu publicación';
+  @override
+  String userCommentedOnYourPost(String user) => '$user comentó en tu publicación';
+  @override
+  String userFollowedYou(String user) => '$user comenzó a seguirte';
+  @override
+  String userMentionedYou(String user) => '$user te mencionó';
+  @override
+  String userInvitedYouTo(String user, String something) => '$user te invitó a $something';
+  @override
+  String userSentYouAMessage(String user) => '$user te envió un mensaje';
+  @override
+  String userJoinedTheCommunity(String user) => '$user se unió a la comunidad';
+  @override
+  String userJoinedTheChat(String user) => '$user se unió al chat';
+  @override
+  String userLeftTheChat(String user) => '$user salió del chat';
+  @override
+  String youWereKickedFromTheChat(String reason) => 'Fuiste eliminado del chat. Motivo: $reason';
+  @override
+  String youWereMutedInTheChat(String reason) => 'Fuiste silenciado en el chat. Motivo: $reason';
+  @override
+  String youLeveledUpTo(int level) => '¡Subiste al nivel $level!';
+  @override
+  String youGotANewAchievement(String achievement) => 'Desbloqueaste un nuevo logro: $achievement';
+  @override
+  String youHaveBeenStriked(int strike, String reason) => 'Recibiste el strike $strike. Motivo: $reason';
+  @override
+  String yourPostWasFeatured(String postTitle) => '¡Tu publicación "$postTitle" fue destacada!';
+  @override
+  String yourPostWasPinned(String postTitle) => '¡Tu publicación "$postTitle" fue fijada!';
+  @override
+  String yourPostWasCrossposted(String postTitle) => '¡Tu publicación "$postTitle" fue reposteada!';
+  @override
+  String yourWikiWasApproved(String wikiTitle) => '¡Tu wiki "$wikiTitle" fue aprobado!';
+  @override
+  String yourWikiWasRejected(String wikiTitle) => 'Tu wiki "$wikiTitle" fue rechazado.';
 }

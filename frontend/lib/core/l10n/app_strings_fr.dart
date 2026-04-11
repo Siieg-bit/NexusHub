@@ -5590,4 +5590,125 @@ class AppStringsFr implements AppStrings {
   String get yourProfile => 'yourProfile';
   @override
   String get youtubeVideo => 'youtubeVideo';
+  // FORMATTED COUNTS & NOTIFICATIONS
+  @override
+  String followersCount(int count) => '$count abonnés';
+  @override
+  String followingCount(int count) => '$count abonnements';
+  @override
+  String postsCount(int count) => '$count publications';
+  @override
+  String onlineMembersCount(int count) => '$count en ligne';
+  @override
+  String commentsCount(int count) => '$count commentaires';
+  @override
+  String memberSinceDate(String date) => 'Membre depuis $date';
+  @override
+  String userIsTyping(String user) => '$user est en train d\'écrire...';
+  @override
+  String userLikedYourPost(String user) => '$user a aimé votre publication';
+  @override
+  String userCommentedOnYourPost(String user) => '$user a commenté votre publication';
+  @override
+  String userFollowedYou(String user) => '$user a commencé à vous suivre';
+  @override
+  String userMentionedYou(String user) => '$user vous a mentionné';
+  @override
+  String userInvitedYouTo(String user, String something) => '$user vous a invité à $something';
+  @override
+  String userSentYouAMessage(String user) => '$user vous a envoyé un message';
+  @override
+  String userJoinedTheCommunity(String user) => '$user a rejoint la communauté';
+  @override
+  String userJoinedTheChat(String user) => '$user a rejoint le chat';
+  @override
+  String userLeftTheChat(String user) => '$user a quitté le chat';
+  @override
+  String youWereKickedFromTheChat(String reason) => 'Vous avez été retiré du chat. Raison : $reason';
+  @override
+  String youWereMutedInTheChat(String reason) => 'Vous avez été mis en sourdine dans le chat. Raison : $reason';
+  @override
+  String youLeveledUpTo(int level) => 'Vous avez atteint le niveau $level !';
+  @override
+  String youGotANewAchievement(String achievement) => 'Vous avez débloqué un nouvel accomplissement : $achievement';
+  @override
+  String youHaveBeenStriked(int strike, String reason) => 'Vous avez reçu le strike $strike. Raison : $reason';
+  @override
+  String yourPostWasFeatured(String postTitle) => 'Votre publication "$postTitle" a été mise en avant !';
+  @override
+  String yourPostWasPinned(String postTitle) => 'Votre publication "$postTitle" a été épinglée !';
+  @override
+  String yourPostWasCrossposted(String postTitle) => 'Votre publication "$postTitle" a été repostée !';
+  @override
+  String yourWikiWasApproved(String wikiTitle) => 'Votre wiki "$wikiTitle" a été approuvé !';
+  @override
+  String yourWikiWasRejected(String wikiTitle) => 'Votre wiki "$wikiTitle" a été rejeté.';
+
+  // ── Getters faltantes (placeholder) ──
+  @override
+  String get postCreationSuccess => 'postCreationSuccess';
+  @override
+  String get unpin => 'unpin';
+  @override
+  String get unreadChats => 'unreadChats';
+  @override
+  String get updateEmail => 'updateEmail';
+  @override
+  String get uploadVideo => 'uploadVideo';
+  @override
+  String get userBanned => 'userBanned';
+  @override
+  String get userKicked => 'userKicked';
+  @override
+  String get userMuted => 'userMuted';
+  @override
+  String get userWarned => 'userWarned';
+  @override
+  String get verificationEmailSent => 'verificationEmailSent';
+  @override
+  String get video2 => 'video2';
+  @override
+  String get viewAll2 => 'viewAll2';
+  @override
+  String get voiceChat => 'voiceChat';
+  @override
+  String get wall2 => 'wall2';
+  @override
+  String get warnUser => 'warnUser';
+  @override
+  String get warning => 'warning';
+  @override
+  String get warningSent => 'warningSent';
+  @override
+  String get welcome2 => 'welcome2';
+  @override
+  String get welcomeToOurCommunity => 'welcomeToOurCommunity';
+  @override
+  String get wiki2 => 'wiki2';
+  @override
+  String get yes2 => 'yes2';
+  @override
+  String get youAreBanned => 'youAreBanned';
+  @override
+  String get youAreNotFollowingAnyone => 'youAreNotFollowingAnyone';
+  @override
+  String get youHaveNoFollowers => 'youHaveNoFollowers';
+  @override
+  String get yourAccountHasBeenDeleted => 'yourAccountHasBeenDeleted';
+  @override
+  String get yourChangesHaveBeenSaved => 'yourChangesHaveBeenSaved';
+  @override
+  String get yourEmailHasBeenVerified => 'yourEmailHasBeenVerified';
+  @override
+  String get yourInterests => 'yourInterests';
+  @override
+  String get yourLanguages => 'yourLanguages';
+  @override
+  String get yourNickname => 'yourNickname';
+  @override
+  String get yourProfileIsNowPublic => 'yourProfileIsNowPublic';
+  @override
+  String get yourTopCommunities => 'yourTopCommunities';
+  @override
+  String get yourWallIsEmpty => 'yourWallIsEmpty';
 }

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
-import '../../../core/l10n/locale_provider.dart';
 import '../models/sticker_model.dart';
 import '../providers/sticker_providers.dart';
 import 'sticker_pack_screen.dart';
@@ -37,7 +36,6 @@ class _StickerGalleryScreenState extends ConsumerState<StickerGalleryScreen>
   @override
   Widget build(BuildContext context) {
     final r = context.r;
-    final s = ref.watch(stringsProvider);
 
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -440,13 +438,11 @@ class _CreatePackCard extends StatelessWidget {
 class _StickerTile extends StatelessWidget {
   final StickerModel sticker;
   final bool isFavorite;
-  final VoidCallback? onTap;
   final VoidCallback? onLongPress;
 
   const _StickerTile({
     required this.sticker,
     this.isFavorite = false,
-    this.onTap,
     this.onLongPress,
   });
 
@@ -454,7 +450,6 @@ class _StickerTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final r = context.r;
     return GestureDetector(
-      onTap: onTap,
       onLongPress: onLongPress,
       child: Stack(
         children: [

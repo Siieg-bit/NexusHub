@@ -288,7 +288,6 @@ class _HeatmapCell extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       width: r.s(12),
@@ -320,7 +319,6 @@ class _StatCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       padding: EdgeInsets.symmetric(vertical: r.s(10), horizontal: r.s(8)),

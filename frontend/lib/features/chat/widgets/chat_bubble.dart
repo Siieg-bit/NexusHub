@@ -66,7 +66,6 @@ class ChatBubble extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     // Se tem frame de imagem, usar o frame
     if (bubbleFrameUrl != null && bubbleFrameUrl!.isNotEmpty) {
       return _buildFramedBubble(context);

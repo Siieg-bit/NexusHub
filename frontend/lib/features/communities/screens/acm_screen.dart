@@ -1105,7 +1105,6 @@ class _FeaturedStyleOption extends ConsumerWidget {
   @override
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final s = ref.watch(stringsProvider);
     final r = context.r;
     return Expanded(
       child: GestureDetector(
@@ -1164,7 +1163,6 @@ class _AccessOption extends ConsumerWidget {
   @override
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: onTap,
@@ -1234,7 +1232,6 @@ class _StatCard extends ConsumerWidget {
   @override
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       margin: EdgeInsets.only(bottom: r.s(8)),
@@ -1282,7 +1279,6 @@ class _InfoRow extends ConsumerWidget {
   @override
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final s = ref.watch(stringsProvider);
     final r = context.r;
     return Padding(
       padding: EdgeInsets.symmetric(vertical: r.s(6)),

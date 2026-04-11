@@ -39,7 +39,6 @@ class StickerPicker extends ConsumerStatefulWidget {
 class _StickerPickerState extends ConsumerState<StickerPicker> {
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
     return _StickerPickerBody(communityId: widget.communityId);
   }
 }

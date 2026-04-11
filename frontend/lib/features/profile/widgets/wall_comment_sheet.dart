@@ -13,7 +13,6 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/utils/media_utils.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
-import '../../../core/l10n/locale_provider.dart';
 import '../../stickers/stickers.dart';
 
 // =============================================================================

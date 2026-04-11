@@ -34,7 +34,6 @@ class GiphyPicker extends ConsumerStatefulWidget {
 class _GiphyPickerState extends ConsumerState<GiphyPicker> {
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
     return const _GiphyPickerBody();
   }
 }

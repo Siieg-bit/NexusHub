@@ -413,11 +413,7 @@ class AppStringsDe implements AppStrings {
   @override
   String yourWikiWasRejected(String wikiTitle)=>'Dein Wiki "$wikiTitle" wurde abgelehnt.';
   @override
-  String youHaveBeenWarned(String reason)=>'Du wurdest verwarnt. Grund: $reason';
-  @override
   String youHaveBeenStriked(int strike, String reason)=>'Du hast einen Strike $strike erhalten. Grund: $reason';
-  @override
-  String youHaveBeenBanned(String reason)=>'Du wurdest gebannt. Grund: $reason';
   @override
   String userJoinedTheChat(String user)=>'$user ist dem Chat beigetreten';
   @override
@@ -5619,4 +5615,100 @@ class AppStringsDe implements AppStrings {
   String get yourWallIsEmpty => 'yourWallIsEmpty';
   @override
   String get youtubeVideo => 'youtubeVideo';
+
+  // ── Getters faltantes (placeholder) ──
+  @override
+  String get coins => 'coins';
+  @override
+  String get color => 'color';
+  @override
+  String get commentsLabel => 'commentsLabel';
+  @override
+  String get communityGuidelinesShort => 'communityGuidelinesShort';
+  @override
+  String get communityLink => 'communityLink';
+  @override
+  String get communityMembers => 'communityMembers';
+  @override
+  String get communityStats => 'communityStats';
+  @override
+  String get communityTheme => 'communityTheme';
+  @override
+  String get confirmAndContinue => 'confirmAndContinue';
+  @override
+  String get confirmNewPassword => 'confirmNewPassword';
+  @override
+  String get continueWithEmail => 'continueWithEmail';
+  @override
+  String get copiedToClipboardMsg => 'copiedToClipboardMsg';
+  @override
+  String get createYourAccount => 'createYourAccount';
+  @override
+  String get creatingAccount => 'creatingAccount';
+  @override
+  String get creatingCommunity => 'creatingCommunity';
+  @override
+  String get creatingPost => 'creatingPost';
+  @override
+  String get dailyActiveMembers => 'dailyActiveMembers';
+  @override
+  String get dailyCheckInCoins => 'dailyCheckInCoins';
+  @override
+  String get dark => 'dark';
+  @override
+  String get dataProcessing => 'dataProcessing';
+  @override
+  String get deleteAccountConfirmation => 'deleteAccountConfirmation';
+  @override
+  String get description => 'description';
+  @override
+  String get deviceNotSupported => 'deviceNotSupported';
+  @override
+  String get disconnected => 'disconnected';
+  @override
+  String get editCommunity => 'editCommunity';
+  @override
+  String get editProfileLabel => 'editProfileLabel';
+  @override
+  String get editWiki => 'editWiki';
+  @override
+  String get emailAddress => 'emailAddress';
+  @override
+  String get emailNotVerified => 'emailNotVerified';
+  @override
+  String get empty => 'empty';
+  @override
+  String get enable => 'enable';
+  @override
+  String get enterYourNickname => 'enterYourNickname';
+  @override
+  String get errorCreatingPost => 'errorCreatingPost';
+  @override
+  String get errorDeleting => 'errorDeleting';
+  @override
+  String get errorDeletingMessage => 'errorDeletingMessage';
+  @override
+  String get errorFetchingLink => 'errorFetchingLink';
+  @override
+  String get errorJoiningCommunity => 'errorJoiningCommunity';
+  @override
+  String get errorLeavingCommunity => 'errorLeavingCommunity';
+  @override
+  String get errorLoadingCommunity => 'errorLoadingCommunity';
+  @override
+  String get errorLoadingContent => 'errorLoadingContent';
+  @override
+  String get errorLoadingDrafts => 'errorLoadingDrafts';
+  @override
+  String get errorLoadingFollowers => 'errorLoadingFollowers';
+  @override
+  String get errorLoadingFollowing => 'errorLoadingFollowing';
+  @override
+  String get errorLoadingMembers => 'errorLoadingMembers';
+  @override
+  String get errorLoadingMessages => 'errorLoadingMessages';
+  @override
+  String get errorLoadingPost => 'errorLoadingPost';
+  @override
+  String get helpAndSupport => 'helpAndSupport';
 }

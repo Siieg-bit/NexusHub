@@ -111,7 +111,6 @@ class _ErrorBoundaryState extends ConsumerState<ErrorBoundary> {
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
     if (_error != null) {
       return widget.fallback ??
           _DefaultErrorFallback(

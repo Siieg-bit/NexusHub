@@ -5638,4 +5638,77 @@ class AppStringsIt implements AppStrings {
   String get yourWallIsEmpty => 'yourWallIsEmpty';
   @override
   String get youtubeVideo => 'youtubeVideo';
+  // FORMATTED COUNTS & NOTIFICATIONS
+  @override
+  String followersCount(int count) => '$count follower';
+  @override
+  String followingCount(int count) => '$count seguiti';
+  @override
+  String postsCount(int count) => '$count post';
+  @override
+  String onlineMembersCount(int count) => '$count online';
+  @override
+  String commentsCount(int count) => '$count commenti';
+  @override
+  String memberSinceDate(String date) => 'Membro dal $date';
+  @override
+  String userIsTyping(String user) => '$user sta scrivendo...';
+  @override
+  String userLikedYourPost(String user) => 'A $user è piaciuto il tuo post';
+  @override
+  String userCommentedOnYourPost(String user) => '$user ha commentato il tuo post';
+  @override
+  String userFollowedYou(String user) => '$user ha iniziato a seguirti';
+  @override
+  String userMentionedYou(String user) => '$user ti ha menzionato';
+  @override
+  String userInvitedYouTo(String user, String something) => '$user ti ha invitato a $something';
+  @override
+  String userSentYouAMessage(String user) => '$user ti ha inviato un messaggio';
+  @override
+  String userJoinedTheCommunity(String user) => '$user è entrato nella community';
+  @override
+  String userJoinedTheChat(String user) => '$user è entrato nella chat';
+  @override
+  String userLeftTheChat(String user) => '$user ha lasciato la chat';
+  @override
+  String youWereKickedFromTheChat(String reason) => 'Sei stato rimosso dalla chat. Motivo: $reason';
+  @override
+  String youWereMutedInTheChat(String reason) => 'Sei stato silenziato nella chat. Motivo: $reason';
+  @override
+  String youLeveledUpTo(int level) => 'Sei salito al livello $level!';
+  @override
+  String youGotANewAchievement(String achievement) => 'Hai sbloccato un nuovo obiettivo: $achievement';
+  @override
+  String youHaveBeenStriked(int strike, String reason) => 'Hai ricevuto lo strike $strike. Motivo: $reason';
+  @override
+  String yourPostWasFeatured(String postTitle) => 'Il tuo post "$postTitle" è stato messo in evidenza!';
+  @override
+  String yourPostWasPinned(String postTitle) => 'Il tuo post "$postTitle" è stato fissato!';
+  @override
+  String yourPostWasCrossposted(String postTitle) => 'Il tuo post "$postTitle" è stato repostato!';
+  @override
+  String yourWikiWasApproved(String wikiTitle) => 'Il tuo wiki "$wikiTitle" è stato approvato!';
+  @override
+  String yourWikiWasRejected(String wikiTitle) => 'Il tuo wiki "$wikiTitle" è stato rifiutato.';
+
+  // ── Getters faltantes (placeholder) ──
+  @override
+  String get reorder => 'reorder';
+  @override
+  String get reportSent => 'reportSent';
+  @override
+  String get reportUser => 'reportUser';
+  @override
+  String get reportedContent => 'reportedContent';
+  @override
+  String get requestToJoin => 'requestToJoin';
+  @override
+  String get requested => 'requested';
+  @override
+  String get resetAction => 'resetAction';
+  @override
+  String get restorePurchases => 'restorePurchases';
+  @override
+  String get reviewEntry => 'reviewEntry';
 }

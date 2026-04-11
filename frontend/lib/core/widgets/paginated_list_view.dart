@@ -204,7 +204,6 @@ class _PaginatedListViewState<T> extends ConsumerState<PaginatedListView<T>> {
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     // ── First load: shimmer ──
     if (_isFirstLoad) {

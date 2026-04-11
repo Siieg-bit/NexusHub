@@ -130,7 +130,6 @@ class CallService {
 
   /// Inicializa o Agora RTC Engine (chamado uma vez)
   static Future<void> _initEngine() async {
-    final s = getStrings();
     if (_isEngineInitialized && _engine != null) return;
 
     _engine = createAgoraRtcEngine();
@@ -179,7 +178,6 @@ class CallService {
 
   /// Solicita permissões de câmera e microfone
   static Future<bool> _requestPermissions(CallType type) async {
-    final s = getStrings();
     final permissions = <Permission>[Permission.microphone];
     if (type == CallType.video) {
       permissions.add(Permission.camera);

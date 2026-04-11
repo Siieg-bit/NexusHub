@@ -138,7 +138,6 @@ class _CallScreenState extends ConsumerState<CallScreen> {
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     final isVideo = widget.session.type == CallType.video;
     final isScreening = widget.session.type == CallType.screeningRoom;
@@ -598,7 +597,6 @@ class _AudioLevelBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -638,7 +636,6 @@ class _ControlButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: onTap,

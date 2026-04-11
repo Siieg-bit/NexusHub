@@ -31,8 +31,8 @@ class StickerPickerV2 extends ConsumerStatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => ProviderScope(
-        parent: ProviderScope.containerOf(context),
+      builder: (ctx) => UncontrolledProviderScope(
+        container: ProviderScope.containerOf(context),
         child: StickerPickerV2(onStickerSelected: onStickerSelected),
       ),
     );

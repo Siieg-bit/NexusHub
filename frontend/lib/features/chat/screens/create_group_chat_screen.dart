@@ -634,15 +634,31 @@ class _CreateGroupChatScreenState extends ConsumerState<CreateGroupChatScreen> {
               Icon(Icons.groups_rounded,
                   color: AppTheme.primaryColor, size: r.s(18)),
               SizedBox(width: r.s(8)),
-              Text(
-                s.communityLabel,
-                style: TextStyle(
-                  color: AppTheme.primaryColor,
-                  fontSize: r.fs(12),
-                  fontWeight: FontWeight.w600,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      s.communityLabel,
+                      style: TextStyle(
+                        color: Colors.grey[500],
+                        fontSize: r.fs(11),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    if (_selectedCommunityName != null)
+                      Text(
+                        _selectedCommunityName!,
+                        style: TextStyle(
+                          color: AppTheme.primaryColor,
+                          fontSize: r.fs(13),
+                          fontWeight: FontWeight.w700,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                  ],
                 ),
               ),
-              const Spacer(),
               GestureDetector(
                 onTap: () => setState(() => _currentStep = 0),
                 child: Text(s.change,

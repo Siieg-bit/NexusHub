@@ -5656,4 +5656,57 @@ class AppStringsJa implements AppStrings {
   String get yourWallIsEmpty => 'yourWallIsEmpty';
   @override
   String get youtubeVideo => 'youtubeVideo';
+  // FORMATTED COUNTS & NOTIFICATIONS
+  @override
+  String followersCount(int count) => '$count人のフォロワー';
+  @override
+  String followingCount(int count) => '$count人をフォロー中';
+  @override
+  String postsCount(int count) => '$count件の投稿';
+  @override
+  String onlineMembersCount(int count) => '$count人がオンライン';
+  @override
+  String commentsCount(int count) => '$count件のコメント';
+  @override
+  String memberSinceDate(String date) => '$dateからのメンバー';
+  @override
+  String userIsTyping(String user) => '$userが入力中...';
+  @override
+  String userLikedYourPost(String user) => '$userがあなたの投稿にいいねしました';
+  @override
+  String userCommentedOnYourPost(String user) => '$userがあなたの投稿にコメントしました';
+  @override
+  String userFollowedYou(String user) => '$userがあなたをフォローし始めました';
+  @override
+  String userMentionedYou(String user) => '$userがあなたをメンションしました';
+  @override
+  String userInvitedYouTo(String user, String something) => '$userがあなたを$somethingに招待しました';
+  @override
+  String userSentYouAMessage(String user) => '$userからメッセージが届きました';
+  @override
+  String userJoinedTheCommunity(String user) => '$userがコミュニティに参加しました';
+  @override
+  String userJoinedTheChat(String user) => '$userがチャットに参加しました';
+  @override
+  String userLeftTheChat(String user) => '$userがチャットを退出しました';
+  @override
+  String youWereKickedFromTheChat(String reason) => 'チャットから削除されました。理由: $reason';
+  @override
+  String youWereMutedInTheChat(String reason) => 'チャットでミュートされました。理由: $reason';
+  @override
+  String youLeveledUpTo(int level) => 'レベル$levelに上がりました！';
+  @override
+  String youGotANewAchievement(String achievement) => '新しい実績を解除しました: $achievement';
+  @override
+  String youHaveBeenStriked(int strike, String reason) => 'ストライク$strikeを受けました。理由: $reason';
+  @override
+  String yourPostWasFeatured(String postTitle) => 'あなたの投稿「$postTitle」が注目されました！';
+  @override
+  String yourPostWasPinned(String postTitle) => 'あなたの投稿「$postTitle」がピン留めされました！';
+  @override
+  String yourPostWasCrossposted(String postTitle) => 'あなたの投稿「$postTitle」がクロスポストされました！';
+  @override
+  String yourWikiWasApproved(String wikiTitle) => 'あなたのウィキ「$wikiTitle」が承認されました！';
+  @override
+  String yourWikiWasRejected(String wikiTitle) => 'あなたのウィキ「$wikiTitle」が拒否されました。';
 }

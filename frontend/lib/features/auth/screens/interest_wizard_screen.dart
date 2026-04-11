@@ -134,7 +134,6 @@ class _InterestWizardScreenState extends ConsumerState<InterestWizardScreen> {
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       body: SafeArea(

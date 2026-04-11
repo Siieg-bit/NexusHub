@@ -294,7 +294,6 @@ class AminoCommunityFab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return FloatingActionButton(
       onPressed: onTap,
@@ -322,7 +321,6 @@ class _CapsuleNavItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Expanded(
       child: GestureDetector(
@@ -360,7 +358,6 @@ class _NavContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -404,7 +401,6 @@ class _OnlineAvatarStack extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     final visible = avatars.take(3).toList();
 

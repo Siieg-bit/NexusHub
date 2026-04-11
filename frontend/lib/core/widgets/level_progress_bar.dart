@@ -67,7 +67,7 @@ class LevelProgressBar extends StatelessWidget {
         Padding(
           padding: EdgeInsets.symmetric(horizontal: r.s(24)),
           child: _buildProgressBar(r, context, progress, reputation,
-              nextThreshold, isMaxLevel, levelColor),
+              currentThreshold, nextThreshold, isMaxLevel, levelColor),
         ),
         SizedBox(height: r.s(12)),
 
@@ -160,10 +160,14 @@ class LevelProgressBar extends StatelessWidget {
     BuildContext context,
     double progress,
     int currentRep,
+    int currentThreshold,
     int nextThreshold,
     bool isMaxLevel,
     Color levelColor,
   ) {
+    // Progresso relativo ao nível atual: quanto falta dentro do intervalo do nível
+    final relativeRep = (currentRep - currentThreshold).clamp(0, nextThreshold - currentThreshold);
+    final relativeNext = (nextThreshold - currentThreshold).clamp(1, nextThreshold);
     return Container(
       height: r.s(28),
       decoration: BoxDecoration(
@@ -197,7 +201,7 @@ class LevelProgressBar extends StatelessWidget {
               child: Text(
                 isMaxLevel
                     ? s.levelMaxReached
-                    : s.repProgressLabel(currentRep, nextThreshold),
+                    : s.repProgressLabel(relativeRep, relativeNext),
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: r.fs(12),
