@@ -57,6 +57,12 @@ class PostModel {
   /// Nível LOCAL do autor na comunidade deste post.
   /// Populado via community_members.local_level — NUNCA de profiles.level (global).
   final int? authorLocalLevel;
+  /// Nickname LOCAL do autor na comunidade deste post.
+  final String? authorLocalNickname;
+  /// Avatar LOCAL do autor na comunidade deste post.
+  final String? authorLocalIconUrl;
+  /// Banner LOCAL do autor na comunidade deste post.
+  final String? authorLocalBannerUrl;
 
   const PostModel({
     required this.id,
@@ -101,6 +107,9 @@ class PostModel {
     this.isLiked = false,
     this.contentBlocks,
     this.authorLocalLevel,
+    this.authorLocalNickname,
+    this.authorLocalIconUrl,
+    this.authorLocalBannerUrl,
     this.originalAuthor,
     this.originalPost,
   });
@@ -170,6 +179,9 @@ class PostModel {
               : null),
       isLiked: json['is_liked'] as bool? ?? false,
       authorLocalLevel: (json['author_local_level'] as num?)?.toInt(),
+      authorLocalNickname: json['author_local_nickname'] as String?,
+      authorLocalIconUrl: json['author_local_icon_url'] as String?,
+      authorLocalBannerUrl: json['author_local_banner_url'] as String?,
       originalAuthor: json['original_author'] != null
           ? UserModel.fromJson(json['original_author'] as Map<String, dynamic>)
           : null,
@@ -261,6 +273,10 @@ class PostModel {
       author: author,
       isLiked: isLiked ?? this.isLiked,
       contentBlocks: contentBlocks,
+      authorLocalLevel: authorLocalLevel,
+      authorLocalNickname: authorLocalNickname,
+      authorLocalIconUrl: authorLocalIconUrl,
+      authorLocalBannerUrl: authorLocalBannerUrl,
       originalAuthor: originalAuthor ?? this.originalAuthor,
       originalPost: originalPost ?? this.originalPost,
     );

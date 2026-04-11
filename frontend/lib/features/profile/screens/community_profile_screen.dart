@@ -1597,6 +1597,12 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
         final post = bookmark['posts'] as Map<String, dynamic>? ?? {};
         final author = post['profiles'] as Map<String, dynamic>?;
         final postId = post['id'] as String?;
+        final authorId = post['author_id'] as String?;
+        final localSelfNickname = (_membership?['local_nickname'] as String?)?.trim();
+        final displayAuthorName =
+            authorId == widget.userId && (localSelfNickname?.isNotEmpty ?? false)
+                ? localSelfNickname!
+                : (author?['nickname'] as String? ?? s.user);
 
         return GestureDetector(
           onTap: () {
@@ -1638,7 +1644,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                       ),
                       SizedBox(height: r.s(4)),
                       Text(
-                        'por ${author?['nickname'] ?? s.user}',
+                        'por $displayAuthorName',
                         style: TextStyle(
                             color: Colors.grey[500], fontSize: r.fs(12)),
                       ),

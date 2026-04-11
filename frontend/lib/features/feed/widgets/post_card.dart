@@ -363,6 +363,14 @@ class _PostCardState extends ConsumerState<PostCard>
   Widget _buildAuthorHeader(BuildContext context) {
     final s = ref.read(stringsProvider);
     final r = context.r;
+    final displayAuthorName =
+        _post.authorLocalNickname?.trim().isNotEmpty == true
+            ? _post.authorLocalNickname!.trim()
+            : (_post.author?.nickname ?? s.user);
+    final displayAuthorAvatar =
+        _post.authorLocalIconUrl?.trim().isNotEmpty == true
+            ? _post.authorLocalIconUrl!.trim()
+            : _post.author?.iconUrl;
     return Padding(
       padding: EdgeInsets.fromLTRB(r.s(12), r.s(10), r.s(12), r.s(8)),
       child: Row(
@@ -370,7 +378,7 @@ class _PostCardState extends ConsumerState<PostCard>
           // Avatar (36px, rounded-full)
           CosmeticAvatar(
             userId: _post.authorId,
-            avatarUrl: _post.author?.iconUrl,
+            avatarUrl: displayAuthorAvatar,
             size: r.s(36),
             onTap: () => context.push('/user/${_post.authorId}'),
           ),
@@ -384,7 +392,7 @@ class _PostCardState extends ConsumerState<PostCard>
                   children: [
                     Flexible(
                       child: Text(
-                        _post.author?.nickname ?? s.user,
+                        displayAuthorName,
                         style: TextStyle(
                           color: context.textPrimary,
                           fontWeight: FontWeight.w600,

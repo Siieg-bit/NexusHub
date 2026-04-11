@@ -44,6 +44,8 @@ final communityFeedProvider =
     return map;
   }).toList();
 
+  await _injectCommunityAuthorIdentity(maps, communityId);
+
   // Injetar is_liked para o usuário atual
   await _injectIsLikedCommunity(maps);
 
@@ -73,6 +75,7 @@ final pinnedFeedProvider =
     return map;
   }).toList();
 
+  await _injectCommunityAuthorIdentity(maps, communityId);
   await _injectIsLikedCommunity(maps);
   return maps.map((map) => PostModel.fromJson(map)).toList();
 });
@@ -97,6 +100,7 @@ final activeFeaturedFeedProvider =
     return map;
   }).toList();
 
+  await _injectCommunityAuthorIdentity(maps, communityId);
   await _injectIsLikedCommunity(maps);
 
   // Filtro extra no cliente para garantir expiração correta
@@ -121,9 +125,73 @@ final latestFeedProvider =
     return map;
   }).toList();
 
+  await _injectCommunityAuthorIdentity(maps, communityId);
   await _injectIsLikedCommunity(maps);
   return maps.map((map) => PostModel.fromJson(map)).toList();
 });
+
+Future<void> _injectCommunityAuthorIdentity(
+  List<Map<String, dynamic>> posts,
+  String communityId,
+) async {
+  if (posts.isEmpty) return;
+
+  final authorIds = posts
+      .map((p) => p['author_id'] as String?)
+      .whereType<String>()
+      .where((id) => id.isNotEmpty)
+      .toSet()
+      .toList();
+  if (authorIds.isEmpty) return;
+
+  try {
+    final membershipsRes = await SupabaseService.table('community_members')
+        .select('user_id, local_nickname, local_icon_url, local_banner_url, local_level')
+        .eq('community_id', communityId)
+        .inFilter('user_id', authorIds);
+
+    final memberships = {
+      for (final row in (membershipsRes as List? ?? const []))
+        (row['user_id'] as String): Map<String, dynamic>.from(row as Map),
+    };
+
+    for (final post in posts) {
+      final authorId = post['author_id'] as String?;
+      if (authorId == null) continue;
+      final membership = memberships[authorId];
+      if (membership == null) continue;
+
+      post['author_local_level'] = membership['local_level'];
+      post['author_local_nickname'] = membership['local_nickname'];
+      post['author_local_icon_url'] = membership['local_icon_url'];
+      post['author_local_banner_url'] = membership['local_banner_url'];
+
+      final currentAuthor = Map<String, dynamic>.from(
+        (post['author'] ?? post['profiles'] ?? const <String, dynamic>{}) as Map,
+      );
+      final localNickname = (membership['local_nickname'] as String?)?.trim();
+      final localIconUrl = (membership['local_icon_url'] as String?)?.trim();
+      final localBannerUrl = (membership['local_banner_url'] as String?)?.trim();
+
+      if (localNickname != null && localNickname.isNotEmpty) {
+        currentAuthor['nickname'] = localNickname;
+      }
+      if (localIconUrl != null && localIconUrl.isNotEmpty) {
+        currentAuthor['icon_url'] = localIconUrl;
+      }
+      if (localBannerUrl != null && localBannerUrl.isNotEmpty) {
+        currentAuthor['banner_url'] = localBannerUrl;
+      }
+
+      post['author'] = currentAuthor;
+      post['profiles'] = currentAuthor;
+    }
+  } catch (e) {
+    debugPrint(
+      '[community_detail_providers] _injectCommunityAuthorIdentity error: $e',
+    );
+  }
+}
 
 /// Helper: injeta is_liked em uma lista de maps de posts para o usuário atual.
 Future<void> _injectIsLikedCommunity(List<Map<String, dynamic>> posts) async {
