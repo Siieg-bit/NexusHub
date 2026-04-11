@@ -1419,7 +1419,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get saving => 'Salvando...';
   @override
-  String get screeningRoom => 'Sala de exibição';
+  String get screeningRoom => 'Projeção de Vídeo';
   @override
   String get searchMembers => 'Buscar membros...';
   @override
@@ -2057,7 +2057,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get saveFilesAndMedia => 'Necessário para salvar arquivos e mídia';
   @override
-  String get screening => 'Screening';
+  String get screening => 'Projeção de Vídeo';
   @override
   String get searchByName => 'Busca por Nome';
   @override
@@ -3208,7 +3208,7 @@ class AppStringsPt implements AppStrings {
   @override
   String get copyLink => 'Copiar Link';
   @override
-  String get createScreeningRoom => 'Criar Screening Room';
+  String get createScreeningRoom => 'Criar Projeção de Vídeo';
   @override
   String get leaveEmptyBio => 'Deixe vazio para usar a bio global';
   @override

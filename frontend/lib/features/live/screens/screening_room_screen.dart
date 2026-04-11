@@ -10,7 +10,7 @@ import '../../../core/services/realtime_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 
-/// Screening Room — sala de exibição coletiva de vídeos/streams.
+/// Sala de Projeção — sala de exibição coletiva de vídeos/streams.
 ///
 /// Técnicas anti-bloqueio implementadas:
 /// - HTML wrapper local com <iframe> e todos os atributos de permissão
@@ -267,7 +267,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
               color: context.textPrimary, fontWeight: FontWeight.w800),
         ),
         content: Text(
-          'O host encerrou a Screening Room.',
+          'O host encerrou a Sala de Projeção.',
           style: TextStyle(color: Colors.grey[400]),
         ),
         actions: [
@@ -656,7 +656,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(context.r.s(16))),
           title: Text(
-            'Encerrar Screening Room?',
+            'Encerrar Sala de Projeção?',
             style: TextStyle(
                 color: context.textPrimary, fontWeight: FontWeight.w800),
           ),
@@ -712,7 +712,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
             'send_chat_message_with_reputation',
             params: {
               'p_thread_id': widget.threadId,
-              'p_content': 'Screening Room encerrada',
+              'p_content': 'Sala de Projeção encerrada',
               'p_type': 'system_screen_end',
               'p_media_url': null,
               'p_media_type': null,
@@ -940,7 +940,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
           Icon(Icons.tv_off_rounded, color: Colors.grey[700], size: r.s(64)),
           SizedBox(height: r.s(16)),
           Text(
-            'Screening Room encerrada',
+            'Sala de Projeção encerrada',
             style: TextStyle(
                 color: Colors.grey[400],
                 fontSize: r.fs(18),
@@ -998,7 +998,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
           ),
           SizedBox(width: r.s(6)),
           Text(
-            'SCREENING ROOM',
+            'SALA DE PROJEÇÃO',
             style: TextStyle(
               color: context.textPrimary,
               fontWeight: FontWeight.w800,
@@ -1432,7 +1432,7 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
                 color: Colors.grey[800], size: r.s(40)),
             SizedBox(height: r.s(8)),
             Text(
-              'Chat da Screening Room',
+              'Chat da Sala de Projeção',
               style:
                   TextStyle(color: Colors.grey[700], fontSize: r.fs(14)),
             ),

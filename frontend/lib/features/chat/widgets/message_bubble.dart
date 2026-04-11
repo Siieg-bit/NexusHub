@@ -76,7 +76,7 @@ class MessageBubble extends ConsumerWidget {
                 Icon(Icons.tv_off_rounded, color: Colors.grey[600], size: r.s(16)),
                 SizedBox(width: r.s(8)),
                 Text(
-                  'Screening Room encerrada',
+                  'Sala de Projeção encerrada',
                   style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
                 ),
               ],
@@ -89,7 +89,7 @@ class MessageBubble extends ConsumerWidget {
     if (_specialType == 'system_voice_start' || _specialType == 'system_screen_start') {
       final isVoice = _specialType == 'system_voice_start';
       final icon = isVoice ? Icons.headset_mic_rounded : Icons.live_tv_rounded;
-      final label = isVoice ? 'Voice Chat' : 'Screening Room';
+      final label = isVoice ? 'Voice Chat' : 'Sala de Projeção';
       final accentColor = isVoice ? const Color(0xFF4CAF50) : const Color(0xFFFF5722);
       final threadId = message.threadId;
       final container = Container(
@@ -544,7 +544,7 @@ class MessageBubble extends ConsumerWidget {
       );
     }
 
-    // Screening Room encerrada
+    // Sala de Projeção encerrada
     if (type == 'system_screen_end') {
       return Container(
         padding: EdgeInsets.all(r.s(12)),
@@ -558,7 +558,7 @@ class MessageBubble extends ConsumerWidget {
             Icon(Icons.tv_off_rounded, color: Colors.grey[600], size: r.s(20)),
             SizedBox(width: r.s(8)),
             Text(
-              'Screening Room encerrada',
+              'Sala de Projeção encerrada',
               style: TextStyle(
                   fontWeight: FontWeight.w600, color: Colors.grey[500]),
             ),
@@ -570,7 +570,7 @@ class MessageBubble extends ConsumerWidget {
     if (type == 'system_voice_start' || type == 'system_screen_start') {
       final isVoice = type == 'system_voice_start';
       final icon = isVoice ? Icons.headset_mic_rounded : Icons.live_tv_rounded;
-      final label = isVoice ? 'Voice Chat' : 'Screening Room';
+      final label = isVoice ? 'Voice Chat' : 'Sala de Projeção';
       final accentColor =
           isVoice ? const Color(0xFF4CAF50) : const Color(0xFFFF5722);
       final threadId = message.threadId;
@@ -596,7 +596,7 @@ class MessageBubble extends ConsumerWidget {
           ],
         ),
       );
-      // Screening Room é clicavel para entrar na sala
+      // Sala de Projeção é clicável para entrar na sala
       if (!isVoice && threadId.isNotEmpty) {
         return GestureDetector(
           onTap: () => context.push('/screening-room/$threadId'),

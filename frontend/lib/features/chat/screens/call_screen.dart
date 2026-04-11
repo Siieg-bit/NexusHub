@@ -18,7 +18,7 @@ import '../../../core/l10n/locale_provider.dart';
 /// - Controles: mute, speaker, câmera, trocar câmera, encerrar
 /// - Grid adaptativo de participantes
 /// - Timer de duração da chamada
-/// - Suporte a Voice Chat, Video Chat e Screening Room
+/// - Suporte a Voice Chat, Video Chat e Sala de Projeção
 /// ============================================================================
 
 class CallScreen extends ConsumerStatefulWidget {
@@ -142,7 +142,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     final isVideo = widget.session.type == CallType.video;
     final isScreening = widget.session.type == CallType.screeningRoom;
     final title = isScreening
-        ? 'Screening Room'
+        ? 'Sala de Projeção'
         : isVideo
             ? 'Video Chat'
             : 'Voice Chat';
@@ -170,7 +170,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
                     child: isVideo ? _buildVideoGrid() : _buildAudioGrid(),
                   ),
 
-                  // ── Screening Room: Shared screen area ──
+                  // ── Sala de Projeção: área de vídeo ──
                   if (isScreening) _buildScreeningArea(),
 
                   // ── Controls ──

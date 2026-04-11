@@ -551,14 +551,14 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // _startCall removido — chamadas de voz/vídeo foram substituídas pelo sistema de projeção.
 
   // ==========================================================================
-  // INICIAR PROJEÇÃO (Screening Room)
+  // INICIAR PROJEÇÃO (Sala de Projeção)
   // ==========================================================================
 
   Future<void> _startProjection() async {
     // Envia mensagem de sistema informando o início da projeção
     _sendMessage(type: 'screening_room');
     if (!mounted) return;
-    // Navega para a tela de Screening Room passando o threadId
+    // Navega para a Sala de Projeção passando o threadId
     context.push('/screening-room/${widget.threadId}');
   }
 
@@ -705,7 +705,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             ? 'Iniciou um Voice Chat'
             : type == 'video_chat'
                 ? 'Iniciou um Video Chat'
-                : 'Iniciou um Screening Room';
+                : 'Iniciou uma Sala de Projeção';
       } else {
         content = text;
       }

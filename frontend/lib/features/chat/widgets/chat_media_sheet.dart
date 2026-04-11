@@ -9,7 +9,7 @@ import 'message_bubble.dart' show MediaOptionItem;
 /// Bottom sheet com as opções de mídia do chat — Estilo Amino.
 ///
 /// Chamadas de voz/vídeo foram removidas conforme solicitado.
-/// O sistema de projeção (Screening Room) é acessado via botão na AppBar
+/// O sistema de Sala de Projeção é acessado via botão na AppBar
 /// e também aparece aqui como opção de mídia.
 ///
 /// Extraído de chat_room_screen.dart para isolar a UI do painel de mídia.

@@ -3133,7 +3133,7 @@ class AppStringsDe implements AppStrings {
   @override
   String get copiedMsg => 'Kopiert!';
   @override
-  String get createScreeningRoom => 'Screening Room erstellen';
+  String get createScreeningRoom => 'Videoprojektion erstellen';
   @override
   String get leaveEmptyBio => 'Leer lassen, um globale Bio zu verwenden';
   @override

@@ -8,7 +8,7 @@ import 'realtime_service.dart';
 import '../../core/l10n/locale_provider.dart';
 
 /// ============================================================================
-/// CallService — Gerencia chamadas de voz, vídeo e screening room.
+/// CallService — Gerencia chamadas de voz, vídeo e Sala de Projeção.
 ///
 /// Integração completa com Agora.io RTC SDK para áudio/vídeo real.
 ///

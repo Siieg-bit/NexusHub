@@ -6,7 +6,7 @@ import 'screening_room_screen.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 
-/// Tela Live — exibe Screening Rooms, Voice Chats e Video Chats ativos.
+/// Tela Live — exibe Salas de Projeção, Voice Chats e Video Chats ativos.
 ///
 /// No Amino original, esta tela mostra todas as salas ativas
 /// da comunidade com contagem de participantes, tipo de sala,
@@ -52,7 +52,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     final r = context.r;
     // Precisa de um thread_id — criar um chat thread temporário ou usar existente
     final threadIdController = TextEditingController();
-    final titleController = TextEditingController(text: 'Screening Room');
+    final titleController = TextEditingController(text: 'Sala de Projeção');
 
     final result = await showDialog<Map<String, String>>(
       context: context,
@@ -112,12 +112,12 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     if (result == null) return;
 
     try {
-      // Criar um chat thread para a screening room
+      // Criar um chat thread para a Sala de Projeção
       final thread = await SupabaseService.table('chat_threads')
           .insert({
             'community_id': widget.communityId,
             'type': 'screening_room',
-            'title': result['title'] ?? 'Screening Room',
+            'title': result['title'] ?? 'Sala de Projeção',
             'host_id': SupabaseService.currentUserId,
           })
           .select()
@@ -153,7 +153,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   String _typeLabel(String type) {
     switch (type) {
       case 'screening_room':
-        return 'Screening Room';
+        return 'Sala de Projeção';
       case 'voice':
         return 'Voice Chat';
       case 'video':
@@ -221,7 +221,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         onPressed: _createScreeningRoom,
         backgroundColor: AppTheme.aminoPink,
         icon: const Icon(Icons.live_tv_rounded, color: Colors.white),
-        label: const Text('Screening Room',
+        label: const Text('Sala de Projeção',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
       ),
       body: _isLoading
@@ -272,7 +272,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
               ),
               SizedBox(height: r.s(8)),
               Text(
-                'Screening Rooms, Voice Chats e Video Chats\naparecerão aqui quando estiverem ativos.',
+                'Salas de Projeção, Voice Chats e Video Chats\naparecerão aqui quando estiverem ativos.',
                 style: TextStyle(color: Colors.grey[500], height: 1.5),
                 textAlign: TextAlign.center,
               ),

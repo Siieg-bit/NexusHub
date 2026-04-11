@@ -1365,7 +1365,7 @@ class AppStringsEn implements AppStrings {
   @override
   String get saving => 'Saving...';
   @override
-  String get screeningRoom => 'Screening Room';
+  String get screeningRoom => 'Video Projection';
   @override
   String get searchMembers => 'Search members...';
   @override
@@ -2003,7 +2003,7 @@ class AppStringsEn implements AppStrings {
   @override
   String get saveFilesAndMedia => 'Required to save files and media';
   @override
-  String get screening => 'Screening';
+  String get screening => 'Video Projection';
   @override
   String get searchByName => 'Search by Name';
   @override
@@ -3154,7 +3154,7 @@ class AppStringsEn implements AppStrings {
   @override
   String get copyLink => 'Copy Link';
   @override
-  String get createScreeningRoom => 'Create Screening Room';
+  String get createScreeningRoom => 'Create Video Projection';
   @override
   String get leaveEmptyBio => 'Leave empty to use global bio';
   @override
