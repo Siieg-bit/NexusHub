@@ -38,6 +38,7 @@ class MessageBubble extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final r = context.r;
     // System messages
     if (message.isSystemMessage) {
       return Padding(

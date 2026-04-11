@@ -163,6 +163,13 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
   WallComment? _replyingTo;
 
   @override
+  void initState() {
+    super.initState();
+    // Atualiza a borda do campo ao ganhar/perder foco
+    _focusNode.addListener(() => setState(() {}));
+  }
+
+  @override
   void dispose() {
     _textCtrl.dispose();
     _focusNode.dispose();
@@ -232,7 +239,51 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
     await _send();
   }
 
-  Future<void> _pickImage() async {
+  // Mídia unificada: abre dialog para escolher imagem ou vídeo
+  Future<void> _pickMedia() async {
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: context.surfaceColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[700],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.image_outlined, color: AppTheme.primaryColor),
+              title: const Text('Imagem', style: TextStyle(color: Colors.white)),
+              onTap: () => Navigator.pop(context, 'image'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.videocam_outlined, color: AppTheme.primaryColor),
+              title: const Text('Vídeo', style: TextStyle(color: Colors.white)),
+              onTap: () => Navigator.pop(context, 'video'),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+    if (choice == null) return;
+    if (choice == 'image') {
+      await _doPickImage();
+    } else {
+      await _doPickVideo();
+    }
+  }
+
+  Future<void> _doPickImage() async {
     final picker = ImagePicker();
     final file = await picker.pickImage(
       source: ImageSource.gallery,
@@ -267,7 +318,7 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
     }
   }
 
-  Future<void> _pickVideo() async {
+  Future<void> _doPickVideo() async {
     final picker = ImagePicker();
     final file = await picker.pickVideo(
       source: ImageSource.gallery,
@@ -384,73 +435,15 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
     final r = context.r;
     final commentsAsync = ref.watch(wallCommentsProvider(widget.wallUserId));
 
-    if (widget.asBottomSheet) {
-      return DraggableScrollableSheet(
-        initialChildSize: 0.85,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        builder: (_, scrollCtrl) => Container(
-          decoration: BoxDecoration(
-            color: context.scaffoldBg,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(20))),
-          ),
-          child: Column(
-            children: [
-              // Handle
-              Center(
-                child: Container(
-                  margin: EdgeInsets.only(top: r.s(10), bottom: r.s(4)),
-                  width: r.s(40),
-                  height: r.s(4),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[700],
-                    borderRadius: BorderRadius.circular(r.s(2)),
-                  ),
-                ),
-              ),
-              // Header
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
-                child: Row(
-                  children: [
-                    Text(
-                      'Comentários',
-                      style: TextStyle(
-                        color: context.textPrimary,
-                        fontSize: r.fs(17),
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const Spacer(),
-                    commentsAsync.when(
-                      data: (c) => Text(
-                        '${c.length}',
-                        style: TextStyle(color: Colors.grey[500], fontSize: r.fs(14)),
-                      ),
-                      loading: () => const SizedBox.shrink(),
-                      error: (_, __) => const SizedBox.shrink(),
-                    ),
-                  ],
-                ),
-              ),
-              const Divider(height: 1, color: Colors.white10),
-              // Lista de comentários
-              Expanded(
-                child: _buildCommentList(r, scrollCtrl, commentsAsync),
-              ),
-              // Composer
-              _buildComposer(r),
-            ],
-          ),
-        ),
-      );
-    }
-
-    // Modo inline (dentro de uma tela)
+    // Layout sempre inline fixo: composer no topo, lista de comentários abaixo.
+    // O campo de texto fica sempre visível — ao tocar, o teclado abre direto.
+    // Não existe mais bottom sheet.
     return Column(
       children: [
-        Expanded(child: _buildCommentList(r, null, commentsAsync)),
+        // Composer fixo no topo
         _buildComposer(r),
+        // Lista de comentários ocupa o restante
+        Expanded(child: _buildCommentList(r, null, commentsAsync)),
       ],
     );
   }
@@ -530,18 +523,20 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
     final hasContent = _pendingMediaUrl != null || _pendingStickerUrl != null;
 
     return Container(
-      decoration: BoxDecoration(
-        color: context.surfaceColor,
-        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.06))),
-      ),
+      color: context.scaffoldBg,
+      padding: EdgeInsets.fromLTRB(r.s(16), r.s(12), r.s(16), r.s(12)),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           // Banner de reply
           if (_replyingTo != null)
             Container(
-              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(6)),
-              color: AppTheme.primaryColor.withValues(alpha: 0.08),
+              margin: EdgeInsets.only(bottom: r.s(8)),
+              padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(6)),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(r.s(8)),
+              ),
               child: Row(
                 children: [
                   Icon(Icons.reply_rounded, color: AppTheme.primaryColor, size: r.s(14)),
@@ -564,10 +559,10 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
               ),
             ),
 
-          // Preview de mídia pendente
+          // Preview de mídia / sticker pendente
           if (hasContent)
             Container(
-              padding: EdgeInsets.symmetric(horizontal: r.s(16), vertical: r.s(8)),
+              margin: EdgeInsets.only(bottom: r.s(8)),
               child: Row(
                 children: [
                   Stack(
@@ -577,21 +572,24 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
                         child: _pendingStickerUrl != null
                             ? CachedNetworkImage(
                                 imageUrl: _pendingStickerUrl!,
-                                width: r.s(56),
-                                height: r.s(56),
+                                width: r.s(52),
+                                height: r.s(52),
                                 fit: BoxFit.contain,
                               )
                             : _pendingMediaBytes != null
                                 ? Image.memory(
                                     _pendingMediaBytes!,
-                                    width: r.s(56),
-                                    height: r.s(56),
+                                    width: r.s(52),
+                                    height: r.s(52),
                                     fit: BoxFit.cover,
                                   )
                                 : Container(
-                                    width: r.s(56),
-                                    height: r.s(56),
-                                    color: context.cardBg,
+                                    width: r.s(52),
+                                    height: r.s(52),
+                                    decoration: BoxDecoration(
+                                      color: context.cardBg,
+                                      borderRadius: BorderRadius.circular(r.s(8)),
+                                    ),
                                     child: Icon(
                                       _pendingMediaType == 'video'
                                           ? Icons.videocam_rounded
@@ -612,7 +610,7 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
                               color: Colors.red,
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(Icons.close_rounded, color: Colors.white, size: r.s(12)),
+                            child: Icon(Icons.close_rounded, color: Colors.white, size: r.s(11)),
                           ),
                         ),
                       ),
@@ -631,124 +629,136 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
               ),
             ),
 
-          // Barra de input
-          Padding(
-            padding: EdgeInsets.fromLTRB(
-              r.s(12), r.s(8), r.s(12),
-              r.s(8) + MediaQuery.of(context).viewInsets.bottom,
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                // Avatar do usuário atual
-                CosmeticAvatar(
-                  userId: SupabaseService.currentUserId ?? '',
-                  size: r.s(32),
-                ),
-                SizedBox(width: r.s(8)),
-
-                // Campo de texto
-                Expanded(
-                  child: Container(
-                    constraints: BoxConstraints(maxHeight: r.s(120)),
-                    decoration: BoxDecoration(
-                      color: context.cardBg,
-                      borderRadius: BorderRadius.circular(r.s(20)),
+          // Linha principal: campo de texto + botão enviar
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Campo de texto com borda
+              Expanded(
+                child: Container(
+                  constraints: BoxConstraints(maxHeight: r.s(120)),
+                  decoration: BoxDecoration(
+                    color: context.cardBg,
+                    borderRadius: BorderRadius.circular(r.s(24)),
+                    border: Border.all(
+                      color: _focusNode.hasFocus
+                          ? AppTheme.primaryColor
+                          : Colors.white.withValues(alpha: 0.1),
+                      width: 1.5,
                     ),
-                    child: TextField(
-                      controller: _textCtrl,
-                      focusNode: _focusNode,
-                      maxLines: null,
-                      style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
-                      decoration: InputDecoration(
-                        hintText: _replyingTo != null
-                            ? 'Respondendo...'
-                            : 'Escreva um comentário...',
-                        hintStyle: TextStyle(color: Colors.grey[600], fontSize: r.fs(14)),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: r.s(14),
-                          vertical: r.s(10),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Input
+                      Expanded(
+                        child: TextField(
+                          controller: _textCtrl,
+                          focusNode: _focusNode,
+                          maxLines: null,
+                          style: TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
+                          decoration: InputDecoration(
+                            hintText: _replyingTo != null
+                                ? 'Respondendo...'
+                                : 'Escreva no mural...',
+                            hintStyle: TextStyle(color: Colors.grey[600], fontSize: r.fs(14)),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: r.s(14),
+                              vertical: r.s(10),
+                            ),
+                          ),
+                          onTap: () {
+                            if (_showEmojiPicker) setState(() => _showEmojiPicker = false);
+                          },
                         ),
                       ),
-                      onTap: () {
-                        if (_showEmojiPicker) {
-                          setState(() => _showEmojiPicker = false);
-                        }
-                      },
-                    ),
+                      // Botão sticker
+                      GestureDetector(
+                        onTap: () async {
+                          _focusNode.unfocus();
+                          await StickerPickerV2.show(
+                            context,
+                            onStickerSelected: _sendSticker,
+                          );
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: r.s(6)),
+                          child: Icon(
+                            Icons.sticky_note_2_outlined,
+                            color: Colors.grey[500],
+                            size: r.s(22),
+                          ),
+                        ),
+                      ),
+                      // Botão mídia (imagem ou vídeo)
+                      GestureDetector(
+                        onTap: _isUploadingMedia ? null : _pickMedia,
+                        child: Padding(
+                          padding: EdgeInsets.only(right: r.s(10)),
+                          child: _isUploadingMedia
+                              ? SizedBox(
+                                  width: r.s(20),
+                                  height: r.s(20),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppTheme.primaryColor,
+                                  ),
+                                )
+                              : Icon(
+                                  Icons.perm_media_outlined,
+                                  color: Colors.grey[500],
+                                  size: r.s(22),
+                                ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+              ),
 
-                SizedBox(width: r.s(6)),
+              SizedBox(width: r.s(8)),
 
-                // Botões de ação
-                _ActionButton(
-                  icon: Icons.emoji_emotions_outlined,
-                  isActive: _showEmojiPicker,
-                  onTap: () {
-                    setState(() => _showEmojiPicker = !_showEmojiPicker);
-                    if (_showEmojiPicker) _focusNode.unfocus();
-                  },
-                ),
-                SizedBox(width: r.s(4)),
-                _ActionButton(
-                  icon: Icons.image_outlined,
-                  onTap: _isUploadingMedia ? null : _pickImage,
-                  isLoading: _isUploadingMedia && _pendingMediaType != 'video',
-                ),
-                SizedBox(width: r.s(4)),
-                _ActionButton(
-                  icon: Icons.videocam_outlined,
-                  onTap: _isUploadingMedia ? null : _pickVideo,
-                  isLoading: _isUploadingMedia && _pendingMediaType == 'video',
-                ),
-                SizedBox(width: r.s(4)),
-                _ActionButton(
-                  icon: Icons.sticky_note_2_outlined,
-                  onTap: () async {
-                    await StickerPickerV2.show(
-                      context,
-                      onStickerSelected: _sendSticker,
-                    );
-                  },
-                ),
-                SizedBox(width: r.s(6)),
-
-                // Botão enviar
-                GestureDetector(
-                  onTap: _isSending ? null : _send,
-                  child: Container(
-                    width: r.s(36),
-                    height: r.s(36),
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryColor,
-                      shape: BoxShape.circle,
-                    ),
-                    child: _isSending
-                        ? Padding(
-                            padding: EdgeInsets.all(r.s(8)),
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : Icon(Icons.send_rounded, color: Colors.white, size: r.s(18)),
+              // Botão enviar
+              GestureDetector(
+                onTap: _isSending ? null : _send,
+                child: Container(
+                  width: r.s(42),
+                  height: r.s(42),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryColor,
+                    shape: BoxShape.circle,
                   ),
+                  child: _isSending
+                      ? Padding(
+                          padding: EdgeInsets.all(r.s(10)),
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Icon(Icons.send_rounded, color: Colors.white, size: r.s(20)),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
 
-          // Emoji Picker
+          // Emoji Picker (abre abaixo do campo)
           if (_showEmojiPicker)
             SizedBox(
               height: 250,
               child: EmojiPicker(
                 onEmojiSelected: (_, emoji) {
-                  _textCtrl.text += emoji.emoji;
-                  _textCtrl.selection = TextSelection.fromPosition(
-                    TextPosition(offset: _textCtrl.text.length),
+                  final pos = _textCtrl.selection.baseOffset;
+                  final text = _textCtrl.text;
+                  final newText = pos < 0
+                      ? text + emoji.emoji
+                      : text.substring(0, pos) + emoji.emoji + text.substring(pos);
+                  _textCtrl.value = TextEditingValue(
+                    text: newText,
+                    selection: TextSelection.collapsed(
+                      offset: (pos < 0 ? newText.length : pos + emoji.emoji.length),
+                    ),
                   );
                 },
                 config: Config(
