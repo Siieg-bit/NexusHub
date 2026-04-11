@@ -2418,6 +2418,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 onSend: () => _sendMessage(),
                 onEmojiToggle: () =>
                     setState(() => _showEmojiPicker = !_showEmojiPicker),
+                onAudioTap: () =>
+                    setState(() => _isRecordingVoice = true),
                 onTextChanged: _onTextChanged,
               ),
 

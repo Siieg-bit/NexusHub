@@ -18,6 +18,20 @@ import 'voice_recorder.dart' show VoiceNotePlayer;
 /// principal e isolar a lógica de renderização de mensagens.
 /// ============================================================================
 
+/// Tipos de mensagem que NÃO devem ter a borda/bubble ao redor.
+/// Imagem, GIF e vídeo são renderizados sem container de fundo.
+bool _isMediaOnlyType(MessageModel message) {
+  final type = message.type;
+  if (type == 'image' && message.mediaUrl != null) return true;
+  if (type == 'gif' && message.mediaUrl != null) return true;
+  if (type == 'video') return true;
+  // Retrocompatibilidade: tipo 'text' com media_type de mídia
+  if (message.mediaUrl != null && message.mediaType == 'image') return true;
+  if (message.mediaUrl != null && message.mediaType == 'gif') return true;
+  if (message.mediaUrl != null && message.mediaType == 'video') return true;
+  return false;
+}
+
 class MessageBubble extends ConsumerWidget {
   final MessageModel message;
   final bool isMe;
@@ -60,6 +74,8 @@ class MessageBubble extends ConsumerWidget {
         ),
       );
     }
+
+    final isMediaOnly = _isMediaOnlyType(message);
 
     return Padding(
       padding: EdgeInsets.only(
@@ -111,71 +127,129 @@ class MessageBubble extends ConsumerWidget {
                 SizedBox(width: r.s(32)),
               SizedBox(width: r.s(8)),
               Flexible(
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: r.s(14), vertical: r.s(10)),
-                  decoration: BoxDecoration(
-                    color: isMe ? AppTheme.primaryColor : context.surfaceColor,
-                    borderRadius: BorderRadius.only(
-                      topLeft: const Radius.circular(16),
-                      topRight: const Radius.circular(16),
-                      bottomLeft:
-                          Radius.circular(isMe ? 16 : (showAvatar ? 4 : 16)),
-                      bottomRight:
-                          Radius.circular(isMe ? (showAvatar ? 4 : 16) : 16),
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (!isMe && showAvatar)
-                        Padding(
-                          padding: EdgeInsets.only(bottom: r.s(4)),
-                          child: Text(
-                            message.author?.nickname ?? 'User',
-                            style: TextStyle(
-                              color: AppTheme.primaryColor,
-                              fontSize: r.fs(11),
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      // Conteúdo baseado no tipo
-                      _buildContent(context),
-                      // Hora + indicador de editado
-                      Padding(
-                        padding: EdgeInsets.only(top: r.s(4)),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              _formatTime(message.createdAt),
-                              style: TextStyle(
-                                color: isMe
-                                    ? Colors.white.withValues(alpha: 0.6)
-                                    : Colors.grey[600],
-                                fontSize: r.fs(10),
-                              ),
-                            ),
-                            if (message.isEdited) ...[
-                              SizedBox(width: r.s(4)),
-                              Text(
-                                'editado',
+                child: isMediaOnly
+                    // ── Mídia sem bubble: apenas nome do autor + conteúdo + hora ──
+                    ? Column(
+                        crossAxisAlignment: isMe
+                            ? CrossAxisAlignment.end
+                            : CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (!isMe && showAvatar)
+                            Padding(
+                              padding: EdgeInsets.only(bottom: r.s(2)),
+                              child: Text(
+                                message.author?.nickname ?? 'User',
                                 style: TextStyle(
-                                  color: isMe
-                                      ? Colors.white.withValues(alpha: 0.45)
-                                      : Colors.grey[600],
-                                  fontSize: r.fs(9),
-                                  fontStyle: FontStyle.italic,
+                                  color: AppTheme.primaryColor,
+                                  fontSize: r.fs(11),
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
-                            ],
+                            ),
+                          // Conteúdo de mídia (imagem/gif/vídeo)
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(r.s(12)),
+                            child: _buildContent(context),
+                          ),
+                          // Hora sobreposta abaixo da mídia
+                          Padding(
+                            padding: EdgeInsets.only(top: r.s(2)),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  _formatTime(message.createdAt),
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: r.fs(10),
+                                  ),
+                                ),
+                                if (message.isEdited) ...[
+                                  SizedBox(width: r.s(4)),
+                                  Text(
+                                    'editado',
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: r.fs(9),
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ],
+                      )
+                    // ── Mensagem com bubble normal (texto, áudio, sticker, etc.) ──
+                    : Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: r.s(14), vertical: r.s(10)),
+                        decoration: BoxDecoration(
+                          color: isMe
+                              ? AppTheme.primaryColor
+                              : context.surfaceColor,
+                          borderRadius: BorderRadius.only(
+                            topLeft: const Radius.circular(16),
+                            topRight: const Radius.circular(16),
+                            bottomLeft: Radius.circular(
+                                isMe ? 16 : (showAvatar ? 4 : 16)),
+                            bottomRight: Radius.circular(
+                                isMe ? (showAvatar ? 4 : 16) : 16),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (!isMe && showAvatar)
+                              Padding(
+                                padding: EdgeInsets.only(bottom: r.s(4)),
+                                child: Text(
+                                  message.author?.nickname ?? 'User',
+                                  style: TextStyle(
+                                    color: AppTheme.primaryColor,
+                                    fontSize: r.fs(11),
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            // Conteúdo baseado no tipo
+                            _buildContent(context),
+                            // Hora + indicador de editado
+                            Padding(
+                              padding: EdgeInsets.only(top: r.s(4)),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    _formatTime(message.createdAt),
+                                    style: TextStyle(
+                                      color: isMe
+                                          ? Colors.white.withValues(alpha: 0.6)
+                                          : Colors.grey[600],
+                                      fontSize: r.fs(10),
+                                    ),
+                                  ),
+                                  if (message.isEdited) ...[
+                                    SizedBox(width: r.s(4)),
+                                    Text(
+                                      'editado',
+                                      style: TextStyle(
+                                        color: isMe
+                                            ? Colors.white
+                                                .withValues(alpha: 0.45)
+                                            : Colors.grey[600],
+                                        fontSize: r.fs(9),
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
               ),
             ],
           ),
@@ -262,25 +336,26 @@ class MessageBubble extends ConsumerWidget {
     final type = message.type;
     final textColor = isMe ? Colors.white : context.textPrimary;
 
-    // Bug fix (migration 058): os tipos image, gif, audio agora existem nativamente
-    // no enum. Detectar pelo type nativo OU pelo mediaType para retrocompatibilidade.
-
     // Imagem: tipo 'image' (nativo) OU tipo 'text' com media_type == 'image' (legado)
     if ((type == 'image' && message.mediaUrl != null) ||
         (message.mediaUrl != null && message.mediaType == 'image')) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(r.s(8)),
-        child: CachedNetworkImage(
-          imageUrl: message.mediaUrl!,
-          width: r.s(200),
-          fit: BoxFit.cover,
-          placeholder: (_, __) => Container(
-            width: r.s(200),
-            height: r.s(150),
-            color: Colors.grey[800],
-            child:
-                const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-          ),
+      return CachedNetworkImage(
+        imageUrl: message.mediaUrl!,
+        width: r.s(220),
+        fit: BoxFit.cover,
+        placeholder: (_, __) => Container(
+          width: r.s(220),
+          height: r.s(160),
+          color: Colors.grey[800],
+          child:
+              const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        ),
+        errorWidget: (_, __, ___) => Container(
+          width: r.s(220),
+          height: r.s(160),
+          color: Colors.grey[800],
+          child: Icon(Icons.broken_image_rounded,
+              color: Colors.grey[600], size: r.s(32)),
         ),
       );
     }
@@ -288,12 +363,15 @@ class MessageBubble extends ConsumerWidget {
     // GIF: tipo 'gif' (nativo) OU tipo 'text' com media_type == 'gif' (legado)
     if ((type == 'gif' && message.mediaUrl != null) ||
         (message.mediaUrl != null && message.mediaType == 'gif')) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(r.s(8)),
-        child: CachedNetworkImage(
-          imageUrl: message.mediaUrl!,
-          width: r.s(180),
-          fit: BoxFit.cover,
+      return CachedNetworkImage(
+        imageUrl: message.mediaUrl!,
+        width: r.s(200),
+        fit: BoxFit.cover,
+        errorWidget: (_, __, ___) => Container(
+          width: r.s(200),
+          height: r.s(150),
+          color: Colors.grey[800],
+          child: Icon(Icons.gif_rounded, color: Colors.grey[600], size: r.s(32)),
         ),
       );
     }
@@ -320,7 +398,6 @@ class MessageBubble extends ConsumerWidget {
     }
 
     // Áudio: tipo 'audio' (nativo, gravado pelo VoiceRecorder) ou 'voice_note' (legado)
-    // Bug fix (migration 058): ambos os tipos agora usam VoiceNotePlayer com URL real.
     if (type == 'audio' || type == 'voice_note') {
       final audioUrl = message.mediaUrl;
       final duration = message.mediaDuration ?? 0;
@@ -361,15 +438,12 @@ class MessageBubble extends ConsumerWidget {
       );
     }
 
-    // Video
+    // Video — sem bubble, renderizado diretamente (ClipRRect aplicado no build)
     if (type == 'video') {
       return Container(
-        width: r.s(200),
-        height: r.s(150),
-        decoration: BoxDecoration(
-          color: Colors.black26,
-          borderRadius: BorderRadius.circular(r.s(8)),
-        ),
+        width: r.s(220),
+        height: r.s(160),
+        color: Colors.black45,
         child: Center(
           child: Icon(Icons.play_circle_rounded,
               color: Colors.white, size: r.s(48)),

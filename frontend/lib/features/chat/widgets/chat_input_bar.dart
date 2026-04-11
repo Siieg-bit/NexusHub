@@ -7,14 +7,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Barra de input de mensagem do chat — estilo Amino.
 ///
-/// Contém o botão de mídia (+), o campo de texto, o botão de emoji
-/// e o botão de enviar. Extraído de chat_room_screen.dart para
-/// isolar a UI do input sem mover lógica de negócio.
+/// Contém o botão de mídia (+), o campo de texto, o botão de emoji,
+/// o botão de microfone (atalho rápido) e o botão de enviar.
 ///
 /// Callbacks:
 /// - [onMediaTap]: abre o painel de opções de mídia
 /// - [onSend]: envia a mensagem de texto
 /// - [onEmojiToggle]: alterna o emoji picker
+/// - [onAudioTap]: inicia a gravação de áudio (atalho rápido ao lado do emoji)
 /// - [onTextChanged]: notifica mudanças no texto (para link detection etc.)
 class ChatInputBar extends ConsumerWidget {
   final TextEditingController controller;
@@ -22,6 +22,7 @@ class ChatInputBar extends ConsumerWidget {
   final VoidCallback onMediaTap;
   final VoidCallback onSend;
   final VoidCallback onEmojiToggle;
+  final VoidCallback onAudioTap;
   final ValueChanged<String>? onTextChanged;
 
   const ChatInputBar({
@@ -31,12 +32,13 @@ class ChatInputBar extends ConsumerWidget {
     required this.onMediaTap,
     required this.onSend,
     required this.onEmojiToggle,
+    required this.onAudioTap,
     this.onTextChanged,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       padding: EdgeInsets.fromLTRB(r.s(8), r.s(8), r.s(8), r.s(8)),
@@ -96,11 +98,21 @@ class ChatInputBar extends ConsumerWidget {
                         onChanged: onTextChanged,
                       ),
                     ),
+                    // ── Ícone de emoji ──
                     GestureDetector(
                       onTap: onEmojiToggle,
                       child: Padding(
-                        padding: EdgeInsets.only(right: r.s(8)),
+                        padding: EdgeInsets.only(right: r.s(4)),
                         child: Icon(Icons.emoji_emotions_outlined,
+                            color: Colors.grey[600], size: r.s(20)),
+                      ),
+                    ),
+                    // ── Ícone de microfone (atalho rápido de áudio) ──
+                    GestureDetector(
+                      onTap: onAudioTap,
+                      child: Padding(
+                        padding: EdgeInsets.only(right: r.s(8)),
+                        child: Icon(Icons.mic_none_rounded,
                             color: Colors.grey[600], size: r.s(20)),
                       ),
                     ),

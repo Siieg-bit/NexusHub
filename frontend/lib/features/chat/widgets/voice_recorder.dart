@@ -325,7 +325,6 @@ class _WaveformPainter extends CustomPainter {
       final y1 = (size.height - barHeight) / 2;
       final y2 = y1 + barHeight;
 
-      // Gradiente de opacidade: barras mais recentes são mais brilhantes
       final opacity = 0.4 + 0.6 * (i / bars.length);
       paint.color = color.withValues(alpha: opacity);
 
@@ -342,7 +341,7 @@ class VoiceNotePlayer extends StatefulWidget {
   /// URL do arquivo de áudio.
   final String audioUrl;
 
-  /// Duração em segundos.
+  /// Duração em segundos (usada como fallback se o player não retornar duração).
   final int durationSeconds;
 
   /// Se a mensagem é do próprio usuário.
@@ -360,27 +359,42 @@ class VoiceNotePlayer extends StatefulWidget {
 }
 
 class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
-  // Bug fix (migration 058): reprodução real com audioplayers.
   late final AudioPlayer _player;
   bool _isPlaying = false;
   double _progress = 0.0;
   Duration _position = Duration.zero;
-  Duration _duration = Duration.zero;
+  // Bug fix: _duration começa com o valor do widget mas é atualizado pelo
+  // evento onDurationChanged do player. Isso garante sincronização real
+  // mesmo quando widget.durationSeconds é 0 ou impreciso.
+  late Duration _duration;
   StreamSubscription? _positionSub;
+  StreamSubscription? _durationSub;
   StreamSubscription? _stateSub;
 
   @override
   void initState() {
     super.initState();
     _player = AudioPlayer();
+    // Inicializa com o valor fornecido como fallback
     _duration = Duration(seconds: widget.durationSeconds);
+
+    // Bug fix: assinar onDurationChanged para obter a duração real do arquivo.
+    // Sem isso, _duration ficava fixo no valor do widget (que pode ser 0 ou
+    // impreciso), fazendo o progresso não avançar corretamente.
+    _durationSub = _player.onDurationChanged.listen((d) {
+      if (!mounted) return;
+      if (d > Duration.zero) {
+        setState(() => _duration = d);
+      }
+    });
 
     _positionSub = _player.onPositionChanged.listen((pos) {
       if (!mounted) return;
       final total = _duration.inMilliseconds;
       setState(() {
         _position = pos;
-        _progress = total > 0 ? (pos.inMilliseconds / total).clamp(0.0, 1.0) : 0.0;
+        _progress =
+            total > 0 ? (pos.inMilliseconds / total).clamp(0.0, 1.0) : 0.0;
       });
     });
 
@@ -424,6 +438,7 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
   @override
   void dispose() {
     _positionSub?.cancel();
+    _durationSub?.cancel();
     _stateSub?.cancel();
     _player.dispose();
     super.dispose();
@@ -437,18 +452,20 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
         : AppTheme.accentColor.withValues(alpha: 0.1);
     final fgColor = widget.isMine ? Colors.white : AppTheme.accentColor;
 
+    // Fix de altura: padding vertical reduzido de 8 para 4,
+    // waveform de 24 para 18, e duração inline na mesma linha da waveform.
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
-      constraints: const BoxConstraints(minWidth: 180),
+      padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(4)),
+      constraints: const BoxConstraints(minWidth: 160),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Play/Pause button
+          // Play/Pause button — levemente menor (32 em vez de 36)
           GestureDetector(
-            onTap: () => _togglePlay(),
+            onTap: _togglePlay,
             child: Container(
-              width: r.s(36),
-              height: r.s(36),
+              width: r.s(32),
+              height: r.s(32),
               decoration: BoxDecoration(
                 color: bgColor,
                 shape: BoxShape.circle,
@@ -456,23 +473,23 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
               child: Icon(
                 _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
                 color: fgColor,
-                size: r.s(22),
+                size: r.s(20),
               ),
             ),
           ),
-          SizedBox(width: r.s(10)),
+          SizedBox(width: r.s(8)),
 
-          // Waveform estático + progress
+          // Waveform + duração na mesma coluna compacta
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Waveform bars estáticas
+                // Waveform com altura reduzida
                 SizedBox(
-                  height: r.s(24),
+                  height: r.s(18),
                   child: CustomPaint(
-                    size: const Size(double.infinity, 24),
+                    size: const Size(double.infinity, 18),
                     painter: _StaticWaveformPainter(
                       progress: _progress,
                       activeColor: fgColor,
@@ -481,14 +498,14 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
                   ),
                 ),
                 const SizedBox(height: 2),
-                // Duração: mostra posição atual durante reprodução
+                // Duração: posição atual durante reprodução, total em pausa
                 Text(
                   _isPlaying
                       ? _formatDuration(_position)
-                      : _formatDuration(Duration(seconds: widget.durationSeconds)),
+                      : _formatDuration(_duration),
                   style: TextStyle(
                     color: fgColor.withValues(alpha: 0.7),
-                    fontSize: r.fs(10),
+                    fontSize: r.fs(9),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
