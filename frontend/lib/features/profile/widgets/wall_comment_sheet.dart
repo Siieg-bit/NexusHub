@@ -521,11 +521,16 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
   Widget _buildComposer(Responsive r) {
     final hasContent = _pendingMediaUrl != null || _pendingStickerUrl != null;
 
-    return Container(
-      color: context.scaffoldBg,
-      padding: EdgeInsets.fromLTRB(r.s(16), r.s(12), r.s(16), r.s(12)),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final bottomPad = bottomInset > 0 ? r.s(8) : r.s(12);
+
+    return SafeArea(
+      top: false,
+      child: Container(
+        color: context.scaffoldBg,
+        padding: EdgeInsets.fromLTRB(r.s(16), r.s(12), r.s(16), bottomPad),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
         children: [
           // Banner de reply
           if (_replyingTo != null)
@@ -762,6 +767,7 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
               ),
             ),
         ],
+        ),
       ),
     );
   }
