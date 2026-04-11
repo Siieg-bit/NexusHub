@@ -16,6 +16,7 @@ import '../widgets/block_content_renderer.dart';
 import '../widgets/poll_quiz_widget.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../moderation/widgets/report_dialog.dart';
+import '../../moderation/widgets/post_moderation_menu.dart';
 import '../../stickers/stickers.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/utils/media_utils.dart';
@@ -54,6 +55,33 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   bool _isSending = false;
   bool _viewRecorded = false;
   bool _isBookmarked = false;
+  // Cache do role do usuário na comunidade atual
+  String? _cachedCommunityId;
+  String? _cachedUserRole;
+
+  bool _isStaffOf(String communityId) {
+    const staffRoles = ['agent', 'leader', 'curator', 'moderator'];
+    return staffRoles.contains(_cachedUserRole);
+  }
+
+  Future<void> _loadUserRole(String communityId) async {
+    if (_cachedCommunityId == communityId) return;
+    try {
+      final userId = SupabaseService.currentUserId;
+      if (userId == null) return;
+      final row = await SupabaseService.table('community_members')
+          .select('role')
+          .eq('community_id', communityId)
+          .eq('user_id', userId)
+          .maybeSingle();
+      if (mounted) {
+        setState(() {
+          _cachedCommunityId = communityId;
+          _cachedUserRole = row?['role'] as String?;
+        });
+      }
+    } catch (_) {}
+  }
   CommentModel? _replyingToComment;
   String? _pendingStickerUrl;
   String? _pendingMediaUrl;
@@ -603,6 +631,20 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   ref.read(postDetailProvider(widget.postId)).valueOrNull;
               if (post == null) return;
               switch (value) {
+                case 'moderation_menu':
+                  final changed = await showPostModerationMenu(
+                    context: context,
+                    ref: ref,
+                    communityId: post.communityId,
+                    postId: widget.postId,
+                    isPinned: post.isPinned,
+                    isFeatured: post.isFeatured,
+                    postTitle: post.title ?? '',
+                  );
+                  if (changed == true && mounted) {
+                    ref.invalidate(postDetailProvider(widget.postId));
+                  }
+                  break;
                 case 'report':
                   ReportDialog.show(
                     context,
@@ -729,6 +771,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               final post =
                   ref.read(postDetailProvider(widget.postId)).valueOrNull;
               final isAuthor = post?.authorId == SupabaseService.currentUserId;
+              // Carregar role se necessário
+              if (post != null) _loadUserRole(post.communityId);
               return [
                 if (!isAuthor && post?.type != 'repost')
                   PopupMenuItem(
@@ -812,6 +856,18 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       SizedBox(width: r.s(10)),
                       Text(s.deleteAction2,
                           style: TextStyle(color: AppTheme.errorColor)),
+                    ]),
+                  ),
+                // Menu de Moderação — visível apenas para staff
+                if (post != null && _isStaffOf(post.communityId))
+                  PopupMenuItem(
+                    value: 'moderation_menu',
+                    child: Row(children: [
+                      Icon(Icons.admin_panel_settings_rounded,
+                          size: r.s(18), color: AppTheme.primaryColor),
+                      SizedBox(width: r.s(10)),
+                      Text('Menu de Moderação',
+                          style: TextStyle(color: context.textPrimary)),
                     ]),
                   ),
               ];

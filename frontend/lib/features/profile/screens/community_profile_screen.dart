@@ -16,6 +16,7 @@ import '../../communities/widgets/community_create_menu.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/providers/block_provider.dart';
 import '../widgets/wall_comment_sheet.dart';
+import '../../moderation/widgets/member_role_manager.dart';
 
 /// Perfil dentro de uma Comunidade — Layout 1:1 com Amino Apps.
 ///
@@ -57,6 +58,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   String? _communityBannerUrl;
 
   bool get _isOwnProfile => widget.userId == SupabaseService.currentUserId;
+  Map<String, dynamic>? _myMembership; // membership do usuário logado na comunidade
 
   @override
   void initState() {
@@ -86,13 +88,28 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
         debugPrint('[community_profile_screen.dart] $e');
       }
 
-      // Membership na comunidade
+      // Membership na comunidade (do usuário alvo)
       final memberRes = await SupabaseService.table('community_members')
           .select()
           .eq('user_id', widget.userId)
           .eq('community_id', widget.communityId)
           .maybeSingle();
       _membership = memberRes;
+
+      // Membership do usuário logado (para verificar se pode moderar)
+      if (!_isOwnProfile) {
+        try {
+          final myId = SupabaseService.currentUserId;
+          if (myId != null) {
+            final myMemberRes = await SupabaseService.table('community_members')
+                .select('role')
+                .eq('user_id', myId)
+                .eq('community_id', widget.communityId)
+                .maybeSingle();
+            _myMembership = myMemberRes;
+          }
+        } catch (_) {}
+      }
 
       // Posts do usuário na comunidade
       final postsRes = await SupabaseService.table('posts')
@@ -1608,7 +1625,11 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (ctx) => Padding(
+      builder: (ctx) {
+        final myRole = _myMembership?['role'] as String? ?? 'member';
+        final canManageRoles = !_isOwnProfile &&
+            (myRole == 'agent' || myRole == 'leader' || myRole == 'curator');
+        return Padding(
         padding: EdgeInsets.all(r.s(16)),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1622,6 +1643,38 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
+            if (canManageRoles)
+              _optionTile(
+                Icons.manage_accounts_rounded,
+                'Gerenciar Cargo',
+                () async {
+                  Navigator.pop(ctx);
+                  final targetRole = _membership?['role'] as String? ?? 'member';
+                  final targetName = _user?.nickname ?? 'Membro';
+                  String? currentTitle;
+                  try {
+                    final titleRes = await SupabaseService.table('member_titles')
+                        .select('title')
+                        .eq('community_id', widget.communityId)
+                        .eq('user_id', widget.userId)
+                        .maybeSingle();
+                    currentTitle = titleRes?['title'] as String?;
+                  } catch (_) {}
+                  if (!mounted) return;
+                  final changed = await showMemberRoleManager(
+                    context: context,
+                    ref: ref,
+                    communityId: widget.communityId,
+                    targetUserId: widget.userId,
+                    targetUserName: targetName,
+                    currentRole: targetRole,
+                    currentTitle: currentTitle,
+                  );
+                  if (changed == true && mounted) {
+                    _loadProfile();
+                  }
+                },
+              ),
             if (!_isOwnProfile) ...[
               _optionTile(Icons.flag_rounded, s.report, () {
                 Navigator.pop(ctx);
@@ -1658,7 +1711,8 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
             }),
           ],
         ),
-      ),
+      );
+      },
     );
   }
 

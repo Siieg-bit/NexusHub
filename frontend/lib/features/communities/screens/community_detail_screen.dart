@@ -483,22 +483,44 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             background: Stack(
               fit: StackFit.expand,
               children: [
-                // Cover image
-                if ((community.bannerUrl ?? '').isNotEmpty)
-                  CachedNetworkImage(
-                    imageUrl: community.bannerUrl ?? '',
-                    fit: BoxFit.cover,
-                  )
-                else
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [themeColor, themeColor.withValues(alpha: 0.3)],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                    ),
-                  ),
+                // Cover image — usa banner do header ou fallback
+                Builder(builder: (ctx) {
+                  final headerBanner = community.bannerForContext('header');
+                  if ((headerBanner ?? '').isNotEmpty) {
+                    return CachedNetworkImage(
+                      imageUrl: headerBanner!,
+                      fit: BoxFit.cover,
+                    );
+                  }
+                  // Sem banner: aplica cor predominante conforme themeApplyMode
+                  switch (community.themeApplyMode) {
+                    case 'full':
+                      return Container(color: themeColor);
+                    case 'gradient':
+                      final gradEnd = community.themeGradientEnd != null
+                          ? Color(int.tryParse(community.themeGradientEnd!.replaceFirst('#', '0xFF')) ?? 0xFF2196F3)
+                          : themeColor.withValues(alpha: 0.3);
+                      return Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [themeColor, gradEnd],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                        ),
+                      );
+                    default: // accent
+                      return Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [themeColor, themeColor.withValues(alpha: 0.3)],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                        ),
+                      );
+                  }
+                }),
                 // Gradient overlay
                 Container(
                   decoration: BoxDecoration(

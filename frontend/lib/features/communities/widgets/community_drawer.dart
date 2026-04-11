@@ -414,10 +414,10 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
           child: Container(
             decoration: BoxDecoration(
               color: themeColor.withValues(alpha: 0.9),
-              image: widget.community.bannerUrl != null
+              image: widget.community.bannerForContext('drawer') != null
                   ? DecorationImage(
                       image: CachedNetworkImageProvider(
-                          widget.community.bannerUrl!),
+                          widget.community.bannerForContext('drawer')!),
                       fit: BoxFit.cover,
                     )
                   : widget.community.iconUrl != null
@@ -528,8 +528,8 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
 
   /// Banner retangular da comunidade no topo do header (como no Amino)
   Widget _buildCommunityBanner(Responsive r) {
-    if (widget.community.iconUrl == null &&
-        widget.community.bannerUrl == null) {
+    final drawerBanner = widget.community.bannerForContext('drawer');
+    if (widget.community.iconUrl == null && drawerBanner == null) {
       return SizedBox(height: r.s(10));
     }
     return Container(
@@ -538,10 +538,10 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(r.s(8)),
         color: Colors.white.withValues(alpha: 0.08),
-        image: (widget.community.bannerUrl ?? widget.community.iconUrl) != null
+        image: (drawerBanner ?? widget.community.iconUrl) != null
             ? DecorationImage(
                 image: CachedNetworkImageProvider(
-                    widget.community.bannerUrl ?? widget.community.iconUrl!),
+                    drawerBanner ?? widget.community.iconUrl!),
                 fit: BoxFit.cover,
               )
             : null,
