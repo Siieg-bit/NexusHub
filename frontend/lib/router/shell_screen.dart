@@ -4,17 +4,18 @@ import 'package:go_router/go_router.dart';
 import 'package:badges/badges.dart' as badges;
 import '../config/app_theme.dart';
 import '../core/l10n/locale_provider.dart';
-import '../core/providers/notification_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Bottom Navigation Bar Global — réplica pixel-perfect do Amino Apps.
 ///
-/// 5 Tabs:
+/// 4 Tabs globais:
 ///   1. Discover  (ícone pena/feather)
 ///   2. Communities (ícone grid 2x2)
 ///   3. Chats (ícone balão de chat)
-///   4. Notificações (ícone sino — com badge dinâmico)
-///   5. Store (ícone prédio/loja)
+///   4. Store (ícone prédio/loja)
+///
+/// Alertas permanecem acessíveis apenas dentro das comunidades e por entradas contextuais,
+/// não pela navegação global inferior.
 ///
 /// Cor ativa: ciano (#00BCD4) — NÃO branco.
 /// Cor inativa: cinza translúcido.
@@ -29,8 +30,8 @@ class ShellScreen extends ConsumerWidget {
     if (location == '/explore' || location == '/') return 0;
     if (location == '/communities') return 1;
     if (location == '/chats') return 2;
-    if (location.startsWith('/notifications')) return 3;
-    if (location == '/store') return 4;
+    if (location == '/store') return 3;
+    if (location.startsWith('/notifications')) return -1;
     return 0;
   }
 
@@ -46,9 +47,6 @@ class ShellScreen extends ConsumerWidget {
         context.go('/chats');
         break;
       case 3:
-        context.go('/notifications');
-        break;
-      case 4:
         context.go('/store');
         break;
     }
@@ -58,8 +56,6 @@ class ShellScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final s = ref.watch(stringsProvider);
     final selectedIndex = _getSelectedIndex(context);
-    final unreadNotifCount = ref.watch(unreadNotificationCountProvider);
-
     return Scaffold(
       body: child,
       extendBody: true,
@@ -107,22 +103,13 @@ class ShellScreen extends ConsumerWidget {
                       onTap: () => _onItemTapped(context, 2),
                       badgeCount: 0,
                     ),
-                    // ── Notificações (com badge dinâmico)
-                    _AminoNavItem(
-                      icon: Icons.notifications_outlined,
-                      activeIcon: Icons.notifications_rounded,
-                      label: 'Alertas',
-                      isSelected: selectedIndex == 3,
-                      onTap: () => _onItemTapped(context, 3),
-                      badgeCount: unreadNotifCount,
-                    ),
                     // ── Store
                     _AminoNavItem(
                       icon: Icons.store_mall_directory_outlined,
                       activeIcon: Icons.store_mall_directory,
                       label: s.shop,
-                      isSelected: selectedIndex == 4,
-                      onTap: () => _onItemTapped(context, 4),
+                      isSelected: selectedIndex == 3,
+                      onTap: () => _onItemTapped(context, 3),
                     ),
                   ],
                 ),
