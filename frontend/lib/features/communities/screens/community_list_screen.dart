@@ -137,7 +137,8 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
 
             // ── Grade horizontal de cards com drag & drop ──
             SizedBox(
-              height: r.s(195),
+              // 18 (iconOverflow) + 175 (cardHeight) = 193
+              height: r.s(193),
               child: Row(
                 children: [
                   Expanded(
@@ -571,8 +572,10 @@ class _AminoCommunityCard extends ConsumerStatefulWidget {
   final VoidCallback onLongPress;
 
   static const double _cardWidth = 120;
-  static const double _iconSize = 34;
-  static const double _iconOverflow = 16;
+  static const double _cardHeight = 175;
+  static const double _bannerHeight = 130;
+  static const double _iconSize = 36;
+  static const double _iconOverflow = 18;
 
   const _AminoCommunityCard({
     required this.community,
@@ -667,17 +670,28 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
     final hasCheckedIn = myStatus?['has_checkin_today'] as bool? ?? false;
     final streak = myStatus?['consecutive_checkin_days'] as int? ?? 0;
 
+    // Altura total escalada — deve bater com o SizedBox pai (r.s(193))
+    final double scaledOverflow = r.s(_AminoCommunityCard._iconOverflow);
+    final double scaledCardH   = r.s(_AminoCommunityCard._cardHeight);
+    final double scaledWidth   = r.s(_AminoCommunityCard._cardWidth);
+    final double scaledBannerH = r.s(_AminoCommunityCard._bannerHeight);
+    final double scaledIconSz  = r.s(_AminoCommunityCard._iconSize);
+
     return GestureDetector(
       onTap: widget.onTap,
       onLongPress: widget.onLongPress,
       child: SizedBox(
-        width: _AminoCommunityCard._cardWidth,
+        width: scaledWidth,
+        height: scaledOverflow + scaledCardH,
         child: Stack(
           clipBehavior: Clip.none,
           children: [
             // ── Card principal (com margem top para o ícone flutuante) ──
-            Positioned.fill(
-              top: _AminoCommunityCard._iconOverflow,
+            Positioned(
+              top: scaledOverflow,
+              left: 0,
+              right: 0,
+              bottom: 0,
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(r.s(10)),
@@ -692,20 +706,24 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
                 ),
                 clipBehavior: Clip.antiAlias,
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Banner (imagem de capa) — preenche o espaço disponível
-                    Expanded(
+                    // Banner (imagem de capa) — altura fixa escalada para não distorcer
+                    SizedBox(
+                      height: scaledBannerH,
                       child: Stack(
                         fit: StackFit.expand,
                         children: [
-                          // Imagem
+                          // Imagem com BoxFit.cover garantido
                           widget.community.bannerUrl != null &&
                                   widget.community.bannerUrl!.isNotEmpty
                               ? CachedNetworkImage(
-                                  imageUrl: widget.community.bannerUrl ?? '',
+                                  imageUrl: widget.community.bannerUrl!,
                                   fit: BoxFit.cover,
-                                  memCacheWidth: 360,
-                                  memCacheHeight: 480,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  memCacheWidth: 240,
+                                  memCacheHeight: 260,
                                   placeholder: (_, __) => Container(
                                     color: color.withValues(alpha: 0.3),
                                   ),
@@ -723,8 +741,8 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
                                   color: color.withValues(alpha: 0.3),
                                   child: Center(
                                     child: Icon(Icons.groups_rounded,
-                                        color:
-                                            Colors.white.withValues(alpha: 0.2),
+                                        color: Colors.white
+                                            .withValues(alpha: 0.2),
                                         size: r.s(28)),
                                   ),
                                 ),
@@ -734,7 +752,7 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
                             bottom: 0,
                             left: 0,
                             right: 0,
-                            height: r.s(50),
+                            height: r.s(52),
                             child: Container(
                               decoration: const BoxDecoration(
                                 gradient: LinearGradient(
@@ -742,7 +760,7 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
                                   end: Alignment.bottomCenter,
                                   colors: [
                                     Colors.transparent,
-                                    Color(0xCC000000),
+                                    Color(0xDD000000),
                                   ],
                                 ),
                               ),
@@ -751,7 +769,7 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
 
                           // Nome da comunidade
                           Positioned(
-                            bottom: 4,
+                            bottom: 5,
                             left: 6,
                             right: 6,
                             child: Text(
@@ -761,7 +779,7 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
                                 fontSize: r.fs(11),
                                 fontWeight: FontWeight.w700,
                                 height: 1.2,
-                                shadows: [
+                                shadows: const [
                                   Shadow(
                                     color: Colors.black,
                                     blurRadius: 6,
@@ -781,117 +799,151 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
                     ),
 
                     // ── Botão CHECK IN ou Streak Badge ──
-                    if (!hasCheckedIn)
-                      // Botão CHECK IN — visível apenas se não fez check-in hoje
-                      GestureDetector(
-                        onTap: _isCheckingIn ? null : _doCheckIn,
-                        child: Padding(
-                          padding: EdgeInsets.fromLTRB(
-                              r.s(6), r.s(4), r.s(6), r.s(5)),
-                          child: Container(
-                            width: double.infinity,
-                            padding: EdgeInsets.symmetric(vertical: r.s(4)),
-                            decoration: BoxDecoration(
-                              color: _isCheckingIn
-                                  ? AppTheme.accentColor.withValues(alpha: 0.5)
-                                  : AppTheme.accentColor,
-                              borderRadius: BorderRadius.circular(r.s(6)),
-                            ),
-                            child: _isCheckingIn
-                                ? SizedBox(
-                                    height: r.s(14),
-                                    child: Center(
-                                      child: SizedBox(
-                                        width: r.s(12),
-                                        height: r.s(12),
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 1.5,
-                                          color: Colors.white,
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: !hasCheckedIn
+                            // Botão CHECK IN
+                            ? GestureDetector(
+                                onTap: _isCheckingIn ? null : _doCheckIn,
+                                child: Padding(
+                                  padding: EdgeInsets.fromLTRB(
+                                      r.s(6), r.s(4), r.s(6), r.s(5)),
+                                  child: Container(
+                                    width: double.infinity,
+                                    padding:
+                                        EdgeInsets.symmetric(vertical: r.s(4)),
+                                    decoration: BoxDecoration(
+                                      color: _isCheckingIn
+                                          ? AppTheme.accentColor
+                                              .withValues(alpha: 0.5)
+                                          : AppTheme.accentColor,
+                                      borderRadius:
+                                          BorderRadius.circular(r.s(6)),
+                                    ),
+                                    child: _isCheckingIn
+                                        ? SizedBox(
+                                            height: r.s(14),
+                                            child: Center(
+                                              child: SizedBox(
+                                                width: r.s(12),
+                                                height: r.s(12),
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  strokeWidth: 1.5,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          )
+                                        : Text(
+                                            'CHECK IN',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: r.fs(10),
+                                              fontWeight: FontWeight.w800,
+                                              letterSpacing: 0.5,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                  ),
+                                ),
+                              )
+                            // Streak badge
+                            : Padding(
+                                padding: EdgeInsets.fromLTRB(
+                                    r.s(6), r.s(4), r.s(6), r.s(5)),
+                                child: Container(
+                                  width: double.infinity,
+                                  padding:
+                                      EdgeInsets.symmetric(vertical: r.s(3)),
+                                  decoration: BoxDecoration(
+                                    color: color.withValues(alpha: 0.15),
+                                    borderRadius:
+                                        BorderRadius.circular(r.s(6)),
+                                    border: Border.all(
+                                      color: color.withValues(alpha: 0.3),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.local_fire_department_rounded,
+                                        color: AppTheme.warningColor,
+                                        size: r.s(12),
+                                      ),
+                                      const SizedBox(width: 2),
+                                      Text(
+                                        '$streak dia${streak > 1 ? 's' : ''}',
+                                        style: TextStyle(
+                                          color: AppTheme.warningColor,
+                                          fontSize: r.fs(9),
+                                          fontWeight: FontWeight.w700,
                                         ),
                                       ),
-                                    ),
-                                  )
-                                : Text(
-                                    'CHECK IN',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: r.fs(10),
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: 0.5,
-                                    ),
-                                    textAlign: TextAlign.center,
+                                    ],
                                   ),
-                          ),
-                        ),
-                      )
-                    else
-                      // Streak badge — mostra quando já fez check-in hoje
-                      Padding(
-                        padding:
-                            EdgeInsets.fromLTRB(r.s(6), r.s(4), r.s(6), r.s(5)),
-                        child: Container(
-                          width: double.infinity,
-                          padding: EdgeInsets.symmetric(vertical: r.s(3)),
-                          decoration: BoxDecoration(
-                            color: context.cardBgAlt,
-                            borderRadius: BorderRadius.circular(r.s(6)),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.local_fire_department_rounded,
-                                color: AppTheme.warningColor,
-                                size: r.s(12),
-                              ),
-                              const SizedBox(width: 2),
-                              Text(
-                                '$streak dia${streak > 1 ? 's' : ''}',
-                                style: TextStyle(
-                                  color: AppTheme.warningColor,
-                                  fontSize: r.fs(9),
-                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
                       ),
+                    ),
                   ],
                 ),
               ),
             ),
 
-            // ── Ícone flutuante (acima e à esquerda do card, parcialmente fora) ──
+            // ── Ícone flutuante — sem borda colorida, com sombra e clip correto ──
             Positioned(
               top: 0,
               left: 4,
               child: Container(
-                width: _AminoCommunityCard._iconSize,
-                height: _AminoCommunityCard._iconSize,
+                width: scaledIconSz,
+                height: scaledIconSz,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(r.s(8)),
-                  color: context.scaffoldBg,
-                  border: Border.all(color: color, width: 2.5),
+                  // Sem cor de fundo — a imagem preenche 100%
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.6),
+                      color: color.withValues(alpha: 0.5),
                       blurRadius: 6,
+                      spreadRadius: 0,
                       offset: const Offset(0, 2),
+                    ),
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
                     ),
                   ],
                 ),
-                clipBehavior: Clip.antiAlias,
-                child: widget.community.iconUrl != null &&
-                        widget.community.iconUrl!.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: widget.community.iconUrl ?? '',
-                        fit: BoxFit.cover,
-                        memCacheWidth: 96,
-                        memCacheHeight: 96,
-                      )
-                    : Icon(Icons.person, color: Colors.white54, size: r.s(18)),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(r.s(8)),
+                  child: widget.community.iconUrl != null &&
+                          widget.community.iconUrl!.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: widget.community.iconUrl!,
+                          fit: BoxFit.cover,
+                          width: scaledIconSz,
+                          height: scaledIconSz,
+                          memCacheWidth: 72,
+                          memCacheHeight: 72,
+                          placeholder: (_, __) => Container(
+                            color: color.withValues(alpha: 0.4),
+                          ),
+                          errorWidget: (_, __, ___) => Container(
+                            color: color.withValues(alpha: 0.4),
+                            child: Icon(Icons.groups_rounded,
+                                color: Colors.white, size: r.s(18)),
+                          ),
+                        )
+                      : Container(
+                          color: color.withValues(alpha: 0.4),
+                          child: Icon(Icons.groups_rounded,
+                              color: Colors.white, size: r.s(18)),
+                        ),
+                ),
               ),
             ),
           ],
@@ -913,41 +965,54 @@ class _JoinCommunityCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final r = context.r;
+    // Mesmas dimensões escaladas do _AminoCommunityCard para alinhamento perfeito
+    final double scaledOverflow = r.s(_AminoCommunityCard._iconOverflow);
+    final double scaledCardH   = r.s(_AminoCommunityCard._cardHeight);
+    final double scaledWidth   = r.s(_AminoCommunityCard._cardWidth);
+
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: r.s(120),
-        margin: EdgeInsets.only(top: r.s(18)),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(r.s(10)),
-          color: context.cardBgAlt.withValues(alpha: 0.5),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.06),
-            width: 0.5,
-          ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Ícone "+"
-            Icon(
-              Icons.add,
-              color: Colors.white.withValues(alpha: 0.55),
-              size: r.s(28),
-            ),
-            SizedBox(height: r.s(10)),
-            // Texto
-            Text(
-              'Entrar em uma\ncomunidade',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.55),
-                fontSize: r.fs(12),
-                fontWeight: FontWeight.w500,
-                height: 1.3,
+      // SizedBox com altura total = overflow + cardHeight, igual ao _AminoCommunityCard
+      child: SizedBox(
+        width: scaledWidth,
+        height: scaledOverflow + scaledCardH,
+        child: Padding(
+          // Empurra o container para baixo do overflow, deixando o topo vazio
+          // (assim o card fica alinhado ao card de comunidade)
+          padding: EdgeInsets.only(top: scaledOverflow),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(r.s(10)),
+              color: context.cardBgAlt.withValues(alpha: 0.5),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.06),
+                width: 0.5,
               ),
-              textAlign: TextAlign.center,
             ),
-          ],
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Ícone "+"
+                Icon(
+                  Icons.add,
+                  color: Colors.white.withValues(alpha: 0.55),
+                  size: r.s(28),
+                ),
+                SizedBox(height: r.s(10)),
+                // Texto
+                Text(
+                  'Entrar em uma\ncomunidade',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.55),
+                    fontSize: r.fs(12),
+                    fontWeight: FontWeight.w500,
+                    height: 1.3,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
