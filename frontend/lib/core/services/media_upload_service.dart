@@ -26,6 +26,12 @@ enum MediaBucket {
   postMedia,
   chatMedia,
   wikiMedia,
+  /// Banner local do usuário dentro de uma comunidade
+  communityProfileBanners,
+  /// Plano de fundo local do usuário dentro de uma comunidade
+  communityProfileBackgrounds,
+  /// Galeria de fotos local do usuário dentro de uma comunidade
+  communityProfileGallery,
 }
 
 class UploadResult {
@@ -57,6 +63,12 @@ class MediaUploadService {
         return 'chat-media';
       case MediaBucket.wikiMedia:
         return 'wiki-media';
+      case MediaBucket.communityProfileBanners:
+        return 'community-profile-banners';
+      case MediaBucket.communityProfileBackgrounds:
+        return 'community-profile-backgrounds';
+      case MediaBucket.communityProfileGallery:
+        return 'community-profile-gallery';
     }
   }
 

@@ -92,14 +92,33 @@ class _EditCommunityProfileScreenState
 
   // ─── Upload helpers ──────────────────────────────────────────────────────────
 
+  /// Retorna o bucket correto para cada tipo de mídia do perfil de comunidade.
+  /// Avatar usa [MediaBucket.avatars] (bucket compartilhado com perfil global).
+  /// Banner, background e galeria usam buckets dedicados.
+  static MediaBucket _bucketForFolder(String folder) {
+    switch (folder) {
+      case 'avatar':
+        return MediaBucket.avatars;
+      case 'banner':
+        return MediaBucket.communityProfileBanners;
+      case 'background':
+        return MediaBucket.communityProfileBackgrounds;
+      case 'gallery':
+        return MediaBucket.communityProfileGallery;
+      default:
+        return MediaBucket.communityProfileGallery;
+    }
+  }
+
   Future<String?> _uploadCommunityImage(String folder,
       {bool crop = false}) async {
     try {
       final userId = SupabaseService.currentUserId ?? 'unknown';
-      // A política RLS do bucket 'avatars' exige que o primeiro segmento
-      // do path seja o userId do usuário autenticado.
+      // Path: userId/communityId/timestamp.jpg
+      // O primeiro segmento é sempre o userId, satisfazendo a política RLS
+      // de todos os buckets (foldername[1] = auth.uid()).
       final customPath =
-          '$userId/community_profiles/${widget.communityId}/$folder/'
+          '$userId/${widget.communityId}/'
           '${DateTime.now().millisecondsSinceEpoch}.jpg';
 
       // Abre o picker
@@ -123,7 +142,7 @@ class _EditCommunityProfileScreenState
 
       final result = await MediaUploadService.uploadFile(
         file: fileToUpload,
-        bucket: MediaBucket.avatars,
+        bucket: _bucketForFolder(folder),
         customPath: customPath,
       );
       return result?.url;
