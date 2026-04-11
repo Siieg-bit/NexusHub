@@ -406,3 +406,31 @@ final unreadCountProvider = FutureProvider<int>((ref) async {
     return 0;
   }
 });
+
+// ── Unread Count por Comunidade ──
+// Retorna um Map<communityId, unreadCount> para exibir badges no drawer.
+final unreadCountByCommunityProvider = FutureProvider<Map<String, int>>((ref) async {
+  final userId = SupabaseService.currentUserId;
+  if (userId == null) return {};
+  try {
+    // Busca unread_count de cada thread junto com o community_id do thread
+    final res = await SupabaseService.client
+        .from('chat_members')
+        .select('unread_count, chat_threads!thread_id(community_id)')
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .gt('unread_count', 0);
+    final list = res as List? ?? [];
+    final Map<String, int> result = {};
+    for (final row in list) {
+      final thread = row['chat_threads'] as Map<String, dynamic>?;
+      final communityId = thread?['community_id'] as String?;
+      if (communityId == null) continue;
+      final count = row['unread_count'] as int? ?? 0;
+      result[communityId] = (result[communityId] ?? 0) + count;
+    }
+    return result;
+  } catch (_) {
+    return {};
+  }
+});

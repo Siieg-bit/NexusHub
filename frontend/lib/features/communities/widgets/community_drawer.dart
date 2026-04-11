@@ -289,8 +289,9 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
   /// Ícone individual de comunidade na sidebar com badge de notificação
   Widget _buildSidebarCommunityIcon(
       Responsive r, CommunityModel community, bool isCurrent) {
-    // TODO: Integrar com provider de unread count por comunidade quando disponível
-    // Por enquanto, não mostramos badge (como no Amino quando não há notificações)
+    // Badge de não lidas por comunidade
+    final unreadMap = ref.watch(unreadCountByCommunityProvider).valueOrNull ?? {};
+    final unreadCount = unreadMap[community.id] ?? 0;
     return GestureDetector(
       onTap: () {
         if (!isCurrent) {
@@ -345,6 +346,37 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                     )
                   : null,
             ),
+            // Badge de não lidas (estilo Amino: círculo vermelho, canto superior direito)
+            if (unreadCount > 0)
+              Positioned(
+                top: -r.s(3),
+                right: -r.s(3),
+                child: Container(
+                  constraints: BoxConstraints(
+                    minWidth: r.s(16),
+                    minHeight: r.s(16),
+                  ),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: r.s(4),
+                    vertical: r.s(1),
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(r.s(10)),
+                    border: Border.all(color: Colors.black, width: 1.5),
+                  ),
+                  child: Text(
+                    unreadCount > 99 ? '99+' : '$unreadCount',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: r.fs(9),
+                      fontWeight: FontWeight.w700,
+                      height: 1,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
           ],
         ),
       ),
