@@ -11,6 +11,11 @@ class CommentModel {
   final String? parentId;
   final String content;
   final String? mediaUrl;
+  // Campos de sticker (migration 054)
+  final String? stickerId;
+  final String? stickerUrl;
+  final String? stickerName;
+  final String? packId;
   final int likesCount;
   final String status; // enum: ok, pending, closed, disabled, deleted
   final DateTime createdAt;
@@ -27,6 +32,10 @@ class CommentModel {
     this.parentId,
     required this.content,
     this.mediaUrl,
+    this.stickerId,
+    this.stickerUrl,
+    this.stickerName,
+    this.packId,
     this.likesCount = 0,
     this.status = 'ok',
     required this.createdAt,
@@ -45,6 +54,10 @@ class CommentModel {
       parentId: json['parent_id'] as String?,
       content: json['content'] as String? ?? '',
       mediaUrl: json['media_url'] as String?,
+      stickerId: json['sticker_id'] as String?,
+      stickerUrl: json['sticker_url'] as String?,
+      stickerName: json['sticker_name'] as String?,
+      packId: json['pack_id'] as String?,
       likesCount: json['likes_count'] as int? ?? 0,
       status: json['status'] as String? ?? 'ok',
       createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ??
@@ -68,6 +81,15 @@ class CommentModel {
       'parent_id': parentId,
       'content': content,
       'media_url': mediaUrl,
+      if (stickerId != null) 'sticker_id': stickerId,
+      if (stickerUrl != null) 'sticker_url': stickerUrl,
+      if (stickerName != null) 'sticker_name': stickerName,
+      if (packId != null) 'pack_id': packId,
     };
   }
+
+  bool get isSticker =>
+      stickerId != null ||
+      stickerUrl != null ||
+      content == '[sticker]';
 }

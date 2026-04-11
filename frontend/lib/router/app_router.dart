@@ -71,6 +71,11 @@ import '../features/moderation/screens/admin_reports_screen.dart';
 import '../features/stories/screens/create_story_screen.dart';
 import '../features/live/screens/screening_room_screen.dart';
 import '../features/feed/screens/drafts_screen.dart';
+import '../features/stickers/screens/sticker_gallery_screen.dart';
+import '../features/stickers/screens/sticker_pack_screen.dart';
+import '../features/stickers/screens/sticker_creator_screen.dart';
+import '../features/stickers/screens/create_pack_screen.dart';
+import '../features/stickers/screens/sticker_explore_screen.dart';
 import '../features/profile/screens/edit_community_profile_screen.dart';
 import 'shell_screen.dart';
 import '../features/stories/screens/story_viewer_screen.dart';
@@ -720,6 +725,48 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           return CreateStoryScreen(
             communityId: communityId,
             editingPost: extra['editingPost'] as PostModel?,
+          );
+        },
+      ),
+      // ====================================================================
+      // STICKERS
+      // ====================================================================
+      GoRoute(
+        path: '/stickers',
+        name: 'sticker-gallery',
+        builder: (context, state) => const StickerGalleryScreen(),
+      ),
+      GoRoute(
+        path: '/stickers/explore',
+        name: 'sticker-explore',
+        builder: (context, state) => const StickerExploreScreen(),
+      ),
+      GoRoute(
+        path: '/stickers/create-pack',
+        name: 'create-sticker-pack',
+        builder: (context, state) => const CreatePackScreen(),
+      ),
+      GoRoute(
+        path: '/stickers/pack/:packId',
+        name: 'sticker-pack',
+        builder: (context, state) {
+          final packId = state.pathParameters['packId']!;
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return StickerPackScreen(
+            packId: packId,
+            isOwner: extra['isOwner'] as bool? ?? false,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/stickers/pack/:packId/add',
+        name: 'sticker-creator',
+        builder: (context, state) {
+          final packId = state.pathParameters['packId']!;
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return StickerCreatorScreen(
+            packId: packId,
+            packName: extra['packName'] as String? ?? '',
           );
         },
       ),

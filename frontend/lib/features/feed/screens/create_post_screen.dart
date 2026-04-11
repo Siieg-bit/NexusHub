@@ -163,7 +163,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   }
 
   String _colorToHex(Color color) =>
-      '#${color.toARGB32().toRadixString(16).padLeft(8, '0').toUpperCase()}';
+      // ignore: deprecated_member_use
+      '#${color.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
 
   // ════════════════════════════════════════════════════════════════════════════
   // UPLOAD HELPERS
@@ -1148,7 +1149,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             spacing: r.s(6),
             runSpacing: r.s(6),
             children: _presetColors.map((color) {
-              final isSelected = current.toARGB32() == color.toARGB32();
+              // ignore: deprecated_member_use
+              final isSelected = current.value == color.value;
               return GestureDetector(
                 onTap: () => onChanged(color),
                 child: Container(

@@ -8,6 +8,7 @@ import '../../../core/models/message_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../stickers/widgets/sticker_message_bubble.dart';
 
 /// ============================================================================
 /// MESSAGE BUBBLE (suporta todos os 19+ tipos) — Estilo Amino
@@ -284,20 +285,18 @@ class MessageBubble extends ConsumerWidget {
       );
     }
 
-    // Sticker
-    // Guard de URL vazia: stickers emoji padrão não têm URL de imagem.
-    // URL vazia ou null em CachedNetworkImage causa:
-    //   Invalid argument(s): No host specified in URI
+    // Sticker — usa StickerMessageBubble com suporte a favoritar/salvar pack
     if (type == 'sticker' || message.stickerUrl != null) {
       final rawUrl = message.stickerUrl ?? message.mediaUrl;
       final url = (rawUrl != null && rawUrl.isNotEmpty) ? rawUrl : null;
       if (url != null) {
-        return CachedNetworkImage(
-          imageUrl: url,
-          width: r.s(120),
-          height: r.s(120),
-          errorWidget: (_, __, ___) =>
-              Text('\uD83C\uDFAD', style: TextStyle(fontSize: r.fs(48))),
+        return StickerMessageBubble(
+          stickerId: message.stickerId ?? url,
+          stickerUrl: url,
+          stickerName: message.content ?? '',
+          packId: message.packId,
+          isSentByMe: isMe,
+          size: r.s(120),
         );
       }
       // Sticker emoji padrão: renderizar o conteúdo textual da mensagem

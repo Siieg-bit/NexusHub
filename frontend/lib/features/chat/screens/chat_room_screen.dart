@@ -17,6 +17,7 @@ import 'call_screen.dart';
 import '../widgets/giphy_picker.dart';
 import '../widgets/forward_message_sheet.dart';
 import '../widgets/sticker_picker.dart';
+import '../../stickers/stickers.dart';
 import '../widgets/voice_recorder.dart';
 import '../widgets/message_bubble.dart';
 import '../widgets/chat_reply_preview.dart';
@@ -599,6 +600,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     String? mediaType,
     String? stickerId,
     String? stickerUrl,
+    String? stickerName,
+    String? packId,
     String? sharedUrl,
     int? tipAmount,
     int? mediaDuration,
@@ -687,6 +690,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         'p_type': mappedType,
         'p_media_url': finalMediaUrl,
         'p_reply_to': replyToId,
+        if (stickerId != null) 'p_sticker_id': stickerId,
+        if (stickerUrl != null && stickerUrl.isNotEmpty) 'p_sticker_url': stickerUrl,
+        if (stickerName != null && stickerName.isNotEmpty) 'p_sticker_name': stickerName,
+        if (packId != null && packId.isNotEmpty) 'p_pack_id': packId,
       });
     } catch (e) {
       debugPrint('[ChatRoom] Send message error: $e');
@@ -2229,16 +2236,20 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
         }
       },
       onSticker: () async {
-        final sticker = await StickerPicker.show(context);
         if (!mounted) return;
-        if (sticker != null) {
-          _sendMessage(
-            type: 'sticker',
-            mediaUrl: sticker['sticker_url'],
-            stickerId: sticker['sticker_id'],
-            stickerUrl: sticker['sticker_url'],
-          );
-        }
+        await StickerPickerV2.show(
+          context,
+          onStickerSelected: (sticker) {
+            _sendMessage(
+              type: 'sticker',
+              mediaUrl: sticker.imageUrl,
+              stickerId: sticker.id,
+              stickerUrl: sticker.imageUrl,
+              stickerName: sticker.name,
+              packId: sticker.packId.isNotEmpty ? sticker.packId : null,
+            );
+          },
+        );
       },
       onAudio: () => setState(() => _isRecordingVoice = true),
       onPoll: _showInlinePollCreator,

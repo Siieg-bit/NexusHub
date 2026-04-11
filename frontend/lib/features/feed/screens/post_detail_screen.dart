@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show FileOptions;
 import 'package:timeago/timeago.dart' as timeago;
 
 import '../../../config/app_theme.dart';
@@ -15,6 +17,7 @@ import '../widgets/poll_quiz_widget.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../moderation/widgets/report_dialog.dart';
 import '../../chat/widgets/sticker_picker.dart';
+import '../../stickers/stickers.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/utils/media_utils.dart';
 import '../../../core/utils/responsive.dart';
@@ -56,6 +59,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   String? _pendingStickerUrl;
   String? _pendingMediaUrl;
   bool _showStickerPicker = false;
+  bool _showEmojiPicker = false;
+  String? _pendingVideoUrl;
 
   /// Incrementa views_count uma única vez por abertura da tela.
   Future<void> _recordView() async {
@@ -132,6 +137,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         parentId: comment.parentId,
         content: comment.content,
         mediaUrl: comment.mediaUrl,
+        stickerId: comment.stickerId,
+        stickerUrl: comment.stickerUrl,
+        stickerName: comment.stickerName,
+        packId: comment.packId,
         likesCount: comment.likesCount,
         status: comment.status,
         createdAt: comment.createdAt,
@@ -214,10 +223,16 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     }
   }
 
-  Future<void> _sendComment({String? stickerUrl}) async {
+  Future<void> _sendComment({
+    String? stickerUrl,
+    String? stickerId,
+    String? stickerName,
+    String? packId,
+  }) async {
     final s = getStrings();
     final textContent = _commentController.text.trim();
     final mediaUrl = stickerUrl ?? _pendingStickerUrl ?? _pendingMediaUrl;
+    final isSticker = stickerId != null || stickerUrl != null;
 
     // Precisa ter texto ou mídia
     if (textContent.isEmpty && mediaUrl == null) return;
@@ -249,13 +264,26 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         }
       }
 
-      // Usar RPC para texto puro, insert direto quando tem mídia
-      if (mediaUrl != null) {
+      // Sticker: usar RPC dedicado com suporte a sticker_id, sticker_url, pack_id
+      if (isSticker) {
+        await SupabaseService.rpc('send_comment_with_sticker', params: {
+          'p_post_id': widget.postId,
+          'p_content': textContent.isNotEmpty ? textContent : '',
+          'p_parent_id': _replyingToComment?.id,
+          'p_sticker_id': stickerId,
+          'p_sticker_url': stickerUrl,
+          'p_sticker_name': stickerName,
+          'p_pack_id': packId,
+        });
+      } else if (mediaUrl != null) {
+        // Imagem ou vídeo
+        final isVideo = _pendingVideoUrl != null;
         await SupabaseService.table('comments').insert({
           'post_id': widget.postId,
           'author_id': userId,
-          'content': textContent.isNotEmpty ? textContent : (stickerUrl != null ? '[sticker]' : '[image]'),
+          'content': textContent.isNotEmpty ? textContent : (isVideo ? '[video]' : '[image]'),
           'media_url': mediaUrl,
+          'media_type': isVideo ? 'video' : 'image',
           'parent_id': _replyingToComment?.id,
         });
       } else {
@@ -275,7 +303,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       setState(() {
         _pendingStickerUrl = null;
         _pendingMediaUrl = null;
+        _pendingVideoUrl = null;
         _showStickerPicker = false;
+        _showEmojiPicker = false;
       });
       ref.invalidate(postCommentsProvider(widget.postId));
       ref.invalidate(postDetailProvider(widget.postId));
@@ -323,13 +353,61 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     }
   }
 
-  Future<void> _openStickerPicker() async {
-    final post = ref.read(postDetailProvider(widget.postId)).valueOrNull;
-    final result = await StickerPicker.show(context, communityId: post?.communityId);
-    if (result != null && result['sticker_url'] != null && mounted) {
-      // Enviar sticker diretamente como comentário
-      await _sendComment(stickerUrl: result['sticker_url']!);
+  Future<void> _pickCommentVideo() async {
+    final picker = ImagePicker();
+    final file = await picker.pickVideo(
+      source: ImageSource.gallery,
+      maxDuration: const Duration(seconds: 60),
+    );
+    if (file == null) return;
+    try {
+      final bytes = await file.readAsBytes();
+      final userId = SupabaseService.currentUserId ?? 'unknown';
+      final path = 'comments/$userId/${DateTime.now().millisecondsSinceEpoch}.mp4';
+      await SupabaseService.storage.from('post_media').uploadBinary(
+        path, bytes,
+        fileOptions: const FileOptions(contentType: 'video/mp4'),
+      );
+      if (!mounted) return;
+      final url = SupabaseService.storage.from('post_media').getPublicUrl(path);
+      if (!mounted) return;
+      setState(() {
+        _pendingVideoUrl = url;
+        _pendingMediaUrl = url;
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Erro ao enviar vídeo'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
     }
+  }
+
+  void _toggleEmojiPicker() {
+    setState(() {
+      _showEmojiPicker = !_showEmojiPicker;
+      if (_showEmojiPicker) _commentFocusNode.unfocus();
+    });
+  }
+
+  Future<void> _openStickerPicker() async {
+    if (!mounted) return;
+    setState(() => _showEmojiPicker = false);
+    await StickerPickerV2.show(
+      context,
+      onStickerSelected: (sticker) {
+        _sendComment(
+          stickerUrl: sticker.imageUrl,
+          stickerId: sticker.id,
+          stickerName: sticker.name,
+          packId: sticker.packId.isNotEmpty ? sticker.packId : null,
+        );
+      },
+    );
   }
 
   Future<void> _toggleLike() async {
@@ -1242,14 +1320,56 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             ],
                           ),
                         ),
-                      // Input row com botões de sticker e imagem
+                      // Emoji Picker
+                      if (_showEmojiPicker)
+                        SizedBox(
+                          height: 250,
+                          child: EmojiPicker(
+                            onEmojiSelected: (_, emoji) {
+                              _commentController.text += emoji.emoji;
+                              _commentController.selection = TextSelection.fromPosition(
+                                TextPosition(offset: _commentController.text.length),
+                              );
+                            },
+                            config: Config(
+                              columns: 8,
+                              emojiSizeMax: 28,
+                              bgColor: context.surfaceColor,
+                              indicatorColor: AppTheme.primaryColor,
+                              iconColorSelected: AppTheme.primaryColor,
+                              iconColor: Colors.grey[600] ?? Colors.grey,
+                              checkPlatformCompatibility: true,
+                              recentTabBehavior: RecentTabBehavior.RECENT,
+                              recentsLimit: 20,
+                              noRecents: Text(
+                                'Sem recentes',
+                                style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                              ),
+                            ),
+                          ),
+                        ),
+                      // Input row com botões de emoji, sticker, imagem e vídeo
                       Row(
                         children: [
+                          // Botão de emoji
+                          GestureDetector(
+                            onTap: _toggleEmojiPicker,
+                            child: Padding(
+                              padding: EdgeInsets.only(right: r.s(4)),
+                              child: Icon(
+                                Icons.tag_faces_rounded,
+                                color: _showEmojiPicker
+                                    ? AppTheme.primaryColor
+                                    : Colors.grey[500],
+                                size: r.s(22),
+                              ),
+                            ),
+                          ),
                           // Botão de sticker
                           GestureDetector(
                             onTap: _openStickerPicker,
                             child: Padding(
-                              padding: EdgeInsets.only(right: r.s(6)),
+                              padding: EdgeInsets.only(right: r.s(4)),
                               child: Icon(
                                 Icons.emoji_emotions_rounded,
                                 color: Colors.grey[500],
@@ -1261,9 +1381,21 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           GestureDetector(
                             onTap: _pickCommentImage,
                             child: Padding(
-                              padding: EdgeInsets.only(right: r.s(8)),
+                              padding: EdgeInsets.only(right: r.s(4)),
                               child: Icon(
                                 Icons.image_rounded,
+                                color: Colors.grey[500],
+                                size: r.s(22),
+                              ),
+                            ),
+                          ),
+                          // Botão de vídeo
+                          GestureDetector(
+                            onTap: _pickCommentVideo,
+                            child: Padding(
+                              padding: EdgeInsets.only(right: r.s(8)),
+                              child: Icon(
+                                Icons.videocam_rounded,
                                 color: Colors.grey[500],
                                 size: r.s(22),
                               ),
@@ -1884,7 +2016,7 @@ class _CommentTileState extends ConsumerState<_CommentTile> {
                     ),
                     SizedBox(height: r.s(4)),
                     // Texto do comentário (ocultar se for apenas marcador de sticker/imagem)
-                    if (comment.content != '[sticker]' && comment.content != '[image]')
+                    if (comment.content != '[sticker]' && comment.content != '[image]' && !comment.isSticker)
                       Text(
                         comment.content,
                         style: TextStyle(
@@ -1893,8 +2025,87 @@ class _CommentTileState extends ConsumerState<_CommentTile> {
                           color: context.textPrimary,
                         ),
                       ),
-                    // Renderizar mídia (sticker ou imagem) se presente
-                    if (comment.mediaUrl != null && comment.mediaUrl!.isNotEmpty)
+                    // Sticker com suporte a favoritar/salvar pack
+                    if (comment.isSticker && (comment.stickerUrl ?? comment.mediaUrl) != null)
+                      Padding(
+                        padding: EdgeInsets.only(top: r.s(6)),
+                        child: StickerMessageBubble(
+                          stickerId: comment.stickerId ?? (comment.stickerUrl ?? comment.mediaUrl)!,
+                          stickerUrl: comment.stickerUrl ?? comment.mediaUrl!,
+                          stickerName: comment.stickerName ?? '',
+                          packId: comment.packId,
+                          isSentByMe: comment.authorId == SupabaseService.currentUserId,
+                          size: r.s(100),
+                        ),
+                      )
+                    // Vídeo
+                    else if (!comment.isSticker && comment.mediaUrl != null &&
+                        (comment.mediaUrl!.contains('.mp4') ||
+                         comment.mediaUrl!.contains('.mov') ||
+                         comment.mediaUrl!.contains('.webm')))
+                      Padding(
+                        padding: EdgeInsets.only(top: r.s(6)),
+                        child: GestureDetector(
+                          onTap: () {
+                            // Abrir vídeo em tela cheia
+                            showDialog(
+                              context: context,
+                              builder: (_) => Dialog(
+                                backgroundColor: Colors.black,
+                                insetPadding: EdgeInsets.zero,
+                                child: Stack(
+                                  alignment: Alignment.topRight,
+                                  children: [
+                                    AspectRatio(
+                                      aspectRatio: 16 / 9,
+                                      child: Icon(Icons.play_circle_fill_rounded,
+                                          color: Colors.white, size: 64),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.close, color: Colors.white),
+                                      onPressed: () => Navigator.pop(context),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(r.s(10)),
+                            child: Container(
+                              width: r.s(200),
+                              height: r.s(120),
+                              color: Colors.black,
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  Icon(Icons.play_circle_fill_rounded,
+                                      color: Colors.white.withValues(alpha: 0.9),
+                                      size: r.s(48)),
+                                  Positioned(
+                                    bottom: r.s(6),
+                                    left: r.s(6),
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: r.s(6), vertical: r.s(2)),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black54,
+                                        borderRadius: BorderRadius.circular(r.s(4)),
+                                      ),
+                                      child: Text('Vídeo',
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: r.fs(10))),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                    // Imagem genérica (não-sticker)
+                    else if (!comment.isSticker && comment.mediaUrl != null && comment.mediaUrl!.isNotEmpty)
                       Padding(
                         padding: EdgeInsets.only(top: r.s(6)),
                         child: ClipRRect(

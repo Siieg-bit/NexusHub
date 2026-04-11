@@ -6,7 +6,7 @@ import 'user_model.dart';
 /// Campos mapeados diretamente da tabela `chat_messages`:
 /// - id, thread_id, author_id, type, content
 /// - media_url, media_type, media_duration, media_thumbnail_url
-/// - sticker_id, sticker_url
+/// - sticker_id, sticker_url, sticker_name, pack_id
 /// - reply_to_id
 /// - shared_user_id, shared_url, shared_link_summary
 /// - tip_amount
@@ -29,6 +29,8 @@ class MessageModel {
   final String? mediaThumbnailUrl;
   final String? stickerId;
   final String? stickerUrl;
+  final String? stickerName;
+  final String? packId;
   final String? replyToId;
   final String? sharedUserId;
   final String? sharedUrl;
@@ -54,6 +56,8 @@ class MessageModel {
     this.mediaThumbnailUrl,
     this.stickerId,
     this.stickerUrl,
+    this.stickerName,
+    this.packId,
     this.replyToId,
     this.sharedUserId,
     this.sharedUrl,
@@ -81,6 +85,8 @@ class MessageModel {
       mediaThumbnailUrl: json['media_thumbnail_url'] as String?,
       stickerId: json['sticker_id'] as String?,
       stickerUrl: json['sticker_url'] as String?,
+      stickerName: json['sticker_name'] as String?,
+      packId: json['pack_id'] as String?,
       replyToId: json['reply_to_id'] as String?,
       sharedUserId: json['shared_user_id'] as String?,
       sharedUrl: json['shared_url'] as String?,
@@ -125,6 +131,8 @@ class MessageModel {
       map['media_thumbnail_url'] = mediaThumbnailUrl;
     if (stickerId != null) map['sticker_id'] = stickerId;
     if (stickerUrl != null) map['sticker_url'] = stickerUrl;
+    if (stickerName != null) map['sticker_name'] = stickerName;
+    if (packId != null) map['pack_id'] = packId;
     if (replyToId != null) map['reply_to_id'] = replyToId;
     if (sharedUserId != null) map['shared_user_id'] = sharedUserId;
     if (sharedUrl != null) map['shared_url'] = sharedUrl;
@@ -167,6 +175,8 @@ class MessageModel {
     String? mediaType,
     String? stickerUrl,
     String? stickerId,
+    String? stickerName,
+    String? packId,
     String? sharedUrl,
   }) {
     return MessageModel(
@@ -181,6 +191,8 @@ class MessageModel {
       mediaThumbnailUrl: mediaThumbnailUrl,
       stickerId: stickerId ?? this.stickerId,
       stickerUrl: stickerUrl ?? this.stickerUrl,
+      stickerName: stickerName ?? this.stickerName,
+      packId: packId ?? this.packId,
       replyToId: replyToId,
       sharedUserId: sharedUserId,
       sharedUrl: sharedUrl ?? this.sharedUrl,
