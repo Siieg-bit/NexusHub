@@ -218,6 +218,7 @@ class PushNotificationService {
       case 'like':
       case 'comment':
       case 'follow':
+      case 'mention':
       case 'wall_post':
         channelId = 'nexushub_social';
         break;

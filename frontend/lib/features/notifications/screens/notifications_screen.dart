@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -88,8 +87,16 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       ),
     );
     if (confirmed == true) {
-      await ref.read(notificationProvider.notifier).markAllAsRead();
+      await ref.read(notificationProvider.notifier).deleteAll();
     }
+  }
+
+  void _onCategoryChanged(NotificationCategory category) {
+    ref.read(notificationProvider.notifier).setCategory(category);
+  }
+
+  Future<void> _deleteNotification(String id) async {
+    await ref.read(notificationProvider.notifier).deleteNotification(id);
   }
 
   Map<String, dynamic> _notificationData(Map<String, dynamic> notification) {
@@ -418,6 +425,53 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                   ),
                 ),
 
+                // ── Filtros de categoria ─────────────────────────────────
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: r.s(44),
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: EdgeInsets.symmetric(
+                          horizontal: r.s(12), vertical: r.s(6)),
+                      children: NotificationCategory.values.map((cat) {
+                        final isSelected = notifState.category == cat;
+                        return GestureDetector(
+                          onTap: () => _onCategoryChanged(cat),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            margin: EdgeInsets.only(right: r.s(8)),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: r.s(14), vertical: r.s(4)),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? AppTheme.primaryColor
+                                  : context.surfaceColor,
+                              borderRadius: BorderRadius.circular(r.s(20)),
+                              border: Border.all(
+                                color: isSelected
+                                    ? AppTheme.primaryColor
+                                    : context.dividerClr.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: Text(
+                              cat.label,
+                              style: TextStyle(
+                                color: isSelected
+                                    ? Colors.white
+                                    : context.textSecondary,
+                                fontSize: r.fs(12),
+                                fontWeight: isSelected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+
                 // ── Lista vazia ──────────────────────────────────────────
                 if (notifications.isEmpty)
                   SliverFillRemaining(
@@ -460,18 +514,37 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                                 'community_invite' &&
                             _inviteCodeFromNotification(notification) != null;
 
-                        return _NotificationTile(
-                          data: notification,
-                          onTap: () {
-                            _handleTap(notification);
+                        return Dismissible(
+                          key: Key(notificationId ?? index.toString()),
+                          direction: DismissDirection.endToStart,
+                          background: Container(
+                            alignment: Alignment.centerRight,
+                            padding: EdgeInsets.only(right: r.s(20)),
+                            color: AppTheme.errorColor.withValues(alpha: 0.85),
+                            child: Icon(
+                              Icons.delete_rounded,
+                              color: Colors.white,
+                              size: r.s(24),
+                            ),
+                          ),
+                          onDismissed: (_) {
+                            if (notificationId != null) {
+                              _deleteNotification(notificationId);
+                            }
                           },
-                          onPrimaryAction: hasInviteAction
-                              ? () {
-                                  _acceptCommunityInvite(notification);
-                                }
-                              : null,
-                          isActionLoading: notificationId != null &&
-                              _acceptingInviteIds.contains(notificationId),
+                          child: _NotificationTile(
+                            data: notification,
+                            onTap: () {
+                              _handleTap(notification);
+                            },
+                            onPrimaryAction: hasInviteAction
+                                ? () {
+                                    _acceptCommunityInvite(notification);
+                                  }
+                                : null,
+                            isActionLoading: notificationId != null &&
+                                _acceptingInviteIds.contains(notificationId),
+                          ),
                         );
                       },
                       childCount: notifications.length,
