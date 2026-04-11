@@ -133,11 +133,20 @@ class BlockEditor extends ConsumerStatefulWidget {
   final ValueChanged<List<ContentBlock>> onChanged;
   final String communityId;
 
+  /// Placeholder para o primeiro bloco de texto quando vazio.
+  final String? placeholder;
+
+  /// Se false, esconde a barra de adicionar blocos no final.
+  /// Útil quando a tela pai controla a inserção de blocos (estilo Amino).
+  final bool showAddBar;
+
   const BlockEditor({
     super.key,
     this.initialBlocks = const [],
     required this.onChanged,
     required this.communityId,
+    this.placeholder,
+    this.showAddBar = true,
   });
 
   @override
@@ -363,19 +372,25 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
               animation: animation,
               builder: (context, _) => Material(
                 color: Colors.transparent,
-                elevation: 6,
+                elevation: 4,
                 child: child,
               ),
             );
           },
           itemBuilder: (context, index) {
             final block = _blocks[index];
+            // Determinar placeholder: só o primeiro bloco de texto usa o placeholder custom
+            String? blockPlaceholder;
+            if (index == 0 && block.isTextBased && widget.placeholder != null) {
+              blockPlaceholder = widget.placeholder;
+            }
             return _BlockWidget(
               key: ValueKey(block.id),
               block: block,
               index: index,
               isFocused: _focusedBlockIndex == index,
               isUploading: _isUploading && _focusedBlockIndex == index,
+              placeholder: blockPlaceholder,
               onFocus: () => setState(() => _focusedBlockIndex = index),
               onRemove: () => _removeBlock(index),
               onPickImage: () => _pickImageForBlock(index),
@@ -389,23 +404,30 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
             );
           },
         ),
-        SizedBox(height: r.s(10)),
-        _AddBlockBar(
-          onAddText: () => _addBlock(BlockType.text),
-          onAddImage: () => _insertImageBlock(),
-          onAddDivider: () => _addBlock(BlockType.divider),
-          onAddHeading: () => _addBlock(BlockType.heading),
-        ),
+        if (widget.showAddBar) ...[
+          SizedBox(height: r.s(10)),
+          _AddBlockBar(
+            onAddText: () => _addBlock(BlockType.text),
+            onAddImage: () => _insertImageBlock(),
+            onAddDivider: () => _addBlock(BlockType.divider),
+            onAddHeading: () => _addBlock(BlockType.heading),
+          ),
+        ],
       ],
     );
   }
 }
+
+// =============================================================================
+// _BlockWidget — renderiza cada bloco individual
+// =============================================================================
 
 class _BlockWidget extends ConsumerWidget {
   final ContentBlock block;
   final int index;
   final bool isFocused;
   final bool isUploading;
+  final String? placeholder;
   final VoidCallback onFocus;
   final VoidCallback onRemove;
   final VoidCallback onPickImage;
@@ -423,6 +445,7 @@ class _BlockWidget extends ConsumerWidget {
     required this.index,
     required this.isFocused,
     required this.isUploading,
+    this.placeholder,
     required this.onFocus,
     required this.onRemove,
     required this.onPickImage,
@@ -442,18 +465,18 @@ class _BlockWidget extends ConsumerWidget {
     return GestureDetector(
       onTap: onFocus,
       child: Container(
-        margin: EdgeInsets.only(bottom: r.s(8)),
-        padding: EdgeInsets.symmetric(vertical: r.s(6)),
+        // Sem margin extra, sem background — estilo Amino limpo
+        padding: EdgeInsets.symmetric(vertical: r.s(2)),
         decoration: BoxDecoration(
-          color: isFocused
-              ? context.cardBg.withValues(alpha: 0.3)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(r.s(12)),
-          border: Border.all(
-            color: isFocused
-                ? AppTheme.accentColor.withValues(alpha: 0.35)
-                : Colors.transparent,
-          ),
+          // Borda lateral sutil apenas quando focado (não card inteiro)
+          border: isFocused
+              ? Border(
+                  left: BorderSide(
+                    color: AppTheme.accentColor.withValues(alpha: 0.4),
+                    width: r.s(2),
+                  ),
+                )
+              : null,
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -462,6 +485,7 @@ class _BlockWidget extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Toolbar de formatação compacta — só quando focado
                   if (isFocused && block.isTextBased)
                     _FormatToolbar(
                       block: block,
@@ -475,9 +499,10 @@ class _BlockWidget extends ConsumerWidget {
                 ],
               ),
             ),
+            // Ações mínimas apenas quando focado
             if (isFocused)
               Padding(
-                padding: EdgeInsets.only(top: r.s(2), right: r.s(4)),
+                padding: EdgeInsets.only(top: r.s(2), right: r.s(2)),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -485,13 +510,13 @@ class _BlockWidget extends ConsumerWidget {
                       index: index,
                       child: _MiniAction(
                         icon: Icons.drag_indicator_rounded,
-                        color: context.textSecondary,
+                        color: context.textSecondary.withValues(alpha: 0.5),
                         onTap: () {},
                       ),
                     ),
                     _MiniAction(
-                      icon: Icons.delete_outline_rounded,
-                      color: AppTheme.errorColor,
+                      icon: Icons.close_rounded,
+                      color: AppTheme.errorColor.withValues(alpha: 0.7),
                       onTap: onRemove,
                     ),
                   ],
@@ -515,54 +540,54 @@ class _BlockWidget extends ConsumerWidget {
         final isQuote = block.type == BlockType.quote;
         final baseStyle = TextStyle(
           fontSize: isHeading
-              ? (block.level == 1 ? r.fs(24) : block.level == 2 ? r.fs(20) : r.fs(18))
-              : r.fs(15),
+              ? (block.level == 1 ? r.fs(20) : block.level == 2 ? r.fs(17) : r.fs(15))
+              : r.fs(14),
           height: isQuote ? 1.6 : 1.7,
           color: context.textPrimary,
           fontWeight: isHeading || block.bold ? FontWeight.w700 : FontWeight.w400,
           fontStyle: block.italic || isQuote ? FontStyle.italic : FontStyle.normal,
         );
 
+        // Determinar hint text
+        final hintText = placeholder ??
+            (isHeading
+                ? 'Subtítulo'
+                : isQuote
+                    ? 'Citação...'
+                    : s.writeHereHint);
+
         final field = TextField(
           controller: block.controller,
           textAlign: _parseTextAlign(block.align),
           style: baseStyle,
           decoration: InputDecoration(
-            hintText: isHeading
-                ? 'Subtítulo da seção'
-                : isQuote
-                    ? 'Escreva uma citação ou destaque'
-                    : s.writeHereHint,
+            hintText: hintText,
             hintStyle: TextStyle(
-              color: context.textHint,
+              color: context.textHint.withValues(alpha: 0.5),
               fontSize: baseStyle.fontSize,
               fontWeight: isHeading ? FontWeight.w700 : FontWeight.w400,
               fontStyle: isQuote ? FontStyle.italic : FontStyle.normal,
             ),
             border: InputBorder.none,
             contentPadding: EdgeInsets.symmetric(
-              horizontal: r.s(8),
-              vertical: r.s(10),
+              horizontal: r.s(4),
+              vertical: r.s(4),
             ),
+            isDense: true,
           ),
           maxLines: null,
           onTap: onFocus,
           onChanged: onTextChanged,
         );
 
-        if (!isQuote) {
-          return field;
-        }
+        if (!isQuote) return field;
 
         return Container(
-          margin: EdgeInsets.symmetric(horizontal: r.s(6)),
           decoration: BoxDecoration(
-            color: AppTheme.accentColor.withValues(alpha: 0.06),
-            borderRadius: BorderRadius.circular(r.s(12)),
             border: Border(
               left: BorderSide(
-                color: AppTheme.accentColor.withValues(alpha: 0.7),
-                width: r.s(3),
+                color: AppTheme.accentColor.withValues(alpha: 0.5),
+                width: r.s(2.5),
               ),
             ),
           ),
@@ -572,24 +597,27 @@ class _BlockWidget extends ConsumerWidget {
       case BlockType.image:
         if (isUploading) {
           return Container(
-            height: r.s(180),
-            margin: EdgeInsets.symmetric(horizontal: r.s(6)),
+            height: r.s(120),
             decoration: BoxDecoration(
-              color: context.cardBg,
-              borderRadius: BorderRadius.circular(r.s(12)),
+              color: context.cardBg.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(r.s(8)),
             ),
             child: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const CircularProgressIndicator(
-                    color: AppTheme.accentColor,
-                    strokeWidth: 2,
+                  SizedBox(
+                    width: r.s(20),
+                    height: r.s(20),
+                    child: const CircularProgressIndicator(
+                      color: AppTheme.accentColor,
+                      strokeWidth: 2,
+                    ),
                   ),
-                  SizedBox(height: r.s(8)),
+                  SizedBox(height: r.s(6)),
                   Text(
                     s.sendingImage,
-                    style: TextStyle(color: context.textSecondary, fontSize: r.fs(12)),
+                    style: TextStyle(color: context.textSecondary, fontSize: r.fs(11)),
                   ),
                 ],
               ),
@@ -601,13 +629,12 @@ class _BlockWidget extends ConsumerWidget {
           return GestureDetector(
             onTap: onPickImage,
             child: Container(
-              height: r.s(132),
-              margin: EdgeInsets.symmetric(horizontal: r.s(6)),
+              height: r.s(100),
               decoration: BoxDecoration(
-                color: context.cardBg,
-                borderRadius: BorderRadius.circular(r.s(12)),
+                color: context.cardBg.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(r.s(8)),
                 border: Border.all(
-                  color: AppTheme.accentColor.withValues(alpha: 0.25),
+                  color: context.dividerClr.withValues(alpha: 0.3),
                 ),
               ),
               child: Center(
@@ -615,14 +642,17 @@ class _BlockWidget extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      Icons.add_photo_alternate_rounded,
-                      color: AppTheme.accentColor.withValues(alpha: 0.7),
-                      size: r.s(30),
+                      Icons.add_photo_alternate_outlined,
+                      color: context.textHint,
+                      size: r.s(24),
                     ),
-                    SizedBox(height: r.s(6)),
+                    SizedBox(height: r.s(4)),
                     Text(
                       s.tapToAddImage,
-                      style: TextStyle(color: context.textSecondary, fontSize: r.fs(12)),
+                      style: TextStyle(
+                        color: context.textHint,
+                        fontSize: r.fs(11),
+                      ),
                     ),
                   ],
                 ),
@@ -631,99 +661,92 @@ class _BlockWidget extends ConsumerWidget {
           );
         }
 
-        return Padding(
-          padding: EdgeInsets.symmetric(horizontal: r.s(6)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(r.s(12)),
-                child: Image.network(
-                  block.imageUrl!,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    height: r.s(120),
-                    color: context.cardBg,
-                    child: Center(
-                      child: Icon(
-                        Icons.broken_image_rounded,
-                        color: context.textHint,
-                        size: r.s(32),
-                      ),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(r.s(8)),
+              child: Image.network(
+                block.imageUrl!,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  height: r.s(100),
+                  color: context.cardBg,
+                  child: Center(
+                    child: Icon(
+                      Icons.broken_image_rounded,
+                      color: context.textHint,
+                      size: r.s(24),
                     ),
                   ),
                 ),
               ),
-              SizedBox(height: r.s(8)),
-              OutlinedButton.icon(
-                onPressed: onPickImage,
-                icon: const Icon(Icons.refresh_rounded),
-                label: const Text('Trocar imagem'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: context.textPrimary,
-                  side: BorderSide(color: context.dividerClr),
+            ),
+            if (isFocused) ...[
+              SizedBox(height: r.s(4)),
+              GestureDetector(
+                onTap: onPickImage,
+                child: Text(
+                  'Trocar imagem',
+                  style: TextStyle(
+                    color: AppTheme.accentColor.withValues(alpha: 0.7),
+                    fontSize: r.fs(11),
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-              SizedBox(height: r.s(6)),
-              TextField(
-                controller: block.captionController,
-                style: TextStyle(
-                  color: context.textSecondary,
-                  fontSize: r.fs(12),
-                  fontStyle: FontStyle.italic,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'Legenda da imagem (opcional)',
-                  hintStyle: TextStyle(color: context.textHint),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(horizontal: r.s(4)),
-                ),
-                onTap: onFocus,
-                onChanged: onCaptionChanged,
               ),
             ],
-          ),
+            SizedBox(height: r.s(2)),
+            TextField(
+              controller: block.captionController,
+              style: TextStyle(
+                color: context.textSecondary,
+                fontSize: r.fs(11),
+                fontStyle: FontStyle.italic,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Legenda (opcional)',
+                hintStyle: TextStyle(
+                  color: context.textHint.withValues(alpha: 0.4),
+                  fontSize: r.fs(11),
+                ),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(horizontal: r.s(2)),
+                isDense: true,
+              ),
+              onTap: onFocus,
+              onChanged: onCaptionChanged,
+            ),
+          ],
         );
 
       case BlockType.divider:
         return Padding(
-          padding: EdgeInsets.symmetric(vertical: r.s(16), horizontal: r.s(20)),
+          padding: EdgeInsets.symmetric(vertical: r.s(12)),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: r.s(4),
-                height: r.s(4),
+            children: List.generate(
+              3,
+              (_) => Container(
+                margin: EdgeInsets.symmetric(horizontal: r.s(3)),
+                width: r.s(3),
+                height: r.s(3),
                 decoration: BoxDecoration(
-                  color: context.textHint.withValues(alpha: 0.5),
+                  color: context.textHint.withValues(alpha: 0.4),
                   shape: BoxShape.circle,
                 ),
               ),
-              SizedBox(width: r.s(8)),
-              Container(
-                width: r.s(4),
-                height: r.s(4),
-                decoration: BoxDecoration(
-                  color: context.textHint.withValues(alpha: 0.5),
-                  shape: BoxShape.circle,
-                ),
-              ),
-              SizedBox(width: r.s(8)),
-              Container(
-                width: r.s(4),
-                height: r.s(4),
-                decoration: BoxDecoration(
-                  color: context.textHint.withValues(alpha: 0.5),
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ],
+            ),
           ),
         );
     }
   }
 }
+
+// =============================================================================
+// _FormatToolbar — barra de formatação compacta inline
+// =============================================================================
 
 class _FormatToolbar extends StatelessWidget {
   final ContentBlock block;
@@ -746,65 +769,71 @@ class _FormatToolbar extends StatelessWidget {
   Widget build(BuildContext context) {
     final r = context.r;
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: EdgeInsets.only(left: r.s(6), right: r.s(6), bottom: r.s(6)),
-      child: Row(
-        children: [
-          PopupMenuButton<BlockType>(
-            tooltip: 'Estilo do bloco',
-            color: context.surfaceColor,
-            onSelected: onTypeChanged,
-            itemBuilder: (_) => const [
-              PopupMenuItem(value: BlockType.text, child: Text('Texto')),
-              PopupMenuItem(value: BlockType.heading, child: Text('Subtítulo')),
-              PopupMenuItem(value: BlockType.quote, child: Text('Citação')),
-            ],
-            child: _ToolbarChip(
-              label: switch (block.type) {
-                BlockType.heading => 'Subtítulo',
-                BlockType.quote => 'Citação',
-                _ => 'Texto',
-              },
-            ),
-          ),
-          SizedBox(width: r.s(6)),
-          _ToolbarIconButton(
-            icon: Icons.format_bold_rounded,
-            selected: block.bold,
-            onTap: onToggleBold,
-          ),
-          SizedBox(width: r.s(6)),
-          _ToolbarIconButton(
-            icon: Icons.format_italic_rounded,
-            selected: block.italic,
-            onTap: onToggleItalic,
-          ),
-          SizedBox(width: r.s(6)),
-          _ToolbarIconButton(
-            icon: _alignmentIcon(block.align),
-            selected: false,
-            onTap: onCycleAlignment,
-          ),
-          if (block.type == BlockType.heading) ...[
-            SizedBox(width: r.s(6)),
-            PopupMenuButton<int>(
-              tooltip: 'Nível do subtítulo',
+    return Padding(
+      padding: EdgeInsets.only(bottom: r.s(2)),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            PopupMenuButton<BlockType>(
+              tooltip: 'Estilo',
               color: context.surfaceColor,
-              onSelected: onHeadingLevelChanged,
+              onSelected: onTypeChanged,
               itemBuilder: (_) => const [
-                PopupMenuItem(value: 1, child: Text('Título grande')),
-                PopupMenuItem(value: 2, child: Text('Título médio')),
-                PopupMenuItem(value: 3, child: Text('Título pequeno')),
+                PopupMenuItem(value: BlockType.text, child: Text('Texto')),
+                PopupMenuItem(value: BlockType.heading, child: Text('Subtítulo')),
+                PopupMenuItem(value: BlockType.quote, child: Text('Citação')),
               ],
-              child: _ToolbarChip(label: 'H${block.level}'),
+              child: _ToolbarChip(
+                label: switch (block.type) {
+                  BlockType.heading => 'H',
+                  BlockType.quote => 'Q',
+                  _ => 'T',
+                },
+              ),
             ),
+            SizedBox(width: r.s(4)),
+            _ToolbarIconBtn(
+              icon: Icons.format_bold_rounded,
+              selected: block.bold,
+              onTap: onToggleBold,
+            ),
+            SizedBox(width: r.s(4)),
+            _ToolbarIconBtn(
+              icon: Icons.format_italic_rounded,
+              selected: block.italic,
+              onTap: onToggleItalic,
+            ),
+            SizedBox(width: r.s(4)),
+            _ToolbarIconBtn(
+              icon: _alignmentIcon(block.align),
+              selected: false,
+              onTap: onCycleAlignment,
+            ),
+            if (block.type == BlockType.heading) ...[
+              SizedBox(width: r.s(4)),
+              PopupMenuButton<int>(
+                tooltip: 'Nível',
+                color: context.surfaceColor,
+                onSelected: onHeadingLevelChanged,
+                itemBuilder: (_) => const [
+                  PopupMenuItem(value: 1, child: Text('H1')),
+                  PopupMenuItem(value: 2, child: Text('H2')),
+                  PopupMenuItem(value: 3, child: Text('H3')),
+                ],
+                child: _ToolbarChip(label: 'H${block.level}'),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
 }
+
+// =============================================================================
+// _AddBlockBar — barra de adicionar blocos (visível quando showAddBar = true)
+// =============================================================================
 
 class _AddBlockBar extends ConsumerWidget {
   final VoidCallback onAddText;
@@ -825,11 +854,11 @@ class _AddBlockBar extends ConsumerWidget {
     final r = context.r;
 
     return Container(
-      padding: EdgeInsets.symmetric(vertical: r.s(10), horizontal: r.s(6)),
+      padding: EdgeInsets.symmetric(vertical: r.s(8), horizontal: r.s(6)),
       decoration: BoxDecoration(
-        color: context.cardBg.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(r.s(12)),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.03)),
+        color: context.cardBg.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(r.s(10)),
+        border: Border.all(color: context.dividerClr.withValues(alpha: 0.15)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -887,20 +916,20 @@ class _AddBlockButton extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: r.s(40),
-            height: r.s(40),
+            width: r.s(36),
+            height: r.s(36),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(r.s(10)),
+              borderRadius: BorderRadius.circular(r.s(8)),
             ),
-            child: Icon(icon, color: color, size: r.s(20)),
+            child: Icon(icon, color: color, size: r.s(18)),
           ),
-          SizedBox(height: r.s(4)),
+          SizedBox(height: r.s(3)),
           Text(
             label,
             style: TextStyle(
               color: context.textSecondary,
-              fontSize: r.fs(10),
+              fontSize: r.fs(9),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -909,6 +938,10 @@ class _AddBlockButton extends StatelessWidget {
     );
   }
 }
+
+// =============================================================================
+// Widgets auxiliares compactos
+// =============================================================================
 
 class _ToolbarChip extends StatelessWidget {
   final String label;
@@ -919,30 +952,30 @@ class _ToolbarChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final r = context.r;
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(6)),
+      padding: EdgeInsets.symmetric(horizontal: r.s(8), vertical: r.s(4)),
       decoration: BoxDecoration(
-        color: context.cardBg,
-        borderRadius: BorderRadius.circular(r.s(20)),
-        border: Border.all(color: context.dividerClr),
+        color: context.cardBg.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(r.s(12)),
+        border: Border.all(color: context.dividerClr.withValues(alpha: 0.3)),
       ),
       child: Text(
         label,
         style: TextStyle(
           color: context.textPrimary,
-          fontSize: r.fs(11),
-          fontWeight: FontWeight.w600,
+          fontSize: r.fs(10),
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
   }
 }
 
-class _ToolbarIconButton extends StatelessWidget {
+class _ToolbarIconBtn extends StatelessWidget {
   final IconData icon;
   final bool selected;
   final VoidCallback onTap;
 
-  const _ToolbarIconButton({
+  const _ToolbarIconBtn({
     required this.icon,
     required this.selected,
     required this.onTap,
@@ -953,24 +986,19 @@ class _ToolbarIconButton extends StatelessWidget {
     final r = context.r;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(r.s(20)),
+      borderRadius: BorderRadius.circular(r.s(12)),
       child: Container(
-        padding: EdgeInsets.all(r.s(8)),
+        padding: EdgeInsets.all(r.s(5)),
         decoration: BoxDecoration(
           color: selected
-              ? AppTheme.accentColor.withValues(alpha: 0.18)
-              : context.cardBg,
-          borderRadius: BorderRadius.circular(r.s(20)),
-          border: Border.all(
-            color: selected
-                ? AppTheme.accentColor.withValues(alpha: 0.35)
-                : context.dividerClr,
-          ),
+              ? AppTheme.accentColor.withValues(alpha: 0.15)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(r.s(12)),
         ),
         child: Icon(
           icon,
-          size: r.s(18),
-          color: selected ? AppTheme.accentColor : context.textPrimary,
+          size: r.s(15),
+          color: selected ? AppTheme.accentColor : context.textSecondary,
         ),
       ),
     );
@@ -994,8 +1022,8 @@ class _MiniAction extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Padding(
-        padding: EdgeInsets.all(r.s(4)),
-        child: Icon(icon, color: color, size: r.s(16)),
+        padding: EdgeInsets.all(r.s(3)),
+        child: Icon(icon, color: color, size: r.s(14)),
       ),
     );
   }
