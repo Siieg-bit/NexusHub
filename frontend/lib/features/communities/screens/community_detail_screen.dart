@@ -472,7 +472,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
             SizedBox(width: r.s(6)),
             // Notifications
             GestureDetector(
-              onTap: () => context.push('/community/$communityId/notifications'),
+              onTap: () => context.push('/community/${widget.communityId}/notifications'),
               child: Container(
                 width: r.s(34),
                 height: r.s(34),
