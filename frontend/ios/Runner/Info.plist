@@ -104,5 +104,13 @@
 	<!-- Suporte a JavaScript no WebView -->
 	<key>WebKitJavaScriptEnabled</key>
 	<true/>
+
+	<!-- flutter_inappwebview: obrigatório para renderizar WebView no iOS (Flutter Platform Views) -->
+	<key>io.flutter.embedded_views_preview</key>
+	<true/>
+
+	<!-- flutter_inappwebview: permite acesso a arquivos locais no WebView -->
+	<key>NSAllowsLocalNetworking</key>
+	<true/>
 </dict>
 </plist>

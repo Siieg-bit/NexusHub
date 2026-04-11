@@ -69,6 +69,12 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
 
   InAppWebViewController? _webViewController;
   StreamSubscription<List<Map<String, dynamic>>>? _sessionSub;
+  Timer? _heartbeatTimer;
+  Timer? _cleanupTimer;
+
+  // Perfil do usuário atual (para exibir no chat interno)
+  String? _myUsername;
+  String? _myAvatarUrl;
 
   // User-agent de desktop Chrome — contorna bloqueios de WebView mobile
   static const _desktopUserAgent =
@@ -89,6 +95,8 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
 
   @override
   void dispose() {
+    _heartbeatTimer?.cancel();
+    _cleanupTimer?.cancel();
     _sessionSub?.cancel();
     if (_sessionId != null) {
       RealtimeService.instance.unsubscribe('screening_$_sessionId');
@@ -150,13 +158,26 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
         'call_session_id': _sessionId,
         'user_id': userId,
         'status': 'connected',
+        'last_heartbeat': DateTime.now().toIso8601String(),
       });
 
+      // Carregar perfil do usuário atual para exibir no chat interno
+      try {
+        final profile = await SupabaseService.table('profiles')
+            .select('username, avatar_url')
+            .eq('id', userId)
+            .single();
+        _myUsername = profile['username'] as String?;
+        _myAvatarUrl = profile['avatar_url'] as String?;
+      } catch (_) {}
+
       await _loadParticipants();
+      await _loadChatHistory();
       if (!mounted) return;
 
       _subscribeToRealtime();
       _listenForSessionEnd();
+      _startHeartbeat();
 
       if (mounted) setState(() => _isLoading = false);
     } catch (e) {
@@ -180,6 +201,71 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
       if (mounted) setState(() {});
     } catch (e) {
       debugPrint('[screening_room] _loadParticipants error: $e');
+    }
+  }
+
+  // ── Histórico do chat interno ──────────────────────────────────────────────
+
+  Future<void> _loadChatHistory() async {
+    if (_sessionId == null) return;
+    try {
+      final rows = await SupabaseService.client.rpc(
+        'get_screening_chat_history',
+        params: {'p_session_id': _sessionId, 'p_limit': 100},
+      );
+      if (!mounted) return;
+      final msgs = (rows as List? ?? []).map((r) {
+        final m = Map<String, dynamic>.from(r as Map);
+        // Normalizar para o mesmo formato usado pelo Broadcast
+        return <String, dynamic>{
+          'user_id': m['user_id'],
+          'username': m['username'],
+          'avatar_url': m['avatar_url'],
+          'text': m['text'],
+          'ts': DateTime.parse(m['created_at'] as String)
+              .millisecondsSinceEpoch,
+          'persisted': true,
+        };
+      }).toList();
+      setState(() {
+        _chatMessages
+          ..clear()
+          ..addAll(msgs);
+      });
+      _scrollToBottom();
+    } catch (e) {
+      debugPrint('[screening_room] _loadChatHistory error: $e');
+    }
+  }
+
+  // ── Heartbeat ─────────────────────────────────────────────────────────────
+
+  void _startHeartbeat() {
+    if (_sessionId == null) return;
+    // Envia heartbeat a cada 30s para manter o participante como 'connected'
+    _heartbeatTimer = Timer.periodic(const Duration(seconds: 30), (_) async {
+      try {
+        await SupabaseService.client.rpc(
+          'send_screening_heartbeat',
+          params: {'p_session_id': _sessionId},
+        );
+      } catch (e) {
+        debugPrint('[screening_room] heartbeat error: $e');
+      }
+    });
+    // Se for host, limpa participantes inativos a cada 90s
+    if (_isHost) {
+      _cleanupTimer = Timer.periodic(const Duration(seconds: 90), (_) async {
+        try {
+          await SupabaseService.client.rpc(
+            'cleanup_inactive_screening_participants',
+            params: {'p_session_id': _sessionId},
+          );
+          await _loadParticipants();
+        } catch (e) {
+          debugPrint('[screening_room] cleanup error: $e');
+        }
+      });
     }
   }
 
@@ -746,12 +832,25 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
     final userId = SupabaseService.currentUserId;
     if (userId == null) return;
     _chatController.clear();
+
     final msg = <String, dynamic>{
       'user_id': userId,
+      'username': _myUsername ?? 'Usuário',
+      'avatar_url': _myAvatarUrl,
       'text': text,
       'ts': DateTime.now().millisecondsSinceEpoch,
     };
+
+    // Broadcast em tempo real para todos na sala
     _channel?.sendBroadcastMessage(event: 'chat', payload: msg);
+
+    // Persistir no banco para histórico
+    SupabaseService.table('screening_chat_messages').insert({
+      'session_id': _sessionId,
+      'user_id': userId,
+      'text': text,
+    }).catchError((e) => debugPrint('[screening_room] persist chat: $e'));
+
     if (mounted) {
       setState(() => _chatMessages.add(msg));
       _scrollToBottom();
@@ -1453,40 +1552,75 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
       itemBuilder: (ctx, i) {
         final msg = _chatMessages[i];
         final isMe = msg['user_id'] == SupabaseService.currentUserId;
+        final username = msg['username'] as String? ?? 'Usuário';
+        final avatarUrl = msg['avatar_url'] as String?;
         return Padding(
           padding: EdgeInsets.only(bottom: r.s(6)),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               if (!isMe) ...[
                 CircleAvatar(
-                  radius: 12,
+                  radius: 14,
                   backgroundColor: context.cardBg,
-                  child: Text(
-                    (msg['user_id'] as String? ?? '?')[0].toUpperCase(),
-                    style: TextStyle(
-                        color: context.textPrimary, fontSize: r.fs(10)),
-                  ),
+                  backgroundImage:
+                      avatarUrl != null ? NetworkImage(avatarUrl) : null,
+                  child: avatarUrl == null
+                      ? Text(
+                          username.isNotEmpty
+                              ? username[0].toUpperCase()
+                              : '?',
+                          style: TextStyle(
+                              color: context.textPrimary,
+                              fontSize: r.fs(10),
+                              fontWeight: FontWeight.w700),
+                        )
+                      : null,
                 ),
-                SizedBox(width: r.s(8)),
+                SizedBox(width: r.s(6)),
               ],
               Flexible(
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: r.s(12), vertical: r.s(8)),
-                  decoration: BoxDecoration(
-                    color: isMe
-                        ? AppTheme.primaryColor.withValues(alpha: 0.2)
-                        : context.cardBg,
-                    borderRadius: BorderRadius.circular(r.s(16)),
-                  ),
-                  child: Text(
-                    msg['text'] as String? ?? '',
-                    style: TextStyle(
-                        color: context.textPrimary, fontSize: r.fs(13)),
-                  ),
+                child: Column(
+                  crossAxisAlignment: isMe
+                      ? CrossAxisAlignment.end
+                      : CrossAxisAlignment.start,
+                  children: [
+                    if (!isMe)
+                      Padding(
+                        padding: EdgeInsets.only(left: r.s(4), bottom: r.s(2)),
+                        child: Text(
+                          username,
+                          style: TextStyle(
+                              color: AppTheme.accentColor,
+                              fontSize: r.fs(10),
+                              fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: r.s(12), vertical: r.s(8)),
+                      decoration: BoxDecoration(
+                        color: isMe
+                            ? AppTheme.primaryColor.withValues(alpha: 0.25)
+                            : context.cardBg,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(r.s(16)),
+                          topRight: Radius.circular(r.s(16)),
+                          bottomLeft: Radius.circular(isMe ? r.s(16) : r.s(4)),
+                          bottomRight:
+                              Radius.circular(isMe ? r.s(4) : r.s(16)),
+                        ),
+                      ),
+                      child: Text(
+                        msg['text'] as String? ?? '',
+                        style: TextStyle(
+                            color: context.textPrimary, fontSize: r.fs(13)),
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              if (isMe) SizedBox(width: r.s(6)),
             ],
           ),
         );
