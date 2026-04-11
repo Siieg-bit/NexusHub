@@ -57,7 +57,72 @@ class MessageBubble extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final r = context.r;
-    // System messages
+    final _specialType = message.type;
+
+    // ── Tipos system especiais com UI própria (devem vir ANTES do isSystemMessage genérico) ──
+    if (_specialType == 'system_screen_end') {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: r.s(8)),
+        child: Center(
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: r.s(12), vertical: r.s(8)),
+            decoration: BoxDecoration(
+              color: Colors.grey.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(r.s(12)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.tv_off_rounded, color: Colors.grey[600], size: r.s(16)),
+                SizedBox(width: r.s(8)),
+                Text(
+                  'Screening Room encerrada',
+                  style: TextStyle(color: Colors.grey[500], fontSize: r.fs(12)),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (_specialType == 'system_voice_start' || _specialType == 'system_screen_start') {
+      final isVoice = _specialType == 'system_voice_start';
+      final icon = isVoice ? Icons.headset_mic_rounded : Icons.live_tv_rounded;
+      final label = isVoice ? 'Voice Chat' : 'Screening Room';
+      final accentColor = isVoice ? const Color(0xFF4CAF50) : const Color(0xFFFF5722);
+      final threadId = message.threadId;
+      final container = Container(
+        padding: EdgeInsets.all(r.s(12)),
+        decoration: BoxDecoration(
+          color: accentColor.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(r.s(12)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: accentColor),
+            SizedBox(width: r.s(8)),
+            Text(label,
+                style: TextStyle(fontWeight: FontWeight.w600, color: accentColor)),
+            if (!isVoice) ...[SizedBox(width: r.s(8)), Icon(Icons.arrow_forward_ios_rounded, color: accentColor, size: r.s(12))],
+          ],
+        ),
+      );
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: r.s(8)),
+        child: Center(
+          child: !isVoice && threadId.isNotEmpty
+              ? GestureDetector(
+                  onTap: () => context.push('/screening-room/$threadId'),
+                  child: container,
+                )
+              : container,
+        ),
+      );
+    }
+
+    // System messages genéricos (system_join, system_leave, etc.)
     if (message.isSystemMessage) {
       return Padding(
         padding: EdgeInsets.symmetric(vertical: r.s(8)),
@@ -474,6 +539,29 @@ class MessageBubble extends ConsumerWidget {
             Text(s.amountCoins(amount),
                 style: const TextStyle(
                     fontWeight: FontWeight.bold, color: AppTheme.warningColor)),
+          ],
+        ),
+      );
+    }
+
+    // Screening Room encerrada
+    if (type == 'system_screen_end') {
+      return Container(
+        padding: EdgeInsets.all(r.s(12)),
+        decoration: BoxDecoration(
+          color: Colors.grey.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(r.s(12)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.tv_off_rounded, color: Colors.grey[600], size: r.s(20)),
+            SizedBox(width: r.s(8)),
+            Text(
+              'Screening Room encerrada',
+              style: TextStyle(
+                  fontWeight: FontWeight.w600, color: Colors.grey[500]),
+            ),
           ],
         ),
       );

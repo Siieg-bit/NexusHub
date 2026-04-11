@@ -87,6 +87,7 @@ dependencies:
   # Utils
   uuid: ^4.3.3
   url_launcher: ^6.2.4
+  flutter_inappwebview: ^6.1.5
   share_plus: ^10.0.0
   connectivity_plus: ^6.0.0
   flutter_markdown: ^0.7.0
