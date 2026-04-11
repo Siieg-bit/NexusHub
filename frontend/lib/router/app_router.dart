@@ -165,13 +165,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             name: 'notifications',
             builder: (context, state) => const NotificationsScreen(),
           ),
-          GoRoute(
-            path: '/community/:communityId/notifications',
-            name: 'community-notifications',
-            builder: (context, state) => NotificationsScreen(
-              communityId: state.pathParameters['communityId']!,
-            ),
-          ),
           // STORE (tab 4)
           GoRoute(
             path: '/store',
@@ -206,6 +199,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'community-detail',
         builder: (context, state) => CommunityDetailScreen(
           communityId: state.pathParameters['id']!,
+        ),
+      ),
+      GoRoute(
+        path: '/community/:communityId/notifications',
+        name: 'community-notifications',
+        builder: (context, state) => NotificationsScreen(
+          communityId: state.pathParameters['communityId']!,
         ),
       ),
       GoRoute(
