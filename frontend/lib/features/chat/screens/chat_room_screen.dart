@@ -652,14 +652,21 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     // "Cannot get renderObject of inactive element" quando o widget
     // é desmontado (ex: ao fechar o chat) antes do async completar.
     if (!mounted) return;
-    // Bug fix: usar addPostFrameCallback para evitar "dirty widget in wrong
-    // build scope" e "Cannot get renderObject of inactive element".
-    // Ambos ocorriam quando setState/_messageController.clear() eram chamados
-    // durante o build de outro widget (ex: ao abrir _showTipDialog).
+
+    // Bug fix #059: separar setState(_isSending=true) do addPostFrameCallback.
+    // O addPostFrameCallback agenda execução para o PRÓXIMO frame, mas o
+    // bloco finally de _sendMessage executa _isSending=false ANTES disso.
+    // Resultado: o callback sobrescreve o finally e _isSending fica true
+    // permanentemente ao enviar imagem, sticker ou GIF (loop de loading).
+    //
+    // Correção: setState(_isSending=true) é chamado IMEDIATAMENTE (síncrono),
+    // enquanto _messageController.clear() permanece no addPostFrameCallback
+    // para evitar "Cannot get renderObject of inactive element" ao limpar
+    // o campo durante o frame de desmontagem de dialogs (tip, poll, link).
+    setState(() => _isSending = true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _messageController.clear();
-        setState(() => _isSending = true);
       }
     });
 
@@ -1077,6 +1084,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
     if (image == null) return;
+    // Bug fix #059: setar _isSending=true antes do upload para mostrar o
+    // indicador de carregamento durante o processo de compressão e envio.
+    if (mounted) setState(() => _isSending = true);
     try {
       final userId = SupabaseService.currentUserId ?? 'unknown';
       final path = 'chat/$userId/${DateTime.now().millisecondsSinceEpoch}.jpg';
@@ -1103,6 +1113,10 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           ),
         );
       }
+    } finally {
+      // Bug fix #059: garantir reset do _isSending mesmo se _sendMessage
+      // não for chamado (ex: falha no upload antes do _sendMessage).
+      if (mounted) setState(() => _isSending = false);
     }
   }
 
@@ -1122,6 +1136,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       );
       return;
     }
+    // Bug fix #059: setar _isSending=true antes do upload.
+    if (mounted) setState(() => _isSending = true);
     try {
       final userId = SupabaseService.currentUserId ?? 'unknown';
       final ext = video.path.split('.').last.toLowerCase();
@@ -1130,7 +1146,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       await SupabaseService.storage.from('chat-media').uploadBinary(path, bytes,
           fileOptions: const FileOptions(contentType: 'video/mp4'));
       final url = SupabaseService.storage.from('chat-media').getPublicUrl(path);
-       await _sendMessage(type: 'video', mediaUrl: url, mediaType: 'video');
+      await _sendMessage(type: 'video', mediaUrl: url, mediaType: 'video');
     } catch (e, stack) {
       debugPrint('[ChatRoom] ❌ Video upload error: $e');
       debugPrint('[ChatRoom] ❌ Video upload stack: $stack');
@@ -1144,6 +1160,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
           ),
         );
       }
+    } finally {
+      if (mounted) setState(() => _isSending = false);
     }
   }
   // ==========================================================================
