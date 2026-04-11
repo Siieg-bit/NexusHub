@@ -453,12 +453,13 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
     final fgColor = widget.isMine ? Colors.white : AppTheme.accentColor;
 
     // Largura da waveform proporcional à duração do áudio:
-    // mínimo 80px, máximo 180px, crescendo 2px por segundo.
-    // Isso evita o espaço vazio verde para áudios curtos.
+    // mínimo 160px, máximo 220px, crescendo 3px por segundo.
+    // Bug fix #060: mínimo aumentado de 80px para 160px para evitar
+    // bubble de voz muito estreito visualmente.
     final durationSecs = _duration.inSeconds > 0
         ? _duration.inSeconds
         : widget.durationSeconds;
-    final waveformWidth = (80.0 + durationSecs * 2.0).clamp(80.0, 180.0);
+    final waveformWidth = (160.0 + durationSecs * 3.0).clamp(160.0, 220.0);
 
     return Row(
       mainAxisSize: MainAxisSize.min,
