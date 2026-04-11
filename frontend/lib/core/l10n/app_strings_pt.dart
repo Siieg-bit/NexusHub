@@ -5786,5 +5786,58 @@ class AppStringsPt implements AppStrings {
   @override
   String get yourWallIsEmpty => 'yourWallIsEmpty';
   @override
+  @override
+  String followersCount(int count) => '$count seguidores';
+  @override
+  String followingCount(int count) => '$count seguindo';
+  @override
+  String postsCount(int count) => '$count posts';
+  @override
+  String onlineMembersCount(int count) => '$count online';
+  @override
+  String commentsCount(int count) => '$count comentários';
+  @override
+  String memberSinceDate(String date) => 'Membro desde $date';
+  @override
+  String userIsTyping(String user) => '$user está digitando...';
+  @override
+  String userLikedYourPost(String user) => '$user curtiu seu post';
+  @override
+  String userCommentedOnYourPost(String user) => '$user comentou no seu post';
+  @override
+  String userFollowedYou(String user) => '$user começou a te seguir';
+  @override
+  String userMentionedYou(String user) => '$user te mencionou';
+  @override
+  String userInvitedYouTo(String user, String something) => '$user te convidou para $something';
+  @override
+  String userSentYouAMessage(String user) => '$user te enviou uma mensagem';
+  @override
+  String userJoinedTheCommunity(String user) => '$user entrou na comunidade';
+  @override
+  String userJoinedTheChat(String user) => '$user entrou no chat';
+  @override
+  String userLeftTheChat(String user) => '$user saiu do chat';
+  @override
+  String youWereKickedFromTheChat(String reason) => 'Você foi removido do chat. Motivo: $reason';
+  @override
+  String youWereMutedInTheChat(String reason) => 'Você foi silenciado no chat. Motivo: $reason';
+  @override
+  String youLeveledUpTo(int level) => 'Você subiu para o nível $level!';
+  @override
+  String youGotANewAchievement(String achievement) => 'Você desbloqueou uma nova conquista: $achievement';
+  @override
+  String youHaveBeenStriked(int strike, String reason) => 'Você recebeu o aviso $strike. Motivo: $reason';
+  @override
+  String yourPostWasFeatured(String postTitle) => 'Seu post "$postTitle" foi destacado!';
+  @override
+  String yourPostWasPinned(String postTitle) => 'Seu post "$postTitle" foi fixado!';
+  @override
+  String yourPostWasCrossposted(String postTitle) => 'Seu post "$postTitle" foi compartilhado!';
+  @override
+  String yourWikiWasApproved(String wikiTitle) => 'Sua wiki "$wikiTitle" foi aprovada!';
+  @override
+  String yourWikiWasRejected(String wikiTitle) => 'Sua wiki "$wikiTitle" foi rejeitada.';
+  @override
   String get youtubeVideo => 'youtubeVideo';
 }

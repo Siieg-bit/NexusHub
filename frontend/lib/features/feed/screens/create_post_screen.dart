@@ -171,6 +171,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   // ════════════════════════════════════════════════════════════════════════════
 
   Future<void> _pickImage() async {
+    final s = getStrings();
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
     if (image == null) return;
@@ -199,6 +200,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   }
 
   Future<void> _pickCoverImage() async {
+    final s = getStrings();
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
     if (image == null) return;
@@ -227,6 +229,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   }
 
   Future<void> _pickBackgroundImage() async {
+    final s = getStrings();
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
     if (image == null) return;
@@ -319,6 +322,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   // ════════════════════════════════════════════════════════════════════════════
 
   Future<void> _submitPost() async {
+    final s = getStrings();
     if (_titleController.text.trim().isEmpty &&
         _contentController.text.trim().isEmpty &&
         _mediaUrls.isEmpty) {
@@ -728,6 +732,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   }
 
   Future<void> _saveDraft() async {
+    final s = getStrings();
     final title = _titleController.text.trim();
     final content = _contentController.text.trim();
     if (title.isEmpty && content.isEmpty) {
@@ -1611,6 +1616,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
   void _showMusicPicker() {
     final r = context.r;
+    final s = getStrings();
     final urlCtrl = TextEditingController(text: _musicUrl ?? '');
     final titleCtrl = TextEditingController(text: _musicTitle ?? '');
     showModalBottomSheet(

@@ -50,6 +50,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
   @override
   void initState() {
     super.initState();
+    final s = getStrings();
     _activeTabs = [s.guidelines, s.featured, s.latest, s.chats];
     _tabController = TabController(length: _activeTabs.length, vsync: this);
     _tabController.index = 1; // Featured como padrão
@@ -75,7 +76,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     if (_isDisposed || !mounted) return;
     // Evitar múltiplos rebuilds agendados no mesmo frame
     if (_pendingTabRebuild) return;
-
+    final s = getStrings();
     final visible = layout['sections_visible'] as Map<String, dynamic>? ?? {};
     final tabs = <String>[];
     if (visible['guidelines'] != false) tabs.add(s.guidelines);
@@ -157,6 +158,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
 
   Future<void> _joinCommunity() async {
     final r = context.r;
+    final s = getStrings();
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
@@ -379,6 +381,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     Map<String, dynamic> welcomeBanner,
   ) {
     final r = context.r;
+    final s = getStrings();
     return NestedScrollView(
       headerSliverBuilder: (context, innerBoxIsScrolled) => [
         // HEADER
@@ -722,6 +725,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
   ) {
     // Usa showGeneralDialog para ter controle total sobre o overlay escuro.
     // showModalBottomSheet ignora barrierColor quando há um Scaffold pai.
+    final s = getStrings();
     showGeneralDialog(
       context: ctx,
       barrierDismissible: true,

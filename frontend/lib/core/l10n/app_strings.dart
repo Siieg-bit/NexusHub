@@ -2914,4 +2914,31 @@ abstract class AppStrings {
   String get yourTopCommunities;
   String get yourWallIsEmpty;
   String get youtubeVideo;
+  // FORMATTED COUNTS & NOTIFICATIONS
+  String followersCount(int count);
+  String followingCount(int count);
+  String postsCount(int count);
+  String onlineMembersCount(int count);
+  String commentsCount(int count);
+  String memberSinceDate(String date);
+  String userIsTyping(String user);
+  String userLikedYourPost(String user);
+  String userCommentedOnYourPost(String user);
+  String userFollowedYou(String user);
+  String userMentionedYou(String user);
+  String userInvitedYouTo(String user, String something);
+  String userSentYouAMessage(String user);
+  String userJoinedTheCommunity(String user);
+  String userJoinedTheChat(String user);
+  String userLeftTheChat(String user);
+  String youWereKickedFromTheChat(String reason);
+  String youWereMutedInTheChat(String reason);
+  String youLeveledUpTo(int level);
+  String youGotANewAchievement(String achievement);
+  String youHaveBeenStriked(int strike, String reason);
+  String yourPostWasFeatured(String postTitle);
+  String yourPostWasPinned(String postTitle);
+  String yourPostWasCrossposted(String postTitle);
+  String yourWikiWasApproved(String wikiTitle);
+  String yourWikiWasRejected(String wikiTitle);
 }

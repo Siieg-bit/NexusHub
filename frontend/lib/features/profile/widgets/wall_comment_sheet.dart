@@ -673,42 +673,26 @@ class _WallCommentSheetState extends ConsumerState<WallCommentSheet> {
                         ),
                       ),
                       // Botão sticker
-                      GestureDetector(
-                        onTap: () async {
-                          _focusNode.unfocus();
-                          await StickerPickerV2.show(
-                            context,
-                            onStickerSelected: _sendSticker,
-                          );
-                        },
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: r.s(6)),
-                          child: Icon(
-                            Icons.sticky_note_2_outlined,
-                            color: Colors.grey[500],
-                            size: r.s(22),
-                          ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: r.s(6)),
+                        child: _ActionButton(
+                          icon: Icons.sticky_note_2_outlined,
+                          onTap: () async {
+                            _focusNode.unfocus();
+                            await StickerPickerV2.show(
+                              context,
+                              onStickerSelected: _sendSticker,
+                            );
+                          },
                         ),
                       ),
                       // Botão mídia (imagem ou vídeo)
-                      GestureDetector(
-                        onTap: _isUploadingMedia ? null : _pickMedia,
-                        child: Padding(
-                          padding: EdgeInsets.only(right: r.s(10)),
-                          child: _isUploadingMedia
-                              ? SizedBox(
-                                  width: r.s(20),
-                                  height: r.s(20),
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: AppTheme.primaryColor,
-                                  ),
-                                )
-                              : Icon(
-                                  Icons.perm_media_outlined,
-                                  color: Colors.grey[500],
-                                  size: r.s(22),
-                                ),
+                      Padding(
+                        padding: EdgeInsets.only(right: r.s(10)),
+                        child: _ActionButton(
+                          icon: Icons.perm_media_outlined,
+                          onTap: _isUploadingMedia ? null : _pickMedia,
+                          isLoading: _isUploadingMedia,
                         ),
                       ),
                     ],
@@ -1288,13 +1272,11 @@ class _VideoDisplayState extends State<_VideoDisplay> {
 class _ActionButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onTap;
-  final bool isActive;
   final bool isLoading;
 
   const _ActionButton({
     required this.icon,
     this.onTap,
-    this.isActive = false,
     this.isLoading = false,
   });
 
@@ -1317,7 +1299,7 @@ class _ActionButton extends StatelessWidget {
             : Icon(
                 icon,
                 size: r.s(20),
-                color: isActive ? AppTheme.primaryColor : Colors.grey[500],
+                color: Colors.grey[500],
               ),
       ),
     );

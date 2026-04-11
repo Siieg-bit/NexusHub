@@ -271,6 +271,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
   // ═══════════════════════════════════════════════════════════════════════════
 
   Future<void> _pickCoverImage() async {
+    final s = getStrings();
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
     if (image == null || !mounted) return;
@@ -559,6 +560,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
   }
 
   Future<void> _submit() async {
+    final s = getStrings();
     final title = _titleController.text.trim();
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1283,6 +1285,7 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
       backgroundColor: Colors.transparent,
       builder: (ctx) {
         final r = ctx.r;
+        final s = getStrings();
         return Container(
           decoration: BoxDecoration(
             color: ctx.scaffoldBg,
