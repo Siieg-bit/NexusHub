@@ -16,7 +16,6 @@ import '../../../core/providers/presence_provider.dart';
 
 // Extracted providers & widgets
 import '../providers/community_detail_providers.dart';
-import '../widgets/community_check_in_bar.dart';
 import '../widgets/community_live_projections.dart';
 import '../widgets/community_guidelines_tab.dart';
 import '../widgets/community_feed_tab.dart';

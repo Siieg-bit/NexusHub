@@ -79,7 +79,6 @@ import '../features/stickers/screens/sticker_explore_screen.dart';
 import '../features/profile/screens/edit_community_profile_screen.dart';
 import 'shell_screen.dart';
 import '../features/stories/screens/story_viewer_screen.dart';
-import '../core/l10n/locale_provider.dart';
 
 /// Router principal do app com GoRouter.
 final appRouterProvider = Provider<GoRouter>((ref) {

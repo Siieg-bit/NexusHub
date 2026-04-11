@@ -315,11 +315,11 @@ class BlockEditorState extends ConsumerState<BlockEditor> {
           'posts/${widget.communityId}/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
 
       await SupabaseService.client.storage
-          .from('post_media')
+          .from('post-media')
           .uploadBinary(path, bytes);
 
       final publicUrl =
-          SupabaseService.client.storage.from('post_media').getPublicUrl(path);
+          SupabaseService.client.storage.from('post-media').getPublicUrl(path);
 
       if (!mounted) return;
       setState(() {
@@ -373,11 +373,11 @@ class BlockEditorState extends ConsumerState<BlockEditor> {
           'posts/${widget.communityId}/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
 
       await SupabaseService.client.storage
-          .from('post_media')
+          .from('post-media')
           .uploadBinary(path, bytes);
 
       final publicUrl =
-          SupabaseService.client.storage.from('post_media').getPublicUrl(path);
+          SupabaseService.client.storage.from('post-media').getPublicUrl(path);
 
       if (!mounted) return;
       setState(() {

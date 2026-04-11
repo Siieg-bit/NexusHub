@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../l10n/locale_provider.dart';
 import '../l10n/app_strings.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Utilitários e helpers do aplicativo.
 

@@ -88,7 +88,6 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
     }
   }
 
-
   // ════════════════════════════════════════════════════════════════════════════
   // RASCUNHOS AUTOMÁTICOS
   // ════════════════════════════════════════════════════════════════════════════
@@ -304,10 +303,10 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
       final path =
           'posts/$userId/${DateTime.now().millisecondsSinceEpoch}_thumb_${image.name}';
       await SupabaseService.storage
-          .from('post_media')
+          .from('post-media')
           .uploadBinary(path, bytes);
       final url =
-          SupabaseService.storage.from('post_media').getPublicUrl(path);
+          SupabaseService.storage.from('post-media').getPublicUrl(path);
       if (mounted) setState(() => _thumbnailUrl = url);
     } catch (_) {
       if (mounted) {
@@ -351,6 +350,7 @@ class _CreateLinkPostScreenState extends ConsumerState<CreateLinkPostScreen> {
     }
 
     setState(() => _isSubmitting = true);
+    await _deleteDraftIfNeeded();
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) throw Exception(s.notAuthenticated);

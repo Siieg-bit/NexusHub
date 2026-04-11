@@ -36,7 +36,6 @@ class _CommunityOnlineTabState extends ConsumerState<CommunityOnlineTab> {
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     final communityId = widget.community.id;
 
@@ -141,7 +140,6 @@ class _HappeningSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
 
     return Container(
@@ -385,7 +383,6 @@ class _MembersOnlineSection extends ConsumerWidget {
                   final p = m['profiles'] as Map<String, dynamic>? ?? {};
                   final nickname = p['nickname'] as String? ?? s.user;
                   final avatarUrl = p['icon_url'] as String?;
-                  final userId = p['id'] as String? ?? m['user_id'] as String?;
 
                   return AminoAnimations.cardPress(
                     onTap: () => _showMemberSheet(
@@ -474,7 +471,6 @@ class _BrowsingSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
 
     final onlineMembers = members.where((m) {
@@ -583,7 +579,6 @@ class _AllMembersSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     final communityId = community.id;
 
@@ -886,7 +881,6 @@ class _FollowButtonState extends ConsumerState<_FollowButton> {
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     final currentUserId = SupabaseService.currentUserId;
     if (currentUserId == widget.targetUserId || widget.targetUserId.isEmpty) {
@@ -943,7 +937,6 @@ class _AvatarStack extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final visible = avatars.take(3).toList();
     if (visible.isEmpty) return const SizedBox.shrink();
     final overlap = size * 0.35;

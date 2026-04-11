@@ -141,7 +141,6 @@ class _AminoNavItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     // Amino: ativo = ciano brilhante, inativo = cinza claro translúcido
     final color = isSelected
         ? AppTheme.accentColor // #00BCD4 ciano

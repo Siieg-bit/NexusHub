@@ -149,7 +149,6 @@ class _FollowersScreenState extends ConsumerState<FollowersScreen>
           final userId = profile['id'] as String?;
           final nickname = profile['nickname'] as String? ?? s.user;
           final avatarUrl = profile['icon_url'] as String?;
-          final level = profile['level'] as int? ?? 1;
 
           return Container(
             decoration: BoxDecoration(

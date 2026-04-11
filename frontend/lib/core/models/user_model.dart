@@ -1,6 +1,5 @@
 /// Modelo de usuário/perfil da plataforma.
 import '../l10n/locale_provider.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// Baseado no schema v5 — engenharia reversa do APK Amino (User.smali).
 class UserModel {
   final String id;

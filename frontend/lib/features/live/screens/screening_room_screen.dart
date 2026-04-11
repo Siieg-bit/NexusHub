@@ -391,7 +391,6 @@ class _ScreeningRoomScreenState extends ConsumerState<ScreeningRoomScreen> {
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(

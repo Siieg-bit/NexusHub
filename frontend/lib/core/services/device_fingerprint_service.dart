@@ -2,7 +2,6 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'supabase_service.dart';
 import '../../core/l10n/locale_provider.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Serviço de Device Fingerprinting — registra e atualiza dispositivos.
 /// Baseado na tabela device_fingerprints do schema v5.

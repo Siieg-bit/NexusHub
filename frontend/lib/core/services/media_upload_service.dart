@@ -7,7 +7,6 @@ import 'package:uuid/uuid.dart';
 import 'package:path/path.dart' as path;
 import 'supabase_service.dart';
 import '../../core/l10n/locale_provider.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// ============================================================================
 /// MediaUploadService — Upload de mídia para Supabase Storage.
@@ -51,13 +50,13 @@ class MediaUploadService {
       case MediaBucket.avatars:
         return 'avatars';
       case MediaBucket.communityIcons:
-        return 'community_icons';
+        return 'community-icons';
       case MediaBucket.postMedia:
-        return 'post_media';
+        return 'post-media';
       case MediaBucket.chatMedia:
-        return 'chat_media';
+        return 'chat-media';
       case MediaBucket.wikiMedia:
-        return 'wiki_media';
+        return 'wiki-media';
     }
   }
 
@@ -334,6 +333,12 @@ class MediaUploadService {
         return 'audio/mpeg';
       case '.ogg':
         return 'audio/ogg';
+      case '.m4a':
+        return 'audio/mp4';
+      case '.aac':
+        return 'audio/aac';
+      case '.wav':
+        return 'audio/wav';
       case '.pdf':
         return 'application/pdf';
       default:

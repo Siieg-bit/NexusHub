@@ -6,7 +6,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'supabase_service.dart';
 import 'realtime_service.dart';
 import '../../core/l10n/locale_provider.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// ============================================================================
 /// CallService — Gerencia chamadas de voz, vídeo e screening room.

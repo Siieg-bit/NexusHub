@@ -3,7 +3,6 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'supabase_service.dart';
 import '../l10n/locale_provider.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Serviço de Segurança — sanitização e validação.
 ///

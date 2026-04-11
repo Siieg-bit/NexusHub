@@ -363,8 +363,6 @@ class AppStringsDe implements AppStrings {
   @override
   String get account => 'Konto';
   @override
-  String get helpAndSupport => 'Hilfe & Support';
-  @override
   String get about => 'Über';
   @override
   String get termsOfService => 'Nutzungsbedingungen';
@@ -771,33 +769,9 @@ class AppStringsDe implements AppStrings {
   @override
   String get code => 'Code';
   @override
-  String get coins => 'Münzen';
-  @override
-  String get color => 'Farbe';
-  @override
-  String get commentsLabel => 'Kommentare';
-  @override
   String get communityGuidelines => 'Community-Richtlinien';
   @override
-  String get communityGuidelinesShort => 'Richtlinien';
-  @override
-  String get communityLink => 'Community-Link';
-  @override
-  String get communityMembers => 'Community-Mitglieder';
-  @override
-  String get communityStats => 'Community-Statistiken';
-  @override
-  String get communityTheme => 'Community-Thema';
-  @override
-  String get confirmAndContinue => 'Bestätigen und fortfahren';
-  @override
-  String get confirmNewPassword => 'Neues Passwort bestätigen';
-  @override
   String get confirmPassword => 'Passwort bestätigen';
-  @override
-  String get continueWithEmail => 'Mit E-Mail fortfahren';
-  @override
-  String get copiedToClipboardMsg => 'In die Zwischenablage kopiert!';
   @override
   String get copyLink => 'Link kopieren';
   @override
@@ -805,91 +779,23 @@ class AppStringsDe implements AppStrings {
   @override
   String get correct => 'Richtig';
   @override
-  String get createYourAccount => 'Erstellen Sie Ihr Konto';
-  @override
-  String get creatingAccount => 'Konto wird erstellt...';
-  @override
-  String get creatingCommunity => 'Community wird erstellt...';
-  @override
-  String get creatingPost => 'Beitrag wird erstellt...';
-  @override
-  String get dailyActiveMembers => 'Täglich aktive Mitglieder';
-  @override
-  String get dailyCheckInCoins => 'Täglicher Check-in: +1 Münze';
-  @override
-  String get dark => 'Dunkel';
-  @override
-  String get dataProcessing => 'Datenverarbeitung...';
-  @override
   String get date => 'Datum';
   @override
   String get days => 'Tage';
   @override
   String get deleteAccount => 'Konto löschen';
   @override
-  String get deleteAccountConfirmation => 'Möchten Sie Ihr Konto wirklich löschen?';
-  @override
   String get deleteMessage => 'Nachricht löschen';
-  @override
-  String get description => 'Beschreibung';
-  @override
-  String get deviceNotSupported => 'Gerät nicht unterstützt';
   @override
   String get devices => 'Geräte';
   @override
-  String get disconnected => 'Getrennt';
-  @override
   String get drafts => 'Entwürfe';
-  @override
-  String get editCommunity => 'Community bearbeiten';
   @override
   String get editPost => 'Beitrag bearbeiten';
   @override
-  String get editProfileLabel => 'Profil bearbeiten';
-  @override
-  String get editWiki => 'Wiki bearbeiten';
-  @override
-  String get emailAddress => 'E-Mail-Adresse';
-  @override
-  String get emailNotVerified => 'E-Mail nicht verifiziert. Überprüfen Sie Ihren Posteingang.';
-  @override
-  String get empty => 'Leer';
-  @override
-  String get enable => 'Aktivieren';
-  @override
   String get enterYourEmail => 'Geben Sie Ihre E-Mail-Adresse ein';
   @override
-  String get enterYourNickname => 'Geben Sie Ihren Spitznamen ein';
-  @override
   String get errorCreatingCommunity => 'Fehler beim Erstellen der Community';
-  @override
-  String get errorCreatingPost => 'Fehler beim Erstellen des Beitrags';
-  @override
-  String get errorDeleting => 'Fehler beim Löschen';
-  @override
-  String get errorDeletingMessage => 'Fehler beim Löschen der Nachricht';
-  @override
-  String get errorFetchingLink => 'Fehler beim Abrufen des Links';
-  @override
-  String get errorJoiningCommunity => 'Fehler beim Beitreten zur Community';
-  @override
-  String get errorLeavingCommunity => 'Fehler beim Verlassen der Community';
-  @override
-  String get errorLoadingCommunity => 'Fehler beim Laden der Community';
-  @override
-  String get errorLoadingContent => 'Fehler beim Laden des Inhalts';
-  @override
-  String get errorLoadingDrafts => 'Fehler beim Laden der Entwürfe';
-  @override
-  String get errorLoadingFollowers => 'Fehler beim Laden der Follower';
-  @override
-  String get errorLoadingFollowing => 'Fehler beim Laden der gefolgten Benutzer';
-  @override
-  String get errorLoadingMembers => 'Fehler beim Laden der Mitglieder';
-  @override
-  String get errorLoadingMessages => 'Fehler beim Laden der Nachrichten';
-  @override
-  String get errorLoadingPost => 'Fehler beim Laden des Beitrags';
   @override
   String get errorLoadingProfileMsg => 'Fehler beim Laden des Profils';
   @override
@@ -3597,7 +3503,6 @@ class AppStringsDe implements AppStrings {
   @override
   String daysToLevelUp(int days)=>'~$days Tage bis zum Aufstieg';
 
-
   // ── Achievements screen (layout Amino) ──
   @override
   String get myStatistics => 'Meine Statistiken';
@@ -3704,10 +3609,8 @@ class AppStringsDe implements AppStrings {
   @override
   String repostNotificationBody(String username)=>'$username reposted your post.';
 
-
   @override
   String get confirmationEmailSent => 'E-Mail-Bestätigung gesendet an';
-
 
   @override
   String get membersCount => 'Mitglieder';

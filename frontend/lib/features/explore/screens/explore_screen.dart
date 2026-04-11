@@ -704,7 +704,6 @@ class _MyCommunityCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     final color = _parseColor(community.themeColor);
     return GestureDetector(
@@ -873,7 +872,6 @@ class _NewCommunityCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     final color = _parseColor(community.themeColor);
     return GestureDetector(
@@ -1014,7 +1012,6 @@ class _ForYouPostTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     final title = post['title'] as String? ?? '';
     final content = post['content'] as String? ?? '';

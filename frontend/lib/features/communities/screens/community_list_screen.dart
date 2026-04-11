@@ -57,7 +57,6 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
     final communitiesAsync = ref.watch(userCommunitiesProvider);
     // Observar status de check-in para rebuild automático
     ref.watch(checkInStatusProvider);
@@ -660,7 +659,6 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     final color = _parseColor(widget.community.themeColor);
     final checkInStatus = ref.watch(checkInStatusProvider);
@@ -914,7 +912,6 @@ class _JoinCommunityCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: onTap,
@@ -1361,7 +1358,6 @@ class _StatChip extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: r.s(8), vertical: r.s(4)),

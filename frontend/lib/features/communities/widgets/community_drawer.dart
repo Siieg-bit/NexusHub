@@ -13,6 +13,7 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/amino_drawer.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/widgets/level_up_dialog.dart';
+import '../../../core/providers/chat_provider.dart';
 
 // =============================================================================
 // COMMUNITY DRAWER — Réplica fiel do painel lateral do Amino Apps
@@ -161,7 +162,6 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     final themeColor = _parseColor(widget.community.themeColor);
     final checkInStatus = ref.watch(checkInStatusProvider);
@@ -868,6 +868,7 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
           icon: Icons.chat_bubble_rounded,
           iconColor: const Color(0xFF66BB6A),
           label: s.drawerMyChats,
+          badgeCount: ref.watch(unreadCountProvider).valueOrNull,
           onTap: () => _closeAndNavigate(() {
             context.push(
               '/community/${widget.community.id}/my-chats',
@@ -1078,7 +1079,6 @@ class _AminoDrawerTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: onTap,

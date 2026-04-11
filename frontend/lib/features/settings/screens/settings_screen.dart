@@ -1067,7 +1067,6 @@ class _SettingsGroup extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       decoration: BoxDecoration(
@@ -1110,7 +1109,6 @@ class _SettingsItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return ListTile(
       leading: Icon(icon, color: AppTheme.primaryColor, size: r.s(22)),

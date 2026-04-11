@@ -363,17 +363,9 @@ class AppStringsKo implements AppStrings {
   @override
   String get account => '계정';
   @override
-  String get securityAndPrivacy => '보안 및 개인정보';
-  @override
-  String get helpAndSupport => '도움말 및 지원';
-  @override
   String get about => '정보';
   @override
   String get blog => '블로그';
-  @override
-  String get story => '스토리';
-  @override
-  String get goLive => '라이브 시작';
   @override
   String get endLive => '라이브 종료';
   @override
@@ -719,185 +711,31 @@ class AppStringsKo implements AppStrings {
   @override
   String get code => '코드';
   @override
-  String get coinHistory => '코인 내역';
-  @override
-  String get coins => '코인';
-  @override
-  String get color => '색상';
-  @override
-  String get communityDeleted => '커뮤니티가 삭제되었습니다';
-  @override
   String get communityGuidelines => '커뮤니티 가이드라인';
-  @override
-  String get communityModeration => '커뮤니티 관리';
-  @override
-  String get communityPrivacy => '커뮤니티 개인정보';
-  @override
-  String get communityStats => '커뮤니티 통계';
-  @override
-  String get communityTheme => '커뮤니티 테마';
-  @override
-  String get confirmAction => '작업 확인';
-  @override
-  String get confirmAndContinue => '확인하고 계속';
-  @override
-  String get confirmDelete => '삭제 확인';
-  @override
-  String get confirmLeave => '나가기 확인';
-  @override
-  String get confirmLogout => '로그아웃 확인';
-  @override
-  String get confirmPurchase => '구매 확인';
-  @override
-  String get confirmSelection => '선택 확인';
-  @override
-  String get contentFormat => '콘텐츠 형식';
-  @override
-  String get continueAnyway => '그래도 계속';
-  @override
-  String get copyAction => '복사';
-  @override
-  String get copyLinkAction => '링크 복사';
   @override
   String get copyMessage => '메시지 복사';
   @override
   String get correct => '정답';
   @override
-  String get createChat => '채팅 만들기';
-  @override
-  String get createFirstPost => '첫 게시물 작성';
-  @override
   String get createPoll => '투표 만들기';
   @override
   String get createPublicChat => '공개 채팅 만들기';
-  @override
-  String get createYourAccount => '계정 만들기';
-  @override
-  String get createYourCommunity => '커뮤니티 만들기';
-  @override
-  String get createdBy => '작성자';
-  @override
-  String get custom => '사용자 지정';
-  @override
-  String get customize => '사용자 지정';
-  @override
-  String get dailyActiveMembers => '일일 활성 멤버';
-  @override
-  String get dailyCheckInCoins => '일일 체크인 코인';
-  @override
-  String get dailyCheckInHistory => '일일 체크인 기록';
-  @override
-  String get dark => '어둡게';
-  @override
-  String get dataExport => '데이터 내보내기';
-  @override
-  String get dataProcessing => '데이터 처리 중...';
   @override
   String get days => '일';
   @override
   String get deleteAccount => '계정 삭제';
   @override
-  String get deleteChat => '채팅 삭제';
-  @override
-  String get deleteForEveryone => '모두에게서 삭제';
-  @override
-  String get deleteForMe => '나에게서만 삭제';
-  @override
   String get deleteMessage => '메시지 삭제';
-  @override
-  String get description => '설명';
-  @override
-  String get deviceManager => '기기 관리자';
-  @override
-  String get disabled => '비활성화됨';
-  @override
-  String get discard => '취소';
-  @override
-  String get discardChanges => '변경사항을 취소하시겠습니까?';
-  @override
-  String get discoverMore => '더 알아보기';
-  @override
-  String get discussion => '토론';
-  @override
-  String get discussions => '토론';
-  @override
-  String get doNotShowAgain => '다시 보지 않기';
   @override
   String get drafts => '임시저장';
   @override
-  String get editCommunity => '커뮤니티 수정';
-  @override
-  String get editCover => '커버 수정';
-  @override
   String get editLink => '링크 수정';
-  @override
-  String get editPostPermission => '게시물 수정 권한';
-  @override
-  String get editThePost => '게시물 수정';
-  @override
-  String get editWiki => '위키 수정';
-  @override
-  String get emailIsRequired => '이메일은 필수입니다';
-  @override
-  String get emptyChat => '빈 채팅';
-  @override
-  String get emptyChatStart => '채팅이 비어 있습니다. 대화를 시작하세요!';
-  @override
-  String get enable => '활성화';
-  @override
-  String get enabled => '활성화됨';
-  @override
-  String get enterADescription => '설명을 입력하세요...';
-  @override
-  String get enterAName => '이름을 입력하세요...';
-  @override
-  String get enterATitle => '제목을 입력하세요...';
-  @override
-  String get enterLink => '링크 입력';
-  @override
-  String get enterNickname => '닉네임을 입력하세요...';
-  @override
-  String get enterPassword => '비밀번호를 입력하세요...';
-  @override
-  String get enterTheReason => '사유를 입력하세요...';
-  @override
-  String get enterYourBio => '소개를 입력하세요...';
   @override
   String get enterYourEmail => '이메일을 입력하세요...';
   @override
-  String get enterYourNickname => '닉네임을 입력하세요...';
-  @override
-  String get errorAcceptingInvite => '초대를 수락하는 중 오류 발생';
-  @override
   String get errorCreatingChat => '채팅을 만드는 중 오류 발생';
   @override
-  String get errorCreatingPost => '게시물을 만드는 중 오류 발생';
-  @override
-  String get errorDeleting => '삭제 중 오류 발생';
-  @override
-  String get errorDeletingMessage => '메시지를 삭제하는 중 오류 발생';
-  @override
-  String get errorJoiningCommunity => '커뮤니티에 가입하는 중 오류 발생';
-  @override
-  String get errorLeavingCommunity => '커뮤니티를 나가는 중 오류 발생';
-  @override
-  String get errorLoadingChat => '채팅을 불러오는 중 오류 발생';
-  @override
-  String get errorLoadingComments => '댓글을 불러오는 중 오류 발생';
-  @override
-  String get errorLoadingCommunity => '커뮤니티를 불러오는 중 오류 발생';
-  @override
-  String get errorLoadingContent => '콘텐츠를 불러오는 중 오류 발생';
-  @override
-  String get errorLoadingHistory => '기록을 불러오는 중 오류 발생';
-  @override
   String get errorLoadingImage => '이미지를 불러오는 중 오류 발생';
-  @override
-  String get errorLoadingMembers => '멤버를 불러오는 중 오류 발생';
-  @override
-  String get errorLoadingMessages => '메시지를 불러오는 중 오류 발생';
-  @override
-  String get errorLoadingPost => '게시물을 불러오는 중 오류 발생';
   @override
   String get errorLoadingProfileMsg => '프로필을 불러오는 중 오류 발생';
   @override
@@ -1237,39 +1075,15 @@ class AppStringsKo implements AppStrings {
   @override
   String get realTimeChat => '실시간 채팅';
   @override
-  String get reasonForAction => '작업 사유';
-  @override
-  String get reasonForReport => '신고 사유';
-  @override
   String get recentSearches => '최근 검색';
-  @override
-  String get reorder => '재정렬';
   @override
   String get reportBug => '버그 신고';
   @override
   String get reportContent => '콘텐츠 신고';
   @override
-  String get reportSent => '신고가 전송되었습니다';
-  @override
-  String get reportUser => '사용자 신고';
-  @override
-  String get reportedContent => '신고된 콘텐츠';
-  @override
-  String get requestToJoin => '가입 요청';
-  @override
   String get requiredField => '필수 필드';
   @override
-  String get reset => '재설정';
-  @override
   String get resetToDefault => '기본값으로 재설정';
-  @override
-  String get restorePurchases => '구매 내역 복원';
-  @override
-  String get restrictContent => '콘텐츠 제한';
-  @override
-  String get results => '결과';
-  @override
-  String get resume => '재개';
   @override
   String get revoke => '취소';
   @override
@@ -1567,173 +1381,15 @@ class AppStringsKo implements AppStrings {
   @override
   String get newMembersNeedApproval => '새 멤버는 승인이 필요합니다';
   @override
-  String get newPasswordIsRequired => '새 비밀번호는 필수입니다';
-  @override
-  String get nicknameInCommunity => '이 커뮤니티의 닉네임';
-  @override
-  String get noOneCanFollow => '아무도 나를 팔로우할 수 없음';
-  @override
-  String get noOneCanMessage => '아무도 나에게 메시지를 보낼 수 없음';
-  @override
   String get notFound => '찾을 수 없음';
   @override
-  String get notificationsFromNexusHub => 'NexusHub의 알림';
-  @override
   String get offTopic => '주제와 관련 없음';
-  @override
-  String get onlyFriendsCanMessage => '친구만 메시지를 보낼 수 있습니다';
-  @override
-  String get openInBrowser => '브라우저에서 열기';
-  @override
-  String get openToEveryone => '모두에게 공개';
-  @override
-  String get optional => '선택 사항';
-  @override
-  String get passwordIsRequired => '비밀번호는 필수입니다';
-  @override
-  String get pasteLink => '링크 붙여넣기';
-  @override
-  String get personalInformation => '개인 정보';
-  @override
-  String get pollOptions => '투표 옵션';
-  @override
-  String get postHighlighted => '게시물이 강조 표시되었습니다!';
-  @override
-  String get postInYourFeed => '피드에 게시';
-  @override
-  String get postIsHidden => '게시물이 숨겨졌습니다';
-  @override
-  String get postIsVisible => '게시물이 표시됩니다';
-  @override
-  String get postOptions => '게시물 옵션';
-  @override
-  String get postVisibility => '게시물 공개 범위';
-  @override
-  String get profileCommentsDisabled => '프로필 댓글 비활성화됨';
-  @override
-  String get profileIsPrivate => '프로필이 비공개입니다';
-  @override
-  String get profileIsPublic => '프로필이 공개입니다';
-  @override
-  String get profileVisibility => '프로필 공개 범위';
-  @override
-  String get questionIsRequired => '질문은 필수입니다';
-  @override
-  String get quizExplanation => '퀴즈 설명';
-  @override
-  String get quizExplanationHint => '정답에 대한 설명(선택 사항)';
-  @override
-  String get quizOptions => '퀴즈 옵션';
-  @override
-  String get quizResults => '퀴즈 결과';
   @override
   String get quizTitle => '퀴즈 제목';
   @override
   String get recentPostsTab => '최근 게시물 탭';
   @override
-  String get removeAtLeastOneImage => '이미지를 하나 이상 제거하세요';
-  @override
-  String get removedFromFavorites => '즐겨찾기에서 제거됨';
-  @override
-  String get reportSentSuccess => '신고가 성공적으로 전송되었습니다';
-  @override
-  String get requestToJoinSent => '가입 요청이 전송되었습니다';
-  @override
-  String get resetLayout => '레이아웃 재설정';
-  @override
-  String get seeWhoVoted => '투표한 사람 보기';
-  @override
-  String get selectAtLeastOne => '하나 이상 선택';
-  @override
-  String get selectAtLeastTwo => '두 개 이상 선택';
-  @override
-  String get selectCoverImage => '커버 이미지 선택';
-  @override
-  String get selectIcon => '아이콘 선택';
-  @override
-  String get selectPollEndDate => '투표 종료일 선택';
-  @override
-  String get selectQuizEndDate => '퀴즈 종료일 선택';
-  @override
-  String get selfHarm => '자해';
-  @override
-  String get sendAMessage => '메시지 보내기';
-  @override
-  String get sendBroadcastTo => '브로드캐스트 대상';
-  @override
-  String get sendToEveryone => '모두에게 보내기';
-  @override
-  String get sexuallyExplicit => '성적으로 노골적인 내용';
-  @override
-  String get shareTheCommunity => '커뮤니티 공유';
-  @override
   String get showOnlineStatus => '온라인 상태 표시';
-  @override
-  String get startAConversation => '대화 시작';
-  @override
-  String get startChatting => '채팅 시작!';
-  @override
-  String get startFollowing => '팔로우 시작';
-  @override
-  String get startNewChat => '새 채팅 시작';
-  @override
-  String get stickerPack => '스티커 팩';
-  @override
-  String get storyOptions => '스토리 옵션';
-  @override
-  String get subscribeToPlus => 'Plus 구독';
-  @override
-  String get successfullyUnfollowed => '성공적으로 언팔로우했습니다';
-  @override
-  String get takeAPhoto => '사진 찍기';
-  @override
-  String get tapAnAnswer => '답변을 탭하세요';
-  @override
-  String get tapHereToStart => '탭하여 시작';
-  @override
-  String get tapToChange => '탭하여 변경';
-  @override
-  String get tapToCopy => '탭하여 복사';
-  @override
-  String get tapToEdit => '탭하여 수정';
-  @override
-  String get tapToSelect => '탭하여 선택';
-  @override
-  String get tapToUnfollow => '탭하여 언팔로우';
-  @override
-  String get thisActionIsIrreversible => '이 작업은 되돌릴 수 없습니다.';
-  @override
-  String get thisPostIsPrivate => '이 게시물은 비공개입니다';
-  @override
-  String get thisPostIsPublic => '이 게시물은 공개입니다';
-  @override
-  String get titleIsRequired => '제목은 필수입니다';
-  @override
-  String get todayAt => '오늘';
-  @override
-  String get topFans => '최고 팬';
-  @override
-  String get transferLeadership => '리더십 이전';
-  @override
-  String get typeYourMessage => '메시지를 입력하세요...';
-  @override
-  String get unbanUser => '사용자 차단 해제';
-  @override
-  String get unblockUserConfirmation => '이 사용자를 차단 해제하시겠습니까?';
-  @override
-  String get unfollowUser => '사용자 언팔로우';
-  @override
-  String get unfollowUserConfirmation => '이 사용자를 언팔로우하시겠습니까?';
-  @override
-  String get userBanned => '사용자가 차단되었습니다';
-  @override
-  String get userKicked => '사용자가 강퇴되었습니다';
-  @override
-  String get userMuted => '사용자가 음소거되었습니다';
-  @override
-  String get userUnbanned => '사용자가 차단 해제되었습니다';
-  @override
-  String get userWarned => '사용자에게 경고가 전송되었습니다';
   @override
   String get usersLabel => '사용자';
   @override
@@ -1743,8 +1399,6 @@ class AppStringsKo implements AppStrings {
   @override
   String get videoLabel => '동영상';
   @override
-  String get videoTitle => '동영상 제목';
-  @override
   String get visualCustomization => '시각적 사용자 지정';
   @override
   String get waitingForHostVideo => '호스트가 동영상을 추가하기를 기다리는 중...';
@@ -1752,12 +1406,6 @@ class AppStringsKo implements AppStrings {
   String get warningsStrikesActions => '콘텐츠에 대한 경고, 스트라이크 및 조치';
   @override
   String get watchAd => '광고 보기';
-  @override
-  String get watchAds => '광고 보기';
-  @override
-  String get watch => '보기';
-  @override
-  String get watchVideo => '동영상 보기';
   @override
   String get welcomeToCommunity => '커뮤니티에 오신 것을 환영합니다!';
   @override
@@ -2005,177 +1653,23 @@ class AppStringsKo implements AppStrings {
   @override
   String get galleryImage => '갤러리 이미지';
   @override
-  String get insertYoutube => 'YouTube 삽입';
-  @override
-  String get invalidYoutubeUrl => '잘못된 YouTube URL';
-  @override
-  String get lastPost => '마지막 게시물';
-  @override
-  String get lastPostBy => '마지막 게시물 작성자';
-  @override
-  String get leaveChat2 => '채팅 나가기';
-  @override
-  String get leaveCommunity2 => '커뮤니티 나가기';
-  @override
-  String get leaveGroup2 => '그룹 나가기';
-  @override
   String get linkCopied => '링크가 복사되었습니다!';
-  @override
-  String get loadingGifs => 'GIF 로딩 중...';
-  @override
-  String get loadingStickers => '스티커 로딩 중...';
-  @override
-  String get loginToVote => '투표하려면 로그인하세요';
-  @override
-  String get manageBlockedUsers => '차단된 사용자 관리';
-  @override
-  String get manageDevices => '기기 관리';
-  @override
-  String get managePosts => '게시물 관리';
-  @override
-  String get messageFrom => '...의 메시지';
-  @override
-  String get moreOptions => '더 많은 옵션';
-  @override
-  String get myStickers => '내 스티커';
-  @override
-  String get noFollowers => '팔로워 없음';
-  @override
-  String get noFollowing => '팔로잉 없음';
   @override
   String get noMembers => '멤버 없음';
   @override
-  String get noPostsFound => '게시물을 찾을 수 없습니다';
-  @override
-  String get noUsersFound => '사용자를 찾을 수 없습니다';
-  @override
-  String get notAMember => '멤버가 아님';
-  @override
-  String get openCamera => '카메라 열기';
-  @override
-  String get openGallery => '갤러리 열기';
-  @override
-  String get pinToBlog => '블로그에 고정';
-  @override
   String get post => '게시물';
-  @override
-  String get postSucessfully => '게시물이 성공적으로 게시되었습니다!';
   @override
   String get postType => '게시물 유형';
   @override
-  String get poweredByGiphy => 'Powered by GIPHY';
-  @override
-  String get questionCreatedSuccess => '질문이 성공적으로 생성되었습니다!';
-  @override
   String get quizCreatedSuccess => '퀴즈가 성공적으로 생성되었습니다!';
-  @override
-  String get removeCover => '커버 제거';
-  @override
-  String get removeUser => '사용자 제거';
-  @override
-  String get reportBug2 => '버그 신고';
-  @override
-  String get searchForGifs => 'GIF 검색';
-  @override
-  String get searchForStickers => '스티커 검색';
-  @override
-  String get searchForUsers => '사용자 검색';
-  @override
-  String get searchPosts => '게시물 검색';
-  @override
-  String get searchUsers => '사용자 검색';
-  @override
-  String get selectAction => '작업 선택';
-  @override
-  String get selectCover => '커버 선택';
   @override
   String get selectImage => '이미지 선택';
   @override
-  String get selectVideo => '동영상 선택';
-  @override
   String get sending => '전송 중...';
-  @override
-  String get sendingAudio => '오디오 전송 중...';
-  @override
-  String get sendingVideo => '동영상 전송 중...';
-  @override
-  String get shareImage => '이미지 공유';
-  @override
-  String get sharePost => '게시물 공유';
-  @override
-  String get start => '시작';
-  @override
-  String get startChat => '채팅 시작';
   @override
   String get startLive => '라이브 시작';
   @override
-  String get stickerAddedToPost => '스티커가 게시물에 추가되었습니다!';
-  @override
-  String get storyCreatedSuccess => '스토리가 성공적으로 생성되었습니다!';
-  @override
-  String get submitToCatalog => '카탈로그에 제출';
-  @override
-  String get takePicture => '사진 찍기';
-  @override
-  String get tapToAdd => '탭하여 추가';
-  @override
-  String get tapToJoin => '탭하여 참여';
-  @override
-  String get tapToRecord => '탭하여 녹음';
-  @override
-  String get tapToReply => '탭하여 답장';
-  @override
-  String get tapToSee => '탭하여 보기';
-  @override
-  String get tapToStartChat => '탭하여 채팅 시작';
-  @override
-  String get tapToView => '탭하여 보기';
-  @override
-  String get textCopied => '텍스트가 복사되었습니다!';
-  @override
-  String get transfering => '이전 중...';
-  @override
-  String get transferingOwner => '소유권 이전 중...';
-  @override
-  String get typeSomething => '무엇이든 입력하세요...';
-  @override
-  String get unpinFromBlog => '블로그에서 고정 해제';
-  @override
-  String get uploading => '업로드 중...';
-  @override
-  String get uploadingFile => '파일 업로드 중...';
-  @override
-  String get uploadingImage => '이미지 업로드 중...';
-  @override
-  String get uploadingVideo => '동영상 업로드 중...';
-  @override
-  String get videoAddedToPost => '동영상이 게시물에 추가되었습니다!';
-  @override
-  String get viewAll => '모두 보기';
-  @override
-  String get viewPost => '게시물 보기';
-  @override
-  String get viewProfile => '프로필 보기';
-  @override
-  String get viewResults => '결과 보기';
-  @override
-  String get voiceNote => '음성 메모';
-  @override
   String get vote => '투표';
-  @override
-  String get youHaveBeenBanned => '차단되었습니다.';
-  @override
-  String get youHaveBeenKicked => '강퇴되었습니다.';
-  @override
-  String get youHaveBeenMuted => '음소거되었습니다.';
-  @override
-  String get youHaveBeenWarned => '경고를 받았습니다.';
-  @override
-  String get yourAccount => '내 계정';
-  @override
-  String get yourProfile => '내 프로필';
-  @override
-  String get youtubeVideo => 'YouTube 동영상';
   @override
   String get clearCache => '캐시 지우기';
   @override
@@ -3955,7 +3449,6 @@ class AppStringsKo implements AppStrings {
   @override
   String daysToLevelUp(int days)=>'~$days일 후 레벨업';
 
-
   // ── Achievements screen (layout Amino) ──
   @override
   String get myStatistics => '내 통계';
@@ -4061,7 +3554,6 @@ class AppStringsKo implements AppStrings {
   String get repostNotificationTitle => 'New Repost';
   @override
   String repostNotificationBody(String username)=>'$username reposted your post.';
-
 
   @override
   String get confirmationEmailSent => '확인 이메일이 전송되었습니다';

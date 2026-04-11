@@ -122,7 +122,6 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
     }
   }
 
-
   // ════════════════════════════════════════════════════════════════════════════
   // RASCUNHOS AUTOMÁTICOS
   // ════════════════════════════════════════════════════════════════════════════
@@ -340,10 +339,10 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
       final path =
           'posts/$userId/${DateTime.now().millisecondsSinceEpoch}_wiki_cover_${image.name}';
       await SupabaseService.storage
-          .from('post_media')
+          .from('post-media')
           .uploadBinary(path, bytes);
       final url =
-          SupabaseService.storage.from('post_media').getPublicUrl(path);
+          SupabaseService.storage.from('post-media').getPublicUrl(path);
       if (mounted) setState(() => _coverImageUrl = url);
     } catch (_) {
       if (mounted) {
@@ -373,10 +372,10 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
       final path =
           'posts/$userId/${DateTime.now().millisecondsSinceEpoch}_wiki_s${index}_${image.name}';
       await SupabaseService.storage
-          .from('post_media')
+          .from('post-media')
           .uploadBinary(path, bytes);
       final url =
-          SupabaseService.storage.from('post_media').getPublicUrl(path);
+          SupabaseService.storage.from('post-media').getPublicUrl(path);
       if (mounted) setState(() => _sections[index].imageUrl = url);
     } catch (_) {
       if (mounted) {
@@ -422,6 +421,7 @@ class _CreateWikiScreenState extends ConsumerState<CreateWikiScreen> {
     }
 
     setState(() => _isSubmitting = true);
+    await _deleteDraftIfNeeded();
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) throw Exception(s.notAuthenticated);

@@ -134,7 +134,6 @@ class _CoinShopScreenState extends ConsumerState<CoinShopScreen> {
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),

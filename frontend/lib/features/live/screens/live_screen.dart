@@ -202,7 +202,6 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Scaffold(
       backgroundColor: context.scaffoldBg,

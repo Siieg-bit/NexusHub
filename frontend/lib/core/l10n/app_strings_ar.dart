@@ -693,55 +693,13 @@ class AppStringsAr implements AppStrings {
   @override
   String get code => 'كود';
   @override
-  String get coinHistory => 'سجل العملات';
-  @override
-  String get coins => 'العملات';
-  @override
-  String get color => 'اللون';
-  @override
   String get communityGuidelines => 'إرشادات المجتمع';
-  @override
-  String get communityModeration => 'إشراف المجتمع';
-  @override
-  String get communityTheme => 'سمة المجتمع';
-  @override
-  String get confirmAction => 'تأكيد الإجراء';
-  @override
-  String get confirmAndContinue => 'تأكيد ومتابعة';
-  @override
-  String get confirmLeave => 'هل أنت متأكد أنك تريد المغادرة؟';
-  @override
-  String get confirmLogout => 'هل أنت متأكد أنك تريد تسجيل الخروج؟';
-  @override
-  String get contentLabel => 'المحتوى';
-  @override
-  String get continueAnyway => 'متابعة على أي حال';
-  @override
-  String get copyLinkAction => 'نسخ الرابط';
   @override
   String get copyMessage => 'نسخ الرسالة';
   @override
   String get correct => 'صحيح';
   @override
-  String get createYourAccount => 'أنشئ حسابك';
-  @override
-  String get creating => 'جارٍ الإنشاء...';
-  @override
-  String get creatingAccount => 'جارٍ إنشاء الحساب...';
-  @override
-  String get creatingCommunity => 'جارٍ إنشاء المجتمع...';
-  @override
-  String get creatingPost => 'جارٍ إنشاء المنشور...';
-  @override
-  String get custom => 'مخصص';
-  @override
-  String get customize => 'تخصيص';
-  @override
   String get dailyReward => 'المكافأة اليومية';
-  @override
-  String get dark => 'داكن';
-  @override
-  String get dataProcessing => 'معالجة البيانات';
   @override
   String get date => 'التاريخ';
   @override
@@ -751,79 +709,17 @@ class AppStringsAr implements AppStrings {
   @override
   String get deleteMessage => 'حذف الرسالة';
   @override
-  String get description => 'الوصف';
-  @override
-  String get deviceName => 'اسم الجهاز';
-  @override
   String get devices => 'الأجهزة';
-  @override
-  String get disabled => 'معطل';
-  @override
-  String get discardChanges => 'هل تريد تجاهل التغييرات؟';
-  @override
-  String get discoverLabel => 'اكتشاف';
-  @override
-  String get dismiss => 'تجاهل';
-  @override
-  String get doNotShowAgain => 'لا تظهر مرة أخرى';
-  @override
-  String get downloading => 'جارٍ التنزيل...';
   @override
   String get drafts => 'المسودات';
   @override
-  String get editCommunity => 'تعديل المجتمع';
-  @override
   String get editLink => 'تعديل الرابط';
   @override
-  String get editPoll => 'تعديل الاستطلاع';
-  @override
-  String get editQuiz => 'تعديل الاختبار';
-  @override
-  String get editWiki => 'تعديل الويكي';
-  @override
-  String get emailAddress => 'عنوان البريد الإلكتروني';
-  @override
-  String get emailNotVerified => 'البريد الإلكتروني لم يتم التحقق منه';
-  @override
-  String get empty => 'فارغ';
-  @override
-  String get enable => 'تمكين';
-  @override
-  String get enabled => 'ممكّن';
-  @override
   String get enterYourEmail => 'أدخل بريدك الإلكتروني';
-  @override
-  String get errorAcceptingInvite => 'خطأ في قبول الدعوة';
   @override
   String get errorCreatingAccount => 'خطأ في إنشاء الحساب';
   @override
   String get errorCreatingChat => 'خطأ في إنشاء الدردشة';
-  @override
-  String get errorDeleting => 'خطأ في الحذف';
-  @override
-  String get errorDeletingMessage => 'خطأ في حذف الرسالة';
-  @override
-  String get errorFetchingLink => 'خطأ في جلب الرابط';
-  @override
-  String get errorJoiningCommunity => 'خطأ في الانضمام إلى المجتمع';
-  @override
-  String get errorLeavingCommunity => 'خطأ في مغادرة المجتمع';
-  @override
-  String get errorLoading => 'خطأ في التحميل';
-  @override
-  String get errorLoadingCommunity => 'خطأ في تحميل المجتمع';
-  @override
-  String get errorLoadingDrafts => 'خطأ في تحميل المسودات';
-  @override
-  String get errorLoadingFollowers => 'خطأ في تحميل المتابعين';
-  @override
-  String get errorLoadingFollowing => 'خطأ في تحميل المتابَعين';
-  @override
-  String get errorLoadingMembers => 'خطأ في تحميل الأعضاء';
-  @override
-  String get errorLoadingMessages => 'خطأ في تحميل الرسائل';
-  @override
-  String get errorLoadingPage => 'خطأ في تحميل الصفحة';
   @override
   String get errorLoadingPosts => 'خطأ في تحميل المنشورات';
   @override
@@ -1165,31 +1061,11 @@ class AppStringsAr implements AppStrings {
   @override
   String get realTimeChat => 'دردشة في الوقت الفعلي';
   @override
-  String get reorder => 'إعادة الترتيب';
-  @override
   String get reportBug => 'الإبلاغ عن خطأ';
-  @override
-  String get reportSent => 'تم إرسال البلاغ';
-  @override
-  String get requestData => 'طلب البيانات';
-  @override
-  String get requestDataMsg => 'سيتم إرسال بياناتك إلى بريدك الإلكتروني عند توفرها.';
-  @override
-  String get resendEmail => 'إعادة إرسال البريد الإلكتروني';
-  @override
-  String get reset => 'إعادة تعيين';
-  @override
-  String get resetLayout => 'إعادة تعيين التخطيط';
-  @override
-  String get restorePurchases => 'استعادة المشتريات';
-  @override
-  String get review => 'مراجعة';
   @override
   String get revoke => 'إلغاء';
   @override
   String get revokeAll => 'إلغاء الكل';
-  @override
-  String get revokeAllDevices => 'إلغاء جميع الأجهزة';
   @override
   String get revokeAllOthers => 'إلغاء كل الآخرين';
   @override
@@ -1485,219 +1361,39 @@ class AppStringsAr implements AppStrings {
   @override
   String get newMembersNeedApproval => 'الأعضاء الجدد بحاجة إلى موافقة';
   @override
-  String get noOneCanMessage => 'لا أحد يستطيع مراسلتك';
-  @override
-  String get noOneCanMessageDesc => 'لا أحد يستطيع بدء محادثة معك';
-  @override
   String get notFound => 'غير موجود';
-  @override
-  String get notificationsFrom => 'إشعارات من';
   @override
   String get offTopic => 'خارج الموضوع';
   @override
-  String get offlineStatus => 'غير متصل';
-  @override
-  String get onlineStatus => 'متصل';
-  @override
-  String get onlyFriendsCanMessage => 'الأصدقاء فقط هم من يمكنهم مراسلتك';
-  @override
-  String get onlyFriendsCanMessageDesc => 'فقط المستخدمون الذين تتابعهم يمكنهم بدء محادثة معك';
-  @override
-  String get openToEveryone => 'مفتوح للجميع';
-  @override
-  String get openToEveryoneDesc => 'يمكن لأي شخص الانضمام إلى مجتمعك';
-  @override
   String get optionLabel => 'خيار';
   @override
-  String get originalPoster => 'الناشر الأصلي';
-  @override
-  String get otherReason => 'سبب آخر';
-  @override
-  String get pinMessage => 'تثبيت الرسالة';
-  @override
-  String get plagiarism => 'انتحال';
-  @override
-  String get postHighlighted => 'تم تمييز المنشور!';
-  @override
-  String get postUnhidden => 'تم إظهار المنشور';
-  @override
-  String get postVisibility => 'رؤية المنشور';
-  @override
-  String get presence => 'الحضور';
-  @override
-  String get privateCommunity => 'مجتمع خاص';
-  @override
-  String get privateCommunityDesc => 'يجب دعوة الأعضاء الجدد للانضمام';
-  @override
-  String get profileComments => 'تعليقات الملف الشخصي';
-  @override
-  String get profileCommentsDisabled => 'تم تعطيل تعليقات الملف الشخصي';
-  @override
-  String get profileFrame => 'إطار الملف الشخصي';
-  @override
-  String get profileFrames => 'إطارات الملف الشخصي';
-  @override
-  String get profileViewers => 'زوار الملف الشخصي';
-  @override
   String get prohibitedContent => 'محتوى محظور';
-  @override
-  String get publicChatrooms => 'غرف الدردشة العامة';
-  @override
-  String get questionLabel => 'سؤال';
-  @override
-  String get quizLabel => 'اختبار';
-  @override
-  String get recentPosts => 'المنشورات الأخيرة';
-  @override
-  String get removeAtLeastOneImage => 'إزالة صورة واحدة على الأقل';
-  @override
-  String get removeAtLeastOneQuestion => 'إزالة سؤال واحد على الأقل';
-  @override
-  String get removeFromFavorites => 'إزالة من المفضلة';
   @override
   String get reportContent => 'الإبلاغ عن المحتوى';
   @override
   String get reportReason => 'سبب الإبلاغ';
   @override
-  String get reportUser => 'الإبلاغ عن المستخدم';
-  @override
-  String get reportedContent => 'المحتوى المبلغ عنه';
-  @override
-  String get reportedUser => 'المستخدم المبلغ عنه';
-  @override
-  String get reportsCenter => 'مركز البلاغات';
-  @override
-  String get reputationPoints => 'نقاط السمعة';
-  @override
-  String get requestToJoin => 'طلب الانضمام';
-  @override
   String get requiredField => 'حقل مطلوب';
   @override
   String get resetToDefault => 'إعادة التعيين إلى الافتراضي';
   @override
-  String get rookie => 'مبتدئ';
-  @override
-  String get saveDraft => 'حفظ المسودة';
-  @override
-  String get searchForStickers => 'البحث عن ملصقات';
-  @override
-  String get searchGifs => 'البحث عن صور GIF';
-  @override
   String get searchMusic => 'البحث عن موسيقى';
-  @override
-  String get selectAction => 'اختر إجراءً';
-  @override
-  String get selectCover => 'اختر غلافًا';
-  @override
-  String get selectDuration => 'اختر المدة';
-  @override
-  String get selectReason => 'اختر السبب';
-  @override
-  String get selfHarm => 'إيذاء النفس';
-  @override
-  String get sendAMessage => 'إرسال رسالة';
-  @override
-  String get sexualContent => 'محتوى جنسي';
-  @override
-  String get shareCommunity => 'مشاركة المجتمع';
-  @override
-  String get showLess => 'عرض أقل';
-  @override
-  String get showMore => 'عرض المزيد';
-  @override
-  String get silent => 'صامت';
   @override
   String get spanishLang => 'Español';
   @override
-  String get stickerPack => 'حزمة ملصقات';
-  @override
-  String get stickerPacks => 'حزم الملصقات';
-  @override
   String get strikethroughFormat => 'يتوسطه خط';
-  @override
-  String get submit => 'إرسال';
-  @override
-  String get submitted => 'تم الإرسال';
-  @override
-  String get subscription => 'الاشتراك';
-  @override
-  String get success => 'نجاح';
-  @override
-  String get takeAPhoto => 'التقاط صورة';
-  @override
-  String get tapToCopy => 'انقر للنسخ';
-  @override
-  String get theme => 'السمة';
-  @override
-  String get thisActionIsIrreversible => 'هذا الإجراء لا يمكن التراجع عنه.';
-  @override
-  String get titleLabel => 'العنوان';
   @override
   String get underline => 'تسطير';
   @override
-  String get underlineFormat => 'تسطير';
-  @override
-  String get unpinMessage => 'إلغاء تثبيت الرسالة';
-  @override
-  String get updateAction => 'تحديث';
-  @override
   String get uploadFile => 'تحميل ملف';
-  @override
-  String get uploading => 'جارٍ التحميل...';
-  @override
-  String get veteran => 'خبير';
   @override
   String get videoLabel => 'الفيديو';
   @override
-  String get viewProfile => 'عرض الملف الشخصي';
-  @override
-  String get violentContent => 'محتوى عنيف';
-  @override
-  String get visitor => 'زائر';
-  @override
-  String get voiceNote => 'مذكرة صوتية';
-  @override
   String get vote => 'تصويت';
-  @override
-  String get youAreBanned => 'أنت محظور';
-  @override
-  String get youAreMuted => 'أنت مكتوم';
-  @override
-  String get youHaveBeenWarned => 'لقد تم تحذيرك';
-  @override
-  String get yourAccount => 'حسابك';
-  @override
-  String get yourInterests => 'اهتماماتك';
   @override
   String get about => 'حول';
   @override
-  String get aboutMe => 'عني';
-  @override
-  String get accountDeleted => 'تم حذف الحساب';
-  @override
-  String get accountSettings => 'إعدادات الحساب';
-  @override
   String get actionCannotBeUndone => 'لا يمكن التراجع عن هذا الإجراء.';
-  @override
-  String get addDescription => 'إضافة وصف';
-  @override
-  String get addDescriptionOptional => 'إضافة وصف (اختياري)';
-  @override
-  String get addFriend => 'إضافة صديق';
-  @override
-  String get addMoreInterests => 'أضف المزيد من الاهتمامات!';
-  @override
-  String get addYourInterests => 'أضف اهتماماتك';
-  @override
-  String get advanced => 'متقدم';
-  @override
-  String get advancedSettings => 'الإعدادات المتقدمة';
-  @override
-  String get all => 'الكل';
-  @override
-  String get allMembers => 'كل الأعضاء';
-  @override
-  String get allPosts => 'كل المنشورات';
   @override
   String get allowedContent => 'المحتوى المسموح به';
   @override
@@ -1989,215 +1685,33 @@ class AppStringsAr implements AppStrings {
   @override
   String get lastAccess2 => 'آخر وصول: ...';
   @override
-  String get lastActivity => 'آخر نشاط: ...';
-  @override
-  String get latest2 => 'الأحدث';
-  @override
   String get leader2 => 'القائد';
-  @override
-  String get legendary2 => 'أسطوري';
   @override
   String get levelUp2 => 'ارتقاء المستوى';
   @override
-  String get light => 'فاتح';
-  @override
-  String get link2 => 'الرابط';
-  @override
   String get linkCopied => 'تم نسخ الرابط';
-  @override
-  String get loading2 => 'جار التحميل...';
-  @override
-  String get loadingPosts => 'جار تحميل المنشورات...';
-  @override
-  String get loadingUsers => 'جار تحميل المستخدمين...';
-  @override
-  String get loginError => 'خطأ في تسجيل الدخول';
-  @override
-  String get loginRequired => 'تسجيل الدخول مطلوب';
-  @override
-  String get loginToContinue2 => 'سجل الدخول للمتابعة';
-  @override
-  String get loginToVote => 'سجل الدخول للتصويت';
-  @override
-  String get longestStreak => 'أطول سلسلة: ... أيام';
-  @override
-  String get master => 'ماجستير';
-  @override
-  String get max100Chars => '100 حرف كحد أقصى';
-  @override
-  String get max150Chars => '150 حرفًا كحد أقصى';
-  @override
-  String get max200Chars => '200 حرف كحد أقصى';
-  @override
-  String get max300Chars => '300 حرف كحد أقصى';
-  @override
-  String get max50Chars => '50 حرفًا كحد أقصى';
-  @override
-  String get member2 => 'عضو';
-  @override
-  String get memberRole => 'دور العضو';
-  @override
-  String get members2 => 'الأعضاء';
-  @override
-  String get mention => 'ذكر';
-  @override
-  String get message2 => 'الرسالة';
-  @override
-  String get min2Options => 'خياران على الأقل';
   @override
   String get monday => 'الاثنين';
   @override
-  String get moviesTv => 'أفلام وتلفزيون';
-  @override
-  String get music2 => 'الموسيقى';
-  @override
-  String get myProfile => 'ملفي الشخصي';
-  @override
-  String get myStickers => 'ملصقاتي';
-  @override
-  String get nameYourCommunity => 'اسم مجتمعك';
-  @override
-  String get newPassword => 'كلمة المرور الجديدة';
-  @override
-  String get newPasswordConfirmation => 'تأكيد كلمة المرور الجديدة';
-  @override
-  String get newTag => 'وسم جديد';
-  @override
-  String get nickname2 => 'اللقب';
-  @override
-  String get no2 => 'لا';
-  @override
-  String get noBannedUsers => 'لا يوجد مستخدمون محظورون';
-  @override
-  String get noFollowers => 'لا يوجد متابعون';
-  @override
-  String get noFollowing => 'لا يتابع أحدًا';
-  @override
   String get noMembers => 'لا يوجد أعضاء';
-  @override
-  String get noPosts2 => 'لا توجد منشورات';
-  @override
-  String get noUsersFound => 'لم يتم العثور على مستخدمين';
-  @override
-  String get noUsersFound2 => 'لم يتم العثور على مستخدمين.';
-  @override
-  String get notNow => 'ليس الآن';
-  @override
-  String get notifications2 => 'الإشعارات';
-  @override
-  String get off => 'إيقاف';
-  @override
-  String get on => 'تشغيل';
-  @override
-  String get online2 => 'متصل';
-  @override
-  String get onlyHostCanDoThis => 'يمكن للمضيف فقط القيام بذلك.';
   @override
   String get openSettings => 'فتح الإعدادات';
   @override
-  String get optional => 'اختياري';
-  @override
-  String get or => 'أو';
-  @override
-  String get originalContent => 'المحتوى الأصلي';
-  @override
-  String get other2 => 'آخر';
-  @override
-  String get password2 => 'كلمة المرور';
-  @override
-  String get passwordChangedSuccess => 'تم تغيير كلمة المرور بنجاح!';
-  @override
-  String get passwordDoNotMatch => 'كلمتا المرور غير متطابقتين.';
-  @override
-  String get passwordRequired => 'كلمة المرور مطلوبة';
-  @override
-  String get passwordResetEmailSent => 'تم إرسال بريد إلكتروني لإعادة تعيين كلمة المرور!';
-  @override
-  String get pasteLink => 'الصق الرابط';
-  @override
   String get pending2 => 'قيد الانتظار';
-  @override
-  String get permissions => 'الأذونات';
   @override
   String get petsAnimals => 'حيوانات أليفة وحيوانات';
   @override
-  String get phone => 'الهاتف';
-  @override
-  String get photo => 'صورة';
-  @override
-  String get pin => 'تثبيت';
-  @override
   String get poll => 'استطلاع';
-  @override
-  String get pollOptions => 'خيارات الاستطلاع';
-  @override
-  String get popular2 => 'شائع';
-  @override
-  String get post2 => 'المنشور';
-  @override
-  String get postHistory => 'سجل المنشورات';
-  @override
-  String get postOptions => 'خيارات المنشور';
-  @override
-  String get postSentForReview => 'تم إرسال المنشور للمراجعة!';
-  @override
-  String get posts2 => 'المنشورات';
   @override
   String get preferences => 'التفضيلات';
   @override
-  String get privacy2 => 'الخصوصية';
-  @override
   String get privacyPolicy => 'سياسة الخصوصية';
   @override
-  String get private2 => 'خاص';
-  @override
-  String get profile2 => 'الملف الشخصي';
-  @override
-  String get profileOptions => 'خيارات الملف الشخصي';
-  @override
   String get prohibitedContentDetails => '• محتوى +18 / صريح\n• تنمر أو مضايقة\n• سرقة فنية\n• إعلانات غير مصرح بها\n• محتوى تمييزي';
-  @override
-  String get public2 => 'عام';
-  @override
-  String get publish2 => 'نشر';
-  @override
-  String get quizResults => 'نتائج الاختبار';
-  @override
-  String get quizzes => 'الاختبارات';
-  @override
-  String get readOnly => 'للقراءة فقط';
-  @override
-  String get reason2 => 'السبب';
   @override
   String get recentSearches => 'عمليات البحث الأخيرة';
   @override
   String get rejected2 => 'مرفوض';
-  @override
-  String get remove2 => 'إزالة';
-  @override
-  String get removeCover => 'إزالة الغلاف';
-  @override
-  String get removeFriend => 'إزالة الصديق';
-  @override
-  String get removeMember => 'إزالة العضو';
-  @override
-  String get reorder2 => 'إعادة الترتيب';
-  @override
-  String get report2 => 'الإبلاغ';
-  @override
-  String get reportDetails => 'تفاصيل الإبلاغ';
-  @override
-  String get reportSummary => 'ملخص الإبلاغ';
-  @override
-  String get reputation2 => 'السمعة';
-  @override
-  String get required => 'مطلوب';
-  @override
-  String get resendVerificationEmail => 'إعادة إرسال بريد التحقق الإلكتروني';
-  @override
-  String get reset2 => 'إعادة تعيين';
-  @override
-  String get restore => 'استعادة';
   @override
   String get artTheftPlagiarism => 'سرقة فنية / انتحال';
   @override
@@ -2471,219 +1985,7 @@ class AppStringsAr implements AppStrings {
   @override
   String get newMembersNeedApprovalDesc => 'الأعضاء الجدد بحاجة إلى موافقة';
   @override
-  String get newPasswordConfirmationHint => 'تأكيد كلمة المرور الجديدة';
-  @override
-  String get newPasswordHint => 'كلمة المرور الجديدة';
-  @override
-  String get newTagHint => 'وسم جديد';
-  @override
-  String get nicknameInCommunity => 'اللقب في هذا المجتمع';
-  @override
-  String get noActivity => 'لا يوجد نشاط';
-  @override
-  String get noActivityInCommunity => 'لا يوجد نشاط في هذا المجتمع';
-  @override
-  String get noActivityYet => 'لا يوجد نشاط بعد';
-  @override
-  String get noAdAvailable => 'لا يوجد إعلان متاح. حاول مرة أخرى.';
-  @override
-  String get noBannedUsersMsg => 'لا يوجد مستخدمون محظورون';
-  @override
-  String get noCommonCommunities => 'لا توجد مجتمعات مشتركة';
-  @override
-  String get noFollowersYet => 'لا يوجد متابعون بعد';
-  @override
-  String get noFollowingYet => 'لا يتابع أحدًا بعد';
-  @override
-  String get noMembersFound => 'لم يتم العثور على أعضاء';
-  @override
-  String get noMembersInCommunity => 'لا يوجد أعضاء في هذا المجتمع';
-  @override
-  String get noPostsFound => 'لم يتم العثور على منشورات';
-  @override
-  String get noUsersFoundMsg => 'لم يتم العثور على مستخدمين';
-  @override
-  String get notAMember => 'لست عضوًا';
-  @override
-  String get notificationsFromChats => 'إشعارات من الدردشات';
-  @override
-  String get notificationsFromNexusHub => 'إشعارات من NexusHub';
-  @override
-  String get nowOnline => 'متصل الآن';
-  @override
-  String get officialEvents => 'الأحداث الرسمية';
-  @override
-  String get onlyYouCanSeeThis => 'أنت فقط من يمكنه رؤية هذا';
-  @override
-  String get optionCannotBeEmpty => 'لا يمكن أن يكون الخيار فارغًا';
-  @override
-  String get otherOffenses => 'مخالفات أخرى';
-  @override
-  String get pasteGiphyLink => 'الصق رابط GIPHY';
-  @override
-  String get pasteImageUrl => 'الصق عنوان URL للصورة';
-  @override
-  String get pasteYoutubeLink => 'الصق رابط يوتيوب';
-  @override
-  String get permanentlyBanUser => 'حظر المستخدم بشكل دائم';
-  @override
-  String get phoneNotVerified => 'لم يتم التحقق من الهاتف';
-  @override
-  String get pinToCommunityHome => 'تثبيت في الصفحة الرئيسية للمجتمع';
-  @override
-  String get pollDuration => 'مدة الاستطلاع';
-  @override
-  String get pollEndsIn => 'ينتهي الاستطلاع في';
-  @override
-  String get postHidden => 'تم إخفاء المنشور';
-  @override
-  String get postInYourFeed => 'منشور في موجزك';
-  @override
-  String get postUnpinned => 'تم إلغاء تثبيت المنشور';
-  @override
-  String get postsYouMightLike => 'منشورات قد تعجبك';
-  @override
-  String get presenceStatus => 'حالة الحضور';
-  @override
-  String get privateChatInvite => 'دعوة دردشة خاصة';
-  @override
-  String get profileCustomization => 'تخصيص الملف الشخصي';
-  @override
-  String get questionCannotBeEmpty => 'لا يمكن أن يكون السؤال فارغًا';
-  @override
-  String get quizPublishedSuccess => 'تم نشر الاختبار بنجاح!';
-  @override
-  String get recentVisitors => 'الزوار الجدد';
-  @override
-  String get removeUserFromChat => 'إزالة المستخدم من الدردشة';
-  @override
-  String get reportSubmittedSuccess => 'تم إرسال البلاغ بنجاح';
-  @override
-  String get reputationLevel => 'مستوى السمعة';
-  @override
-  String get resendCode => 'إعادة إرسال الرمز';
-  @override
-  String get resetPasswordSuccess => 'تمت إعادة تعيين كلمة المرور بنجاح!';
-  @override
-  String get searchByUsername => 'البحث باسم المستخدم';
-  @override
-  String get searchForCommunities => 'البحث عن مجتمعات';
-  @override
-  String get searchForMembers => 'البحث عن أعضاء';
-  @override
-  String get searchForPosts => 'البحث عن منشورات';
-  @override
-  String get searchForUsers => 'البحث عن مستخدمين';
-  @override
-  String get selectAtLeastOne => 'اختر واحدًا على الأقل';
-  @override
-  String get selectAtLeastOneInterest => 'اختر اهتمامًا واحدًا على الأقل';
-  @override
-  String get selectPollEndDate => 'اختر تاريخ انتهاء الاستطلاع';
-  @override
-  String get sendCoinsToUser => 'إرسال عملات إلى المستخدم';
-  @override
-  String get sendFile => 'إرسال ملف';
-  @override
-  String get sendFileToChat => 'إرسال ملف إلى الدردشة';
-  @override
-  String get sendGif => 'إرسال GIF';
-  @override
   String get sending => 'جارٍ الإرسال...';
-  @override
-  String get sendingMessage => 'جارٍ إرسال الرسالة...';
-  @override
-  String get sessionExpiredMessage => 'انتهت صلاحية جلستك. يرجى تسجيل الدخول مرة أخرى.';
-  @override
-  String get shareYourThoughts => 'شارك أفكارك...';
-  @override
-  String get showOriginal => 'إظهار الأصلي';
-  @override
-  String get soundOnNotifications => 'صوت عند الإشعارات';
-  @override
-  String get soundOnNotificationsDesc => 'تشغيل صوت عند تلقي الإشعارات';
-  @override
-  String get startChat => 'بدء الدردشة';
-  @override
-  String get startFollowing => 'ابدأ المتابعة!';
-  @override
-  String get startNewChat => 'بدء دردشة جديدة';
-  @override
-  String get strikeUser => 'إنذار المستخدم';
-  @override
-  String get submitForReview => 'إرسال للمراجعة';
-  @override
-  String get successfullyUnlinked => 'تم إلغاء الربط بنجاح!';
-  @override
-  String get tapToChange => 'انقر للتغيير';
-  @override
-  String get tapToSeeDetails => 'انقر لرؤية التفاصيل';
-  @override
-  String get thisChatIsPrivate => 'هذه الدردشة خاصة';
-  @override
-  String get thisChatIsPublic => 'هذه الدردشة عامة';
-  @override
-  String get thisContentIsHidden => 'هذا المحتوى مخفي';
-  @override
-  String get transferLeadership => 'نقل القيادة';
-  @override
-  String get transferOwnership => 'نقل الملكية';
-  @override
-  String get translate => 'ترجمة';
-  @override
-  String get translation => 'الترجمة';
-  @override
-  String get typeYourMessageHere => 'اكتب رسالتك هنا...';
-  @override
-  String get unbanUser => 'رفع الحظر عن المستخدم';
-  @override
-  String get unblockUserConfirmation => 'هل أنت متأكد أنك تريد إلغاء حظر هذا المستخدم؟';
-  @override
-  String get unfeaturePost => 'إلغاء تمييز المنشور';
-  @override
-  String get unfollowUser => 'إلغاء متابعة المستخدم';
-  @override
-  String get unknownUser => 'مستخدم غير معروف';
-  @override
-  String get unlinkProvider => 'إلغاء ربط الموفر';
-  @override
-  String get unpinFromCommunityHome => 'إلغاء التثبيت من الصفحة الرئيسية للمجتمع';
-  @override
-  String get unread => 'غير مقروء';
-  @override
-  String get unsupportedLink => 'رابط غير مدعوم';
-  @override
-  String get until => 'حتى';
-  @override
-  String get upcoming => 'قادم';
-  @override
-  String get updateAvailable => 'يتوفر تحديث';
-  @override
-  String get updateNow => 'التحديث الآن';
-  @override
-  String get uploadFromGallery => 'تحميل من المعرض';
-  @override
-  String get userBanned => 'تم حظر المستخدم';
-  @override
-  String get userHasBeenBanned => 'تم حظر المستخدم.';
-  @override
-  String get userHasBeenKicked => 'تم طرد المستخدم.';
-  @override
-  String get userHasBeenMuted => 'تم كتم صوت المستخدم.';
-  @override
-  String get userHasBeenUnbanned => 'تم رفع الحظر عن المستخدم.';
-  @override
-  String get userHasBeenWarned => 'تم تحذير المستخدم.';
-  @override
-  String get userKicked => 'تم طرد المستخدم';
-  @override
-  String get userMuted => 'تم كتم صوت المستخدم';
-  @override
-  String get userNotFound => 'لم يتم العثور على المستخدم';
-  @override
-  String get userUnbanned => 'تم رفع الحظر عن المستخدم';
-  @override
-  String get userWarned => 'تم تحذير المستخدم';
   @override
   String get usersLabelGeneral => 'المستخدمون';
   @override
@@ -2953,123 +2255,11 @@ class AppStringsAr implements AppStrings {
   @override
   String get insertLink2 => 'إدراج رابط';
   @override
-  String get insertYoutube => 'إدراج يوتيوب';
-  @override
-  String get invalidYoutubeUrl => 'عنوان URL يوتيوب غير صالح';
-  @override
-  String get leaveChat2 => 'مغادرة الدردشة';
-  @override
-  String get leaveCommunity2 => 'مغادرة المجتمع';
-  @override
-  String get leaveGroup2 => 'مغادرة المجموعة';
-  @override
-  String get leaveScreening => 'مغادرة العرض';
-  @override
-  String get linkCopied2 => 'تم نسخ الرابط!';
-  @override
-  String get loadingMedia => 'جار تحميل الوسائط...';
-  @override
-  String get loginToJoin => 'سجل الدخول للانضمام!';
-  @override
-  String get myDrafts => 'مسوداتي';
-  @override
-  String get myPosts => 'منشوراتي';
-  @override
-  String get mySavedPosts => 'منشوراتي المحفوظة';
-  @override
-  String get noCommonFollowers => 'لا يوجد متابعون مشتركون';
-  @override
-  String get noCommonFollowing => 'لا يتابع أحدًا مشتركًا';
-  @override
-  String get noFollowers2 => 'لا يوجد متابعون بعد!';
-  @override
-  String get noFollowing2 => 'لا يتابع أحدًا بعد!';
-  @override
-  String get noPostsToSee => 'لا توجد منشورات لرؤيتها!';
-  @override
-  String get noUsersToSee => 'لا يوجد مستخدمون لرؤيتهم!';
-  @override
-  String get notEnoughCoins => 'لا توجد عملات كافية';
-  @override
-  String get pasteLink2 => 'الصق الرابط...';
-  @override
-  String get pollPublishedSuccess => 'تم نشر الاستطلاع بنجاح!';
-  @override
-  String get postOptions2 => 'خيارات المنشور';
-  @override
   String get postDeleted2 => 'تم حذف المنشور!';
-  @override
-  String get quizPublishedSuccess2 => 'تم نشر الاختبار بنجاح!';
-  @override
-  String get removeMusic => 'إزالة الموسيقى';
-  @override
-  String get removePoll => 'إزالة الاستطلاع';
-  @override
-  String get removeQuiz => 'إزالة الاختبار';
-  @override
-  String get reportBug2 => 'الإبلاغ عن خطأ';
   @override
   String get saveChanges => 'حفظ التغييرات';
   @override
-  String get searchForGifs => 'البحث عن صور GIF...';
-  @override
-  String get searchForMusic => 'البحث عن موسيقى...';
-  @override
-  String get searchForStickers2 => 'البحث عن ملصقات...';
-  @override
-  String get searchForUsers2 => 'البحث عن مستخدمين...';
-  @override
-  String get sendingVideo => 'جارٍ إرسال الفيديو...';
-  @override
-  String get shareImage => 'مشاركة الصورة';
-  @override
-  String get sharePost => 'مشاركة المنشور';
-  @override
-  String get shareProfile2 => 'مشاركة الملف الشخصي';
-  @override
-  String get shareWiki => 'مشاركة الويكي';
-  @override
-  String get startTyping => 'ابدأ الكتابة...';
-  @override
-  String get storyViews => 'مشاهدات القصة';
-  @override
-  String get tapToAddDescription => 'انقر لإضافة وصف...';
-  @override
   String get tapToAddImage => 'انقر لإضافة صورة...';
-  @override
-  String get tapToEdit => 'انقر للتعديل...';
-  @override
-  String get tapToVote => 'انقر للتصويت!';
-  @override
-  String get titleOptional => 'العنوان (اختياري)';
-  @override
-  String get unfeature => 'إلغاء التمييز';
-  @override
-  String get unpin => 'إلغاء التثبيت';
-  @override
-  String get userProfile => 'ملف المستخدم الشخصي';
-  @override
-  String get videoPublishedSuccess => 'تم نشر الفيديو بنجاح!';
-  @override
-  String get viewAll => 'عرض الكل';
-  @override
-  String get viewParticipants => 'عرض المشاركين';
-  @override
-  String get viewResults => 'عرض النتائج';
-  @override
-  String get waitingForWifi => 'في انتظار واي فاي...';
-  @override
-  String get wallComments => 'تعليقات الحائط';
-  @override
-  String get writeYourMessage => 'اكتب رسالتك...';
-  @override
-  String get yesDeleteIt => 'نعم، احذفه!';
-  @override
-  String get youHaveNoDrafts => 'ليس لديك مسودات!';
-  @override
-  String get youHaveNoPosts => 'ليس لديك منشورات!';
-  @override
-  String get youHaveNoSavedPosts => 'ليس لديك منشورات محفوظة!';
   @override
   String get clearCache => 'مسح التخزين المؤقت';
   @override
@@ -4260,7 +3450,6 @@ class AppStringsAr implements AppStrings {
   String repProgressLabel(int current, int total)=>'$current/$total REP';
   @override
   String daysToLevelUp(int days)=>'~$days يوم للارتقاء بالمستوى';
-
 
   // ── Achievements screen (layout Amino) ──
   @override

@@ -199,7 +199,6 @@ class _PostCardState extends ConsumerState<PostCard>
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return AminoAnimations.cardPress(
       onTap: () => context.push('/post/${_post.id}'),
@@ -885,9 +884,13 @@ class _PostCardState extends ConsumerState<PostCard>
           padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(6)),
           child: Row(
             children: [
-              Icon(Icons.repeat_rounded,
-                  size: r.s(14), color: Colors.grey[500]),
-              SizedBox(width: r.s(5)),
+              _RepostIconBox(
+                color: Colors.grey[500]!,
+                icon: Icons.repeat_rounded,
+                size: r.s(20),
+                iconSize: r.s(12),
+              ),
+              SizedBox(width: r.s(6)),
               Text(
                 s.repostedBy(reposterName),
                 style: TextStyle(
@@ -1119,6 +1122,24 @@ class _PostCardState extends ConsumerState<PostCard>
               ),
             ),
           ),
+
+          // Repost button
+          if (_post.type != 'repost') ...[
+            SizedBox(width: r.s(16)),
+            Semantics(
+              label: s.repostAction,
+              button: true,
+              child: GestureDetector(
+                onTap: _doRepost,
+                behavior: HitTestBehavior.opaque,
+                child: Icon(
+                  Icons.repeat_rounded,
+                  size: r.s(16),
+                  color: Colors.grey[600],
+                ),
+              ),
+            ),
+          ],
 
           const Spacer(),
 

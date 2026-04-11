@@ -450,7 +450,6 @@ class _SectionLabel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Text(
       text.toUpperCase(),
@@ -479,7 +478,6 @@ class _AminoTextField extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return TextField(
       controller: controller,

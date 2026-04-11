@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/l10n/locale_provider.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// ============================================================================
 /// ErrorHandler — Tratamento padronizado de erros para o NexusHub.

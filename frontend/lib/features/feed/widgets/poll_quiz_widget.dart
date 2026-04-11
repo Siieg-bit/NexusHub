@@ -457,7 +457,6 @@ class _QuizDetailWidgetState extends ConsumerState<QuizDetailWidget> {
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     if (_questions.isEmpty) return const SizedBox.shrink();
 

@@ -108,7 +108,6 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
     }
   }
 
-
   // ════════════════════════════════════════════════════════════════════════════
   // RASCUNHOS AUTOMÁTICOS
   // ════════════════════════════════════════════════════════════════════════════
@@ -317,10 +316,10 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
       final path =
           'posts/$userId/${DateTime.now().millisecondsSinceEpoch}_poll_cover_${image.name}';
       await SupabaseService.storage
-          .from('post_media')
+          .from('post-media')
           .uploadBinary(path, bytes);
       final url =
-          SupabaseService.storage.from('post_media').getPublicUrl(path);
+          SupabaseService.storage.from('post-media').getPublicUrl(path);
       if (mounted) setState(() => _coverImageUrl = url);
     } catch (_) {
       if (mounted) {
@@ -364,6 +363,7 @@ class _CreatePollScreenState extends ConsumerState<CreatePollScreen> {
     }
 
     setState(() => _isSubmitting = true);
+    await _deleteDraftIfNeeded();
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) throw Exception(s.notAuthenticated);

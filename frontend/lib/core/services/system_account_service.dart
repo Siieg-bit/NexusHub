@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 
 import 'supabase_service.dart';
 import '../l10n/locale_provider.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Serviço de System Accounts — encapsula fluxos sistêmicos que agora são
 /// centralizados no backend via RPCs.

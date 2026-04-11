@@ -693,73 +693,7 @@ class AppStringsFr implements AppStrings {
   @override
   String get code => 'Code';
   @override
-  String get unpin => 'Désépingler';
-  @override
-  String get unreadChats => 'Chats non lus';
-  @override
-  String get updateEmail => 'Mettre à jour l\'e-mail';
-  @override
-  String get uploadVideo => 'Téléverser une vidéo';
-  @override
-  String get userBanned => 'Utilisateur banni';
-  @override
-  String get userKicked => 'Utilisateur expulsé';
-  @override
-  String get userMuted => 'Utilisateur rendu muet';
-  @override
-  String get userWarned => 'Utilisateur averti';
-  @override
-  String get verificationEmailSent => 'E-mail de vérification envoyé !';
-  @override
-  String get video2 => 'Vidéo';
-  @override
-  String get viewAll2 => 'Voir tout';
-  @override
-  String get voiceChat => 'Chat vocal';
-  @override
-  String get wall2 => 'Mur';
-  @override
-  String get warnUser => 'Avertir l\'utilisateur';
-  @override
-  String get warning => 'Avertissement';
-  @override
-  String get warningSent => 'Avertissement envoyé';
-  @override
   String get wednesday => 'Mer';
-  @override
-  String get welcome2 => 'Bienvenue !';
-  @override
-  String get welcomeToOurCommunity => 'Bienvenue dans notre communauté !';
-  @override
-  String get wiki2 => 'Wiki';
-  @override
-  String get yes2 => 'Oui';
-  @override
-  String get youAreBanned => 'Vous êtes banni de cette communauté.';
-  @override
-  String get youAreNotFollowingAnyone => 'Vous ne suivez personne.';
-  @override
-  String get youHaveNoFollowers => 'Vous n\'avez aucun abonné.';
-  @override
-  String get yourAccountHasBeenDeleted => 'Votre compte a été supprimé.';
-  @override
-  String get yourChangesHaveBeenSaved => 'Vos modifications ont été enregistrées.';
-  @override
-  String get yourEmailHasBeenVerified => 'Votre e-mail a été vérifié !';
-  @override
-  String get yourInterests => 'Vos centres d\'intérêt';
-  @override
-  String get yourLanguages => 'Vos langues';
-  @override
-  String get yourNickname => 'Votre surnom';
-  @override
-  String get yourProfileIsNowPublic => 'Votre profil est maintenant public.';
-  @override
-  String get yourTopCommunities => 'Vos meilleures communautés';
-  @override
-  String get yourWallIsEmpty => 'Votre mur est vide.';
-  @override
-  String get postCreationSuccess => 'Publication créée avec succès !';
   @override
   String get postDeleted2 => 'Publication supprimée';
   @override
@@ -3515,7 +3449,6 @@ class AppStringsFr implements AppStrings {
   @override
   String daysToLevelUp(int days)=>'~$days jours pour monter de niveau';
 
-
   // ── Achievements screen (layout Amino) ──
   @override
   String get myStatistics => 'Mes Statistiques';
@@ -3621,7 +3554,6 @@ class AppStringsFr implements AppStrings {
   String get repostNotificationTitle => 'New Repost';
   @override
   String repostNotificationBody(String username)=>'$username reposted your post.';
-
 
   @override
   String get confirmationEmailSent => 'E-mail de confirmation envoyé à';

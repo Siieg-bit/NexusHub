@@ -1,6 +1,5 @@
 import '../services/supabase_service.dart';
 import '../l10n/locale_provider.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Serviço de Privacy Levels — implementa os 3 níveis de privacidade do Amino.
 ///

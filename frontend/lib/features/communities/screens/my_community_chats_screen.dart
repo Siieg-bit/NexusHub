@@ -117,7 +117,6 @@ class _MyCommunityChatsScreenState
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     final chatsAsync = ref.watch(communityMyChatsProvider(widget.communityId));
     final membersAsync =

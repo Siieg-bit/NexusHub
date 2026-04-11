@@ -1,6 +1,5 @@
 /// Modelo de thread de chat (sala/grupo/DM).
 import '../l10n/locale_provider.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// Baseado no schema v5 — tabela chat_threads (ChatThread.smali).
 ///
 /// SEPARAÇÃO CONCEITUAL (Etapa 1):

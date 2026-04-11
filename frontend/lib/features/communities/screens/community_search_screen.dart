@@ -865,7 +865,6 @@ class _FilterChip extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -917,7 +916,6 @@ class _SortOption extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     return ListTile(
       dense: true,
       leading: Icon(icon,
@@ -948,7 +946,6 @@ class _PostTypeBadge extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final (icon, color) = switch (type) {
       'image' => (Icons.image_rounded, Colors.blue),
       'poll' => (Icons.poll_rounded, Colors.orange),

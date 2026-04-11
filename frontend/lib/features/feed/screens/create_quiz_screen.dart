@@ -163,7 +163,6 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
     }
   }
 
-
   // ════════════════════════════════════════════════════════════════════════════
   // RASCUNHOS AUTOMÁTICOS
   // ════════════════════════════════════════════════════════════════════════════
@@ -399,10 +398,10 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
       final path =
           'posts/$userId/${DateTime.now().millisecondsSinceEpoch}_quiz_cover_${image.name}';
       await SupabaseService.storage
-          .from('post_media')
+          .from('post-media')
           .uploadBinary(path, bytes);
       final url =
-          SupabaseService.storage.from('post_media').getPublicUrl(path);
+          SupabaseService.storage.from('post-media').getPublicUrl(path);
       if (mounted) setState(() => _coverImageUrl = url);
     } catch (_) {
       if (mounted) {
@@ -432,10 +431,10 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
       final path =
           'posts/$userId/${DateTime.now().millisecondsSinceEpoch}_quiz_q${qi}_${image.name}';
       await SupabaseService.storage
-          .from('post_media')
+          .from('post-media')
           .uploadBinary(path, bytes);
       final url =
-          SupabaseService.storage.from('post_media').getPublicUrl(path);
+          SupabaseService.storage.from('post-media').getPublicUrl(path);
       if (mounted) setState(() => _questions[qi].imageUrl = url);
     } catch (_) {
       if (mounted) {
@@ -478,6 +477,7 @@ class _CreateQuizScreenState extends ConsumerState<CreateQuizScreen> {
     }
 
     setState(() => _isSubmitting = true);
+    await _deleteDraftIfNeeded();
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) throw Exception(s.notAuthenticated);

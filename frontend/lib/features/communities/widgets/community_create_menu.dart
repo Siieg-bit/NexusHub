@@ -243,7 +243,6 @@ class _CreateItemTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: () => item.onTap(sheetContext),

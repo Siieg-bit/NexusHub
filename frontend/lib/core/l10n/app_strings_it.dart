@@ -1041,25 +1041,7 @@ class AppStringsIt implements AppStrings {
   @override
   String get realTimeChat => 'Chat in tempo reale';
   @override
-  String get reorder => 'Riordina';
-  @override
   String get reportBug => 'Segnala un Bug';
-  @override
-  String get reportSent => 'Segnalazione inviata';
-  @override
-  String get reportUser => 'Segnala Utente';
-  @override
-  String get reportedContent => 'Contenuto segnalato';
-  @override
-  String get requestToJoin => 'Richiesta di adesione';
-  @override
-  String get requested => 'Richiesto';
-  @override
-  String get resetAction => 'Reimposta';
-  @override
-  String get restorePurchases => 'Ripristina Acquisti';
-  @override
-  String get reviewEntry => 'Revisiona Voce';
   @override
   String get revokeAllOthers => 'Revoca Tutti gli Altri';
   @override
@@ -3467,7 +3449,6 @@ class AppStringsIt implements AppStrings {
   @override
   String daysToLevelUp(int days)=>'~$days giorni per salire di livello';
 
-
   // ── Achievements screen (layout Amino) ──
   @override
   String get myStatistics => 'Le Mie Statistiche';
@@ -3573,7 +3554,6 @@ class AppStringsIt implements AppStrings {
   String get repostNotificationTitle => 'New Repost';
   @override
   String repostNotificationBody(String username)=>'$username reposted your post.';
-
 
   @override
   String get confirmationEmailSent => 'Email di conferma inviata a';

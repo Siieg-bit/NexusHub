@@ -116,11 +116,11 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
       final path =
           'stories/${widget.communityId}/$userId/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
       await SupabaseService.client.storage
-          .from('post_media')
+          .from('post-media')
           .uploadBinary(path, bytes);
       if (!mounted) return;
       final url =
-          SupabaseService.client.storage.from('post_media').getPublicUrl(path);
+          SupabaseService.client.storage.from('post-media').getPublicUrl(path);
 
       if (!mounted) return;
       setState(() {
@@ -159,11 +159,11 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
       final bytes = await video.readAsBytes();
       final path =
           'stories/${widget.communityId}/$userId/${DateTime.now().millisecondsSinceEpoch}_${video.name}';
-      await SupabaseService.client.storage.from('post_media').uploadBinary(
+      await SupabaseService.client.storage.from('post-media').uploadBinary(
           path, bytes,
           fileOptions: const FileOptions(contentType: 'video/mp4'));
       final url =
-          SupabaseService.client.storage.from('post_media').getPublicUrl(path);
+          SupabaseService.client.storage.from('post-media').getPublicUrl(path);
 
       _videoPreviewController?.dispose();
       _videoPreviewController =
@@ -226,7 +226,11 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
         String bgColor;
         if (_isGradient) {
           final g = _bgGradients[_gradientIndex];
-          bgColor = '#${g[0].value.toRadixString(16).padLeft(8, '0').substring(2)}';
+          final c = g[0];
+          final r = (c.r * 255).round().toRadixString(16).padLeft(2, '0');
+          final gv = (c.g * 255).round().toRadixString(16).padLeft(2, '0');
+          final b = (c.b * 255).round().toRadixString(16).padLeft(2, '0');
+          bgColor = '#$r$gv$b';
         } else if (_selectedBgIndex < _bgColors.length) {
           bgColor = _bgHexCodes[_selectedBgIndex];
         } else {
@@ -272,8 +276,11 @@ class _CreateStoryScreenState extends ConsumerState<CreateStoryScreen> {
       String bgColor;
       if (_isGradient) {
         final g = _bgGradients[_gradientIndex];
-        bgColor =
-            '#${g[0].value.toRadixString(16).padLeft(8, '0').substring(2)}';
+        final c = g[0];
+        final r = (c.r * 255).round().toRadixString(16).padLeft(2, '0');
+        final gv = (c.g * 255).round().toRadixString(16).padLeft(2, '0');
+        final b = (c.b * 255).round().toRadixString(16).padLeft(2, '0');
+        bgColor = '#$r$gv$b';
       } else if (_selectedBgIndex < _bgColors.length) {
         bgColor = _bgHexCodes[_selectedBgIndex];
       } else {
@@ -801,7 +808,6 @@ class _TypeChip extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: onTap,

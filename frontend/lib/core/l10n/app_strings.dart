@@ -1870,4 +1870,42 @@ abstract class AppStrings {
   String get wikiPublishedSuccess;
   String get wikiEntry;
   String get wikiDescription;
+
+  // CONTAGENS FORMATADAS
+  String followersCount(int count);
+  String followingCount(int count);
+  String postsCount(int count);
+  String onlineMembersCount(int count);
+  String commentsCount(int count);
+  String memberSinceDate(String date);
+
+  // NOTIFICAÇÕES — ATIVIDADE SOCIAL
+  String userIsTyping(String user);
+  String userLikedYourPost(String user);
+  String userCommentedOnYourPost(String user);
+  String userFollowedYou(String user);
+  String userMentionedYou(String user);
+  String userInvitedYouTo(String user, String something);
+  String userSentYouAMessage(String user);
+  String userJoinedTheCommunity(String user);
+
+  // NOTIFICAÇÕES — CHAT
+  String userJoinedTheChat(String user);
+  String userLeftTheChat(String user);
+  String youWereKickedFromTheChat(String reason);
+  String youWereMutedInTheChat(String reason);
+
+  // NOTIFICAÇÕES — CONQUISTAS E MODERAÇÃO
+  String youLeveledUpTo(int level);
+  String youGotANewAchievement(String achievement);
+  String youHaveBeenWarned(String reason);
+  String youHaveBeenStriked(int strike, String reason);
+  String youHaveBeenBanned(String reason);
+
+  // NOTIFICAÇÕES — CONTEÚDO
+  String yourPostWasFeatured(String postTitle);
+  String yourPostWasPinned(String postTitle);
+  String yourPostWasCrossposted(String postTitle);
+  String yourWikiWasApproved(String wikiTitle);
+  String yourWikiWasRejected(String wikiTitle);
 }

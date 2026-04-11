@@ -130,6 +130,15 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
     }
   }
 
+  /// Converte uma [Color] para string hexadecimal ARGB (#AARRGGBB).
+  String _colorToHex(Color c) {
+    final a = (c.a * 255).round().toRadixString(16).padLeft(2, '0');
+    final r = (c.r * 255).round().toRadixString(16).padLeft(2, '0');
+    final g = (c.g * 255).round().toRadixString(16).padLeft(2, '0');
+    final b = (c.b * 255).round().toRadixString(16).padLeft(2, '0');
+    return '#$a$r$g$b';
+  }
+
   Color? _parseHexColor(String? hex) {
     if (hex == null || hex.isEmpty) return null;
     try {
@@ -275,10 +284,10 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
       final path =
           'posts/$userId/${DateTime.now().millisecondsSinceEpoch}_cover_${image.name}';
       await SupabaseService.storage
-          .from('post_media')
+          .from('post-media')
           .uploadBinary(path, bytes);
       final url =
-          SupabaseService.storage.from('post_media').getPublicUrl(path);
+          SupabaseService.storage.from('post-media').getPublicUrl(path);
       if (mounted) setState(() => _coverImageUrl = url);
     } catch (_) {
       if (mounted) {
@@ -503,10 +512,8 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
   Map<String, dynamic> _buildEditorMetadata() {
     return {
       'editor_type': 'blog',
-      'title_color':
-          '#${_titleColor.value.toRadixString(16).padLeft(8, '0')}',
-      'bg_accent_color':
-          '#${_bgAccentColor.value.toRadixString(16).padLeft(8, '0')}',
+      'title_color': _colorToHex(_titleColor),
+      'bg_accent_color': _colorToHex(_bgAccentColor),
       'title_font': _titleFont,
       'tags': _tags,
       'pin_to_profile': _pinToProfile,
@@ -886,12 +893,25 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                           _SettingsSection(
                             icon: Icons.photo_library_outlined,
                             title: 'Capa do blog',
-                            subtitle: _coverImageUrl != null
-                                ? 'Capa definida'
-                                : 'Sem capa',
+                            subtitle: _isUploadingCover
+                                ? 'Enviando capa...'
+                                : _coverImageUrl != null
+                                    ? 'Capa definida'
+                                    : 'Sem capa',
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                if (_isUploadingCover)
+                                  Padding(
+                                    padding: EdgeInsets.only(bottom: r.s(8)),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(r.s(4)),
+                                      child: LinearProgressIndicator(
+                                        backgroundColor: Colors.white12,
+                                        color: AppTheme.primaryColor,
+                                      ),
+                                    ),
+                                  ),
                                 if (_coverImageUrl != null) ...[
                                   ClipRRect(
                                     borderRadius:

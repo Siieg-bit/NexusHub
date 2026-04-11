@@ -10,10 +10,10 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/models/message_model.dart';
 import '../../../core/services/supabase_service.dart';
-import '../../../core/services/call_service.dart';
+// call_service.dart removido — não utilizado após remoção das chamadas de voz/vídeo
 import '../../auth/providers/auth_provider.dart';
 import '../../../core/services/realtime_service.dart';
-import 'call_screen.dart';
+// call_screen.dart removido — chamadas de voz/vídeo substituídas por projeção
 import '../widgets/giphy_picker.dart';
 import '../widgets/forward_message_sheet.dart';
 import '../widgets/sticker_picker.dart';
@@ -28,6 +28,7 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/utils/media_utils.dart';
 import 'chat_list_screen.dart' show chatListProvider, chatCommunitiesProvider;
 import '../../../core/l10n/locale_provider.dart';
+// screening_room_screen.dart — navegação via GoRouter ('/screening-room/:threadId')
 
 /// =============================================================================
 /// ChatRoomScreen — Tela principal de chat.
@@ -73,6 +74,11 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   bool _isRecordingVoice = false;
   List<Map<String, dynamic>> _pinnedMessages = [];
   String? _chatBackground;
+  // Fluxo de DM invite
+  // _isDmInvitePending: true quando o usuário atual é o destinatário de um convite pendente (status='invite_sent')
+  // _isDmInviteSender:  true quando o usuário atual é o remetente e aguarda aceitação
+  bool _isDmInvitePending = false;
+  bool _isDmInviteSender = false;
 
   // ==========================================================================
   // LIFECYCLE
@@ -133,10 +139,38 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               '[ChatRoom] User previously left ($threadType) — showing CTA');
           return;
         }
+        if (memberStatus == 'invite_sent') {
+          // Usuário é o destinatário de um convite pendente.
+          // Ele pode ver as mensagens mas não pode enviar até aceitar.
+          _isDmInvitePending = true;
+          _membershipConfirmed = false; // Bloqueia o input bar
+          debugPrint('[ChatRoom] User is invite recipient (invite_sent)');
+          return;
+        }
         _membershipConfirmed = true;
         debugPrint(
             '[ChatRoom] Already a member (type: $threadType, status: $memberStatus)');
         return;
+      }
+      // Verificar se o usuário atual é o remetente do convite (status='active' no DM)
+      // e o outro membro ainda está com status='invite_sent'
+      if (threadType == 'dm') {
+        // Verificar se há algum membro com status='invite_sent' neste thread
+        try {
+          final pendingMembers = await SupabaseService.table('chat_members')
+              .select('id, status, user_id')
+              .eq('thread_id', widget.threadId)
+              .eq('status', 'invite_sent');
+          if (!mounted || _isDisposed) return;
+          if ((pendingMembers as List?)?.isNotEmpty == true) {
+            _isDmInviteSender = true;
+            _membershipConfirmed = true; // Remetente pode enviar mensagens
+            debugPrint('[ChatRoom] User is DM invite sender, waiting for acceptance');
+            return;
+          }
+        } catch (e) {
+          debugPrint('[ChatRoom] Could not check pending invite members: $e');
+        }
       }
     } catch (e) {
       debugPrint('[ChatRoom] Direct membership check failed: $e');
@@ -514,27 +548,18 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   // CHAMADAS (Voice / Video)
   // ==========================================================================
 
-  Future<void> _startCall(CallType type) async {
-    final msgType = type == CallType.video ? 'video_chat' : 'voice_chat';
-    _sendMessage(type: msgType);
-    final session = await CallService.createCall(
-      threadId: widget.threadId,
-      type: type,
-    );
-    if (session != null && mounted) {
-      await CallScreen.show(context, session);
-    } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text(
-              'Não foi possível iniciar a chamada. Verifique as permissões.'),
-          backgroundColor: AppTheme.errorColor,
-          behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
-    }
+  // _startCall removido — chamadas de voz/vídeo foram substituídas pelo sistema de projeção.
+
+  // ==========================================================================
+  // INICIAR PROJEÇÃO (Screening Room)
+  // ==========================================================================
+
+  Future<void> _startProjection() async {
+    // Envia mensagem de sistema informando o início da projeção
+    _sendMessage(type: 'screening_room');
+    if (!mounted) return;
+    // Navega para a tela de Screening Room passando o threadId
+    context.push('/screening-room/${widget.threadId}');
   }
 
   // ==========================================================================
@@ -1033,9 +1058,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       final rawBytes = await image.readAsBytes();
       final bytes = await MediaUtils.compressImage(rawBytes);
       await SupabaseService.storage
-          .from('chat_media')
+          .from('chat-media')
           .uploadBinary(path, bytes);
-      final url = SupabaseService.storage.from('chat_media').getPublicUrl(path);
+      final url = SupabaseService.storage.from('chat-media').getPublicUrl(path);
       await _sendMessage(type: 'image', mediaUrl: url, mediaType: 'image');
     } catch (e) {
       if (mounted) {
@@ -1071,9 +1096,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       final ext = video.path.split('.').last.toLowerCase();
       final path = 'chat/$userId/${DateTime.now().millisecondsSinceEpoch}.$ext';
       final bytes = await video.readAsBytes();
-      await SupabaseService.storage.from('chat_media').uploadBinary(path, bytes,
+      await SupabaseService.storage.from('chat-media').uploadBinary(path, bytes,
           fileOptions: const FileOptions(contentType: 'video/mp4'));
-      final url = SupabaseService.storage.from('chat_media').getPublicUrl(path);
+      final url = SupabaseService.storage.from('chat-media').getPublicUrl(path);
       await _sendMessage(type: 'video', mediaUrl: url, mediaType: 'video');
     } catch (e) {
       if (mounted) {
@@ -1798,7 +1823,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               child: _badgeIcon(Icons.push_pin_rounded, _pinnedMessages.length),
             ),
           GestureDetector(
-            onTap: () => _startCall(CallType.voice),
+            onTap: _startProjection,
             child: Container(
               width: r.s(34),
               height: r.s(34),
@@ -1807,21 +1832,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                 color: context.surfaceColor,
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.mic_rounded,
-                  color: Colors.grey[500], size: r.s(16)),
-            ),
-          ),
-          GestureDetector(
-            onTap: () => _startCall(CallType.video),
-            child: Container(
-              width: r.s(34),
-              height: r.s(34),
-              margin: EdgeInsets.only(right: r.s(4)),
-              decoration: BoxDecoration(
-                color: context.surfaceColor,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.videocam_rounded,
+              child: Icon(Icons.live_tv_rounded,
                   color: Colors.grey[500], size: r.s(16)),
             ),
           ),
@@ -1999,6 +2010,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                                   showAvatar: showAvatar,
                                   onReactionTap: (emoji) =>
                                       _addReaction(message.id, emoji),
+                                  communityId: _threadInfo?['community_id'] as String?,
                                 ),
                               ),
                             );
@@ -2015,9 +2027,183 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
             // ── Membership CTA — diferenciado por tipo de chat ──
             // public: usuário pode entrar livremente (rejoin_public_chat)
-            // group:  entrada por convite — Etapa 2+ (não congelar regra aqui)
-            // dm:     entrada por convite — Etapa 2+ (não congelar regra aqui)
-            if (!_membershipConfirmed && !_isLoading)
+            // dm (invite_sent): destinatário vê botões de aceitar/recusar
+            // dm (sender): remetente vê mensagem aguardando aceitação
+            // group: acesso restrito
+
+            // CTA: destinatário de convite DM pendente
+            if (_isDmInvitePending && !_isLoading)
+              Container(
+                padding: EdgeInsets.symmetric(
+                    horizontal: r.s(16), vertical: r.s(14)),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryColor.withValues(alpha: 0.08),
+                  border: Border(
+                      top: BorderSide(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.2))),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.mail_rounded,
+                            color: AppTheme.primaryColor, size: r.s(18)),
+                        SizedBox(width: r.s(8)),
+                        Expanded(
+                          child: Text(
+                            'Você recebeu um convite de chat. Aceite para participar e responder.',
+                            style: TextStyle(
+                                color: Colors.grey[300], fontSize: r.fs(13)),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: r.s(10)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        OutlinedButton(
+                          onPressed: _isSending
+                              ? null
+                              : () async {
+                                  setState(() => _isSending = true);
+                                  try {
+                                    await SupabaseService.rpc(
+                                        'respond_dm_invite',
+                                        params: {
+                                          'p_thread_id': widget.threadId,
+                                          'p_accept': false,
+                                        });
+                                    if (mounted) {
+                                      ref.invalidate(chatListProvider);
+                                      ref.invalidate(chatCommunitiesProvider);
+                                      context.pop();
+                                    }
+                                  } catch (e) {
+                                    debugPrint('[ChatRoom] decline invite error: $e');
+                                    if (mounted) {
+                                      setState(() => _isSending = false);
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: const Text('Erro ao recusar convite.'),
+                                          backgroundColor: AppTheme.errorColor,
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.grey[400],
+                            side: BorderSide(color: Colors.grey[600]!),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(r.s(10))),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: r.s(16), vertical: r.s(8)),
+                          ),
+                          child: Text('Recusar',
+                              style: TextStyle(fontSize: r.fs(13))),
+                        ),
+                        SizedBox(width: r.s(10)),
+                        ElevatedButton(
+                          onPressed: _isSending
+                              ? null
+                              : () async {
+                                  setState(() => _isSending = true);
+                                  try {
+                                    await SupabaseService.rpc(
+                                        'respond_dm_invite',
+                                        params: {
+                                          'p_thread_id': widget.threadId,
+                                          'p_accept': true,
+                                        });
+                                    if (mounted) {
+                                      setState(() {
+                                        _isSending = false;
+                                        _isDmInvitePending = false;
+                                        _membershipConfirmed = true;
+                                      });
+                                      ref.invalidate(chatListProvider);
+                                      ref.invalidate(chatCommunitiesProvider);
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: const Text('Convite aceito! Agora você pode conversar.'),
+                                          backgroundColor: AppTheme.primaryColor,
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
+                                    }
+                                  } catch (e) {
+                                    debugPrint('[ChatRoom] accept invite error: $e');
+                                    if (mounted) {
+                                      setState(() => _isSending = false);
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: const Text('Erro ao aceitar convite.'),
+                                          backgroundColor: AppTheme.errorColor,
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primaryColor,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(r.s(10))),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: r.s(16), vertical: r.s(8)),
+                          ),
+                          child: _isSending
+                              ? SizedBox(
+                                  width: r.s(16),
+                                  height: r.s(16),
+                                  child: const CircularProgressIndicator(
+                                      strokeWidth: 2, color: Colors.white),
+                                )
+                              : Text('Aceitar',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: r.fs(13))),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+            // CTA: remetente aguardando aceitação
+            if (_isDmInviteSender && !_isDmInvitePending && !_isLoading)
+              Container(
+                padding: EdgeInsets.symmetric(
+                    horizontal: r.s(16), vertical: r.s(10)),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: 0.08),
+                  border: Border(
+                      top: BorderSide(
+                          color: Colors.orange.withValues(alpha: 0.2))),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.hourglass_top_rounded,
+                        color: Colors.orange, size: r.s(16)),
+                    SizedBox(width: r.s(8)),
+                    Expanded(
+                      child: Text(
+                        'Aguardando aceitação do convite. Suas mensagens serão entregues quando o convite for aceito.',
+                        style: TextStyle(
+                            color: Colors.grey[400], fontSize: r.fs(12)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+            // CTA: não membro (chat público ou acesso restrito)
+            if (!_membershipConfirmed && !_isDmInvitePending && !_isLoading)
               Builder(builder: (context) {
                 final threadType = _threadInfo?['type'] as String? ?? 'public';
                 final isPublic = threadType == 'public';
@@ -2141,13 +2327,17 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                       final fileName =
                           'voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
                       final storagePath =
-                          'chat_media/${widget.threadId}/$fileName';
+                          'audio/${widget.threadId}/$fileName';
                       await SupabaseService.client.storage
-                          .from('chat_media')
-                          .upload(storagePath, file);
+                          .from('chat-media')
+                          .upload(storagePath, file,
+                              fileOptions: const FileOptions(
+                                contentType: 'audio/mp4',
+                                upsert: true,
+                              ));
                       if (_isDisposed || !mounted) return;
                       final url = SupabaseService.client.storage
-                          .from('chat_media')
+                          .from('chat-media')
                           .getPublicUrl(storagePath);
                       _sendMessage(
                         type: 'audio',
@@ -2254,9 +2444,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       onAudio: () => setState(() => _isRecordingVoice = true),
       onPoll: _showInlinePollCreator,
       onTip: _showTipDialog,
-      onVoiceCall: () => _startCall(CallType.voice),
-      onVideoCall: () => _startCall(CallType.video),
-      onScreening: () => _sendMessage(type: 'screening_room'),
+      onScreening: _startProjection,
       onLink: _showLinkInput,
       onVideoFile: _sendVideoFile,
     );

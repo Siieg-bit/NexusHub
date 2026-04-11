@@ -454,7 +454,6 @@ class _StatCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       padding: EdgeInsets.all(r.s(20)),
@@ -522,7 +521,6 @@ class _ToolItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: onTap,

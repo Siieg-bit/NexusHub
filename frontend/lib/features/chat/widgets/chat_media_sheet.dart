@@ -3,13 +3,14 @@ import 'package:flutter/material.dart';
 
 import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
-import 'message_bubble.dart';
 import '../../../core/l10n/locale_provider.dart';
+import 'message_bubble.dart' show MediaOptionItem;
 
-/// Bottom sheet com as opções de mídia do chat (19+ tipos) — Estilo Amino.
+/// Bottom sheet com as opções de mídia do chat — Estilo Amino.
 ///
-/// Cada opção retorna um identificador de ação via Navigator.pop para que
-/// o caller (chat_room_screen) execute a lógica correspondente.
+/// Chamadas de voz/vídeo foram removidas conforme solicitado.
+/// O sistema de projeção (Screening Room) é acessado via botão na AppBar
+/// e também aparece aqui como opção de mídia.
 ///
 /// Extraído de chat_room_screen.dart para isolar a UI do painel de mídia.
 class ChatMediaSheet extends ConsumerWidget {
@@ -19,8 +20,6 @@ class ChatMediaSheet extends ConsumerWidget {
   final VoidCallback onAudio;
   final VoidCallback onPoll;
   final VoidCallback onTip;
-  final VoidCallback onVoiceCall;
-  final VoidCallback onVideoCall;
   final VoidCallback onScreening;
   final VoidCallback onLink;
   final VoidCallback onVideoFile;
@@ -33,8 +32,6 @@ class ChatMediaSheet extends ConsumerWidget {
     required this.onAudio,
     required this.onPoll,
     required this.onTip,
-    required this.onVoiceCall,
-    required this.onVideoCall,
     required this.onScreening,
     required this.onLink,
     required this.onVideoFile,
@@ -42,7 +39,7 @@ class ChatMediaSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
     return Padding(
       padding: EdgeInsets.all(r.s(20)),
@@ -118,24 +115,6 @@ class ChatMediaSheet extends ConsumerWidget {
                 },
               ),
               MediaOptionItem(
-                icon: Icons.headset_mic_rounded,
-                label: s.voice,
-                color: const Color(0xFF4CAF50),
-                onTap: () {
-                  Navigator.pop(context);
-                  onVoiceCall();
-                },
-              ),
-              MediaOptionItem(
-                icon: Icons.video_call_rounded,
-                label: s.video,
-                color: const Color(0xFF2196F3),
-                onTap: () {
-                  Navigator.pop(context);
-                  onVideoCall();
-                },
-              ),
-              MediaOptionItem(
                 icon: Icons.live_tv_rounded,
                 label: s.screening,
                 color: const Color(0xFFFF5722),
@@ -178,8 +157,6 @@ class ChatMediaSheet extends ConsumerWidget {
     required VoidCallback onAudio,
     required VoidCallback onPoll,
     required VoidCallback onTip,
-    required VoidCallback onVoiceCall,
-    required VoidCallback onVideoCall,
     required VoidCallback onScreening,
     required VoidCallback onLink,
     required VoidCallback onVideoFile,
@@ -197,8 +174,6 @@ class ChatMediaSheet extends ConsumerWidget {
         onAudio: onAudio,
         onPoll: onPoll,
         onTip: onTip,
-        onVoiceCall: onVoiceCall,
-        onVideoCall: onVideoCall,
         onScreening: onScreening,
         onLink: onLink,
         onVideoFile: onVideoFile,

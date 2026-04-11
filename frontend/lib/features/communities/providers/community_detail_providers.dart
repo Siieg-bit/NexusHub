@@ -5,7 +5,6 @@ import '../../../core/models/community_model.dart';
 import '../../../core/models/post_model.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/services/supabase_service.dart';
-import '../../../core/providers/block_provider.dart';
 
 // =============================================================================
 // PROVIDERS — Community Detail
@@ -248,7 +247,7 @@ final guidelinesProvider =
         .select('title, content, updated_at')
         .eq('community_id', communityId)
         .maybeSingle();
-    return response as Map<String, dynamic>?;
+    return response;
   } catch (_) {
     return null;
   }

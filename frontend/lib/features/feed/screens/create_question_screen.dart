@@ -80,7 +80,6 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
     }
   }
 
-
   // ════════════════════════════════════════════════════════════════════════════
   // RASCUNHOS AUTOMÁTICOS
   // ════════════════════════════════════════════════════════════════════════════
@@ -234,10 +233,10 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
       final path =
           'posts/$userId/${DateTime.now().millisecondsSinceEpoch}_ref_${image.name}';
       await SupabaseService.storage
-          .from('post_media')
+          .from('post-media')
           .uploadBinary(path, bytes);
       final url =
-          SupabaseService.storage.from('post_media').getPublicUrl(path);
+          SupabaseService.storage.from('post-media').getPublicUrl(path);
       if (mounted) setState(() => _referenceImageUrl = url);
     } catch (_) {
       if (mounted) {
@@ -269,6 +268,7 @@ class _CreateQuestionScreenState extends ConsumerState<CreateQuestionScreen> {
     }
 
     setState(() => _isSubmitting = true);
+    await _deleteDraftIfNeeded();
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) throw Exception(s.notAuthenticated);

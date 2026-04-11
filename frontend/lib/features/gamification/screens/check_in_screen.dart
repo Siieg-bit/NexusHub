@@ -668,7 +668,6 @@ class _DayCircle extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final s = ref.watch(stringsProvider);
     final r = context.r;
     final bool active = isCompleted || isTodayCompleted;
 
@@ -728,7 +727,6 @@ class _RewardItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final s = ref.watch(stringsProvider);
     final r = context.r;
     return Column(
       children: [
@@ -761,7 +759,6 @@ class _InfoRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final s = ref.watch(stringsProvider);
     final r = context.r;
     return Padding(
       padding: EdgeInsets.symmetric(vertical: r.s(5)),

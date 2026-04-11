@@ -303,7 +303,6 @@ class _SectionTitle extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Text(
       title,
@@ -337,7 +336,6 @@ class _EarningCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       margin: EdgeInsets.only(bottom: r.s(8)),

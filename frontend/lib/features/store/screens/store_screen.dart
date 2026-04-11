@@ -527,7 +527,6 @@ class _StoreItemCardState extends ConsumerState<_StoreItemCard>
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     final price = widget.item['price'] as int? ?? 0;
     final name = widget.item['name'] as String? ?? 'Item';

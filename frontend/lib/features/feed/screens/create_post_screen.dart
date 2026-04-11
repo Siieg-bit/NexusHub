@@ -182,10 +182,10 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       final rawBytes = await image.readAsBytes();
       final bytes = await MediaUtils.compressImage(rawBytes);
       await SupabaseService.storage
-          .from('post_media')
+          .from('post-media')
           .uploadBinary(path, bytes);
       if (!mounted) return;
-      final url = SupabaseService.storage.from('post_media').getPublicUrl(path);
+      final url = SupabaseService.storage.from('post-media').getPublicUrl(path);
       if (!mounted) return;
       setState(() => _mediaUrls.add(url));
     } catch (e) {
@@ -211,10 +211,10 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       final rawBytes = await image.readAsBytes();
       final bytes = await MediaUtils.compressImage(rawBytes);
       await SupabaseService.storage
-          .from('post_media')
+          .from('post-media')
           .uploadBinary(path, bytes);
       if (!mounted) return;
-      final url = SupabaseService.storage.from('post_media').getPublicUrl(path);
+      final url = SupabaseService.storage.from('post-media').getPublicUrl(path);
       if (!mounted) return;
       setState(() => _coverImageUrl = url);
     } catch (e) {
@@ -240,10 +240,10 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       final rawBytes = await image.readAsBytes();
       final bytes = await MediaUtils.compressImage(rawBytes);
       await SupabaseService.storage
-          .from('post_media')
+          .from('post-media')
           .uploadBinary(path, bytes);
       if (!mounted) return;
-      final url = SupabaseService.storage.from('post_media').getPublicUrl(path);
+      final url = SupabaseService.storage.from('post-media').getPublicUrl(path);
       if (!mounted) return;
       setState(() => _backgroundUrlController.text = url);
     } catch (e) {

@@ -610,7 +610,6 @@ class _SectionHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Padding(
       padding: EdgeInsets.only(bottom: r.s(12)),
@@ -643,7 +642,6 @@ class _SettingToggle extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       margin: EdgeInsets.only(bottom: r.s(8)),
@@ -718,7 +716,6 @@ class _RadioOption extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Theme(
       data: Theme.of(context).copyWith(

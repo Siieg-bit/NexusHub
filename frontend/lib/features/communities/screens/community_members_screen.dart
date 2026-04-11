@@ -251,7 +251,6 @@ class _SectionHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Padding(
       padding: EdgeInsets.only(left: r.s(4), bottom: r.s(8), top: r.s(4)),

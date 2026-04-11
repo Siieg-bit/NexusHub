@@ -1,5 +1,4 @@
 import '../l10n/locale_provider.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'post_editor_model.dart';
 

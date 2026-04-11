@@ -500,7 +500,6 @@ class _SectionTitle extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Padding(
       padding: EdgeInsets.only(bottom: r.s(12), left: r.s(4)),
@@ -537,7 +536,6 @@ class _NotifToggle extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Container(
       margin: EdgeInsets.only(bottom: r.s(12)),

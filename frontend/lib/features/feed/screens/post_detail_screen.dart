@@ -23,7 +23,6 @@ import '../../../core/utils/media_utils.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
-import '../../../core/providers/block_provider.dart';
 
 /// Provider para comentários de um post.
 final postCommentsProvider =
@@ -58,7 +57,6 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   CommentModel? _replyingToComment;
   String? _pendingStickerUrl;
   String? _pendingMediaUrl;
-  bool _showStickerPicker = false;
   bool _showEmojiPicker = false;
   String? _pendingVideoUrl;
 
@@ -304,7 +302,6 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         _pendingStickerUrl = null;
         _pendingMediaUrl = null;
         _pendingVideoUrl = null;
-        _showStickerPicker = false;
         _showEmojiPicker = false;
       });
       ref.invalidate(postCommentsProvider(widget.postId));
@@ -1800,7 +1797,6 @@ class _BottomBarButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     final effectiveColor = color ?? Colors.grey[600]!;
     return Expanded(

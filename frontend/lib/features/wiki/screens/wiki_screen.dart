@@ -255,7 +255,6 @@ class _CategoryChip extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: onTap,
@@ -773,9 +772,17 @@ class _WikiDetailScreenState extends ConsumerState<WikiDetailScreen> {
                   ),
                   SizedBox(height: r.s(6)),
                   Text(
-                    s.averageRating,
+                    _totalRatings > 0
+                        ? '${_avgRating.toStringAsFixed(1)} ★  ($_totalRatings ${_totalRatings == 1 ? 'avaliação' : 'avaliações'})'
+                        : s.averageRating,
                     style: TextStyle(
-                        color: context.textSecondary, fontSize: r.fs(13)),
+                        color: _totalRatings > 0
+                            ? AppTheme.warningColor
+                            : context.textSecondary,
+                        fontSize: r.fs(13),
+                        fontWeight: _totalRatings > 0
+                            ? FontWeight.w600
+                            : FontWeight.normal),
                   ),
 
                   // ── What I Like ──

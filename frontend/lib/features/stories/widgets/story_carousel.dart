@@ -93,7 +93,6 @@ class _StoryCarouselState extends ConsumerState<StoryCarousel> {
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return SizedBox(
       height: r.s(100),

@@ -22,6 +22,10 @@ class MessageBubble extends ConsumerWidget {
   final bool isMe;
   final bool showAvatar;
   final void Function(String emoji)? onReactionTap;
+  /// ID da comunidade à qual este chat pertence.
+  /// Quando fornecido, ao clicar no avatar/nome do autor navega para
+  /// o perfil do usuário dentro da comunidade em vez do perfil global.
+  final String? communityId;
 
   const MessageBubble({
     super.key,
@@ -29,12 +33,11 @@ class MessageBubble extends ConsumerWidget {
     required this.isMe,
     required this.showAvatar,
     this.onReactionTap,
+    this.communityId,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
-    final r = context.r;
     // System messages
     if (message.isSystemMessage) {
       return Padding(
@@ -73,7 +76,13 @@ class MessageBubble extends ConsumerWidget {
             children: [
               if (!isMe && showAvatar)
                 GestureDetector(
-                  onTap: () => context.push('/user/${message.authorId}'),
+                  onTap: () {
+                    if (communityId != null && communityId!.isNotEmpty) {
+                      context.push('/community/$communityId/profile/${message.authorId}');
+                    } else {
+                      context.push('/user/${message.authorId}');
+                    }
+                  },
                   child: CircleAvatar(
                     radius: 16,
                     backgroundColor: context.surfaceColor,
@@ -417,7 +426,8 @@ class MessageBubble extends ConsumerWidget {
       final label = isVoice ? 'Voice Chat' : 'Screening Room';
       final accentColor =
           isVoice ? const Color(0xFF4CAF50) : const Color(0xFFFF5722);
-      return Container(
+      final threadId = message.threadId;
+      final container = Container(
         padding: EdgeInsets.all(r.s(12)),
         decoration: BoxDecoration(
           color: accentColor.withValues(alpha: 0.15),
@@ -431,9 +441,22 @@ class MessageBubble extends ConsumerWidget {
             Text(label,
                 style:
                     TextStyle(fontWeight: FontWeight.w600, color: accentColor)),
+            if (!isVoice) ...[
+              SizedBox(width: r.s(8)),
+              Icon(Icons.arrow_forward_ios_rounded,
+                  color: accentColor, size: r.s(12)),
+            ],
           ],
         ),
       );
+      // Screening Room é clicavel para entrar na sala
+      if (!isVoice && threadId != null && threadId.isNotEmpty) {
+        return GestureDetector(
+          onTap: () => context.push('/screening-room/$threadId'),
+          child: container,
+        );
+      }
+      return container;
     }
 
     // Link (share_url)
@@ -684,7 +707,6 @@ class MediaOptionItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return GestureDetector(
       onTap: onTap,

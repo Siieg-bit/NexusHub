@@ -3647,4 +3647,70 @@ class AppStringsEn implements AppStrings {
   String get wikiEntry => 'Wiki Entry';
   @override
   String get wikiDescription => 'Description...';
+
+  // FORMATTED COUNTS
+  @override
+  String followersCount(int count) => '$count followers';
+  @override
+  String followingCount(int count) => '$count following';
+  @override
+  String postsCount(int count) => '$count posts';
+  @override
+  String onlineMembersCount(int count) => '$count online';
+  @override
+  String commentsCount(int count) => '$count comments';
+  @override
+  String memberSinceDate(String date) => 'Member since $date';
+
+  // NOTIFICATIONS — SOCIAL ACTIVITY
+  @override
+  String userIsTyping(String user) => '$user is typing...';
+  @override
+  String userLikedYourPost(String user) => '$user liked your post';
+  @override
+  String userCommentedOnYourPost(String user) => '$user commented on your post';
+  @override
+  String userFollowedYou(String user) => '$user started following you';
+  @override
+  String userMentionedYou(String user) => '$user mentioned you';
+  @override
+  String userInvitedYouTo(String user, String something) => '$user invited you to $something';
+  @override
+  String userSentYouAMessage(String user) => '$user sent you a message';
+  @override
+  String userJoinedTheCommunity(String user) => '$user joined the community';
+
+  // NOTIFICATIONS — CHAT
+  @override
+  String userJoinedTheChat(String user) => '$user joined the chat';
+  @override
+  String userLeftTheChat(String user) => '$user left the chat';
+  @override
+  String youWereKickedFromTheChat(String reason) => 'You were removed from the chat. Reason: $reason';
+  @override
+  String youWereMutedInTheChat(String reason) => 'You were muted in the chat. Reason: $reason';
+
+  // NOTIFICATIONS — ACHIEVEMENTS & MODERATION
+  @override
+  String youLeveledUpTo(int level) => 'You leveled up to level $level!';
+  @override
+  String youGotANewAchievement(String achievement) => 'You unlocked a new achievement: $achievement';
+  @override
+  String youHaveBeenWarned(String reason) => 'You have been warned. Reason: $reason';
+  @override
+  String youHaveBeenStriked(int strike, String reason) => 'You received strike $strike. Reason: $reason';
+  @override
+  String youHaveBeenBanned(String reason) => 'You have been banned. Reason: $reason';
+
+  // NOTIFICATIONS — CONTENT
+  @override
+  String yourPostWasFeatured(String postTitle) => 'Your post "$postTitle" was featured!';
+  @override
+  String yourPostWasPinned(String postTitle) => 'Your post "$postTitle" was pinned!';
+  @override
+  String yourPostWasCrossposted(String postTitle) => 'Your post "$postTitle" was crossposted!';
+  @override
+  String yourWikiWasApproved(String wikiTitle) => 'Your wiki "$wikiTitle" was approved!';
+  @override
+  String yourWikiWasRejected(String wikiTitle) => 'Your wiki "$wikiTitle" was rejected.';
 }

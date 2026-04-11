@@ -1,6 +1,4 @@
 /// Constantes do aplicativo NexusHub.
-import '../l10n/locale_provider.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AppConstants {
   AppConstants._();
@@ -77,8 +75,8 @@ class AppConstants {
   // ====================================================================
   static const String bucketAvatars = 'avatars';
   static const String bucketBanners = 'banners';
-  static const String bucketPostMedia = 'post_media';
-  static const String bucketChatMedia = 'chat_media';
+  static const String bucketPostMedia = 'post-media';
+  static const String bucketChatMedia = 'chat-media';
   static const String bucketCommunityAssets = 'community-assets';
   static const String bucketWikiMedia = 'wiki-media';
 

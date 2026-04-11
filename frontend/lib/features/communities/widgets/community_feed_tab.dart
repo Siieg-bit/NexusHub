@@ -4,7 +4,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../config/app_theme.dart';
-import '../../../core/models/community_model.dart';
 import '../../../core/models/post_model.dart';
 import '../../../core/utils/amino_animations.dart';
 import '../../../core/utils/responsive.dart';
@@ -47,7 +46,6 @@ class CommunityFeedTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     if (isFeatured) {
       return _FeaturedTab(communityId: communityId, onRefresh: _onRefresh);
     }
@@ -327,7 +325,6 @@ class _SectionHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return Padding(
       padding: EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(8)),
@@ -364,7 +361,6 @@ class _PinnedPostRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     return AminoAnimations.staggerItem(
       index: index,
@@ -561,7 +557,6 @@ class _PlaceholderCover extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     return Container(
       color: accent.withValues(alpha: 0.15),
       child: Center(
@@ -582,7 +577,6 @@ class _DefaultAvatar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     return Container(
       width: size,
       height: size,

@@ -653,7 +653,6 @@ class _DurationChip extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
     final r = context.r;
     final isSelected = selected == hours;
     return GestureDetector(
