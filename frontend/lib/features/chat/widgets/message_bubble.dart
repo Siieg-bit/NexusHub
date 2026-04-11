@@ -19,12 +19,15 @@ import 'voice_recorder.dart' show VoiceNotePlayer;
 /// ============================================================================
 
 /// Tipos de mensagem que NÃO devem ter a borda/bubble ao redor.
-/// Imagem, GIF e vídeo são renderizados sem container de fundo.
+/// Imagem, GIF, vídeo e sticker são renderizados sem container de fundo.
 bool _isMediaOnlyType(MessageModel message) {
   final type = message.type;
   if (type == 'image' && message.mediaUrl != null) return true;
   if (type == 'gif' && message.mediaUrl != null) return true;
   if (type == 'video') return true;
+  // Stickers: sem borda/bubble
+  if (type == 'sticker') return true;
+  if (message.stickerUrl != null) return true;
   // Retrocompatibilidade: tipo 'text' com media_type de mídia
   if (message.mediaUrl != null && message.mediaType == 'image') return true;
   if (message.mediaUrl != null && message.mediaType == 'gif') return true;
