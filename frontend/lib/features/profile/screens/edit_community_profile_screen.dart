@@ -38,6 +38,7 @@ class _EditCommunityProfileScreenState
   String? _localBannerUrl;
   String? _localBackgroundUrl;
   List<String> _gallery = [];
+  bool _galleryLoaded = false; // garante que galeria só é enviada após carregamento
 
   bool _isLoading = true;
   bool _isSaving = false;
@@ -77,11 +78,15 @@ class _EditCommunityProfileScreenState
               _gallery = rawGallery.map((e) => e.toString()).toList();
             }
           }
+          _galleryLoaded = true;
           _isLoading = false;
         });
       }
     } catch (e) {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) setState(() {
+        _galleryLoaded = true; // mesmo em erro, permite salvar sem apagar galeria
+        _isLoading = false;
+      });
     }
   }
 
@@ -185,6 +190,12 @@ class _EditCommunityProfileScreenState
       final nickname = _nicknameController.text.trim();
       final bio = _bioController.text.trim();
 
+      // Só envia a galeria se ela foi carregada com sucesso.
+      // O RPC usa COALESCE para galeria: NULL preserva o valor atual,
+      // array vazio limpa. Enviar null quando não carregou evita apagar
+      // a galeria existente por acidente.
+      final galleryPayload = _galleryLoaded ? _gallery : null;
+
       await SupabaseService.client.rpc('update_community_profile', params: {
         'p_community_id': widget.communityId,
         'p_local_nickname': nickname.isEmpty ? null : nickname,
@@ -192,7 +203,7 @@ class _EditCommunityProfileScreenState
         'p_local_icon_url': _localIconUrl,
         'p_local_banner_url': _localBannerUrl,
         'p_local_background_url': _localBackgroundUrl,
-        'p_local_gallery': _gallery,
+        'p_local_gallery': galleryPayload,
       });
 
       // Invalidar o provider de membership para refletir as mudanças
@@ -368,18 +379,11 @@ class _EditCommunityProfileScreenState
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            s.profileBackgroundOptional.split(' (')[0],
+                            s.profileBackgroundOptional,
                             style: TextStyle(
                               color: context.textPrimary,
                               fontSize: r.fs(15),
                               fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          Text(
-                            '(${s.profileBackgroundOptional.contains('(') ? s.profileBackgroundOptional.split('(')[1].replaceAll(')', '') : 'Opcional'})',
-                            style: TextStyle(
-                              color: context.textSecondary,
-                              fontSize: r.fs(12),
                             ),
                           ),
                         ],
