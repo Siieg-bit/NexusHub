@@ -101,6 +101,11 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+
         <!-- flutter_inappwebview: suporte a WebView para Screening Room -->
         <!-- Permite Mixed Content (HTTP dentro de HTTPS) no WebView -->
         <meta-data
