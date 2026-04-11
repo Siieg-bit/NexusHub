@@ -61,20 +61,21 @@ class _EditCommunityProfileScreenState
               'local_background_url, local_gallery')
           .eq('community_id', widget.communityId)
           .eq('user_id', userId)
-          .single();
-
+          .maybeSingle();
       if (mounted) {
         setState(() {
-          _nicknameController.text =
-              (membership['local_nickname'] as String?) ?? '';
-          _bioController.text = (membership['local_bio'] as String?) ?? '';
-          _localIconUrl = membership['local_icon_url'] as String?;
-          _localBannerUrl = membership['local_banner_url'] as String?;
-          _localBackgroundUrl =
-              membership['local_background_url'] as String?;
-          final rawGallery = membership['local_gallery'];
-          if (rawGallery is List) {
-            _gallery = rawGallery.map((e) => e.toString()).toList();
+          if (membership != null) {
+            _nicknameController.text =
+                (membership['local_nickname'] as String?) ?? '';
+            _bioController.text = (membership['local_bio'] as String?) ?? '';
+            _localIconUrl = membership['local_icon_url'] as String?;
+            _localBannerUrl = membership['local_banner_url'] as String?;
+            _localBackgroundUrl =
+                membership['local_background_url'] as String?;
+            final rawGallery = membership['local_gallery'];
+            if (rawGallery is List) {
+              _gallery = rawGallery.map((e) => e.toString()).toList();
+            }
           }
           _isLoading = false;
         });
@@ -90,8 +91,10 @@ class _EditCommunityProfileScreenState
       {bool crop = false}) async {
     try {
       final userId = SupabaseService.currentUserId ?? 'unknown';
+      // A política RLS do bucket 'avatars' exige que o primeiro segmento
+      // do path seja o userId do usuário autenticado.
       final customPath =
-          'community_profiles/${widget.communityId}/$userId/$folder/'
+          '$userId/community_profiles/${widget.communityId}/$folder/'
           '${DateTime.now().millisecondsSinceEpoch}.jpg';
 
       // Abre o picker
