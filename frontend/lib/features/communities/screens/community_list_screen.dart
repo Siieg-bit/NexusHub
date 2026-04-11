@@ -136,10 +136,15 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
             ),
 
             // ── Grade horizontal de cards com drag & drop ──
+            // Layout: o SizedBox total = iconOverflow(18) + cardHeight(175) = 193.
+            // O ReorderableListView tem padding.top = iconOverflow para que os
+            // cards fiquem alinhados ao fundo. O ícone usa top:0 no Stack
+            // (que começa no topo do SizedBox, acima do card). O JoinCard usa
+            // margin.top = iconOverflow para alinhar com os cards de comunidade.
             SizedBox(
-              // 18 (iconOverflow) + 175 (cardHeight) = 193
-              height: r.s(193),
+              height: r.s(193), // overflow(18) + cardHeight(175)
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Expanded(
                     child: ReorderableListView.builder(
@@ -200,8 +205,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                 ],
               ),
             ),
-
-            // ── Texto instrucional ──
+            // ── Texto instrucional ───
             Padding(
               padding: EdgeInsets.only(top: r.s(16), bottom: r.s(16)),
               child: Center(
@@ -670,28 +674,23 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
     final hasCheckedIn = myStatus?['has_checkin_today'] as bool? ?? false;
     final streak = myStatus?['consecutive_checkin_days'] as int? ?? 0;
 
-    // Altura total escalada — deve bater com o SizedBox pai (r.s(193))
-    final double scaledOverflow = r.s(_AminoCommunityCard._iconOverflow);
-    final double scaledCardH   = r.s(_AminoCommunityCard._cardHeight);
-    final double scaledWidth   = r.s(_AminoCommunityCard._cardWidth);
-    final double scaledBannerH = r.s(_AminoCommunityCard._bannerHeight);
-    final double scaledIconSz  = r.s(_AminoCommunityCard._iconSize);
+    // Dimensões escaladas do card
+    final double scaledCardH   = r.s(_AminoCommunityCard._cardHeight);   // 175
+    final double scaledWidth   = r.s(_AminoCommunityCard._cardWidth);    // 120
+    final double scaledBannerH = r.s(_AminoCommunityCard._bannerHeight); // 130
+    final double scaledIconSz  = r.s(_AminoCommunityCard._iconSize);     // 36
 
     return GestureDetector(
       onTap: widget.onTap,
       onLongPress: widget.onLongPress,
       child: SizedBox(
         width: scaledWidth,
-        height: scaledOverflow + scaledCardH,
+        height: scaledCardH,
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            // ── Card principal (com margem top para o ícone flutuante) ──
-            Positioned(
-              top: scaledOverflow,
-              left: 0,
-              right: 0,
-              bottom: 0,
+            // ── Card principal ocupa toda a altura do SizedBox ──
+            Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(r.s(10)),
@@ -894,9 +893,12 @@ class _AminoCommunityCardState extends ConsumerState<_AminoCommunityCard> {
               ),
             ),
 
-            // ── Ícone flutuante — sem borda colorida, com sombra e clip correto ──
+            // ── Ícone flutuante — sai para cima do card usando top negativo ──
+            // O Stack tem clipBehavior: Clip.none, então o ícone pode ultrapassar
+            // o limite superior do SizedBox e entrar no espaço do padding.top
+            // do ReorderableListView (18px), ficando visualmente "flutuando" acima.
             Positioned(
-              top: 0,
+              top: -r.s(_AminoCommunityCard._iconOverflow),
               left: 4,
               child: Container(
                 width: scaledIconSz,
@@ -965,21 +967,21 @@ class _JoinCommunityCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final r = context.r;
-    // Mesmas dimensões escaladas do _AminoCommunityCard para alinhamento perfeito
-    final double scaledOverflow = r.s(_AminoCommunityCard._iconOverflow);
-    final double scaledCardH   = r.s(_AminoCommunityCard._cardHeight);
-    final double scaledWidth   = r.s(_AminoCommunityCard._cardWidth);
+    // Mesmas dimensões do _AminoCommunityCard
+    final double overflow = r.s(_AminoCommunityCard._iconOverflow); // 18
+    final double cardH    = r.s(_AminoCommunityCard._cardHeight);   // 175
+    final double cardW    = r.s(_AminoCommunityCard._cardWidth);    // 120
 
+    // O JoinCard fica fora do ReorderableListView (sem padding.top).
+    // Para alinhar com os cards de comunidade, usamos margin.top = overflow.
+    // Altura total = overflow + cardH = 193, igual ao SizedBox pai.
     return GestureDetector(
       onTap: onTap,
-      // SizedBox com altura total = overflow + cardHeight, igual ao _AminoCommunityCard
       child: SizedBox(
-        width: scaledWidth,
-        height: scaledOverflow + scaledCardH,
+        width: cardW,
+        height: overflow + cardH,
         child: Padding(
-          // Empurra o container para baixo do overflow, deixando o topo vazio
-          // (assim o card fica alinhado ao card de comunidade)
-          padding: EdgeInsets.only(top: scaledOverflow),
+          padding: EdgeInsets.only(top: overflow),
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(r.s(10)),
@@ -992,14 +994,12 @@ class _JoinCommunityCard extends ConsumerWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Ícone "+"
                 Icon(
                   Icons.add,
                   color: Colors.white.withValues(alpha: 0.55),
                   size: r.s(28),
                 ),
                 SizedBox(height: r.s(10)),
-                // Texto
                 Text(
                   'Entrar em uma\ncomunidade',
                   style: TextStyle(
