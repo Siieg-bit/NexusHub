@@ -15,7 +15,7 @@ O estado atual do repositório mostra um projeto significativamente mais avança
 | Estrutura de código | Aproximadamente **205 arquivos Dart** em `frontend/lib/` |
 | Testes | **11 arquivos de teste** em `frontend/test/` |
 | CI/CD | Workflow em `.github/workflows/ci.yml` com análise, testes, build Android e deploy de funções |
-| Documentação | README, documentação temática em `docs/` e vários relatórios técnicos na raiz |
+| Documentação | README central atualizado e arquivo `instrucoes.txt` para onboarding técnico rápido |
 
 ## Arquitetura do projeto
 
@@ -150,7 +150,6 @@ NexusHub/
 │       ├── functions/
 │       ├── migrations/
 │       └── run_migrations.py
-├── docs/
 ├── frontend/
 │   ├── android/
 │   ├── ios/
@@ -166,16 +165,12 @@ NexusHub/
 
 ## Documentação complementar
 
-Além deste README, o repositório possui uma quantidade relevante de material histórico e analítico. Esses arquivos ajudam a entender a evolução do projeto, decisões de correção e contexto de entregas anteriores.
+A documentação foi propositalmente enxugada para reduzir ruído e evitar que relatórios históricos desatualizados confundam novas análises. A referência principal do projeto agora está concentrada neste `README.md`, enquanto o arquivo [`instrucoes.txt`](./instrucoes.txt) atua como guia curto de onboarding técnico para outras IAs ou colaboradores.
 
-| Local | Conteúdo esperado |
+| Arquivo | Finalidade |
 | --- | --- |
-| `docs/` | relatórios por fase, auditorias e validações |
-| arquivos `RELATORIO_*.md` na raiz | relatórios técnicos e de bugs |
-| `DOCUMENTACAO_AMINO_NEXUS.md` | documentação complementar do produto |
-| `GUIA_DE_LANCAMENTO.md` | preparação e lançamento |
-| `NOTES.md` | observações operacionais diversas |
-| [`instrucoes.txt`](./instrucoes.txt) | resumo curto para acelerar análise por outra IA |
+| `README.md` | visão atual do projeto, arquitetura, setup e estrutura |
+| [`instrucoes.txt`](./instrucoes.txt) | resumo operacional para acelerar análise técnica |
 
 ## Observações práticas para manutenção
 
