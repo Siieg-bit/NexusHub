@@ -1438,11 +1438,18 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
                     .where((t) => t.isNotEmpty)
                     .toList();
                 Navigator.pop(ctx);
-                _sendMessage(
-                  type: 'poll',
-                  pollQuestion: question,
-                  pollOptions: options,
-                );
+                // Bug fix: usar Future.microtask para garantir que _sendMessage
+                // só seja chamado após o dialog ser completamente desmontado.
+                // Chamar _sendMessage diretamente após Navigator.pop causava
+                // 'Tried to build dirty widget in the wrong build scope'
+                // porque setState era disparado durante o frame de fechamento.
+                Future.microtask(() {
+                  _sendMessage(
+                    type: 'poll',
+                    pollQuestion: question,
+                    pollOptions: options,
+                  );
+                });
                 questionCtrl.dispose();
                 for (final c in optionCtrls) {
                   c.dispose();
@@ -1492,7 +1499,8 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
             onPressed: () {
               final url = linkCtrl.text;
               Navigator.pop(ctx);
-              _sendMessage(type: 'link', sharedUrl: url);
+              // Bug fix: Future.microtask para evitar dirty widget in wrong build scope
+              Future.microtask(() => _sendMessage(type: 'link', sharedUrl: url));
               linkCtrl.dispose();
             },
             style: ElevatedButton.styleFrom(
