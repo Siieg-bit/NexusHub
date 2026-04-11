@@ -214,7 +214,10 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
           ((data['url'] ?? data['image_url']) as String? ?? '').trim();
 
       if (type == 'divider') {
-        serialized.add({'type': 'divider'});
+        serialized.add({
+          'type': 'divider',
+          'divider_style': data['divider_style'] ?? 'dots',
+        });
         continue;
       }
       if (type == 'image') {
@@ -510,80 +513,43 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
     };
   }
 
-  Future<dynamic> _createBlogPost({
+  Future<bool> _createBlogPost({
     required String title,
     required String content,
     required List<Map<String, dynamic>> contentBlocks,
     required List<String> mediaUrls,
   }) async {
-    final errors = <String>[];
     final coverUrl =
         _coverImageUrl ?? (mediaUrls.isNotEmpty ? mediaUrls.first : null);
     final editorMetadata = _buildEditorMetadata();
+    final mediaList = mediaUrls
+        .map((url) => {'url': url, 'type': 'image'})
+        .toList();
 
-    // Tentativa 1: RPC
-    try {
-      final result = await SupabaseService.rpc(
-          'create_post_with_reputation',
-          params: {
-            'p_community_id': widget.communityId,
-            'p_title': title,
-            'p_content': content,
-            'p_type': 'blog',
-            'p_visibility': _visibility,
-            'p_media_urls': mediaUrls,
-            'p_cover_image_url': coverUrl,
-            'p_content_blocks': contentBlocks,
-            'p_editor_type': 'blog',
-            'p_editor_metadata': editorMetadata,
-            'p_is_pinned_profile': _pinToProfile,
-          });
-      return result;
-    } catch (e) {
-      errors.add('RPC: ${_extractErrorMessage(e)}');
+    // Usar o provider que já lida com todos os parâmetros corretamente
+    final postData = {
+      'title': title,
+      'content': content,
+      'type': 'blog',
+      'media_list': mediaList,
+      'tags': _tags,
+      'cover_image_url': coverUrl,
+      'visibility': _visibility,
+      'content_blocks': contentBlocks,
+      'is_pinned_profile': _pinToProfile,
+      'editor_type': 'blog',
+      'editor_metadata': editorMetadata,
+    };
+
+    final success = await ref
+        .read(communityFeedProvider(widget.communityId).notifier)
+        .createPost(postData);
+
+    if (!success) {
+      throw Exception('Erro ao publicar. Tente novamente.');
     }
 
-    // Tentativa 2: Insert direto
-    try {
-      final userId = SupabaseService.currentUserId;
-      if (userId == null) throw Exception('Não autenticado');
-
-      final result = await SupabaseService.table('posts')
-          .insert({
-            'community_id': widget.communityId,
-            'author_id': userId,
-            'type': 'blog',
-            'title': title,
-            'content': content,
-            'media_list': mediaUrls
-                .map((url) => {'url': url, 'type': 'image'})
-                .toList(),
-            'cover_image_url': coverUrl,
-            'visibility': _visibility,
-            'content_blocks': contentBlocks,
-            'editor_type': 'blog',
-            'editor_metadata': editorMetadata,
-            'is_pinned_profile': _pinToProfile,
-          })
-          .select()
-          .single();
-
-      try {
-        await SupabaseService.rpc('add_reputation', params: {
-          'p_user_id': userId,
-          'p_community_id': widget.communityId,
-          'p_action_type': 'post_create',
-          'p_raw_amount': 20,
-          'p_reference_id': result['id'],
-        });
-      } catch (_) {}
-
-      return result;
-    } catch (e) {
-      errors.add('Insert: ${_extractErrorMessage(e)}');
-    }
-
-    throw Exception(errors.join('\n'));
+    return success;
   }
 
   Future<void> _submit() async {

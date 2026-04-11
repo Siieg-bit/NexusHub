@@ -64,7 +64,7 @@ class BlockContentRenderer extends StatelessWidget {
       case 'image':
         return _buildImageBlock(block, context);
       case 'divider':
-        return _buildDividerBlock(context);
+        return _buildDividerBlock(block, context);
       case 'quote':
         return _buildQuoteBlock(block, context);
       case 'link':
@@ -183,45 +183,180 @@ class BlockContentRenderer extends StatelessWidget {
     );
   }
 
-  /// Bloco de divisor — separador visual
-  Widget _buildDividerBlock(BuildContext context) {
+  /// Bloco de divisor — separador visual com estilos variados
+  Widget _buildDividerBlock(
+      Map<String, dynamic> block, BuildContext context) {
     final r = context.r;
+    final style = block['divider_style'] as String? ?? 'dots';
+    final color = context.textHint.withValues(alpha: 0.3);
+    final softPink = const Color(0xFFE8A0BF).withValues(alpha: 0.6);
+    final softPurple = const Color(0xFFB983FF).withValues(alpha: 0.6);
+    final softBlue = const Color(0xFF94B3FD).withValues(alpha: 0.5);
+
+    Widget dividerContent;
+
+    switch (style) {
+      case 'line':
+        dividerContent = Container(
+          height: 1,
+          margin: EdgeInsets.symmetric(horizontal: r.s(20)),
+          color: color,
+        );
+        break;
+      case 'dashed':
+        dividerContent = Padding(
+          padding: EdgeInsets.symmetric(horizontal: r.s(20)),
+          child: Row(
+            children: List.generate(
+              20,
+              (_) => Expanded(
+                child: Container(
+                  height: 1,
+                  margin: EdgeInsets.symmetric(horizontal: r.s(2)),
+                  color: color,
+                ),
+              ),
+            ),
+          ),
+        );
+        break;
+      case 'hearts':
+        dividerContent = Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '\u2661 \u2665 \u2661 \u2665 \u2661',
+              style: TextStyle(
+                  color: softPink,
+                  fontSize: r.fs(14),
+                  letterSpacing: 4),
+            ),
+          ],
+        );
+        break;
+      case 'sparkles':
+        dividerContent = Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '\u2729 \u00b7 \u2729 \u00b7 \u2729 \u00b7 \u2729',
+              style: TextStyle(
+                  color: softPurple,
+                  fontSize: r.fs(14),
+                  letterSpacing: 3),
+            ),
+          ],
+        );
+        break;
+      case 'flowers':
+        dividerContent = Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '\u2740 \u2022 \u273f \u2022 \u2740 \u2022 \u273f \u2022 \u2740',
+              style: TextStyle(
+                  color: softPink,
+                  fontSize: r.fs(13),
+                  letterSpacing: 2),
+            ),
+          ],
+        );
+        break;
+      case 'stars':
+        dividerContent = Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '\u2606 \u2605 \u2606 \u2605 \u2606',
+              style: TextStyle(
+                  color: softPurple,
+                  fontSize: r.fs(13),
+                  letterSpacing: 4),
+            ),
+          ],
+        );
+        break;
+      case 'moon':
+        dividerContent = Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '\u2729 \u263d \u2729',
+              style: TextStyle(
+                  color: softBlue,
+                  fontSize: r.fs(15),
+                  letterSpacing: 6),
+            ),
+          ],
+        );
+        break;
+      case 'ribbon':
+        dividerContent = Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '\u2500\u2500 \u2661 \u2500\u2500\u2500 \u2661 \u2500\u2500',
+              style: TextStyle(
+                  color: softPink,
+                  fontSize: r.fs(12),
+                  letterSpacing: 1),
+            ),
+          ],
+        );
+        break;
+      case 'wave':
+        dividerContent = Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '\u223c\u223c\u223c\u223c\u223c\u223c\u223c\u223c\u223c\u223c',
+              style: TextStyle(
+                  color: softBlue,
+                  fontSize: r.fs(14),
+                  letterSpacing: 2),
+            ),
+          ],
+        );
+        break;
+      case 'butterfly':
+        dividerContent = Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '\u2022\u00b7\u2022\u00b7\u2022 \u0e51 \u2022\u00b7\u2022\u00b7\u2022',
+              style: TextStyle(
+                  color: softPurple,
+                  fontSize: r.fs(13),
+                  letterSpacing: 1),
+            ),
+          ],
+        );
+        break;
+      case 'dots':
+      default:
+        dividerContent = Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(
+            3,
+            (_) => Container(
+              margin: EdgeInsets.symmetric(horizontal: r.s(3)),
+              width: r.s(4),
+              height: r.s(4),
+              decoration: BoxDecoration(
+                color: context.textHint.withValues(alpha: 0.4),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+        );
+    }
+
     return Padding(
       padding: EdgeInsets.symmetric(
-        horizontal: horizontalPadding * 2,
-        vertical: r.s(4),
+        horizontal: horizontalPadding,
+        vertical: r.s(8),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: r.s(4),
-            height: r.s(4),
-            decoration: BoxDecoration(
-              color: context.textHint.withValues(alpha: 0.4),
-              shape: BoxShape.circle,
-            ),
-          ),
-          SizedBox(width: r.s(8)),
-          Container(
-            width: r.s(4),
-            height: r.s(4),
-            decoration: BoxDecoration(
-              color: context.textHint.withValues(alpha: 0.4),
-              shape: BoxShape.circle,
-            ),
-          ),
-          SizedBox(width: r.s(8)),
-          Container(
-            width: r.s(4),
-            height: r.s(4),
-            decoration: BoxDecoration(
-              color: context.textHint.withValues(alpha: 0.4),
-              shape: BoxShape.circle,
-            ),
-          ),
-        ],
-      ),
+      child: dividerContent,
     );
   }
 
