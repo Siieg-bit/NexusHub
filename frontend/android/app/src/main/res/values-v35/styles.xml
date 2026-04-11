@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 15+ (API 35) — Edge-to-Edge enforçado pelo sistema.
+  O Flutter já chama SystemUiMode.edgeToEdge via main.dart, mas este arquivo
+  garante que o tema nativo não conflite com a política de edge-to-edge do
+  Android 15/16, evitando que a system bar reapareça com cor sólida.
+
+  Referência: https://developer.android.com/about/versions/15/behavior-changes-15#edge-to-edge
+-->
+<resources>
+    <style name="LaunchTheme" parent="@android:style/Theme.Black.NoTitleBar">
+        <item name="android:windowBackground">@drawable/launch_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <!-- Android 15+: aceitar edge-to-edge enforçado pelo sistema -->
+        <item name="android:windowOptOutEdgeToEdgeEnforcement">false</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
+
+    <style name="NormalTheme" parent="@android:style/Theme.Black.NoTitleBar">
+        <item name="android:windowBackground">?android:colorBackground</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <!-- Android 15+: aceitar edge-to-edge enforçado pelo sistema -->
+        <item name="android:windowOptOutEdgeToEdgeEnforcement">false</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
+
+    <!--
+      UCrop: opt-out do edge-to-edge para manter compatibilidade com a
+      biblioteca de cropping que não foi atualizada para edge-to-edge.
+    -->
+    <style name="Theme.NexusHub.UCrop" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
+        <item name="android:fitsSystemWindows">true</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+</resources>

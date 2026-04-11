@@ -704,7 +704,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           }
           // Fallback: redirecionar para home se não houver sessão
           return const Scaffold(
-            body: Center(child: Text('Sessão de chamada inválida')),
+            // SafeArea garante que o conteúdo não fique atrás da status bar
+            // em dispositivos com edge-to-edge (Android 15+).
+            body: SafeArea(
+              child: Center(child: Text('Sessão de chamada inválida')),
+            ),
           );
         },
       ),

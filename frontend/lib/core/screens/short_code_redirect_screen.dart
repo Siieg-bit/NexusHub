@@ -95,39 +95,43 @@ class _ShortCodeRedirectScreenState extends State<ShortCodeRedirectScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.scaffoldBg,
-      body: Center(
-        child: _error
-            ? Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.link_off_rounded,
-                      size: 48, color: Colors.grey[600]),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Link não encontrado',
-                    style: TextStyle(
-                      color: Colors.grey[400],
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+      // SafeArea garante que o conteúdo não fique atrás da status bar ou
+      // navigation bar em dispositivos com edge-to-edge (Android 15+).
+      body: SafeArea(
+        child: Center(
+          child: _error
+              ? Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.link_off_rounded,
+                        size: 48, color: Colors.grey[600]),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Link não encontrado',
+                      style: TextStyle(
+                        color: Colors.grey[400],
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'O conteúdo pode ter sido removido.',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                  ),
-                  const SizedBox(height: 24),
-                  TextButton(
-                    onPressed: () => context.go('/explore'),
-                    child: const Text('Voltar ao início',
-                        style: TextStyle(color: AppTheme.primaryColor)),
-                  ),
-                ],
-              )
-            : const CircularProgressIndicator(
-                color: AppTheme.primaryColor,
-                strokeWidth: 2,
-              ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'O conteúdo pode ter sido removido.',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                    ),
+                    const SizedBox(height: 24),
+                    TextButton(
+                      onPressed: () => context.go('/explore'),
+                      child: const Text('Voltar ao início',
+                          style: TextStyle(color: AppTheme.primaryColor)),
+                    ),
+                  ],
+                )
+              : const CircularProgressIndicator(
+                  color: AppTheme.primaryColor,
+                  strokeWidth: 2,
+                ),
+        ),
       ),
     );
   }

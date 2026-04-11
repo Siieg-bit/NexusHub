@@ -106,4 +106,6 @@ dependencies {
     implementation 'com.google.firebase:firebase-crashlytics'
     implementation 'com.google.android.gms:play-services-ads:23.6.0'
     implementation 'androidx.multidex:multidex:2.0.1'
+    // WindowCompat para edge-to-edge nativo (Android 15+)
+    implementation 'androidx.core:core-ktx:1.13.1'
 }
