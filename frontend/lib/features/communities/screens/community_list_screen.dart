@@ -212,7 +212,7 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
                       padding: EdgeInsets.only(right: rightPad),
                       child: _JoinCommunityCard(
                         cardWidth: cardW,
-                        onTap: () => context.push('/explore'),
+                        onTap: () => _showJoinCommunitySheet(communities),
                       ),
                     ),
                   ],
@@ -474,6 +474,278 @@ class _CommunityListScreenState extends ConsumerState<CommunityListScreen> {
         }
       }
     }
+  }
+
+  void _showJoinCommunitySheet(List<CommunityModel> joinedCommunities) {
+    final joinedIds = joinedCommunities.map((community) => community.id).toSet();
+    final r = context.r;
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return Consumer(
+          builder: (context, ref, _) {
+            final suggestionsAsync = ref.watch(suggestedCommunitiesProvider);
+
+            return Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.82,
+              ),
+              decoration: BoxDecoration(
+                color: context.surfaceColor,
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(r.s(24)),
+                ),
+              ),
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(r.s(20), r.s(12), r.s(20), r.s(20)),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: r.s(44),
+                          height: r.s(5),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(r.s(999)),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: r.s(16)),
+                      Text(
+                        'Entrar em uma comunidade',
+                        style: TextStyle(
+                          color: context.textPrimary,
+                          fontSize: r.fs(18),
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      SizedBox(height: r.s(6)),
+                      Text(
+                        'Abra rapidamente comunidades sugeridas para descobrir algo novo sem sair do seu hub atual.',
+                        style: TextStyle(
+                          color: context.textSecondary,
+                          fontSize: r.fs(13),
+                          height: 1.4,
+                        ),
+                      ),
+                      SizedBox(height: r.s(18)),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(sheetContext).pop();
+                          context.push('/explore');
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: r.s(16),
+                            vertical: r.s(14),
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryColor,
+                            borderRadius: BorderRadius.circular(r.s(14)),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.travel_explore_rounded,
+                                  color: Colors.white, size: r.s(18)),
+                              SizedBox(width: r.s(10)),
+                              Text(
+                                'Explorar todas as comunidades',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: r.fs(14),
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: r.s(18)),
+                      Text(
+                        'Sugestões para entrar agora',
+                        style: TextStyle(
+                          color: context.textPrimary,
+                          fontSize: r.fs(14),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      SizedBox(height: r.s(10)),
+                      Flexible(
+                        child: suggestionsAsync.when(
+                          loading: () => const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(24),
+                              child: CircularProgressIndicator(
+                                color: AppTheme.accentColor,
+                                strokeWidth: 2.4,
+                              ),
+                            ),
+                          ),
+                          error: (_, __) => Center(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(vertical: r.s(24)),
+                              child: Text(
+                                'Não foi possível carregar sugestões agora.',
+                                style: TextStyle(color: context.textSecondary),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                          data: (suggestions) {
+                            final filtered = suggestions
+                                .where((community) => !joinedIds.contains(community.id))
+                                .take(6)
+                                .toList(growable: false);
+
+                            if (filtered.isEmpty) {
+                              return Center(
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(vertical: r.s(24)),
+                                  child: Text(
+                                    'Você já entrou nas principais sugestões. Toque acima para explorar outras comunidades.',
+                                    style: TextStyle(color: context.textSecondary),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              );
+                            }
+
+                            return ListView.separated(
+                              shrinkWrap: true,
+                              itemCount: filtered.length,
+                              separatorBuilder: (_, __) => SizedBox(height: r.s(10)),
+                              itemBuilder: (context, index) {
+                                final community = filtered[index];
+                                return GestureDetector(
+                                  onTap: () {
+                                    Navigator.of(sheetContext).pop();
+                                    context.push('/community/${community.id}');
+                                  },
+                                  child: Container(
+                                    padding: EdgeInsets.all(r.s(12)),
+                                    decoration: BoxDecoration(
+                                      color: context.cardBgAlt.withValues(alpha: 0.42),
+                                      borderRadius: BorderRadius.circular(r.s(14)),
+                                      border: Border.all(
+                                        color: Colors.white.withValues(alpha: 0.05),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(r.s(12)),
+                                          child: SizedBox(
+                                            width: r.s(48),
+                                            height: r.s(48),
+                                            child: community.iconUrl != null &&
+                                                    community.iconUrl!.isNotEmpty
+                                                ? CachedNetworkImage(
+                                                    imageUrl: community.iconUrl!,
+                                                    fit: BoxFit.cover,
+                                                    errorWidget: (_, __, ___) =>
+                                                        _suggestionIconFallback(r),
+                                                  )
+                                                : _suggestionIconFallback(r),
+                                          ),
+                                        ),
+                                        SizedBox(width: r.s(12)),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                community.name,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  color: context.textPrimary,
+                                                  fontSize: r.fs(14),
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                              ),
+                                              if (community.tagline.isNotEmpty) ...[
+                                                SizedBox(height: r.s(4)),
+                                                Text(
+                                                  community.tagline,
+                                                  maxLines: 2,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                    color: context.textSecondary,
+                                                    fontSize: r.fs(12),
+                                                    height: 1.3,
+                                                  ),
+                                                ),
+                                              ],
+                                              SizedBox(height: r.s(6)),
+                                              Text(
+                                                '${community.membersCount} membros',
+                                                style: TextStyle(
+                                                  color: Colors.grey[400],
+                                                  fontSize: r.fs(11),
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(width: r.s(12)),
+                                        Container(
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: r.s(10),
+                                            vertical: r.s(8),
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.primaryColor.withValues(alpha: 0.12),
+                                            borderRadius: BorderRadius.circular(r.s(999)),
+                                          ),
+                                          child: Text(
+                                            'Abrir',
+                                            style: TextStyle(
+                                              color: AppTheme.primaryColor,
+                                              fontSize: r.fs(11),
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _suggestionIconFallback(Responsive r) {
+    return Container(
+      color: const Color(0xFF2D3142),
+      child: Icon(
+        Icons.groups_rounded,
+        color: Colors.white,
+        size: r.s(22),
+      ),
+    );
   }
 
   Widget _buildEmptyState() {
