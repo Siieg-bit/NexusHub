@@ -3569,4 +3569,1280 @@ class AppStringsAr implements AppStrings {
   String get wikiEntry => 'مدخل ويكي';
   @override
   String get wikiDescription => 'الوصف...';
+
+  // ── Getters adicionados para completar a interface ──
+  @override
+  String get adNotAvailableDesc => 'adNotAvailableDesc';
+  @override
+  String get addAtLeastOneQuestionDesc => 'addAtLeastOneQuestionDesc';
+  @override
+  String get addCoverImage => 'addCoverImage';
+  @override
+  String get addMembersToChat => 'addMembersToChat';
+  @override
+  String get addPollOption => 'addPollOption';
+  @override
+  String get addQuizQuestion => 'addQuizQuestion';
+  @override
+  String get addSomething => 'addSomething';
+  @override
+  String get addYourComment => 'addYourComment';
+  @override
+  String get adminTools => 'adminTools';
+  @override
+  String get allCommunities => 'allCommunities';
+  @override
+  String get allLabel => 'allLabel';
+  @override
+  String get allowChatInvites => 'allowChatInvites';
+  @override
+  String get allowChatInvitesDesc => 'allowChatInvitesDesc';
+  @override
+  String get allowCommentsDesc => 'allowCommentsDesc';
+  @override
+  String get allowContentHighlightDesc => 'allowContentHighlightDesc';
+  @override
+  String get allowDirectMessages => 'allowDirectMessages';
+  @override
+  String get allowDirectMessagesDesc => 'allowDirectMessagesDesc';
+  @override
+  String get allowFollowers => 'allowFollowers';
+  @override
+  String get allowFollowersDesc => 'allowFollowersDesc';
+  @override
+  String get allowMentionsDesc => 'allowMentionsDesc';
+  @override
+  String get allowProfileComments => 'allowProfileComments';
+  @override
+  String get allowProfileCommentsDesc => 'allowProfileCommentsDesc';
+  @override
+  String get allowProps => 'allowProps';
+  @override
+  String get allowPropsDesc => 'allowPropsDesc';
+  @override
+  String get allowWallComments => 'allowWallComments';
+  @override
+  String get allowWallCommentsDesc => 'allowWallCommentsDesc';
+  @override
+  String get amount => 'amount';
+  @override
+  String get anErrorOccurred => 'anErrorOccurred';
+  @override
+  String get anErrorOccurredWhile => 'anErrorOccurredWhile';
+  @override
+  String get and => 'and';
+  @override
+  String get animation => 'animation';
+  @override
+  String get appearOffline => 'appearOffline';
+  @override
+  String get applyTheme => 'applyTheme';
+  @override
+  String get approveEntry => 'approveEntry';
+  @override
+  String get approveJoinRequests => 'approveJoinRequests';
+  @override
+  String get approveJoinRequestsDesc => 'approveJoinRequestsDesc';
+  @override
+  String get approveWikiSubmission => 'approveWikiSubmission';
+  @override
+  String get approvedEntries => 'approvedEntries';
+  @override
+  String get areYouSure => 'areYouSure';
+  @override
+  String get areYouSureBan => 'areYouSureBan';
+  @override
+  String get areYouSureDelete => 'areYouSureDelete';
+  @override
+  String get areYouSureDeleteAccount => 'areYouSureDeleteAccount';
+  @override
+  String get areYouSureDeletePost => 'areYouSureDeletePost';
+  @override
+  String get areYouSureKick => 'areYouSureKick';
+  @override
+  String get areYouSureLeave => 'areYouSureLeave';
+  @override
+  String get areYouSureMute => 'areYouSureMute';
+  @override
+  String get areYouSureReject => 'areYouSureReject';
+  @override
+  String get areYouSureRemove => 'areYouSureRemove';
+  @override
+  String get areYouSureRevoke => 'areYouSureRevoke';
+  @override
+  String get areYouSureStrike => 'areYouSureStrike';
+  @override
+  String get areYouSureUnban => 'areYouSureUnban';
+  @override
+  String get areYouSureUnfollowUser => 'areYouSureUnfollowUser';
+  @override
+  String get areYouSureWarn => 'areYouSureWarn';
+  @override
+  String get article => 'article';
+  @override
+  String get askJoinCommunity => 'askJoinCommunity';
+  @override
+  String get attachFile => 'attachFile';
+  @override
+  String get attachMedia => 'attachMedia';
+  @override
+  String get author => 'author';
+  @override
+  String get autoPlayVideos => 'autoPlayVideos';
+  @override
+  String get autoPlayVideosDesc => 'autoPlayVideosDesc';
+  @override
+  String get avatar => 'avatar';
+  @override
+  String get avatarAndCover => 'avatarAndCover';
+  @override
+  String get banUser => 'banUser';
+  @override
+  String get banUserFromChat => 'banUserFromChat';
+  @override
+  String get banned => 'banned';
+  @override
+  String get beTheFirstToComment => 'beTheFirstToComment';
+  @override
+  String get beTheFirstToPost => 'beTheFirstToPost';
+  @override
+  String get blockUser => 'blockUser';
+  @override
+  String get blocked => 'blocked';
+  @override
+  String get blogLabel => 'blogLabel';
+  @override
+  String get blogs => 'blogs';
+  @override
+  String get bookmarkAdded => 'bookmarkAdded';
+  @override
+  String get bookmarkRemoved => 'bookmarkRemoved';
+  @override
+  String get broadcast => 'broadcast';
+  @override
+  String get broadcastMessage => 'broadcastMessage';
+  @override
+  String get broadcastNotification => 'broadcastNotification';
+  @override
+  String get broadcastTitle => 'broadcastTitle';
+  @override
+  String get by => 'by';
+  @override
+  String get call => 'call';
+  @override
+  String get cameraPermission => 'cameraPermission';
+  @override
+  String get cannotBeEmpty => 'cannotBeEmpty';
+  @override
+  String get cannotBeUndone => 'cannotBeUndone';
+  @override
+  String get cannotRemoveLastLeader => 'cannotRemoveLastLeader';
+  @override
+  String get cannotReportYourself => 'cannotReportYourself';
+  @override
+  String get caption => 'caption';
+  @override
+  String get category => 'category';
+  @override
+  String get changeCommunity => 'changeCommunity';
+  @override
+  String get changeCover => 'changeCover';
+  @override
+  String get changeNickname => 'changeNickname';
+  @override
+  String get changePassword => 'changePassword';
+  @override
+  String get changePhoto => 'changePhoto';
+  @override
+  String get changeUsername => 'changeUsername';
+  @override
+  String get chatInvites => 'chatInvites';
+  @override
+  String get chatSettings => 'chatSettings';
+  @override
+  String get chatWallpaper => 'chatWallpaper';
+  @override
+  String get chooseACommunity => 'chooseACommunity';
+  @override
+  String get chooseACover => 'chooseACover';
+  @override
+  String get chooseAnImage => 'chooseAnImage';
+  @override
+  String get chooseCategory => 'chooseCategory';
+  @override
+  String get chooseColor => 'chooseColor';
+  @override
+  String get chooseCover => 'chooseCover';
+  @override
+  String get chooseDuration => 'chooseDuration';
+  @override
+  String get chooseImage => 'chooseImage';
+  @override
+  String get chooseLanguage => 'chooseLanguage';
+  @override
+  String get chooseLayout => 'chooseLayout';
+  @override
+  String get chooseNicknameDesc => 'chooseNicknameDesc';
+  @override
+  String get chooseOption => 'chooseOption';
+  @override
+  String get choosePollEndDate => 'choosePollEndDate';
+  @override
+  String get chooseReason => 'chooseReason';
+  @override
+  String get chooseSticker => 'chooseSticker';
+  @override
+  String get chooseTheme => 'chooseTheme';
+  @override
+  String get chooseVisibility => 'chooseVisibility';
+  @override
+  String get clearAll => 'clearAll';
+  @override
+  String get clearCacheConfirmation => 'clearCacheConfirmation';
+  @override
+  String get clearHistory => 'clearHistory';
+  @override
+  String get clearHistoryConfirmation => 'clearHistoryConfirmation';
+  @override
+  String get clearRecentSearches => 'clearRecentSearches';
+  @override
+  String get closeAndSaveChanges => 'closeAndSaveChanges';
+  @override
+  String get coinBalance => 'coinBalance';
+  @override
+  String get coinsSpent => 'coinsSpent';
+  @override
+  String get collapse => 'collapse';
+  @override
+  String get commentDeleted => 'commentDeleted';
+  @override
+  String get commentNotifications => 'commentNotifications';
+  @override
+  String get commentOptions => 'commentOptions';
+  @override
+  String get commentSent => 'commentSent';
+  @override
+  String get commentsLabel => 'commentsLabel';
+  @override
+  String get commentsOnYourProfile => 'commentsOnYourProfile';
+  @override
+  String get communityCreated => 'communityCreated';
+  @override
+  String get communityDeleted => 'communityDeleted';
+  @override
+  String get communityDescriptionHint => 'communityDescriptionHint';
+  @override
+  String get communityGuidelinesShort => 'communityGuidelinesShort';
+  @override
+  String get communityInvites => 'communityInvites';
+  @override
+  String get communityLeader => 'communityLeader';
+  @override
+  String get communityLink => 'communityLink';
+  @override
+  String get communityMembers => 'communityMembers';
+  @override
+  String get communityNameHint => 'communityNameHint';
+  @override
+  String get communityPrivacy => 'communityPrivacy';
+  @override
+  String get communitySettings => 'communitySettings';
+  @override
+  String get communityStats => 'communityStats';
+  @override
+  String get communityUpdated => 'communityUpdated';
+  @override
+  String get confirmBlockUser => 'confirmBlockUser';
+  @override
+  String get confirmChanges => 'confirmChanges';
+  @override
+  String get confirmDelete => 'confirmDelete';
+  @override
+  String get confirmDeleteAccount => 'confirmDeleteAccount';
+  @override
+  String get confirmDeleteConversation => 'confirmDeleteConversation';
+  @override
+  String get confirmDeleteFile => 'confirmDeleteFile';
+  @override
+  String get confirmEmail => 'confirmEmail';
+  @override
+  String get confirmLeaveCommunity => 'confirmLeaveCommunity';
+  @override
+  String get confirmLeaveGroup => 'confirmLeaveGroup';
+  @override
+  String get confirmNewPassword => 'confirmNewPassword';
+  @override
+  String get confirmPurchase => 'confirmPurchase';
+  @override
+  String get confirmReport => 'confirmReport';
+  @override
+  String get confirmSelection => 'confirmSelection';
+  @override
+  String get confirmUnfollow => 'confirmUnfollow';
+  @override
+  String get connectWithFriends => 'connectWithFriends';
+  @override
+  String get connecting => 'connecting';
+  @override
+  String get contactUs => 'contactUs';
+  @override
+  String get contentAndConduct => 'contentAndConduct';
+  @override
+  String get contentFormat => 'contentFormat';
+  @override
+  String get contentPolicies => 'contentPolicies';
+  @override
+  String get continueWithEmail => 'continueWithEmail';
+  @override
+  String get copiedToClipboardMsg => 'copiedToClipboardMsg';
+  @override
+  String get copyAction => 'copyAction';
+  @override
+  String get copyPostLink => 'copyPostLink';
+  @override
+  String get copyProfileLink => 'copyProfileLink';
+  @override
+  String get copyToClipboard => 'copyToClipboard';
+  @override
+  String get couldNotLaunchUrl => 'couldNotLaunchUrl';
+  @override
+  String get createAPoll => 'createAPoll';
+  @override
+  String get createAQuiz => 'createAQuiz';
+  @override
+  String get createChat => 'createChat';
+  @override
+  String get createEvent => 'createEvent';
+  @override
+  String get createFirstPost => 'createFirstPost';
+  @override
+  String get createFolder => 'createFolder';
+  @override
+  String get createYourCommunity => 'createYourCommunity';
+  @override
+  String get created => 'created';
+  @override
+  String get createdBy => 'createdBy';
+  @override
+  String get creative => 'creative';
+  @override
+  String get customColor => 'customColor';
+  @override
+  String get customImage => 'customImage';
+  @override
+  String get customTheme => 'customTheme';
+  @override
+  String get dailyActiveMembers => 'dailyActiveMembers';
+  @override
+  String get dailyBonus => 'dailyBonus';
+  @override
+  String get dailyCheckInCoins => 'dailyCheckInCoins';
+  @override
+  String get dailyCheckInDesc => 'dailyCheckInDesc';
+  @override
+  String get dailyCheckInHistory => 'dailyCheckInHistory';
+  @override
+  String get dailyCheckInReward => 'dailyCheckInReward';
+  @override
+  String get dailyCheckInStreak => 'dailyCheckInStreak';
+  @override
+  String get dataAndStorage => 'dataAndStorage';
+  @override
+  String get dataExport => 'dataExport';
+  @override
+  String get dataExportDesc => 'dataExportDesc';
+  @override
+  String get dataUsage => 'dataUsage';
+  @override
+  String get dateJoined => 'dateJoined';
+  @override
+  String get deactivateAccount => 'deactivateAccount';
+  @override
+  String get defaultLabel => 'defaultLabel';
+  @override
+  String get deleteAccountConfirmation => 'deleteAccountConfirmation';
+  @override
+  String get deleteChat => 'deleteChat';
+  @override
+  String get deleteChatConfirmation => 'deleteChatConfirmation';
+  @override
+  String get deleteComment => 'deleteComment';
+  @override
+  String get deleteCommentConfirmation => 'deleteCommentConfirmation';
+  @override
+  String get deleteDraft => 'deleteDraft';
+  @override
+  String get deleteForEveryone => 'deleteForEveryone';
+  @override
+  String get deleteForMe => 'deleteForMe';
+  @override
+  String get deleteFromHistory => 'deleteFromHistory';
+  @override
+  String get deleteMessageConfirmation => 'deleteMessageConfirmation';
+  @override
+  String get deletePermanently => 'deletePermanently';
+  @override
+  String get deletePostConfirmation => 'deletePostConfirmation';
+  @override
+  String get deleteStory => 'deleteStory';
+  @override
+  String get deleteStoryConfirmation => 'deleteStoryConfirmation';
+  @override
+  String get deleteWiki => 'deleteWiki';
+  @override
+  String get deleteWikiConfirmation => 'deleteWikiConfirmation';
+  @override
+  String get describeYourCommunity => 'describeYourCommunity';
+  @override
+  String get details => 'details';
+  @override
+  String get deviceAndOs => 'deviceAndOs';
+  @override
+  String get deviceManager => 'deviceManager';
+  @override
+  String get deviceNotSupported => 'deviceNotSupported';
+  @override
+  String get disable => 'disable';
+  @override
+  String get disableAccount => 'disableAccount';
+  @override
+  String get disableAccountConfirmation => 'disableAccountConfirmation';
+  @override
+  String get disableComments => 'disableComments';
+  @override
+  String get discard => 'discard';
+  @override
+  String get discardDraft => 'discardDraft';
+  @override
+  String get disconnected => 'disconnected';
+  @override
+  String get discoverMore => 'discoverMore';
+  @override
+  String get discussion => 'discussion';
+  @override
+  String get discussions => 'discussions';
+  @override
+  String get doneEditing => 'doneEditing';
+  @override
+  String get download => 'download';
+  @override
+  String get downloadData => 'downloadData';
+  @override
+  String get draftDiscarded => 'draftDiscarded';
+  @override
+  String get draftNotFound => 'draftNotFound';
+  @override
+  String get draftPublished => 'draftPublished';
+  @override
+  String get duplicateContent => 'duplicateContent';
+  @override
+  String get earnCoins => 'earnCoins';
+  @override
+  String get editBio => 'editBio';
+  @override
+  String get editChat => 'editChat';
+  @override
+  String get editCover => 'editCover';
+  @override
+  String get editDraft => 'editDraft';
+  @override
+  String get editEntry => 'editEntry';
+  @override
+  String get editImage => 'editImage';
+  @override
+  String get editNickname => 'editNickname';
+  @override
+  String get editPostPermission => 'editPostPermission';
+  @override
+  String get editPostTitle => 'editPostTitle';
+  @override
+  String get editProfileLabel => 'editProfileLabel';
+  @override
+  String get editStory => 'editStory';
+  @override
+  String get editTags => 'editTags';
+  @override
+  String get editThePost => 'editThePost';
+  @override
+  String get editTheme => 'editTheme';
+  @override
+  String get editTitle => 'editTitle';
+  @override
+  String get editYourProfile => 'editYourProfile';
+  @override
+  String get emailInUse => 'emailInUse';
+  @override
+  String get emailIsRequired => 'emailIsRequired';
+  @override
+  String get emailSent => 'emailSent';
+  @override
+  String get emailVerified => 'emailVerified';
+  @override
+  String get emptyChat => 'emptyChat';
+  @override
+  String get emptyChatStart => 'emptyChatStart';
+  @override
+  String get emptyFeed => 'emptyFeed';
+  @override
+  String get emptyFeedFollow => 'emptyFeedFollow';
+  @override
+  String get emptyWall => 'emptyWall';
+  @override
+  String get enableModule => 'enableModule';
+  @override
+  String get enablePushNotifications => 'enablePushNotifications';
+  @override
+  String get endDate => 'endDate';
+  @override
+  String get endPoll => 'endPoll';
+  @override
+  String get endQuiz => 'endQuiz';
+  @override
+  String get english => 'english';
+  @override
+  String get enterADescription => 'enterADescription';
+  @override
+  String get enterAName => 'enterAName';
+  @override
+  String get enterATitle => 'enterATitle';
+  @override
+  String get enterCode => 'enterCode';
+  @override
+  String get enterCommunityName => 'enterCommunityName';
+  @override
+  String get enterCurrentPassword => 'enterCurrentPassword';
+  @override
+  String get enterDescription => 'enterDescription';
+  @override
+  String get enterEmail => 'enterEmail';
+  @override
+  String get enterLink => 'enterLink';
+  @override
+  String get enterNewPassword => 'enterNewPassword';
+  @override
+  String get enterNickname => 'enterNickname';
+  @override
+  String get enterPassword => 'enterPassword';
+  @override
+  String get enterReason => 'enterReason';
+  @override
+  String get enterTheReason => 'enterTheReason';
+  @override
+  String get enterTitle => 'enterTitle';
+  @override
+  String get enterYourBio => 'enterYourBio';
+  @override
+  String get enterYourMessage => 'enterYourMessage';
+  @override
+  String get enterYourNickname => 'enterYourNickname';
+  @override
+  String get entry => 'entry';
+  @override
+  String get entrySubmitted => 'entrySubmitted';
+  @override
+  String get errorAddingMember => 'errorAddingMember';
+  @override
+  String get errorAddingToFavorites => 'errorAddingToFavorites';
+  @override
+  String get errorApprovingEntry => 'errorApprovingEntry';
+  @override
+  String get errorBanningUser => 'errorBanningUser';
+  @override
+  String get errorBlockingUser => 'errorBlockingUser';
+  @override
+  String get errorChangingEmail => 'errorChangingEmail';
+  @override
+  String get errorChangingNickname => 'errorChangingNickname';
+  @override
+  String get errorChangingPassword => 'errorChangingPassword';
+  @override
+  String get errorCreatingDraft => 'errorCreatingDraft';
+  @override
+  String get errorCreatingEntry => 'errorCreatingEntry';
+  @override
+  String get errorCreatingFolder => 'errorCreatingFolder';
+  @override
+  String get errorCreatingPost => 'errorCreatingPost';
+  @override
+  String get errorCreatingStory => 'errorCreatingStory';
+  @override
+  String get errorDeletingAccount => 'errorDeletingAccount';
+  @override
+  String get errorDeletingComment => 'errorDeletingComment';
+  @override
+  String get errorDeletingDraft => 'errorDeletingDraft';
+  @override
+  String get errorDeletingEntry => 'errorDeletingEntry';
+  @override
+  String get errorDeletingFolder => 'errorDeletingFolder';
+  @override
+  String get errorDeletingPost => 'errorDeletingPost';
+  @override
+  String get errorDeletingStory => 'errorDeletingStory';
+  @override
+  String get errorDownloading => 'errorDownloading';
+  @override
+  String get errorEditingChat => 'errorEditingChat';
+  @override
+  String get errorEditingEntry => 'errorEditingEntry';
+  @override
+  String get errorEditingPost => 'errorEditingPost';
+  @override
+  String get errorEditingProfile => 'errorEditingProfile';
+  @override
+  String get errorFetchingData => 'errorFetchingData';
+  @override
+  String get errorFetchingFeed => 'errorFetchingFeed';
+  @override
+  String get errorFetchingMembers => 'errorFetchingMembers';
+  @override
+  String get errorFetchingNotifications => 'errorFetchingNotifications';
+  @override
+  String get errorFetchingPosts => 'errorFetchingPosts';
+  @override
+  String get errorFetchingProfile => 'errorFetchingProfile';
+  @override
+  String get errorFetchingResults => 'errorFetchingResults';
+  @override
+  String get errorFetchingSettings => 'errorFetchingSettings';
+  @override
+  String get errorFetchingUser => 'errorFetchingUser';
+  @override
+  String get errorFetchingWiki => 'errorFetchingWiki';
+  @override
+  String get errorFollowingUser => 'errorFollowingUser';
+  @override
+  String get errorKickingUser => 'errorKickingUser';
+  @override
+  String get errorLeavingGroup => 'errorLeavingGroup';
+  @override
+  String get errorLoadingAchievements => 'errorLoadingAchievements';
+  @override
+  String get errorLoadingBlockedUsers => 'errorLoadingBlockedUsers';
+  @override
+  String get errorLoadingCategories => 'errorLoadingCategories';
+  @override
+  String get errorLoadingChat => 'errorLoadingChat';
+  @override
+  String get errorLoadingComments => 'errorLoadingComments';
+  @override
+  String get errorLoadingCommunities => 'errorLoadingCommunities';
+  @override
+  String get errorLoadingContent => 'errorLoadingContent';
+  @override
+  String get errorLoadingHistory => 'errorLoadingHistory';
+  @override
+  String get errorLoadingLeaderboard => 'errorLoadingLeaderboard';
+  @override
+  String get errorLoadingMedia => 'errorLoadingMedia';
+  @override
+  String get errorLoadingMore => 'errorLoadingMore';
+  @override
+  String get errorLoadingPoll => 'errorLoadingPoll';
+  @override
+  String get errorLoadingPost => 'errorLoadingPost';
+  @override
+  String get errorLoadingQuiz => 'errorLoadingQuiz';
+  @override
+  String get errorLoadingReplies => 'errorLoadingReplies';
+  @override
+  String get errorLoadingUsers => 'errorLoadingUsers';
+  @override
+  String get errorLoadingWallet => 'errorLoadingWallet';
+  @override
+  String get errorLoadingWikiEntries => 'errorLoadingWikiEntries';
+  @override
+  String get errorLoggingIn => 'errorLoggingIn';
+  @override
+  String get errorMutingUser => 'errorMutingUser';
+  @override
+  String get errorOpeningImage => 'errorOpeningImage';
+  @override
+  String get errorPinningPost => 'errorPinningPost';
+  @override
+  String get errorRejectingEntry => 'errorRejectingEntry';
+  @override
+  String get errorRemovingAdmin => 'errorRemovingAdmin';
+  @override
+  String get errorRemovingCurator => 'errorRemovingCurator';
+  @override
+  String get errorRemovingFavorite => 'errorRemovingFavorite';
+  @override
+  String get errorRemovingLeader => 'errorRemovingLeader';
+  @override
+  String get errorRemovingMember => 'errorRemovingMember';
+  @override
+  String get errorReporting => 'errorReporting';
+  @override
+  String get errorResendingEmail => 'errorResendingEmail';
+  @override
+  String get errorResettingPassword => 'errorResettingPassword';
+  @override
+  String get errorSavingChanges => 'errorSavingChanges';
+  @override
+  String get errorSavingDraft => 'errorSavingDraft';
+  @override
+  String get errorSavingSettings => 'errorSavingSettings';
+  @override
+  String get errorSendingMessage => 'errorSendingMessage';
+  @override
+  String get errorSendingVerificationEmail => 'errorSendingVerificationEmail';
+  @override
+  String get errorSigningUp => 'errorSigningUp';
+  @override
+  String get errorStartingChat => 'errorStartingChat';
+  @override
+  String get errorStrikingUser => 'errorStrikingUser';
+  @override
+  String get errorSubmittingEntry => 'errorSubmittingEntry';
+  @override
+  String get errorUnbanningUser => 'errorUnbanningUser';
+  @override
+  String get errorUnblockingUser => 'errorUnblockingUser';
+  @override
+  String get errorUnfollowingUser => 'errorUnfollowingUser';
+  @override
+  String get errorUnpinningPost => 'errorUnpinningPost';
+  @override
+  String get errorUpdatingCommunity => 'errorUpdatingCommunity';
+  @override
+  String get errorUpdatingPost => 'errorUpdatingPost';
+  @override
+  String get errorUpdatingSettings => 'errorUpdatingSettings';
+  @override
+  String get errorUploadingImage => 'errorUploadingImage';
+  @override
+  String get errorVerifyingEmail => 'errorVerifyingEmail';
+  @override
+  String get errorVoting => 'errorVoting';
+  @override
+  String get errorWarningUser => 'errorWarningUser';
+  @override
+  String get events => 'events';
+  @override
+  String get expand => 'expand';
+  @override
+  String get explicitContent => 'explicitContent';
+  @override
+  String get failedToLoadImage => 'failedToLoadImage';
+  @override
+  String get fanArt => 'fanArt';
+  @override
+  String get faq => 'faq';
+  @override
+  String get feature => 'feature';
+  @override
+  String get featurePostInCommunity => 'featurePostInCommunity';
+  @override
+  String get featuredLabel => 'featuredLabel';
+  @override
+  String get featuredMembers => 'featuredMembers';
+  @override
+  String get featuredPosts => 'featuredPosts';
+  @override
+  String get feedAndPosts => 'feedAndPosts';
+  @override
+  String get feedback => 'feedback';
+  @override
+  String get fileIsTooLarge => 'fileIsTooLarge';
+  @override
+  String get fileName => 'fileName';
+  @override
+  String get fileSize => 'fileSize';
+  @override
+  String get fileType => 'fileType';
+  @override
+  String get fileUploadedSuccessfully => 'fileUploadedSuccessfully';
+  @override
+  String get fillAllFields => 'fillAllFields';
+  @override
+  String get fillInTheFields => 'fillInTheFields';
+  @override
+  String get filterBy => 'filterBy';
+  @override
+  String get findFriends => 'findFriends';
+  @override
+  String get flag => 'flag';
+  @override
+  String get flagContent => 'flagContent';
+  @override
+  String get flagDetails => 'flagDetails';
+  @override
+  String get flagSent => 'flagSent';
+  @override
+  String get flagUser => 'flagUser';
+  @override
+  String get flaggedContent => 'flaggedContent';
+  @override
+  String get followNotifications => 'followNotifications';
+  @override
+  String get followUser => 'followUser';
+  @override
+  String get followersOnly => 'followersOnly';
+  @override
+  String get followingLabel => 'followingLabel';
+  @override
+  String get font => 'font';
+  @override
+  String get forReview => 'forReview';
+  @override
+  String get forgotYourPassword => 'forgotYourPassword';
+  @override
+  String get format => 'format';
+  @override
+  String get frame => 'frame';
+  @override
+  String get friends => 'friends';
+  @override
+  String get from => 'from';
+  @override
+  String get galleryPermission => 'galleryPermission';
+  @override
+  String get gaming => 'gaming';
+  @override
+  String get generalChat => 'generalChat';
+  @override
+  String get getCoins => 'getCoins';
+  @override
+  String get getHelp => 'getHelp';
+  @override
+  String get getStartedDesc => 'getStartedDesc';
+  @override
+  String get giphy => 'giphy';
+  @override
+  String get giveProps => 'giveProps';
+  @override
+  String get globalProfile => 'globalProfile';
+  @override
+  String get goBack => 'goBack';
+  @override
+  String get goLive => 'goLive';
+  @override
+  String get goToChat => 'goToChat';
+  @override
+  String get goToCommunity => 'goToCommunity';
+  @override
+  String get goToPost => 'goToPost';
+  @override
+  String get goToProfile => 'goToProfile';
+  @override
+  String get group => 'group';
+  @override
+  String get groupAdmin => 'groupAdmin';
+  @override
+  String get groupCreated => 'groupCreated';
+  @override
+  String get groupIcon => 'groupIcon';
+  @override
+  String get groupMembers => 'groupMembers';
+  @override
+  String get groupSettings => 'groupSettings';
+  @override
+  String get guidelinesLabel => 'guidelinesLabel';
+  @override
+  String get hasLeftTheChat => 'hasLeftTheChat';
+  @override
+  String get helpAndSupport => 'helpAndSupport';
+  @override
+  String get lastPost => 'lastPost';
+  @override
+  String get lastPostBy => 'lastPostBy';
+  @override
+  String get linkToPost => 'linkToPost';
+  @override
+  String get loadingGifs => 'loadingGifs';
+  @override
+  String get loadingImages => 'loadingImages';
+  @override
+  String get loadingStickers => 'loadingStickers';
+  @override
+  String get manageBlockedUsers => 'manageBlockedUsers';
+  @override
+  String get manageDevices => 'manageDevices';
+  @override
+  String get managePosts => 'managePosts';
+  @override
+  String get manageUsers => 'manageUsers';
+  @override
+  String get memberList => 'memberList';
+  @override
+  String get messageFrom => 'messageFrom';
+  @override
+  String get messageToBroadcast => 'messageToBroadcast';
+  @override
+  String get moreOptions => 'moreOptions';
+  @override
+  String get newPasswordIsRequired => 'newPasswordIsRequired';
+  @override
+  String get noAdOffers => 'noAdOffers';
+  @override
+  String get noChatsFound => 'noChatsFound';
+  @override
+  String get noChatsHere => 'noChatsHere';
+  @override
+  String get noCommunityFound => 'noCommunityFound';
+  @override
+  String get noCommunityMembers => 'noCommunityMembers';
+  @override
+  String get noCommunityPosts => 'noCommunityPosts';
+  @override
+  String get noGifsFound => 'noGifsFound';
+  @override
+  String get noImagesFound => 'noImagesFound';
+  @override
+  String get noInvites => 'noInvites';
+  @override
+  String get noMessagesHere => 'noMessagesHere';
+  @override
+  String get noMorePosts => 'noMorePosts';
+  @override
+  String get noNotificationsYet => 'noNotificationsYet';
+  @override
+  String get noOneCanFollow => 'noOneCanFollow';
+  @override
+  String get noRecentSearches => 'noRecentSearches';
+  @override
+  String get noResultsFound => 'noResultsFound';
+  @override
+  String get noResultsFoundMsg => 'noResultsFoundMsg';
+  @override
+  String get noSharedContent => 'noSharedContent';
+  @override
+  String get noStickersFound => 'noStickersFound';
+  @override
+  String get noWikiEntries => 'noWikiEntries';
+  @override
+  String get notificationsLabel => 'notificationsLabel';
+  @override
+  String get onlyFriendsCanComment => 'onlyFriendsCanComment';
+  @override
+  String get onlyHostCanInvite => 'onlyHostCanInvite';
+  @override
+  String get onlyHostCanRemove => 'onlyHostCanRemove';
+  @override
+  String get onlyHostCanSee => 'onlyHostCanSee';
+  @override
+  String get onlyLeadersCanFeature => 'onlyLeadersCanFeature';
+  @override
+  String get onlyLeadersCanPin => 'onlyLeadersCanPin';
+  @override
+  String get openCamera => 'openCamera';
+  @override
+  String get openGallery => 'openGallery';
+  @override
+  String get openImage => 'openImage';
+  @override
+  String get openInBrowser => 'openInBrowser';
+  @override
+  String get option => 'option';
+  @override
+  String get otherLabel => 'otherLabel';
+  @override
+  String get passwordChanged => 'passwordChanged';
+  @override
+  String get passwordIsRequired => 'passwordIsRequired';
+  @override
+  String get passwordReset => 'passwordReset';
+  @override
+  String get passwordUpdated => 'passwordUpdated';
+  @override
+  String get pendingLabel => 'pendingLabel';
+  @override
+  String get personalInformation => 'personalInformation';
+  @override
+  String get pinChat => 'pinChat';
+  @override
+  String get pinToBlog => 'pinToBlog';
+  @override
+  String get pinWiki => 'pinWiki';
+  @override
+  String get postCreationSuccess => 'postCreationSuccess';
+  @override
+  String get postFeatured => 'postFeatured';
+  @override
+  String get postIsHidden => 'postIsHidden';
+  @override
+  String get postIsVisible => 'postIsVisible';
+  @override
+  String get postLink => 'postLink';
+  @override
+  String get postPinned => 'postPinned';
+  @override
+  String get postSucessfully => 'postSucessfully';
+  @override
+  String get postUnfeatured => 'postUnfeatured';
+  @override
+  String get postsLabel => 'postsLabel';
+  @override
+  String get poweredByGiphy => 'poweredByGiphy';
+  @override
+  String get privacyLabel => 'privacyLabel';
+  @override
+  String get profileIsPrivate => 'profileIsPrivate';
+  @override
+  String get profileIsPublic => 'profileIsPublic';
+  @override
+  String get profileLabel => 'profileLabel';
+  @override
+  String get profileVisibility => 'profileVisibility';
+  @override
+  String get publishChanges => 'publishChanges';
+  @override
+  String get purchase => 'purchase';
+  @override
+  String get purchaseHistory => 'purchaseHistory';
+  @override
+  String get purchaseRestored => 'purchaseRestored';
+  @override
+  String get purchasesRestored => 'purchasesRestored';
+  @override
+  String get question2 => 'question2';
+  @override
+  String get questionCreatedSuccess => 'questionCreatedSuccess';
+  @override
+  String get questionIsRequired => 'questionIsRequired';
+  @override
+  String get quizExplanation => 'quizExplanation';
+  @override
+  String get quizExplanationHint => 'quizExplanationHint';
+  @override
+  String get quizOptions => 'quizOptions';
+  @override
+  String get reasonForAction => 'reasonForAction';
+  @override
+  String get reasonForReport => 'reasonForReport';
+  @override
+  String get reasonLabel => 'reasonLabel';
+  @override
+  String get recentSearchesCleared => 'recentSearchesCleared';
+  @override
+  String get removeAdmin => 'removeAdmin';
+  @override
+  String get removeCurator => 'removeCurator';
+  @override
+  String get removeFavorite => 'removeFavorite';
+  @override
+  String get removeLeader => 'removeLeader';
+  @override
+  String get removeLink => 'removeLink';
+  @override
+  String get removeUser => 'removeUser';
+  @override
+  String get removedFromFavorites => 'removedFromFavorites';
+  @override
+  String get reportSentSuccess => 'reportSentSuccess';
+  @override
+  String get requestToJoinSent => 'requestToJoinSent';
+  @override
+  String get requested => 'requested';
+  @override
+  String get resetAction => 'resetAction';
+  @override
+  String get restrictContent => 'restrictContent';
+  @override
+  String get results => 'results';
+  @override
+  String get resume => 'resume';
+  @override
+  String get reviewEntry => 'reviewEntry';
+  @override
+  String get searchImages => 'searchImages';
+  @override
+  String get searchPosts => 'searchPosts';
+  @override
+  String get searchStickers => 'searchStickers';
+  @override
+  String get searchUsers => 'searchUsers';
+  @override
+  String get securityAndPrivacy => 'securityAndPrivacy';
+  @override
+  String get seeWhoVoted => 'seeWhoVoted';
+  @override
+  String get selectAtLeastTwo => 'selectAtLeastTwo';
+  @override
+  String get selectCoverImage => 'selectCoverImage';
+  @override
+  String get selectIcon => 'selectIcon';
+  @override
+  String get selectQuizEndDate => 'selectQuizEndDate';
+  @override
+  String get selectSticker => 'selectSticker';
+  @override
+  String get selectVideo => 'selectVideo';
+  @override
+  String get sendBroadcastTo => 'sendBroadcastTo';
+  @override
+  String get sendToEveryone => 'sendToEveryone';
+  @override
+  String get sendingAudio => 'sendingAudio';
+  @override
+  String get sexuallyExplicit => 'sexuallyExplicit';
+  @override
+  String get shareTheCommunity => 'shareTheCommunity';
+  @override
+  String get start => 'start';
+  @override
+  String get startAConversation => 'startAConversation';
+  @override
+  String get startChatting => 'startChatting';
+  @override
+  String get stickerAddedToPost => 'stickerAddedToPost';
+  @override
+  String get story => 'story';
+  @override
+  String get storyCreatedSuccess => 'storyCreatedSuccess';
+  @override
+  String get storyOptions => 'storyOptions';
+  @override
+  String get submitToCatalog => 'submitToCatalog';
+  @override
+  String get subscribeToPlus => 'subscribeToPlus';
+  @override
+  String get successfullyUnfollowed => 'successfullyUnfollowed';
+  @override
+  String get takePicture => 'takePicture';
+  @override
+  String get tapAnAnswer => 'tapAnAnswer';
+  @override
+  String get tapHereToStart => 'tapHereToStart';
+  @override
+  String get tapToAdd => 'tapToAdd';
+  @override
+  String get tapToJoin => 'tapToJoin';
+  @override
+  String get tapToRecord => 'tapToRecord';
+  @override
+  String get tapToReply => 'tapToReply';
+  @override
+  String get tapToSee => 'tapToSee';
+  @override
+  String get tapToSelect => 'tapToSelect';
+  @override
+  String get tapToStartChat => 'tapToStartChat';
+  @override
+  String get tapToUnfollow => 'tapToUnfollow';
+  @override
+  String get tapToView => 'tapToView';
+  @override
+  String get textCopied => 'textCopied';
+  @override
+  String get textFormatting => 'textFormatting';
+  @override
+  String get thisPostIsPrivate => 'thisPostIsPrivate';
+  @override
+  String get thisPostIsPublic => 'thisPostIsPublic';
+  @override
+  String get title2 => 'title2';
+  @override
+  String get titleIsRequired => 'titleIsRequired';
+  @override
+  String get todayAt => 'todayAt';
+  @override
+  String get topFans => 'topFans';
+  @override
+  String get transferCoins => 'transferCoins';
+  @override
+  String get transferTo => 'transferTo';
+  @override
+  String get transfering => 'transfering';
+  @override
+  String get transferingOwner => 'transferingOwner';
+  @override
+  String get typeSomething => 'typeSomething';
+  @override
+  String get typeYourMessage => 'typeYourMessage';
+  @override
+  String get unfollowUserConfirmation => 'unfollowUserConfirmation';
+  @override
+  String get unpinFromBlog => 'unpinFromBlog';
+  @override
+  String get unreadChats => 'unreadChats';
+  @override
+  String get updateEmail => 'updateEmail';
+  @override
+  String get uploadVideo => 'uploadVideo';
+  @override
+  String get uploadingFile => 'uploadingFile';
+  @override
+  String get uploadingImage => 'uploadingImage';
+  @override
+  String get uploadingVideo => 'uploadingVideo';
+  @override
+  String get verificationEmailSent => 'verificationEmailSent';
+  @override
+  String get video2 => 'video2';
+  @override
+  String get videoAddedToPost => 'videoAddedToPost';
+  @override
+  String get videoTitle => 'videoTitle';
+  @override
+  String get viewAll2 => 'viewAll2';
+  @override
+  String get viewPost => 'viewPost';
+  @override
+  String get viewStory => 'viewStory';
+  @override
+  String get voiceChat => 'voiceChat';
+  @override
+  String get wall2 => 'wall2';
+  @override
+  String get warnUser => 'warnUser';
+  @override
+  String get warning => 'warning';
+  @override
+  String get warningSent => 'warningSent';
+  @override
+  String get watch => 'watch';
+  @override
+  String get watchAds => 'watchAds';
+  @override
+  String get watchVideo => 'watchVideo';
+  @override
+  String get welcome2 => 'welcome2';
+  @override
+  String get welcomeToOurCommunity => 'welcomeToOurCommunity';
+  @override
+  String get wiki2 => 'wiki2';
+  @override
+  String get writeAComment => 'writeAComment';
+  @override
+  String get writeAMessage => 'writeAMessage';
+  @override
+  String get writeAPost => 'writeAPost';
+  @override
+  String get writeAReply => 'writeAReply';
+  @override
+  String get writeSomething => 'writeSomething';
+  @override
+  String get yes2 => 'yes2';
+  @override
+  String get youAreNotFollowingAnyone => 'youAreNotFollowingAnyone';
+  @override
+  String get youHaveBeenBanned => 'youHaveBeenBanned';
+  @override
+  String get youHaveBeenKicked => 'youHaveBeenKicked';
+  @override
+  String get youHaveBeenMuted => 'youHaveBeenMuted';
+  @override
+  String get youHaveNoFollowers => 'youHaveNoFollowers';
+  @override
+  String get yourAccountHasBeenDeleted => 'yourAccountHasBeenDeleted';
+  @override
+  String get yourChangesHaveBeenSaved => 'yourChangesHaveBeenSaved';
+  @override
+  String get yourEmailHasBeenVerified => 'yourEmailHasBeenVerified';
+  @override
+  String get yourLanguages => 'yourLanguages';
+  @override
+  String get yourNickname => 'yourNickname';
+  @override
+  String get yourProfile => 'yourProfile';
+  @override
+  String get yourProfileIsNowPublic => 'yourProfileIsNowPublic';
+  @override
+  String get yourTopCommunities => 'yourTopCommunities';
+  @override
+  String get yourWallIsEmpty => 'yourWallIsEmpty';
+  @override
+  String get youtubeVideo => 'youtubeVideo';
 }

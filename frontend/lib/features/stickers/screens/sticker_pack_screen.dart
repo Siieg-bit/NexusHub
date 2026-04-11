@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
-import '../../../core/l10n/locale_provider.dart';
 import '../models/sticker_model.dart';
 import '../providers/sticker_providers.dart';
 import '../repositories/sticker_repository.dart';

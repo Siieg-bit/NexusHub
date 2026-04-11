@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/models/user_model.dart';
-import '../../../core/models/comment_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/helpers.dart';
 import '../../../core/providers/dm_invite_provider.dart';
@@ -16,6 +15,7 @@ import '../../../core/widgets/amino_bottom_nav.dart';
 import '../../communities/widgets/community_create_menu.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/providers/block_provider.dart';
+import '../widgets/wall_comment_sheet.dart';
 
 /// Perfil dentro de uma Comunidade — Layout 1:1 com Amino Apps.
 ///
@@ -45,14 +45,12 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   late TabController _tabController;
   UserModel? _user;
   Map<String, dynamic>? _membership;
-  List<CommentModel> _wallComments = [];
   List<Map<String, dynamic>> _userPosts = [];
   List<Map<String, dynamic>> _wikiEntries = [];
   List<Map<String, dynamic>> _savedPosts = [];
   bool _isInitialLoading = true;
   bool _savedPostsLoaded = false;
   bool _bioExpanded = false;
-  final _wallController = TextEditingController();
   int _followersCount = 0;
   int _followingCount = 0;
   String _communityName = '';
@@ -120,16 +118,6 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
         _wikiEntries = [];
       }
 
-      // Mural (wall comments)
-      final wallRes = await SupabaseService.table('comments')
-          .select('*, profiles(*)')
-          .eq('profile_wall_id', widget.userId)
-          .order('created_at', ascending: false)
-          .limit(30);
-      _wallComments = (wallRes as List? ?? [])
-          .map((e) => CommentModel.fromJson(e))
-          .toList();
-
       // Contagem de seguidores/seguindo
       final followersRes = await SupabaseService.table('follows')
           .select()
@@ -154,7 +142,6 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   @override
   void dispose() {
     _tabController.dispose();
-    _wallController.dispose();
     super.dispose();
   }
 
@@ -938,10 +925,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                       child: Text(
                           '${s.posts}${_userPosts.isNotEmpty ? ' ${_userPosts.length}' : ''}'),
                     ),
-                    Tab(
-                      child: Text(
-                          '${s.wall}${_wallComments.isNotEmpty ? ' ${_wallComments.length}' : ''}'),
-                    ),
+                    Tab(text: s.wall),
                     Tab(text: s.savedPosts),
                   ],
                 ),
@@ -952,7 +936,11 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
             controller: _tabController,
             children: [
               _buildPostsTab(),
-              _buildWallTab(),
+              WallCommentSheet(
+                wallUserId: widget.userId,
+                isOwnWall: false,
+                asBottomSheet: false,
+              ),
               _buildSavedPostsTab(),
             ],
           ),
@@ -1238,137 +1226,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   // ============================================================================
   // WALL TAB
   // ============================================================================
-  Widget _buildWallTab() {
-    final s = getStrings();
-    final r = context.r;
-    return Column(
-      children: [
-        // Input
-        Container(
-          padding: EdgeInsets.all(r.s(12)),
-          decoration: BoxDecoration(
-            color: context.surfaceColor,
-            border: Border(
-              bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
-            ),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _wallController,
-                  style:
-                      TextStyle(color: context.textPrimary, fontSize: r.fs(14)),
-                  decoration: InputDecoration(
-                    hintText: s.writeOnTheWall,
-                    hintStyle:
-                        TextStyle(color: Colors.grey[600], fontSize: r.fs(14)),
-                    filled: true,
-                    fillColor: context.scaffoldBg,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(r.s(20)),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: EdgeInsets.symmetric(
-                        horizontal: r.s(14), vertical: r.s(8)),
-                  ),
-                ),
-              ),
-              SizedBox(width: r.s(8)),
-              GestureDetector(
-                onTap: _postWallComment,
-                child: Container(
-                  padding: EdgeInsets.all(r.s(10)),
-                  decoration: const BoxDecoration(
-                    color: AppTheme.primaryColor,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(Icons.send_rounded,
-                      color: Colors.white, size: r.s(18)),
-                ),
-              ),
-            ],
-          ),
-        ),
-        // Comments list
-        Expanded(
-          child: _wallComments.isEmpty
-              ? Center(
-                  child: Text(s.noWallComments,
-                      style: TextStyle(color: Colors.grey[500])),
-                )
-              : ListView.builder(
-                  padding: EdgeInsets.all(r.s(12)),
-                  itemCount: _wallComments.length,
-                  itemBuilder: (context, index) {
-                    final comment = _wallComments[index];
-                    return Container(
-                      margin: EdgeInsets.only(bottom: r.s(10)),
-                      padding: EdgeInsets.all(r.s(14)),
-                      decoration: BoxDecoration(
-                        color: context.surfaceColor,
-                        borderRadius: BorderRadius.circular(r.s(12)),
-                        border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.05)),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          GestureDetector(
-                            onTap: () =>
-                                context.push('/user/${comment.authorId}'),
-                            child: CircleAvatar(
-                              radius: 18,
-                              backgroundColor: context.scaffoldBg,
-                              backgroundImage: () {
-                                final authorIcon = comment.author?.iconUrl;
-                                return authorIcon != null &&
-                                        authorIcon.isNotEmpty
-                                    ? CachedNetworkImageProvider(authorIcon)
-                                    : null;
-                              }(),
-                              child: () {
-                                final authorIcon = comment.author?.iconUrl;
-                                return authorIcon == null || authorIcon.isEmpty
-                                    ? Icon(Icons.person_rounded,
-                                        size: r.s(18),
-                                        color: context.textPrimary)
-                                    : null;
-                              }(),
-                            ),
-                          ),
-                          SizedBox(width: r.s(10)),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  comment.author?.nickname ?? s.anonymous,
-                                  style: TextStyle(
-                                      color: context.textPrimary,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: r.fs(13)),
-                                ),
-                                SizedBox(height: r.s(3)),
-                                Text(
-                                  comment.content,
-                                  style: TextStyle(
-                                      color: Colors.grey[300],
-                                      fontSize: r.fs(13),
-                                      height: 1.4),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-        ),
-      ],
-    );
-  }
+
 
   // ============================================================================
   // SAVED POSTS TAB
@@ -1584,38 +1442,6 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(message)),
-        );
-      }
-    }
-  }
-
-  Future<void> _postWallComment() async {
-    final s = getStrings();
-    final text = _wallController.text.trim();
-    if (text.isEmpty) return;
-    try {
-      // RPC server-side: validação + auth.uid()
-      await SupabaseService.rpc('post_wall_comment', params: {
-        'p_profile_user_id': widget.userId,
-        'p_community_id': widget.communityId,
-        'p_content': text,
-      });
-      _wallController.clear();
-      final wallRes = await SupabaseService.table('comments')
-          .select('*, profiles(*)')
-          .eq('profile_wall_id', widget.userId)
-          .order('created_at', ascending: false)
-          .limit(30);
-      if (!mounted) return;
-      setState(() {
-        _wallComments = (wallRes as List? ?? [])
-            .map((e) => CommentModel.fromJson(e))
-            .toList();
-      });
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(s.anErrorOccurredTryAgain)),
         );
       }
     }

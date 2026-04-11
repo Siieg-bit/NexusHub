@@ -4,13 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:uuid/uuid.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
-import '../../../core/l10n/locale_provider.dart';
 import '../repositories/sticker_repository.dart';
-import '../providers/sticker_providers.dart';
 
 /// Tela de criação de stickers personalizados.
 /// Permite: escolher imagem, adicionar texto, emojis, molduras e bordas.

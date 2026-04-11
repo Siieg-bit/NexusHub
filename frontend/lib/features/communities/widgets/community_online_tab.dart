@@ -993,7 +993,6 @@ void _showMemberSheet(
   Map<String, dynamic> member,
   Set<String> onlineUserIds,
 ) {
-  final s = getStrings();
   final p = member['profiles'] as Map<String, dynamic>? ?? {};
   final nickname = p['nickname'] as String? ?? s.user;
   final avatarUrl = p['icon_url'] as String?;
@@ -1221,7 +1220,6 @@ class _MemberBottomSheet extends ConsumerWidget {
       context.push('/chat/$threadId');
     } catch (e) {
       if (context.mounted) {
-        final s = getStrings();
         final err = e.toString();
         String message = s.errorOpeningChatTryAgain;
 

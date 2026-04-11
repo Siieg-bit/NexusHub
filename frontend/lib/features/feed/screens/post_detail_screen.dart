@@ -16,7 +16,6 @@ import '../widgets/block_content_renderer.dart';
 import '../widgets/poll_quiz_widget.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../moderation/widgets/report_dialog.dart';
-import '../../chat/widgets/sticker_picker.dart';
 import '../../stickers/stickers.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/utils/media_utils.dart';

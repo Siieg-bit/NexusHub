@@ -16,7 +16,6 @@ import '../../../core/services/realtime_service.dart';
 // call_screen.dart removido — chamadas de voz/vídeo substituídas por projeção
 import '../widgets/giphy_picker.dart';
 import '../widgets/forward_message_sheet.dart';
-import '../widgets/sticker_picker.dart';
 import '../../stickers/stickers.dart';
 import '../widgets/voice_recorder.dart';
 import '../widgets/message_bubble.dart';
