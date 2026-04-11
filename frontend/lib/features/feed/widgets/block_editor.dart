@@ -786,17 +786,19 @@ class _InlineFormatBar extends StatelessWidget {
                 },
               ),
             ),
-            SizedBox(width: r.s(2)),
+            SizedBox(width: r.s(4)),
             _MiniIconBtn(
               icon: Icons.format_bold_rounded,
               selected: block.bold,
               onTap: onToggleBold,
             ),
+            SizedBox(width: r.s(2)),
             _MiniIconBtn(
               icon: Icons.format_italic_rounded,
               selected: block.italic,
               onTap: onToggleItalic,
             ),
+            SizedBox(width: r.s(2)),
             _MiniIconBtn(
               icon: _alignmentIcon(block.align),
               selected: false,
@@ -951,16 +953,16 @@ class _MiniChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final r = context.r;
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: r.s(6), vertical: r.s(3)),
+      padding: EdgeInsets.symmetric(horizontal: r.s(10), vertical: r.s(5)),
       decoration: BoxDecoration(
         color: context.surfaceColor.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(r.s(10)),
+        borderRadius: BorderRadius.circular(r.s(12)),
       ),
       child: Text(
         label,
         style: TextStyle(
           color: context.textPrimary,
-          fontSize: r.fs(10),
+          fontSize: r.fs(14),
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -986,12 +988,12 @@ class _MiniIconBtn extends StatelessWidget {
     final r = context.r;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(r.s(10)),
+      borderRadius: BorderRadius.circular(r.s(12)),
       child: Padding(
-        padding: EdgeInsets.all(r.s(4)),
+        padding: EdgeInsets.all(r.s(6)),
         child: Icon(
           icon,
-          size: r.s(14),
+          size: r.s(20),
           color: color ??
               (selected ? AppTheme.accentColor : context.textSecondary),
         ),

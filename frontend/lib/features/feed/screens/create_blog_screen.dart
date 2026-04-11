@@ -1450,14 +1450,21 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
 
                 // ── Área de edição ──
                 Expanded(
-                  child: GestureDetector(
-                    onTap: () => _contentFocusNode.requestFocus(),
-                    child: SingleChildScrollView(
-                      controller: _scrollController,
-                      padding: EdgeInsets.symmetric(horizontal: r.s(16)),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onTap: () => _contentFocusNode.requestFocus(),
+                        child: SingleChildScrollView(
+                          controller: _scrollController,
+                          padding: EdgeInsets.symmetric(horizontal: r.s(16)),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minHeight: constraints.maxHeight,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                           SizedBox(height: r.s(12)),
 
                           // ── Título (direto, sem card) ──
@@ -1611,10 +1618,13 @@ class _CreateBlogScreenState extends ConsumerState<CreateBlogScreen>
                             ),
                           ],
 
-                          SizedBox(height: r.s(80)),
-                        ],
+                              SizedBox(height: r.s(80)),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
+                    );
+                    },
                   ),
                 ),
 
