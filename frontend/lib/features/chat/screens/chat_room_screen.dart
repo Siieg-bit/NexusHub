@@ -647,9 +647,20 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       return;
     }
 
-    _messageController.clear();
+    // Bug fix: checar mounted ANTES de chamar clear() para evitar
+    // "Cannot get renderObject of inactive element" quando o widget
+    // é desmontado (ex: ao fechar o chat) antes do async completar.
     if (!mounted) return;
-    setState(() => _isSending = true);
+    // Bug fix: usar addPostFrameCallback para evitar "dirty widget in wrong
+    // build scope" e "Cannot get renderObject of inactive element".
+    // Ambos ocorriam quando setState/_messageController.clear() eram chamados
+    // durante o build de outro widget (ex: ao abrir _showTipDialog).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _messageController.clear();
+        setState(() => _isSending = true);
+      }
+    });
 
     // Se membership não foi confirmada, tentar novamente antes de enviar
     if (!_membershipConfirmed) {

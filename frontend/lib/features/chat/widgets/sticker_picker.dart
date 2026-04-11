@@ -54,7 +54,11 @@ class _StickerPickerBody extends ConsumerStatefulWidget {
 
 class _StickerPickerBodyState extends ConsumerState<_StickerPickerBody>
     with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+  // Bug fix: TabController é nullable e recriado sempre que _packs muda de tamanho.
+  // Isso evita o erro "Controller's length property (9) does not match the number
+  // of tabs (17)" que ocorria ao favoritar/desfavoritar stickers, pois a aba
+  // Favoritos era adicionada/removida de _packs sem recriar o controller.
+  TabController? _tabController;
   List<Map<String, dynamic>> _packs = [];
   Map<String, List<Map<String, dynamic>>> _stickersByPack = {};
   bool _isLoading = true;
@@ -95,6 +99,18 @@ class _StickerPickerBodyState extends ConsumerState<_StickerPickerBody>
     _loadAll();
   }
 
+  /// Reconstrói o TabController sempre que a lista de packs muda de tamanho.
+  /// Isso evita o mismatch entre controller.length e tabs.length.
+  void _rebuildTabController(List<Map<String, dynamic>> newPacks) {
+    final oldController = _tabController;
+    final newController = TabController(length: newPacks.length, vsync: this);
+    _tabController = newController;
+    // Dispose do controller antigo após o frame para evitar uso após dispose
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      oldController?.dispose();
+    });
+  }
+
   Future<void> _loadAll() async {
     await _loadFavoriteStickers();
     await _loadRecentStickers();
@@ -112,7 +128,7 @@ class _StickerPickerBodyState extends ConsumerState<_StickerPickerBody>
           .limit(20);
       _recentStickers = List<Map<String, dynamic>>.from(res as List? ?? []);
     } catch (e) {
-      debugPrint('[sticker_picker] Erro: $e');
+      debugPrint('[sticker_picker] Erro ao carregar recentes: $e');
     }
   }
 
@@ -136,7 +152,7 @@ class _StickerPickerBodyState extends ConsumerState<_StickerPickerBody>
         'used_at': DateTime.now().toIso8601String(),
       }, onConflict: 'user_id,sticker_id');
     } catch (e) {
-      debugPrint('[sticker_picker] Erro: $e');
+      debugPrint('[sticker_picker] Erro ao adicionar recente: $e');
     }
   }
 
@@ -153,7 +169,7 @@ class _StickerPickerBodyState extends ConsumerState<_StickerPickerBody>
           .map((s) => (s['sticker_id'] as String?) ?? '')
           .toSet();
     } catch (e) {
-      debugPrint('[sticker_picker] Erro: $e');
+      debugPrint('[sticker_picker] Erro ao carregar favoritos: $e');
     }
   }
 
@@ -179,7 +195,7 @@ class _StickerPickerBodyState extends ConsumerState<_StickerPickerBody>
           .toList();
       _stickersByPack = packs;
     } catch (e) {
-      debugPrint('[sticker_picker] Erro: $e');
+      debugPrint('[sticker_picker] Erro ao carregar packs: $e');
     }
 
     // Aba Emojis padrão
@@ -197,7 +213,7 @@ class _StickerPickerBodyState extends ConsumerState<_StickerPickerBody>
       _stickersByPack[_favTab] = _favoriteStickers;
     }
 
-    _tabController = TabController(length: _packs.length, vsync: this);
+    _rebuildTabController(_packs);
     if (mounted) setState(() => _isLoading = false);
   }
 
@@ -219,7 +235,16 @@ class _StickerPickerBodyState extends ConsumerState<_StickerPickerBody>
           setState(() {
             _favoriteStickers.removeWhere((s) => s['sticker_id'] == stickerId);
             _favoriteStickerIds.remove(stickerId);
-            _stickersByPack[_favTab] = _favoriteStickers;
+            _stickersByPack[_favTab] = List.from(_favoriteStickers);
+
+            // Se não há mais favoritos, remove a aba e reconstrói o controller
+            if (_favoriteStickers.isEmpty) {
+              final hadFavTab = _packs.any((p) => p['name'] == _favTab);
+              if (hadFavTab) {
+                _packs.removeWhere((p) => p['name'] == _favTab);
+                _rebuildTabController(_packs);
+              }
+            }
           });
         }
       } else {
@@ -240,40 +265,61 @@ class _StickerPickerBodyState extends ConsumerState<_StickerPickerBody>
               'sticker_name': entry['sticker_name'],
             });
             _favoriteStickerIds.add(stickerId);
-            _stickersByPack[_favTab] = _favoriteStickers;
+            _stickersByPack[_favTab] = List.from(_favoriteStickers);
+
+            // Se é o primeiro favorito, adiciona a aba e reconstrói o controller
+            if (_favoriteStickers.length == 1) {
+              final hasFavTab = _packs.any((p) => p['name'] == _favTab);
+              if (!hasFavTab) {
+                _packs.insert(0, {
+                  'name': _favTab,
+                  'count': _favoriteStickers.length,
+                });
+                _rebuildTabController(_packs);
+              }
+            } else {
+              // Atualiza o count da aba existente
+              final idx = _packs.indexWhere((p) => p['name'] == _favTab);
+              if (idx >= 0) {
+                _packs[idx] = {
+                  'name': _favTab,
+                  'count': _favoriteStickers.length,
+                };
+              }
+            }
           });
         }
       }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(
-              isFav ? 'Removido dos favoritos' : s.addedToFavorites),
+          content: Text(isFav ? 'Removido dos favoritos' : s.addedToFavorites),
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 1),
         ));
       }
     } catch (e) {
-      debugPrint('[sticker_picker] Erro: $e');
+      debugPrint('[sticker_picker] Erro ao favoritar: $e');
     }
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
+    _tabController?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-      final s = ref.watch(stringsProvider);
+    final s = ref.watch(stringsProvider);
     final r = context.r;
+    final controller = _tabController;
     return Container(
       decoration: BoxDecoration(
         color: context.scaffoldBg,
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      child: _isLoading
+      child: _isLoading || controller == null
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
@@ -305,9 +351,9 @@ class _StickerPickerBodyState extends ConsumerState<_StickerPickerBody>
                     ],
                   ),
                 ),
-                // Tab bar for packs
+                // Tab bar for packs — usa o controller local para garantir sync
                 TabBar(
-                  controller: _tabController,
+                  controller: controller,
                   isScrollable: true,
                   labelColor: AppTheme.primaryColor,
                   unselectedLabelColor: context.textSecondary,
@@ -319,14 +365,16 @@ class _StickerPickerBodyState extends ConsumerState<_StickerPickerBody>
                 // Sticker grid
                 Expanded(
                   child: TabBarView(
-                    controller: _tabController,
+                    controller: controller,
                     children: _packs.map((pack) {
                       final packName = pack['name'] as String?;
                       if (packName == 'Emojis') {
                         return _buildEmojiGrid();
                       }
-                      return _buildStickerGrid(_stickersByPack[packName] ?? [],
-                          isFavTab: packName == _favTab);
+                      return _buildStickerGrid(
+                        _stickersByPack[packName] ?? [],
+                        isFavTab: packName == _favTab,
+                      );
                     }).toList(),
                   ),
                 ),
