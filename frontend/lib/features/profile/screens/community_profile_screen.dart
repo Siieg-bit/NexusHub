@@ -117,6 +117,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
           .eq('author_id', widget.userId)
           .eq('community_id', widget.communityId)
           .eq('status', 'ok')
+          .order('is_pinned_profile', ascending: false)
           .order('created_at', ascending: false)
           .limit(20);
       _userPosts = List<Map<String, dynamic>>.from(postsRes as List? ?? []);
@@ -1039,6 +1040,14 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
   Widget _buildPostsTab() {
     final s = getStrings();
     final r = context.r;
+    final pinnedPost = _userPosts.cast<Map<String, dynamic>?>().firstWhere(
+          (post) => post?['is_pinned_profile'] == true,
+          orElse: () => null,
+        );
+    final regularPosts = _userPosts
+        .where((post) => post['is_pinned_profile'] != true)
+        .toList(growable: false);
+
     return ListView(
       padding: EdgeInsets.zero,
       children: [
@@ -1208,6 +1217,25 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
           ),
         ],
 
+        if (pinnedPost != null) ...[
+          Padding(
+            padding: EdgeInsets.fromLTRB(r.s(16), r.s(16), r.s(16), r.s(6)),
+            child: Text(
+              'Post fixado no perfil da comunidade',
+              style: TextStyle(
+                color: context.textPrimary,
+                fontSize: r.fs(14),
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          _buildCommunityProfilePostCard(pinnedPost, highlighted: true),
+          Divider(
+            color: Colors.white.withValues(alpha: 0.05),
+            height: r.s(20),
+          ),
+        ],
+
         // ── Lista de posts ────────────────────────────────────────────────
         if (_userPosts.isEmpty)
           Padding(
@@ -1226,75 +1254,233 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
               ),
             ),
           )
-        else
-          ...List.generate(_userPosts.length, (index) {
-            final post = _userPosts[index];
-            return GestureDetector(
-              onTap: () => context.push('/post/${post["id"]}'),
-              child: Container(
-                margin: EdgeInsets.fromLTRB(r.s(16), r.s(6), r.s(16), r.s(6)),
-                padding: EdgeInsets.all(r.s(16)),
-                decoration: BoxDecoration(
-                  color: context.surfaceColor,
-                  borderRadius: BorderRadius.circular(r.s(12)),
-                  border:
-                      Border.all(color: Colors.white.withValues(alpha: 0.05)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (post['title'] != null)
-                      Text(
-                        post['title'] as String? ?? '',
-                        style: TextStyle(
-                            color: context.textPrimary,
-                            fontWeight: FontWeight.w700,
-                            fontSize: r.fs(15)),
-                      ),
-                    if (post['content'] != null) ...[
-                      SizedBox(height: r.s(4)),
-                      Text(
-                        post['content'] as String? ?? '',
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            color: Colors.grey[500], fontSize: r.fs(13)),
-                      ),
-                    ],
-                    SizedBox(height: r.s(10)),
-                    Row(
-                      children: [
-                        Icon(Icons.favorite_rounded,
-                            size: r.s(14), color: Colors.grey[600]),
-                        SizedBox(width: r.s(4)),
-                        Text(
-                          '${post['likes_count'] ?? 0}',
-                          style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: r.fs(12),
-                              fontWeight: FontWeight.w600),
-                        ),
-                        SizedBox(width: r.s(14)),
-                        Icon(Icons.comment_rounded,
-                            size: r.s(14), color: Colors.grey[600]),
-                        SizedBox(width: r.s(4)),
-                        Text(
-                          '${post['comments_count'] ?? 0}',
-                          style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: r.fs(12),
-                              fontWeight: FontWeight.w600),
-                        ),
-                      ],
-                    ),
-                  ],
+        else if (regularPosts.isEmpty)
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: r.s(24)),
+            child: Center(
+              child: Text(
+                'Nenhum outro post nesta comunidade.',
+                style: TextStyle(
+                  color: Colors.grey[500],
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-            );
-          }),
+            ),
+          )
+        else
+          ...regularPosts.map((post) => _buildCommunityProfilePostCard(post)),
         SizedBox(height: r.s(80)), // espaço para o FAB
       ],
     );
+  }
+
+  Widget _buildCommunityProfilePostCard(
+    Map<String, dynamic> post, {
+    bool highlighted = false,
+  }) {
+    final r = context.r;
+    final isPinnedProfile = post['is_pinned_profile'] == true;
+
+    return GestureDetector(
+      onTap: () => context.push('/post/${post["id"]}'),
+      child: Container(
+        margin: EdgeInsets.fromLTRB(r.s(16), r.s(6), r.s(16), r.s(6)),
+        padding: EdgeInsets.all(r.s(16)),
+        decoration: BoxDecoration(
+          color: context.surfaceColor,
+          borderRadius: BorderRadius.circular(r.s(12)),
+          border: Border.all(
+            color: highlighted
+                ? AppTheme.primaryColor.withValues(alpha: 0.45)
+                : Colors.white.withValues(alpha: 0.05),
+          ),
+          boxShadow: highlighted
+              ? [
+                  BoxShadow(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.14),
+                    blurRadius: 18,
+                    offset: const Offset(0, 6),
+                  ),
+                ]
+              : null,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (isPinnedProfile)
+                        Container(
+                          margin: EdgeInsets.only(bottom: r.s(8)),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: r.s(10),
+                            vertical: r.s(5),
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryColor.withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(r.s(999)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.push_pin_rounded,
+                                size: r.s(14),
+                                color: AppTheme.primaryColor,
+                              ),
+                              SizedBox(width: r.s(6)),
+                              Text(
+                                'Fixado no perfil',
+                                style: TextStyle(
+                                  color: AppTheme.primaryColor,
+                                  fontSize: r.fs(11),
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      if ((post['title'] as String?)?.isNotEmpty == true)
+                        Text(
+                          post['title'] as String,
+                          style: TextStyle(
+                            color: context.textPrimary,
+                            fontWeight: FontWeight.w700,
+                            fontSize: r.fs(15),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                if (_isOwnProfile)
+                  PopupMenuButton<String>(
+                    icon: Icon(
+                      Icons.more_horiz_rounded,
+                      color: Colors.grey[400],
+                      size: r.s(20),
+                    ),
+                    color: context.surfaceColor,
+                    onSelected: (value) {
+                      if (value == 'pin_profile') {
+                        _toggleCommunityProfilePin(post);
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 'pin_profile',
+                        child: Row(
+                          children: [
+                            Icon(
+                              isPinnedProfile
+                                  ? Icons.push_pin_rounded
+                                  : Icons.push_pin_outlined,
+                              size: r.s(18),
+                              color: AppTheme.primaryColor,
+                            ),
+                            SizedBox(width: r.s(10)),
+                            Text(
+                              isPinnedProfile
+                                  ? 'Desafixar do perfil'
+                                  : 'Fixar no perfil',
+                              style: TextStyle(color: context.textPrimary),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+            if ((post['content'] as String?)?.isNotEmpty == true) ...[
+              SizedBox(height: r.s(4)),
+              Text(
+                post['content'] as String,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Colors.grey[500],
+                  fontSize: r.fs(13),
+                ),
+              ),
+            ],
+            SizedBox(height: r.s(10)),
+            Row(
+              children: [
+                Icon(Icons.favorite_rounded,
+                    size: r.s(14), color: Colors.grey[600]),
+                SizedBox(width: r.s(4)),
+                Text(
+                  '${post['likes_count'] ?? 0}',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: r.fs(12),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(width: r.s(14)),
+                Icon(Icons.comment_rounded,
+                    size: r.s(14), color: Colors.grey[600]),
+                SizedBox(width: r.s(4)),
+                Text(
+                  '${post['comments_count'] ?? 0}',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: r.fs(12),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _toggleCommunityProfilePin(Map<String, dynamic> post) async {
+    final isPinnedProfile = post['is_pinned_profile'] == true;
+
+    try {
+      if (isPinnedProfile) {
+        await SupabaseService.table('posts')
+            .update({'is_pinned_profile': false}).eq('id', post['id']);
+      } else {
+        await SupabaseService.table('posts')
+            .update({'is_pinned_profile': false})
+            .eq('author_id', widget.userId)
+            .eq('community_id', widget.communityId);
+        await SupabaseService.table('posts')
+            .update({'is_pinned_profile': true}).eq('id', post['id']);
+      }
+
+      if (!mounted) return;
+      await _loadProfile();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isPinnedProfile
+                ? 'Post desafixado do perfil da comunidade'
+                : 'Post fixado no perfil da comunidade',
+          ),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Não foi possível atualizar o post fixado.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   Widget _wikiPlaceholder(Responsive r) {
