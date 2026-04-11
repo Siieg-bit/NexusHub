@@ -95,32 +95,35 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
     }
   }
 
-  Future<void> _joinCommunity() async {
+    Future<void> _joinCommunity() async {
     final s = getStrings();
     if (_isJoining) return;
     setState(() => _isJoining = true);
-
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
-
       await SupabaseService.table('community_members').insert({
         'community_id': widget.communityId,
         'user_id': userId,
         'role': 'member',
       });
-
       if (mounted) {
         setState(() {
           _isMember = true;
           _isJoining = false;
         });
         ref.invalidate(userCommunitiesProvider);
+        // Exibir welcomeMessage personalizada se configurada, senão mensagem padrão
+        final welcomeMsg = _community?.welcomeMessage;
+        final displayMsg = (welcomeMsg != null && welcomeMsg.trim().isNotEmpty)
+            ? welcomeMsg.trim()
+            : s.joinedCommunityName(_community?.name ?? '');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(s.joinedCommunityName(_community?.name ?? '')),
+            content: Text(displayMsg),
             backgroundColor: AppTheme.accentColor,
             behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
           ),
         );
       }
@@ -551,7 +554,7 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
                   SizedBox(height: r.s(24)),
 
                   // ── About ── (novo campo aboutText, fallback para description)
-                  if ((community.aboutText?.isNotEmpty ?? false) ||
+                  if (community.aboutText.isNotEmpty ||
                       community.description.isNotEmpty) ...[
                     Align(
                       alignment: Alignment.centerLeft,
@@ -568,8 +571,8 @@ class _CommunityInfoScreenState extends ConsumerState<CommunityInfoScreen> {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        community.aboutText?.isNotEmpty == true
-                            ? community.aboutText!
+                        community.aboutText.isNotEmpty
+                            ? community.aboutText
                             : community.description,
                         style: TextStyle(
                           color: context.textSecondary,

@@ -163,6 +163,9 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
+      // Capturar welcomeMessage ANTES de invalidar o provider
+      final communityState = ref.read(communityDetailProvider(widget.communityId));
+      final welcomeMsg = communityState.valueOrNull?.welcomeMessage;
       await SupabaseService.table('community_members').insert({
         'community_id': widget.communityId,
         'user_id': userId,
@@ -171,11 +174,15 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen>
       ref.invalidate(communityMembershipProvider(widget.communityId));
       ref.invalidate(communityDetailProvider(widget.communityId));
       if (mounted) {
+        final displayMsg = (welcomeMsg != null && welcomeMsg.trim().isNotEmpty)
+            ? welcomeMsg.trim()
+            : s.joinedCommunity;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(s.joinedCommunity),
+            content: Text(displayMsg),
             backgroundColor: AppTheme.primaryColor,
             behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(r.s(10))),
           ),
