@@ -95,6 +95,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen>
             iconUrl: (_avatarUrl != null && _avatarUrl != _originalAvatarUrl)
                 ? _avatarUrl
                 : currentUser.iconUrl,
+            // Atualizar aminoId no estado local para refletir imediatamente.
+            // String vazia quando apagado (consistente com fromJson: ?? '').
+            aminoId: aminoId, // já é trim(); vazio = sem amino_id
           ),
         );
       }

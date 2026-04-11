@@ -166,6 +166,7 @@ class UserModel {
   }
 
   UserModel copyWith({
+    String? aminoId,
     String? nickname,
     String? iconUrl,
     String? bannerUrl,
@@ -178,7 +179,7 @@ class UserModel {
   }) {
     return UserModel(
       id: id,
-      aminoId: aminoId,
+      aminoId: aminoId ?? this.aminoId,
       nickname: nickname ?? this.nickname,
       isNicknameVerified: isNicknameVerified,
       email: email,
