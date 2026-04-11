@@ -1158,44 +1158,215 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           ),
                         ),
 
-                        // Atalho para abrir o composer fixo de comentários
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: r.s(16), vertical: r.s(8)),
-                          child: Row(
-                            children: [
-                              CosmeticAvatar(
-                                userId: SupabaseService.currentUserId ?? '',
-                                avatarUrl: null,
-                                size: r.s(36),
+                        // ================================================================
+                        // COMPOSER DE COMENTÁRIO INLINE (unificado)
+                        // ================================================================
+                        Container(
+                          padding: EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16), r.s(8)),
+                          decoration: BoxDecoration(
+                            color: context.surfaceColor,
+                            border: Border(
+                              top: BorderSide(
+                                color: Colors.grey.withValues(alpha: 0.15),
                               ),
-                              SizedBox(width: r.s(10)),
-                              Expanded(
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(r.s(20)),
-                                    onTap: () => _focusCommentComposer(),
-                                    child: Container(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: r.s(14),
-                                        vertical: r.s(10),
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey.withValues(alpha: 0.1),
-                                        borderRadius:
-                                            BorderRadius.circular(r.s(20)),
-                                      ),
-                                      child: Text(
-                                        s.saySomethingHint,
-                                        style: TextStyle(
-                                          color: Colors.grey[500],
-                                          fontSize: r.fs(14),
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Reply indicator
+                              if (_replyingToComment != null)
+                                Container(
+                                  margin: EdgeInsets.only(bottom: r.s(8)),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: r.s(12),
+                                    vertical: r.s(8),
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.primaryColor.withValues(alpha: 0.08),
+                                    borderRadius: BorderRadius.circular(r.s(12)),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          'Respondendo a @${_replyingToComment!.author?.nickname ?? s.user}',
+                                          style: TextStyle(
+                                            color: AppTheme.primaryColor,
+                                            fontSize: r.fs(12),
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
                                         ),
+                                      ),
+                                      GestureDetector(
+                                        onTap: _clearReplyTarget,
+                                        child: Icon(
+                                          Icons.close_rounded,
+                                          color: Colors.grey[600],
+                                          size: r.s(18),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              // Preview de mídia pendente
+                              if (_pendingMediaUrl != null || _pendingStickerUrl != null)
+                                Container(
+                                  margin: EdgeInsets.only(bottom: r.s(8)),
+                                  child: Row(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(r.s(8)),
+                                        child: Image.network(
+                                          _pendingStickerUrl ?? _pendingMediaUrl!,
+                                          width: r.s(60),
+                                          height: r.s(60),
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      SizedBox(width: r.s(8)),
+                                      Expanded(
+                                        child: Text(
+                                          _pendingStickerUrl != null ? 'Sticker' : 'Imagem anexada',
+                                          style: TextStyle(
+                                            color: Colors.grey[500],
+                                            fontSize: r.fs(12),
+                                          ),
+                                        ),
+                                      ),
+                                      GestureDetector(
+                                        onTap: () => setState(() {
+                                          _pendingMediaUrl = null;
+                                          _pendingStickerUrl = null;
+                                        }),
+                                        child: Icon(Icons.close_rounded,
+                                            color: Colors.grey[600], size: r.s(18)),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              // Emoji Picker
+                              if (_showEmojiPicker)
+                                SizedBox(
+                                  height: 250,
+                                  child: EmojiPicker(
+                                    onEmojiSelected: (_, emoji) {
+                                      _commentController.text += emoji.emoji;
+                                      _commentController.selection = TextSelection.fromPosition(
+                                        TextPosition(offset: _commentController.text.length),
+                                      );
+                                    },
+                                    config: Config(
+                                      columns: 8,
+                                      emojiSizeMax: 28,
+                                      bgColor: context.surfaceColor,
+                                      indicatorColor: AppTheme.primaryColor,
+                                      iconColorSelected: AppTheme.primaryColor,
+                                      iconColor: Colors.grey[600] ?? Colors.grey,
+                                      checkPlatformCompatibility: true,
+                                      recentTabBehavior: RecentTabBehavior.RECENT,
+                                      recentsLimit: 20,
+                                      noRecents: Text(
+                                        'Sem recentes',
+                                        style: TextStyle(color: Colors.grey[500], fontSize: 12),
                                       ),
                                     ),
                                   ),
                                 ),
+                              // Input row: avatar + botões + campo + enviar
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  CosmeticAvatar(
+                                    userId: SupabaseService.currentUserId ?? '',
+                                    avatarUrl: null,
+                                    size: r.s(32),
+                                  ),
+                                  SizedBox(width: r.s(8)),
+                                  // Botão de emoji
+                                  GestureDetector(
+                                    onTap: _toggleEmojiPicker,
+                                    child: Padding(padding: EdgeInsets.only(right: r.s(4)),
+                                      child: Icon(Icons.tag_faces_rounded,
+                                        color: _showEmojiPicker ? AppTheme.primaryColor : Colors.grey[500],
+                                        size: r.s(20)),
+                                    ),
+                                  ),
+                                  // Botão de sticker
+                                  GestureDetector(
+                                    onTap: _openStickerPicker,
+                                    child: Padding(padding: EdgeInsets.only(right: r.s(4)),
+                                      child: Icon(Icons.emoji_emotions_rounded,
+                                        color: Colors.grey[500], size: r.s(20)),
+                                    ),
+                                  ),
+                                  // Botão de imagem
+                                  GestureDetector(
+                                    onTap: _pickCommentImage,
+                                    child: Padding(padding: EdgeInsets.only(right: r.s(6)),
+                                      child: Icon(Icons.image_rounded,
+                                        color: Colors.grey[500], size: r.s(20)),
+                                    ),
+                                  ),
+                                  // Campo de texto
+                                  Expanded(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.withValues(alpha: 0.08),
+                                        borderRadius: BorderRadius.circular(r.s(20)),
+                                      ),
+                                      child: TextField(
+                                        controller: _commentController,
+                                        focusNode: _commentFocusNode,
+                                        style: TextStyle(
+                                          color: context.textPrimary,
+                                          fontSize: r.fs(14),
+                                        ),
+                                        decoration: InputDecoration(
+                                          hintText: _replyingToComment == null
+                                              ? s.saySomethingHint
+                                              : 'Escreva uma resposta...',
+                                          hintStyle: TextStyle(color: Colors.grey[500]),
+                                          border: InputBorder.none,
+                                          contentPadding: EdgeInsets.symmetric(
+                                            horizontal: r.s(14),
+                                            vertical: r.s(10),
+                                          ),
+                                        ),
+                                        maxLines: 4,
+                                        minLines: 1,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: r.s(8)),
+                                  // Botão enviar
+                                  Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(r.s(22)),
+                                      onTap: _isSending ? null : _sendComment,
+                                      child: Container(
+                                        padding: EdgeInsets.all(r.s(9)),
+                                        decoration: const BoxDecoration(
+                                          color: AppTheme.primaryColor,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: _isSending
+                                            ? SizedBox(
+                                                width: r.s(16),
+                                                height: r.s(16),
+                                                child: const CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                                ),
+                                              )
+                                            : Icon(Icons.send_rounded,
+                                                color: Colors.white, size: r.s(16)),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -1272,245 +1443,6 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 ),
               ),
 
-              // ================================================================
-              // CAMPO DE COMENTÁRIO FIXO — com stickers, imagem e reply
-              // ================================================================
-              Container(
-                padding: EdgeInsets.fromLTRB(r.s(16), r.s(8), r.s(16), r.s(8)),
-                decoration: BoxDecoration(
-                  color: context.surfaceColor,
-                  border: Border(
-                    top: BorderSide(
-                      color: Colors.grey.withValues(alpha: 0.15),
-                    ),
-                  ),
-                ),
-                child: SafeArea(
-                  top: false,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Reply indicator
-                      if (_replyingToComment != null)
-                        Container(
-                          margin: EdgeInsets.only(bottom: r.s(8)),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: r.s(12),
-                            vertical: r.s(8),
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryColor.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(r.s(12)),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  'Respondendo a @${_replyingToComment!.author?.nickname ?? s.user}',
-                                  style: TextStyle(
-                                    color: AppTheme.primaryColor,
-                                    fontSize: r.fs(12),
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: _clearReplyTarget,
-                                child: Icon(
-                                  Icons.close_rounded,
-                                  color: Colors.grey[600],
-                                  size: r.s(18),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      // Preview de mídia pendente
-                      if (_pendingMediaUrl != null || _pendingStickerUrl != null)
-                        Container(
-                          margin: EdgeInsets.only(bottom: r.s(8)),
-                          child: Row(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(r.s(8)),
-                                child: Image.network(
-                                  _pendingStickerUrl ?? _pendingMediaUrl!,
-                                  width: r.s(60),
-                                  height: r.s(60),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              SizedBox(width: r.s(8)),
-                              Expanded(
-                                child: Text(
-                                  _pendingStickerUrl != null ? 'Sticker' : 'Imagem anexada',
-                                  style: TextStyle(
-                                    color: Colors.grey[500],
-                                    fontSize: r.fs(12),
-                                  ),
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: () => setState(() {
-                                  _pendingMediaUrl = null;
-                                  _pendingStickerUrl = null;
-                                }),
-                                child: Icon(Icons.close_rounded,
-                                    color: Colors.grey[600], size: r.s(18)),
-                              ),
-                            ],
-                          ),
-                        ),
-                      // Emoji Picker
-                      if (_showEmojiPicker)
-                        SizedBox(
-                          height: 250,
-                          child: EmojiPicker(
-                            onEmojiSelected: (_, emoji) {
-                              _commentController.text += emoji.emoji;
-                              _commentController.selection = TextSelection.fromPosition(
-                                TextPosition(offset: _commentController.text.length),
-                              );
-                            },
-                            config: Config(
-                              columns: 8,
-                              emojiSizeMax: 28,
-                              bgColor: context.surfaceColor,
-                              indicatorColor: AppTheme.primaryColor,
-                              iconColorSelected: AppTheme.primaryColor,
-                              iconColor: Colors.grey[600] ?? Colors.grey,
-                              checkPlatformCompatibility: true,
-                              recentTabBehavior: RecentTabBehavior.RECENT,
-                              recentsLimit: 20,
-                              noRecents: Text(
-                                'Sem recentes',
-                                style: TextStyle(color: Colors.grey[500], fontSize: 12),
-                              ),
-                            ),
-                          ),
-                        ),
-                      // Input row com botões de emoji, sticker, imagem e vídeo
-                      Row(
-                        children: [
-                          // Botão de emoji
-                          GestureDetector(
-                            onTap: _toggleEmojiPicker,
-                            child: Padding(
-                              padding: EdgeInsets.only(right: r.s(4)),
-                              child: Icon(
-                                Icons.tag_faces_rounded,
-                                color: _showEmojiPicker
-                                    ? AppTheme.primaryColor
-                                    : Colors.grey[500],
-                                size: r.s(22),
-                              ),
-                            ),
-                          ),
-                          // Botão de sticker
-                          GestureDetector(
-                            onTap: _openStickerPicker,
-                            child: Padding(
-                              padding: EdgeInsets.only(right: r.s(4)),
-                              child: Icon(
-                                Icons.emoji_emotions_rounded,
-                                color: Colors.grey[500],
-                                size: r.s(22),
-                              ),
-                            ),
-                          ),
-                          // Botão de imagem
-                          GestureDetector(
-                            onTap: _pickCommentImage,
-                            child: Padding(
-                              padding: EdgeInsets.only(right: r.s(4)),
-                              child: Icon(
-                                Icons.image_rounded,
-                                color: Colors.grey[500],
-                                size: r.s(22),
-                              ),
-                            ),
-                          ),
-                          // Botão de vídeo
-                          GestureDetector(
-                            onTap: _pickCommentVideo,
-                            child: Padding(
-                              padding: EdgeInsets.only(right: r.s(8)),
-                              child: Icon(
-                                Icons.videocam_rounded,
-                                color: Colors.grey[500],
-                                size: r.s(22),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.grey.withValues(alpha: 0.08),
-                                borderRadius: BorderRadius.circular(r.s(20)),
-                              ),
-                              child: TextField(
-                                controller: _commentController,
-                                focusNode: _commentFocusNode,
-                                style: TextStyle(
-                                  color: context.textPrimary,
-                                  fontSize: r.fs(14),
-                                ),
-                                decoration: InputDecoration(
-                                  hintText: _replyingToComment == null
-                                      ? s.writeComment
-                                      : 'Escreva uma resposta...',
-                                  hintStyle:
-                                      TextStyle(color: Colors.grey[500]),
-                                  border: InputBorder.none,
-                                  contentPadding: EdgeInsets.symmetric(
-                                    horizontal: r.s(14),
-                                    vertical: r.s(10),
-                                  ),
-                                ),
-                                maxLines: 4,
-                                minLines: 1,
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: r.s(8)),
-                          Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(r.s(22)),
-                              onTap: _isSending ? null : _sendComment,
-                              child: Container(
-                                padding: EdgeInsets.all(r.s(10)),
-                                decoration: const BoxDecoration(
-                                  color: AppTheme.primaryColor,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: _isSending
-                                    ? SizedBox(
-                                        width: r.s(18),
-                                        height: r.s(18),
-                                        child: const CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                            Colors.white,
-                                          ),
-                                        ),
-                                      )
-                                    : Icon(
-                                        Icons.send_rounded,
-                                        color: Colors.white,
-                                        size: r.s(18),
-                                      ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
 
             ],
           );
