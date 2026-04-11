@@ -1,170 +1,186 @@
-# NexusHub (Amino Clone)
+# NexusHub
 
-![NexusHub Banner](https://via.placeholder.com/1200x400/0D1B2A/00BCD4?text=NexusHub+-+The+Ultimate+Community+Platform)
+O **NexusHub** é um aplicativo mobile em **Flutter** inspirado na experiência social do Amino, com backend em **Supabase** e foco em comunidades, chats, feed, wiki, moderação, economia virtual e recursos em tempo real. O repositório já contém uma base funcional ampla, com frontend organizado por features, backend serverless baseado em migrações SQL e Edge Functions, além de uma trilha extensa de documentos técnicos e relatórios de evolução.
 
-NexusHub é um aplicativo mobile completo inspirado no clássico **Amino Apps**, construído com uma arquitetura moderna, segura e escalável. O projeto recria a experiência de comunidades sociais com chat em tempo real, feed de posts, wiki colaborativa e um robusto sistema de gamificação.
+> **Para qualquer nova IA ou colaborador que for analisar este projeto, a ordem recomendada é:** ler este `README.md` primeiro e, em seguida, abrir o arquivo [`instrucoes.txt`](./instrucoes.txt). Esse arquivo resume o contexto operacional do repositório, aponta os diretórios mais importantes e acelera a análise.
 
----
+## Visão geral do estado atual
 
-## 🌟 Principais Funcionalidades
+O estado atual do repositório mostra um projeto significativamente mais avançado do que uma prova de conceito simples. A aplicação possui estrutura mobile consolidada, integração com Supabase, múltiplos módulos sociais, suporte a mídia, fluxo de comunidades, sistema de reputação, notificações e uma camada de backend com dezenas de migrações versionadas.
 
-### 👥 Sistema de Comunidades
-- **Descoberta:** Tela Explore com categorias, busca global e recomendações.
-- **Perfis Isolados:** Os usuários podem ter perfis diferentes (nickname, avatar, bio) em cada comunidade.
-- **Customização:** Líderes podem alterar o tema, ícone, banner e links gerais da comunidade.
-- **Módulos Dinâmicos:** Habilite ou desabilite módulos como Chat, Wiki, Shared Folder e Screening Rooms.
+| Área | Estado atual observado |
+| --- | --- |
+| Frontend | Aplicação Flutter organizada por módulos e rotas extensas |
+| Backend | Supabase com **72 migrações SQL** e **10 Edge Functions** |
+| Estrutura de código | Aproximadamente **205 arquivos Dart** em `frontend/lib/` |
+| Testes | **11 arquivos de teste** em `frontend/test/` |
+| CI/CD | Workflow em `.github/workflows/ci.yml` com análise, testes, build Android e deploy de funções |
+| Documentação | README, documentação temática em `docs/` e vários relatórios técnicos na raiz |
 
-### 💬 Comunicação em Tempo Real
-- **Chats Globais e Locais:** Salas de chat públicas, privadas e em grupo.
-- **Recursos Ricos:** Envio de imagens, stickers, GIFs, mensagens de voz e reações.
-- **Indicadores:** Status de "digitando" e presença online via WebSockets.
-- **Screening Rooms:** Assista a vídeos do YouTube em grupo com chat de voz integrado (via SDK Agora).
+## Arquitetura do projeto
 
-### 📝 Criação de Conteúdo
-- **Feed Global e Local:** Algoritmo de feed com suporte a posts fixados e destaques.
-- **Rich Text Editor:** Criação de blogs com blocos de texto, imagens inline, enquetes e quizzes.
-- **Wiki Colaborativa:** Sistema de pastas, submissão para curadoria e fixação no perfil.
-- **Stories:** Conteúdo efêmero em formato de vídeo/imagem estilo Reels.
+A arquitetura é dividida em duas camadas principais. O frontend é um aplicativo Flutter com organização feature-first, gerenciamento de estado com Riverpod e roteamento com GoRouter. O backend utiliza Supabase como base relacional, autenticação, storage, realtime e execução serverless por Edge Functions.
 
-### 🎮 Gamificação e Economia
-- **Reputação (XP):** Ganhe pontos por check-in diário, tempo online e engajamento.
-- **Níveis (1 a 20):** Títulos customizáveis por comunidade (ex: "Newcomer" até "Supreme").
-- **Leaderboard:** Ranking animado com pódio (Top 3) e filtros por período (Semana/Mês/Geral).
-- **Nexus Coins:** Moeda virtual para comprar molduras de avatar (frames) e balões de chat customizados na Loja.
+| Camada | Tecnologias principais | Observações |
+| --- | --- | --- |
+| Frontend mobile | Flutter, Dart, Riverpod, GoRouter | App com múltiplas áreas funcionais e navegação extensa |
+| Backend/BaaS | Supabase, PostgreSQL, RLS, Realtime, Storage | Schema evolutivo por migrações versionadas |
+| Serverless | Supabase Edge Functions em TypeScript/Deno | Automação, moderação, notificações e integrações |
+| CI/CD | GitHub Actions | Pipeline de análise, testes, build Android e deploy de funções |
 
-### 🛡️ Moderação e Segurança
-- **Hierarquia de Cargos:** Agent (Criador), Leader, Curator e Member.
-- **Painel de Moderação:** Central de denúncias (Flag Center), histórico de moderação e ações rápidas (Ban, Strike, Mute).
-- **Filtro de Conteúdo:** Integração com IA para detecção de toxicidade e imagens NSFW via Edge Functions.
+## Módulos implementados no frontend
 
----
+A árvore de `frontend/lib/features/` indica que o aplicativo já está organizado em módulos funcionais concretos. Isso confirma que a documentação deve tratar o projeto como uma base ampla de produto, não apenas como um mock visual.
 
-## 🏗️ Arquitetura do Sistema
+| Módulo | Finalidade geral |
+| --- | --- |
+| `auth` | autenticação, onboarding e fluxo inicial |
+| `chat` | lista de conversas, salas, grupos, chats públicos e chamadas |
+| `communities` | descoberta, criação, detalhes, membros e gestão de comunidades |
+| `explore` | exploração, busca e descoberta de conteúdo |
+| `feed` | posts, blogs, enquetes, quizzes, drafts e detalhes de conteúdo |
+| `gamification` | check-in, ranking, carteira, conquistas e inventário |
+| `live` | screening rooms e experiências síncronas |
+| `moderation` | central de denúncias, painel admin e ações moderativas |
+| `notifications` | notificações globais e contextuais |
+| `profile` | perfil global, perfil por comunidade, seguidores e mural |
+| `settings` | privacidade, permissões, dispositivos, termos e contas vinculadas |
+| `stickers` | exploração, criação e gerenciamento de stickers |
+| `store` | loja e compra de moedas/itens |
+| `stories` | criação e visualização de stories |
+| `wiki` | visualização, criação e curadoria de wikis |
 
-O sistema adota uma arquitetura Serverless orientada a eventos, dividida em duas camadas principais:
+## Backend Supabase
 
-### 1. FRONTEND (App Mobile)
-- **Framework:** Flutter (Dart)
-- **Gerenciamento de Estado:** Riverpod
-- **Roteamento:** GoRouter com suporte a Deep Links (`nexushub://`)
-- **Design System:** Tema escuro nativo (`AppTheme`) com componentes pixel-perfect inspirados no Amino.
-- **Armazenamento Local:** Hive (Cache offline-first) e SharedPreferences.
+O backend está concentrado em `backend/supabase/` e mostra um sistema versionado de forma consistente. As migrações vão de `001` até `074`, com algumas numerações ausentes no intervalo, o que é comum em ciclos reais de desenvolvimento. O conjunto cobre schema central, conteúdo, chat, moderação, economia, notificações, storage, RPCs, stories, stickers, sistema de blog, sistema de bloqueio, melhorias de screening room, short URLs e recursos de perfil/comunidade.
 
-### 2. BACKEND (BaaS - Supabase)
-- **Banco de Dados:** PostgreSQL com 30+ tabelas relacionais.
-- **Segurança:** Row Level Security (RLS) garantindo que usuários só acessem o que têm permissão.
-- **Autenticação:** Supabase Auth (Email/Senha, Google, Apple).
-- **Tempo Real:** Supabase Realtime (Presence, Broadcast e Postgres Changes).
-- **Armazenamento:** Supabase Storage (Avatares, Banners, Mídias).
-- **Lógica de Servidor:** Edge Functions (Deno/TypeScript) para tarefas assíncronas (Push Notifications, Webhooks, Moderação).
+As Edge Functions atualmente presentes no repositório são as seguintes:
 
----
+| Edge Function | Papel geral inferido pelo nome |
+| --- | --- |
+| `agora-token` | emissão/gestão de token para recursos em tempo real da Agora |
+| `check-in` | rotinas de check-in/gamificação |
+| `content-moderation-bot` | automação de moderação de conteúdo |
+| `delete-user-data` | exclusão de dados do usuário |
+| `export-user-data` | exportação de dados do usuário |
+| `fetch-og-tags` | coleta de metadados Open Graph |
+| `link-preview` | pré-visualização de links |
+| `moderation` | lógica de moderação server-side |
+| `push-notification` | envio de notificações push |
+| `webhook-handler` | tratamento de webhooks/integradores |
 
-## 🚀 Como Executar o Projeto
+## Configuração e credenciais
 
-### Pré-requisitos
-- [Flutter SDK](https://flutter.dev/docs/get-started/install) (v3.24+)
-- [Supabase CLI](https://supabase.com/docs/guides/cli) (Para rodar o backend localmente)
-- Conta no [Supabase](https://supabase.com) (Para produção)
+O repositório contém um template de variáveis em `frontend/.env.example`, mas a configuração principal do aplicativo atualmente também aparece centralizada em `frontend/lib/config/app_config.dart`. Na prática, isso significa que qualquer manutenção deve verificar os dois pontos antes de alterar setup, onboarding ou deploy.
 
-### 1. Configuração do Backend (Supabase)
+> **Importante:** para análise, manutenção e onboarding técnico, considere `frontend/.env.example` como referência documental de configuração e `frontend/lib/config/app_config.dart` como ponto efetivo de consumo atual no app. Não replique segredos em documentação, issues, prompts ou commits públicos.
 
-1. Crie um projeto no Supabase.
-2. No painel do Supabase, vá em **SQL Editor** e execute as migrações localizadas em `backend/supabase/migrations/` em ordem sequencial (de `001` a `030`).
-3. Configure os buckets no **Storage**: `avatars`, `banners`, `chat-media`, `post-media`.
-4. Obtenha a **URL do Projeto** e a **Chave Anon (public)** nas configurações de API.
+| Arquivo | Função |
+| --- | --- |
+| `frontend/.env.example` | template de variáveis do frontend |
+| `frontend/lib/config/app_config.dart` | configuração principal atualmente usada pelo app |
+| `backend/supabase/config.toml` | configuração do ambiente local do Supabase CLI |
+| `.env.example` | referência adicional de ambiente na raiz do projeto |
 
-*(Opcional) Para rodar localmente:*
+## Fluxo de desenvolvimento local
+
+Para trabalhar no projeto localmente, o caminho mais seguro é preparar o backend Supabase primeiro e, depois, executar o frontend Flutter. O backend local já possui configuração em `backend/supabase/config.toml`, seed habilitada e ports definidos para API, banco, Studio e serviços auxiliares.
+
+### Backend local
+
 ```bash
 cd backend/supabase
 supabase start
 supabase db reset
 ```
 
-### 2. Configuração do Frontend (Flutter)
+### Frontend local
 
-1. Clone o repositório e navegue até a pasta do frontend:
 ```bash
-git clone https://github.com/seu-usuario/NexusHub.git
-cd NexusHub/frontend
-```
-
-2. Instale as dependências:
-```bash
+cd frontend
+cp .env.example .env
 flutter pub get
-```
-
-3. Configure as variáveis de ambiente. Crie um arquivo `.env` na raiz da pasta `frontend/` (baseado no `.env.example` se existir) ou edite `lib/config/app_config.dart`:
-```dart
-static const String supabaseUrl = 'SUA_URL_AQUI';
-static const String supabaseAnonKey = 'SUA_CHAVE_AQUI';
-static const String agoraAppId = 'SEU_AGORA_APP_ID'; // Para Screening Rooms
-```
-
-4. Execute o aplicativo:
-```bash
 flutter run
 ```
 
----
+Se a configuração efetiva do projeto continuar centralizada em `app_config.dart`, qualquer alteração de ambiente deve ser validada também nesse arquivo antes de testes, builds ou depuração de integração.
 
-## 📁 Estrutura de Diretórios
+## Testes e validação
 
-```text
-NexusHub/
-├── backend/
-│   └── supabase/
-│       ├── functions/       # Edge Functions (TypeScript/Deno)
-│       └── migrations/      # Scripts SQL (Schema, RLS, RPCs)
-│
-├── frontend/
-│   ├── android/             # Configurações nativas Android
-│   ├── ios/                 # Configurações nativas iOS
-│   ├── lib/
-│   │   ├── config/          # Temas, rotas e constantes
-│   │   ├── core/            # Serviços (Supabase, Cache), Utils e Widgets globais
-│   │   ├── features/        # Módulos da aplicação (Feature-First Architecture)
-│   │   │   ├── auth/        # Login, Cadastro, Onboarding
-│   │   │   ├── communities/ # Descoberta, Perfil da Comunidade, Configurações
-│   │   │   ├── feed/        # Feed Global, Criação de Posts, Comentários
-│   │   │   ├── chat/        # Lista de Chats, Salas de Mensagens
-│   │   │   ├── gamification/# Leaderboard, Check-in, Loja, Inventário
-│   │   │   ├── moderation/  # Flag Center, Ações de Admin
-│   │   │   └── profile/     # Perfil de Usuário, Mural, Seguidores
-│   │   └── main.dart        # Ponto de entrada
-│   └── pubspec.yaml         # Dependências Flutter
-│
-└── docs/                    # Documentação de engenharia reversa e UI
-```
+A pasta `frontend/test/` mostra que o projeto possui testes de modelo, segurança, paginação, serviços, validadores e regressões específicas ligadas a fases recentes de correção. Isso sugere uma preocupação prática com estabilidade, especialmente em mudanças de RPC, fluxo de runtime e hardening de regressões.
 
----
+| Arquivos de teste observados | Cobertura funcional aproximada |
+| --- | --- |
+| `models_test.dart` | modelos e serialização |
+| `pagination_test.dart` | paginação e comportamento incremental |
+| `security_test.dart` | segurança e permissões |
+| `services_test.dart` | serviços centrais |
+| `validators_test.dart` | validações de entrada |
+| `phase3_*`, `runtime_*`, `regression_*`, `rpc_flow_*` | correções, regressões e estabilização recente |
 
-## 🧪 Testes e Qualidade
-
-O projeto possui uma suíte de testes unitários cobrindo as regras de negócio principais:
+Execução local dos testes:
 
 ```bash
 cd frontend
 flutter test
 ```
-- `models_test.dart`: Validação de serialização/desserialização JSON.
-- `security_test.dart`: Testes de permissões e roles (Leader vs Member).
-- `validators_test.dart`: Validação de formulários (Email, Senha, Nickname).
-- `pagination_test.dart`: Lógica de paginação do feed e chat.
 
----
+## CI/CD atual
 
-## 🛠️ CI/CD (GitHub Actions)
+O workflow em `.github/workflows/ci.yml` mostra uma pipeline real de integração contínua. O fluxo realiza análise estática, instalação de dependências, testes unitários, build Android e deploy das Edge Functions em condições específicas de branch e secrets.
 
-O projeto inclui workflows automatizados em `.github/workflows/ci.yml`:
-- **PRs para `main`:** Executa `flutter analyze` e `flutter test`.
-- **Push na `main`:** Faz o build do APK (Debug) e AAB (Release) para Android.
-- **Deploy de Edge Functions:** Sincroniza automaticamente as funções serverless com o Supabase.
+| Job | Objetivo |
+| --- | --- |
+| `analyze` | análise estática e verificação de formatação |
+| `test` | testes unitários com geração de coverage |
+| `build-android` | build de APK em `main` |
+| `build-release` | build AAB condicionado a commits `release:` em `main` |
+| `deploy-functions` | deploy automatizado das Edge Functions via Supabase CLI |
 
----
+## Estrutura resumida do repositório
 
-## 📄 Licença
+A organização geral do repositório hoje pode ser entendida da seguinte forma:
 
-Este projeto é distribuído sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+```text
+NexusHub/
+├── backend/
+│   ├── seed/
+│   └── supabase/
+│       ├── config.toml
+│       ├── functions/
+│       ├── migrations/
+│       └── run_migrations.py
+├── docs/
+├── frontend/
+│   ├── android/
+│   ├── ios/
+│   ├── assets/
+│   ├── lib/
+│   ├── patches/
+│   ├── test/
+│   └── pubspec.yaml
+├── redirect/
+├── scripts/
+└── README.md
+```
 
-*Nota: Este é um projeto educacional e de portfólio. "Amino" e "Amino Apps" são marcas registradas da MediaLab AI, Inc. Este projeto não tem afiliação com a MediaLab.*
+## Documentação complementar
+
+Além deste README, o repositório possui uma quantidade relevante de material histórico e analítico. Esses arquivos ajudam a entender a evolução do projeto, decisões de correção e contexto de entregas anteriores.
+
+| Local | Conteúdo esperado |
+| --- | --- |
+| `docs/` | relatórios por fase, auditorias e validações |
+| arquivos `RELATORIO_*.md` na raiz | relatórios técnicos e de bugs |
+| `DOCUMENTACAO_AMINO_NEXUS.md` | documentação complementar do produto |
+| `GUIA_DE_LANCAMENTO.md` | preparação e lançamento |
+| `NOTES.md` | observações operacionais diversas |
+| [`instrucoes.txt`](./instrucoes.txt) | resumo curto para acelerar análise por outra IA |
+
+## Observações práticas para manutenção
+
+Este repositório deve ser tratado como uma base ativa e multifuncional. Antes de grandes mudanças, vale revisar o impacto em rotas, RPCs, políticas de acesso, integrações com Supabase e fluxos mobile nativos. Também é recomendável verificar se uma funcionalidade está documentada apenas em relatórios históricos ou se já está realmente refletida no código e nos testes.
+
+## Licença e observação de referência
+
+O repositório deve preservar a observação de que se trata de um projeto inspirado na experiência social do Amino, sem afiliação oficial com a marca original. Caso exista um arquivo de licença formal no projeto, ele deve ser considerado a fonte definitiva para uso e distribuição.

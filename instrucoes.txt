@@ -1,0 +1,73 @@
+NexusHub — instruções rápidas para uma IA que vai analisar este repositório
+
+Leia primeiro o README.md e só depois continue por este arquivo.
+
+Resumo executivo
+- Este é um app mobile em Flutter inspirado na experiência social do Amino.
+- O backend usa Supabase com muitas migrações SQL, RPCs, RLS, Storage, Realtime e Edge Functions.
+- O repositório já está bem avançado; não trate como protótipo simples.
+- Há bastante documentação histórica na raiz e em docs/, então valide sempre o estado atual no código antes de assumir que um relatório ainda representa a implementação vigente.
+
+Onde começar
+1. README.md
+2. frontend/pubspec.yaml
+3. frontend/lib/config/app_config.dart
+4. frontend/lib/router/app_router.dart
+5. backend/supabase/config.toml
+6. backend/supabase/migrations/
+7. backend/supabase/functions/
+8. frontend/test/
+9. .github/workflows/ci.yml
+
+Stack principal
+- Frontend: Flutter + Dart
+- Estado: Riverpod
+- Rotas: GoRouter
+- Backend: Supabase
+- Banco: PostgreSQL com migrações SQL
+- Serverless: Edge Functions em TypeScript/Deno
+- CI/CD: GitHub Actions
+
+Módulos funcionais relevantes no frontend
+- auth
+- chat
+- communities
+- explore
+- feed
+- gamification
+- live
+- moderation
+- notifications
+- profile
+- settings
+- stickers
+- store
+- stories
+- wiki
+
+Pontos importantes de contexto
+- O projeto tem configuração documentada em frontend/.env.example.
+- Ao mesmo tempo, a configuração efetivamente usada no app também precisa ser conferida em frontend/lib/config/app_config.dart.
+- Antes de sugerir mudanças de setup, confirme qual fonte está sendo usada de fato.
+- Não replique credenciais, chaves ou tokens em documentação, commits, prompts ou saídas desnecessárias.
+
+Como analisar com eficiência
+- Use o README para visão geral.
+- Use app_router.dart para entender as telas e jornadas disponíveis.
+- Use pubspec.yaml para mapear integrações e dependências.
+- Use migrations/ para entender a evolução do backend e a superfície funcional real.
+- Use functions/ para identificar lógica server-side, integrações e automações.
+- Use test/ para descobrir o que já foi endurecido por regressão.
+- Use docs/ e relatórios da raiz para contexto histórico, mas dê prioridade ao código atual.
+
+Se a tarefa envolver documentação
+- Atualize primeiro a visão do estado atual do código.
+- Depois alinhe setup, arquitetura, módulos e observações operacionais.
+- Evite prometer funcionalidades que estejam só em relatórios e não no código.
+
+Se a tarefa envolver correções
+- Verifique frontend + migrations + Edge Functions + testes.
+- Em funcionalidades sociais, quase sempre há impacto em RLS, RPC, rotas e renderização Flutter.
+
+Se a tarefa envolver onboarding de outra IA
+- Oriente a IA a seguir esta ordem: README.md -> instrucoes.txt -> arquivos centrais do stack.
