@@ -15,6 +15,7 @@ import '../screens/call_screen.dart';
 import '../../stickers/widgets/sticker_message_bubble.dart';
 import 'chat_bubble.dart' show ChatBubble;
 import 'voice_recorder.dart' show VoiceNotePlayer;
+import '../../../core/widgets/image_viewer.dart';
 
 /// ============================================================================
 /// MESSAGE BUBBLE (suporta todos os 19+ tipos) — Estilo Amino
@@ -612,23 +613,41 @@ class MessageBubble extends ConsumerWidget {
     // Imagem: tipo 'image' (nativo) OU tipo 'text' com media_type == 'image' (legado)
     if ((type == 'image' && message.mediaUrl != null) ||
         (message.mediaUrl != null && message.mediaType == 'image')) {
-      return CachedNetworkImage(
-        imageUrl: message.mediaUrl!,
-        width: r.s(220),
-        fit: BoxFit.cover,
-        placeholder: (_, __) => Container(
-          width: r.s(220),
-          height: r.s(160),
-          color: Colors.grey[800],
-          child:
-              const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+      final imgUrl = message.mediaUrl!;
+      return GestureDetector(
+        onTap: () => showSingleImageViewer(
+          context,
+          imageUrl: imgUrl,
+          heroTag: 'chat_img_${message.id}',
         ),
-        errorWidget: (_, __, ___) => Container(
-          width: r.s(220),
-          height: r.s(160),
-          color: Colors.grey[800],
-          child: Icon(Icons.broken_image_rounded,
-              color: Colors.grey[600], size: r.s(32)),
+        onLongPress: () => showSingleImageViewer(
+          context,
+          imageUrl: imgUrl,
+          heroTag: 'chat_img_${message.id}',
+        ),
+        child: Hero(
+          tag: 'chat_img_${message.id}',
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(r.s(12)),
+            child: CachedNetworkImage(
+              imageUrl: imgUrl,
+              width: r.s(220),
+              fit: BoxFit.cover,
+              placeholder: (_, __) => Container(
+                width: r.s(220),
+                height: r.s(160),
+                color: Colors.grey[800],
+                child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+              ),
+              errorWidget: (_, __, ___) => Container(
+                width: r.s(220),
+                height: r.s(160),
+                color: Colors.grey[800],
+                child: Icon(Icons.broken_image_rounded,
+                    color: Colors.grey[600], size: r.s(32)),
+              ),
+            ),
+          ),
         ),
       );
     }
@@ -636,15 +655,34 @@ class MessageBubble extends ConsumerWidget {
     // GIF: tipo 'gif' (nativo) OU tipo 'text' com media_type == 'gif' (legado)
     if ((type == 'gif' && message.mediaUrl != null) ||
         (message.mediaUrl != null && message.mediaType == 'gif')) {
-      return CachedNetworkImage(
-        imageUrl: message.mediaUrl!,
-        width: r.s(200),
-        fit: BoxFit.cover,
-        errorWidget: (_, __, ___) => Container(
-          width: r.s(200),
-          height: r.s(150),
-          color: Colors.grey[800],
-          child: Icon(Icons.gif_rounded, color: Colors.grey[600], size: r.s(32)),
+      final gifUrl = message.mediaUrl!;
+      return GestureDetector(
+        onTap: () => showSingleImageViewer(
+          context,
+          imageUrl: gifUrl,
+          heroTag: 'chat_gif_${message.id}',
+        ),
+        onLongPress: () => showSingleImageViewer(
+          context,
+          imageUrl: gifUrl,
+          heroTag: 'chat_gif_${message.id}',
+        ),
+        child: Hero(
+          tag: 'chat_gif_${message.id}',
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(r.s(12)),
+            child: CachedNetworkImage(
+              imageUrl: gifUrl,
+              width: r.s(200),
+              fit: BoxFit.cover,
+              errorWidget: (_, __, ___) => Container(
+                width: r.s(200),
+                height: r.s(150),
+                color: Colors.grey[800],
+                child: Icon(Icons.gif_rounded, color: Colors.grey[600], size: r.s(32)),
+              ),
+            ),
+          ),
         ),
       );
     }

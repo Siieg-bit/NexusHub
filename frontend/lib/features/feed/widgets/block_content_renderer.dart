@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../config/app_theme.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/widgets/image_viewer.dart';
 
 /// BlockContentRenderer — Renderizador de blocos de conteúdo rico.
 ///
@@ -128,35 +129,48 @@ class BlockContentRenderer extends StatelessWidget {
     final r = context.r;
     final url = (block['url'] ?? block['image_url']) as String? ?? '';
     final caption = block['caption'] as String?;
-
     if (url.isEmpty) return const SizedBox.shrink();
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Imagem com cantos arredondados
-        ClipRRect(
-          borderRadius: BorderRadius.circular(r.s(12)),
-          child: CachedNetworkImage(
+        // Imagem com cantos arredondados — clicável para abrir em tela cheia
+        GestureDetector(
+          onTap: () => showSingleImageViewer(
+            context,
             imageUrl: url,
-            width: double.infinity,
-            fit: BoxFit.cover,
-            placeholder: (_, __) => Container(
-              height: r.s(200),
-              color: context.cardBg,
-              child: const Center(
-                child: CircularProgressIndicator(
-                  color: AppTheme.accentColor,
-                  strokeWidth: 2,
+            heroTag: 'blog_img_$url',
+          ),
+          onLongPress: () => showSingleImageViewer(
+            context,
+            imageUrl: url,
+            heroTag: 'blog_img_$url',
+          ),
+          child: Hero(
+            tag: 'blog_img_$url',
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(r.s(12)),
+              child: CachedNetworkImage(
+                imageUrl: url,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                placeholder: (_, __) => Container(
+                  height: r.s(200),
+                  color: context.cardBg,
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      color: AppTheme.accentColor,
+                      strokeWidth: 2,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            errorWidget: (_, __, ___) => Container(
-              height: r.s(120),
-              color: context.cardBg,
-              child: Center(
-                child: Icon(Icons.broken_image_rounded,
-                    color: context.textHint, size: r.s(32)),
+                errorWidget: (_, __, ___) => Container(
+                  height: r.s(120),
+                  color: context.cardBg,
+                  child: Center(
+                    child: Icon(Icons.broken_image_rounded,
+                        color: context.textHint, size: r.s(32)),
+                  ),
+                ),
               ),
             ),
           ),

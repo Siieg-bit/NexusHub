@@ -14,6 +14,7 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/utils/media_utils.dart';
 import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../stickers/stickers.dart';
+import '../../../core/widgets/image_viewer.dart';
 
 // =============================================================================
 // PROVIDER — carregamento de comentários do mural via RPC
@@ -1146,50 +1147,14 @@ class _ImageDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final r = context.r;
-    return GestureDetector(
-      onTap: () {
-        // Visualizar imagem em tela cheia
-        showDialog(
-          context: context,
-          builder: (_) => Dialog(
-            backgroundColor: Colors.black,
-            insetPadding: EdgeInsets.zero,
-            child: GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: InteractiveViewer(
-                child: CachedNetworkImage(imageUrl: url, fit: BoxFit.contain),
-              ),
-            ),
-          ),
-        );
-      },
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(r.s(10)),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: r.s(220), maxHeight: r.s(220)),
-          child: CachedNetworkImage(
-            imageUrl: url,
-            fit: BoxFit.cover,
-            placeholder: (_, __) => Container(
-              width: r.s(160),
-              height: r.s(120),
-              color: Colors.grey[800],
-              child: const Center(
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: AppTheme.primaryColor,
-                ),
-              ),
-            ),
-            errorWidget: (_, __, ___) => Container(
-              width: r.s(80),
-              height: r.s(80),
-              color: Colors.grey[800],
-              child: Icon(Icons.broken_image_rounded, color: Colors.grey[500], size: r.s(32)),
-            ),
-          ),
-        ),
-      ),
+    // Usa TappableImage para abrir o ImageViewer com suporte a salvar
+    return TappableImage(
+      url: url,
+      width: r.s(220),
+      height: r.s(220),
+      fit: BoxFit.cover,
+      borderRadius: BorderRadius.circular(r.s(10)),
+      heroTag: 'wall_comment_img_$url',
     );
   }
 }

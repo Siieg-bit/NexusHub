@@ -24,6 +24,7 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/services/deep_link_service.dart';
+import '../../../core/widgets/image_viewer.dart';
 
 /// Provider para comentários de um post.
 final postCommentsProvider =
@@ -1154,12 +1155,27 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           Padding(
                             padding: EdgeInsets.symmetric(
                                 horizontal: r.s(16), vertical: r.s(8)),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(r.s(12)),
-                              child: CachedNetworkImage(
+                            child: GestureDetector(
+                              onTap: () => showSingleImageViewer(
+                                context,
                                 imageUrl: post.mediaUrl!,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
+                                heroTag: 'post_media_${post.id}',
+                              ),
+                              onLongPress: () => showSingleImageViewer(
+                                context,
+                                imageUrl: post.mediaUrl!,
+                                heroTag: 'post_media_${post.id}',
+                              ),
+                              child: Hero(
+                                tag: 'post_media_${post.id}',
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(r.s(12)),
+                                  child: CachedNetworkImage(
+                                    imageUrl: post.mediaUrl!,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -2087,41 +2103,17 @@ class _CommentTileState extends ConsumerState<_CommentTile> {
                           ),
                         ),
                       )
-                    // Imagem genérica (não-sticker)
+                    // Imagem genérica (não-sticker) — abre ImageViewer ao tocar
                     else if (!comment.isSticker && comment.mediaUrl != null && comment.mediaUrl!.isNotEmpty)
                       Padding(
                         padding: EdgeInsets.only(top: r.s(6)),
-                        child: ClipRRect(
+                        child: TappableImage(
+                          url: comment.mediaUrl!,
+                          width: r.s(200),
+                          height: r.s(200),
+                          fit: BoxFit.cover,
                           borderRadius: BorderRadius.circular(r.s(10)),
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              maxWidth: r.s(200),
-                              maxHeight: r.s(200),
-                            ),
-                            child: Image.network(
-                              comment.mediaUrl!,
-                              fit: BoxFit.contain,
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return SizedBox(
-                                  width: r.s(100),
-                                  height: r.s(100),
-                                  child: Center(
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                          AppTheme.primaryColor),
-                                    ),
-                                  ),
-                                );
-                              },
-                              errorBuilder: (_, __, ___) => Icon(
-                                Icons.broken_image_rounded,
-                                color: Colors.grey[500],
-                                size: r.s(40),
-                              ),
-                            ),
-                          ),
+                          heroTag: 'comment_img_${comment.id}',
                         ),
                       ),
                     SizedBox(height: r.s(8)),
