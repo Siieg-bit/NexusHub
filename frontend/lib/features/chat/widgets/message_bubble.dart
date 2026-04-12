@@ -213,16 +213,16 @@ class MessageBubble extends ConsumerWidget {
         ? myCosmetics?.chatBubbleImageUrl
         : senderCosmetics?.chatBubbleImageUrl;
 
-    // Determina o bubbleFrameUrl para o ChatBubble
-    // Se tem image_url no bubble, usa como frame; senão usa 'procedural:style'
+    // Determina o bubbleFrameUrl para o ChatBubble.
+    // Prioridade: image_url > procedural:style > null (bubble padrão)
     String? bubbleFrameUrl;
     Color? bubbleColor;
-    if (activeBubbleStyle != null && activeBubbleStyle.isNotEmpty) {
-      if (activeBubbleImageUrl != null && activeBubbleImageUrl.isNotEmpty) {
-        bubbleFrameUrl = activeBubbleImageUrl;
-      } else {
-        bubbleFrameUrl = 'procedural:$activeBubbleStyle';
-      }
+    if (activeBubbleImageUrl != null && activeBubbleImageUrl.isNotEmpty) {
+      // Tem imagem (nine-slice ou qualquer frame) — usa diretamente
+      bubbleFrameUrl = activeBubbleImageUrl;
+    } else if (activeBubbleStyle != null && activeBubbleStyle.isNotEmpty) {
+      // Sem imagem mas com estilo procedural
+      bubbleFrameUrl = 'procedural:$activeBubbleStyle';
     }
     if (activeBubbleColor != null && activeBubbleColor.isNotEmpty) {
       try {
