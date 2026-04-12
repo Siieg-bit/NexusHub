@@ -8,9 +8,83 @@ import '../../../core/models/chat_room_model.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/amino_bottom_nav.dart';
+import '../../../core/widgets/cosmetic_avatar.dart';
 import '../../chat/screens/chat_list_screen.dart' show chatListProvider;
 import '../widgets/community_create_menu.dart';
 import '../../../core/l10n/locale_provider.dart';
+
+Map<String, dynamic>? _extractProfile(dynamic rawProfile) {
+  if (rawProfile is Map<String, dynamic>) return rawProfile;
+  if (rawProfile is Map) return Map<String, dynamic>.from(rawProfile);
+  if (rawProfile is List && rawProfile.isNotEmpty) {
+    final first = rawProfile.first;
+    if (first is Map<String, dynamic>) return first;
+    if (first is Map) return Map<String, dynamic>.from(first);
+  }
+  return null;
+}
+
+bool _isDirectLikeCommunityThread(
+  Map<String, dynamic>? thread,
+  String communityId,
+) {
+  if (thread == null) return false;
+
+  final type = (thread['type'] as String? ?? '').trim().toLowerCase();
+  if (type == 'dm' || type == 'direct' || type == 'private') return true;
+  if (type == 'public' || type == 'group') return false;
+
+  final threadCommunityId = thread['community_id'] as String?;
+  final membersCount = thread['members_count'] as int? ?? 0;
+  final title = ((thread['title'] as String?) ?? '').trim().toLowerCase();
+  final hasGenericTitle = title.isEmpty || title == 'chat';
+
+  final belongsToCurrentCommunity = threadCommunityId == communityId;
+  final hasDmShape = membersCount > 0 && membersCount <= 2;
+
+  if (belongsToCurrentCommunity && (hasDmShape || hasGenericTitle)) {
+    return true;
+  }
+
+  return threadCommunityId == null && (hasDmShape || hasGenericTitle);
+}
+
+bool _isDirectLikeChatRoom(ChatRoomModel chatRoom, String communityId) {
+  return _isDirectLikeCommunityThread(
+    {
+      'type': chatRoom.type,
+      'community_id': chatRoom.communityId,
+      'members_count': chatRoom.membersCount,
+      'title': chatRoom.title,
+    },
+    communityId,
+  );
+}
+
+String _dmFallbackInitial(String title) {
+  final trimmed = title.trim();
+  if (trimmed.isEmpty) return '?';
+  return trimmed[0].toUpperCase();
+}
+
+String _typeLabelForChat(ChatRoomModel chatRoom, String communityId) {
+  final s = getStrings();
+  if (_isDirectLikeChatRoom(chatRoom, communityId)) {
+    return 'Mensagem Direta';
+  }
+  switch (chatRoom.type) {
+    case 'public':
+      return s.publicChatLabel;
+    case 'group':
+      return s.groupChatLabel;
+    default:
+      return s.chat;
+  }
+}
+
+bool _usesDmDeleteFlow(ChatRoomModel chatRoom, String communityId) {
+  return _isDirectLikeChatRoom(chatRoom, communityId);
+}
 
 // =============================================================================
 // Provider: chats do usuário filtrados por comunidade
@@ -20,29 +94,81 @@ final communityMyChatsProvider =
         (ref, communityId) async {
   final userId = SupabaseService.currentUserId;
   if (userId == null) return [];
+
   final response = await SupabaseService.table('chat_members')
       .select(
           'thread_id, status, is_pinned_by_user, pinned_at, unread_count, chat_threads(*)')
       .eq('user_id', userId)
       .neq('status', 'left');
-  final all = (response as List? ?? [])
+
+  final rawChats = (response as List? ?? [])
       .where((e) => e['chat_threads'] != null)
-      .map((e) {
-        final threadMap = Map<String, dynamic>.from(
-            e['chat_threads'] as Map<String, dynamic>);
-        threadMap['is_pinned_by_user'] =
-            e['is_pinned_by_user'] as bool? ?? false;
-        threadMap['pinned_at'] = e['pinned_at'];
-        threadMap['membership_status'] = e['status'] as String? ?? 'active';
-        threadMap['unread_count'] = e['unread_count'] as int? ?? 0;
-        return ChatRoomModel.fromJson(threadMap);
+      .map((e) => Map<String, dynamic>.from(e as Map))
+      .where((e) {
+        final thread = e['chat_threads'] as Map<String, dynamic>?;
+        if (thread == null) return false;
+        final threadCommunityId = thread['community_id'] as String?;
+        return threadCommunityId == communityId ||
+            _isDirectLikeCommunityThread(thread, communityId);
       })
-      .where((c) =>
-          c.communityId == communityId ||
-          c.type == 'dm' ||
-          c.type == 'direct' ||
-          c.type == 'private')
       .toList();
+
+  final dmThreadIds = rawChats
+      .where((e) => _isDirectLikeCommunityThread(
+            e['chat_threads'] as Map<String, dynamic>?,
+            communityId,
+          ))
+      .map((e) => e['thread_id'] as String?)
+      .whereType<String>()
+      .toList();
+
+  final Map<String, Map<String, dynamic>> dmCounterparts = {};
+  if (dmThreadIds.isNotEmpty) {
+    try {
+      final dmMembers = await SupabaseService.table('chat_members').select(
+          'thread_id, user_id, profiles!chat_members_user_id_fkey(id, nickname, icon_url)')
+        .inFilter('thread_id', dmThreadIds)
+        .neq('user_id', userId);
+
+      for (final row in (dmMembers as List? ?? [])) {
+        final map = Map<String, dynamic>.from(row as Map);
+        final threadId = map['thread_id'] as String?;
+        final profile = _extractProfile(map['profiles']);
+        if (threadId == null ||
+            profile == null ||
+            dmCounterparts.containsKey(threadId)) {
+          continue;
+        }
+        dmCounterparts[threadId] = profile;
+      }
+    } catch (e) {
+      debugPrint('[CommunityMyChats] Erro ao enriquecer DMs: $e');
+    }
+  }
+
+  final all = rawChats.map((e) {
+    final threadMap =
+        Map<String, dynamic>.from(e['chat_threads'] as Map<String, dynamic>);
+    threadMap['is_pinned_by_user'] = e['is_pinned_by_user'] as bool? ?? false;
+    threadMap['pinned_at'] = e['pinned_at'];
+    threadMap['membership_status'] = e['status'] as String? ?? 'active';
+    threadMap['unread_count'] = e['unread_count'] as int? ?? 0;
+
+    if (_isDirectLikeCommunityThread(threadMap, communityId)) {
+      final dmThreadId =
+          e['thread_id'] as String? ?? threadMap['id'] as String? ?? '';
+      final counterpart = dmCounterparts[dmThreadId];
+      if (counterpart != null) {
+        threadMap['title'] = counterpart['nickname'] ?? threadMap['title'];
+        threadMap['icon_url'] = counterpart['icon_url'];
+        threadMap['host_id'] =
+            counterpart['id'] ?? counterpart['user_id'] ?? threadMap['host_id'];
+      }
+    }
+
+    return ChatRoomModel.fromJson(threadMap);
+  }).toList();
+
   all.sort((a, b) {
     if (a.isPinnedByUser && !b.isPinnedByUser) return -1;
     if (!a.isPinnedByUser && b.isPinnedByUser) return 1;
@@ -605,20 +731,6 @@ class _CommunityChatTile extends ConsumerWidget {
     required this.communityId,
   });
 
-  String _typeLabel(String type) {
-    final s = getStrings();
-    switch (type) {
-      case 'public':
-        return s.publicChatLabel;
-      case 'group':
-        return s.groupChatLabel;
-      case 'dm':
-        return 'Mensagem Direta';
-      default:
-        return s.chat;
-    }
-  }
-
   Future<void> _showContextMenu(BuildContext context, WidgetRef ref) async {
     final s = getStrings();
     final r = context.r;
@@ -697,7 +809,9 @@ class _CommunityChatTile extends ConsumerWidget {
               leading: Icon(Icons.exit_to_app_rounded,
                   color: AppTheme.errorColor, size: r.s(22)),
               title: Text(
-                chatRoom.type == 'dm' ? s.deleteConversation : s.leaveChat,
+                _usesDmDeleteFlow(chatRoom, communityId)
+                    ? s.deleteConversation
+                    : s.leaveChat,
                 style:
                     TextStyle(color: AppTheme.errorColor, fontSize: r.fs(14)),
               ),
@@ -709,7 +823,7 @@ class _CommunityChatTile extends ConsumerWidget {
                   builder: (dCtx) => AlertDialog(
                     backgroundColor: context.cardBg,
                     title: Text(
-                      chatRoom.type == 'dm'
+                      _usesDmDeleteFlow(chatRoom, communityId)
                           ? 'Apagar conversa?'
                           : 'Sair do chat?',
                       style: TextStyle(
@@ -718,7 +832,7 @@ class _CommunityChatTile extends ConsumerWidget {
                           fontWeight: FontWeight.w700),
                     ),
                     content: Text(
-                      chatRoom.type == 'dm'
+                      _usesDmDeleteFlow(chatRoom, communityId)
                           ? s.conversationRemovedFromList
                           : 'Você poderá entrar novamente depois.',
                       style: TextStyle(
@@ -735,7 +849,9 @@ class _CommunityChatTile extends ConsumerWidget {
                       TextButton(
                         onPressed: () => Navigator.of(dCtx).pop(true),
                         child: Text(
-                          chatRoom.type == 'dm' ? s.deleteAction : s.logout,
+                          _usesDmDeleteFlow(chatRoom, communityId)
+                              ? s.deleteAction
+                              : s.logout,
                           style: TextStyle(
                               color: AppTheme.errorColor,
                               fontWeight: FontWeight.w700,
@@ -770,6 +886,7 @@ class _CommunityChatTile extends ConsumerWidget {
     final r = context.r;
     final hasUnread = chatRoom.unreadCount > 0;
     final isPinned = chatRoom.isPinnedByUser;
+    final isDirectLikeChat = _isDirectLikeChatRoom(chatRoom, communityId);
 
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
@@ -789,38 +906,71 @@ class _CommunityChatTile extends ConsumerWidget {
             : null,
         child: Row(
           children: [
-            // ── Cover quadrado (72x72) com badge de não lido ──
+            // ── Avatar circular para DM / cover quadrado para grupo ──
             Stack(
+              clipBehavior: Clip.none,
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(r.s(6)),
-                  child: Container(
+                if (isDirectLikeChat)
+                  SizedBox(
                     width: r.s(72),
                     height: r.s(72),
-                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                    child: chatRoom.iconUrl != null
-                        ? CachedNetworkImage(
-                            imageUrl: chatRoom.iconUrl!,
-                            fit: BoxFit.cover,
-                            placeholder: (_, __) => Container(
-                              color:
-                                  AppTheme.primaryColor.withValues(alpha: 0.3),
+                    child: Center(
+                      child: chatRoom.iconUrl != null &&
+                              chatRoom.iconUrl!.trim().isNotEmpty
+                          ? CosmeticAvatar(
+                              userId: chatRoom.hostId,
+                              avatarUrl: chatRoom.iconUrl,
+                              size: r.s(56),
+                            )
+                          : Container(
+                              width: r.s(56),
+                              height: r.s(56),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: AppTheme.primaryColor
+                                    .withValues(alpha: 0.35),
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                _dmFallbackInitial(chatRoom.title),
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: r.fs(22),
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
                             ),
-                            errorWidget: (_, __, ___) => Icon(
-                              Icons.chat_bubble_rounded,
-                              color: Colors.white,
-                              size: r.s(32),
-                            ),
-                          )
-                        : Icon(Icons.chat_bubble_rounded,
-                            color: Colors.white, size: r.s(32)),
+                    ),
+                  )
+                else
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(r.s(6)),
+                    child: Container(
+                      width: r.s(72),
+                      height: r.s(72),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                      child: chatRoom.iconUrl != null
+                          ? CachedNetworkImage(
+                              imageUrl: chatRoom.iconUrl!,
+                              fit: BoxFit.cover,
+                              placeholder: (_, __) => Container(
+                                color: AppTheme.primaryColor
+                                    .withValues(alpha: 0.3),
+                              ),
+                              errorWidget: (_, __, ___) => Icon(
+                                Icons.chat_bubble_rounded,
+                                color: Colors.white,
+                                size: r.s(32),
+                              ),
+                            )
+                          : Icon(Icons.chat_bubble_rounded,
+                              color: Colors.white, size: r.s(32)),
+                    ),
                   ),
-                ),
-                // Badge de não lido (ponto vermelho)
                 if (hasUnread)
                   Positioned(
                     top: 4,
-                    right: 4,
+                    right: isDirectLikeChat ? 6 : 4,
                     child: Container(
                       width: r.s(10),
                       height: r.s(10),
@@ -842,7 +992,7 @@ class _CommunityChatTile extends ConsumerWidget {
                 children: [
                   // Tipo de chat (ex: "Chat Público")
                   Text(
-                    _typeLabel(chatRoom.type),
+                    _typeLabelForChat(chatRoom, communityId),
                     style: TextStyle(
                       color: context.textHint,
                       fontSize: r.fs(10),
