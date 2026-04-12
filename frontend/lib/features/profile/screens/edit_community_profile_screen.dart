@@ -1617,26 +1617,103 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
     );
   }
 
+  void _insertSnippet(String snippet, {int? cursorOffset}) {
+    final value = _controller.value;
+    final selection = value.selection;
+    final text = value.text;
+
+    if (!selection.isValid || selection.start < 0 || selection.end < 0) {
+      final updated = '$text$snippet';
+      _replaceValue(
+        updated,
+        selection: TextSelection.collapsed(
+          offset: text.length + (cursorOffset ?? snippet.length),
+        ),
+      );
+      return;
+    }
+
+    final start = selection.start;
+    final end = selection.end;
+    final updated = text.replaceRange(start, end, snippet);
+    _replaceValue(
+      updated,
+      selection: TextSelection.collapsed(
+        offset: start + (cursorOffset ?? snippet.length),
+      ),
+    );
+  }
+
+  void _insertImageTemplate() {
+    const snippet = '![descrição](https://exemplo.com/imagem.png)';
+    _insertSnippet(snippet, cursorOffset: 2);
+  }
+
+  void _insertGifTemplate() {
+    const snippet = '![gif](https://exemplo.com/animacao.gif)';
+    _insertSnippet(snippet, cursorOffset: 2);
+  }
+
+  void _insertVideoTemplate() {
+    const snippet = '[Vídeo](https://exemplo.com/video)';
+    _insertSnippet(snippet, cursorOffset: 1);
+  }
+
+  Widget _buildToolbarSection(
+    BuildContext context, {
+    required String title,
+    required List<Widget> actions,
+  }) {
+    final r = context.r;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            color: context.textSecondary,
+            fontSize: r.fs(12),
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        SizedBox(height: r.s(8)),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(children: actions),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final r = context.r;
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final mediaQuery = MediaQuery.of(context);
+    final bottomInset = mediaQuery.viewInsets.bottom;
+    final maxSheetHeight = mediaQuery.size.height * 0.92;
 
     return AnimatedPadding(
       duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOut,
       padding: EdgeInsets.only(bottom: bottomInset),
       child: SafeArea(
         top: false,
         child: Container(
-          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.92),
+          constraints: BoxConstraints(maxHeight: maxSheetHeight),
           decoration: BoxDecoration(
             color: context.surfaceColor,
             borderRadius: BorderRadius.vertical(top: Radius.circular(r.s(24))),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.18),
+                blurRadius: 22,
+                offset: const Offset(0, -6),
+              ),
+            ],
           ),
           child: Padding(
             padding: EdgeInsets.fromLTRB(r.s(16), r.s(12), r.s(16), r.s(16)),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Center(
@@ -1651,75 +1728,113 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
                 ),
                 SizedBox(height: r.s(16)),
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: Text(
-                        widget.title,
-                        style: TextStyle(
-                          color: context.textPrimary,
-                          fontSize: r.fs(18),
-                          fontWeight: FontWeight.w700,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.title,
+                            style: TextStyle(
+                              color: context.textPrimary,
+                              fontSize: r.fs(18),
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          SizedBox(height: r.s(6)),
+                          Text(
+                            '${widget.markdownLabel}. Imagens e GIFs podem ser adicionados por URL.',
+                            style: TextStyle(
+                              color: context.textSecondary,
+                              fontSize: r.fs(12),
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+                    SizedBox(width: r.s(12)),
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
                       child: Text(widget.cancelLabel),
                     ),
-                    SizedBox(width: r.s(4)),
+                    SizedBox(width: r.s(6)),
                     FilledButton(
                       onPressed: () => Navigator.of(context).pop(_controller.text.trim()),
                       child: Text(widget.saveLabel),
                     ),
                   ],
                 ),
-                SizedBox(height: r.s(6)),
-                Text(
-                  widget.markdownLabel,
-                  style: TextStyle(
-                    color: context.textSecondary,
-                    fontSize: r.fs(12),
-                  ),
-                ),
-                SizedBox(height: r.s(14)),
-                Wrap(
-                  spacing: r.s(8),
-                  runSpacing: r.s(8),
-                  children: [
+                SizedBox(height: r.s(16)),
+                _buildToolbarSection(
+                  context,
+                  title: 'Formatação',
+                  actions: [
                     _FormatActionChip(
                       icon: Icons.format_bold_rounded,
                       label: 'Negrito',
                       onTap: () => _wrapSelection('**', '**'),
                     ),
+                    SizedBox(width: r.s(8)),
                     _FormatActionChip(
                       icon: Icons.format_italic_rounded,
                       label: 'Itálico',
                       onTap: () => _wrapSelection('*', '*'),
                     ),
+                    SizedBox(width: r.s(8)),
                     _FormatActionChip(
                       icon: Icons.format_strikethrough_rounded,
                       label: 'Tachado',
                       onTap: () => _wrapSelection('~~', '~~'),
                     ),
+                    SizedBox(width: r.s(8)),
                     _FormatActionChip(
                       icon: Icons.title_rounded,
                       label: 'Título',
                       onTap: () => _toggleLinePrefix('## '),
                     ),
+                    SizedBox(width: r.s(8)),
                     _FormatActionChip(
                       icon: Icons.format_quote_rounded,
                       label: 'Citação',
                       onTap: () => _toggleLinePrefix('> '),
                     ),
+                    SizedBox(width: r.s(8)),
                     _FormatActionChip(
                       icon: Icons.format_list_bulleted_rounded,
                       label: 'Lista',
                       onTap: () => _toggleLinePrefix('- '),
                     ),
+                    SizedBox(width: r.s(8)),
                     _FormatActionChip(
                       icon: Icons.horizontal_rule_rounded,
                       label: 'Divisor',
                       onTap: _insertDivider,
+                    ),
+                  ],
+                ),
+                SizedBox(height: r.s(12)),
+                _buildToolbarSection(
+                  context,
+                  title: 'Mídia e links',
+                  actions: [
+                    _FormatActionChip(
+                      icon: Icons.image_outlined,
+                      label: 'Imagem',
+                      onTap: _insertImageTemplate,
+                    ),
+                    SizedBox(width: r.s(8)),
+                    _FormatActionChip(
+                      icon: Icons.gif_box_outlined,
+                      label: 'GIF',
+                      onTap: _insertGifTemplate,
+                    ),
+                    SizedBox(width: r.s(8)),
+                    _FormatActionChip(
+                      icon: Icons.smart_display_outlined,
+                      label: 'Vídeo',
+                      onTap: _insertVideoTemplate,
                     ),
                   ],
                 ),
@@ -1728,17 +1843,23 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: context.cardBg,
-                      borderRadius: BorderRadius.circular(r.s(16)),
-                      border: Border.all(color: context.dividerClr),
+                      borderRadius: BorderRadius.circular(r.s(18)),
+                      border: Border.all(
+                        color: _showPreview
+                            ? context.dividerClr
+                            : AppTheme.accentColor.withValues(alpha: 0.55),
+                        width: 1.4,
+                      ),
                     ),
                     child: Column(
                       children: [
                         Padding(
-                          padding: EdgeInsets.all(r.s(8)),
+                          padding: EdgeInsets.fromLTRB(r.s(10), r.s(10), r.s(10), r.s(8)),
                           child: Row(
                             children: [
                               Expanded(
                                 child: SegmentedButton<bool>(
+                                  showSelectedIcon: true,
                                   segments: [
                                     ButtonSegment<bool>(
                                       value: false,
@@ -1758,97 +1879,157 @@ class _BioRichEditorSheetState extends State<_BioRichEditorSheet> {
                                       WidgetsBinding.instance.addPostFrameCallback((_) {
                                         if (mounted) _focusNode.requestFocus();
                                       });
+                                    } else {
+                                      _focusNode.unfocus();
                                     }
                                   },
                                 ),
                               ),
-                              SizedBox(width: r.s(8)),
+                              SizedBox(width: r.s(10)),
                               ValueListenableBuilder<TextEditingValue>(
                                 valueListenable: _controller,
-                                builder: (_, value, __) => Text(
-                                  '${value.text.length}/${widget.maxLength}',
-                                  style: TextStyle(
-                                    color: context.textSecondary,
-                                    fontSize: r.fs(12),
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                builder: (_, value, __) => Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      '${value.text.length}/${widget.maxLength}',
+                                      style: TextStyle(
+                                        color: context.textSecondary,
+                                        fontSize: r.fs(12),
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    SizedBox(height: r.s(2)),
+                                    Text(
+                                      _showPreview ? 'Prévia' : 'Editor ativo',
+                                      style: TextStyle(
+                                        color: context.textHint,
+                                        fontSize: r.fs(10),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
                         ),
+                        Padding(
+                          padding: EdgeInsets.fromLTRB(r.s(12), 0, r.s(12), r.s(10)),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              _showPreview
+                                  ? 'Veja abaixo como a bio vai aparecer.'
+                                  : 'O texto começa no topo e continua rolando naturalmente conforme você digita.',
+                              style: TextStyle(
+                                color: context.textSecondary,
+                                fontSize: r.fs(11),
+                                height: 1.35,
+                              ),
+                            ),
+                          ),
+                        ),
                         const Divider(height: 1),
                         Expanded(
-                          child: ValueListenableBuilder<TextEditingValue>(
-                            valueListenable: _controller,
-                            builder: (_, value, __) {
-                              if (_showPreview) {
-                                final previewText = value.text.trim();
-                                return SingleChildScrollView(
-                                  padding: EdgeInsets.all(r.s(16)),
-                                  child: previewText.isEmpty
-                                      ? Text(
-                                          widget.hintText,
-                                          style: TextStyle(
-                                            color: context.textHint,
-                                            fontSize: r.fs(14),
-                                            height: 1.5,
-                                          ),
-                                        )
-                                      : MarkdownBody(
-                                          data: previewText,
-                                          selectable: false,
-                                          styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
-                                            p: TextStyle(
-                                              color: context.textPrimary,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.vertical(bottom: Radius.circular(r.s(18))),
+                            child: ValueListenableBuilder<TextEditingValue>(
+                              valueListenable: _controller,
+                              builder: (_, value, __) {
+                                if (_showPreview) {
+                                  final previewText = value.text.trim();
+                                  return SingleChildScrollView(
+                                    padding: EdgeInsets.all(r.s(16)),
+                                    child: previewText.isEmpty
+                                        ? Text(
+                                            widget.hintText,
+                                            style: TextStyle(
+                                              color: context.textHint,
                                               fontSize: r.fs(14),
                                               height: 1.55,
                                             ),
-                                            h2: TextStyle(
-                                              color: context.textPrimary,
-                                              fontSize: r.fs(18),
-                                              fontWeight: FontWeight.w700,
-                                            ),
-                                            blockquote: TextStyle(
-                                              color: context.textSecondary,
-                                              fontSize: r.fs(14),
-                                              fontStyle: FontStyle.italic,
-                                            ),
-                                            blockquoteDecoration: BoxDecoration(
-                                              color: AppTheme.accentColor.withValues(alpha: 0.08),
-                                              borderRadius: BorderRadius.circular(r.s(12)),
-                                              border: Border.all(
-                                                color: AppTheme.accentColor.withValues(alpha: 0.18),
+                                          )
+                                        : MarkdownBody(
+                                            data: previewText,
+                                            selectable: false,
+                                            styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+                                              p: TextStyle(
+                                                color: context.textPrimary,
+                                                fontSize: r.fs(14),
+                                                height: 1.6,
+                                              ),
+                                              h2: TextStyle(
+                                                color: context.textPrimary,
+                                                fontSize: r.fs(18),
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                              blockquote: TextStyle(
+                                                color: context.textSecondary,
+                                                fontSize: r.fs(14),
+                                                fontStyle: FontStyle.italic,
+                                              ),
+                                              blockquoteDecoration: BoxDecoration(
+                                                color: AppTheme.accentColor.withValues(alpha: 0.08),
+                                                borderRadius: BorderRadius.circular(r.s(12)),
+                                                border: Border.all(
+                                                  color: AppTheme.accentColor.withValues(alpha: 0.18),
+                                                ),
                                               ),
                                             ),
                                           ),
-                                        ),
-                                );
-                              }
+                                  );
+                                }
 
-                              return TextField(
-                                controller: _controller,
-                                focusNode: _focusNode,
-                                maxLines: null,
-                                expands: true,
-                                maxLength: widget.maxLength,
-                                style: TextStyle(
-                                  color: context.textPrimary,
-                                  fontSize: r.fs(14),
-                                  height: 1.55,
-                                ),
-                                decoration: InputDecoration(
-                                  hintText: widget.hintText,
-                                  hintStyle: TextStyle(
-                                    color: context.textHint,
-                                    fontSize: r.fs(14),
+                                return GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap: () => _focusNode.requestFocus(),
+                                  child: ColoredBox(
+                                    color: context.cardBg,
+                                    child: TextField(
+                                      controller: _controller,
+                                      focusNode: _focusNode,
+                                      autofocus: true,
+                                      keyboardType: TextInputType.multiline,
+                                      textInputAction: TextInputAction.newline,
+                                      maxLines: null,
+                                      expands: true,
+                                      maxLength: widget.maxLength,
+                                      textAlignVertical: TextAlignVertical.top,
+                                      scrollPadding: EdgeInsets.only(
+                                        left: r.s(16),
+                                        right: r.s(16),
+                                        top: r.s(16),
+                                        bottom: bottomInset + r.s(28),
+                                      ),
+                                      style: TextStyle(
+                                        color: context.textPrimary,
+                                        fontSize: r.fs(15),
+                                        height: 1.6,
+                                      ),
+                                      decoration: InputDecoration(
+                                        hintText: widget.hintText,
+                                        hintStyle: TextStyle(
+                                          color: context.textHint,
+                                          fontSize: r.fs(14),
+                                          height: 1.5,
+                                        ),
+                                        contentPadding: EdgeInsets.fromLTRB(
+                                          r.s(16),
+                                          r.s(16),
+                                          r.s(16),
+                                          r.s(24),
+                                        ),
+                                        border: InputBorder.none,
+                                        counterText: '',
+                                        isCollapsed: false,
+                                      ),
+                                      onTapOutside: (_) => _focusNode.unfocus(),
+                                    ),
                                   ),
-                                  contentPadding: EdgeInsets.all(r.s(16)),
-                                  border: InputBorder.none,
-                                  counterText: '',
-                                ),
-                              );
-                            },
+                                );
+                              },
+                            ),
                           ),
                         ),
                       ],
