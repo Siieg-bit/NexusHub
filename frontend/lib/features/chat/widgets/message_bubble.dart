@@ -150,19 +150,24 @@ class MessageBubble extends ConsumerWidget {
     final isAudioType = message.type == 'audio' || message.type == 'voice_note';
 
     // ── Cosméticos do remetente (frame + bubble) ──
+    // Usa o tipo explícito AsyncValue<UserCosmetics> para evitar inferência como Object
     final authorId = message.authorId;
-    final senderCosmeticsAsync = authorId.isNotEmpty
-        ? ref.watch(userCosmeticsProvider(authorId))
-        : const AsyncData<UserCosmetics?>(null);
-    final senderCosmetics = senderCosmeticsAsync.valueOrNull;
+    UserCosmetics? senderCosmetics;
+    if (authorId.isNotEmpty) {
+      final AsyncValue<UserCosmetics> senderAsync =
+          ref.watch(userCosmeticsProvider(authorId));
+      senderCosmetics = senderAsync.valueOrNull;
+    }
 
     // Bubble: só aplica cosméticos nas mensagens do remetente (não nas minhas)
     // Para as minhas mensagens, aplica os cosméticos do usuário atual
     final myId = SupabaseService.currentUserId ?? '';
-    final myCosmeticsAsync = isMe && myId.isNotEmpty
-        ? ref.watch(userCosmeticsProvider(myId))
-        : const AsyncData<UserCosmetics?>(null);
-    final myCosmetics = myCosmeticsAsync.valueOrNull;
+    UserCosmetics? myCosmetics;
+    if (isMe && myId.isNotEmpty) {
+      final AsyncValue<UserCosmetics> myAsync =
+          ref.watch(userCosmeticsProvider(myId));
+      myCosmetics = myAsync.valueOrNull;
+    }
 
     final activeBubbleStyle = isMe
         ? myCosmetics?.chatBubbleStyle
