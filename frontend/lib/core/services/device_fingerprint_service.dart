@@ -1,10 +1,10 @@
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'supabase_service.dart';
-import '../../core/l10n/locale_provider.dart';
 
 /// Serviço de Device Fingerprinting — registra e atualiza dispositivos.
-/// Baseado na tabela device_fingerprints do schema v5.
+/// Tabela: device_fingerprints (id, user_id, device_id, device_model, os_version, app_version,
+///         ip_address, is_banned, banned_reason, first_seen_at, last_seen_at)
 class DeviceFingerprintService {
   DeviceFingerprintService._();
 
@@ -15,22 +15,20 @@ class DeviceFingerprintService {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
 
-      final deviceInfo = _collectDeviceInfo();
-      final fingerprint = _generateFingerprint(deviceInfo);
+      final info = _collectDeviceInfo();
+      final deviceId = _generateDeviceId(info);
+      final now = DateTime.now().toUtc().toIso8601String();
 
-      // Upsert: atualiza se já existe, cria se não
       await SupabaseService.table('device_fingerprints').upsert(
         {
           'user_id': userId,
-          'fingerprint': fingerprint,
-          'device_type': deviceInfo['device_type'],
-          'device_name': deviceInfo['device_name'],
-          'os': deviceInfo['os'],
-          'browser': deviceInfo['browser'],
-          'is_current': true,
-          'last_seen_at': DateTime.now().toUtc().toIso8601String(),
+          'device_id': deviceId,
+          'device_model': info['device_model'],
+          'os_version': info['os_version'],
+          'app_version': info['app_version'],
+          'last_seen_at': now,
         },
-        onConflict: 'user_id,fingerprint',
+        onConflict: 'user_id,device_id',
       );
     } catch (e) {
       debugPrint('DeviceFingerprint: Erro ao registrar: $e');
@@ -38,95 +36,71 @@ class DeviceFingerprintService {
   }
 
   /// Atualiza o last_seen_at do dispositivo atual.
-  /// Pode ser chamado periodicamente (ex: a cada abertura do app).
   static Future<void> updateLastSeen() async {
     try {
       final userId = SupabaseService.currentUserId;
       if (userId == null) return;
 
-      final fingerprint = _generateFingerprint(_collectDeviceInfo());
+      final deviceId = _generateDeviceId(_collectDeviceInfo());
 
       await SupabaseService.table('device_fingerprints')
-          .update({
-            'last_seen_at': DateTime.now().toUtc().toIso8601String(),
-            'is_current': true,
-          })
+          .update({'last_seen_at': DateTime.now().toUtc().toIso8601String()})
           .eq('user_id', userId)
-          .eq('fingerprint', fingerprint);
+          .eq('device_id', deviceId);
     } catch (e) {
       debugPrint('DeviceFingerprint: Erro ao atualizar: $e');
     }
   }
 
-  /// Coleta informações do dispositivo atual.
   static Map<String, String> _collectDeviceInfo() {
-    final s = getStrings();
-    String deviceType;
-    String deviceName;
-    String os;
-    String browser = '';
+    String deviceModel;
+    String osVersion;
+    const String appVersion = '1.0.0';
 
     if (kIsWeb) {
-      final s = getStrings();
-      deviceType = 'web';
-      deviceName = s.webBrowser;
-      os = s.web;
-      browser = s.browser; // Em produção, usar package:web para detectar
+      deviceModel = 'Web Browser';
+      osVersion = 'web';
     } else {
       try {
-      final s = getStrings();
         if (Platform.isAndroid) {
-      final s = getStrings();
-          deviceType = 'android';
-          deviceName = s.android;
-          os = s.androidVersion;
+          deviceModel = 'Android Device';
+          osVersion = 'Android ${Platform.operatingSystemVersion}';
         } else if (Platform.isIOS) {
-          deviceType = 'ios';
-          deviceName = 'iPhone/iPad';
-          os = 'iOS ${Platform.operatingSystemVersion}';
+          deviceModel = 'iPhone/iPad';
+          osVersion = 'iOS ${Platform.operatingSystemVersion}';
         } else if (Platform.isMacOS) {
-          deviceType = 'desktop';
-          deviceName = 'macOS';
-          os = 'macOS ${Platform.operatingSystemVersion}';
+          deviceModel = 'macOS';
+          osVersion = 'macOS ${Platform.operatingSystemVersion}';
         } else if (Platform.isWindows) {
-          deviceType = 'desktop';
-          deviceName = s.windows;
-          os = s.windowsVersion;
+          deviceModel = 'Windows PC';
+          osVersion = 'Windows ${Platform.operatingSystemVersion}';
         } else if (Platform.isLinux) {
-          deviceType = 'desktop';
-          deviceName = s.linux;
-          os = s.linuxVersion;
+          deviceModel = 'Linux PC';
+          osVersion = 'Linux ${Platform.operatingSystemVersion}';
         } else {
-          deviceType = 'unknown';
-          deviceName = s.device;
-          os = Platform.operatingSystem;
+          deviceModel = 'Unknown Device';
+          osVersion = Platform.operatingSystem;
         }
       } catch (_) {
-        deviceType = 'unknown';
-        deviceName = s.device;
-        os = s.unknown;
+        deviceModel = 'Unknown Device';
+        osVersion = 'unknown';
       }
     }
 
     return {
-      'device_type': deviceType,
-      'device_name': deviceName,
-      'os': os,
-      'browser': browser,
+      'device_model': deviceModel,
+      'os_version': osVersion,
+      'app_version': appVersion,
     };
   }
 
-  /// Gera um fingerprint simples baseado nas informações do dispositivo.
-  /// Em produção, usar package:device_info_plus para dados mais precisos.
-  static String _generateFingerprint(Map<String, String> info) {
-    final raw =
-        '${info['device_type']}_${info['os']}_${info['browser']}_${info['device_name']}';
-    // Simple hash
+  static String _generateDeviceId(Map<String, String> info) {
+    final raw = '${info['device_model']}_${info['os_version']}';
     var hash = 0;
     for (var i = 0; i < raw.length; i++) {
       hash = ((hash << 5) - hash) + raw.codeUnitAt(i);
       hash = hash & 0xFFFFFFFF;
     }
-    return 'fp_${hash.toRadixString(16)}';
+    return 'dev_${hash.toRadixString(16)}';
   }
 }

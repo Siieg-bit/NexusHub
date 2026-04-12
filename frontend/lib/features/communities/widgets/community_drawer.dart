@@ -11,6 +11,8 @@ import '../../../core/utils/helpers.dart';
 import '../providers/community_shared_providers.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/widgets/amino_drawer.dart';
+import '../../../core/widgets/avatar_with_frame.dart';
+import '../../profile/providers/profile_providers.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/widgets/level_up_dialog.dart';
 import '../../../core/providers/chat_provider.dart';
@@ -553,7 +555,14 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
   /// Ao clicar, navega para o perfil do usuário na comunidade.
   Widget _buildUserAvatar(Responsive r, UserModel? user, Color themeColor) {
     final userId = user?.id ?? SupabaseService.currentUserId;
-    return GestureDetector(
+    final frameUrl = userId != null
+        ? ref.watch(equippedItemsProvider(userId)).valueOrNull?['frame_url'] as String?
+        : null;
+    return AvatarWithFrame(
+      avatarUrl: user?.iconUrl,
+      frameUrl: frameUrl,
+      size: r.s(72),
+      showAminoPlus: user?.isPremium ?? false,
       onTap: userId != null
           ? () => _closeAndNavigate(() {
                 context.push(
@@ -561,27 +570,6 @@ class _CommunityDrawerState extends ConsumerState<CommunityDrawer> {
                 );
               })
           : null,
-      child: Container(
-        width: r.s(92),
-        height: r.s(92),
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.35),
-            width: 2,
-          ),
-          color: themeColor.withValues(alpha: 0.4),
-          image: user?.iconUrl != null
-              ? DecorationImage(
-                  image: CachedNetworkImageProvider(user!.iconUrl!),
-                  fit: BoxFit.cover,
-                )
-              : null,
-        ),
-        child: user?.iconUrl == null
-            ? Icon(Icons.person_rounded, color: Colors.white, size: r.s(44))
-            : null,
-      ),
     );
   }
 

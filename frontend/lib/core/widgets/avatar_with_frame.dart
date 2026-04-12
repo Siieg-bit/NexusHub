@@ -6,24 +6,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Widget de Avatar com Frame decorativo — réplica pixel-perfect do Amino.
 ///
-/// No Amino original, os Avatar Frames são imagens PNG com transparência
-/// que VAZAM a borda do círculo do avatar. Exemplos:
-///   - Molduras com asas que se estendem para fora
-///   - Molduras com chifres, coroas, flores que ultrapassam o círculo
-///   - Molduras com efeitos de brilho/partículas ao redor
-///
-/// A implementação usa [clipBehavior: Clip.none] no Stack para permitir
-/// que o frame ultrapasse os limites do container do avatar.
-///
-/// O frame é renderizado com tamanho 40% maior que o avatar para
-/// garantir que as decorações externas sejam visíveis.
+/// O frame é uma imagem PNG com transparência que envolve o avatar circular.
+/// O frame é renderizado 40% maior que o avatar e centralizado sobre ele
+/// usando [Align] dentro de um [Stack] com [Clip.none].
 class AvatarWithFrame extends ConsumerWidget {
   /// URL da imagem do avatar do usuário.
   final String? avatarUrl;
 
   /// URL da imagem do frame decorativo (PNG com transparência).
-  /// O frame deve ser uma imagem quadrada com o avatar centralizado
-  /// e as decorações se estendendo além do círculo central.
   final String? frameUrl;
 
   /// Tamanho do avatar em pixels (diâmetro do círculo interno).
@@ -50,12 +40,12 @@ class AvatarWithFrame extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-      final s = ref.watch(stringsProvider);
-    // O frame precisa de espaço extra ao redor do avatar para as
-    // decorações que vazam a borda. No Amino, o frame é ~40% maior.
+    final s = ref.watch(stringsProvider);
+    final hasFrame = (frameUrl ?? '').isNotEmpty;
+    // Frame é 40% maior que o avatar para acomodar decorações externas
     final frameSize = size * 1.4;
-    // O container total precisa acomodar o frame com overflow
-    final totalSize = frameSize;
+    // O SizedBox total tem o tamanho do frame para não cortar as bordas
+    final totalSize = hasFrame ? frameSize : size;
 
     final widget = GestureDetector(
       onTap: onTap,
@@ -63,46 +53,44 @@ class AvatarWithFrame extends ConsumerWidget {
         width: totalSize,
         height: totalSize,
         child: Stack(
-          // CRITICAL: Clip.none permite que o frame vaze a borda
           clipBehavior: Clip.none,
           alignment: Alignment.center,
           children: [
-            // ── Avatar circular (camada base) ──
-            Container(
-              width: size,
-              height: size,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: context.surfaceColor,
-                border: frameUrl == null || (frameUrl ?? '').isEmpty
-                    ? Border.all(
-                        color: Colors.white.withValues(alpha: 0.10),
-                        width: 1.5,
-                      )
-                    : null,
-              ),
-              child: ClipOval(
-                child: (avatarUrl ?? '').isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: avatarUrl ?? '',
-                        fit: BoxFit.cover,
-                        width: size,
-                        height: size,
-                        memCacheWidth: (size * 2).toInt(),
-                        memCacheHeight: (size * 2).toInt(),
-                        placeholder: (ctx, __) => _avatarPlaceholder(ctx),
-                        errorWidget: (ctx, __, ___) => _avatarPlaceholder(ctx),
-                      )
-                    : _avatarPlaceholder(context),
+            // ── Avatar circular (camada base, centralizado) ──
+            Center(
+              child: Container(
+                width: size,
+                height: size,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: context.surfaceColor,
+                  border: !hasFrame
+                      ? Border.all(
+                          color: Colors.white.withValues(alpha: 0.10),
+                          width: 1.5,
+                        )
+                      : null,
+                ),
+                child: ClipOval(
+                  child: (avatarUrl ?? '').isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: avatarUrl ?? '',
+                          fit: BoxFit.cover,
+                          width: size,
+                          height: size,
+                          memCacheWidth: (size * 2).toInt(),
+                          memCacheHeight: (size * 2).toInt(),
+                          placeholder: (ctx, __) => _avatarPlaceholder(ctx),
+                          errorWidget: (ctx, __, ___) => _avatarPlaceholder(ctx),
+                        )
+                      : _avatarPlaceholder(context),
+                ),
               ),
             ),
 
-            // ── Frame decorativo (camada overlay, VAZA a borda) ──
-            if ((frameUrl ?? '').isNotEmpty)
-              Positioned(
-                // Centralizar o frame sobre o avatar
-                top: -(frameSize - size) / 2,
-                left: -(frameSize - size) / 2,
+            // ── Frame decorativo (camada overlay, centralizado sobre o avatar) ──
+            if (hasFrame)
+              Center(
                 child: IgnorePointer(
                   child: SizedBox(
                     width: frameSize,
@@ -119,11 +107,11 @@ class AvatarWithFrame extends ConsumerWidget {
                 ),
               ),
 
-            // ── Badge Amino+ (canto inferior direito) ──
+            // ── Badge Amino+ (canto inferior direito do avatar) ──
             if (showAminoPlus)
               Positioned(
-                bottom: (totalSize - size) / 2 - 2,
-                right: (totalSize - size) / 2 - 2,
+                bottom: hasFrame ? (frameSize - size) / 2 - 2 : -2,
+                right: hasFrame ? (frameSize - size) / 2 - 2 : -2,
                 child: Container(
                   width: size * 0.32,
                   height: size * 0.32,
@@ -151,8 +139,8 @@ class AvatarWithFrame extends ConsumerWidget {
             // ── Indicador Online (ponto verde, canto inferior direito) ──
             if (showOnline && !showAminoPlus)
               Positioned(
-                bottom: (totalSize - size) / 2,
-                right: (totalSize - size) / 2,
+                bottom: hasFrame ? (frameSize - size) / 2 : 0,
+                right: hasFrame ? (frameSize - size) / 2 : 0,
                 child: Container(
                   width: size * 0.25,
                   height: size * 0.25,
@@ -167,6 +155,7 @@ class AvatarWithFrame extends ConsumerWidget {
         ),
       ),
     );
+
     if (onTap != null) {
       return Semantics(
         label: s.profilePicture,

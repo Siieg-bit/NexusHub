@@ -338,28 +338,7 @@ class _FramePickerSheetState extends State<_FramePickerSheet> {
       ));
     }
 
-    if (items.length <= 1 && _ownedFrames.isEmpty) {
-      // Só tem "sem moldura" — usuário não possui nenhuma
-      return Center(
-        child: Padding(
-          padding: EdgeInsets.all(r.s(32)),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.photo_filter_outlined,
-                  size: r.s(48), color: Colors.grey[400]),
-              SizedBox(height: r.s(12)),
-              Text(
-                'Você ainda não possui molduras.\nVisite a loja para adquirir!',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: Colors.grey[500], fontSize: r.fs(14)),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
+    // Sempre mostrar o grid — molduras bloqueadas aparecem com cadeado
 
     return GridView.builder(
       padding: EdgeInsets.all(r.s(12)),

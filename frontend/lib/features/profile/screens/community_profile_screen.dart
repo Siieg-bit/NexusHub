@@ -15,6 +15,7 @@ import '../../../core/widgets/amino_bottom_nav.dart';
 import '../../communities/widgets/community_create_menu.dart';
 import '../../../core/l10n/locale_provider.dart';
 import '../../../core/providers/block_provider.dart';
+import '../providers/profile_providers.dart';
 import '../widgets/wall_comment_sheet.dart';
 import '../../moderation/widgets/member_role_manager.dart';
 
@@ -393,6 +394,7 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                           // Avatar centralizado
                           AvatarWithFrame(
                             avatarUrl: displayAvatar,
+                            frameUrl: ref.watch(equippedItemsProvider(widget.userId)).valueOrNull?['frame_url'] as String?,
                             size: r.s(96),
                             showAminoPlus: isPremium,
                           ),
