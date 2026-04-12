@@ -1035,74 +1035,9 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
               ),
             ),
 
-            // ================================================================
-            // GALERIA / BANNER (miniaturas das capas do perfil)
-            // A galeria é exibida como grid de miniaturas. As imagens também
-            // são usadas como capa rotativa no topo do perfil.
-            // ================================================================
-            if (displayGallery.isNotEmpty)
-              SliverToBoxAdapter(
-                child: Container(
-                  margin: EdgeInsets.fromLTRB(0, r.s(4), 0, 0),
-                  padding: EdgeInsets.all(r.s(12)),
-                  color: context.surfaceColor,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        s.gallery,
-                        style: TextStyle(
-                          color: context.textPrimary,
-                          fontSize: r.fs(16),
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      SizedBox(height: r.s(10)),
-                      GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          crossAxisSpacing: r.s(4),
-                          mainAxisSpacing: r.s(4),
-                        ),
-                        itemCount: displayGallery.length,
-                        itemBuilder: (context, index) {
-                          final isActive = index == _bannerIndex.clamp(0, displayGallery.length - 1);
-                          return Stack(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(r.s(4)),
-                                child: CachedNetworkImage(
-                                  imageUrl: displayGallery[index],
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                ),
-                              ),
-                              if (isActive && displayGallery.length > 1)
-                                Positioned(
-                                  bottom: r.s(4),
-                                  right: r.s(4),
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: r.s(4), vertical: r.s(2)),
-                                    decoration: BoxDecoration(
-                                      color: Colors.black.withValues(alpha: 0.6),
-                                      borderRadius: BorderRadius.circular(r.s(4)),
-                                    ),
-                                    child: Icon(Icons.play_arrow_rounded,
-                                        color: Colors.white, size: r.s(12)),
-                                  ),
-                                ),
-                            ],
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+            // A galeria definida na edição do perfil local é usada apenas
+            // como fonte para a capa/banner rotativo do topo. Ela não deve
+            // ser exibida como seção própria abaixo da biografia.
 
             // ================================================================
             // TABS — Posts | Mural | Posts Salvos
