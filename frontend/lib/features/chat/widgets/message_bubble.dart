@@ -71,12 +71,7 @@ class MessageBubble extends ConsumerWidget {
 
   String _replyAuthorLabel(MessageModel? repliedMessage, String fallbackUserLabel) {
     if (repliedMessage == null) return 'Mensagem original';
-    final sender = repliedMessage.sender;
-    final author = repliedMessage.author;
-    final nickname = sender?['nickname'] as String? ??
-        sender?['name'] as String? ??
-        author?['nickname'] as String? ??
-        author?['name'] as String?;
+    final nickname = repliedMessage.author?.nickname;
     if (nickname != null && nickname.trim().isNotEmpty) {
       return nickname.trim();
     }

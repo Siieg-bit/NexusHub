@@ -1109,13 +1109,18 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
                   ),
                   indicatorSize: TabBarIndicatorSize.tab,
                   labelStyle: TextStyle(
-                      fontWeight: FontWeight.w700, fontSize: r.fs(14)),
+                    fontWeight: FontWeight.w700,
+                    fontSize: r.fs(14),
+                  ),
                   unselectedLabelStyle: TextStyle(
-                      fontWeight: FontWeight.w500, fontSize: r.fs(14)),
+                    fontWeight: FontWeight.w500,
+                    fontSize: r.fs(14),
+                  ),
                   tabs: [
                     Tab(
                       child: Text(
-                          '${s.posts}${_userPosts.isNotEmpty ? ' ${_userPosts.length}' : ''}'),
+                        '${s.posts}${_userPosts.isNotEmpty ? ' ${_userPosts.length}' : ''}',
+                      ),
                     ),
                     Tab(text: s.wall),
                     Tab(text: s.savedPosts),
@@ -1137,8 +1142,9 @@ class _CommunityProfileScreenState extends ConsumerState<CommunityProfileScreen>
             ],
           ),
         ),
-      ],
-    ),
+          ),
+        ],
+      ),
     );
   }
 
